@@ -1,0 +1,13 @@
+# 선택 — 차량 mTLS 창구(8443). 차량 CA 인증서를 caddy/vehicle-ca.pem에 두고:
+#   .env에 FF_COMPOSE_EXTRA=-f compose.vehicle-mtls.yml 을 적고 sudo bash scripts/install.sh(부팅 서비스·update·health도 같은 구성)
+# 클라우드 방화벽·ufw에서 8443/tcp도 연다. 기본(443)의 차량 CMAC 서명은 그대로 쓸 수 있다.
+services:
+  caddy:
+    ports:
+      - '8443:8443'
+    volumes:
+      - ./caddy/vehicle-mtls.caddy:/etc/caddy/sites/vehicle-mtls.caddy:ro
+      - ./caddy/vehicle-ca.pem:/etc/caddy/vehicle-ca.pem:ro
+  app:
+    environment:
+      FF_VEHICLE_CERT_HEADER: x-client-cert-subject

@@ -4,6 +4,8 @@
 #
 #   빌드(FF 폴더에서):  docker build -f docker/app/Dockerfile --build-arg FF_BUILD_SHA=$(git rev-parse --short HEAD) -t ff-platform:0.1.0 .
 #   실행:               docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env up -d
+#   공개 시연 변형(클라우드 VM, 20-99): --build-arg FF_WEB_AUTH=demo — 화면만 데모 빌드(데모 로그인·역할 선택기).
+#                       서버는 데모 게이트(FF_DEMO_GATE=on)로 띄운다. 고객 설치 이미지는 기본값 oidc
 #
 # 단계: deps(전체 의존성) → build(contracts·backend·운영 화면) → runtime(운영 의존성만, 비루트 사용자)
 
@@ -24,14 +26,17 @@ RUN npm ci
 
 # ── 2) 빌드 — contracts(tsc) → backend(tsc) → 운영 화면(VITE_AUTH=oidc: 데모 로그인·역할 선택기가 빠진 번들) ──
 FROM deps AS build
+# 화면 인증 빌드 — oidc(고객 설치, 기본) 또는 demo(공개 시연 -demo 태그)
+ARG FF_WEB_AUTH=oidc
 COPY contracts/ contracts/
 COPY backend/ backend/
 COPY frontend/ frontend/
 # Vite 설정이 사용하는 빌드 전용 경로 변환기(runtime에는 복사하지 않는다).
 COPY tools/browser-routes.ts tools/
-RUN npm run build -w @ff/contracts \
+RUN case "$FF_WEB_AUTH" in oidc|demo) ;; *) echo "FF_WEB_AUTH must be oidc or demo" >&2; exit 1;; esac \
+ && npm run build -w @ff/contracts \
  && npm run build -w feature-topology-backend \
- && cd frontend && VITE_AUTH=oidc npx vite build --outDir dist-prod --emptyOutDir --logLevel warn
+ && cd frontend && VITE_AUTH="$FF_WEB_AUTH" npx vite build --outDir dist-prod --emptyOutDir --logLevel warn
 
 # ── 3) 운영 의존성만 — devDependencies 없이 backend·contracts가 쓰는 것만 ──
 FROM ${NODE_IMAGE} AS prod-deps
@@ -48,7 +53,9 @@ RUN npm ci --omit=dev -w feature-topology-backend -w @ff/contracts --include-wor
 # ── 4) 실행 이미지 ──
 FROM ${NODE_IMAGE} AS runtime
 ARG FF_BUILD_SHA=unknown
+ARG FF_WEB_AUTH=oidc
 LABEL org.opencontainers.image.title="Feature Platform" \
+      ai.mutuuslab.ff.web-auth="${FF_WEB_AUTH}" \
       org.opencontainers.image.description="Feature Flag Platform — 고객사 단독 설치(한 설치 = 한 고객)" \
       org.opencontainers.image.revision="${FF_BUILD_SHA}"
 WORKDIR /app/FF

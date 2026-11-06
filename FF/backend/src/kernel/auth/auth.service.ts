@@ -4,6 +4,7 @@
 //  · Bearer: API 클라이언트의 접근 토큰을 JWKS로 검증(발급자·대상 OIDC_AUDIENCE·만료)
 //  · 역할: IdP 그룹 클레임 → OIDC_ROLE_MAP. 맵에 걸리는 역할이 없으면 로그인 거부(감사 DENIED)
 // 데모 모드(FF_AUTH=demo)에서는 이 서비스가 아무것도 하지 않는다 — 신원은 지금까지처럼 X-Actor-* 헤더(actor.ts).
+// 공개 데모 게이트(FF_DEMO_GATE=on, demo-gate.ts)만 예외 — 데모 ID·비밀번호로 같은 세션 표·쿠키를 쓴다(헤더는 데모 계정 표 안에서만).
 import { Inject, Injectable } from '@nestjs/common';
 import type { Role } from '@ff/contracts';
 import type { Request } from 'express';
@@ -13,6 +14,7 @@ import { AuditService } from '../audit.service';
 import { DB, type Db } from '../db';
 import { DomainError } from '../errors';
 import { authModeOf, claimValues, mapRoles, oidcConfigOf, type AuthMode, type OidcConfig } from './auth-config';
+import { demoGateConfigOf, demoGateOn, foldAscii, type DemoGateConfig } from './demo-gate';
 import { readCookie, safeEqual, signValue, unsignValue } from './cookies';
 import { JwtError, type JwtClaims } from './jwt';
 import { OidcClient, OidcError } from './oidc-client';
@@ -90,6 +92,8 @@ export class AuthService {
   readonly cfg: OidcConfig | null = this.mode === 'oidc' ? oidcConfigOf() : null;
   /** 시험이 바꿔 끼운다(유휴·절대 만료) — 세션 시각은 실제 시각(Clock 고정과 무관: IdP 토큰 만료가 실제 시각이다) */
   now: () => number = Date.now;
+  /** 공개 데모 게이트 — FF_AUTH=demo + FF_DEMO_GATE=on일 때만 */
+  readonly gate: DemoGateConfig | null = this.mode === 'demo' && demoGateOn() ? demoGateConfigOf() : null;
   private client: OidcClient | null = this.cfg ? new OidcClient(this.cfg, () => this.now()) : null;
   private readonly listeners: ((user: AuthUser) => void)[] = [];
 
@@ -106,6 +110,26 @@ export class AuthService {
   private get config(): OidcConfig {
     if (!this.cfg) throw new DomainError('NOT_FOUND', 'SSO 로그인은 FF_AUTH=oidc에서만 씁니다.');
     return this.cfg;
+  }
+
+  /** 서버 세션 설정 — SSO 또는 데모 게이트. 둘 다 아니면 null(헤더 데모) */
+  get sessions(): { secret: string; ttlMin: number; idleMin: number; secure: boolean } | null {
+    if (this.cfg) return { secret: this.cfg.sessionSecret, ttlMin: this.cfg.sessionTtlMin, idleMin: this.cfg.sessionIdleMin, secure: this.cfg.secureCookies };
+    if (this.gate) return { secret: this.gate.sessionSecret, ttlMin: this.gate.sessionTtlMin, idleMin: this.gate.sessionIdleMin, secure: this.gate.secureCookies };
+    return null;
+  }
+
+  /**
+   * 데모 게이트 로그인 — 데모 ID·비밀번호(ASCII 대소문자 구분 없음, 상수 시간 비교)가 맞으면 세션 쿠키.
+   * 세션 주체는 방문마다 새 가명(demo-gate:<무작위>) — 어느 데모 계정으로 일할지는 요청마다 머리글로 고르고 서버가 표로 확인한다.
+   */
+  demoLogin(id: unknown, password: unknown): string | null {
+    const g = this.gate;
+    if (!g) throw new DomainError('NOT_FOUND', '데모 게이트가 켜져 있지 않습니다.');
+    const okId = typeof id === 'string' && id.length <= 128 && safeEqual(foldAscii(id.trim()), foldAscii(g.loginId));
+    const okPw = typeof password === 'string' && password.length <= 256 && safeEqual(foldAscii(password), foldAscii(g.password));
+    if (!okId || !okPw) return null;
+    return this.createSession({ id: `demo-gate:${randomBytes(6).toString('hex')}`, name: null, email: null, roles: [] }, 'demo-gate');
   }
 
   /** 세션을 만들 때마다(로그인) — 승인자 서명 키 등록(HSM)이 여기에 붙는다 */
@@ -189,8 +213,9 @@ export class AuthService {
   }
 
   /** 세션 만들기 — 쿠키 값(서명된 ID)을 돌려준다 */
-  createSession(user: AuthUser): string {
-    const cfg = this.config;
+  createSession(user: AuthUser, via: 'oidc' | 'demo-gate' = 'oidc'): string {
+    const cfg = this.sessions;
+    if (!cfg) throw new DomainError('NOT_FOUND', '서버 세션은 FF_AUTH=oidc 또는 데모 게이트에서만 씁니다.');
     const id = b64u(32);
     const now = this.now();
     const iso = (t: number) => new Date(t).toISOString();
@@ -205,30 +230,31 @@ export class AuthService {
         user.email,
         JSON.stringify(user.roles),
         iso(now),
-        iso(now + cfg.sessionTtlMin * 60_000),
+        iso(now + cfg.ttlMin * 60_000),
         iso(now),
       );
-      this.audit.record(actorOfUser(user), 'AUTH_LOGIN', user.id, { after: { roles: user.roles, via: 'oidc' }, componentId: 'D06-09' });
+      this.audit.record(actorOfUser(user), 'AUTH_LOGIN', user.id, { after: { roles: user.roles, via }, componentId: 'D06-09' });
       for (const fn of this.listeners) fn(user);
     });
-    return signValue(cfg.sessionSecret, 'session', id);
+    return signValue(cfg.secret, 'session', id);
   }
 
   private sessionIdOf(req: Request): string | null {
-    if (!this.cfg) return null;
-    return unsignValue(this.cfg.sessionSecret, 'session', readCookie(req, SESSION_COOKIE));
+    const s = this.sessions;
+    if (!s) return null;
+    return unsignValue(s.secret, 'session', readCookie(req, SESSION_COOKIE));
   }
 
   /** 세션 쿠키 → 사용자. 절대 수명·유휴 만료가 지나면 지우고 null. 살아 있으면 유휴 시각을 늦춘다 */
   sessionUser(req: Request): AuthUser | null {
-    const cfg = this.cfg;
+    const cfg = this.sessions;
     const id = this.sessionIdOf(req);
     if (!cfg || !id) return null;
     const hash = sha256(id);
     const row = this.db.get<SessionRow>('SELECT * FROM auth_session WHERE id_hash = ?', hash);
     if (!row) return null;
     const now = this.now();
-    const idle = now - Date.parse(row.last_seen_at) >= cfg.sessionIdleMin * 60_000;
+    const idle = now - Date.parse(row.last_seen_at) >= cfg.idleMin * 60_000;
     if (Date.parse(row.expires_at) <= now || idle) {
       this.db.run('DELETE FROM auth_session WHERE id_hash = ?', hash);
       return null;
@@ -259,6 +285,10 @@ export class AuthService {
 
   /** 로그아웃 — 세션을 지운다. IdP 로그아웃 주소(있으면) */
   async logout(req: Request): Promise<{ endSessionUrl?: string }> {
+    if (this.gate) {
+      this.dropSession(req);
+      return {};
+    }
     if (!this.cfg || !this.dropSession(req)) return {};
     const meta = await this.oidc.meta().catch(() => null);
     if (!meta?.end_session_endpoint) return {};
@@ -302,7 +332,8 @@ export class AuthService {
   /** CSRF — 쿠키로 인증한 변경 요청은 Origin이 설치 출처(또는 FF_CORS_ORIGINS)여야 한다 */
   originAllowed(req: Request): boolean {
     const o = req.header('origin');
-    return !!o && !!this.cfg && this.cfg.allowedOrigins.includes(o);
+    const allowed = this.cfg?.allowedOrigins ?? this.gate?.allowedOrigins ?? [];
+    return !!o && allowed.includes(o);
   }
 }
 

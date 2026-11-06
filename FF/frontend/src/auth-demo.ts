@@ -3,6 +3,8 @@
 // (auth.ts가 상수 OIDC_AUTH로 갈래를 고르고, tools/prod-bundle.test.ts가 표식 DEMO_LOGIN_MARKER·비밀번호가 번들에 없는지 본다).
 // 세션은 localStorage(ff.auth) — e2e의 storageState와 단위 시험이 같은 키로 미리 로그인 상태를 만든다.
 // 상태를 모듈에 캐시하지 않고 매번 저장소를 읽는다: 하네스가 모듈 로드 뒤에 키를 심어도 즉시 반영된다.
+// 공개 데모 게이트(백엔드 FF_DEMO_GATE=on, 클라우드 VM 20-99): 서버가 같은 ID/PW로 세션 쿠키를 준다 — 그때는 서버 판정이 기준이고
+// (서버 비밀번호를 바꿔도 동작), 서버 세션이 끝나면(401) 화면도 로그인으로 돌아간다. 게이트 없는 백엔드·정적 데모는 지금처럼 브라우저 판정.
 import { useSyncExternalStore } from 'react';
 
 /** 번들 검사 표식 — 데모 로그인 폼(data-demo-login)이 쓴다. 운영 빌드에 이 문자열이 있으면 데모 로그인이 실린 것이다 */
@@ -10,6 +12,9 @@ export const DEMO_LOGIN_MARKER = 'ff-demo-login-v1';
 export const DEMO_ID = 'FF';
 export const DEMO_PW = 'FF';
 const KEY = 'ff.auth';
+/** 서버 게이트 세션으로 로그인했다 — 401이면 화면 로그인도 끝낸다 */
+const GATE_KEY = 'ff.auth.gate';
+const STATIC = import.meta.env.VITE_DATA_MODE === 'static';
 
 let version = 0;
 const listeners = new Set<() => void>();
@@ -38,13 +43,63 @@ export function login(id: string, password: string): boolean {
   return true;
 }
 
+/**
+ * 로그인 — 백엔드가 있으면 먼저 서버 게이트에 묻는다. 200이면 서버 세션(httpOnly 쿠키), 401·403·429면 거절,
+ * 게이트가 없는 백엔드(404)·정적 데모·연결 실패·프록시 오류(5xx)는 브라우저 판정(login)으로 넘어간다.
+ */
+export async function loginWithServer(id: string, password: string): Promise<boolean> {
+  if (STATIC) return login(id, password);
+  let res: Response;
+  try {
+    res = await fetch('/api/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ id, password }) });
+  } catch {
+    return login(id, password);
+  }
+  // 게이트 없는 백엔드(404)·백엔드 없이 띄운 개발 화면(프록시 5xx)은 브라우저 판정
+  if (res.status === 404 || res.status >= 500) return login(id, password);
+  if (!res.ok) return false;
+  try {
+    localStorage.setItem(KEY, '1');
+    localStorage.setItem(GATE_KEY, '1');
+  } catch {
+    /* 이 탭에서는 로그인 상태 */
+  }
+  emit();
+  return true;
+}
+
 export function logout(): void {
+  const gate = isGateSession();
   try {
     localStorage.removeItem(KEY);
+    localStorage.removeItem(GATE_KEY);
+  } catch {
+    /* noop */
+  }
+  // 서버 게이트 세션도 지운다(응답을 기다리지 않는다 — 화면은 바로 로그인으로)
+  if (gate && !STATIC) void fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' }).catch(() => undefined);
+  emit();
+}
+
+const isGateSession = (): boolean => {
+  try {
+    return localStorage.getItem(GATE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+/** 서버 게이트 세션이 끝났다(401) — 게이트로 로그인한 화면만 로그인으로 돌려보낸다. 처리했으면 true */
+export function gateSessionEnded(): boolean {
+  if (!isGateSession()) return false;
+  try {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(GATE_KEY);
   } catch {
     /* noop */
   }
   emit();
+  return true;
 }
 
 export const isAuthed = (): boolean => read();

@@ -84,6 +84,7 @@ architecture:
   ARC-COST-ESTIMATION: "20-94 SW 개발비 산정 (선택 모듈)"
   ARC-FLAG-SOURCE:     "20-96 Feature Flag Git 소스·정책·회신 연결"
   ARC-UNLEASH-LIVE:    "20-98 Unleash 실제 런타임 통합"
+  ARC-CLOUD-VM:        "20-99 클라우드 VM 공개 시연 배포"
   INT-UNLEASH-VEHICLE: "80-98 차량 Unleash 서명 조회와 설치"
 
 # ── 엔티티 (18, 4 그룹) ────────────────────────────────────

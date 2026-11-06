@@ -1,0 +1,18 @@
+# 클라우드 VM 공개 시연 — 부팅 때 compose를 올린다(20-99). scripts/install.sh가 @KIT@를 실제 경로로 바꿔 설치한다.
+[Unit]
+Description=Feature Platform cloud demo (docker compose)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=@KIT@
+# .env의 FF_COMPOSE_EXTRA(차량 mTLS 등)까지 같은 구성으로 — scripts/lib.sh의 dc
+ExecStart=/bin/bash -c '. @KIT@/scripts/lib.sh && dc up -d --remove-orphans'
+ExecStop=/bin/bash -c '. @KIT@/scripts/lib.sh && dc stop'
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

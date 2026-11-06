@@ -108,7 +108,6 @@
 }
 .lg__error { margin: 0; color: var(--danger); font-size: var(--fs-sm); }
 .lg__submit { justify-self: start; }
-.lg__demo { margin: 0; color: var(--muted); font-size: var(--fs-xs); }
 .lg__foot { display: grid; gap: 4px; color: var(--muted); font-size: var(--fs-xs); }
 .lg__contact { color: var(--ink-2); }
 .lg__contact a {

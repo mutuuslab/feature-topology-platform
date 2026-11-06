@@ -5,6 +5,12 @@
 __pycache__/
 # Unleash 실연동 토큰 (로컬 전용)
 docker/unleash/.env
+# 클라우드 VM 설정(비밀)·업데이트 기록·차량 CA — VM에서만(20-99)
+deploy/cloud-vm/.env
+deploy/cloud-vm/.env.*
+!deploy/cloud-vm/.env.example
+deploy/cloud-vm/state/
+deploy/cloud-vm/caddy/vehicle-ca.pem
 .unleash-runtime/
 # 외부 연계 실제 연결 값(토큰 포함 — npm run ext:check -- --env-file .env.ext)
 .env.ext

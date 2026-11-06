@@ -2,8 +2,8 @@
 // 담당 부서(부서 보기, 2026-11-04)는 기본이 전체 보기 — 고르면 그 부서의 작업공간으로 들어간다. 상단 바에서 언제든 바꾼다.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DEMO_LOGIN_MARKER, login as authLogin } from '../../auth-demo';
-import { demoLoginHint, login as L } from '../../copy/login';
+import { DEMO_LOGIN_MARKER, loginWithServer as authLogin } from '../../auth-demo';
+import { login as L } from '../../copy/login';
 import { Button } from '../../design';
 import { departments as D } from '../../copy/departments';
 import { ALL_DEPARTMENTS } from '../../data/departments';
@@ -20,9 +20,9 @@ export function DemoLoginForm({ from }: { from?: string }) {
   const { dispatch } = useAppApi();
   const [dept, setDept] = useState(department || ALL_DEPARTMENTS);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authLogin(id, pw)) {
+    if (!(await authLogin(id, pw))) {
       setErr(true);
       return;
     }
@@ -35,7 +35,6 @@ export function DemoLoginForm({ from }: { from?: string }) {
     <form className="lg__card" onSubmit={submit} noValidate data-demo-login={DEMO_LOGIN_MARKER}>
       <header className="lg__card-head">
         <h2>{L.formTitle}</h2>
-        <p className="lg__demo">{demoLoginHint}</p>
       </header>
       <label className="lg__field">
         <span>{L.id}</span>

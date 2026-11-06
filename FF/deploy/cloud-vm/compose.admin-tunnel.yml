@@ -1,0 +1,10 @@
+# 선택 — Unleash 관리 화면을 VM 루프백(127.0.0.1:4242)에만 연다. 인터넷에는 열리지 않는다. 보고 나서 내린다.
+#   sudo FF_COMPOSE_EXTRA='-f compose.admin-tunnel.yml' bash -c '. scripts/lib.sh && dc up -d web' 로 올린 뒤, 내 PC에서:  ssh -L 4242:127.0.0.1:4242 <사용자>@<VM>
+#   브라우저 http://127.0.0.1:4242 — admin / .env의 UNLEASH_ADMIN_PASSWORD. 변경은 FF가 원천이라 Unleash에서 정책을 바꾸지 않는다(20-98)
+services:
+  web:
+    networks: [backend, admin]
+    ports:
+      - '127.0.0.1:4242:4242'
+networks:
+  admin: {}

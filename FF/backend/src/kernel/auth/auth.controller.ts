@@ -1,11 +1,15 @@
 // BFF 로그인 창구 — /api/auth/* (신원 없이 연다: @PublicEndpoint). 브라우저는 토큰을 보지 않고 httpOnly 세션 쿠키만 가진다.
 //   config → 화면이 데모·SSO 중 무엇을 그릴지 · login → IdP 인가(PKCE) · callback → 세션 · logout · me
-import { Controller, Get, HttpCode, Post, Query, Req, Res } from '@nestjs/common';
+//   demo-login → 공개 데모 게이트(FF_DEMO_GATE=on) 세션 — 데모 ID·비밀번호, 출처 확인, 실패 제한(demo-gate.ts)
+import { Body, Controller, Get, HttpCode, Post, Query, Req, Res } from '@nestjs/common';
+import { DemoLoginBody } from '@ff/contracts';
 import type { Request, Response } from 'express';
 import { PublicEndpoint } from '../actor';
+import { ZodPipe } from '../zod.pipe';
 import { DomainError } from '../errors';
 import { AuthFailure, AuthService, LOGIN_COOKIE, LOGIN_TTL_SEC, SESSION_COOKIE } from './auth.service';
 import { clearCookie, readCookie, setCookie } from './cookies';
+import { DEMO_LOGIN_LIMIT, LoginThrottle } from './demo-gate';
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -27,16 +31,47 @@ function fail(req: Request, res: Response, e: AuthFailure) {
 
 @Controller('api/auth')
 export class AuthController {
+  /** 데모 게이트 로그인 실패 제한(출처 IP별) */
+  private readonly throttle = new LoginThrottle();
+  /** 데모 게이트 로그인 성공(세션 생성) 한도(출처 IP별) */
+  private readonly created = new LoginThrottle(DEMO_LOGIN_LIMIT);
+
   constructor(private readonly auth: AuthService) {}
 
   private cookieOpts() {
-    return { secure: this.auth.cfg?.secureCookies ?? false };
+    return { secure: this.auth.sessions?.secure ?? false };
   }
 
   @Get('config')
   @PublicEndpoint()
   config() {
-    return { mode: this.auth.mode };
+    return this.auth.gate ? { mode: this.auth.mode, gate: true } : { mode: this.auth.mode };
+  }
+
+  /** 공개 데모 게이트 로그인 — 맞으면 httpOnly 세션 쿠키(이 브라우저의 이전 세션은 지운다). 다른 사이트에서 보낸 로그인은 거부 */
+  @Post('demo-login')
+  @PublicEndpoint()
+  @HttpCode(200)
+  demoLogin(@Body(new ZodPipe(DemoLoginBody)) body: DemoLoginBody, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    if (!this.auth.gate) throw new DomainError('NOT_FOUND', '데모 게이트가 켜져 있지 않습니다.');
+    res.setHeader('Cache-Control', 'no-store');
+    if (!this.auth.originAllowed(req)) throw new DomainError('FORBIDDEN', '요청 출처를 확인할 수 없습니다. 플랫폼 화면에서 다시 시도하세요.');
+    const key = req.ip ?? req.socket.remoteAddress ?? 'unknown';
+    const wait = this.throttle.blocked(key) || this.created.blocked(key);
+    if (wait) {
+      res.setHeader('Retry-After', String(wait));
+      throw new DomainError('RATE_LIMITED', `로그인 시도가 많습니다. ${wait}초 뒤에 다시 시도하세요.`, { retryAfterSec: wait });
+    }
+    const cookie = this.auth.demoLogin(body.id, body.password);
+    if (!cookie) {
+      this.throttle.fail(key);
+      throw new DomainError('UNAUTHENTICATED', 'ID 또는 비밀번호가 맞지 않습니다.');
+    }
+    this.throttle.reset(key);
+    this.created.fail(key);
+    this.auth.dropSession(req, 'AUTH_SESSION_REPLACED');
+    setCookie(res, SESSION_COOKIE, cookie, { ...this.cookieOpts(), path: '/', maxAgeSec: this.auth.gate.sessionTtlMin * 60 });
+    return { authenticated: true, mode: 'demo' as const, gate: true };
   }
 
   @Get('login')
@@ -78,7 +113,7 @@ export class AuthController {
   @PublicEndpoint()
   @HttpCode(200)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    if (this.auth.mode !== 'oidc') return {};
+    if (this.auth.mode !== 'oidc' && !this.auth.gate) return {};
     // 다른 사이트가 사용자를 강제로 로그아웃시키지 못하게 — 쿠키가 있으면 출처 확인
     if (readCookie(req, SESSION_COOKIE) && !this.auth.originAllowed(req)) throw new DomainError('FORBIDDEN', '요청 출처를 확인할 수 없습니다. 플랫폼 화면에서 다시 시도하세요.');
     const out = await this.auth.logout(req);
@@ -91,6 +126,7 @@ export class AuthController {
   @PublicEndpoint()
   async me(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     res.setHeader('Cache-Control', 'no-store');
+    if (this.auth.gate) return { authenticated: !!this.auth.sessionUser(req), mode: 'demo' as const, gate: true };
     if (this.auth.mode !== 'oidc') return { authenticated: false, mode: 'demo' as const };
     const who = await this.auth.identify(req);
     if (!who) return { authenticated: false, mode: 'oidc' as const };

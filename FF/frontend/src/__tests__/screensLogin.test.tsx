@@ -27,18 +27,17 @@ function mount() {
 }
 
 describe('로그인 화면', () => {
-  it('데모 계정이 아니면 오류를 보이고 들어가지 않는다', () => {
+  it('데모 계정이 아니면 오류를 보이고 들어가지 않는다', async () => {
     mount();
     fireEvent.change(screen.getByLabelText('ID'), { target: { value: 'FF' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong' } });
     fireEvent.click(screen.getByRole('button', { name: '플랫폼 들어가기' }));
-    expect(screen.getByRole('alert').textContent).toContain('ID 또는 비밀번호가 맞지 않습니다');
+    expect((await screen.findByRole('alert')).textContent).toContain('ID 또는 비밀번호가 맞지 않습니다');
     expect(localStorage.getItem('ff.auth')).toBeNull();
   });
 
   it('FF/FF를 소문자·혼합 대소문자로 입력해도 세션을 남기고 홈으로 들어간다', async () => {
     mount();
-    expect(screen.getByText('데모 계정: ID FF · Password FF (대소문자 구분 없음)')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('ID'), { target: { value: 'ff' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'fF' } });
     fireEvent.click(screen.getByRole('button', { name: '플랫폼 들어가기' }));
@@ -54,6 +53,24 @@ describe('로그인 화면', () => {
   it.each([['FF', 'platform'], ['FF', 'wrong'], ['wrong', 'FF'], ['', 'FF'], ['FF', ''], ['FF', 'FF ']])('잘못된 ID %s / 비밀번호 %s는 세션을 만들지 않는다', (id, password) => {
     expect(demoLogin(id, password)).toBe(false);
     expect(localStorage.getItem('ff.auth')).toBeNull();
+  });
+
+  // 사용자 지시(2026-11-06): 자격 증명(ff/ff)은 화면에 보이지 않는다 — 안내·placeholder·기본값·툴팁 모두
+  it('로그인 화면은 ID·비밀번호를 알려 주지 않는다', () => {
+    const { container } = mount();
+    const text = container.textContent ?? '';
+    expect(text).not.toMatch(/데모 계정|ID FF|Password FF|대소문자/i);
+    expect(text).not.toMatch(/\bplatform\b/); // 옛 비밀번호(소문자)
+    expect(container.querySelector('.lg__demo')).toBeNull();
+    for (const el of container.querySelectorAll('input')) {
+      expect(el.value).toBe('');
+      expect(el.getAttribute('placeholder') ?? '').not.toMatch(/ff|platform/i);
+    }
+    for (const el of container.querySelectorAll('[title],[aria-label],[aria-description]')) {
+      const attrs = ['title', 'aria-label', 'aria-description'].map((a) => el.getAttribute(a) ?? '').join(' ');
+      expect(attrs).not.toMatch(/ID FF|Password FF|대소문자/i);
+      expect(attrs).not.toMatch(/\bplatform\b/);
+    }
   });
 
   it('비밀번호 보기/숨기기', () => {

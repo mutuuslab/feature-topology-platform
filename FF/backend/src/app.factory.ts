@@ -29,8 +29,8 @@ export function hardenHttp(app: NestExpressApplication, env: Record<string, stri
   // 데스크톱 배포본(FF_DESKTOP=1)은 루프백 같은 출처만 — 화면 제공·요청 제한보다 먼저 거른다
   const desktop = isDesktop(env);
   if (desktop) app.use(desktopGuard());
-  // TLS는 앞단 프록시가 끝낸다 — 운영 모드는 프록시가 준 출처 IP를 믿는다(요청 제한·감사)
-  if (isProduction(env)) app.set('trust proxy', env.FF_TRUST_PROXY ?? 'loopback');
+  // TLS는 앞단 프록시가 끝낸다 — 운영 모드(또는 FF_TRUST_PROXY를 준 설치, 예: 클라우드 공개 데모)는 프록시가 준 출처 IP를 믿는다(요청 제한·감사)
+  if (isProduction(env) || env.FF_TRUST_PROXY?.trim()) app.set('trust proxy', env.FF_TRUST_PROXY?.trim() || 'loopback');
   app.use(securityHeaders(env));
   // 상관 ID를 먼저 — 요청 로그·감사·오류 로그가 같은 값을 쓴다
   app.use(correlation());

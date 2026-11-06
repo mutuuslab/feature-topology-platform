@@ -1,0 +1,11 @@
+# 일일 백업 실행 — ff-backup.timer가 부른다(20-99 §백업)
+[Unit]
+Description=Feature Platform cloud demo backup (PostgreSQL dump, 7-day retention)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash @KIT@/scripts/backup.sh
+Nice=10
+IOSchedulingClass=idle

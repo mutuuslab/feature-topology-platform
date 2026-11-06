@@ -45,6 +45,10 @@ test('부하 시험(perf)·브라우저 엔진(e2e:engines)이 verify에 있다 
   assert.ok(src.indexOf("id: 'perf'") < src.indexOf("id: 'e2e',"), 'perf는 e2e 앞(백엔드를 빌드한다)');
 });
 
+test('클라우드 VM 공개 시연 키트 시험이 verify에 있다 — 게이트 우회 방지가 CI의 Docker 작업에만 묶이지 않게(20-99)', () => {
+  assert.match(step('cloud:check'), /deploy\/cloud-vm\/test\/compose\.test\.mjs/);
+});
+
 // ── 도구 시험 목록 — 새 tools 시험 파일이 verify·CI에서 돌지 않고 묻히지 않게(2026-11-04: refdb/check.test.ts가 어느 단계에도 없었다)
 /** verify 단계에 넣지 않는 도구 시험과 이유 */
 const NOT_IN_VERIFY: Record<string, string> = {

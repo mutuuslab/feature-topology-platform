@@ -1,0 +1,11 @@
+# 매일 03:30(UTC 기준 VM 시각) 백업 — 꺼져 있던 동안 놓친 실행은 켜질 때 한 번
+[Unit]
+Description=Daily Feature Platform cloud demo backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+RandomizedDelaySec=15m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

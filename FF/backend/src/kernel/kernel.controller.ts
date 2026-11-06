@@ -71,7 +71,7 @@ export class KernelController {
     return { status: ok ? 'ready' : 'not_ready', ...build(), checks };
   }
 
-  /** 지표(Prometheus 텍스트) — 운영 모드는 Bearer FF_METRICS_TOKEN, 토큰이 없으면 꺼짐(출시 준비 RD-OPS-11) */
+  /** 지표(Prometheus 텍스트) — 운영 모드·공개 데모 게이트는 Bearer FF_METRICS_TOKEN, 토큰이 없으면 꺼짐(출시 준비 RD-OPS-11, 20-99) */
   @Get('health/metrics')
   metricsText(@Req() req: Request, @Res() res: Response) {
     metricsEndpoint(this.metrics)(req, res);

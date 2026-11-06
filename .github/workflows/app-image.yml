@@ -1,5 +1,7 @@
 # 단독 설치 이미지 빌드 (출시 준비 RD-OPS-05) — FF/docker/app/Dockerfile이 깨지지 않았는지 빌드하고, 띄워서 준비 점검까지 본다.
-# 레지스트리에 올리지 않는다(배포는 사람이 승인한 뒤 따로). 설치 방법은 docs/20-architecture/20-91-install-guide.md.
+# 푸시·PR에서는 레지스트리에 올리지 않는다. 게시는 사람이 Actions 화면에서 수동 실행(workflow_dispatch, publish=true)하고,
+# 환경 image-publish의 승인자가 승인해야 ghcr.io/mutuuslab/feature-platform에 태그를 올린다(20-99 §이미지).
+# 설치 방법은 docs/20-architecture/20-91-install-guide.md(고객 설치) · 20-99-cloud-vm-deploy.md(클라우드 VM 공개 시연).
 name: App image
 on:
   push:
@@ -8,8 +10,19 @@ on:
   pull_request:
     paths: ['FF/**', '.github/workflows/app-image.yml']
   workflow_dispatch:
+    inputs:
+      publish:
+        description: '빌드·시험 뒤 ghcr.io에 게시(환경 image-publish 승인 필요)'
+        type: boolean
+        default: false
+      version:
+        description: '게시 태그(예: v0.1.0) — 고객 설치용은 이 태그, 공개 시연용은 <태그>-demo'
+        type: string
+        default: ''
 permissions:
   contents: read
+env:
+  IMAGE: ghcr.io/mutuuslab/feature-platform
 jobs:
   build:
     name: 이미지 빌드·준비 점검
@@ -37,3 +50,93 @@ jobs:
       - name: 정리
         if: always()
         run: docker compose -f docker/app/docker-compose.yml --env-file docker/app/.env down -v || true
+
+  cloud-vm:
+    name: 공개 시연 이미지·클라우드 VM 구성(인증 우회 시험)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: FF/deploy/cloud-vm
+    env:
+      FF_INSECURE_TLS: '1'
+      FF_READY_TIMEOUT: '1500'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 셸 스크립트 검사
+        run: shellcheck -x scripts/*.sh test/*.sh
+      - name: 비밀 생성(로컬 이름·시험 포트)
+        run: |
+          bash scripts/gen-secrets.sh --domain localhost --email ci@example.com --https-port 8443
+          sed -i -e 's/^HTTP_PORT=.*/HTTP_PORT=8080/' -e 's#^FF_IMAGE=.*#FF_IMAGE=ff-platform:ci-demo#' .env
+      - name: 구성 검사
+        run: node --test test/compose.test.mjs
+      - name: 공개 시연 이미지 빌드·기동(PostgreSQL·Unleash·Edge·Caddy)
+        run: FF_BUILD_SHA=${GITHUB_SHA::7} FF_BUILD_LOCAL=1 bash scripts/install.sh
+      - name: 인증 우회 시험
+        run: FF_SMOKE_HOST=1 bash test/gate-smoke.sh https://localhost:8443
+      - name: 백업·상태 점검
+        run: |
+          sed -i "s#^BACKUP_DIR=.*#BACKUP_DIR=$RUNNER_TEMP/ff-backups#" .env
+          bash scripts/backup.sh
+          ls -la "$RUNNER_TEMP"/ff-backups/ff-cloud-*/
+          bash scripts/health.sh
+      - name: 실패 시 로그
+        if: failure()
+        run: docker compose --env-file .env logs --tail 200 app caddy web edge || true
+      - name: 정리
+        if: always()
+        run: docker compose --env-file .env down -v || true
+
+  publish:
+    name: ghcr.io 게시(수동 승인)
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    needs: [build, cloud-vm]
+    runs-on: ubuntu-latest
+    # 저장소 Settings → Environments → image-publish 에 승인자(Required reviewers)를 둔다 — 승인 전에는 이 작업이 멈춰 있다
+    environment: image-publish
+    permissions:
+      contents: read
+      packages: write
+      # cosign keyless 서명 — 이 워크플로의 OIDC 신원으로 Sigstore 인증서를 받는다(비밀 키 없음)
+      id-token: write
+    defaults:
+      run:
+        working-directory: FF
+    steps:
+      - uses: actions/checkout@v4
+      - name: 태그 확인
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          echo "$VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$' || { echo "version은 v0.1.0 형식"; exit 1; }
+          case "$VERSION" in *-demo) echo "-demo는 자동으로 붙는다 — 판 번호만"; exit 1;; esac
+      - name: cosign 설치
+        uses: sigstore/cosign-installer@v3
+      - name: 로그인
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: echo "$TOKEN" | docker login ghcr.io -u "$ACTOR" --password-stdin
+      - name: 빌드·게시(고객 설치 oidc · 공개 시연 demo)
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          sha=${GITHUB_SHA::7}
+          for variant in oidc demo; do
+            suffix=""
+            [ "$variant" = demo ] && suffix="-demo"
+            # 같은 판 번호를 다시 올리지 않는다(태그 고정 — 설치가 같은 태그로 다른 내용을 받지 않게)
+            if docker manifest inspect "$IMAGE:$VERSION$suffix" >/dev/null 2>&1; then echo "$IMAGE:$VERSION$suffix 이미 있음"; exit 1; fi
+            docker build -f docker/app/Dockerfile --build-arg FF_BUILD_SHA=$sha --build-arg FF_WEB_AUTH=$variant \
+              --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+              --label "org.opencontainers.image.version=$VERSION$suffix" \
+              -t "$IMAGE:$VERSION$suffix" -t "$IMAGE:sha-$sha$suffix" .
+            docker push "$IMAGE:$VERSION$suffix"
+            docker push "$IMAGE:sha-$sha$suffix"
+            digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE:$VERSION$suffix")
+            # 다이제스트에 서명한다 — VM의 install·update는 FF_IMAGE_SIGNER가 있으면 cosign verify로 확인한다(20-99 §7)
+            cosign sign --yes "$digest"
+            echo "- \`$IMAGE:$VERSION$suffix\` → \`$digest\` (cosign 서명)" >> "$GITHUB_STEP_SUMMARY"
+          done

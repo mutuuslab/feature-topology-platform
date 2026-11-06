@@ -6,6 +6,7 @@
 import type { LoggerService } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { demoGateOn } from './auth/demo-gate';
 import { isProduction } from './runtime-config';
 
 type Env = Record<string, string | undefined>;
@@ -111,7 +112,8 @@ export function requestObserver(metrics: Metrics, log: ((line: Record<string, un
 export function metricsEndpoint(metrics: Metrics, env: Env = process.env) {
   return (req: Request, res: Response) => {
     const token = env.FF_METRICS_TOKEN ?? '';
-    if (isProduction(env)) {
+    // 공개 데모 게이트도 같다 — 공개 비밀번호로 들어온 방문자 누구나 세션을 가지므로 세션만으로 지표를 내주지 않는다(20-99)
+    if (isProduction(env) || demoGateOn(env)) {
       if (!token) return void res.status(404).json({ error: { code: 'NOT_FOUND', message: '지표가 꺼져 있습니다(FF_METRICS_TOKEN).' } });
       const got = Buffer.from(req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? '');
       const want = Buffer.from(token);

@@ -78,6 +78,8 @@ const virtualScreens = () => import('./screens/policy/Virtual');
 const fleetScreens = () => import('./screens/ops/FleetLive');
 const killScreens = () => import('./screens/ops/KillConsole');
 const deployScreens = () => import('./screens/ops/Deployments');
+// Flag 코드 연결·대사·통제(20-97) — 지연 로딩(첫 화면 묶음 밖)
+const flagCodeScreens = () => import('./screens/flag-code');
 const anomalyScreens = () => import('./screens/ops/Anomalies');
 const kpiScreens = () => import('./screens/ops/SafetyKpi');
 const accessScreens = () => import('./screens/admin/Access');
@@ -199,6 +201,10 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/policies', element: named(policyScreens, 'PolicyList'), title: 'Feature Flag 정책·승인', group: 'release', menu: '/policies', components: ['D01-06', 'D01-08'], v2: true },
   { path: '/policies/new', element: named(policyScreens, 'PolicyCreate'), title: '새 정책', group: 'release', parent: '/policies', components: ['D01-06'], v2: true },
   { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08', 'D03-04'], v2: true },
+  { path: '/flag-code', element: named(flagCodeScreens, 'FlagCodeCoverageScreen'), title: 'Flag 코드 연결', group: 'release', menu: '/flag-code', components: ['D01-06'], v2: true },
+  { path: '/flag-code/flags/:flagKey', element: named(flagCodeScreens, 'FlagCodeDetailScreen'), title: 'Flag 코드 상세', group: 'release', parent: '/flag-code', components: ['D01-06'], v2: true },
+  { path: '/flag-code/reconcile', element: named(flagCodeScreens, 'FlagCodeReconcileScreen'), title: '어긋남 대사판', group: 'release', parent: '/flag-code', components: ['D01-06'], v2: true },
+  { path: '/flag-code/lifecycle', element: named(flagCodeScreens, 'FlagCodeLifecycleScreen'), title: 'Flag 수명 관리', group: 'release', parent: '/flag-code', components: ['D01-01'], v2: true },
   { path: '/ops/policy', element: legacyTo('/policies'), title: '정책 단계 보드 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/ops/runtime', element: legacyTo('/policies'), title: '정책 평가 시뮬레이터 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/flag-retirements', element: named(() => import('./screens/policy/Retirements'), 'RetirementsScreen'), title: 'Flag Retirement', group: 'release', menu: '/flag-retirements', components: ['D01-01'], v2: true },
@@ -229,12 +235,16 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/ops/incident', element: legacyTo('/ops/incidents'), title: '장애·VOC (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/incident/:id', element: legacyTo('/ops/incidents'), title: '장애 상세 (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/telemetry', element: named(opsScreens, 'TelemetryScreen'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'], v2: true },
+  { path: '/ops/flag-evaluations', element: named(flagCodeScreens, 'FlagEvaluationsScreen'), title: 'Flag 평가 모니터링', group: 'ops', menu: '/ops/flag-evaluations', components: ['D04-03'], v2: true },
 
   { path: '/events', element: named(auditEvents, 'EventsScreen'), title: 'Platform 이벤트', group: 'ops', menu: '/events', components: ['D04-04'], v2: true },
 
   // 8 연계·감사·관리
   { path: '/integration/connectors', element: named(extScreens, 'IntegrationsScreen'), title: '외부 연계 현황', group: 'admin', menu: '/integration/connectors', components: ['D05-01'], v2: true },
   { path: '/integration/connector/:id', element: legacyTo('/integration/connectors'), title: '연계 상세 (이전 주소)', group: 'admin', parent: '/integration/connectors' },
+  { path: '/integration/code-repositories', element: named(flagCodeScreens, 'CodeRepositoriesScreen'), title: '코드 저장소 연결', group: 'admin', menu: '/integration/code-repositories', components: ['D04-01'], v2: true },
+  { path: '/integration/code-repositories/:repoId', element: named(flagCodeScreens, 'CodeRepositoryDetailScreen'), title: '저장소 상세', group: 'admin', parent: '/integration/code-repositories', components: ['D04-01'], v2: true },
+  { path: '/integration/code-scans', element: named(flagCodeScreens, 'CodeScansScreen'), title: '스캔 기록', group: 'admin', parent: '/integration/code-repositories', components: ['D04-01'], v2: true },
   { path: '/integration/openfeature', element: named(() => import('./screens/ext/OpenFeatureScope'), 'OpenFeatureScopeScreen'), title: 'OpenFeature 범위', group: 'admin', menu: '/integration/openfeature', components: ['D05-01', 'D02-03'], v2: true },
   { path: '/integration/sync', element: named(extScreens, 'DataSyncScreen'), title: '데이터 동기화', group: 'admin', menu: '/integration/sync', components: ['D05-02'], v2: true },
   { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },

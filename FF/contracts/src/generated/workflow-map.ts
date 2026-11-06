@@ -37,7 +37,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G4"
    ],
-   "activities": 6
+   "activities": 7
   },
   {
    "id": "FPW.5",
@@ -46,7 +46,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G5"
    ],
-   "activities": 6
+   "activities": 7
   },
   {
    "id": "FPW.6",
@@ -55,7 +55,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G6"
    ],
-   "activities": 6
+   "activities": 7
   },
   {
    "id": "FPW.7",
@@ -64,7 +64,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G7"
    ],
-   "activities": 12
+   "activities": 13
   },
   {
    "id": "FPW.8",
@@ -73,14 +73,14 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G8"
    ],
-   "activities": 11
+   "activities": 12
   },
   {
    "id": "FPW.9",
    "name": "사후 검토·Flag Retirement",
    "group": "생애주기",
    "gates": [],
-   "activities": 5
+   "activities": 6
   },
   {
    "id": "FPW.10",

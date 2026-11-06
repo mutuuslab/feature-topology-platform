@@ -28,6 +28,20 @@ test('packaging은 실제 백엔드 빌드·스냅샷 생성 뒤 같은 검사�
   assert.equal(packaging.when, undefined, '스냅샷 부재를 skip하지 않는다');
   assert.ok(STEPS.findIndex((s) => s.id === 'contracts:build') < STEPS.indexOf(packaging), '전체 verify는 contracts를 먼저 빌드한다');
 });
+test('flag-code:check는 openfeature:check 뒤에서 생성기 시험 → 백엔드 빌드 → --check 순으로 돈다 — 20-97 §8.1', () => {
+  const s = STEPS.find((x) => x.id === 'flag-code:check')!;
+  assert.ok(s, 'flag-code:check 단계가 있다');
+  assert.equal(STEPS.indexOf(s), STEPS.findIndex((x) => x.id === 'openfeature:check') + 1, 'openfeature:check 바로 뒤');
+  const commands = s.cmd.replace(/\bnpm\.cmd\b/g, 'npm').split(/\s*&&\s*/);
+  const unit = commands.indexOf('node --test tools/flag-code/generate-vehicle-apps.test.ts');
+  const build = commands.indexOf('npm run build -w feature-topology-backend');
+  const check = commands.indexOf('node tools/flag-code/generate-vehicle-apps.ts --check');
+  assert.ok(unit >= 0 && build > unit && check > build, '빌드된 백엔드를 잔존물로 가정하지 않고 --check 앞에서 만든다');
+  // 생성기·백엔드는 contracts dist를 읽는다 — --only로 이 단계만 돌려도 판정 규칙(rules/flag-coverage.ts) 변경을 잡도록 먼저 빌드한다
+  assert.equal(commands[0], 'npm run build --workspace @ff/contracts', 'contracts를 맨 먼저 빌드한다(잔존 dist로 판정하지 않는다)');
+  assert.equal(s.full, undefined, '기본 CI verify에서도 실행한다');
+  assert.equal(s.when, undefined, '건너뛰지 않는다');
+});
 test('운영 빌드 검사(build:prod)와 SSO e2e(e2e:oidc)가 verify에 있다 — 데모 로그인이 운영 번들에 다시 실리지 않게', () => {
   assert.match(step('build:prod'), /prod-bundle\.test\.ts/);
   assert.match(step('e2e:oidc'), /playwright\.oidc\.config\.ts/);

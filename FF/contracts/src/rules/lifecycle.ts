@@ -56,7 +56,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED' | 'FLAG_CODE_MISSING';
 
 export interface Blocker {
   code: BlockerCode;
@@ -97,6 +97,11 @@ export interface TransitionContext {
    * 지금 대표 ASIL 기준 사유(asilDeviation from=대표 ASIL, to=Feature ASIL)가 없으면 막는다(등록 뒤 대표 ASIL이 바뀐 경우).
    */
   refAsilRepOf?: (refId: string) => Asil | null | undefined;
+  /**
+   * Flag 코드 연결 출시 관문(20-97 §3.4, rules/flag-coverage.ts flagReleaseGate) — 주면 RELEASED로 갈 때 코드 연결 없는 Flag를 막는다.
+   * 승인된 출시 차단 해제는 호출자가 계산에 넣는다. 빠지면(대사 연결 전 호출자) 이 조건을 보지 않는다.
+   */
+  flagCodeGate?: { pass: boolean; blockers: { flagKey: string; status: string; message: string }[] } | null;
   reason?: string;
 }
 
@@ -154,6 +159,10 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
 
   if (rule.from === 'VERIFIED' && rule.to === 'RELEASED' && !ctx.releaseSignoff)
     blockers.push({ code: 'RELEASE_SIGNOFF_MISSING', message: 'Feature Owner의 Release Sign-off(출시 책임 확인 개인 서명)가 없습니다 — G8·G9 PASS 뒤 Feature Owner가 서명합니다.' });
+
+  if (rule.to === 'RELEASED' && ctx.flagCodeGate && !ctx.flagCodeGate.pass)
+    for (const b of ctx.flagCodeGate.blockers)
+      blockers.push({ code: 'FLAG_CODE_MISSING', message: `Flag ${b.flagKey}: ${b.message}`, ref: b.flagKey });
 
   if (rule.to === 'RELEASED')
     for (const r of ctx.openRehara ?? [])

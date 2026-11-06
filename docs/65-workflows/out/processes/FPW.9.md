@@ -32,13 +32,17 @@ flowchart LR
   subgraph R_REQ["요구 Owner"]
     FPW_9_A03["A03 Flag Retirement 승인"]
   end
+  subgraph R_INT["통합 조직"]
+    FPW_9_A06["A06 Flag 제거 PR 병합"]
+  end
   subgraph R_REL["Release Manager"]
     FPW_9_A05["A05 Lifecycle 종료 전이"]
   end
   T_FPW_9_A02(("Flag 만료 30일 전 알림, 기능 대체·폐기 결정")) -.-> FPW_9_A02
   FPW_9_A02 --> FPW_9_A03
   FPW_9_A03 --> FPW_9_A04
-  FPW_9_A04 --> FPW_9_A05
+  FPW_9_A04 --> FPW_9_A06
+  FPW_9_A06 --> FPW_9_A05
 ```
 
 ## 2. 활동
@@ -49,6 +53,7 @@ flowchart LR
 | FPW.9-A02 | Flag Retirement 요청 | R Feature Owner · A Feature Owner · C Release Manager, 통합 조직 · I Safety Manager, 요구 Owner | WP-FEAT-REG | WP-RETIRE-REQ | `requestFlagRetirement`, `/flag-retirements` | FFG-CLS-008 |
 | FPW.9-A03 | Flag Retirement 승인 | R 요구 Owner, Safety Manager · A 요구 Owner · C Feature Owner, Release Manager · I 통합 조직, 운영 조직 | WP-RETIRE-REQ | WP-RETIRE-APPROVAL | `approveFlagRetirement`, `/flag-retirements` | FFG-ADS-010 |
 | FPW.9-A04 | 코드·설정·시험 삭제 기록 | R Feature Owner · A Feature Owner · C 통합 조직, 시험 조직 · I Release Manager | WP-RETIRE-APPROVAL | WP-RETIRE-LOG | `recordFlagRetirementStep`, `/flag-retirements` | FFG-LCY-011 |
+| FPW.9-A06 | Flag 제거 PR 병합 | R 통합 조직 · A Feature Owner · C 시험 조직 · I Release Manager | WP-RETIRE-LOG |  | `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements` | FFG-LCY-011 |
 | FPW.9-A05 | Lifecycle 종료 전이 | R Release Manager · A Release Manager · C Feature Owner · I 상품 Owner, 운영 조직 | WP-RETIRE-LOG | WP-RETIRE-CLOSE | `transition`, `/features/:id/:ver` | – |
 
 ### 수행 절차와 완료 기준
@@ -85,6 +90,14 @@ flowchart LR
 
 완료 기준:
 - [ ] Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다
+
+#### FPW.9-A06 Flag 제거 PR 병합
+1. Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
+2. 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
+3. 4단계 기록에 정적 분석 근거로 마지막 스캔을 남긴다
+
+완료 기준:
+- [ ] 제거 PR 병합 뒤 스캔에서 해당 Flag 참조가 0건이다
 
 #### FPW.9-A05 Lifecycle 종료 전이
 1. Feature Version을 DEPRECATED로 전이해 신규 사용을 막는다

@@ -153,6 +153,16 @@ last_updated: 2026-11-05
 3. 구 Version이 남은 차량은 상태 보고로 잔존이 0이 된 것을 확인한 뒤 마지막 단계를 닫는다
 - [ ] Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다
 
+### FPW.9-A06 Flag 제거 PR 병합 — 책임(승인)
+- 프로세스: FPW.9 사후 검토·Flag Retirement
+- 시작: 앞 활동 완료
+- 입력: WP-RETIRE-LOG → 출력: –
+- 플랫폼: `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements`
+1. Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
+2. 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
+3. 4단계 기록에 정적 분석 근거로 마지막 스캔을 남긴다
+- [ ] 제거 PR 병합 뒤 스캔에서 해당 Flag 참조가 0건이다
+
 ### FPW.14-A01 변경 요청 작성 — 수행·책임
 - 프로세스: FPW.14 Feature DB 운영
 - 시작: 앞 활동 완료
@@ -182,13 +192,16 @@ last_updated: 2026-11-05
 - FPW.3-A04 G3 판정·Feature 정의 승인 (협의)
 - FPW.4-A03 Flag 정책 작성·검증 (협의)
 - FPW.4-A05 G4 설계 독립 검토·판정 (통보)
+- FPW.4-A07 Flag PR 검토·병합 (협의)
 - FPW.5-A01 독립성 수준·검증 계획 확정 (통보)
 - FPW.5-A04 비활성화·결함 주입 시험 수행 (통보)
+- FPW.5-A07 Flag 코드 연결 확인 (통보)
 - FPW.5-A06 G5 V&V 판정 (통보)
 - FPW.6-A02 출시 Baseline 확정 승인 (통보)
 - FPW.6-A03 SUMS 기록·형식승인 확인 (통보)
 - FPW.6-A06 G6 서명 배포 실행 (통보)
 - FPW.7-A01 Canary·Shadow 판정 기준 정의 (통보)
+- FPW.7-A13 출시 차단 해제 결정 (협의)
 - FPW.7-A03 Safety Case·SOTIF 근거 정리 (협의)
 - FPW.7-A04 Safety Case 독립 검토 (통보)
 - FPW.7-A05 상품 구성 작성 (협의)
@@ -197,6 +210,7 @@ last_updated: 2026-11-05
 - FPW.7-A09 출시 전이 (협의)
 - FPW.7-A10 상품 고객 출시 승인 (협의)
 - FPW.7-A11 Canary 활성화·단계적 확대 (통보)
+- FPW.8-A12 Flag 평가 이상 확인 (통보)
 - FPW.8-A01 이상 징후 확인 (통보)
 - FPW.8-A02 차단 필요성·범위 판단 (통보)
 - FPW.8-A06 차단 전달·적용 추적 (통보)

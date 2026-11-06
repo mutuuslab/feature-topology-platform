@@ -1033,13 +1033,47 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
      "R-FO"
     ]
    },
-   "next": [],
+   "next": [
+    "FPW.4-A07"
+   ],
    "screens": [
     "/features/:id/:ver",
     "/admin/approval"
    ],
    "actions": [
     "judgeGate"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.4-A07",
+   "processId": "FPW.4",
+   "processName": "안전 설계·정책 설계",
+   "name": "Flag PR 검토·병합",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-ARC",
+    "C": [
+     "R-FO"
+    ],
+    "I": [
+     "R-REL",
+     "R-TST"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/flag-code",
+    "/flag-code/flags/:flagKey"
+   ],
+   "actions": [
+    "createFlagPr",
+    "demoMergeFlagPr"
    ],
    "anchor": null,
    "slaHours": null
@@ -1127,7 +1161,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.5-A04"
+    "FPW.5-A07"
    ],
    "screens": [
     "/master/artifacts"
@@ -1170,6 +1204,40 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "anchor": "virtual-run",
    "slaHours": 24
+  },
+  {
+   "id": "FPW.5-A07",
+   "processId": "FPW.5",
+   "processName": "검증·V&V",
+   "name": "Flag 코드 연결 확인",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-TST"
+    ],
+    "I": [
+     "R-FO",
+     "R-REL"
+    ]
+   },
+   "next": [
+    "FPW.5-A04"
+   ],
+   "screens": [
+    "/flag-code/reconcile",
+    "/integration/code-scans"
+   ],
+   "actions": [
+    "rescanFlagRepository",
+    "requestFlagGateWaiver"
+   ],
+   "anchor": null,
+   "slaHours": null
   },
   {
    "id": "FPW.5-A05",
@@ -1414,7 +1482,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
      "R-QA"
     ]
    },
-   "next": [],
+   "next": [
+    "FPW.6-A07"
+   ],
    "screens": [
     "/deployments",
     "/integration/connectors"
@@ -1422,6 +1492,37 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "actions": [
     "deployPolicy",
     "syncUnleash"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.6-A07",
+   "processId": "FPW.6",
+   "processName": "서명 배포",
+   "name": "코드 저장소 연결 관리",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-REL"
+    ],
+    "A": "R-REL",
+    "C": [
+     "R-INT"
+    ],
+    "I": [
+     "R-ARC"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/integration/code-repositories",
+    "/integration/code-scans"
+   ],
+   "actions": [
+    "createFlagRepository",
+    "updateFlagRepository"
    ],
    "anchor": null,
    "slaHours": null
@@ -1454,6 +1555,39 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "/activation/decide"
    ],
    "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.7-A13",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "출시 차단 해제 결정",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-REQ"
+    ],
+    "A": "R-REQ",
+    "C": [
+     "R-SM",
+     "R-FO"
+    ],
+    "I": [
+     "R-REL",
+     "R-INT"
+    ]
+   },
+   "next": [
+    "FPW.7-A12"
+   ],
+   "screens": [
+    "/flag-code/reconcile"
+   ],
+   "actions": [
+    "decideFlagGateWaiver"
+   ],
    "anchor": null,
    "slaHours": null
   },
@@ -1663,7 +1797,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.7-A12"
+    "FPW.7-A13"
    ],
    "screens": [
     "/activation/decide",
@@ -1801,6 +1935,35 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "actions": [
     "stageRollout"
    ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.8-A12",
+   "processId": "FPW.8",
+   "processName": "운영·긴급 차단·복원",
+   "name": "Flag 평가 이상 확인",
+   "trigger": "평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-INT"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "next": [
+    "FPW.8-A01"
+   ],
+   "screens": [
+    "/ops/flag-evaluations"
+   ],
+   "actions": [],
    "anchor": null,
    "slaHours": null
   },
@@ -2279,12 +2442,45 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.9-A05"
+    "FPW.9-A06"
    ],
    "screens": [
     "/flag-retirements"
    ],
    "actions": [
+    "recordFlagRetirementStep"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.9-A06",
+   "processId": "FPW.9",
+   "processName": "사후 검토·Flag Retirement",
+   "name": "Flag 제거 PR 병합",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-TST"
+    ],
+    "I": [
+     "R-REL"
+    ]
+   },
+   "next": [
+    "FPW.9-A05"
+   ],
+   "screens": [
+    "/flag-code/lifecycle",
+    "/flag-retirements"
+   ],
+   "actions": [
+    "createFlagRemovalPr",
     "recordFlagRetirementStep"
    ],
    "anchor": null,

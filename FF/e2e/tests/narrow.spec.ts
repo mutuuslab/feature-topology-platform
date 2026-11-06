@@ -59,6 +59,15 @@ const SCREENS = [
   { path: '/features/FEAT-00022/1.0.0', title: 'Feature 상세', role: 'author' },
   { path: '/ops/kill', title: '긴급 차단', role: 'operator' },
   { path: '/fleet/vehicles', title: '차량', role: 'operator' },
+  // Flag 코드 연결(20-97 §7) — 표·5원천 칸·대사판 열이 좁은 폭에서 넘치지 않는다
+  { path: '/flag-code', title: 'Flag 코드 연결', role: 'integrator' },
+  { path: '/flag-code/flags/care_00022_signal', title: 'Flag 코드 상세', role: 'integrator' },
+  { path: '/flag-code/reconcile', title: '어긋남 대사판', role: 'integrator' },
+  { path: '/flag-code/lifecycle', title: 'Flag 수명 관리', role: 'integrator' },
+  { path: '/ops/flag-evaluations', title: 'Flag 평가 모니터링', role: 'operator' },
+  { path: '/integration/code-repositories', title: '코드 저장소 연결', role: 'coordinator' },
+  { path: '/integration/code-repositories/FREPO-001', title: '저장소 상세', role: 'coordinator' },
+  { path: '/integration/code-scans', title: '스캔 기록', role: 'coordinator' },
 ];
 
 for (const s of SCREENS) {

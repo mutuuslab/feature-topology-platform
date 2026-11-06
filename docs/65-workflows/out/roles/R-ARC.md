@@ -74,6 +74,16 @@ last_updated: 2026-11-05
 - [ ] 검토자가 설계·정책 작성자와 다른 조직이다
 - [ ] Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
 
+### FPW.4-A07 Flag PR 검토·병합 — 책임(승인)
+- 프로세스: FPW.4 안전 설계·정책 설계
+- 시작: 앞 활동 완료
+- 입력: WP-G4-DECISION → 출력: –
+- 플랫폼: `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey`
+1. Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
+2. 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
+3. PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다
+- [ ] 해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다
+
 ## 2. 협의·통보 받는 활동
 
 - FPW.1-A01 Feature 등록·초안 작성 (협의)
@@ -93,6 +103,7 @@ last_updated: 2026-11-05
 - FPW.5-A03 통합 시험·SEooC 가정 확인 (협의)
 - FPW.5-A06 G5 V&V 판정 (통보)
 - FPW.6-A01 출시 Baseline 확정 요청 (협의)
+- FPW.6-A07 코드 저장소 연결 관리 (통보)
 - FPW.10-A05 기존 구현 진단 (협의)
 - FPW.12-A02 평가 컨텍스트 개인정보 검토 (협의)
 - FPW.14-A01 변경 요청 작성 (협의)

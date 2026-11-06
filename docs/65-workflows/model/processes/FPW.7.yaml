@@ -104,6 +104,14 @@ process:
       content:
         - Cohort 단계별 적용 시각·관측 결과
         - 확대·중단 결정과 근거
+    - key: WP-FLAG-WAIVER
+      name: 출시 차단 해제 결정 기록
+      en: Flag Release Gate Waiver Decision
+      kind: output
+      retained: true
+      content:
+        - 해제 대상 Flag·요청 당시 대사 상태·사유·만료
+        - 요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함)
   activities:
     - id: FPW.7-A01
       name: Canary·Shadow 판정 기준 정의
@@ -120,6 +128,22 @@ process:
         - 모든 단계에 관측 기간·허용 차이·중단 기준이 있다
       platform: {screens: [/activation/decide]}
       next: [FPW.7-A08]
+    - id: FPW.7-A13
+      name: 출시 차단 해제 결정
+      outcomes: [O1]
+      rules: []
+      independent_of: [FPW.5-A07]
+      raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-FO], I: [R-REL, R-INT]}
+      inputs: [WP-INTEGRATION-REC]
+      outputs: [WP-FLAG-WAIVER]
+      steps:
+        - 해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다
+        - F2 이상이면 Safety Manager의 의견을 받는다
+        - 개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다
+      checks:
+        - 요청자와 결정자가 다른 사람이다
+      platform: {actions: [decideFlagGateWaiver], screens: [/flag-code/reconcile]}
+      next: [FPW.7-A12]
     - id: FPW.7-A02
       name: 효과 실험 계획 등록
       trigger: 출시 효과를 실험으로 비교해야 할 때
@@ -228,7 +252,7 @@ process:
       checks:
         - Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
       platform: {actions: [judgeGate], screens: [/activation/decide, /admin/approval], gates: [G9]}
-      next: [FPW.7-A12]
+      next: [FPW.7-A13]
     - id: FPW.7-A12
       name: Release Sign-off(출시 책임 확인)
       outcomes: [O4]

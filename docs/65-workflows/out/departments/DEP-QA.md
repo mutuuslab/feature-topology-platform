@@ -96,6 +96,7 @@ last_updated: 2026-11-05
 | 받음 | FPW.10-A03 확인 조치 독립성 지정 | FPW.10-A06 Gate별 납품물 입고 검사 | 기능안전팀 | 확인 조치 계획 `WP-CONFIRMATION-PLAN` | 2차 초안 |
 | 받음 | FPW.10-A04 공급망 원산지 속성 관리 | FPW.10-A06 Gate별 납품물 입고 검사 | 구매팀 | – | 2차 초안 |
 | 보냄 | FPW.3-A03 요구 검토 판정 등록 | FPW.3-A04 G3 판정·Feature 정의 승인 | 시스템엔지니어링팀 | 요구 검토 판정 기록 `WP-REQ-REVIEW` | 1차 |
+| 보냄 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4-A07 Flag PR 검토·병합 | SW통합·릴리스팀 | G4 Decision Record `WP-G4-DECISION` | 1차 |
 | 보냄 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6-A06 G6 서명 배포 실행 | SW통합·릴리스팀 | OTA Gate 판정 기록 `WP-OTA-GATE` | 1차 |
 | 보냄 | FPW.7-A04 Safety Case 독립 검토 | FPW.7-A08 G7 출시·활성화 판정 | 기능안전팀 | Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 1차 |
 | 보냄 | FPW.8-A09 복원 2인 승인 | FPW.8-A10 단계적 복원·관측 | OTA·서비스운영팀 | 복원 승인 기록 `WP-RESTORE-DECISION` | 1차 |

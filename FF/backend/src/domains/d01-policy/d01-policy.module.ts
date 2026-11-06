@@ -34,6 +34,8 @@ import { TopologyController } from './topology/topology.controller';
 import { TopologyService } from './topology/topology.service';
 import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/analysis-evidence.service';
 import { FlagSourceController, FlagSourceService } from './policy-store/flag-source.service';
+import { FlagCodeStore } from './flag-code/flag-code.store';
+import { FlagCoverageService } from './flag-code/flag-coverage.service';
 
 @Module({
   imports: [TrustModule],
@@ -59,7 +61,10 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
     AuditHistoryService, HistoryExportService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService,
     AnalysisEvidenceService, // 분석 근거(W3) — HARA·TARA·SOTIF·형식승인 영향, G7 서명
     FlagSourceService,
+    // Flag 코드 연결 대사(20-97) — Lifecycle 출시 관문·정책 게시 관문·Feature Flag 탭이 함께 쓴다
+    FlagCodeStore,
+    FlagCoverageService,
   ],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService],
+  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService],
 })
 export class D01PolicyModule {}

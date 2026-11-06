@@ -24,6 +24,7 @@ last_updated: 2026-11-05
 ```mermaid
 flowchart LR
   subgraph R_OPS["운영 조직"]
+    FPW_8_A12["A12 Flag 평가 이상 확인"]
     FPW_8_A01["A01 이상 징후 확인"]
     FPW_8_A04["A04 긴급 차단 요청"]
     FPW_8_A06["A06 차단 전달·적용 추적"]
@@ -42,6 +43,8 @@ flowchart LR
   subgraph R_QA["품질 조직"]
     FPW_8_A07["A07 긴급 권한 사후 검토"]
   end
+  T_FPW_8_A12(("평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다")) -.-> FPW_8_A12
+  FPW_8_A12 --> FPW_8_A01
   T_FPW_8_A01(("운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견")) -.-> FPW_8_A01
   FPW_8_A01 --> FPW_8_A02
   FPW_8_A02 --> FPW_8_A03
@@ -60,6 +63,7 @@ flowchart LR
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
+| FPW.8-A12 | Flag 평가 이상 확인 | R 운영 조직 · A 운영 조직 · C 통합 조직 · I Feature Owner |  |  | `/ops/flag-evaluations` | – |
 | FPW.8-A01 | 이상 징후 확인 | R 운영 조직 · A 운영 조직 · C Safety Manager · I 품질 조직, Feature Owner | WP-G7-DECISION, WP-ROLLOUT-RECORD, WP-KPI-PLAN, WP-G5-EVIDENCE | WP-ANOMALY-CASE | `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents` | FFG-TEL-009 |
 | FPW.8-A02 | 차단 필요성·범위 판단 | R Safety Manager · A Safety Manager · C CSM, 법규 담당, 운영 조직 · I Feature Owner | WP-ANOMALY-CASE, WP-SAFETY-PROFILE, WP-VEX-DECISION | WP-KILL-PLAN | `gatePreview`, `/ops/kill` | FFG-ADS-011, FFG-SEC-003 |
 | FPW.8-A03 | 리콜·봉쇄 근거 연계 | R 법규 담당 · A 법규 담당 · C Safety Manager, 법무 · I 운영 조직 | WP-KILL-PLAN | WP-RECALL-BASIS | 플랫폼 밖 | FFG-DEAC-010 |
@@ -73,6 +77,15 @@ flowchart LR
 | FPW.8-A11 | 분기 드릴·G8 운영 판정 | R 운영 조직 · A 운영 조직 · C Safety Manager, 품질 조직 · I Feature Owner, 법규 담당 | WP-KILL-TRACE, WP-POST-REVIEW | WP-DRILL-REPORT | `/ops/kill`, `/audit` | FFG-DEAC-012 |
 
 ### 수행 절차와 완료 기준
+
+#### FPW.8-A12 Flag 평가 이상 확인
+- 트리거: 평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다
+1. 평가 모니터링에서 기본값 폴백·서명 오류·오류 수가 늘어난 Flag를 찾는다
+2. 차량 회신과 게시본을 대조해 원인이 배포·서명·차량 중 어디인지 가른다
+3. 필요하면 긴급 차단 또는 재배포 절차로 넘긴다
+
+완료 기준:
+- [ ] 폴백 급증 Flag마다 원인과 조치가 기록됐다
 
 #### FPW.8-A01 이상 징후 확인
 - 트리거: 운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견

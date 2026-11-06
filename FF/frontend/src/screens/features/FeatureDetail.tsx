@@ -35,6 +35,7 @@ import { FeatureFlagHighlight, FeatureFlagsTab } from './FeatureFlags';
 import { flags as flagCopy } from '../../copy/flags';
 import { evaluations as evaluationsCopy } from '../../copy/records';
 import { featureRefsTab } from '../../copy/propose';
+import { flagCode as flagCodeCopy } from '../../copy/flag-code';
 import { RefWarningList, type RefWarning } from '../refdb/common';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
 import { GatesTab } from './GatesTab';
@@ -376,6 +377,12 @@ function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifec
           {hard.some((b) => b.code === 'REFDB_LINK_BLOCKED') && (
             <Link to={`/features/${encodeURIComponent(d.feature.featureId)}/${encodeURIComponent(d.feature.version)}?tab=refs`} onClick={onClose} data-ui="toFeatureRefs">
               {featureRefsTab.toRefsTab}
+            </Link>
+          )}
+          {/* Flag 코드 연결 출시 관문(20-97 §3.4) — 막힌 Flag는 어긋남 대사판에서 PR·재스캔·해제 요청으로 푼다 */}
+          {hard.some((b) => b.code === 'FLAG_CODE_MISSING') && (
+            <Link to="/flag-code/reconcile" onClick={onClose} data-ui="toFlagReconcile">
+              {flagCodeCopy.transition.toReconcile}
             </Link>
           )}
           {opt.to === 'RELEASED' && (

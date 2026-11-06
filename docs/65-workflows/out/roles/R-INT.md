@@ -12,6 +12,8 @@ traces:
     - WF-FPW-4
     - WF-FPW-5
     - WF-FPW-6
+    - WF-FPW-7
+    - WF-FPW-8
     - WF-FPW-9
     - WF-FPW-10
     - WF-FPW-11
@@ -55,6 +57,16 @@ last_updated: 2026-11-05
 - [ ] 열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다
 - [ ] Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다
 
+### FPW.4-A07 Flag PR 검토·병합 — 수행
+- 프로세스: FPW.4 안전 설계·정책 설계
+- 시작: 앞 활동 완료
+- 입력: WP-G4-DECISION → 출력: –
+- 플랫폼: `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey`
+1. Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
+2. 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
+3. PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다
+- [ ] 해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다
+
 ### FPW.5-A03 통합 시험·SEooC 가정 확인 — 수행·책임
 - 프로세스: FPW.5 검증·V&V
 - 시작: 앞 활동 완료
@@ -65,6 +77,16 @@ last_updated: 2026-11-05
 3. 통합 빌드와 변경 기록을 CI/CD에서 플랫폼으로 등록한다
 - [ ] 모든 SEooC 가정이 충족 또는 조치 중으로 기록되었다
 
+### FPW.5-A07 Flag 코드 연결 확인 — 수행·책임
+- 프로세스: FPW.5 검증·V&V
+- 시작: 앞 활동 완료
+- 입력: WP-INTEGRATION-REC → 출력: –
+- 플랫폼: `rescanFlagRepository`, `requestFlagGateWaiver`, `/flag-code/reconcile`, `/integration/code-scans`
+1. 어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다
+2. 미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다
+3. 해소할 수 없으면 사유와 만료일로 출시 차단 해제를 요청한다
+- [ ] 출시 관문의 Flag 코드 연결 판정이 통과 또는 승인된 해제다
+
 ### FPW.6-A04 서명 패키지 작성·SBOM 결합 — 수행
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
@@ -74,6 +96,16 @@ last_updated: 2026-11-05
 2. PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다
 3. SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다
 - [ ] 패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다
+
+### FPW.9-A06 Flag 제거 PR 병합 — 수행
+- 프로세스: FPW.9 사후 검토·Flag Retirement
+- 시작: 앞 활동 완료
+- 입력: WP-RETIRE-LOG → 출력: –
+- 플랫폼: `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements`
+1. Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
+2. 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
+3. 4단계 기록에 정적 분석 근거로 마지막 스캔을 남긴다
+- [ ] 제거 PR 병합 뒤 스캔에서 해당 Flag 참조가 0건이다
 
 ### FPW.10-A07 EOL 프로비저닝 검증 — 수행·책임
 - 프로세스: FPW.10 협력사 관리
@@ -92,6 +124,9 @@ last_updated: 2026-11-05
 - FPW.5-A02 시나리오·허용 조합 정의 (통보)
 - FPW.5-A04 비활성화·결함 주입 시험 수행 (협의)
 - FPW.5-A05 시험 Evidence 연결·TMS 제출 (협의)
+- FPW.6-A07 코드 저장소 연결 관리 (협의)
+- FPW.7-A13 출시 차단 해제 결정 (통보)
+- FPW.8-A12 Flag 평가 이상 확인 (협의)
 - FPW.9-A02 Flag Retirement 요청 (협의)
 - FPW.9-A03 Flag Retirement 승인 (통보)
 - FPW.9-A04 코드·설정·시험 삭제 기록 (협의)

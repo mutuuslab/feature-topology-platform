@@ -31,7 +31,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 9 · 책임 7 · 협의 7 · 통보 19 (활동 35개)
+수행 10 · 책임 8 · 협의 7 · 통보 19 (활동 36개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -45,6 +45,7 @@ last_updated: 2026-11-05
 | FPW.7-A09 출시 전이 | FPW.7 출시·활성화·단계적 확대 | I (운영 조직) | G7 Decision Record `WP-G7-DECISION`, Release Sign-off 기록 `WP-RELEASE-SIGNOFF` → 출시 전이 기록 `WP-RELEASE-RECORD` | `/features/:id/:ver` | 1차 |
 | FPW.7-A10 상품 고객 출시 승인 | FPW.7 출시·활성화·단계적 확대 | I (운영 조직) | 출시 전이 기록 `WP-RELEASE-RECORD`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL` → 상품 고객 출시 기록 `WP-PRODUCT-RELEASE` | `/products/:id/:ver` | 1차 |
 | FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | R·A (운영 조직) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live`, `/features/:id/:ver` 외 1 | 1차 |
+| FPW.8-A12 Flag 평가 이상 확인 | FPW.8 운영·긴급 차단·복원 | R·A (운영 조직) | – → – | `/ops/flag-evaluations` | 1차 |
 | FPW.8-A01 이상 징후 확인 | FPW.8 운영·긴급 차단·복원 | R·A (운영 조직) | G7 Decision Record `WP-G7-DECISION`, 단계적 확대 기록 `WP-ROLLOUT-RECORD`, 운행 감시 지표·경보 기준 `WP-KPI-PLAN`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` → 이상 징후 건 `WP-ANOMALY-CASE` | `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents` | 1차 |
 | FPW.8-A02 차단 필요성·범위 판단 | FPW.8 운영·긴급 차단·복원 | C (운영 조직) | 이상 징후 건 `WP-ANOMALY-CASE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, VEX 판정·대응 결정 `WP-VEX-DECISION` → 차단 판단서 `WP-KILL-PLAN` | `/ops/kill` | 1차 |
 | FPW.8-A03 리콜·봉쇄 근거 연계 | FPW.8 운영·긴급 차단·복원 | I (운영 조직) | 차단 판단서 `WP-KILL-PLAN` → 리콜·봉쇄 근거 `WP-RECALL-BASIS` | 플랫폼 밖 | 1차 |
@@ -91,5 +92,5 @@ last_updated: 2026-11-05
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/activation/decide`, `/fleet/live`, `/features/:id/:ver`, `/notifications`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/kill`, `/deployments`, `/audit`
+- 주 업무 화면: `/activation/decide`, `/fleet/live`, `/features/:id/:ver`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/kill`, `/deployments`, `/audit`
 - 참조 화면(협의·통보): `/integration/connectors`, `/experiments`, `/admin/approval`, `/products/:id/:ver`, `/audit/oversight`, `/quality/feedback`, `/flag-retirements`, `/admin/security`, `/admin/data`, `/verify/compliance`

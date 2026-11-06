@@ -426,7 +426,7 @@
       "evidence": [
         "contracts/src/rules/rehara.ts:3",
         "backend/src/domains/d01-policy/topology/gate.service.ts:154",
-        "contracts/src/rules/lifecycle.ts:160"
+        "contracts/src/rules/lifecycle.ts:169"
       ],
       "tests": [
         "backend/test/d06/rehara.spec.ts",

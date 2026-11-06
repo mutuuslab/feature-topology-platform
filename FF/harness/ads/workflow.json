@@ -690,6 +690,14 @@
         {
           "id": "FPW.9-A04",
           "why": "LCY-011 규칙만 공유 — RETIRED·DEPRECATED 정책 생성 거부는 플랫폼 검사이고 삭제 기록 문장은 그대로다"
+        },
+        {
+          "id": "FPW.4-A07",
+          "why": "FFG-LCY-011(Lifecycle 규칙)만 공유 — Flag PR 검토·병합은 코드 연결 절차라 ADS 분류·시장 기준선 문장은 그대로다(통합 2026-11-06)"
+        },
+        {
+          "id": "FPW.9-A06",
+          "why": "FFG-LCY-011(Lifecycle 규칙)만 공유 — Flag 제거 PR 병합은 코드 정리 절차라 ADS 분류·시장 기준선 문장은 그대로다(통합 2026-11-06)"
         }
       ],
       "newProcess": null,
@@ -1611,6 +1619,14 @@
         {
           "id": "FPW.9-A04",
           "why": "LCY-011 규칙만 공유 — RETIRED·DEPRECATED 정책 생성 거부는 플랫폼 검사이고 삭제 기록 문장은 그대로다"
+        },
+        {
+          "id": "FPW.4-A07",
+          "why": "FFG-LCY-011(Lifecycle 규칙)만 공유 — Flag PR 검토·병합은 코드 연결 절차라 ADS 분류·시장 기준선 문장은 그대로다(통합 2026-11-06)"
+        },
+        {
+          "id": "FPW.9-A06",
+          "why": "FFG-LCY-011(Lifecycle 규칙)만 공유 — Flag 제거 PR 병합은 코드 정리 절차라 ADS 분류·시장 기준선 문장은 그대로다(통합 2026-11-06)"
         }
       ],
       "newProcess": null,
@@ -1945,6 +1961,14 @@
         {
           "id": "FPW.9-A03",
           "why": "ADS-010 규칙만 공유 — ADS 폐기 승인 조건 문장은 그대로다"
+        },
+        {
+          "id": "FPW.4-A07",
+          "why": "FFG-LCY-011(Lifecycle 규칙)만 공유 — Flag PR 검토·병합은 코드 연결 절차라 ADS 분류·시장 기준선 문장은 그대로다(통합 2026-11-06)"
+        },
+        {
+          "id": "FPW.9-A06",
+          "why": "FFG-LCY-011(Lifecycle 규칙)만 공유 — Flag 제거 PR 병합은 코드 정리 절차라 ADS 분류·시장 기준선 문장은 그대로다(통합 2026-11-06)"
         }
       ],
       "newProcess": null,

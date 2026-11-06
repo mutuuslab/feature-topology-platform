@@ -34,6 +34,9 @@ const SAMPLE: Record<string, string> = {
   '/fleet/vehicles/:vin': '/fleet/vehicles/ego-01',
   // Feature DB v1.3(엑셀 가져옴) 기준 행 — 오토 홀드
   '/master/feature-db/:refId': '/master/feature-db/CH-BRK-009',
+  // Flag 코드 연결(20-97) — 시연 저장소와 v0.81 대표 Flag(시연 시드가 연결)
+  '/flag-code/flags/:flagKey': '/flag-code/flags/care_00022_signal',
+  '/integration/code-repositories/:repoId': '/integration/code-repositories/FREPO-001',
   '/consults/:id': `/consults/CON-${(process.env.FF_CLOCK_AT ?? new Date().toISOString()).slice(0, 4)}-001`,
 };
 /**

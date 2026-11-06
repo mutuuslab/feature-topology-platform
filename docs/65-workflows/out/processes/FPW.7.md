@@ -29,6 +29,9 @@ flowchart LR
     FPW_7_A01["A01 Canary·Shadow 판정 기준 정의"]
     FPW_7_A11["A11 Canary 활성화·단계적 확대"]
   end
+  subgraph R_REQ["요구 Owner"]
+    FPW_7_A13["A13 출시 차단 해제 결정"]
+  end
   subgraph R_FO["Feature Owner"]
     FPW_7_A02["A02 효과 실험 계획 등록"]
     FPW_7_A12["A12 Release Sign-off(출시 책임 확인)"]
@@ -54,6 +57,7 @@ flowchart LR
     FPW_7_A09["A09 출시 전이"]
   end
   FPW_7_A01 --> FPW_7_A08
+  FPW_7_A13 --> FPW_7_A12
   T_FPW_7_A02(("출시 효과를 실험으로 비교해야 할 때")) -.-> FPW_7_A02
   FPW_7_A02 --> FPW_7_A08
   T_FPW_7_A03(("G6 배포 완료")) -.-> FPW_7_A03
@@ -64,7 +68,7 @@ flowchart LR
   FPW_7_A06 --> FPW_7_A08
   T_FPW_7_A07(("G6 배포 완료")) -.-> FPW_7_A07
   FPW_7_A07 --> FPW_7_A08
-  FPW_7_A08 --> FPW_7_A12
+  FPW_7_A08 --> FPW_7_A13
   FPW_7_A12 --> FPW_7_A09
   FPW_7_A09 --> FPW_7_A10
   FPW_7_A09 --> FPW_7_A11
@@ -75,6 +79,7 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.7-A01 | Canary·Shadow 판정 기준 정의 | R 운영 조직 · A 운영 조직 · C Safety Manager, 시험 조직 · I Feature Owner, Release Manager | WP-SAFETY-PROFILE, WP-G6-DECISION | WP-CANARY-PLAN | `/activation/decide` | FFG-TST-010, FFG-LCY-009 |
+| FPW.7-A13 | 출시 차단 해제 결정 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I Release Manager, 통합 조직 | WP-INTEGRATION-REC | WP-FLAG-WAIVER | `decideFlagGateWaiver`, `/flag-code/reconcile` | – |
 | FPW.7-A02 | 효과 실험 계획 등록 | R Feature Owner · A Feature Owner · C Safety Manager, 운영 조직 · I Release Manager | WP-SAFETY-PROFILE | WP-EXPERIMENT-PLAN | `createExperiment`, `/experiments` | FFG-CLS-006 |
 | FPW.7-A03 | Safety Case·SOTIF 근거 정리 | R Safety Manager · A Safety Manager · C Feature Owner, 시험 조직 · I 품질 조직 | WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA | WP-SAFETY-CASE | `/verify/evidence`, `/verify/compliance` | FFG-SOT-004, FFG-ADS-008 |
 | FPW.7-A04 | Safety Case 독립 검토 | R 품질 조직 · A Safety Manager · C 시험 조직 · I Feature Owner, 법규 담당 | WP-SAFETY-CASE | WP-SC-REVIEW | 플랫폼 밖 | FFG-ADS-012 |
@@ -96,6 +101,14 @@ flowchart LR
 
 완료 기준:
 - [ ] 모든 단계에 관측 기간·허용 차이·중단 기준이 있다
+
+#### FPW.7-A13 출시 차단 해제 결정
+1. 해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다
+2. F2 이상이면 Safety Manager의 의견을 받는다
+3. 개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다
+
+완료 기준:
+- [ ] 요청자와 결정자가 다른 사람이다
 
 #### FPW.7-A02 효과 실험 계획 등록
 - 트리거: 출시 효과를 실험으로 비교해야 할 때
@@ -206,6 +219,7 @@ flowchart LR
 | WP-RELEASE-RECORD | 출시 전이 기록 | 산출 | VERIFIED→RELEASED 전이 시각과 수행자 |
 | WP-PRODUCT-RELEASE | 상품 고객 출시 기록 | 산출 | 고객 출시 승인자(구성 승인자와 다른 사람)와 시각 |
 | WP-ROLLOUT-RECORD | 단계적 확대 기록 | 산출 | Cohort 단계별 적용 시각·관측 결과; 확대·중단 결정과 근거 |
+| WP-FLAG-WAIVER | 출시 차단 해제 결정 기록 | 산출 | 해제 대상 Flag·요청 당시 대사 상태·사유·만료; 요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함) |
 
 ## 4. 진입·완료 기준
 

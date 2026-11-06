@@ -19,7 +19,8 @@
     "@openfeature/server-sdk": "1.23.0",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@nestjs/testing": "^12.2.0",
@@ -30,7 +31,6 @@
     "@types/supertest": "^6.0.2",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4",
     "unplugin-swc": "^1.5.1",
     "vitest": "^5.0.5"
   }

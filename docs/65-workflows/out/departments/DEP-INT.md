@@ -36,7 +36,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 8 · 책임 9 · 협의 14 · 통보 19 (활동 39개)
+수행 12 · 책임 11 · 협의 16 · 통보 23 (활동 45개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -46,10 +46,12 @@ last_updated: 2026-11-05
 | FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | C (통합 조직) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4 안전 설계·정책 설계 | I (Release Manager) | – → 정책 근거 변경요청(CR) 연결 `WP-POLICY-CR` | `/policies/:id`, `/integration/connectors` | 1차 |
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | I (Release Manager) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
+| FPW.4-A07 Flag PR 검토·병합 | FPW.4 안전 설계·정책 설계 | R (통합 조직) · I (Release Manager) | G4 Decision Record `WP-G4-DECISION` → – | `/flag-code`, `/flag-code/flags/:flagKey` | 1차 |
 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5 검증·V&V | I (통합 조직) | G4 Decision Record `WP-G4-DECISION`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 검증 계획(독립성 수준) `WP-VV-PLAN` | 플랫폼 밖 | 1차 |
 | FPW.5-A02 시나리오·허용 조합 정의 | FPW.5 검증·V&V | I (통합 조직) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` | `/arch/topology`, `/validations` | 1차 |
 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5 검증·V&V | R·A (통합 조직) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 입고 검사 결과 `WP-INTAKE-RESULT` → 통합 검증 기록 `WP-INTEGRATION-REC` | `/master/artifacts` | 1차 |
 | FPW.5-A04 비활성화·결함 주입 시험 수행 | FPW.5 검증·V&V | C (통합 조직) | 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC`, 통합 검증 기록 `WP-INTEGRATION-REC`, Flag 정책(검증·승인본) `WP-POLICY` → 시험 결과 `WP-TEST-RESULT` | `/validations/virtual` | 1차 |
+| FPW.5-A07 Flag 코드 연결 확인 | FPW.5 검증·V&V | R·A (통합 조직) · I (Release Manager) | 통합 검증 기록 `WP-INTEGRATION-REC` → – | `/flag-code/reconcile`, `/integration/code-scans` | 1차 |
 | FPW.5-A05 시험 Evidence 연결·TMS 제출 | FPW.5 검증·V&V | C (통합 조직) | 시험 결과 `WP-TEST-RESULT`, 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` → G5 시험 Evidence 묶음 `WP-G5-EVIDENCE` | `/verify/evidence` | 1차 |
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | I (Release Manager) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6 서명 배포 | C (Release Manager) | G5 Decision Record `WP-G5-DECISION`, Flag 정책(검증·승인본) `WP-POLICY` → Baseline 확정 요청 `WP-BASELINE-REQ` | `/baselines` | 1차 |
@@ -58,16 +60,20 @@ last_updated: 2026-11-05
 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | R (통합 조직) · A (Release Manager) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts` | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | A (Release Manager) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | R·A (Release Manager) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/integration/connectors` | 1차 |
+| FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | R·A (Release Manager) · C (통합 조직) | – → – | `/integration/code-repositories`, `/integration/code-scans` | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide` | 1차 |
+| FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager, 통합 조직) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
 | FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW` → Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | `/features/:id/:ver` | 1차 |
 | FPW.7-A09 출시 전이 | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Release Sign-off 기록 `WP-RELEASE-SIGNOFF` → 출시 전이 기록 `WP-RELEASE-RECORD` | `/features/:id/:ver` | 1차 |
 | FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | C (Release Manager) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live`, `/features/:id/:ver` 외 1 | 1차 |
+| FPW.8-A12 Flag 평가 이상 확인 | FPW.8 운영·긴급 차단·복원 | C (통합 조직) | – → – | `/ops/flag-evaluations` | 1차 |
 | FPW.8-A10 단계적 복원·관측 | FPW.8 운영·긴급 차단·복원 | C (Release Manager) | 복원 승인 기록 `WP-RESTORE-DECISION` → 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` | `/fleet/live` | 1차 |
 | FPW.9-A02 Flag Retirement 요청 | FPW.9 사후 검토·Flag Retirement | C (Release Manager, 통합 조직) | Feature 등록 기록 `WP-FEAT-REG` → Flag Retirement 요청 `WP-RETIRE-REQ` | `/flag-retirements` | 1차 |
 | FPW.9-A03 Flag Retirement 승인 | FPW.9 사후 검토·Flag Retirement | C (Release Manager) · I (통합 조직) | Flag Retirement 요청 `WP-RETIRE-REQ` → Retirement 승인 기록 `WP-RETIRE-APPROVAL` | `/flag-retirements` | 1차 |
 | FPW.9-A04 코드·설정·시험 삭제 기록 | FPW.9 사후 검토·Flag Retirement | C (통합 조직) · I (Release Manager) | Retirement 승인 기록 `WP-RETIRE-APPROVAL` → Retirement 단계 기록 `WP-RETIRE-LOG` | `/flag-retirements` | 1차 |
+| FPW.9-A06 Flag 제거 PR 병합 | FPW.9 사후 검토·Flag Retirement | R (통합 조직) · I (Release Manager) | Retirement 단계 기록 `WP-RETIRE-LOG` → – | `/flag-code/lifecycle`, `/flag-retirements` | 1차 |
 | FPW.9-A05 Lifecycle 종료 전이 | FPW.9 사후 검토·Flag Retirement | R·A (Release Manager) | Retirement 단계 기록 `WP-RETIRE-LOG` → Lifecycle 종료 기록 `WP-RETIRE-CLOSE` | `/features/:id/:ver` | 1차 |
 | FPW.10-A01 계약 전 협력사 역량 확인 | FPW.10 협력사 관리 | I (통합 조직) | 협력사 후보·공급 범위 `WP-SUPPLIER-CANDIDATE` → 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A02 DIA·CIA 체결 | FPW.10 협력사 관리 | I (통합 조직) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → DIA·CIA 계약 부속서 `WP-DIA` | 플랫폼 밖 | 2차 초안 |
@@ -86,20 +92,21 @@ last_updated: 2026-11-05
 |---|---|---|---|---|---|
 | 받음 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | 시스템엔지니어링팀 | – | 1차 |
 | 받음 | FPW.3-A05 구현 연결 입력 | FPW.3-A06 외부 연계 동기화·충돌 해결 | 상품기획팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
+| 받음 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4-A07 Flag PR 검토·병합 | 품질팀 | G4 Decision Record `WP-G4-DECISION` | 1차 |
 | 받음 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5-A03 통합 시험·SEooC 가정 확인 | 기능안전팀 | 검증 계획(독립성 수준) `WP-VV-PLAN` | 1차 |
 | 받음 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | PLM·기준정보팀 | 출시 Baseline `WP-RELEASE-BASELINE` | 1차 |
 | 받음 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6-A06 G6 서명 배포 실행 | 품질팀 | OTA Gate 판정 기록 `WP-OTA-GATE` | 1차 |
 | 받음 | FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7-A09 출시 전이 | 상품기획팀 | Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | 1차 |
-| 받음 | FPW.9-A04 코드·설정·시험 삭제 기록 | FPW.9-A05 Lifecycle 종료 전이 | 상품기획팀 | Retirement 단계 기록 `WP-RETIRE-LOG` | 1차 |
+| 받음 | FPW.9-A04 코드·설정·시험 삭제 기록 | FPW.9-A06 Flag 제거 PR 병합 | 상품기획팀 | Retirement 단계 기록 `WP-RETIRE-LOG` | 1차 |
 | 받음 | FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10-A07 EOL 프로비저닝 검증 | 품질팀 | 입고 검사 결과 `WP-INTAKE-RESULT` | 2차 초안 |
 | 받음 | FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10-A07 EOL 프로비저닝 검증 | 시험·검증팀 | 입고 검사 결과 `WP-INTAKE-RESULT` | 2차 초안 |
 | 보냄 | FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3-A04 G3 판정·Feature 정의 승인 | 시스템엔지니어링팀 | – | 1차 |
-| 보냄 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5-A04 비활성화·결함 주입 시험 수행 | 시험·검증팀 | 통합 검증 기록 `WP-INTEGRATION-REC` | 1차 |
+| 보냄 | FPW.5-A07 Flag 코드 연결 확인 | FPW.5-A04 비활성화·결함 주입 시험 수행 | 시험·검증팀 | – | 1차 |
 | 보냄 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6-A05 OTA Gate 판정 등록 | 품질팀 | 서명 배포 패키지 `WP-SIGNED-PACKAGE` | 1차 |
 | 보냄 | FPW.7-A09 출시 전이 | FPW.7-A10 상품 고객 출시 승인 | 상품기획팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |
 | 보냄 | FPW.7-A09 출시 전이 | FPW.7-A11 Canary 활성화·단계적 확대 | OTA·서비스운영팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/deployments`
-- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/baselines`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/flag-retirements`, `/supplier/portal`, `/admin/security`, `/integration/openfeature`
+- 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/deployments`, `/integration/code-repositories`, `/flag-code/lifecycle`, `/flag-retirements`
+- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/baselines`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/supplier/portal`, `/admin/security`, `/integration/openfeature`

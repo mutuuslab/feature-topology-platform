@@ -60,6 +60,16 @@ last_updated: 2026-11-05
 3. 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
 - [ ] 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
 
+### FPW.6-A07 코드 저장소 연결 관리 — 수행·책임
+- 프로세스: FPW.6 서명 배포
+- 시작: 앞 활동 완료
+- 입력: – → 출력: –
+- 플랫폼: `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-scans`
+1. 차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다
+2. webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다
+3. 설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다
+- [ ] 연결 저장소의 webhook이 정상이고 최근 스캔이 서명 확인됐다
+
 ### FPW.7-A09 출시 전이 — 수행·책임
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
@@ -85,11 +95,14 @@ last_updated: 2026-11-05
 - FPW.2-A04 형식승인 영향 1차 판단 (통보)
 - FPW.4-A06 정책 근거 변경요청(CR) 연결 (통보)
 - FPW.4-A04 정책 승인 (통보)
+- FPW.4-A07 Flag PR 검토·병합 (통보)
+- FPW.5-A07 Flag 코드 연결 확인 (통보)
 - FPW.5-A06 G5 V&V 판정 (통보)
 - FPW.6-A01 출시 Baseline 확정 요청 (협의)
 - FPW.6-A02 출시 Baseline 확정 승인 (협의)
 - FPW.6-A03 SUMS 기록·형식승인 확인 (협의)
 - FPW.7-A01 Canary·Shadow 판정 기준 정의 (통보)
+- FPW.7-A13 출시 차단 해제 결정 (통보)
 - FPW.7-A02 효과 실험 계획 등록 (통보)
 - FPW.7-A08 G7 출시·활성화 판정 (통보)
 - FPW.7-A12 Release Sign-off(출시 책임 확인) (통보)
@@ -98,6 +111,7 @@ last_updated: 2026-11-05
 - FPW.9-A02 Flag Retirement 요청 (협의)
 - FPW.9-A03 Flag Retirement 승인 (협의)
 - FPW.9-A04 코드·설정·시험 삭제 기록 (통보)
+- FPW.9-A06 Flag 제거 PR 병합 (통보)
 - FPW.11-A01 서명 키 계층·HSM 운영 (통보)
 - FPW.11-A04 취약점 영향 특정·대응 결정 (통보)
 

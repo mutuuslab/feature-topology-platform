@@ -40,6 +40,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/activation/decide",
      "/admin/approval",
      "/flag-retirements",
+     "/flag-code/lifecycle",
      "/master/feature-db/:refId"
     ],
     "reference": [
@@ -48,12 +49,17 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/change/cr",
      "/policies/new",
      "/policies",
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
      "/validations/virtual",
+     "/flag-code/reconcile",
+     "/integration/code-scans",
      "/verify/evidence",
      "/deployments",
      "/verify/compliance",
      "/fleet/live",
      "/notifications",
+     "/ops/flag-evaluations",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -66,9 +72,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
    },
    "counts": {
     "R": 13,
-    "A": 14,
-    "C": 18,
-    "I": 33
+    "A": 15,
+    "C": 20,
+    "I": 35
    }
   },
   {
@@ -96,6 +102,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/policies/:id",
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
+     "/flag-code/reconcile",
      "/flag-retirements",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes"
@@ -114,15 +123,17 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations",
      "/verify/evidence",
      "/baselines",
+     "/integration/code-repositories",
+     "/integration/code-scans",
      "/integration/openfeature",
      "/master/feature-db/:refId"
     ]
    },
    "counts": {
-    "R": 9,
-    "A": 10,
+    "R": 10,
+    "A": 12,
     "C": 21,
-    "I": 17
+    "I": 18
    }
   },
   {
@@ -144,7 +155,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/features/:id/:ver",
      "/master/artifacts",
      "/integration/connectors",
-     "/deployments"
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
+     "/flag-code/reconcile",
+     "/integration/code-scans",
+     "/deployments",
+     "/integration/code-repositories",
+     "/flag-code/lifecycle",
+     "/flag-retirements"
     ],
     "reference": [
      "/master/control-points",
@@ -160,17 +178,17 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/experiments",
      "/fleet/live",
      "/notifications",
-     "/flag-retirements",
+     "/ops/flag-evaluations",
      "/supplier/portal",
      "/admin/security",
      "/integration/openfeature"
     ]
    },
    "counts": {
-    "R": 8,
-    "A": 9,
-    "C": 14,
-    "I": 19
+    "R": 12,
+    "A": 11,
+    "C": 16,
+    "I": 23
    }
   },
   {
@@ -259,6 +277,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
+     "/flag-code/reconcile",
      "/experiments",
      "/notifications",
      "/ops/anomalies",
@@ -275,7 +294,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 17,
     "A": 17,
-    "C": 34,
+    "C": 35,
     "I": 9
    }
   },
@@ -379,18 +398,23 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/artifacts",
      "/integration/connectors",
      "/master/control-points",
+     "/flag-code",
+     "/flag-code/flags/:flagKey",
+     "/flag-code/reconcile",
+     "/integration/code-scans",
      "/activation/decide",
      "/verify/compliance",
      "/ops/kill",
      "/quality/feedback",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/flag-code/lifecycle"
     ]
    },
    "counts": {
     "R": 4,
     "A": 4,
-    "C": 11,
-    "I": 6
+    "C": 13,
+    "I": 7
    }
   },
   {
@@ -459,6 +483,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/fleet/live",
      "/features/:id/:ver",
      "/notifications",
+     "/ops/flag-evaluations",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -480,8 +505,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 9,
-    "A": 7,
+    "R": 10,
+    "A": 8,
     "C": 7,
     "I": 19
    }

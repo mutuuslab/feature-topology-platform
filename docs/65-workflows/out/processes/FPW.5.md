@@ -35,6 +35,7 @@ flowchart LR
   end
   subgraph R_INT["통합 조직"]
     FPW_5_A03["A03 통합 시험·SEooC 가정 확인"]
+    FPW_5_A07["A07 Flag 코드 연결 확인"]
   end
   subgraph R_QA["품질 조직"]
     FPW_5_A06{{"A06 G5 V&V 판정"}}
@@ -42,8 +43,9 @@ flowchart LR
   FPW_5_A01 --> FPW_5_A02
   FPW_5_A01 --> FPW_5_A03
   FPW_5_A02 --> FPW_5_A04
-  FPW_5_A03 --> FPW_5_A04
+  FPW_5_A03 --> FPW_5_A07
   FPW_5_A04 --> FPW_5_A05
+  FPW_5_A07 --> FPW_5_A04
   FPW_5_A05 --> FPW_5_A06
 ```
 
@@ -55,6 +57,7 @@ flowchart LR
 | FPW.5-A02 | 시나리오·허용 조합 정의 | R 시험 조직 · A 시험 조직 · C 아키텍트, Safety Manager · I 통합 조직 | WP-VV-PLAN, WP-FEAT-SCOPE | WP-TEST-SPEC | `/arch/topology`, `/validations` | FFG-TST-003, FFG-TST-006, FFG-TST-007 |
 | FPW.5-A03 | 통합 시험·SEooC 가정 확인 | R 통합 조직 · A 통합 조직 · C 아키텍트, 시험 조직, Safety Manager · I 품질 조직 | WP-VV-PLAN, WP-INTAKE-RESULT | WP-INTEGRATION-REC | `registerChangeRecord`, `/master/artifacts` | FFG-VEH-012 |
 | FPW.5-A04 | 비활성화·결함 주입 시험 수행 | R 시험 조직 · A 시험 조직 · C 통합 조직, Safety Manager · I 품질 조직, Feature Owner | WP-TEST-SPEC, WP-INTEGRATION-REC, WP-POLICY | WP-TEST-RESULT | `runVirtual`, `/validations/virtual` | FFG-TST-001, FFG-TST-004, FFG-TST-005, FFG-TST-011 |
+| FPW.5-A07 | Flag 코드 연결 확인 | R 통합 조직 · A 통합 조직 · C 시험 조직 · I Feature Owner, Release Manager | WP-INTEGRATION-REC |  | `rescanFlagRepository`, `requestFlagGateWaiver`, `/flag-code/reconcile`, `/integration/code-scans` | – |
 | FPW.5-A05 | 시험 Evidence 연결·TMS 제출 | R 시험 조직 · A 시험 조직 · C 통합 조직 · I 품질 조직, Safety Manager | WP-TEST-RESULT, WP-TEST-SPEC | WP-G5-EVIDENCE | `submitTms`, `/verify/evidence` | FFG-TST-009, FFG-ADS-009 |
 | FPW.5-A06 | G5 V&V 판정 | R 품질 조직 · A 시험 조직 · C Safety Manager · I Feature Owner, Release Manager, 아키텍트 | WP-G5-EVIDENCE, WP-VV-PLAN | WP-G5-DECISION | `judgeGate`, `/verify/evidence`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
 
@@ -94,6 +97,14 @@ flowchart LR
 
 완료 기준:
 - [ ] 시험 명세의 모든 항목에 결과가 있고 실패 항목은 결함으로 등록되었다
+
+#### FPW.5-A07 Flag 코드 연결 확인
+1. 어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다
+2. 미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다
+3. 해소할 수 없으면 사유와 만료일로 출시 차단 해제를 요청한다
+
+완료 기준:
+- [ ] 출시 관문의 Flag 코드 연결 판정이 통과 또는 승인된 해제다
 
 #### FPW.5-A05 시험 Evidence 연결·TMS 제출
 1. 시험 명세와 결과를 시험관리 도구에서 Feature ID·Version과 연결한다

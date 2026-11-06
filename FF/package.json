@@ -14,6 +14,7 @@
   "scripts": {
     "verify": "node tools/verify.ts",
     "flags:scan": "node tools/flag-sources.ts",
+    "flags:demo": "node tools/flag-code/generate-vehicle-apps.ts",
     "verify:full": "node tools/verify.ts --full",
     "lint:tokens": "node tools/lint-tokens.ts",
     "lint:spacing": "node tools/lint-spacing.ts",

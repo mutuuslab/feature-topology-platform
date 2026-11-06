@@ -18,6 +18,7 @@ import { LifecycleService } from '../registry/lifecycle.service';
 import { FeatureRepo } from '../repos';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
 import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
+import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 
 /** 같은 사람이 같은 정책을 다시 조회해도 이 시간 안이면 조회 감사를 한 번만 남긴다(화면 재조회·새로고침 잡음) */
 const VIEW_AUDIT_WINDOW_MS = 10 * 60_000;
@@ -40,6 +41,7 @@ export class PolicyService implements OnModuleInit {
     private readonly secureDeploy: SecureDeployService,
     private readonly flags: SafetyProfileService,
     private readonly errors: IntegrationErrorService,
+    private readonly flagCode: FlagCoverageService,
   ) {}
 
   /**
@@ -250,6 +252,13 @@ export class PolicyService implements OnModuleInit {
     if (odd.length) {
       this.audit.failed(actor, 'POLICY_DEPLOY', id, odd.map((x) => x.message).join(' · '), 'D01-06');
       throw new DomainError('GUARD_FAILED', odd.map((x) => x.message).join(' · '), { rule: 'FFG-SOT-002', findings: odd });
+    }
+    // 20-97 §3.4 — 같은 Flag의 코드 연결이 출시를 막으면 게시하지 않는다(승인된 해제는 통과, 연결 저장소가 없으면 보지 않는다)
+    const flagCode = this.flagCode.deployBlockers(p);
+    if (flagCode.length) {
+      const msg = flagCode.map((b) => `Flag ${b.flagKey}: ${b.message}`).join(' · ');
+      this.audit.failed(actor, 'POLICY_DEPLOY', id, msg, 'D01-06');
+      throw new DomainError('GUARD_FAILED', `정책을 게시할 수 없습니다: ${msg}`, { blockers: flagCode.map((b) => ({ code: 'FLAG_CODE_MISSING', message: `Flag ${b.flagKey}: ${b.message}`, ref: b.flagKey, status: b.status })) });
     }
     try {
       return this.db.tx(() => {

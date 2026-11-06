@@ -55,7 +55,8 @@ export const FlagSourceManifest = z.object({
 });
 export type FlagSourceManifest = z.infer<typeof FlagSourceManifest>;
 
-export const FlagSourceProvenance = z.enum(['CI_IMPORT', 'DEMO']);
+/** CI_IMPORT·DEMO: v1 가져오기. FF_SCAN·CI_ATTESTED: 연결 저장소의 v2 서명 스캔(20-97) — Feature Flag 탭 1단계에 v1·v2를 함께 싣는다 */
+export const FlagSourceProvenance = z.enum(['CI_IMPORT', 'DEMO', 'FF_SCAN', 'CI_ATTESTED']);
 export const FlagSourceImport = z.object({
   manifestId: z.string(),
   manifest: FlagSourceManifest,

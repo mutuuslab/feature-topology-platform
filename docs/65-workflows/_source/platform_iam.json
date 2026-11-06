@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9204/admin/iam",
+  "iam_url": "http://localhost:9252/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-06T02:13:43.517Z",
+  "fetched_at": "2026-11-06T09:01:44.683Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-reqgaps\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-06T02:11:36.542Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-integ\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-06T09:00:55.865Z",
   "ff_git": {
-   "head": "08cd4cc3e15dbe005836c41fbe42bbc78f0df998",
-   "dirty_files": 40
+   "head": "66e68c7a70eb5d97ade9f4e7effeb5bf89ad33f0",
+   "dirty_files": 29
   },
-  "iam_sha256": "c350105f601f73eb28a3b9c7ad072c9d21361546a952cfe8b6f20d4eed7fccbf"
+  "iam_sha256": "408f6ffb82d8a164ab40709cb3782149269f621a819acf01d11fd77cbf8383ce"
  },
  "roles": [
   {
@@ -1822,6 +1822,99 @@
    "roles": [
     "SECURITY_OFFICER"
    ]
+  },
+  {
+   "name": "createFlagRepository",
+   "method": "POST",
+   "path": "/api/flag-code/repositories",
+   "summary": "차량 SW 저장소 연결 — GitHub App 설치 번호 또는 Actions OIDC, 자격 증명은 서버 설정에만",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "updateFlagRepository",
+   "method": "PATCH",
+   "path": "/api/flag-code/repositories/:id",
+   "summary": "저장소 연결 변경 — 브랜치·스캔 경로·주기·일시 중지(사유 필수, 감사)",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "rescanFlagRepository",
+   "method": "POST",
+   "path": "/api/flag-code/repositories/:id/scans",
+   "summary": "저장소 재스캔 요청 — 지정 브랜치의 최신 커밋을 서버가 스캔·서명",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "uploadFlagScan",
+   "method": "POST",
+   "path": "/api/flag-code/scans/upload",
+   "summary": "CI 스캔 결과 올리기 — GitHub Actions OIDC 토큰을 서버가 검증(저장 안 함)",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "createFlagPr",
+   "method": "POST",
+   "path": "/api/flag-code/pull-requests",
+   "summary": "Flag 상수·호출 뼈대 PR 생성(승인 때 자동, 실패 시 다시 요청)",
+   "component": "D01-06",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "createFlagRemovalPr",
+   "method": "POST",
+   "path": "/api/flag-code/removal-pull-requests",
+   "summary": "Flag 제거 PR 생성 — Retirement 승인된 Flag만",
+   "component": "D01-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "demoMergeFlagPr",
+   "method": "POST",
+   "path": "/api/flag-code/pull-requests/:id/demo-merge",
+   "summary": "시연 저장소에서 PR 병합(개발자 병합 재현 → push webhook) — 실제 연결 모드는 거부",
+   "component": "D01-06",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "requestFlagGateWaiver",
+   "method": "POST",
+   "path": "/api/flag-code/waivers",
+   "summary": "출시 차단 해제 요청 — 사유·만료(최대 30일), 요청 당시 대사 상태에만 적용",
+   "component": "D01-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "decideFlagGateWaiver",
+   "method": "POST",
+   "path": "/api/flag-code/waivers/:id/decision",
+   "summary": "출시 차단 해제 결정 — Feature 승인자, F2 이상은 Safety Manager(요청자 제외, 개인 서명)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_APPROVER",
+    "SAFETY_OFFICER"
+   ]
   }
  ],
  "sod": [
@@ -2395,6 +2488,26 @@
    "group": "release"
   },
   {
+   "path": "/flag-code",
+   "title": "Flag 코드 연결",
+   "group": "release"
+  },
+  {
+   "path": "/flag-code/flags/:flagKey",
+   "title": "Flag 코드 상세",
+   "group": "release"
+  },
+  {
+   "path": "/flag-code/reconcile",
+   "title": "어긋남 대사판",
+   "group": "release"
+  },
+  {
+   "path": "/flag-code/lifecycle",
+   "title": "Flag 수명 관리",
+   "group": "release"
+  },
+  {
    "path": "/flag-retirements",
    "title": "Flag Retirement",
    "group": "release"
@@ -2460,6 +2573,11 @@
    "group": "ops"
   },
   {
+   "path": "/ops/flag-evaluations",
+   "title": "Flag 평가 모니터링",
+   "group": "ops"
+  },
+  {
    "path": "/events",
    "title": "Platform 이벤트",
    "group": "ops"
@@ -2467,6 +2585,21 @@
   {
    "path": "/integration/connectors",
    "title": "외부 연계 현황",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/code-repositories",
+   "title": "코드 저장소 연결",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/code-repositories/:repoId",
+   "title": "저장소 상세",
+   "group": "admin"
+  },
+  {
+   "path": "/integration/code-scans",
+   "title": "스캔 기록",
    "group": "admin"
   },
   {

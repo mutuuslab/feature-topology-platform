@@ -1,0 +1,38 @@
+# 공개 데모 Grafana 시연 데이터 — 15분 예약 실행 (80-80)
+# 예약(schedule)은 기본 브랜치(main)의 워크플로로만 돈다. 앱 코드는 아직 main에 없으므로
+# 전송 도구가 있는 브랜치(저장소 변수 GRAFANA_DEMO_REF, 기본 feat/grafana-telemetry)를 받아 실행한다.
+# 앱·공개 사이트 배포와는 무관하다. 비밀이 없으면 전송 도구가 '비밀 없음'으로 실패한다.
+name: Grafana 시연 데이터 (예약)
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      window:
+        description: 보낼 창(분, 1~60)
+        required: false
+        default: '30'
+permissions:
+  contents: read
+concurrency:
+  group: grafana-demo
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ vars.GRAFANA_DEMO_REF || 'feat/grafana-telemetry' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 시연 시계열 전송(Grafana Cloud OTLP)
+        working-directory: FF
+        env:
+          GRAFANA_OTLP_URL: ${{ secrets.GRAFANA_OTLP_URL }}
+          GRAFANA_OTLP_INSTANCE_ID: ${{ secrets.GRAFANA_OTLP_INSTANCE_ID }}
+          GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
+          WINDOW: ${{ inputs.window || '30' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/grafana/push-demo-metrics.ts --window "$WINDOW" --events 15

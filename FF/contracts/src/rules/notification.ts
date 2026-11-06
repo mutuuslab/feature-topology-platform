@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
 import type { Role } from '../enums';
-import { isRecipient, NOTIFICATION_SENT_EVENT, NotificationCategory, type NotificationSeverity } from './notification-keys';
+import { isAppPath, isRecipient, NOTIFICATION_SENT_EVENT, NotificationCategory, type NotificationSeverity } from './notification-keys';
 
 // 범주·심각도는 notification-keys.ts — 상단바 종(첫 화면)이 이 규칙표 없이 읽는다
 
@@ -648,7 +648,7 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
           { label: '내용', value: String(p.message ?? '-') },
           { label: '보낸 사람', value: String(p.sentBy ?? '-') },
         ],
-        link: typeof p.link === 'string' && p.link.startsWith('/') ? p.link : '/notifications',
+        link: isAppPath(p.link) ? p.link : '/notifications',
         recipients,
         exclude: [String(p.sentBy ?? '')].filter(Boolean),
         requirementIds: [],

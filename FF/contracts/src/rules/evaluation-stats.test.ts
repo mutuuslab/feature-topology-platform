@@ -39,7 +39,10 @@ describe('집계 — 평가·활성·비활성·분기값 횟수(FR-OPD-001-005~
     expect(s.bySource.map((x) => [x.source, x.count])).toEqual([['OFREP', 42], ['VEHICLE_SDK', 5]]);
     expect(s.byApp[0]).toEqual({ appName: 'ivi-app', environment: 'production', source: 'OFREP', count: 42, lastDay: '2026-11-06' });
     expect(s.byFlag.map((f) => f.flagKey)).toEqual(['care_00022_alert', 'care_00022_param']);
-    expect(s.daily).toEqual([{ day: '2026-11-05', count: 40, on: 30, off: 10 }, { day: '2026-11-06', count: 7, on: 0, off: 7 }]);
+    // 일별·경로별의 off도 합계와 같은 뜻(비활성만) — Safe Default·오류는 따로 센다(같은 이름이 화면마다 다른 수가 되지 않게)
+    expect(s.daily).toEqual([{ day: '2026-11-05', count: 40, on: 30, off: 10, safeDefault: 0, errors: 0 }, { day: '2026-11-06', count: 7, on: 0, off: 0, safeDefault: 5, errors: 2 }]);
+    expect(s.bySource).toEqual([{ source: 'OFREP', count: 42, on: 30, off: 10, safeDefault: 0, errors: 2 }, { source: 'VEHICLE_SDK', count: 5, on: 0, off: 0, safeDefault: 5, errors: 0 }]);
+    for (const k of ['on', 'off', 'safeDefault', 'errors'] as const) expect(s.daily.reduce((n, d) => n + d[k], 0)).toBe(s.totals[k]);
     expect(s.period).toEqual({ from: '2026-10-24', to: '2026-11-06', days: 14, unit: 'DAY' });
   });
 });

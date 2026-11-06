@@ -10,7 +10,7 @@ import './evaluations.css';
 
 const n = (v: number) => v.toLocaleString('ko-KR');
 
-/** 일별 막대 — 활성(on)·비활성(off+Safe Default+오류) 비율, 값은 글자로도 */
+/** 일별 막대 — 활성(on)과 그 밖(비활성·Safe Default·오류) 비율, 값은 글자로도 */
 function DailyBars({ s }: { s: FeatureEvaluationStats }) {
   const max = Math.max(1, ...s.daily.map((d) => d.count));
   return (
@@ -22,12 +22,12 @@ function DailyBars({ s }: { s: FeatureEvaluationStats }) {
         </span>
         <span>
           <i className="off" />
-          {E.kpi.off}
+          {E.rest}
         </span>
       </p>
       <ol className="ev-days" aria-label={E.daily}>
         {s.daily.map((d) => (
-          <li key={d.day} className="ev-day" aria-label={`${d.day} ${E.kpi.total} ${n(d.count)} · ${E.kpi.on} ${n(d.on)}`}>
+          <li key={d.day} className="ev-day" aria-label={`${d.day} ${E.kpi.total} ${n(d.count)} · ${E.kpi.on} ${n(d.on)} · ${E.kpi.off} ${n(d.off)} · ${E.kpi.safe} ${n(d.safeDefault)} · ${E.col.errors} ${n(d.errors)}`}>
             <span className="ev-day__label">{d.day.slice(5)}</span>
             <span className="ev-bar" style={{ width: `${Math.max(2, (d.count / max) * 100)}%` }}>
               <span className="ev-bar__on" style={{ width: `${d.count ? (d.on / d.count) * 100 : 0}%` }} />

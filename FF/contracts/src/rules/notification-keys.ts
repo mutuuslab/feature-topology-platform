@@ -1,16 +1,26 @@
 // 알림 범주·심각도·수신자 스키마·알림 이벤트 목록 — notification.ts(규칙표)와 notification-rules.ts·상단바 종이 함께 쓴다.
 // 규칙표(notification.ts)를 읽지 않고도 쓸 수 있게 따로 둔다 — 서로 읽는 순환을 피하고, 첫 화면 묶음에 규칙표가 실리지 않는다.
 import { z } from 'zod';
-import { ROLES } from '../enums';
+import { ROLES, type Role } from '../enums';
 
-/** 수신자 스키마 — 직접 보내기·수신자 규칙 화면이 쓴다(개인 계정·플랫폼 역할·Feature Owner 팀) */
+/** 수신자 역할 — 사람 역할만(차량·시스템 역할에는 알림을 받는 계정이 없다). access HUMAN_ROLES와 같다 — 첫 화면 묶음에 access를 싣지 않게 값으로 */
+const RECIPIENT_ROLES = ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM') as [Role, ...Role[]];
+
+/** 수신자 스키마 — 직접 보내기·수신자 규칙 화면이 쓴다(개인 계정·사람 역할·Feature Owner 팀) */
 export const RecipientSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('user'), id: z.string().trim().min(2).max(80) }).strict(),
-  z.object({ kind: z.literal('role'), role: z.enum(ROLES) }).strict(),
+  z.object({ kind: z.literal('role'), role: z.enum(RECIPIENT_ROLES) }).strict(),
   z.object({ kind: z.literal('team'), team: z.string().trim().min(1).max(80) }).strict(),
 ]);
 /** 이벤트 payload에서 온 수신자 확인(직접 보낸 알림) */
 export const isRecipient = (r: unknown): r is z.infer<typeof RecipientSchema> => RecipientSchema.safeParse(r).success;
+
+/**
+ * 앱 안 경로인가 — '/'로 시작하고, 브라우저가 다른 사이트로 읽는 '//'·'/\'와 역슬래시·공백·제어 글자가 없다(열린 리다이렉트 차단).
+ * 직접 보내기 본문 검사·알림 만들기·화면의 링크 그리기가 함께 쓴다.
+ */
+export const APP_PATH_PATTERN = /^\/(?![/\\])[^\s\\\u0000-\u001f\u007f]*$/;
+export const isAppPath = (v: unknown): v is string => typeof v === 'string' && v.length <= 200 && APP_PATH_PATTERN.test(v);
 
 /** 직접 보낸 알림 이벤트 — 보낸 사람이 고른 수신자(payload.recipients) */
 export const NOTIFICATION_SENT_EVENT = 'notification.sent';

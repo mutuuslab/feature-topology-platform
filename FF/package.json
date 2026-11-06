@@ -68,6 +68,7 @@
     "siblings": "node tools/siblings.ts",
     "integration:status": "node tools/integration-status.ts",
     "ext:check": "node tools/ext-check.ts",
+    "audit:verify-export": "node tools/verify-export.ts",
     "ota:reference": "node tools/ota-reference/server.ts",
     "ota:conformance": "node tools/ota-reference/conformance.ts",
     "readiness": "node tools/readiness.ts",

@@ -61,6 +61,39 @@ describe('수신자 지정 알림 보강·오류 이력 (D04-04)', () => {
       expect(got.fields).toEqual([{ label: '내용', value: '점검 중 차량 서명본 발급이 5분 멈춥니다' }, { label: '보낸 사람', value: 'usr-opslead' }]);
       expect(await find(OPSLEAD, 'notification.sent')).toHaveLength(0); // 보낸 사람 본인 제외
     });
+
+    // 하네스 리뷰 회귀 — 열린 리다이렉트·대량 발송·직접 알림 엿보기·받는 사람 없는 발송
+    it('직접 보내기 링크 — 다른 사이트로 읽히는 //·역슬래시 주소는 400', async () => {
+      const base = { title: '점검', message: '점검 안내입니다', recipients: [{ kind: 'role', role: 'OPERATOR' }] };
+      for (const link of ['//evil.example/login', '/\\evil.example']) await http().post('/api/notifications/send').set(OPSLEAD).send({ ...base, link }).expect(400);
+    });
+
+    it('직접 보내기 한도 — 보낸 사람마다 1시간 20건, 넘으면 429(다시 시도 시각), 1시간 뒤 다시 된다. 다른 사람은 영향 없음', async () => {
+      const c = b.get(Clock);
+      const t0 = c.now();
+      const send = (who: Record<string, string>, i: number) => http().post('/api/notifications/send').set(who).send({ title: `안내 ${i}`, message: '대량 발송 시험', recipients: [{ kind: 'role', role: 'FEATURE_AUTHOR' }] });
+      for (let i = 0; i < 20; i++) await send(OPERATOR, i).expect(201);
+      const r = await send(OPERATOR, 20).expect(429);
+      expect(r.body.error.details.retryAfterSec).toBeGreaterThan(0);
+      await send(QUALITY, 0).expect(201);
+      c.set(new Date(t0.getTime() + 61 * 60_000));
+      await send(OPERATOR, 21).expect(201);
+      c.set(t0);
+    });
+
+    it('받는 사람이 보낸 사람 본인뿐이면 400(아무도 받지 않는 알림을 만들지 않는다)', async () => {
+      await http().post('/api/notifications/send').set(OPSLEAD).send({ title: '나에게', message: '나만 받는 알림', recipients: [{ kind: 'user', id: 'usr-opslead' }] }).expect(400);
+    });
+
+    it('직접 보낸 알림에는 추가 수신자 규칙을 둘 수 없다 — 규칙 담당이 남의 직접 알림을 몰래 받아 보지 못한다', async () => {
+      await http().put('/api/notifications/rules/notification.sent').set(OPSLEAD).send({ recipients: [{ kind: 'user', id: 'usr-opslead' }], reason: '모든 직접 알림 사본' }).expect(400);
+      // 예전 판에서 저장된 행이 남아 있어도 직접 알림에는 붙지 않는다
+      b.get<Db>(DB).run("INSERT INTO notification_rule_recipient (event_type, rkey, added_by, added_at) VALUES ('notification.sent', 'user:usr-viewer', 'usr-opslead', '2026-11-06T00:00:00.000Z')");
+      await http().post('/api/notifications/send').set(INTEGRATOR).send({ title: '개별 안내', message: '연계 담당에게만', recipients: [{ kind: 'user', id: 'usr-operator' }] }).expect(201);
+      expect((await find(VIEWER, 'notification.sent')).filter((n: any) => n.title === '개별 안내')).toHaveLength(0);
+      expect((await find(OPERATOR, 'notification.sent')).filter((n: any) => n.title === '개별 안내')).toHaveLength(1);
+      b.get<Db>(DB).run("DELETE FROM notification_rule_recipient WHERE event_type = 'notification.sent'");
+    });
   });
 
   describe('업무 흐름 알림', () => {

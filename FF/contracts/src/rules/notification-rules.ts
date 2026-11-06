@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { ROLE_LABEL, type Role } from '../enums';
 import type { Recipient } from './notification';
 import type { NotificationCategory } from './notification-keys';
-import { NOTIFICATION_SENT_EVENT, RecipientSchema } from './notification-keys';
+import { APP_PATH_PATTERN, NOTIFICATION_SENT_EVENT, RecipientSchema } from './notification-keys';
 
 /** 규칙이 맥락에서 고르는 수신자(사람·팀) — 역할은 플랫폼 역할 그대로 */
 export const RECIPIENT_TOKEN_LABEL = {
@@ -29,6 +29,8 @@ export interface NotificationRuleSpec {
   /** 기본으로 빼는 계정 */
   excludes?: string;
   requirementIds: string[];
+  /** 추가 수신자를 둘 수 없다 — 직접 보낸 알림은 보낸 사람이 고른 사람만 받는다(규칙으로 남의 직접 알림을 받아 보지 못하게) */
+  fixed?: true;
 }
 
 /** 긴급 차단·복원 승인 칸 역할(access KILL_APPROVER_ROLES와 같다 — 순환 import를 피해 값으로 둔다, 시험이 맞춘다) */
@@ -67,7 +69,7 @@ export const NOTIFICATION_RULE_SPECS: NotificationRuleSpec[] = [
   { event: 'refdb.change.reviewed', name: 'Feature DB 변경 요청 검토 의견', category: 'APPROVAL', recipients: ['REFDB_ADMIN', 'REQUESTER'], requirementIds: [] },
   { event: 'release.signed', name: 'Release Sign-off 완료', category: 'APPROVAL', recipients: ['OWNER_TEAM', 'RELEASE_MANAGER', 'PRODUCT_APPROVER', 'AUDITOR'], excludes: '서명자 본인', requirementIds: [] },
   { event: 'pki.key.rotated', name: '서명 키 교체', category: 'DEPLOY', recipients: ['GATE_JUDGE', 'SAFETY_OFFICER', 'OPERATOR'], excludes: '교체한 본인', requirementIds: [] },
-  { event: NOTIFICATION_SENT_EVENT, name: '직접 보낸 알림', category: 'DIRECT', recipients: ['CHOSEN'], excludes: '보낸 사람 본인', requirementIds: [] },
+  { event: NOTIFICATION_SENT_EVENT, name: '직접 보낸 알림', category: 'DIRECT', recipients: ['CHOSEN'], excludes: '보낸 사람 본인', requirementIds: [], fixed: true },
 ];
 
 /** 수신자 표시 이름 — 규칙 토큰·역할 */
@@ -95,12 +97,15 @@ export const NotificationSendBody = z
       .string()
       .trim()
       .max(200)
-      .regex(/^\/[^\s]*$/, '앱 안 경로(/로 시작)만 넣을 수 있습니다')
+      .regex(APP_PATH_PATTERN, '앱 안 경로(/로 시작, // 또는 역슬래시 없이)만 넣을 수 있습니다')
       .optional(),
     recipients: z.array(RecipientSchema).min(1).max(20),
   })
   .strict();
 export type NotificationSendBody = z.infer<typeof NotificationSendBody>;
+
+/** 직접 보내기 한도 — 보낸 사람마다 최근 1시간에 이만큼(역할·팀 수신자는 여러 사람에게 퍼진다 — 알림함을 덮는 대량 발송 차단) */
+export const NOTIFICATION_SEND_LIMIT_PER_HOUR = 20;
 
 /** 수신자 규칙 화면 한 줄 — 기본 수신자(규칙) + 추가 수신자(설정) */
 export interface NotificationRuleView extends NotificationRuleSpec {

@@ -216,7 +216,7 @@ export function NotificationRulesScreen() {
                   header: C.action,
                   srHeader: R.edit,
                   cell: (r) => (
-                    <Button variant="ghost" icon="pen" disabled={!perm.ok} reason={perm.hint} onClick={() => setEdit(r)}>
+                    <Button variant="ghost" icon="pen" disabled={!perm.ok || !!r.fixed} reason={r.fixed ? R.fixed : perm.hint} onClick={() => setEdit(r)}>
                       {R.edit}
                     </Button>
                   ),

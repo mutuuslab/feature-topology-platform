@@ -51,6 +51,14 @@ export interface EvalCountRow {
   count: number;
 }
 
+/** 결과별 횟수 — 합계·경로별·flag별·일별이 같은 뜻으로 센다 */
+export interface EvalTally {
+  on: number;
+  off: number;
+  safeDefault: number;
+  errors: number;
+}
+
 /** Feature 평가 운영 데이터 응답 */
 export interface FeatureEvaluationStats {
   featureId: string;
@@ -58,20 +66,29 @@ export interface FeatureEvaluationStats {
   flagKeys: string[];
   totals: { evaluations: number; on: number; off: number; safeDefault: number; errors: number };
   byVariant: { variant: string; count: number }[];
-  bySource: { source: EvalSource; count: number; on: number; off: number }[];
+  /** 결과 칸(on·off·safeDefault·errors)은 totals와 같은 뜻 — off는 비활성만 */
+  bySource: ({ source: EvalSource; count: number } & EvalTally)[];
   byApp: { appName: string; environment: string; source: EvalSource; count: number; lastDay: string }[];
   byFlag: { flagKey: string; count: number; on: number; off: number; safeDefault: number; errors: number }[];
-  daily: { day: string; count: number; on: number; off: number }[];
+  daily: ({ day: string; count: number } & EvalTally)[];
 }
+
+const tally = (): EvalTally => ({ on: 0, off: 0, safeDefault: 0, errors: 0 });
+const add = (t: EvalTally, r: EvalResult, n: number) => {
+  if (r === 'ON') t.on += n;
+  else if (r === 'OFF') t.off += n;
+  else if (r === 'SAFE_DEFAULT') t.safeDefault += n;
+  else t.errors += n;
+};
 
 /** 집계 칸 → 응답(순수 함수 — 백엔드가 쓰고 시험이 같은 값을 본다) */
 export function summarizeEvaluations(featureId: string, flagKeys: string[], rows: EvalCountRow[], from: string, to: string, days: number): FeatureEvaluationStats {
   const totals = { evaluations: 0, on: 0, off: 0, safeDefault: 0, errors: 0 };
   const variants = new Map<string, number>();
-  const sources = new Map<EvalSource, { count: number; on: number; off: number }>();
+  const sources = new Map<EvalSource, { count: number } & EvalTally>();
   const apps = new Map<string, { appName: string; environment: string; source: EvalSource; count: number; lastDay: string }>();
   const flags = new Map<string, { count: number; on: number; off: number; safeDefault: number; errors: number }>();
-  const daily = new Map<string, { count: number; on: number; off: number }>();
+  const daily = new Map<string, { count: number } & EvalTally>();
   for (const r of rows) {
     const n = r.count;
     totals.evaluations += n;
@@ -80,10 +97,9 @@ export function summarizeEvaluations(featureId: string, flagKeys: string[], rows
     else if (r.result === 'SAFE_DEFAULT') totals.safeDefault += n;
     else totals.errors += n;
     if (r.variant) variants.set(r.variant, (variants.get(r.variant) ?? 0) + n);
-    const s = sources.get(r.source) ?? { count: 0, on: 0, off: 0 };
+    const s = sources.get(r.source) ?? { count: 0, ...tally() };
     s.count += n;
-    if (r.result === 'ON') s.on += n;
-    else s.off += n;
+    add(s, r.result, n);
     sources.set(r.source, s);
     const ak = `${r.appName}|${r.environment}|${r.source}`;
     const a = apps.get(ak) ?? { appName: r.appName, environment: r.environment, source: r.source, count: 0, lastDay: r.day };
@@ -97,10 +113,9 @@ export function summarizeEvaluations(featureId: string, flagKeys: string[], rows
     else if (r.result === 'SAFE_DEFAULT') f.safeDefault += n;
     else f.errors += n;
     flags.set(r.flagKey, f);
-    const d = daily.get(r.day) ?? { count: 0, on: 0, off: 0 };
+    const d = daily.get(r.day) ?? { count: 0, ...tally() };
     d.count += n;
-    if (r.result === 'ON') d.on += n;
-    else d.off += n;
+    add(d, r.result, n);
     daily.set(r.day, d);
   }
   return {

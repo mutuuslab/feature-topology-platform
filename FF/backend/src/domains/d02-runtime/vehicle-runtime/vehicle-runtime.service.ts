@@ -40,7 +40,7 @@ import { FleetRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo } from '../../d01-policy/repos';
 import { TelemetryService } from '../../d04-ops/telemetry-ingest/telemetry.service';
 import { PkiService } from '../../d06-qsec/pki-kms/pki.service';
-import { RuntimeRepo, type VehicleRuntimeState } from '../../d06-qsec/secure-deploy/publication.repo';
+import { PublicationRepo, RuntimeRepo, type VehicleRuntimeState } from '../../d06-qsec/secure-deploy/publication.repo';
 import { GleoAdapter } from '../../../adapters/gleo/gleo.adapter';
 import { VehicleChannelRegistry } from '../vehicle-channel/vehicle-channel';
 
@@ -53,6 +53,15 @@ const TIME_SCALE = Number(process.env.FLEET_SIM_TIME_SCALE ?? 1);
 const SIM_IDLE_MS = Number(process.env.FLEET_SIM_IDLE_MS ?? 1500);
 const SIM_CYCLE_MS = Number(process.env.FLEET_SIM_CYCLE_MS ?? 2000);
 const bootNo = (bootId: string) => Number(/-(\d+)$/.exec(bootId)?.[1] ?? 1);
+
+/**
+ * 시뮬레이터 차량 회신 간격(ms) — 대상이 많으면 마지막 회신도 게시본 기한 안에 들도록 줄인다(기한의 80%까지).
+ * 전시 차량 480대에서 120 ms 간격이면 마지막 회신이 8초 기한 뒤라 대상 차량 대부분이 '미수신'으로 닫혔다.
+ */
+export function simStagger(count: number, windowMs: number, latencyMs = LATENCY, stagger = STAGGER): number {
+  if (count <= 1 || !Number.isFinite(windowMs)) return stagger;
+  return Math.max(0, Math.min(stagger, Math.floor(((windowMs - latencyMs) * 0.8) / (count - 1))));
+}
 
 export const scopeKeyOf = (p: Publication['payload']) => (p.kind === 'POLICY' ? `flag:${p.flagKey}` : `feature:${p.featureId}`);
 
@@ -75,13 +84,15 @@ export class VehicleRuntimeService {
     private readonly gate: PolicyGateService,
     private readonly status: StatusIngestService,
     private readonly channels: VehicleChannelRegistry,
+    private readonly publications: PublicationRepo,
   ) {
     // 내부 시뮬레이터도 전달 어댑터 하나다(sim) — 운영 모드 기본은 실제 채널(pull, RD-OPS-04)
     channels.register({
       id: 'sim',
       description: '내부 차량 시뮬레이터(데모·시험) — 차량 쪽 Guard·적용·회신을 이 프로세스가 대신한다',
       deliver: (pub, vins) => {
-        vins.forEach((vin, i) => this.scheduler.after(LATENCY + i * STAGGER, () => this.receive(vin, pub)));
+        const gap = simStagger(vins.length, Date.parse(pub.deadlineAt) - this.clock.now().getTime());
+        vins.forEach((vin, i) => this.scheduler.after(LATENCY + i * gap, () => this.receive(vin, pub)));
         return { ackOnly: [] };
       },
       // 회신 상태 — 시험용 수동 시계(FF_SCHEDULER=manual)면 시뮬레이터 차량은 시험이 시간을 흘려야 회신한다. 데모 서버가 그 설정이면
@@ -320,6 +331,53 @@ export class VehicleRuntimeService {
     this.runtime.save(s);
   }
 
+  /**
+   * 시동 상태 보고(IF-06) — 원격 명령이 없어도 차량은 시동 때 적용한 정책의 Feature마다 지금 상태를 보고한다(사유 출처 STARTUP).
+   * 명령 회신(emit)과 같은 차량 키·보고 순번. 수신 검사가 전개 Version으로 보는 Version(최신 출시)과 다른 게시본 Feature는 보내지 않는다.
+   * 받아들인 보고 수를 돌려준다.
+   */
+  startupReport(vin: string): number {
+    const s = this.runtime.get(vin);
+    const features = new Map<string, string>();
+    for (const b of Object.values(s.bundles)) features.set(b.policy.featureId, b.policy.featureVersion);
+    let accepted = 0;
+    for (const [featureId, version] of features) {
+      if (this.features.versions(featureId).filter((f) => f.lifecycle === 'RELEASED').at(-1)?.version !== version) continue;
+      const state = (s.featureState[featureId] as GuardState | undefined) ?? 'ACTIVE';
+      const on = state === 'ACTIVE';
+      s.reportCounter = (s.reportCounter ?? 0) + 1;
+      this.runtime.save(s);
+      const epoch = this.hsm.epoch();
+      const now = this.clock.iso();
+      const report: Omit<StatusReportV2, 'state_auth'> = {
+        type: 'status_report',
+        schema_version: '2.0',
+        vehicle_pseudonym: vehiclePseudonym(vin),
+        feature: { id: featureId, version },
+        state,
+        reason: { category: 'OPERATIONAL', source: 'STARTUP' },
+        request_result: 'NONE',
+        vehicle_seq: s.guard?.[featureId]?.lastSeq ?? 0,
+        durable: true,
+        hmi: 'NONE',
+        feature_weight_permille: on ? 1000 : 0,
+        edr_aligned_state: on ? 'AVAILABLE' : s.kills[featureId] ? 'OFF_BY_COMMAND' : 'OFF',
+        received_at: now,
+        applied_at: now,
+        observed_at: now,
+        time_sync: 'SYNCED',
+        offline_since: null,
+        data_category: 'SAFETY_OPERATION',
+        key_epoch: epoch,
+        report_seq: reportSeqOf(bootNo(s.bootId), s.reportCounter),
+        persistence: 'DURABLE',
+      };
+      const state_auth = this.hsm.cmac(vin, epoch, Buffer.from(statusAuthCanonical(report as Record<string, unknown>)));
+      if (this.status.ingest(vin, { ...report, state_auth }, 'SIM').accepted) accepted++;
+    }
+    return accepted;
+  }
+
   /** status_report v2 — 차량 키로 state_auth를 붙여 수신 검사(D04-03)로 보낸다(IF-06) */
   private emit(
     vin: string,
@@ -393,6 +451,9 @@ export class VehicleRuntimeService {
   /** Fleet 실시간 적용 현황 — 차량마다 적용 게시본·Feature 상태·차량 측 값과 서버 판단(어긋남 표시) */
   /** fleet: FLEET = 등록 차량(운영 PRODUCTION·시연 DEMO — 5년 운영 수신 표본 제외, 화면·지도는 표본을 성향·가중치로 따로 본다), ALL = 표본 포함 */
   async fleetStatus(fleet: 'FLEET' | 'ALL' = 'FLEET') {
+    // flag마다 마지막으로 내보낸 정책 게시본의 대상 — 대상인데 꾸러미가 없는 flag만 '미수신'(pending), 대상이 아닌 flag는 해당 없음
+    const targeted = new Map<string, Set<string>>();
+    for (const p of this.publications.list({ kind: 'POLICY', status: 'DISPATCHED' })) if (p.payload.flagKey && !targeted.has(p.payload.flagKey)) targeted.set(p.payload.flagKey, new Set(p.payload.targets));
     const items = [];
     for (const v of this.fleet.vehicles()) {
       if (fleet === 'FLEET' && v.fleet === 'SAMPLE') continue;
@@ -414,6 +475,7 @@ export class VehicleRuntimeService {
           server: e.server && { value: e.server.value, reason: e.server.reason },
           drift: e.drift,
         })),
+        pending: [...targeted].filter(([k, vins]) => vins.has(v.vin) && !s.bundles[k]).map(([k]) => k).sort(),
         last: s.log.at(-1) ?? null,
       });
     }

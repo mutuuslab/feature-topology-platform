@@ -166,3 +166,9 @@ export function roParticle(word: string): '으로' | '로' {
   const jong = (c - 0xac00) % 28;
   return jong === 0 || jong === 8 ? '로' : '으로';
 }
+
+/** 부서 전환 — 역할이 바뀌면 알린다(P4-9) */
+export const deptNotice = {
+  changed: (from: string, to: string) => `역할이 ${from} → ${to}(으)로 바뀌었습니다`,
+  restored: (to: string) => `전체 보기 — 원래 역할 ${to}(으)로 돌아왔습니다`,
+};

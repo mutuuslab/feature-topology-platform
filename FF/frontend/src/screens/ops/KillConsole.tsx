@@ -56,7 +56,7 @@ import {
   type RuleItem,
 } from '../../design';
 import { usePermission, when } from '../shared';
-import { nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, type Delivery } from './shared';
+import { evidenceLabel, nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, type Delivery } from './shared';
 import { KillBulkPreview } from '../ads/BulkPreviews';
 import { adsChange } from '../../copy/ads-change';
 
@@ -339,9 +339,13 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
               </option>
             ))}
           </Select>
-          <Field label={K.reasonCode}>
-            <input className="ds-input ds-input--mono" value={code} onChange={(e) => setCode(e.target.value.trim().toUpperCase())} />
-          </Field>
+          <Select label={K.reasonCode} value={code} onChange={(e) => setCode(e.target.value)}>
+            {Object.entries(K.reasonCodes).map(([c, label]) => (
+              <option key={c} value={c} title={c}>
+                {label}
+              </option>
+            ))}
+          </Select>
           {safetyF2 && (
             <>
               <Field label={K.recall}>
@@ -370,7 +374,11 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
       </div>
       <DangerConfirm
         open={confirm}
-        title={`${K.create} — ${featureId}`}
+        title={
+          <>
+            {K.create} — <span className="ds-mono">{featureId}</span>
+          </>
+        }
         body={K.confirmBody}
         confirmWord={featureId}
         actionLabel={K.issue}
@@ -576,6 +584,22 @@ function KillTimeline({ id }: { id: string }) {
   );
 }
 
+/** 회신 요약 한 줄 — 반영 n/대상 m · 미수신(회신 없음) · 재전송(전달 작업 다시 보내기). 전달 작업이 없는 채널이면 재전송은 빼고 */
+function ReplySummary({ d, kind }: { d: Delivery; kind: 'KILL' | 'RESTORE' }) {
+  const pub = useApi<{ delivery?: { attempts: number } | null }>('publicationDetail', { params: { id: d.publicationId } });
+  const missing = d.nodes.filter((n) => n.reason.split(':')[0] === 'NO_REPORT').length;
+  const attempts = pub.data?.delivery?.attempts;
+  const R = CT.reply;
+  return (
+    <p className="ds-kill-reply" role="status" data-testid="kill-reply-summary" data-done={d.denominator > 0 && d.confirmed >= d.denominator ? '' : undefined}>
+      <strong>{R.title[kind]}</strong>
+      <span>{R.applied(d.confirmed, d.denominator)}</span>
+      <span data-warn={missing ? '' : undefined}>{R.missing(missing)}</span>
+      {attempts !== undefined && <span>{R.retries(Math.max(0, attempts - 1))}</span>}
+    </p>
+  );
+}
+
 /** 긴급 권한(Kill 발행)의 24시간 사후 독립 검토 (FFG-PLT-016) */
 function PostReview({ id }: { id: string }) {
   const q = useApi<{ items: { killId: string; due: string; status: 'REVIEWED' | 'PENDING' | 'OVERDUE'; review: any; issuedAt: string; featureId: string; requestedBy: string; approvers: string[] }[] }>('killPostReviews');
@@ -618,7 +642,7 @@ function RestoreStages({ k }: { k: Kill }) {
       columns={[
         { key: 'n', header: C.no, cell: (s) => <span className="ds-mono">{s.no}</span> },
         { key: 'c', header: C.cohort, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.cohort.map((vin, i) => <span key={vin}>{i > 0 ? ', ' : ''}<span className="ds-nowrap">{vin}</span></span>)}</span> },
-        { key: 'e', header: C.evidence, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.evidenceRef ?? '—'}</span> },
+        { key: 'e', header: C.evidence, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }} title={s.evidenceRef ?? undefined}>{s.evidenceRef ? evidenceLabel(s.evidenceRef) : '—'}</span> },
         { key: 'p', header: C.pub, cell: (s) => <Link className="ds-mono ds-nowrap" to={`/deployments/${s.publicationId}`}>{s.publicationId}</Link> },
       ]}
     />
@@ -657,7 +681,7 @@ function RestoreForm({ k }: { k: Kill }) {
         <Select label={CT.restore.evidence} value={picked} onChange={(e) => setEvidence(e.target.value)} style={{ minWidth: 0, width: '100%', maxWidth: '100%' }} title={picked} data-testid="restore-evidence">
           {options.map((e) => (
             <option key={e.evidenceRef} value={e.evidenceRef}>
-              {`${e.gate} · ${e.featureVersion} · ${e.evidenceRef}`}
+              {`${e.gate} · ${e.featureVersion} · ${evidenceLabel(e.evidenceRef)}`}
             </option>
           ))}
         </Select>
@@ -706,7 +730,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
   const v2 = k?.version === 2;
   const rr = k?.restoreRequest;
   return (
-    <Drawer open={!!id} title={id ?? ''} onClose={onClose}>
+    <Drawer open={!!id} title={<span className="ds-mono">{id ?? ''}</span>} onClose={onClose}>
       {k && (
         // 좁은 서랍(1366 폭) — 긴 ID·이름은 줄을 바꾸고, 표는 제 칸 안에서 가로로 넘긴다(P4-10)
         // 대상·상태 속성 — 따라하기 판정이 이 기록(Feature·차량·상태)에 묶인다(시드의 다른 차단 기록을 열어 통과하지 않게)
@@ -717,6 +741,8 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
           data-vins={k.vins.join(' ')}
           data-kill-status={k.status}
         >
+          {/* 맨 위 회신 요약 — 아래 표까지 내려가지 않아도 반영·미수신·재전송을 본다(복원이 나갔으면 복원 회신) */}
+          {(k.restore ?? k.delivery) && <ReplySummary d={(k.restore ?? k.delivery)!} kind={k.restore ? 'RESTORE' : 'KILL'} />}
           <KeyValue
             rows={[
               { k: K.col.feature, v: <span className="ds-mono">{k.featureIds.join(', ')}</span> },
@@ -726,7 +752,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
                 v: <span title={k.status}>{k.status === 'ACTIVE' && k.restoredVins?.length ? CT.restore.activeWithRestore(k.restoredVins.length, k.vins.length) : K.status[k.status]}</span>,
                 note: k.releasedAt ? `${personLabel(k.releasedBy ?? '')} · ${when(k.releasedAt)}` : k.expiresAt && k.status === 'REQUESTED' ? `${K.expiresAt} ${when(k.expiresAt)}` : undefined,
               },
-              { k: K.reasonCategory, v: v2 ? `${K.reasonCategories[k.reasonCategory ?? 'SAFETY']} · ${k.reasonCode}` : '—' },
+              { k: K.reasonCategory, v: v2 ? <span title={k.reasonCode}>{`${K.reasonCategories[k.reasonCategory ?? 'SAFETY']} · ${K.reasonCodes[k.reasonCode ?? ''] ?? k.reasonCode}`}</span> : '—' },
               { k: ko.page.reason, v: k.reason },
               ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ? personLabel(k.rejectedBy) : undefined }] : []),
             ]}
@@ -776,7 +802,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
           {k.command && (
             <KeyValue
               rows={[
-                { k: K.command, v: <span className="ds-mono" title={k.command.commandId}>{`${k.command.commandId.slice(0, 8)}…`}</span> },
+                { k: K.command, v: <span className="ds-mono" title={`kill_command v2 · ${k.command.commandId}`}>{`${k.command.commandId.slice(0, 8)}…`}</span> },
                 { k: K.commandSeq, v: <span className="ds-mono">{k.command.commandSeq}</span>, note: `${K.kid} ${k.command.kid}` },
               ]}
             />
@@ -789,9 +815,9 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               rowKey={(e) => `${e.request}-${e.scope.vehicle_ids[0]}`}
               columns={[
                 { key: 'v', header: K.envCol.vin, cell: (e) => <span className="ds-mono ds-nowrap">{e.scope.vehicle_ids[0]}</span> },
-                { key: 'r', header: K.envCol.request, cell: (e) => <span className="ds-mono">{e.request}</span> },
-                { key: 's', header: K.envCol.seq, cell: (e) => <span className="ds-mono ds-nowrap">{`e${e.vehicle_auth.key_epoch} · #${e.vehicle_auth.vehicle_seq}`}</span> },
-                { key: 'a', header: K.envCol.auth, cell: (e) => <span className="ds-mono" title={e.vehicle_auth.cmd_auth}>{`${e.vehicle_auth.cmd_auth.slice(0, 8)}…`}</span> },
+                { key: 'r', header: K.envCol.request, cell: (e) => <span title={e.request}>{K.envRequest[e.request] ?? e.request}</span> },
+                { key: 's', header: K.envCol.seq, cell: (e) => <span className="ds-mono ds-nowrap" title={`key_epoch ${e.vehicle_auth.key_epoch} · vehicle_seq ${e.vehicle_auth.vehicle_seq}`}>{K.envSeq(e.vehicle_auth.key_epoch, e.vehicle_auth.vehicle_seq)}</span> },
+                { key: 'a', header: K.envCol.auth, cell: (e) => <span className="ds-mono" title={`cmd_auth ${e.vehicle_auth.cmd_auth}`}>{`${e.vehicle_auth.cmd_auth.slice(0, 8)}…`}</span> },
               ]}
             />
             </div>
@@ -815,7 +841,6 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
           )}
           {!!k.restoreStages?.length && <RestoreStages k={k} />}
           {k.command && <KillTimeline id={k.killId} />}
-          {k.command && <PostReview id={k.killId} />}
           {k.status === 'ACTIVE' && v2 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-tour="kill-restore">
               <h3 className="ds-eyebrow ds-eyebrow--ko">
@@ -827,7 +852,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               <RestoreOutlookNote k={k} />
               {rr?.status === 'REQUESTED' ? (
                 <>
-                  {rr.evidenceRef && <p className="ds-field__hint">{CT.restore.requested(rr.evidenceRef, rr.cohort?.length ?? k.vins.length)}</p>}
+                  {rr.evidenceRef && <p className="ds-field__hint" title={rr.evidenceRef}>{CT.restore.requested(evidenceLabel(rr.evidenceRef), rr.cohort?.length ?? k.vins.length)}</p>}
                   <ApprovalBox
                     requestedBy={rr.requestedBy}
                     approvals={rr.approvals}
@@ -869,6 +894,8 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               </Button>
             </div>
           )}
+          {/* 사후 검토는 발령 뒤 24시간 안의 독립 검토 — 차단 중이면 복원(지금 할 일) 아래에 둔다 */}
+          {k.command && <PostReview id={k.killId} />}
         </div>
       )}
     </Drawer>
@@ -877,7 +904,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
 
 export function KillConsole() {
   const q = useApi<{ items: Kill[] }>('killRequests');
-  usePlatformEvents(['kill.', 'publication.', 'vehicle.readback'], ['killRequests', 'killDetail', 'killEnvelopes']);
+  usePlatformEvents(['kill.', 'publication.', 'vehicle.readback', 'ota.job.'], ['killRequests', 'killDetail', 'killEnvelopes', 'publicationDetail']);
   // 상세는 라우터 검색 파라미터로 연다 — 검토함 등 앱 안 이동(/ops/kill?id=…)에서도 열린다
   const [sp] = useSearchParams();
   const [open, setOpen] = useState<string | null>(() => sp.get('id'));

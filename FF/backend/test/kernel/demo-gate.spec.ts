@@ -29,7 +29,8 @@ const READ_ALL = '/api/notifications/read-all';
 
 async function boot(env: Record<string, string>) {
   for (const k of ['FF_ENV', 'FF_CLOCK_AT', 'FF_SCHEDULER', 'FF_DEMO_GATE', 'FF_AUTH', 'FF_PUBLIC_URL', 'FF_SESSION_SECRET', 'FF_TRUST_PROXY']) delete process.env[k];
-  Object.assign(process.env, env);
+  // 전시 빈 화면 채우기는 이 시험과 무관 — 부팅이 채우기를 기다리지 않게(통합 12단계)
+  Object.assign(process.env, { FF_SHOWCASE_FILL: '0' }, env);
   const app = await createApp({ logger: false });
   await app.init();
   return app;

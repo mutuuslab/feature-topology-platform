@@ -14,6 +14,16 @@ jobs:
     permissions:
       contents: read
     steps:
+      # 공개 사이트 접속 게이트(FF/functions/_middleware.ts) — 서명 키가 없으면 빌드 전에 멈춘다(게이트 없이 열리지 않게).
+      # 설정: GitHub 저장소 비밀 FF_GATE_SECRET(32자 이상, 예: openssl rand -base64 48). 아래 'Access gate secret'이 Pages 비밀로 옮긴다.
+      - name: Require access gate secret
+        env:
+          FF_GATE_SECRET: ${{ secrets.FF_GATE_SECRET }}
+        run: |
+          if [ "${#FF_GATE_SECRET}" -lt 32 ]; then
+            echo "::error::FF_GATE_SECRET(32자 이상)이 저장소 비밀에 없습니다 — docs/20-architecture/20-91-install-guide.md §2.2"
+            exit 1
+          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -39,8 +49,32 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx --yes wrangler@4.152.0 pages project create feature-topology --production-branch=main || true
-      - name: Deploy
+      # 서명 키를 Pages 운영 환경 비밀로 넣는다(매 배포 전 — 바뀐 키는 다음 배포부터 쓰인다). 값은 표준 입력으로만 넘긴다.
+      - name: Access gate secret
+        working-directory: FF
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx --yes wrangler@4.152.0 pages deploy FF/frontend/dist --project-name=feature-topology --branch=main
+          FF_GATE_SECRET: ${{ secrets.FF_GATE_SECRET }}
+        run: printf '%s' "$FF_GATE_SECRET" | npx --yes wrangler@4.152.0 pages secret put FF_GATE_SECRET --project-name=feature-topology
+      # FF/에서 올린다 — wrangler pages deploy는 실행 위치의 ./functions(접속 게이트 미들웨어)를 함께 올린다(저장소 루트에서 돌리면 빠진다).
+      - name: Deploy
+        working-directory: FF
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -f functions/_middleware.ts
+          npx --yes wrangler@4.152.0 pages deploy frontend/dist --project-name=feature-topology --branch=main
+      # 게이트가 실제로 막는지 — 로그인 없이 별도 페이지는 302, 스냅샷은 401이어야 한다(200이면 실패).
+      - name: Verify access gate
+        run: |
+          base=https://feature-topology.pages.dev
+          for i in $(seq 1 12); do
+            page=$(curl -s -o /dev/null -w '%{http_code}' "$base/external.html")
+            data=$(curl -s -o /dev/null -w '%{http_code}' "$base/api-snapshot/release.json")
+            if [ "$page" = 302 ] && [ "$data" = 401 ]; then echo "gate ok (external.html $page, api-snapshot $data)"; exit 0; fi
+            echo "기다림 $i: external.html $page, api-snapshot $data"; sleep 10
+          done
+          echo "::error::공개 사이트가 로그인 없이 열린다 — functions가 올라갔는지·FF_GATE_SECRET 확인"
+          exit 1

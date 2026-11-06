@@ -7,8 +7,10 @@ import { createContext, lazy, Suspense, useCallback, useContext, useEffect, useR
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { apiQuery } from '../../../api/hooks';
 import { ROLE_LABEL } from '@ff/contracts';
 import { dashboard } from '../../../copy/dashboard';
+import { loadWorkflows } from '../../../data/workflows';
 import { ErrorNote, PageHeader, type KeyMessageSpec } from '../../../design';
 import { gadgetTitle, typeDef, type BodyModule } from './catalog';
 import { Glyph, LayoutThumb } from './icons';
@@ -22,15 +24,32 @@ const G = B.gadget;
 const MIME = 'application/x-ff-gadget';
 
 // ── 필요할 때 읽는 묶음 ──
-const BODIES: Record<BodyModule, LazyExoticComponent<ComponentType<GadgetBodyProps>>> = {
-  lists: lazy(() => import('./bodies-lists')),
-  charts: lazy(() => import('./bodies-charts')),
-  ops: lazy(() => import('./bodies-ops')),
+const BODY_LOADERS: Record<BodyModule, () => Promise<{ default: ComponentType<GadgetBodyProps> }>> = {
+  lists: () => import('./bodies-lists'),
+  charts: () => import('./bodies-charts'),
+  ops: () => import('./bodies-ops'),
 };
+const BODIES: Record<BodyModule, LazyExoticComponent<ComponentType<GadgetBodyProps>>> = { lists: lazy(BODY_LOADERS.lists), charts: lazy(BODY_LOADERS.charts), ops: lazy(BODY_LOADERS.ops) };
 const GadgetConfigForm = lazy(() => import('./GadgetConfig'));
 const Directory = lazy(() => import('./Directory'));
 const DashboardDialog = lazy(() => import('./DashboardDialogs'));
-const OperationOverview = lazy(() => import('./ReadOnlyOperationOverview'));
+const loadOverview = () => import('./ReadOnlyOperationOverview');
+const OperationOverview = lazy(loadOverview);
+
+let homePreloaded = false;
+/**
+ * 홈 첫 렌더 — 운영 현황 요약 조회와 가젯 본문·업무 절차 지도 묶음을 판이 그려지기를 기다리지 않고 함께 받기 시작한다.
+ * 예전에는 홈 묶음 → 가젯 묶음 → 데이터 → 절차 지도 묶음 → 업무 절차 정의가 차례로 받아져 느린 망에서 왕복이 4~5번 쌓였다.
+ * 렌더 중에 부른다(지연 묶음 import도 렌더 중이라 그보다 먼저) — 페이지마다 한 번
+ */
+function usePreloadHome(role: string) {
+  const qc = useQueryClient();
+  if (homePreloaded) return;
+  homePreloaded = true;
+  const first = [qc.prefetchQuery(apiQuery('operationSummary', {}, role)), loadOverview(), ...Object.values(BODY_LOADERS).map((load) => load())];
+  // 절차 지도(업무 절차 정의 약 40 KB)는 첫 화면 묶음·요약을 받은 다음 — 느린 망에서 함께 받으면 운영 현황이 늦게 보였다
+  void Promise.allSettled(first).then(() => Promise.allSettled([import('../ProcedureMapPanel'), loadWorkflows()]));
+}
 
 export interface GadgetBodyProps {
   gadget: Gadget;
@@ -160,6 +179,7 @@ function MenuGroup({ label, children }: { label: string; children: ReactNode }) 
 // ───────── 대시보드 화면 ─────────
 
 export function DashboardPage({ role, message, lead }: { role: string; message: KeyMessageSpec; lead?: string }) {
+  usePreloadHome(role);
   const api = useDashboards(role);
   const { current } = api;
   const [editing, setEditing] = useState(false);
@@ -205,7 +225,7 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
   };
 
   const refreshAll = () => {
-    void refreshApis([...Object.values(board.gadgets).flatMap((g) => typeDef(g.type)?.apis(g.config) ?? []), 'fleetRuntime', 'vehicles', 'listPolicies', 'listFeatures', 'publications', 'readbacks', 'integrationCalls']);
+    void refreshApis([...Object.values(board.gadgets).flatMap((g) => typeDef(g.type)?.apis(g.config) ?? []), 'operationSummary', 'fleetRuntime', 'vehicles', 'listPolicies', 'listFeatures', 'publications', 'readbacks', 'integrationCalls']);
     setRefreshedAt(Date.now());
   };
 
@@ -600,23 +620,50 @@ function Slot({ show, children }: { show: boolean; children: ReactNode }) {
   );
 }
 
-// 가로로 넘치는 본문(절차 지도) — 오른쪽에 더 있으면 data-more를 달아 끝을 흐린다
-function useMoreRight(on: boolean) {
+// 가로로 넘치는 본문(절차 지도) — 오른쪽에 더 있으면 data-more를 달아 끝을 흐린다.
+// 옵저버는 켤 때 한 번만 만들고, 크기 읽기는 프레임 시작(rAF)에서 한 프레임에 한 번·값이 바뀔 때만 속성을 고친다
+// (의존성 없는 effect가 렌더마다 scrollWidth를 읽고 옵저버를 새로 만들어 로그인 직후 홈이 느렸다)
+export function useMoreRight(on: boolean) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!on || !el) return;
-    const check = () => el.toggleAttribute('data-more', el.scrollWidth - el.clientWidth - el.scrollLeft > 2);
-    check();
-    el.addEventListener('scroll', check, { passive: true });
-    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(check);
-    ro?.observe(el);
-    if (el.firstElementChild) ro?.observe(el.firstElementChild);
-    return () => {
-      el.removeEventListener('scroll', check);
-      ro?.disconnect();
+    let frame = 0;
+    let more: boolean | null = null;
+    const check = () => {
+      frame = 0;
+      const next = el.scrollWidth - el.clientWidth - el.scrollLeft > 2;
+      if (next !== more) el.toggleAttribute('data-more', (more = next));
     };
-  });
+    const schedule = () => {
+      if (frame) return;
+      if (typeof requestAnimationFrame === 'undefined') check();
+      else frame = requestAnimationFrame(check);
+    };
+    // 처음 읽기도 다음 프레임에 — 커밋 도중에 읽으면 그리기 전에 레이아웃을 한 번 더 한다
+    schedule();
+    el.addEventListener('scroll', schedule, { passive: true });
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedule);
+    let child = el.firstElementChild;
+    ro?.observe(el);
+    if (child) ro?.observe(child);
+    // 본문은 지연 묶음 — 자리 표시가 본문으로 바뀌면 새 첫 자식을 본다
+    const mo = typeof MutationObserver === 'undefined' ? null : new MutationObserver(() => {
+      if (el.firstElementChild === child) return;
+      if (child) ro?.unobserve(child);
+      child = el.firstElementChild;
+      if (child) ro?.observe(child);
+      schedule();
+    });
+    mo?.observe(el, { childList: true });
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      el.removeEventListener('scroll', schedule);
+      ro?.disconnect();
+      mo?.disconnect();
+      el.removeAttribute('data-more');
+    };
+  }, [on]);
   return ref;
 }
 

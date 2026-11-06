@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FeatureRefRole } from '@ff/contracts';
 import { canAct } from '../../../api/actor';
-import { STATIC_MODE } from '../../../api/client';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
@@ -182,10 +181,8 @@ export default function ProposeScreen() {
     [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
   );
 
-  // 공개 데모(읽기 전용)는 역할과 상관없이 등록하지 못한다 — '작성자만' 안내는 실제로 역할이 다를 때만
-  const message = STATIC_MODE
-    ? { tone: 'neutral' as const, text: P.key.readOnly }
-    : !canAct(perm.role, ['FEATURE_AUTHOR'])
+  // '작성자만' 안내는 실제로 역할이 다를 때만 — 공개 데모도 브라우저 안 시연 데이터로 등록한다(설계 20-60)
+  const message = !canAct(perm.role, ['FEATURE_AUTHOR'])
     ? { tone: 'neutral' as const, text: P.key.cannot }
     : done
       ? { tone: 'warn' as const, text: P.key.done }
@@ -355,7 +352,7 @@ export default function ProposeScreen() {
 
             <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <Button onClick={() => setStep(1)}>{P.changeRefs}</Button>
-              <Button variant="primary" data-ui="createFeature" disabled={!!why || STATIC_MODE || create.isPending} reason={why} title={perm.hint} onClick={() => submit(false)}>
+              <Button variant="primary" data-ui="createFeature" disabled={!!why || create.isPending} reason={why} title={perm.hint} onClick={() => submit(false)}>
                 {P.submit}
               </Button>
             </div>

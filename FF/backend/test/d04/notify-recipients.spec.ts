@@ -143,14 +143,15 @@ describe('수신자 지정 알림 보강·오류 이력 (D04-04)', () => {
       const c = b.get(Clock);
       c.set(new Date(c.now().getTime() + 25 * 3600_000));
       const k = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '단계 확대 중 결함', confirm: 'FEAT-00022' });
-      const coordinator = actor('usr-coordinator', 'RELEASE_MANAGER');
-      expect((await http().post(`/api/policies/${pid}/rollout`).set(coordinator).send({ basisPoints: 5000, reason: '확대' }).expect(422)).body.error.message).toMatch(new RegExp(`차단 ${k.killId}`));
+      // 확대 요청자는 운영자 — 시드 배포 기록의 배포자가 usr-coordinator라(통합 12단계, static 시드) 배포자 본인은 효력을 넓힐 수 없다(SAME_AS_DEPLOYER → 403)
+      const requester = OPERATOR;
+      expect((await http().post(`/api/policies/${pid}/rollout`).set(requester).send({ basisPoints: 5000, reason: '확대' }).expect(422)).body.error.message).toMatch(new RegExp(`차단 ${k.killId}`));
       const n = (await find(OWNER, 'rollout.halt-required'))[0];
       expect(n).toMatchObject({ category: 'DEPLOY', severity: 'CRITICAL', requirementIds: ['FR-DSV-003-005'] });
       expect(n.fields[0].value).toContain(pid);
       expect(n.fields[1].value).toContain('FEAT-00022');
       expect(n.fields[2].value).toContain(k.killId);
-      expect(await find(coordinator, 'rollout.halt-required')).toHaveLength(1); // 확대를 요청한 사람
+      expect(await find(requester, 'rollout.halt-required')).toHaveLength(1); // 확대를 요청한 사람
     });
   });
 

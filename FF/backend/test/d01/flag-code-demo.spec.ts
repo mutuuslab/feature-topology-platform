@@ -26,7 +26,8 @@ for (const showcase of [false, true]) describe(`시연 픽스처 대사 정합(�
     // 생성기가 읽은 시연 기본 환경과 같게 — 개발비 데모 Feature가 먼저 번호를 받아야 전시 Feature 번호(FEAT-00197~)가 같다
     ({ app, http } = await bootApp({ at: plans.asOf, demoActivity: true, costDemo: true, flagCode: DIR }));
     c = FlagCoverageResponse.parse((await http().get('/api/flag-code/coverage').expect(200)).body);
-  });
+    // 생성기와 같은 데이터 — 전시 빈 화면 채우기(시연 주인공 단계 배포·차단)까지 기다린다(메모리 DB 부팅 30초 넘음, 통합 12단계)
+  }, 120_000);
 
   it('픽스처의 모든 스캔이 시연 공개키 서명 검증을 통과해 시드된다', async () => {
     expect((await http().get('/api/flag-code/scans?status=REJECTED').expect(200)).body.items).toEqual([]);
@@ -69,7 +70,7 @@ describe('평가 모니터링 — 정시가 아닌 시각에 띄워도 1h·24h·
   let app: INestApplication;
   let http: () => any;
   beforeAll(async () => {
-    ({ app, http } = await bootApp({ at: new Date(Date.parse(plans.asOf) + 37 * 60_000).toISOString(), demoActivity: true, costDemo: true, flagCode: DIR }));
+    ({ app, http } = await bootApp({ at: new Date(Date.parse(plans.asOf) + 37 * 60_000).toISOString(), demoActivity: true, costDemo: true, flagCode: DIR, showcaseFill: false }));
   });
   afterAll(async () => app?.close());
 

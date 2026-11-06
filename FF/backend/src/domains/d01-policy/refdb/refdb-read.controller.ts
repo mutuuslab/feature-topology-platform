@@ -9,8 +9,11 @@ export class RefdbReadController {
   constructor(private readonly read: RefdbReadService) {}
 
   @Get('refs')
-  list(@CurrentActor() actor: Actor, @Query('q') q?: unknown, @Query('domain') domain?: unknown, @Query('component') component?: unknown, @Query('status') status?: unknown, @Query('offset') offset?: unknown, @Query('limit') limit?: unknown, @Query('source') source?: unknown) {
-    return this.read.list({ q, domain, component, status, offset, limit, source }, actor.role);
+  // 다중 선택(쉼표 목록, REF_MULTI_QUERY)도 이름을 하나씩 받는다 — 하네스(refdb-harness.spec)가 처리기 질의 이름 = routes.ts query를 맞춰 본다
+  list(@CurrentActor() actor: Actor, @Query('q') q?: unknown, @Query('domain') domain?: unknown, @Query('component') component?: unknown, @Query('status') status?: unknown, @Query('offset') offset?: unknown, @Query('limit') limit?: unknown, @Query('source') source?: unknown,
+    @Query('statuses') statuses?: unknown, @Query('asils') asils?: unknown, @Query('lifecycles') lifecycles?: unknown, @Query('swStacks') swStacks?: unknown, @Query('tshirts') tshirts?: unknown, @Query('vehicleTypes') vehicleTypes?: unknown, @Query('regions') regions?: unknown) {
+    const multi: Record<string, unknown> = { statuses, asils, lifecycles, swStacks, tshirts, vehicleTypes, regions };
+    return this.read.list({ q, domain, component, status, offset, limit, source, multi }, actor.role);
   }
 
   @Get('refs/:refId')

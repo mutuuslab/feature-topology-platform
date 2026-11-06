@@ -95,7 +95,7 @@ export const procedures = {
     mine: (n: number) => `내 차례 ${n}`,
     next: '다음',
     all: '업무 절차 전체',
-    noSummary: '진행률은 플랫폼 백엔드에 연결되면 표시됩니다 — 절차 구조는 지금도 볼 수 있습니다.',
+    noSummary: '진행률이 아직 없습니다 — 절차 구조는 지금도 볼 수 있습니다.',
   },
   guide: {
     eyebrow: '표준 따라하기',
@@ -126,7 +126,6 @@ export const procedures = {
     submit: '완료로 표시',
     done: '활동을 완료로 표시했습니다.',
     undone: '완료를 취소했습니다.',
-    localOnly: '백엔드에 연결되지 않아 이 브라우저에만 저장됩니다.',
     close: '닫기',
   },
 };

@@ -1,8 +1,5 @@
-.ref-explorer { padding: var(--sp-4); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface-3); margin-block: var(--sp-4); }
-.ref-explorer__filters { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: start; }
-.ref-explorer details { min-width: 180px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-sm); }
-.ref-explorer summary { padding: var(--sp-3); color: var(--accent); font-weight: 600; cursor: pointer; }
-.ref-explorer fieldset { border: 0; padding: var(--sp-3); display: grid; gap: var(--sp-2); }
-.ref-explorer legend { font-size: var(--fs-sm); }
-.ref-explorer label { display: flex; gap: var(--sp-2); align-items: center; font-size: var(--fs-sm); }
-.ref-explorer > p { margin-block: var(--sp-3) 0; }
+/* Feature DB 탐색판 — 표 위 검색·상태 줄(탐색판 자체는 design/workbook.css) */
+.ref-wb__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); min-width: 0; }
+.ref-wb__search { flex: 1 1 240px; max-width: 420px; min-width: 0; }
+.ref-wb__bar .ds-seg { flex-wrap: wrap; }
+.ref-wb__bar > p { flex-basis: 100%; margin: 0; }

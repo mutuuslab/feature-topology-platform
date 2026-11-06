@@ -25,7 +25,7 @@ export const catalogExperience = {
   play: '상품 설명 재생', pause: '상품 설명 일시정지', replay: '처음부터 설명',
   playing: '적용 구조 설명 중', paused: '설명 일시정지', hidden: '화면이 숨겨져 설명을 멈췄습니다.',
   reduced: '움직임 줄이기 설정에 따라 적용 구조를 정적으로 표시합니다.',
-  approval: '승인과 다음 담당', createdBy: '상품 작성자', configBy: '구성 승인자', releaseBy: '고객 출시 승인자', noApproval: '승인 기록 없음',
+  approval: '승인과 다음 담당', createdBy: '상품 작성자', configBy: '구성 승인자', releaseBy: '고객 출시 승인자', noApproval: '승인 기록 없음', configPending: '구성 승인 전', releasePending: '고객 출시 승인 전',
   next: '다음 업무', configRole: '상품 구성 승인 담당', releaseRole: '고객 출시 승인 담당', productRole: '상품 담당', noNext: '현재 제공된 다음 전이가 없습니다.',
   eligibility: '출시 조건', eligible: '충족', blocked: '보완 필요', configured: '구성 검증',
   theme: { parking: '주차·저속 보조', road: '주행 보조', energy: '에너지·편의', connected: '연결·접근', climate: '공조·열 관리', bundle: 'Feature 구성' },

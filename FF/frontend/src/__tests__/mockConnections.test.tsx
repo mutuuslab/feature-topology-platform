@@ -68,9 +68,9 @@ async function renderNotifications() {
 }
 
 describe('모의 연계 표시 (RD-UX-04)', () => {
-  it('표시 규칙 — live는 표시 없음, 데모는 모의(연결 전), 운영·꺼짐은 연결 안 됨, 상태를 못 읽으면 모의', () => {
+  it('표시 규칙 — live는 표시 없음, 데모의 모의 연계도 표시 없음(D-ALM-17), 운영·꺼짐은 연결 안 됨, 상태를 못 읽으면 모의', () => {
     expect(connectionLabel({ mode: 'live' }, 'production')).toBe('none');
-    expect(connectionLabel({ mode: 'mock' }, 'demo')).toBe('mock');
+    expect(connectionLabel({ mode: 'mock' }, 'demo')).toBe('none');
     expect(connectionLabel({ mode: 'mock' }, 'production')).toBe('disconnected');
     expect(connectionLabel({ mode: 'off' }, 'demo')).toBe('disconnected');
     expect(connectionLabel(null, null)).toBe('mock');
@@ -103,10 +103,11 @@ describe('모의 연계 표시 (RD-UX-04)', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('데모 설치 — 모의 연결은 모의(연결 전)', async () => {
-    stub(status('demo'));
+  it('데모 설치 — 모의 연결을 드러내지 않는다(D-ALM-17, 2026-11-05)', async () => {
+    stub(status('demo', 'mock', 'seamless')); // 데모 서버 기본(presentation seamless) — 'labeled'는 FF_DEMO_LABELS=on
     renderProbe();
-    await waitFor(() => expect(document.querySelector('[data-testid="probe"] [data-connection="mock"]')).toBeTruthy());
+    await waitFor(() => expect(screen.getByTestId('probe').textContent).toBe(CN.panel.live));
+    expect(document.querySelector('[data-testid="probe"] [data-connection]')).toBeNull();
   });
 
   it('운영 설치 — 같은 모의 연결이 "연결 안 됨"', async () => {

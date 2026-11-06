@@ -132,6 +132,9 @@ export function CatalogAssembly({ product: p, composition }: { product: Product;
 export function CatalogApproval({ product: p, meta, transitions, eligibility }: { product: Product; meta?: ProductMeta; transitions: { ko: string; approval: string | null; to: string }[]; eligibility: { eligible: boolean; reasons: string[] } }) {
   const next = transitions.find((t) => t.approval) ?? transitions[0];
   const role = next?.approval === 'CONFIG' ? C.configRole : next?.approval === 'RELEASE' ? C.releaseRole : C.productRole;
-  const facts = [[C.owner, p.ownerId || C.unknown], [C.createdBy, meta?.createdBy ? personLabel(meta.createdBy) : C.unknown], [C.configBy, meta?.configApprovedBy ? personLabel(meta.configApprovedBy) : C.noApproval], [C.releaseBy, meta?.releaseApprovedBy ? personLabel(meta.releaseApprovedBy) : C.noApproval]];
+  // 아직 그 승인 단계 전인 상품은 '기록 없음'이 아니라 단계 전이다(구성 승인 = 제안 다음, 고객 출시 승인 = 출시)
+  const configDue = p.lifecycle !== 'PROPOSED';
+  const releaseDue = ['RELEASED', 'DEPRECATED', 'RETIRED'].includes(p.lifecycle);
+  const facts = [[C.owner, p.ownerId || C.unknown], [C.createdBy, meta?.createdBy ? personLabel(meta.createdBy) : C.unknown], [C.configBy, meta?.configApprovedBy ? personLabel(meta.configApprovedBy) : configDue ? C.noApproval : C.configPending], [C.releaseBy, meta?.releaseApprovedBy ? personLabel(meta.releaseApprovedBy) : releaseDue ? C.noApproval : C.releasePending]];
   return <section className="catalog-approval" aria-label={C.approval}><h2>{C.approval}</h2><dl>{facts.map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl><p className="catalog-approval__next"><strong>{C.next}</strong>: {next ? `${next.ko} · ${role}` : C.noNext}<br />{C.eligibility}: {eligibility.eligible ? C.eligible : C.blocked}</p></section>;
 }

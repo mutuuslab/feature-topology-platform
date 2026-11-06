@@ -5,13 +5,13 @@
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-06T20:21:31.700Z",
+  "fetched_at": "2026-11-06T20:42:30.916Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-integ\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-06T20:20:46.115Z",
+  "contracts_dist_mtime": "2026-11-06T20:41:40.986Z",
   "ff_git": {
-   "head": "76140266f7507168d032eed047f67842d95b70f2",
-   "dirty_files": 21
+   "head": "73860c7c45f5725f3404e97de6cfd9a51520522d",
+   "dirty_files": 51
   },
   "iam_sha256": "0eb12af87fd5f1db090dcf7fb7016a20c3de93cb00644a2ea57eb323994ad941"
  },

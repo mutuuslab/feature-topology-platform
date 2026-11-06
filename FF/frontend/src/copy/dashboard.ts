@@ -28,7 +28,7 @@ export const dashboard = {
     refreshed: (min: number) => (min < 1 ? '방금 새로 고침' : `${min}분 전 새로 고침`),
     owner: { me: '내 대시보드', system: '모든 역할의 기본 대시보드', of: (id: string) => `소유자 ${id}` },
     shareState: { none: '공유 안 함', to: (roles: string) => `공유: ${roles}` },
-    localNote: '이 데모에서는 대시보드가 이 브라우저에만 저장됩니다',
+    localNote: '대시보드 배치는 이 브라우저에 저장됩니다',
     saving: '저장 중…',
     saved: '저장됨',
     saveFailed: '대시보드를 저장하지 못했습니다',

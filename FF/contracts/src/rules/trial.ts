@@ -288,6 +288,12 @@ export function trialListQuery(f: TrialListFilter): Record<string, string | numb
   return out;
 }
 
+/** 체험 목록 전체 표 한 쪽 — 서버 상한(pageSize ≤ 200). 정적 스냅샷이 출처 ALL을 이 크기로 모두 받아 두면 시연 엔진이 성향·검색·다음 쪽을 서버 규칙으로 계산한다 */
+export const TRIAL_TABLE_PAGE = 200;
+export function trialTableQuery(catalogId: string, page: number): Record<string, string | number> {
+  return { catalogId, source: 'ALL', page, pageSize: TRIAL_TABLE_PAGE };
+}
+
 /** 체험 전환 분석 질의 */
 export function trialAnalyticsQuery(f: { catalogId: string; source: TrialSource; groupBy?: SegmentDimension | '' }): Record<string, string | undefined> {
   return { catalogId: f.catalogId, source: f.source, groupBy: f.groupBy || undefined };

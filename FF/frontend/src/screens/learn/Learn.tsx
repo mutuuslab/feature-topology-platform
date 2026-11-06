@@ -88,7 +88,8 @@ export function LearnHub() {
         label={L.pathLabel}
         value={path}
         onChange={(v) => setSp(v === 'ALL' ? {} : { path: v }, { replace: true })}
-        options={PATHS.map((p) => ({ value: p, label: L.path[p], count: counts[p] }))}
+        // 시나리오가 없는 경로는 내놓지 않는다(정적 공개본은 준비된 시나리오만 싣는다)
+        options={PATHS.filter((p) => counts[p] > 0).map((p) => ({ value: p, label: L.path[p], count: counts[p] }))}
       />
       <ul className="ds-learn-grid">
         {list.map((t) => (

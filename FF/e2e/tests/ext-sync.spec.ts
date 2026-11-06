@@ -26,7 +26,8 @@ test('Feature 상세 연계 탭 — 요구·Epic·MR이 외부 도구 링크로'
   await expect(req).toHaveAttribute('href', /\/external\.html\?system=codebeamer&key=CB-\d+$/);
   await expect(req).toHaveAttribute('target', '_blank');
   await expect(tab.locator('.ds-ext[data-system="JIRA"] a').first()).toHaveAttribute('href', /\/external\.html\?system=jira&key=FFE-\d+$/);
-  await expect(tab.locator('.ds-ext[data-system="GITLAB"] a').first()).toHaveAttribute('href', /\/-\/merge_requests\/\d+$/);
+  // MR도 예약 데모 호스트(gitlab.ff.example)라 GitLab 시연 창으로 — 연결 Feature를 함께 넘긴다
+  await expect(tab.locator('.ds-ext[data-system="GITLAB"] a').first()).toHaveAttribute('href', /\/external\.html\?system=gitlab&key=vehicle%2Ffeature-sw%21\d+&feature=FEAT-00001%402\.1\.0$/);
   // 머리 메타에도 Epic
   await expect(page.locator('.ds-page-header .ds-ext[data-system="JIRA"], header .ds-ext[data-system="JIRA"]').first()).toBeVisible();
 });

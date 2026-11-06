@@ -1,8 +1,8 @@
 // Feature DB 검색(30-95 §6.1) — 순수 함수. 한글·영문 기능명·별칭·사내 용어집·ID를 대소문자·띄어쓰기 무시로 찾고,
-// 도메인·컴포넌트·상태 패싯 수를 센다. 패싯은 자기 축의 필터만 빼고 센다(도메인을 골라도 다른 도메인 수가 보이게 — 단계 선택).
+// 도메인·컴포넌트·상태·다중 선택 축의 패싯 수와 요약을 센다. 패싯은 자기 축의 필터만 빼고 센다(도메인을 골라도 다른 도메인 수가 보이게 — 단계 선택).
 // 검색어는 이 행을 연결한 Registry Feature 이름('스마트 크루즈 컨트롤')과 FF 사내 용어(contracts REF_INTERNAL_GLOSSARY, 'SCC')에도 건다(P1-8).
-import type { FeatureRefRow, RefGlossary, RefStatus } from '@ff/contracts';
-import { internalGlossaryHits, REF_STATUSES } from '@ff/contracts';
+import type { FeatureRefRow, RefExploreFacets, RefExploreSummary, RefGlossary, RefStatus } from '@ff/contracts';
+import { exploreRefs, internalGlossaryHits } from '@ff/contracts';
 
 export const norm = (s: string) => s.replace(/\s+/g, '').toLowerCase();
 
@@ -13,13 +13,12 @@ export interface RefSearchQuery {
   status?: RefStatus;
   /** 이 출처를 쓰는 행만(출처 점검 '개정 있음' → 영향 행) */
   source?: string;
+  /** 다중 선택(쉼표 목록) — statuses·asils·lifecycles·swStacks·tshirts·vehicleTypes·regions(contracts REF_EXPLORE_PARAM) */
+  [multi: string]: string | undefined;
 }
 
-export interface RefFacets {
-  domain: Record<string, number>;
-  component: Record<string, number>;
-  status: Record<RefStatus, number>;
-}
+/** 패싯 — 도메인·컴포넌트·상태 + 출처·분류 트리·다중 선택 축(contracts exploreRefs) */
+export type RefFacets = RefExploreFacets;
 
 /** 검색어 일치 순위 — 0 ID·이름·별칭 완전 일치, 1 앞부분 일치, 2 부분 일치, 3 용어집만 일치. 일치 없음은 null */
 export function matchRank(r: FeatureRefRow, key: string, glossaryRefIds: ReadonlySet<string>): number | null {
@@ -48,42 +47,18 @@ export function featureNameHits(featureNames: ReadonlyMap<string, readonly strin
   return out;
 }
 
-const tally = (rows: readonly FeatureRefRow[], pick: (r: FeatureRefRow) => string) => {
-  const out: Record<string, number> = {};
-  for (const r of rows) out[pick(r)] = (out[pick(r)] ?? 0) + 1;
-  return out;
-};
-
-/** 검색 + 필터 + 순위 정렬(순위 → ID) + 패싯. featureNames — 기준 행 → 연결한 Registry Feature 이름(용어집과 같은 순위 3) */
-export function searchRefs(rows: readonly FeatureRefRow[], glossary: readonly RefGlossary[], q: RefSearchQuery, featureNames: ReadonlyMap<string, readonly string[]> = new Map()): { rows: FeatureRefRow[]; facets: RefFacets } {
+/** 검색 + 필터 + 순위 정렬(순위 → ID) + 패싯 + 요약. featureNames — 기준 행 → 연결한 Registry Feature 이름(용어집과 같은 순위 3) */
+export function searchRefs(rows: readonly FeatureRefRow[], glossary: readonly RefGlossary[], q: RefSearchQuery, featureNames: ReadonlyMap<string, readonly string[]> = new Map()): { rows: FeatureRefRow[]; facets: RefFacets; summary: RefExploreSummary } {
   const key = q.q ? norm(q.q) : '';
   const gl = glossaryHits(glossary, key);
   for (const id of featureNameHits(featureNames, key)) gl.add(id);
-  if (q.source) rows = rows.filter((r) => r.sourceIds.includes(q.source!));
   const hits: { r: FeatureRefRow; rank: number }[] = [];
   for (const r of rows) {
     const rank = matchRank(r, key, gl);
     if (rank !== null) hits.push({ r, rank });
   }
-  const pass = (r: FeatureRefRow, skip: keyof RefSearchQuery | null) =>
-    (skip === 'domain' || !q.domain || r.domain === q.domain) && (skip === 'component' || !q.component || r.component === q.component) && (skip === 'status' || !q.status || r.status === q.status);
-  const matched = hits.map((h) => h.r);
-  const status = Object.fromEntries(REF_STATUSES.map((s) => [s, 0])) as Record<RefStatus, number>;
-  for (const r of matched) if (pass(r, 'status')) status[r.status]++;
-  const facets: RefFacets = {
-    domain: tally(
-      matched.filter((r) => pass(r, 'domain')),
-      (r) => r.domain,
-    ),
-    component: tally(
-      matched.filter((r) => pass(r, 'component')),
-      (r) => r.component,
-    ),
-    status,
-  };
-  const out = hits
-    .filter((h) => pass(h.r, null))
-    .sort((a, b) => a.rank - b.rank || (a.r.refId < b.r.refId ? -1 : a.r.refId > b.r.refId ? 1 : 0))
-    .map((h) => h.r);
-  return { rows: out, facets };
+  // 필터·패싯·요약은 화면 검색(정적 데모)과 같은 함수 — 순위 순으로 넘겨 통과한 행의 순서를 그대로 쓴다
+  hits.sort((a, b) => a.rank - b.rank || (a.r.refId < b.r.refId ? -1 : a.r.refId > b.r.refId ? 1 : 0));
+  const { rows: out, facets, summary } = exploreRefs(hits.map((h) => h.r), q);
+  return { rows: out, facets, summary };
 }

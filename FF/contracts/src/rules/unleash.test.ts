@@ -1,7 +1,7 @@
 // IF-04 Unleash 연계 계획 — P0 개정 기준(배포 정책만, 코호트는 서명 목록, EXCLUDES는 BLOCKED)
 import { describe, expect, it } from 'vitest';
 import type { Policy } from '../schemas/policy';
-import { planUnleash, toUnleashConstraint, unleashContext, unleashDrift } from './unleash';
+import { planUnleash, toUnleashConstraint, unleashContext, unleashDrift, unleashPartial } from './unleash';
 
 const POL: Policy = {
   policyId: 'POL-00002',
@@ -58,6 +58,11 @@ describe('Unleash 계획 (IF-04)', () => {
     const c = { ...POL, rollout: { mode: 'COHORT' as const, basisPoints: 5000, salt: 'S' } };
     expect(planUnleash({ ...base, policy: c, cohortMembers: ['lead-01', 'ego-01'] }).strategies[0].constraints.at(-1)).toMatchObject({ contextName: 'vehicleKey', operator: 'IN', values: ['ego-01', 'lead-01'] });
     expect(planUnleash({ ...base, policy: c, cohortMembers: [] }).enabled).toBe(false);
+    // 회귀(2026-11-06): 승인 범위 전체(ALL)라도 Canary 단계 배포 중이면 지금 효력 범위의 코호트 목록만 고른다 — 빼면 Unleash 전체 ON ≠ 플랫폼 COHORT_MISS
+    const staged = { ...POL, rollout: { mode: 'ALL' as const, basisPoints: 10000, salt: 'S' }, stageBasisPoints: 500 };
+    expect(unleashPartial(staged)).toBe(true);
+    expect(unleashPartial({ ...staged, stageBasisPoints: null })).toBe(false);
+    expect(planUnleash({ ...base, policy: staged, cohortMembers: ['ego-01'] }).strategies[0].constraints.at(-1)).toMatchObject({ contextName: 'vehicleKey', values: ['ego-01'] });
   });
 
   it.each([

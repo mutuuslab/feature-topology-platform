@@ -24,6 +24,8 @@ test('packaging은 실제 백엔드 빌드·스냅샷 생성 뒤 같은 검사�
   assert.ok(build >= 0, '빌드된 백엔드를 로컬 잔존물로 가정하지 않는다');
   assert.ok(snapshot > build, '실제 스냅샷 생성은 백엔드 빌드 성공 뒤에 돈다');
   assert.ok(check > snapshot, 'packaging 검사는 실제 스냅샷 생성 성공 뒤에 돈다');
+  // 공개 스냅샷의 로컬 PC 흔적 검사(2026-11-06) — 생성한 스냅샷 폴더를 그대로 훑는다
+  assert.ok(commands.indexOf('node tools/local-leaks.ts frontend/public/api-snapshot') > snapshot, '스냅샷 생성 뒤 로컬 PC 흔적을 검사한다');
   assert.equal(packaging.full, undefined, '기본 CI verify에서도 실행한다');
   assert.equal(packaging.when, undefined, '스냅샷 부재를 skip하지 않는다');
   assert.ok(STEPS.findIndex((s) => s.id === 'contracts:build') < STEPS.indexOf(packaging), '전체 verify는 contracts를 먼저 빌드한다');

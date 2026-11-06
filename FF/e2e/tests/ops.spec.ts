@@ -57,21 +57,23 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
     await expect(drawer.locator('.ds-approvals__slot[data-done]')).toHaveCount(role === 'quality' ? 1 : 2);
   }
   await expect(drawer).toContainText('차단 중');
-  await expect(drawer).toContainText('서명된 명령');
+  await expect(drawer).toContainText('서명된 차단 명령');
   await expect(drawer.getByRole('table', { name: '차량별 봉투' })).toContainText('lead-01');
   await expect(drawer.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
   await expect(drawer).toContainText('적용 확인');
 
   // Fleet 실시간 적용 현황 — lead-01은 차량 측에서 Safe(차단) 상태
+  // 차단한 flag(care_00022_param) 열로 찾는다 — 다른 차종 전용 flag(GN7 adas_00004_assist 등)가 앞 열에 올 수 있다
   await page.goto('/fleet/live?tab=match'); // 차량×flag 행렬은 '정책 값 대조' 탭(ADS-UI01)
-  const row = page.getByRole('row', { name: /lead-01/ });
-  await expect(row.locator('.ds-fcell').first()).toHaveAttribute('data-v', 'safe');
-  await expect(
-    page
-      .getByRole('row', { name: /KMH-NX4-0001/ })
-      .locator('.ds-fcell')
-      .first(),
-  ).not.toHaveAttribute('data-v', 'safe');
+  const matrix = page.getByRole('table', { name: /차량 × flag/ });
+  await expect(matrix.getByRole('columnheader', { name: 'care_00022_param' })).toBeVisible();
+  const col = (await matrix.getByRole('columnheader').allTextContents()).indexOf('care_00022_param') - 1; // 차량 머리칸(rowheader) 다음부터 칸
+  expect(col).toBeGreaterThan(0);
+  const cellOf = (vin: RegExp) => matrix.getByRole('row', { name: vin }).getByRole('cell').nth(col).locator('.ds-fcell');
+  await expect(cellOf(/lead-01/)).toHaveAttribute('data-v', 'safe');
+  await expect(cellOf(/KMH-NX4-0001/)).not.toHaveAttribute('data-v', 'safe');
+  // 다른 차종 전용 flag 칸은 미수신이 아니다(해당 없음)
+  await expect(matrix.getByRole('row', { name: /lead-01/ })).not.toContainText('미수신');
 
   // 서명 배포 현황 — 차단 게시본은 차단 용도 키로 서명 검증 통과
   await page.goto('/deployments');

@@ -47,12 +47,15 @@ class Renderer {
   private memo = new Map<string, Record<string, string>>();
   private root: Record<string, string>;
   private byId: Map<string, FeatureP>;
+  private prev: Map<string, FeatureP> = new Map();
   constructor(repo: RepoDef, features: FeatureP[]) {
     this.root = repoRootFiles(repo);
     this.byId = new Map(features.map((f) => [f.featureId, f]));
   }
   /** 정책 키 맞춤부터는 현재 계획(키·제어점·이름)으로 그린다 — 고정 이력 커밋은 그대로 둔다 */
   useFeatures(features: FeatureP[]) {
+    // 앞 계획(이력)도 남긴다 — 맞춤 PR이 여럿이면 아직 맞추지 않은 Feature는 이력 키로 그린다(통합 12단계)
+    this.prev = this.byId;
     this.byId = new Map(features.map((f) => [f.featureId, f]));
     this.memo.clear();
   }
@@ -62,8 +65,10 @@ class Renderer {
   }
   private entries(featureId: string, keys: string[]) {
     const f = this.byId.get(featureId)!;
+    const old = this.prev.get(featureId);
     return keys.map((k) => {
-      const e = f.plan.find((x) => x.flagKey === k)!;
+      const e = f.plan.find((x) => x.flagKey === k) ?? old?.plan.find((x) => x.flagKey === k);
+      if (!e) throw new Error(`${featureId}: 계획에 없는 Flag 키 ${k}`);
       return { flagKey: e.flagKey, featureId: e.featureId, version: e.version, controlPoint: e.controlPoint, ordinal: e.ordinal, package: e.package, source: e.source };
     });
   }
@@ -81,7 +86,14 @@ class Renderer {
     if (called.length) out[`${dir}/flag-guards.ts`] = C.flagScaffoldFiles(info, this.entries(s.featureId, called))[1].content;
     if (s.impl) {
       const iv = this.version(s.featureId, s.impl.version);
-      const flags: PlanFlag[] = this.entries(s.featureId, s.impl.keys.filter((k) => !s.omit.includes(k))).map((e) => ({ flagKey: e.flagKey, controlPoint: e.controlPoint as CP, ordinal: e.ordinal }));
+      // 같은 제어점·순번의 키가 둘이면(앞 Version 정책 키 + 승인 전 새 Version의 생성 키 — 백엔드 승인 훅과 같은 계획) 뒤 키는 다음 순번으로 그린다 — 함수 이름이 겹치지 않게(통합 12단계)
+      const used = new Set<string>();
+      const flags: PlanFlag[] = this.entries(s.featureId, s.impl.keys.filter((k) => !s.omit.includes(k))).map((e) => {
+        let ordinal = e.ordinal;
+        while (used.has(`${e.controlPoint}#${ordinal}`)) ordinal++;
+        used.add(`${e.controlPoint}#${ordinal}`);
+        return { flagKey: e.flagKey, controlPoint: e.controlPoint as CP, ordinal };
+      });
       const r: FeatureRender = {
         info: { featureId: s.featureId, version: s.impl.version, name: iv.name, description: iv.description, pkg: s.pkg, safetyRelated: !!iv.asil && iv.asil !== 'QM' },
         flags, removed: new Set(s.removed), dynamic: s.dynamic,

@@ -1,13 +1,13 @@
 // 외부 항목 칩 — GitLab·JIRA·codeBeamer 항목 하나. 도구 이름(글자)·키(새 탭 링크)·외부 상태·동기 상태.
 // 색만으로 구분하지 않는다: 도구는 글자 표지, 동기 문제는 글자와 아이콘으로 함께 보인다. IdChip과 같은 크기 규칙.
-import type { ExtRef } from '@ff/contracts';
+import type { ExtLink, ExtRef } from '@ff/contracts';
 import { extSync } from '../copy/ext-sync';
 import { Icon } from './icons';
 import { externalReferenceUrl, openExternalWindow } from '../external/links';
 
 const X = extSync;
 
-export function ExtRefChip({ r, showStatus = true, title }: { r: Pick<ExtRef, 'system' | 'kind' | 'key' | 'url' | 'status' | 'syncState' | 'stale' | 'title'>; showStatus?: boolean; title?: boolean }) {
+export function ExtRefChip({ r, showStatus = true, title }: { r: Pick<ExtRef, 'system' | 'kind' | 'key' | 'url' | 'status' | 'syncState' | 'stale' | 'title'> & Partial<Pick<ExtLink, 'entityId'>>; showStatus?: boolean; title?: boolean }) {
   const sys = X.system[r.system];
   const trouble = r.syncState !== 'SYNCED' && r.syncState !== 'PENDING';
   return (

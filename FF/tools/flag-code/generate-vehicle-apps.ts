@@ -11,7 +11,7 @@ import { FF } from '../lib.ts';
 import { DEMO_SCAN_KEY_ID, demoScanPrivateKey, signScanPayload, verifyScanPayload } from '../../backend/src/domains/d01-policy/flag-code/scan-signing.ts';
 import { scanGitV2 } from '../flag-sources.ts';
 import {
-  alignEvents, alignmentOf, buildEvaluations, buildEvents, buildFeatures, C, DEMO_FEATURES, NOW, REPO_START, REPOS, UNLEASH_MISMATCH, reconcileAll, renameAnomalies, selectAnomalies,
+  alignEvents, alignmentOf, buildEvaluations, currentPolicyOf, buildEvents, buildFeatures, C, DEMO_FEATURES, NOW, REPO_START, REPOS, reconcileAll, renameAnomalies, selectAnomalies,
   type Alignment, type Anomalies, type FeatureP, type Model, type PolicyM, type PrFacts, type ScanFacts, type UnleashRecord, type VersionM,
 } from './plan.ts';
 import { git, isGeneratedRepo, scanCommits, writeRepo, type ManifestV2, type WrittenRepo } from './repo-writer.ts';
@@ -207,10 +207,11 @@ export function generate(model: Model, outMain: string, outFleet: string, histor
     prFacts.push({ flagKeys: p.pr.flagKeys, state: p.pr.state, createdAt: item.createdAt, ...offset });
   }
 
-  // Unleash 시연 동기화 기록 — 승인·배포 정책만, ivi_00027_detail은 r2(불일치 시연)
-  const unleash: UnleashRecord[] = features.flatMap((f) => f.policies).filter((p) => p.status === 'APPROVED' || p.status === 'DEPLOYED')
+  // Unleash 시연 동기화 기록 — 키의 현재 승인·배포 정책(백엔드 대사와 같은 정책). 의도적 불일치 시연은 없다(통합 12단계: 시연 데이터가 그 Flag를
+  // 실행 중에 다시 배포·동기화해 백엔드가 실제 동기화 결과로 덮는다 — 불일치 시연 Flag는 사용자 결정 대기)
+  const unleash: UnleashRecord[] = features.flatMap((f) => [...new Set(f.allPolicies.map((p) => p.flagKey))].map((k) => currentPolicyOf(f.allPolicies, k)!)).filter((p) => p.status === 'APPROVED' || p.status === 'DEPLOYED')
     .sort((a, b) => a.policyId.localeCompare(b.policyId))
-    .map((p) => ({ flagKey: p.flagKey, policyId: p.policyId, revision: p.flagKey === UNLEASH_MISMATCH.flagKey ? UNLEASH_MISMATCH.revision : p.revision, outcome: 'SYNCED' as const, archived: false, at: '2026-11-05T00:00:00.000Z' }));
+    .map((p) => ({ flagKey: p.flagKey, policyId: p.policyId, revision: p.revision, outcome: 'SYNCED' as const, archived: false, at: '2026-11-05T00:00:00.000Z' }));
   const evaluations = buildEvaluations(features, anomalies);
   const report = reconcileAll(features, model, anomalies, mainScans, prFacts, unleash, evaluations.flags, ['main', 'fleet']);
   const mainOnly = reconcileAll(features, model, anomalies, mainScans, prFacts, unleash, evaluations.flags, ['main']);
@@ -248,7 +249,6 @@ export function generate(model: Model, outMain: string, outFleet: string, histor
         DYNAMIC_KEY: [anomalies.dynamic],
         STALE: anomalies.stale,
         REMOVAL_DUE: [...anomalies.removalDue.map((r) => r.flagKey), ...model.retiring.filter((k) => features.some((f) => f.plan.some((e) => e.flagKey === k)))],
-        UNLEASH_MISMATCH: [UNLEASH_MISMATCH.flagKey],
         SIGNATURE_INVALID_SPIKE: [anomalies.signatureSpike],
       },
     },
@@ -295,7 +295,7 @@ export function expectedStatus(g: Pick<Generated, 'features' | 'anomalies'>, mod
   const naturalRemoval = model.retiring.filter((k) => g.features.some((f) => f.plan.some((e) => e.flagKey === k))).length;
   const prOpenFlags = g.features.filter((f) => g.anomalies.prOpen.some((k) => k.startsWith(f.featureId + '@'))).reduce((s, f) => s + f.plan.length, 0);
   // 코드 없음 3·삭제된 호출 2(selectAnomalies가 보장) — 정책 키 맞춤이 삭제된 호출의 키를 바꾸면 그만큼 코드 없음으로 옮긴다(renameAnomalies)
-  return { PR_OPEN: prOpenFlags, NO_CODE: g.anomalies.noCode.length, CALL_DELETED: g.anomalies.callDeleted.length, UNREGISTERED_KEY: 2, DYNAMIC_KEY: 0, UNLEASH_MISMATCH: 1, STALE: 5, REMOVAL_DUE: 2 + naturalRemoval };
+  return { PR_OPEN: prOpenFlags, NO_CODE: g.anomalies.noCode.length, CALL_DELETED: g.anomalies.callDeleted.length, UNREGISTERED_KEY: 2, DYNAMIC_KEY: 0, UNLEASH_MISMATCH: 0, STALE: 5, REMOVAL_DUE: 2 + naturalRemoval };
 }
 
 export function checkGenerated(g: Generated, model: Model): string[] {
@@ -315,9 +315,9 @@ export function checkGenerated(g: Generated, model: Model): string[] {
   // 정책 원장 키 — 등록된 Feature의 정책 키는 모두 Flag 계획에 있다(계획은 정책 키를 먼저 쓴다 — 같은 Feature에 키가 두 벌 생기지 않는다)
   const planKeys = new Set(g.features.flatMap((f) => f.plan.map((e) => e.flagKey)));
   for (const p of model.policies) if (g.features.some((f) => f.featureId === p.featureId) && !planKeys.has(p.flagKey)) problems.push(`정책 키 ${p.flagKey}(${p.featureId})가 Flag 계획에 없다`);
-  // 기존 6개 시연 Flag — 코드 연결 정상(ivi_00027_banner는 Retirement로 제거 대상, ivi_00027_detail은 Unleash 기록만 r2)
+  // 기존 시연 Flag — 코드 연결 정상(ivi_00027_banner는 Retirement로 제거 대상)
   for (const r of g.report.results.filter((x) => g.features.some((f) => DEMO_FEATURES.has(f.featureId) && f.plan.some((e) => e.flagKey === x.flagKey) && f.policies.some((p) => p.flagKey === x.flagKey)))) {
-    const want = r.flagKey === 'ivi_00027_banner' ? 'REMOVAL_DUE' : r.flagKey === UNLEASH_MISMATCH.flagKey ? 'UNLEASH_MISMATCH' : 'OK';
+    const want = r.flagKey === 'ivi_00027_banner' ? 'REMOVAL_DUE' : 'OK';
     if (r.result.status !== want) problems.push(`시연 Flag ${r.flagKey} 상태 ${r.result.status} — 기대 ${want}`);
     if (r.flagKey !== 'ivi_00027_banner' && r.result.lanes.CODE !== 'OK') problems.push(`시연 Flag ${r.flagKey} 코드 칸 ${r.result.lanes.CODE}`);
   }

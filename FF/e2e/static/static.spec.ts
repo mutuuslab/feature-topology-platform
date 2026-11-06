@@ -1,8 +1,14 @@
 // 정적 데모 — 모든 메뉴·하위 화면이 스냅샷만으로 열린다: 요청한 /api-snapshot/ 파일은 모두 200·JSON이어야 한다.
 // 빠진 파일은 SPA 대체 응답(index.html)으로 와서 화면이 오류가 된다 — 그 URL을 모아 실패 메시지로 낸다(tools/snapshot-api.ts에 추가할 목록).
 // 탭마다 본문 오류 상자([data-state=error])도 0이어야 한다(하네스 리뷰 H10 — 파일은 있어도 화면이 오류일 수 있다).
+// 탭마다 빈 상태도 0이어야 한다(2026-11-05 사용자 규칙 — 공개 데모 어디에도 빈 상태 금지, 문구로 때우지 말고 스냅샷으로 채운다):
+//   빈 상자([data-state=empty], 숨은 빈 목록 포함)·빈 상태 문구(empty-copy.ts — 화면 문구 집합 그대로)·끝나지 않는 로딩.
+//   안쪽 탭(탭 안의 탭)도 바깥 탭마다 모두 누른다. 데이터상 0이 정상인 안내만 ALLOW에 이유와 함께 둔다.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from '../tests/menu';
+import { EMPTY_PATTERN, EMPTY_PHRASES } from './empty-copy';
 
 const targets = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), ...DRILLDOWNS.map((d) => ({ title: d.title, url: d.url }))];
 
@@ -24,7 +30,111 @@ async function noErrorBox(page: Page, where: string) {
   await expect(page.locator('#main [data-state="error"]'), `${where}: 본문에 오류 상자가 보인다`).toHaveCount(0);
 }
 
-/** 화면이 뜬 뒤 탭을 모두 차례로 연다 — 탭마다 따로 조회하고, 탭마다 오류 상자가 없는지 본다 */
+/**
+ * 빈 상태 허용 — [주소 정규식, 표식 정규식, 이유]. 데이터상 0이 정상인 안내만, 최소로.
+ * 표식은 '종류 [패널 제목] 글자'(빈 상자·문구·로딩).
+ */
+const ALLOW: [RegExp, RegExp, string][] = [
+  [/^\/audit\/oversight/, /겸직 계정이 없습니다/, '직무 분리 감사의 정상 결과 — 겸직 0건이 통과 기준이다(FFG-PLT-016)'],
+  [/^\/feature\/propose/, /아직 고른 기준 행이 없습니다/, '등록 1단계의 입력 전 칸 — 사람이 기준 행을 고르기 전 상태(실서버 빈 화면 하네스와 같은 허용)'],
+  [/^\/data\/workbench/, /저장한 조회가 없습니다|실행한 조회가 없습니다/, '이 브라우저·계정의 개인 목록 — 사람이 조회를 저장·실행하기 전 칸(스냅샷 데이터가 아니다)'],
+];
+
+const allowed = (url: string, mark: string) => ALLOW.some(([u, m]) => u.test(url) && m.test(mark));
+
+/** 다 그려진 범위(본문·팝오버)의 빈 상태 표식 */
+async function emptyMarks(page: Page, scope: string): Promise<string[]> {
+  return page.evaluate(
+    ([scope, phrases, pattern]) => {
+      const root = document.querySelector(scope) as HTMLElement | null;
+      if (!root) return [];
+      const vis = (e: Element) => (e as HTMLElement).checkVisibility?.() ?? !!(e as HTMLElement).offsetParent;
+      const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
+      const where = (e: Element) => {
+        const p = e.closest('section, article, .ds-panel, aside, [role="dialog"], main');
+        const h = p?.querySelector('h1, h2, h3, h4');
+        return norm(h?.textContent ?? '').slice(0, 40);
+      };
+      const out: string[] = [];
+      for (const e of root.querySelectorAll('[data-state="empty"]')) {
+        if (!e.hasAttribute('data-empty-hidden') && !vis(e)) continue;
+        out.push(`빈 상자 [${where(e.parentElement ?? e)}] ${norm(e.textContent ?? '').slice(0, 90) || '(숨은 빈 목록)'}`);
+      }
+      for (const e of root.querySelectorAll('[data-state="loading"]')) if (vis(e)) out.push(`로딩 [${where(e.parentElement ?? e)}]`);
+      // 문구 — 보이는 글자(innerText)에서 찾고, 그 문구를 가진 가장 안쪽 요소로 위치를 적는다(빈 상자 안 문구는 위에서 셌다)
+      const text = norm(root.innerText);
+      const hits = phrases.filter((p) => text.includes(norm(p)));
+      const m = text.match(new RegExp(pattern));
+      if (m && !hits.some((h) => norm(h).includes(m[0]))) hits.push(m[0]);
+      for (const h of hits) {
+        const els = [...root.querySelectorAll('*')].filter((e) => vis(e) && norm(e.textContent ?? '').includes(norm(h)));
+        const inner = els.filter((e) => !els.some((o) => o !== e && e.contains(o)));
+        const shown = inner.filter((e) => !e.closest('[data-state="empty"]'));
+        if (inner.length && !shown.length) continue;
+        out.push(`문구 [${shown[0] ? where(shown[0]) : ''}] ${norm(h).slice(0, 90)}`);
+      }
+      return out;
+    },
+    [scope, EMPTY_PHRASES, EMPTY_PATTERN.source] as const,
+  );
+}
+
+/**
+ * 로딩이 끝나기를 기다린 뒤(10초 안에 끝나지 않으면 '로딩' 표식으로 남는다) 빈 상태 표식을 모은다.
+ * 탭을 누른 직후에는 지연 모듈이 아직 그려지지 않아 로딩 0이 바로 맞을 수 있다 — 0이 세 번 이어질 때까지 본다.
+ */
+async function collectEmpty(page: Page, scope: string, where: string, into: string[]) {
+  const loading = page.locator(`${scope} [data-state="loading"]`);
+  for (let calm = 0, end = Date.now() + 10_000; calm < 3 && Date.now() < end; ) {
+    calm = (await loading.count()) === 0 ? calm + 1 : 0;
+    await page.waitForTimeout(200); // hygiene-ok: 로딩 0이 세 번 이어지는지 보는 조건 대기의 간격(상한 10초) — 못 끝나면 '로딩' 표식으로 실패에 남는다
+  }
+  const url = new URL(page.url()).pathname;
+  for (const mark of await emptyMarks(page, scope)) if (!allowed(url, mark)) into.push(`${where} — ${mark}`);
+}
+
+/** 탭 묶음(role=tablist)에 깊이(바깥 탭 패널 수)별 표식을 붙이고 수를 센다 — 안쪽 탭은 바깥 탭마다 다시 센다 */
+async function tagTabLists(page: Page, scope: string, depth: number): Promise<number> {
+  return page.evaluate(
+    ([scope, depth]) => {
+      const root = document.querySelector(scope);
+      if (!root) return 0;
+      const depthOf = (l: Element) => {
+        let d = 0;
+        for (let e = l.parentElement; e; e = e.parentElement) if (e.getAttribute('role') === 'tabpanel') d++;
+        return d;
+      };
+      const lists = [...root.querySelectorAll('[role="tablist"]')].filter((l) => depthOf(l) === depth);
+      lists.forEach((l, i) => l.setAttribute('data-static-tl', `${depth}-${i}`));
+      return lists.length;
+    },
+    [scope, depth] as const,
+  );
+}
+
+/** 이 범위의 탭을 모두 누르고, 탭마다 오류 상자·빈 상태를 본다. 누른 탭의 패널 안 탭(안쪽 탭)도 차례로 */
+async function visitTabs(page: Page, scope: string, depth: number, trail: string, empties: string[]) {
+  if (depth > 3) return;
+  const lists = await tagTabLists(page, scope, depth);
+  for (let k = 0; k < lists; k++) {
+    await tagTabLists(page, scope, depth);
+    const n = await page.locator(`[data-static-tl="${depth}-${k}"] [role="tab"]`).count();
+    for (let i = 0; i < n; i++) {
+      await tagTabLists(page, scope, depth);
+      const tab = page.locator(`[data-static-tl="${depth}-${k}"] [role="tab"]`).nth(i);
+      if (!(await tab.isVisible())) continue;
+      const label = `${trail} › ${((await tab.textContent()) ?? '').trim().slice(0, 30)}`;
+      await tab.click();
+      await page.waitForLoadState('networkidle');
+      await noErrorBox(page, `${page.url()} 탭 ${label}`);
+      await collectEmpty(page, '#main', label, empties);
+      const panel = await tab.getAttribute('aria-controls');
+      if (panel && (await page.locator(`[id="${panel}"]`).count())) await visitTabs(page, `[id="${panel}"]`, depth + 1, label, empties);
+    }
+  }
+}
+
+/** 화면이 뜬 뒤 탭을 모두 차례로 연다 — 탭마다 따로 조회하고, 탭마다 오류 상자·빈 상태가 없는지 본다 */
 async function openAllTabs(page: Page) {
   // URL 전환 뒤 지연 모듈이 실제로 읽힐 때까지 기다린다. 이전 화면의 탭을 세면 사라진 탭을 누른다.
   await page.waitForLoadState('networkidle');
@@ -32,12 +142,12 @@ async function openAllTabs(page: Page) {
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   await page.waitForLoadState('networkidle');
   await noErrorBox(page, page.url());
-  const tabs = page.getByRole('tab');
-  for (let i = 0; i < (await tabs.count()); i++) {
-    await tabs.nth(i).click();
-    await page.waitForLoadState('networkidle');
-    await noErrorBox(page, `${page.url()} 탭 ${i + 1}`);
-  }
+  const where = new URL(page.url()).pathname + new URL(page.url()).search;
+  const empties: string[] = [];
+  await collectEmpty(page, '#main', where, empties);
+  await visitTabs(page, '#main', 0, where, empties);
+  // 빈 상태는 모아서 한 번에 — 같은 시험의 스냅샷 누락 목록도 함께 보이게 soft
+  expect.soft([...new Set(empties)], `빈 상태가 보인다 — 스냅샷 데이터로 채우거나, 데이터상 0이 정상이면 이유와 함께 ALLOW에`).toEqual([]);
 }
 
 for (const t of targets) {
@@ -163,6 +273,232 @@ test('정적 데모: Feature DB 목록·등록 1단계 검색 AVH', async ({ pag
   await page.locator('input[name="refSearch"]').fill('AVH');
   await expect(page.getByRole('button', { name: 'CH-BRK-009 대표로' })).toBeVisible();
   await noErrorBox(page, '등록 1단계 검색');
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+// 부서 작업공간 홈 14개 — 부서를 고르면 홈('/')이 그 부서의 작업공간으로 바뀐다(부서의 기본 계정)
+const DEPTS = (JSON.parse(readFileSync(join(__dirname, '..', '..', 'contracts', 'src', 'generated', 'departments.ts'), 'utf8').replace(/^[\s\S]*?=\s*/, '').replace(/;\s*$/, '')) as { departments: { id: string; name: string; workspace: string; personas: string[] }[] }).departments;
+test('정적 데모: 부서 목록을 생성 파일에서 읽었다', () => expect(DEPTS.length).toBe(14));
+for (const d of DEPTS) {
+  test(`정적 데모: 부서 작업공간 홈 — ${d.name}`, async ({ page }) => {
+    const { missing, errors } = watch(page);
+    await page.addInitScript((s) => localStorage.setItem('fp.state.v2', JSON.stringify(s)), { role: d.personas[0], department: d.id, theme: 'light' });
+    await page.goto('/');
+    await expect(page.locator(`#main [data-workspace-home="${d.workspace}"]`)).toBeVisible();
+    await openAllTabs(page);
+    expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+}
+
+// 알림 종 팝오버 — 머리줄(본문 밖)이라 메뉴 시험이 보지 않는다
+test('정적 데모: 알림 종 팝오버', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+  await page.locator('.sh-ntf > button').click();
+  const pop = page.locator('.sh-ntf__pop');
+  await expect(pop).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  await expect(pop.locator('[data-state="error"]'), '알림 팝오버에 오류 상자').toHaveCount(0);
+  const empties: string[] = [];
+  await collectEmpty(page, '.sh-ntf__pop', '알림 팝오버', empties);
+  expect.soft(empties, '알림 팝오버에 빈 상태가 보인다').toEqual([]);
+  await expect(pop.locator('li').first(), '알림 팝오버에 알림이 한 건 이상').toBeVisible();
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+// ── 알림·운영 지표·OFREP·상세 서랍(묶음 F1) — 정적에서 조회를 끄고 안내만 그리던 곳을 스냅샷으로 채운다(2026-11-05) ──
+
+/** 화면 전체(서랍·팝오버 포함)의 오류 상자 0 — '데모에 없는 데이터입니다'(스냅샷 404)가 서랍 안에 뜨던 결함 */
+async function noErrorAnywhere(page: Page, where: string) {
+  await expect(page.locator('[data-state="error"]'), `${where}: 오류 상자가 보인다`).toHaveCount(0);
+}
+
+test('정적 데모: 알림 센터 — 받은 알림·범주·안 읽음/전체 보기', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/notifications');
+  const rows = page.getByTestId('notification-row');
+  await expect(rows.first()).toBeVisible();
+  // 상단 종 배지 — 안 읽은 수. 100건 이상은 '99+'로 줄여 보인다(전시 시드 196건 — Number('99+')가 NaN이라 실패하던 시험 결함, 2026-11-06).
+  // 정확한 수는 종 단추의 접근 이름에 있다
+  await expect(page.getByTestId('notify-badge')).toHaveText(/^([1-9]\d?|99\+)$/);
+  expect(Number((await page.getByRole('button', { name: /^알림 — 안 읽음 \d+건$/ }).getAttribute('aria-label'))!.match(/\d+/)![0])).toBeGreaterThan(0);
+  // 범주마다(받은 알림이 있는 범주만 고른다) — 안 읽음 보기와 전체 보기 모두 행이 있다
+  const select = page.getByRole('combobox', { name: '범주' });
+  const values = await select.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value).filter(Boolean));
+  expect(values.length, '알림 범주가 여럿').toBeGreaterThan(1);
+  for (const v of values) {
+    await select.selectOption(v);
+    await expect(rows.first(), `안 읽음 · ${v}`).toBeVisible();
+  }
+  await select.selectOption('');
+  await page.getByRole('radio', { name: /^전체/ }).click();
+  await expect(rows.first()).toBeVisible();
+  for (const v of values) {
+    await select.selectOption(v);
+    await expect(rows.first(), `전체 · ${v}`).toBeVisible();
+  }
+  // 읽음 처리는 쓰기 — 정적 공개 사이트도 이 브라우저의 시연 데이터로 처리된다(20-60). 하나 읽으면 안 읽음 수가 준다
+  const bell = page.getByRole('button', { name: /^알림 — 안 읽음 \d+건$/ });
+  const before = Number((await bell.getAttribute('aria-label'))!.match(/\d+/)![0]);
+  await page.getByRole('button', { name: '읽음', exact: true }).first().click();
+  await expect.poll(async () => Number((await bell.getAttribute('aria-label'))!.match(/\d+/)![0])).toBe(before - 1);
+  await page.waitForLoadState('networkidle');
+  await noErrorAnywhere(page, '알림 센터');
+  const empties: string[] = [];
+  await collectEmpty(page, '#main', '알림 센터', empties);
+  expect.soft(empties, '알림 센터에 빈 상태가 보인다').toEqual([]);
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('정적 데모: 운영 지표 탭 — 스냅샷의 처리 지표 표', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/ops/telemetry?tab=observability&observe=metrics');
+  await expect(page.getByRole('tab', { name: 'Metrics', exact: true })).toHaveAttribute('aria-selected', 'true');
+  const table = page.getByRole('table', { name: '처리 지표', exact: true });
+  await expect(table.locator('tbody tr').first()).toBeVisible();
+  expect(await table.locator('tbody tr').count()).toBeGreaterThan(0);
+  await expect(page.locator('#main')).not.toContainText('수집하지 않습니다');
+  await page.waitForLoadState('networkidle');
+  await noErrorAnywhere(page, '운영 지표 탭');
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('정적 데모: 활성화 판단 — OFREP 응답과 OpenFeature 값(차량·Flag 바꾸기)', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/activation/decide');
+  const ofrep = page.getByTestId('ofrep-response');
+  await expect(ofrep).toContainText('"key"');
+  await expect(page.getByTestId('of-value')).toHaveText(/^(ON|OFF)$/);
+  await expect(page.locator('#main')).not.toContainText(/OFREP를 호출하지 않습니다|OFREP 서버가 없습니다/);
+  // 다른 차량·다른 Flag도 받아 둔 응답으로 그린다
+  const [vehicle, flag] = [page.getByRole('combobox', { name: '차량' }), page.getByRole('combobox', { name: 'Flag' })];
+  const vins = await vehicle.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+  const flags = await flag.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+  await vehicle.selectOption(vins.at(-1)!);
+  await flag.selectOption(flags.at(-1)!);
+  await expect(ofrep).toContainText(`"${flags.at(-1)}"`);
+  await expect(page.getByTestId('of-value')).toHaveText(/^(ON|OFF)$/);
+  await page.waitForLoadState('networkidle');
+  await noErrorAnywhere(page, '활성화 판단');
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+// 목록 행을 열면 상세(서랍·패널)를 따로 읽는다 — 목록에 나오는 모든 행의 상세가 스냅샷에 있어야 한다
+for (const url of ['/ops/anomalies', '/experiments', '/ops/kill', '/baselines', '/ops/rollback', '/ops/safety-kpi', '/validations/virtual', '/policies', '/policies/POL-00001']) {
+  test(`정적 데모: 목록 행 상세 열기 (${url})`, async ({ page }) => {
+    test.setTimeout(180_000);
+    const { missing, errors } = watch(page);
+    await page.goto(url);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    const rows = page.locator('#main tbody tr[data-clickable="true"]');
+    await expect(rows.first(), '열 수 있는 행이 한 줄 이상').toBeVisible();
+    const empties: string[] = [];
+    const n = Math.min(await rows.count(), 30);
+    for (let i = 0; i < n; i++) {
+      const before = page.url();
+      await rows.nth(i).click();
+      // 서랍은 주소(?request= 등)가 바뀐 뒤 늦게 열린다 — 바로 보면 '서랍 없음'으로 지나가고, 뒤늦게 열린 서랍의 가림막이 다음 행 클릭을 막아
+      // 시간 초과였다(전시 시드 /baselines 25행, 2026-11-06). 서랍이 열리거나 다른 화면으로 옮겨 갈 때까지 잠깐 기다린다
+      await expect
+        .poll(async () => (await page.locator('.ds-drawer').isVisible()) || new URL(page.url()).pathname !== new URL(before).pathname, { timeout: 3_000 })
+        .toBe(true)
+        .catch(() => undefined);
+      await page.waitForLoadState('networkidle');
+      await noErrorAnywhere(page, `${url} 행 ${i + 1}`);
+      if (await page.locator('.ds-drawer').isVisible()) {
+        await collectEmpty(page, '.ds-drawer', `${url} 행 ${i + 1} 서랍`, empties);
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.ds-drawer')).toHaveCount(0);
+      } else if (new URL(page.url()).pathname !== new URL(before).pathname) {
+        // 행이 상세 화면으로 옮겨 간다(정책 목록 → 정책 상세) — 그 화면을 본 뒤 목록으로 돌아온다
+        await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+        await page.goto(before);
+        await expect(rows.first()).toBeVisible();
+        await page.waitForLoadState('networkidle');
+      }
+    }
+    expect.soft(empties, '상세 서랍에 빈 상태가 보인다').toEqual([]);
+    expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+}
+
+test('정적 데모: 정책 상세 Unleash 차량별 대조', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  // 지금 배포된 care_00022_signal 정책 — 데모 시드가 같은 값의 새 판을 배포해 POL-00001은 복구 후보(앞 판)다(2026-11-06)
+  const deployed = (await (await page.request.get('/api-snapshot/policies_status_DEPLOYED.json')).json()).items.find((p: { flagKey: string }) => p.flagKey === 'care_00022_signal');
+  await page.goto(`/policies/${deployed.policyId}`);
+  await page.getByRole('button', { name: '차량별 대조' }).click();
+  await expect(page.getByRole('table', { name: '차량별 대조' }).locator('tbody tr').first()).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  await noErrorAnywhere(page, 'Unleash 차량별 대조');
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('정적 데모: 가상검증 — 실행 기록·Evidence 보고서 링크', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/validations/virtual');
+  const report = page.getByTestId('sim-report');
+  await expect(report).toHaveAttribute('href', /api-snapshot\/files\/virtual\/.+\/report\.html$/);
+  const res = await page.request.get((await report.getAttribute('href'))!);
+  expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toContain('html');
+  await page.locator('#main tbody tr[data-clickable="true"]').first().click();
+  await expect(page.locator('.ds-drawer a[href*="api-snapshot/files/virtual/"]').first()).toBeVisible();
+  await noErrorAnywhere(page, '가상검증');
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+// 회귀(2026-11-06 로컬 의존 점검): 검증 서버 패널에 빌드 PC의 127.0.0.1:2100·실행기·Python 경로가, 재현 정보에 사용자 임시 폴더가 보였다
+test('정적 데모: 가상검증 — 검증 서버 패널·재현 정보에 빌드 PC 흔적이 없다', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/validations/virtual');
+  const panel = page.locator('[data-tour="sim-status"]');
+  await expect(panel).toContainText(/CARLA \d+\.\d+/);
+  await expect(panel).toContainText('마지막 실행');
+  await expect(panel).not.toContainText(/127\.0\.0\.1|localhost|:2100|ffcarla_cli|python|[A-Z]:[\\/]/);
+  await page.locator('#main tbody tr[data-clickable="true"]').first().click();
+  const drawer = page.locator('.ds-drawer');
+  await expect(drawer).toContainText('--replay "evidence/');
+  await expect(drawer).not.toContainText(/AppData|[A-Z]:[\\/]|\/tmp\/|\/home\//);
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+// 외부 시연 창 GitLab 보기 — Feature 상세 연계 탭의 MR 링크가 여는 창(예전에는 gitlab.ff.example로 깨졌다)
+test('정적 데모: 외부 시연 창 GitLab — MR 상세·변경 파일·연결된 Feature', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  await page.goto('/external.html?system=gitlab');
+  await expect(page.getByTestId('gl-detail')).toBeVisible();
+  await expect(page.getByTestId('gl-changes')).toBeVisible();
+  await expect(page.getByTestId('gl-linked')).toBeVisible();
+  await page.waitForLoadState('networkidle');
+  expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+// Variant 지원 조건 — 차량별 지원 표의 Feature 링크·입력은 키트 밖 Feature도 연다(FEAT-00022만 받아 둔 결함)
+test('정적 데모: Variant 지원 조건 — 키트 밖 Feature Version', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  const list = await (await page.request.get('/api-snapshot/features_latestOnly_false.json')).json();
+  const other = (list.items as { featureId: string; version: string }[]).filter((f) => f.featureId !== 'FEAT-00022').slice(0, 3);
+  expect(other.length).toBeGreaterThan(0);
+  for (const f of other) {
+    await page.goto(`/variant-conditions?featureId=${f.featureId}&version=${f.version}`);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await noErrorAnywhere(page, `Variant ${f.featureId} ${f.version}`);
+  }
   expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
   expect(errors).toEqual([]);
 });

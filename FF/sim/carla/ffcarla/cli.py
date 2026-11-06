@@ -99,7 +99,7 @@ def run_package(pkg: dict, out: Path, world, simulator: str, server_version: str
         repro = dict(toolVersion=f'{VERSION} · CARLA {server_version} · {info["map"]}', simulator=simulator, serverVersion=server_version,
                      map=info['map'], stepS=info['stepS'], seed=seed, scenarioHash=sha256(canon(sc)), scriptHash=script_hash(),
                      safety=run.safety, clockBase=iso(0), routeStart=info['routeStart'], vehicles=dict(ego=info['egoBlueprint'], lead=info['leadBlueprint']),
-                     replay=f'python sim/carla/ffcarla_cli.py --replay "{rec}"')
+                     replay=f'python sim/carla/ffcarla_cli.py --replay "evidence/{test_id}/carla_recording.log"')  # Evidence 저장 폴더 기준(로컬 절대 경로 없음)
         verdict = dict(testId=test_id, kind='FF virtual validation (CARLA)', overall=v['overall'], generatedAt=iso(run.t), internalOnly=True,
                        repro=repro, policy={k: pol.get(k) for k in ('policyId', 'revision', 'status', 'contentHash', 'featureId', 'featureVersion', 'flagKey')},
                        evaluation=ev, vehicle=vehicle, scenario=sc, start=info['start'], maxLateralDevM=info['maxLateralDevM'],
@@ -178,7 +178,11 @@ def _main(a, emit) -> int:
 
 
 def _replay(W, rec: Path, info_only: bool, host: str, port: int, emit) -> int:
-    """기록 재생 — 서버가 파일을 직접 읽으므로 절대 경로로 넘긴다. --info는 읽기만, 재생은 세계를 바꾸므로 검증 잠금을 잡는다."""
+    """기록 재생 — 서버가 파일을 직접 읽으므로 절대 경로로 넘긴다. --info는 읽기만, 재생은 세계를 바꾸므로 검증 잠금을 잡는다.
+    evidence/... 는 Evidence 저장 폴더(FF_EVIDENCE_DIR, 기본 .evidence/carla) 기준이다(재현 정보의 재생 명령 형식)."""
+    parts = rec.parts
+    if parts and parts[0] == 'evidence':
+        rec = Path(os.environ.get('FF_EVIDENCE_DIR') or Path('.evidence') / 'carla').joinpath(*parts[1:])
     rec = rec.resolve()
     if not rec.is_file():
         emit(dict(tool=TOOL, error=f'기록 파일이 없습니다: {rec}'))

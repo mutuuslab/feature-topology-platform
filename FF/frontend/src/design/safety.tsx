@@ -6,6 +6,12 @@ import { useReportCatalog } from './rule-catalog';
 import { ko } from '../copy/ko';
 import { Icon, StatusGlyph } from './icons';
 
+/** 서명 시각 HH:mm:ss — 한국 시각. UTC 그대로 잘라 쓰면 같은 서랍의 다른 시각(KST)보다 9시간 앞서 보였다 */
+const kstClock = (iso: string) => {
+  const t = Date.parse(iso);
+  return Number.isNaN(t) ? iso : new Date(t + 9 * 3600_000).toISOString().slice(11, 19);
+};
+
 /** 역할 enum → 한글 라벨(원문은 툴팁) — 화면에 OPS_LEAD 같은 코드를 보이지 않는다(UX3-02) */
 const roleLabel = (role: string) => ((ROLES as readonly string[]).includes(role) ? ROLE_LABEL[role as keyof typeof ROLE_LABEL] : role);
 
@@ -340,7 +346,7 @@ export function ApprovalSlots({ requester, slots, now = Date.now() }: { requeste
                       <Icon name="pen" size={14} aria-hidden="true" /> {s.approver!.name ?? s.approver!.id}
                     </span>
                     <span className="ds-field__hint">
-                      {S.signed} · <span className="ds-mono">{s.approver!.signedAt.slice(11, 19)}</span>
+                      {S.signed} · <span className="ds-mono">{kstClock(s.approver!.signedAt)}</span>
                     </span>
                   </>
                 ) : (

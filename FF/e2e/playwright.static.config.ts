@@ -20,11 +20,14 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: `npm run build -w feature-topology-backend && npm run snapshot:api && npm exec -w feature-topology-frontend -- vite build --outDir dist-static --emptyOutDir && npm exec -w feature-topology-frontend -- vite preview --outDir dist-static --port ${WEB} --strictPort`,
+    // tools/static-build.ts — 계약(dist)·백엔드를 다시 만들고(snapshot:api가 계약의 스냅샷 파일 이름 함수를 dist에서 읽는다),
+    // 공개 배포와 같은 시드(cloudflare.yml, E2E_STATIC_SEED=base면 기본 시드)로 스냅샷을 찍어 포트별 폴더에 빌드한다.
+    // 같은 폴더의 다른 작업과 빌드 단계만 잠금(STATIC_BUILD_LOCK)으로 나눈다 — 기다림·전시 시드 스냅샷까지 넉넉히
+    command: `node tools/static-build.ts ${WEB} && npm exec -w feature-topology-frontend -- vite preview --outDir dist-static/${WEB}/dist --port ${WEB} --strictPort`,
     cwd: '..',
     env: { VITE_DATA_MODE: 'static' },
     url: `http://localhost:${WEB}`,
     reuseExistingServer: false,
-    timeout: 300_000,
+    timeout: 1_800_000,
   },
 });

@@ -156,6 +156,28 @@ describe('Git Flag 소스 가져오기 (D01-06)', () => {
     expect(absent).toMatchObject({ policy: { status: 'DEPLOYED' }, publication: null, sources: [] });
   });
 
+  // 사용자 결정(2026-11-06): Feature Flag 탭 5단계(차량 수신)에도 진행 중 긴급 차단을 '긴급 차단 중 — 반영 n/m'으로 보인다
+  it('진행 중 긴급 차단(ACTIVE)은 그 Feature(REQUIRES로 함께 막힌 Feature 포함)의 Flag 행에 반영 집계와 함께 붙는다', async () => {
+    const flagsOf = async (featureId: string) => (await http().get(`/api/feature-flags?featureId=${featureId}`).expect(200)).body as FeatureFlagRow[];
+    expect((await flagsOf('FEAT-00022')).every((r) => r.kill === null)).toBe(true);
+    const pub = { publicationId: 'PUB-98001', kind: 'KILL', status: 'DISPATCHED', confirmed: 1, denominator: 2, nodes: [], ackOnly: [], closedAt: null, payload: { targets: ['ego-01', 'lead-01'] } };
+    db.run('INSERT INTO publication (publication_id, kind, status, scope_key, sequence, created_at, doc) VALUES (?, ?, ?, ?, ?, ?, ?)', pub.publicationId, 'KILL', pub.status, 'feature:FEAT-00022', 98001, '2030-02-01T00:00:00.000Z', JSON.stringify(pub));
+    const kill = (killId: string, status: string) => ({ killId, featureId: 'FEAT-00022', featureVersion: '1.0.0', featureIds: ['FEAT-00022', 'FEAT-00188'], vins: ['ego-01', 'lead-01'], status, publicationId: pub.publicationId });
+    db.run('INSERT INTO kill_request (kill_id, feature_id, status, doc) VALUES (?, ?, ?, ?)', 'KILL-98001', 'FEAT-00022', 'RELEASED', JSON.stringify(kill('KILL-98001', 'RELEASED')));
+    db.run('INSERT INTO kill_request (kill_id, feature_id, status, doc) VALUES (?, ?, ?, ?)', 'KILL-98002', 'FEAT-00022', 'ACTIVE', JSON.stringify(kill('KILL-98002', 'ACTIVE')));
+    const rows = await flagsOf('FEAT-00022');
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.kill).toEqual({ killId: 'KILL-98002', confirmed: 1, denominator: 2 });
+      expect(FeatureFlagRow.safeParse(r).success).toBe(true);
+    }
+    for (const r of await flagsOf('FEAT-00188')) expect(r.kill?.killId).toBe('KILL-98002');
+    expect((await flagsOf('FEAT-00023')).every((r) => r.kill === null)).toBe(true);
+    // 해제되면 사라진다
+    db.run("UPDATE kill_request SET status = 'RELEASED' WHERE kill_id = 'KILL-98002'");
+    expect((await flagsOf('FEAT-00022')).every((r) => r.kill === null)).toBe(true);
+  });
+
   it('이벤트 훅 실패 시 소스·감사·이벤트를 함께 롤백한다', async () => {
     const body = manifest('rollback');
     const before = db.get<{ n: number }>("SELECT count(*) AS n FROM audit WHERE action = 'FLAG_SOURCE_IMPORT'")!.n;

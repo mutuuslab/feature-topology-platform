@@ -14,7 +14,7 @@ const routeIds = (route: string) => [...route.matchAll(/\/features\/(FEAT-\d{5})
 describe('따라하기 시나리오 — 참조 ID가 데모 시드에 있다', () => {
   let app: INestApplication;
   let http: () => any;
-  beforeAll(async () => ({ app, http } = await bootApp({ demoActivity: true, costDemo: true })));
+  beforeAll(async () => ({ app, http } = await bootApp({ demoActivity: true, costDemo: true, showcaseFill: false })));
   afterAll(() => app.close());
 
   /** 목록 응답 본문에 ID가 있는가 — 같은 목록은 한 번만 받는다 */

@@ -78,7 +78,8 @@ describe('데모 활동 시드 — 켠 부팅', () => {
     expect(ivi.byApp.map((a: any) => `${a.appName}/${a.environment}`)).toEqual(expect.arrayContaining(['ivi-nav/production', 'ivi-nav/staging', 'vehicle-sdk/fleet']));
     expect(ivi.daily).toHaveLength(14);
     const adas = (await b.http().get('/api/features/FEAT-00022/evaluations').expect(200)).body;
-    expect(adas.bySource.map((s: any) => s.source).sort()).toEqual(['UNLEASH_EDGE', 'VEHICLE_SDK']);
+    // 차량 앱의 OFREP 평가(전시 빈 화면 채우기 13-2, static 시드)도 같은 집계에 들어온다 — 통합 12단계
+    expect(adas.bySource.map((s: any) => s.source).sort()).toEqual(['OFREP', 'UNLEASH_EDGE', 'VEHICLE_SDK']);
     expect(adas.totals.safeDefault).toBeGreaterThan(0);
   });
 

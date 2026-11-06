@@ -7,7 +7,7 @@
 import { Body, Controller, Get, Injectable, NotFoundException, Param, Post, Query, Res } from '@nestjs/common';
 import { combinationPlan, combinationViolations, evaluateFlag, judgeVirtual, RunVirtualBody, virtualScenariosFor, type Policy, type VirtualRun } from '@ff/contracts';
 import type { Response } from 'express';
-import { resolve, sep } from 'node:path';
+import { extname, resolve, sep } from 'node:path';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
 import { CarlaAdapter } from '../../../adapters/sim/carla.adapter';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -137,11 +137,16 @@ export class VirtualValidationService {
     });
   }
 
+  // 응답에는 Evidence 저장 폴더 기준 경로만 — 이전 기록의 절대 경로도 evidence/...로 보인다
   list(q: { policyId?: string; featureId?: string; featureVersion?: string }) {
-    return this.runs.list(q);
+    return this.sim.publicRun(this.runs.list(q));
   }
 
   detail(id: string): VirtualRun {
+    return this.sim.publicRun(this.record(id));
+  }
+
+  private record(id: string): VirtualRun {
     const r = this.runs.get(id);
     if (!r) throw new DomainError('NOT_FOUND', `가상검증 ${id}을(를) 찾을 수 없습니다.`);
     return r;
@@ -149,10 +154,10 @@ export class VirtualValidationService {
 
   /** 기록된 Evidence 파일만 내준다 (경로 조작 차단) */
   file(id: string, name: string): string {
-    const r = this.detail(id);
+    const r = this.record(id);
     const f = r.evidence?.files.find((x) => x.name === name);
     if (!r.evidence || !f) throw new DomainError('NOT_FOUND', `${id}에 ${name} Evidence가 없습니다.`);
-    const dir = resolve(r.evidence.dir);
+    const dir = this.sim.evidencePath(r.evidence.dir);
     const path = resolve(dir, f.name);
     if (!path.startsWith(dir + sep)) throw new DomainError('VALIDATION', '잘못된 Evidence 경로입니다.');
     return path;
@@ -253,6 +258,13 @@ export class VirtualValidationController {
     // Evidence 보고서는 같은 출처에서 열리므로 스크립트를 막는다
     res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data: 'self'");
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    // 이전 기록의 판정·보고서에 남은 로컬 절대 경로도 응답 규칙(evidence/...)대로 — 바꾼 본문은 기록된 sha256과 다르다(헤더로 알린다)
+    const body = this.sim.publicEvidenceFile(path);
+    if (body !== null) {
+      res.setHeader('X-Evidence-Rewritten', 'local-paths');
+      res.type(extname(path)).send(body);
+      return;
+    }
     res.sendFile(path);
   }
 
@@ -260,6 +272,6 @@ export class VirtualValidationController {
   @Roles('GATE_JUDGE', 'IMPLEMENTER')
   @AuditAction('TMS_SUBMIT')
   submit(@CurrentActor() actor: Actor, @Param('id') id: string) {
-    return this.tms.submit(actor, id);
+    return this.sim.publicRun(this.tms.submit(actor, id));
   }
 }

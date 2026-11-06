@@ -73,6 +73,22 @@ describe('Feature DB 읽기', () => {
       expect(brk.items.map((i: { refId: string }) => i.refId)).toContain('CH-BRK-009');
     });
 
+    it('다중 선택 — ASIL C·D와 수명주기, 표 행 수·요약·축별 수·분류 트리가 같은 조건', async () => {
+      const all = await search({ limit: 1 });
+      expect(all.summary).toMatchObject({ rows: 1052, domains: 10, components: 69, asilCD: 151 });
+      expect(Object.values(all.facets.tree as Record<string, number>).reduce((a, b) => a + b, 0)).toBe(1052);
+      expect(all.facets.swStack).toEqual({ Application: 702, Platform: 278, 'Back-end': 72 });
+      const cd = await search({ asils: 'C,D', limit: 1 });
+      expect(cd.total).toBe(151);
+      expect(cd.summary.rows).toBe(151);
+      expect(cd.summary.asilCD).toBe(151);
+      expect(cd.facets.asilRep.QM).toBe(620); // 자기 축 선택은 빼고 센다
+      const inno = await search({ asils: 'C,D', lifecycles: 'Innovation', limit: 200 });
+      expect(inno.total).toBe(cd.facets.lifecycle.Innovation);
+      expect(inno.items.every((i: { asilRep: string; lifecycle: string }) => ['C', 'D'].includes(i.asilRep) && i.lifecycle === 'Innovation')).toBe(true);
+      expect(new Set(inno.items.map((i: { domain: string }) => i.domain)).size).toBe(inno.summary.domains);
+    });
+
     it('잘못된 질의 — 없는 상태·음수 offset·같은 질의 두 번은 400', async () => {
       await http().get('/api/refdb/refs?status=GONE').set(AUTHOR).expect(400);
       await http().get('/api/refdb/refs?offset=-1').set(AUTHOR).expect(400);

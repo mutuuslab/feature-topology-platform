@@ -6,6 +6,7 @@
 //   flag 없는 대상(차량에 기본 탑재된 기반 기능 등)은 FP Topology·Catalog 검증이 보장하므로 참고(notes)로만 남긴다.
 import type { Constraint } from '../flags/p0';
 import type { Policy } from '../schemas/policy';
+import { effectiveBasisPoints } from '../flags/evaluate';
 
 export const UNLEASH_PROJECT = 'default';
 export const UNLEASH_ENVIRONMENT = 'development';
@@ -63,6 +64,9 @@ export interface PlanInput {
   cohortMembers: string[] | null;
 }
 
+/** Unleash에 서명 코호트 목록으로 내보낼 부분 롤아웃인가 — 코호트 롤아웃이거나, 단계 효력이 전체보다 좁다 */
+export const unleashPartial = (p: Pick<Policy, 'rollout' | 'stageBasisPoints'>) => p.rollout.mode === 'COHORT' || (p.rollout.mode !== 'NONE' && effectiveBasisPoints(p) < 10000);
+
 export function planUnleash(i: PlanInput): UnleashPlan {
   const p = i.policy;
   const blockers: string[] = [];
@@ -81,8 +85,10 @@ export function planUnleash(i: PlanInput): UnleashPlan {
   ];
   if (p.entitlementCatalogId) applicability.push({ contextName: 'trialSessionValid', operator: 'IN', values: ['true'], inverted: false, caseInsensitive: false });
   // 부분 롤아웃 = 서명 코호트 목록. 목록이 비면(0%) 전략이 아무 차량도 고르지 않도록 env를 끈다.
+  // 단계적 배포(Canary 등, stageBasisPoints)도 부분 롤아웃이다 — 승인 범위가 전체(ALL)여도 지금 효력 범위의 차량만 고른다(FFG-LCY-009).
+  // 단계를 빼면 Unleash는 전체 ON, 플랫폼은 단계 밖 OFF(COHORT_MISS)로 갈렸다(2026-11-06)
   let enabled = p.enabled && p.rollout.mode !== 'NONE';
-  if (p.rollout.mode === 'COHORT') {
+  if (unleashPartial(p)) {
     const members = i.cohortMembers ?? [];
     if (!members.length) enabled = false;
     else applicability.push({ contextName: 'vehicleKey', operator: 'IN', values: [...members].sort(), inverted: false, caseInsensitive: false });

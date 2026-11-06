@@ -43,6 +43,10 @@ export const NOTIFICATION_CATEGORY_LABEL: Record<NotificationCategory, string> =
 export const NotificationSeverity = z.enum(['INFO', 'WARNING', 'CRITICAL']);
 export type NotificationSeverity = z.infer<typeof NotificationSeverity>;
 
+/** Feature DB 알림 이벤트 — 출처 정기 점검 기한 지남 · 추가 요청 반려(요청 중 행 폐기) */
+export const REFDB_REVIEW_DUE_EVENT = 'refdb.source.review-due';
+export const REFDB_REF_REJECTED_EVENT = 'refdb.ref.rejected';
+
 /** 알림을 만드는 이벤트 — NOTIFICATION_RULES의 키와 같다(시험이 맞춘다). 상단바 종이 실시간 구독에 쓴다 */
 export const NOTIFICATION_EVENT_TYPES: readonly string[] = [
   'gate.judged',
@@ -60,8 +64,8 @@ export const NOTIFICATION_EVENT_TYPES: readonly string[] = [
   'sync.completed',
   'procedure.activity.completed',
   'procedure.activity.overdue',
-  'refdb.source.review-due',
-  'refdb.ref.rejected',
+  REFDB_REVIEW_DUE_EVENT,
+  REFDB_REF_REJECTED_EVENT,
   'baseline.requested',
   'refdb.change.created',
   'refdb.change.reviewed',
@@ -77,3 +81,8 @@ export const NOTIFICATION_EVENT_TYPES: readonly string[] = [
   'signing.failed',
   NOTIFICATION_SENT_EVENT,
 ];
+
+// ─── 읽음 처리 — API 경로 표(routes.ts)가 규칙표 없이 읽는다(첫 화면 예산) ───
+
+export const NotificationReadAllBody = z.object({ category: NotificationCategory.optional() }).strict();
+export type NotificationReadAllBody = z.infer<typeof NotificationReadAllBody>;

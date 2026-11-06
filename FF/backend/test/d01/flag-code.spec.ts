@@ -238,6 +238,18 @@ describe('Flag 코드 연결 — 시연 픽스처(DEMO_MIRROR)', () => {
     expect(ddl).toMatch(/CREATE TRIGGER flag_scan_result_no_update BEFORE UPDATE ON flag_scan_result FOR EACH ROW EXECUTE FUNCTION/);
     expect(ddl).not.toMatch(/RAISE\s*\(\s*ABORT|AUTOINCREMENT/i);
   });
+  // 통합 12단계 결함 — 실제 동기화 기록(IF-04)은 최근 200건을 id 내림차순으로 읽고 시각순으로 정렬했다. 시계가 고정되면(같은 시각)
+  // 정렬이 그 순서를 유지해 오래된 기록이 나중에 덮었다 — 같은 키를 다시 배포·동기화한 정책이 'Unleash 개정(없음)'으로 보였다
+  it('Unleash 대사 — 같은 시각의 동기화 기록은 나중 기록이 이긴다', async () => {
+    const at = '2026-11-06T00:30:00.000Z';
+    const put = (key: string, revision: number) => db.run('INSERT INTO if_call (if_id, idem_key, at, doc) VALUES (?, ?, ?, ?)', 'IF-04', key, at, JSON.stringify({ ifId: 'IF-04', key, at, request: { policyId: 'POL-00001', revision }, response: { outcome: 'SYNCED' } }));
+    put('test-order#1', 1);
+    put('test-order#2', 9);
+    const r = await row('care_00022_signal');
+    expect(r.status).toBe('UNLEASH_MISMATCH');
+    expect(r.findings.map((f) => f.message).join(' ')).toMatch(/개정\(9\)/);
+    db.run("DELETE FROM if_call WHERE idem_key LIKE 'test-order#%'");
+  });
 });
 
 describe('Flag 코드 연결 — 시드 끔', () => {

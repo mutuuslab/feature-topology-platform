@@ -45,6 +45,8 @@ export const refSources = {
   dueNone: '정기 점검 기한이 지난 출처가 없습니다',
   due: '점검 기한 지남',
   col: { pick: '고르기', id: 'ID', title: '자료', checked: '최종 확인일', next: '다음 점검일' },
+  // 한 칸에 여러 주소를 ' ; '로 적은 출처 — 첫 주소는 자료 제목에, 나머지는 주소별 링크로
+  moreLinks: '함께 본 자료',
   pickLabel: (id: string) => `${id} 점검 기록에 넣기`,
   record: '점검 기록',
   recordHint: (n: number) => (n ? `고른 출처 ${n}개의 확인일과 다음 점검일을 기록합니다` : '점검한 출처를 표에서 고르세요'),
@@ -217,7 +219,6 @@ export const refChanges = {
   rcol: { release: '버전', at: '발행 시각', by: '발행자', changes: '변경 요청', hash: '전체 해시' },
   exportRelease: '내보낼 버전',
   export: '엑셀 내보내기',
-  exportStatic: '정적 데모에서는 파일을 만들 수 없습니다',
   exportNone: '발행 버전이 없습니다',
 };
 

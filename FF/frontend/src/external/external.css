@@ -19,7 +19,6 @@
 .external-notice { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1h) var(--sp-4); color: var(--ink-2); background: color-mix(in srgb, var(--ink) 3%, var(--surface)); border-bottom: 1px solid var(--line); }
 .external-notice > svg { flex-shrink: 0; color: var(--tool-ink); }
 .external-notice p { margin: 0; max-width: 90ch; font-size: 12px; }
-.external-readonly { margin: 0; padding: var(--sp-2) var(--sp-4); color: var(--warn); background: var(--warn-soft); font-size: 12px; }
 .external-main { padding: 0; margin: 0 auto; }
 .external-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4); background: var(--surface); }
 .external-heading h1 { font-size: 18px; margin: 0; line-height: 1.3; }
@@ -179,3 +178,31 @@
   .external-group { flex-wrap: wrap; }
   .external-app[data-tool="codebeamer"][data-view="item"] .external-detail .external-properties dl { grid-template-columns: 1fr; }
 }
+/* 공식 로고 머리글 · codeBeamer 상단 바(로고·제목·검색·사용자)·탭 밑줄·프로젝트 띠·하단 바 */
+.external-wordmark .ext-brand-logo { display: block; width: auto; }
+.external-app[data-tool="jira"] .external-wordmark .ext-brand-logo { height: 32px; width: auto; }
+.external-app[data-tool="codebeamer"] .external-header { background: linear-gradient(var(--accent-ink), var(--ext-cb-topbar-end)); border-bottom: 0; }
+.external-title { margin: 0; flex: 1; text-align: center; font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.external-app[data-tool="codebeamer"] .external-search { flex: 0 1 220px; }
+.external-user { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.external-avatar { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--r-pill); background: var(--ext-cb-link); color: var(--accent-ink); font-size: 12px; font-weight: 700; }
+.external-app[data-tool="codebeamer"] .external-product-tabs { border-top: 1px solid var(--line); border-bottom: var(--sp-0h) solid var(--ext-cb-tab-line); }
+.external-product-tabs button[aria-pressed="false"] { cursor: pointer; color: var(--ext-cb-link); }
+.external-product-tabs button[aria-pressed="false"]:hover { background: var(--ext-cb-selected); }
+.external-context__mark { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--accent-ink); color: var(--ext-cb-header); flex-shrink: 0; }
+.external-app[data-tool="codebeamer"] .external-context { justify-content: flex-start; }
+.external-app[data-tool="codebeamer"] .external-context > div { flex: 1; }
+.external-context__path { flex-basis: 100%; font-size: 11px; opacity: 0.9; overflow-wrap: anywhere; }
+.external-context__icons { display: inline-flex; gap: var(--sp-3); margin-right: var(--sp-4); vertical-align: middle; }
+.external-footer { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); padding: var(--sp-2) var(--sp-4); border-top: 1px solid var(--line-strong); background: color-mix(in srgb, var(--ink) 4%, var(--surface)); color: var(--ink-2); font-size: 11px; }
+.external-footer a { display: inline-flex; align-items: center; min-height: 24px; }
+@media (max-width: 1100px) { .external-title { display: none; } }
+@media (max-width: 900px) { .external-app[data-tool="codebeamer"] .external-search { flex: 1 1 100%; } }
+.external-app[data-tool="codebeamer"] .external-context { word-break: keep-all; overflow-wrap: break-word; }
+@media (max-width: 650px) {
+  .external-user { order: 2; }
+  .external-footer { justify-content: flex-start; padding-left: var(--sp-3); padding-right: var(--sp-3); }
+}
+/* 클릭 영역 24px(WCAG 2.5.8) — 머리글 링크·추적 링크 */
+.external-header > a, .external-feature-link > a, .external-pr > a { display: inline-flex; align-items: center; min-height: 24px; }
+.external-product-tabs { position: relative; }

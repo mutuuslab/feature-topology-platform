@@ -91,6 +91,8 @@ export const extSync = {
     simStatus: '새 상태',
     simUser: '외부 계정',
     simSend: '보내기',
+    // GitLab — 고른 MR의 파이프라인 결과. 병합된 MR이 성공하면 변경 기록(MR 본문의 SW-…@버전)이 등록된다
+    simPipelineHint: 'GitLab은 고른 MR의 파이프라인 결과를 보냅니다(새 상태: success 또는 failed, 비우면 success). 병합된 MR이 성공하면 변경 기록이 등록됩니다.',
     open: '열기',
     revised: (title: string) => `${title} (개정)`,
     simResult: (outcome: string, summary: string) => `${outcome} — ${summary}`,

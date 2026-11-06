@@ -133,6 +133,20 @@ describe('Unleash 연계 패널 (IF-04)', () => {
     expect(screen.getByText('긴급 차단은 FP에서만')).toBeTruthy();
   });
 
+  // 회귀(2026-11-06): Canary 단계 밖 차량의 사유가 코드(COHORT_MISS)로만 보여 오류처럼 읽혔다 — 의도된 단계 배포 상태로 보인다
+  it('차량별 대조의 플랫폼 사유는 업무 말(단계 배포 중 — 대상 밖), 코드는 툴팁', async () => {
+    handler = (url) => {
+      if (url.endsWith('/unleash/evaluation')) return { body: { summary: { vehicles: 1, agree: 1, mismatch: 0, noContext: 0, error: 0 }, rows: [{ vin: 'KMH-NX4-0001', label: 'a', unleash: false, platform: false, platformReason: 'COHORT_MISS', verdict: 'AGREE', why: null }] } };
+      return { body: VIEW() };
+    };
+    mount('/p', '/p', <UnleashPanel policyId="POL-00043" deployed />, 'coordinator');
+    await screen.findByText('country IN KR');
+    fireEvent.click(screen.getByRole('button', { name: '차량별 대조' }));
+    const cell = await screen.findByText('OFF · 단계 배포 중 — 대상 밖');
+    expect(cell.getAttribute('title')).toBe('COHORT_MISS');
+    expect(screen.queryByText(/COHORT_MISS/)).toBeNull();
+  });
+
   it('막힌 계획은 이유를 보여 주고 동기화 버튼을 막는다', async () => {
     handler = () => ({ body: VIEW({ plan: { ...VIEW().plan, ready: false, blockers: ['배포(DEPLOYED)된 정책만 내보낼 수 있습니다 — 현재 DRAFT'] } }) });
     mount('/p', '/p', <UnleashPanel policyId="POL-00009" deployed={false} />, 'approver');

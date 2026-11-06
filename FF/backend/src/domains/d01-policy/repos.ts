@@ -437,6 +437,10 @@ export class ProductRepo {
   update(p: ProductRow) {
     this.db.run('UPDATE product SET lifecycle = ?, doc = ? WHERE catalog_id = ? AND version = ?', p.lifecycle, JSON.stringify(p), p.catalogId, p.version);
   }
+  /** 작성자·작성 시각 — 데이터셋에서 가져온 상품의 이력(새 상품은 insert가 적는다) */
+  setOrigin(catalogId: string, version: string, createdBy: string, createdAt: string) {
+    this.db.run('UPDATE product SET created_by = ?, created_at = ? WHERE catalog_id = ? AND version = ?', createdBy, createdAt, catalogId, version);
+  }
   setApprover(catalogId: string, version: string, kind: 'CONFIG' | 'RELEASE', actorId: string) {
     this.db.run(`UPDATE product SET ${kind === 'CONFIG' ? 'config_approved_by' : 'release_approved_by'} = ? WHERE catalog_id = ? AND version = ?`, actorId, catalogId, version);
   }

@@ -125,9 +125,17 @@ export class FlagCoverageService {
       for (const r of this.db.all<{ publication_id: string; last_at: string }>(`SELECT publication_id, max(at) AS last_at FROM readback WHERE publication_id IN (${pubIds.map(() => '?').join(', ')}) GROUP BY publication_id`, ...pubIds)) lastReport.set(r.publication_id, r.last_at);
     // Unleash — 실제 동기화 기록(IF-04)이 있으면 그것, 없으면 시연 동기화 기록
     const unleash = new Map<string, { policyId: string; revision: number | null; outcome: 'SYNCED' | 'FAILED'; archived: boolean }>();
-    for (const o of this.store.unleashObservations()) unleash.set(o.flagKey, { policyId: o.policyId, revision: o.revision, outcome: o.outcome, archived: o.archived });
     const byPolicy = new Map(this.policies.all().map((p) => [p.policyId, p]));
-    for (const c of this.ifCalls.list({ ifId: 'IF-04' }).sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))) {
+    // 시연 동기화 기록(픽스처)의 정책 ID는 생성기 실행(전시 차량군 포함) 기준 — 다른 시드 조합(전시 없음)에서는 그 ID가 없거나 다른 Flag의 정책이라,
+    // 그때는 이 키의 현재 정책 기록으로 본다(통합 12단계). 실제 기록(IF-04)은 아래에서 덮는다
+    const latestOf = (key: string) => this.policies.all().filter((p) => p.flagKey === key).sort((a, b) => policyRank(a) - policyRank(b) || (b.createdAt < a.createdAt ? -1 : b.createdAt > a.createdAt ? 1 : 0))[0];
+    for (const o of this.store.unleashObservations()) {
+      const own = byPolicy.get(o.policyId);
+      const policyId = !own || own.flagKey !== o.flagKey ? (latestOf(o.flagKey)?.policyId ?? o.policyId) : o.policyId;
+      unleash.set(o.flagKey, { policyId, revision: o.revision, outcome: o.outcome, archived: o.archived });
+    }
+    // list는 최근 순(id 내림차순) — 뒤집어 기록 순서로 두고 시각순으로 정렬한다(안정 정렬: 같은 시각이면 나중 기록이 덮는다)
+    for (const c of this.ifCalls.list({ ifId: 'IF-04' }).reverse().sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0))) {
       const req = c.request as { policyId?: string; revision?: number };
       const res = c.response as { outcome?: string } | null;
       const p = req?.policyId ? byPolicy.get(req.policyId) : undefined;

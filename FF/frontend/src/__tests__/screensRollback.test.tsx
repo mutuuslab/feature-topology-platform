@@ -122,4 +122,17 @@ describe('롤백 화면', () => {
     expect(await within(dlg).findByText('PUB-00011')).toBeTruthy();
     expect(within(dlg).getByText(/완료 · 성공/)).toBeTruthy();
   });
+
+  it('실행 이력 상태 필터에는 서버가 만들 수 있는 상태(실행 중·완료·실패)만 — 늘 빈 결과인 요청은 없다', async () => {
+    // 서버 실행 기록은 RUNNING(또는 재검증 실패 FAILED)부터 남는다 — '요청'을 고르면 데모가 빈 화면이 됐다(2026-11-06)
+    mount('operator', '/ops/rollback');
+    await screen.findByRole('table', { name: '롤백 이력' });
+    const pick = screen.getByRole('combobox', { name: '상태' }) as HTMLSelectElement;
+    expect([...pick.options].map((o) => [o.value, o.textContent])).toEqual([
+      ['', '전체'],
+      ['RUNNING', '실행 중'],
+      ['COMPLETED', '완료'],
+      ['FAILED', '실패'],
+    ]);
+  });
 });

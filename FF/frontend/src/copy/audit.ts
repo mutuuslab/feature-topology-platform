@@ -138,6 +138,24 @@ export function auditActionKo(action: string): string | null {
   return ko ? [ko, ...rest].join(' ') : null;
 }
 
+/** 전후 값 칸의 키 — 화면은 업무 말, 원래 키는 툴팁(차단 시연 검토 2026-11-06: featureIds·vins·kid가 그대로 보였다). 표에 없으면 키 그대로 */
+export const AUDIT_KEY_KO: Record<string, string> = {
+  featureId: 'Feature',
+  featureIds: '함께 차단한 Feature',
+  featureVersion: 'Version',
+  vins: '대상 차량',
+  deactClass: '비활성화 등급',
+  fsmRequired: '기능안전 승인 필요',
+  approvals: '승인 수',
+  role: '서명 역할',
+  kid: '서명 키',
+  reason: '사유',
+  commandSeq: '명령 순번',
+  cohort: '복원 차량',
+  evidenceRef: '재검증 Evidence',
+  restoredVins: '복원한 차량',
+};
+
 export const auditPlus = {
   searchLabel: '대상 (앞부분)',
   searchPlaceholder: 'CR-2026 · FEAT-00022 · BC-ACC-023',
@@ -146,6 +164,8 @@ export const auditPlus = {
   change: '전후 값',
   changeNone: '—',
   more: (n: number) => `외 ${n}개`,
+  vehicles: (n: number) => `${n}대`,
+  approverKey: (name: string) => `${name}의 승인 키`,
   chain: {
     title: '해시 체인 검증',
     state: '상태',

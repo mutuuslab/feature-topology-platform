@@ -1,7 +1,7 @@
 // Feature DB 읽기(30-95 §6.1·§8.4) — 기준 행 검색·상세·분류·출처·품질 지표·발행 이력·세부기능 후보·내보내기.
 // 벤치마크 필드(금액·Make/Buy)는 산정 역할만(read-view.ts, 20-94 §8). 검색 순위·패싯은 read-search.ts(순수 함수).
 import { Injectable } from '@nestjs/common';
-import { REF_PENDING_APPROVED, REF_STATUS_POLICY, REF_STATUSES, refQuality, type RefStatus, type Role, type TaxonomyNode } from '@ff/contracts';
+import { REF_EXPLORE_PARAM, REF_PENDING_APPROVED, REF_STATUS_POLICY, REF_STATUSES, refQuality, type RefStatus, type Role, type TaxonomyNode } from '@ff/contracts';
 import { Clock } from '../../../kernel/clock';
 import { DomainError } from '../../../kernel/errors';
 import { pageLimit, singleQuery } from '../../../kernel/paging';
@@ -22,7 +22,12 @@ export interface RefListQuery {
   offset?: unknown;
   limit?: unknown;
   source?: unknown;
+  /** 다중 선택(쉼표 목록) — statuses·asils·lifecycles·swStacks·tshirts·vehicleTypes·regions */
+  multi?: Record<string, unknown>;
 }
+
+/** 목록 다중 선택 질의 이름 — 상태 + contracts REF_EXPLORE_PARAM */
+export const REF_MULTI_QUERY = ['statuses', ...Object.values(REF_EXPLORE_PARAM)];
 
 const one = (raw: unknown, field: string) => singleQuery(raw, field)?.trim() || undefined;
 
@@ -55,16 +60,17 @@ export class RefdbReadService {
     private readonly exporter: RefdbExportService,
   ) {}
 
-  /** 검색(listRefs) — 페이지 + 전체 수 + 패싯(도메인·컴포넌트·상태). 결과 행에 세부기능 후보 수를 붙인다 */
+  /** 검색(listRefs) — 페이지 + 전체 수 + 패싯(도메인·컴포넌트·상태·출처·분류 트리·다중 선택 축) + 조건 요약. 결과 행에 세부기능 후보 수를 붙인다 */
   list(q: RefListQuery, role: Role) {
-    const query = { q: one(q.q, 'q'), domain: one(q.domain, 'domain'), component: one(q.component, 'component'), status: statusOf(q.status), source: one(q.source, 'source') };
+    const multi = Object.fromEntries(REF_MULTI_QUERY.flatMap((k) => { const v = one(q.multi?.[k], k); return v ? [[k, v]] : []; }));
+    const query = { q: one(q.q, 'q'), domain: one(q.domain, 'domain'), component: one(q.component, 'component'), status: statusOf(q.status), source: one(q.source, 'source'), ...multi };
     const offset = offsetOf(q.offset);
     const limit = pageLimit(q.limit, REF_PAGE_MAX) ?? REF_PAGE_DEFAULT;
     // 검색어가 있을 때만 연결 Feature 이름을 모은다(이름 검색 — 'SCC'·'스마트 크루즈', P1-8)
-    const { rows, facets } = searchRefs(this.repo.listRefs(), this.repo.glossary(), query, query.q ? this.repo.linkedFeatureNames() : undefined);
+    const { rows, facets, summary } = searchRefs(this.repo.listRefs(), this.repo.glossary(), query, query.q ? this.repo.linkedFeatureNames() : undefined);
     const subCount = this.repo.subfunctionCounts();
     const items = rows.slice(offset, offset + limit).map((r) => ({ ...refView(r, role), subfunctionCount: subCount.get(r.component) ?? 0 }));
-    return { items, total: rows.length, offset, limit, facets, release: this.repo.latestRelease()?.release ?? null };
+    return { items, total: rows.length, offset, limit, facets, summary, release: this.repo.latestRelease()?.release ?? null };
   }
 
   /** 상세(refDetail) — 행 + 분류 경로 + 출처 + 세부기능 후보 + 이 행을 쓰는 Feature + 상태 정책 안내 */

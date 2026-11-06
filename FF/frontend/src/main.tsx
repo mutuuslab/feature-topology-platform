@@ -12,6 +12,8 @@ import { CommandPalette } from './shell/CommandPalette';
 import { configureErrorActions } from './design'; // 토큰·폰트·디자인 키트 (레거시 styles.css보다 먼저)
 import { relogin } from './auth';
 import { shouldRetry } from './api/errors';
+import { STATIC_MODE } from './api/client';
+import { onLocalDataChange } from './api/shared-event-source';
 import './styles.css';
 import './design/legacy-bridge.css'; // 레거시 화면을 새 체계로 (styles.css 다음)
 
@@ -21,6 +23,8 @@ const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30
 
 // 오류 안내의 다음 행동 — 다시 로그인, 최신 내용 다시 불러오기(서버 상태만 다시 읽고 화면 입력은 그대로)
 configureErrorActions({ relogin, reload: () => queryClient.invalidateQueries() });
+// 공개 시연 사이트 — 이 브라우저의 시연 데이터가 바뀌면 화면 조회를 새로 읽는다(보이는 것만 바로, 나머지는 다음에 열 때 — 20-60)
+if (STATIC_MODE) onLocalDataChange(() => void queryClient.invalidateQueries());
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

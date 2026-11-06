@@ -1,0 +1,251 @@
+[
+  {
+    "catalogId": "CAT-00001",
+    "version": "3.0.0",
+    "lifecycle": "DEVELOPING",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-09-20T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-10-11T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00002",
+    "version": "4.1.0",
+    "lifecycle": "RELEASED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-27T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-18T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-09-01T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00004",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-09-20T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-10-11T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00007",
+    "version": "1.4.0",
+    "lifecycle": "DEVELOPING",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-09-20T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-10-11T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00010",
+    "version": "1.0.0",
+    "lifecycle": "DEPRECATED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-02-08T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-03-01T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-04-15T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00011",
+    "version": "1.0.0",
+    "lifecycle": "RETIRED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-02-08T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-03-01T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-04-15T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00013",
+    "version": "1.1.0",
+    "lifecycle": "RELEASED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-18T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-09T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-08-23T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00014",
+    "version": "1.1.0",
+    "lifecycle": "RELEASED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-18T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-09T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-08-23T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00015",
+    "version": "1.1.0",
+    "lifecycle": "RELEASED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-18T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-09T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-08-23T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00016",
+    "version": "1.1.0",
+    "lifecycle": "RELEASED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-18T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-09T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-08-23T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00017",
+    "version": "1.0.0",
+    "lifecycle": "DEVELOPING",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-12T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-03T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00018",
+    "version": "1.0.0",
+    "lifecycle": "APPROVED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-12T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-03T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00019",
+    "version": "1.0.0",
+    "lifecycle": "APPROVED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-06-12T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-07-03T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00024",
+    "version": "1.0.0",
+    "lifecycle": "DEPRECATED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-05-28T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-06-18T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-08-02T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00034",
+    "version": "1.4.0",
+    "lifecycle": "DEVELOPING",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-09-20T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-10-11T02:00:00.000Z"
+    },
+    "release": null
+  },
+  {
+    "catalogId": "CAT-00054",
+    "version": "1.0.0",
+    "lifecycle": "DEPRECATED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-04-15T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-05-06T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-06-20T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00055",
+    "version": "1.0.0",
+    "lifecycle": "RETIRED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-04-15T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-05-06T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-06-20T05:00:00.000Z"
+    }
+  },
+  {
+    "catalogId": "CAT-00063",
+    "version": "1.0.0",
+    "lifecycle": "DEPRECATED",
+    "createdBy": "usr-commerce",
+    "createdAt": "2026-05-28T01:00:00.000Z",
+    "config": {
+      "by": "usr-approver",
+      "at": "2026-06-18T02:00:00.000Z"
+    },
+    "release": {
+      "by": "usr-productowner",
+      "at": "2026-08-02T05:00:00.000Z"
+    }
+  }
+]

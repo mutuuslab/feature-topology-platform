@@ -117,7 +117,7 @@ export function UnleashPanel({ policyId, deployed }: { policyId: string; deploye
                       columns={[
                         { key: 'v', header: U.col.vin, cell: (r) => <span className="ds-mono">{r.vin}</span> },
                         { key: 'u', header: U.col.unleash, cell: (r) => <span className="ds-mono">{onOff(r.unleash)}</span> },
-                        { key: 'p', header: U.col.platform, cell: (r) => <span className="ds-mono">{`${onOff(r.platform)}${r.platformReason ? ` · ${r.platformReason}` : ''}`}</span> },
+                        { key: 'p', header: U.col.platform, cell: (r) => <span title={r.platformReason ?? undefined}>{`${onOff(r.platform)}${r.platformReason ? ` · ${ko.activation.reason[r.platformReason] ?? r.platformReason}` : ''}`}</span> },
                         { key: 'x', header: U.col.verdict, cell: (r) => <VerdictBadge value={VERDICT[r.verdict]} /> },
                         { key: 'w', header: U.col.why, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.why ?? ''}</span> },
                       ]}

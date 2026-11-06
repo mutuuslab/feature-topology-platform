@@ -4,13 +4,12 @@
 // 수신자: 개인(요청자·작성자·배포자), 역할(승인 대상자·운영 담당자, 본인·직무 분리 제외 계정 빼고), 팀(Feature Owner = ownerId 팀).
 // 채널: 화면(Web) 알림만 — 사용자 결정 D-RD-7(2026-10-24, 메일 채널 없음). 끄는 설정이 없어 승인 요청·긴급(CRITICAL)을 포함한
 // 모든 알림이 받는 사람의 알림 목록에 항상 남는다(읽음·안 읽음은 계정별).
-import { z } from 'zod';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
 import type { Role } from '../enums';
-import { isAppPath, isRecipient, NOTIFICATION_SENT_EVENT, NotificationCategory, type NotificationSeverity } from './notification-keys';
+import { isAppPath, isRecipient, NOTIFICATION_SENT_EVENT, NotificationCategory, REFDB_REF_REJECTED_EVENT, REFDB_REVIEW_DUE_EVENT, type NotificationSeverity } from './notification-keys';
 
-// 범주·심각도는 notification-keys.ts — 상단바 종(첫 화면)이 이 규칙표 없이 읽는다
+// 범주·심각도·이벤트 종류·REFDB 이벤트·읽음 처리 본문은 notification-keys.ts — 상단바 종·API 경로 표(첫 화면)가 이 규칙표 없이 읽는다
 
 export type Recipient = { kind: 'user'; id: string } | { kind: 'role'; role: Role } | { kind: 'team'; team: string };
 
@@ -78,10 +77,6 @@ const roleNames = (rs: unknown): Recipient[] =>
   (Array.isArray(rs) ? rs : [])
     .filter((r): r is Role => typeof r === 'string' && (HUMAN_ROLES as readonly string[]).includes(r))
     .map((role) => ({ kind: 'role', role }));
-
-/** Feature DB 알림 이벤트 — 출처 정기 점검 기한 지남 · 추가 요청 반려(요청 중 행 폐기) */
-export const REFDB_REVIEW_DUE_EVENT = 'refdb.source.review-due';
-export const REFDB_REF_REJECTED_EVENT = 'refdb.ref.rejected';
 
 /**
  * 이벤트 종류 → 알림 규칙. 없는 이벤트는 알림을 만들지 않는다(이벤트 이력에만 남는다).
@@ -793,9 +788,3 @@ export const recipientKey = (r: Recipient) => (r.kind === 'user' ? `user:${r.id}
 
 /** 계정이 볼 수신자 키(팀 '*'는 'team:*'로 표기 — 저장소가 모든 팀으로 해석) */
 export const accountKeys = (a: Pick<NotificationAccount, 'id' | 'roles' | 'teams'>) => [`user:${a.id}`, ...a.roles.map((r) => `role:${r}`), ...(a.teams === '*' ? ['team:*'] : a.teams.map((t) => `team:${t}`))];
-
-// ─── 읽음 처리 ───────────────────────────────────────────────
-
-export const NotificationReadAllBody = z.object({ category: NotificationCategory.optional() }).strict();
-export type NotificationReadAllBody = z.infer<typeof NotificationReadAllBody>;
-

@@ -11,6 +11,7 @@ import { ko } from '../../copy/ko';
 import { ops5y } from '../../copy/ops5y';
 import { formatCount, formatExact } from '../../design/format';
 import { AsyncView, DataTable, EventStream, KeyValue, PageHeader, Panel, Segmented, Select } from '../../design';
+import { mapScope as MS } from '../../copy/map-scope';
 import { when } from '../shared';
 import { ACTIVATION_VAR, FleetMapCanvas, HOLLOW_VAR, NO_RUNTIME_VAR, stateLabel, stateVar, SUBSCRIPTION_VAR, VIEWS, type MapView, type MapViewport } from './FleetMapCanvas';
 
@@ -155,6 +156,16 @@ function Legend({ lens, items, summary, clustered }: { lens: MapLens; items: Fle
           </span>
         </li>
       )}
+      {items.filter((x) => x.source !== 'SYNTHETIC').length > 1 && (
+        <li>
+          <span className="fm-chip">
+            <span className="fm-group fm-group--chip" aria-hidden="true">
+              <span>n</span>
+            </span>
+            {F.legendGroup}
+          </span>
+        </li>
+      )}
       {clustered && (
         <li>
           <span className="fm-chip">
@@ -277,8 +288,8 @@ function Detail({ vin }: { vin: string }) {
                         key: 'r',
                         header: '사유',
                         cell: (f) => (
-                          <span className="ds-mono">
-                            {f.local.reason}
+                          <span title={f.local.reason}>
+                            {ko.activation.reason[f.local.reason] ?? f.local.reason}
                             {f.drift ? ' ≠' : ''}
                           </span>
                         ),
@@ -295,6 +306,13 @@ function Detail({ vin }: { vin: string }) {
   );
 }
 
+/** 고르기 전 오른쪽 칸에 보일 주의 차량 수 */
+const ATTENTION_TOP = 5;
+
+/** 국가 조건으로 열 때 처음 볼 지역 — 지역 보기가 있는 국가만, 나머지는 세계 */
+const EU_COUNTRIES = new Set(['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'SE', 'PL', 'CZ', 'GB', 'UK', 'EU', 'NO', 'DK', 'FI', 'PT', 'IE', 'CH']);
+export const countryView = (country: string): MapView => (country === 'KR' ? 'kr' : country === 'US' ? 'us' : EU_COUNTRIES.has(country) ? 'eu' : 'world');
+
 export function FleetMapScreen() {
   const [sp, setSp] = useSearchParams();
   // 주소를 필터의 정본으로 쓴다. 직접 연 Flag 지도·새로고침·SPA 뒤로/앞으로가 같은 조회를 만든다.
@@ -302,14 +320,17 @@ export function FleetMapScreen() {
   const withSynthetic = ['ALL', 'SYNTHETIC', 'all'].includes(sp.get('source') ?? '');
   const catalogId = sp.get('catalogId') ?? sp.get('catalog') ?? '';
   const flagKey = sp.get('flagKey') ?? '';
-  const filter = (key: 'lens' | 'source' | 'catalogId' | 'flagKey', value: string) => setSp((p) => {
+  // 홈 수신 현황의 국가·차종 고리에서 온 조건 — 그 국가·차종 차량만 그린다
+  const country = sp.get('country') ?? '';
+  const model = sp.get('model') ?? '';
+  const filter = (key: 'lens' | 'source' | 'catalogId' | 'flagKey' | 'country' | 'model', value: string) => setSp((p) => {
     const n = new URLSearchParams(p);
     if (key === 'catalogId') n.delete('catalog');
     if (value) n.set(key, value);
     else n.delete(key);
     return n;
   });
-  const [view, setView] = useState<MapView>('world');
+  const [view, setView] = useState<MapView>(() => countryView(country));
   // 핵심 메시지 행동을 누를 때마다 늘린다 — 같은 차량을 다시 눌러도(지도를 옮긴 뒤) 지도가 그 차량으로 돌아간다
   const [focus, setFocus] = useState(0);
   const selected = sp.get('vin');
@@ -355,7 +376,7 @@ export function FleetMapScreen() {
   );
   const live = usePlatformEvents(STREAM, ['fleetMap']);
 
-  const items = useMemo(() => [...(demo.data?.items ?? []), ...(withSynthetic ? (syn.data?.items ?? []) : [])], [demo.data, syn.data, withSynthetic]);
+  const items = useMemo(() => [...(demo.data?.items ?? []), ...(withSynthetic ? (syn.data?.items ?? []) : [])].filter((v) => (!country || v.country === country) && (!model || v.vehicleModel === model)), [demo.data, syn.data, withSynthetic, country, model]);
   const synData = withSynthetic ? syn.data : undefined;
   const summary = useMemo(() => (synData ? mergeSummary(summarize(demo.data?.items ?? []), synData.summary) : summarize(items)), [items, demo.data, synData]);
   const clusters = useMemo(() => (synData && synData.pointsOmitted ? (synData.clusters ?? []) : []), [synData]);
@@ -364,7 +385,17 @@ export function FleetMapScreen() {
   // 안내 문구는 지금 보이는 범위 기준 — 국가 요약(전체)과 다르다
   const inView = clusters.reduce((t, c) => t + c.count, 0);
   const count = (pred: (v: FleetMapVehicle) => boolean) => items.filter(pred).length.toLocaleString('ko-KR');
-  const demoItems = demo.data?.items ?? [];
+  const demoItems = useMemo(() => (demo.data?.items ?? []).filter((v) => (!country || v.country === country) && (!model || v.vehicleModel === model)), [demo.data, country, model]);
+  // 주의 차량 — 긴급 차단 먼저, 위치가 있는 차량 먼저. 핵심 메시지 행동과 고르기 전 오른쪽 칸(상위 목록)이 같은 순서를 쓴다
+  const attention = useMemo(() => {
+    const rank = (v: FleetMapVehicle) => (v.activation === 'DISABLED' ? 0 : 2) + (v.position ? 0 : 1);
+    return items.filter((v) => v.activation === 'DISABLED' || v.activation === 'UNKNOWN').sort((a, b) => rank(a) - rank(b));
+  }, [items]);
+  const locate = (vin: string) => {
+    select(vin);
+    setFocus((x) => x + 1);
+    document.getElementById('fm-map')?.scrollIntoView?.({ block: 'nearest' });
+  };
   const forbidden = demo.error?.status === 403;
   const requestedFlagMissing = lens === 'activation' && !!flagKey && demo.isSuccess && !(demo.data?.flagKeys ?? []).includes(flagKey);
 
@@ -454,9 +485,7 @@ export function FleetMapScreen() {
         message={(() => {
           if (forbidden) return { tone: 'neutral', text: F.key.forbidden };
           if (!demo.data) return { tone: 'neutral', value: '—', text: F.key.attention };
-          // 긴급 차단 먼저, 위치가 있는 차량 먼저 — 행동은 그 차량을 골라 지도를 옮긴다(여러 대면 누를 때마다 다음 차량)
-          const rank = (v: FleetMapVehicle) => (v.activation === 'DISABLED' ? 0 : 2) + (v.position ? 0 : 1);
-          const attention = items.filter((v) => v.activation === 'DISABLED' || v.activation === 'UNKNOWN').sort((a, b) => rank(a) - rank(b));
+          // 행동은 주의 차량(긴급 차단 먼저)을 골라 지도를 옮긴다(여러 대면 누를 때마다 다음 차량)
           if (!attention.length) return { tone: 'ok', text: F.key.clean };
           const at = attention.findIndex((v) => v.vin === selected);
           const next = attention[(at + 1) % attention.length];
@@ -469,11 +498,7 @@ export function FleetMapScreen() {
                 type="button"
                 className="fm-linkbtn"
                 data-vin={next.vin}
-                onClick={() => {
-                  select(next.vin);
-                  setFocus((x) => x + 1);
-                  document.getElementById('fm-map')?.scrollIntoView?.({ block: 'nearest' });
-                }}
+                onClick={() => locate(next.vin)}
               >
                 {at >= 0 && attention.length > 1 ? F.key.next : F.key.locate}
               </button>
@@ -507,6 +532,14 @@ export function FleetMapScreen() {
               eyebrow={`${synData ? O.represented(represented) : `${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString('ko-KR')}`}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
             >
               {controls}
+              {(country || model) && (
+                <p className="fm-note" data-map-scope={`${country}|${model}`}>
+                  {MS.note(country, model)}{' '}
+                  <button type="button" className="ds-btn ds-btn--ghost" onClick={() => setSp((p) => { const n = new URLSearchParams(p); n.delete('country'); n.delete('model'); return n; })}>
+                    {MS.clear}
+                  </button>
+                </p>
+              )}
               {requestedFlagMissing && <p className="fm-note" data-testid="map-requested-flag"><code>{flagKey}</code> · {F.requestedFlagNote}</p>}
               <AsyncView state={asyncState(demo, false)} error={demo.error} onRetry={() => demo.refetch()}>
                 <FleetMapCanvas items={items} lens={lens} selected={selected} focus={focus} onSelect={select} view={view} clusters={clusters} onViewChange={onViewChange} />
@@ -517,7 +550,7 @@ export function FleetMapScreen() {
             </Panel>
             <div id="fm-side" className="fm-side">
               <Panel
-                title={selected ? F.detail(selected) : F.side}
+                title={selected ? F.detail(selected) : F.summary}
                 id="fm-detail"
                 actions={
                   selected ? (
@@ -530,13 +563,27 @@ export function FleetMapScreen() {
                 {selected ? (
                   <Detail key={selected} vin={selected} />
                 ) : (
-                  <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
+                  // 고르기 전 — 빈 상세 칸 대신 국가별 대수와 주의 차량 상위 목록(디자인 검토 2026-11-05: 빈 칸이 지도 폭만 줄였다)
+                  <div className="fm-overview" data-testid="fleet-map-summary">
+                    {summaryTable}
+                    {attention.length > 0 && (
+                      <section className="fm-attn" aria-labelledby="fm-attn-title" data-testid="fleet-map-attention">
+                        <h3 id="fm-attn-title" className="fm-attn__title">{F.attentionTop(Math.min(ATTENTION_TOP, attention.length), attention.length)}</h3>
+                        <p className="fm-note">{F.attentionHint}</p>
+                        <ol className="fm-attn__list">
+                          {attention.slice(0, ATTENTION_TOP).map((v) => (
+                            <li key={v.vin}>
+                              <button type="button" className="fm-attn__item" onClick={() => locate(v.vin)}>
+                                <span className="ds-mono">{v.vin}</span>
+                                <span className="fm-sub">{v.position ? `${v.position.city} · ${v.country}` : v.country}</span>
+                                <StateChip cssVar={stateVar(v, 'activation')} label={stateLabel(v, 'activation')} />
+                              </button>
+                            </li>
+                          ))}
+                        </ol>
+                      </section>
+                    )}
                     <p className="fm-note">{F.pick}</p>
-                    {/* 국가별 현황은 보조 정보 — 접어 두어 핵심 메시지·지도와 시선을 다투지 않게(UX3-05). 펼치면 같은 표 */}
-                    <details className="fm-fold" data-testid="fleet-map-summary">
-                      <summary>{F.summaryFold(summary.length)}</summary>
-                      {summaryTable}
-                    </details>
                   </div>
                 )}
               </Panel>

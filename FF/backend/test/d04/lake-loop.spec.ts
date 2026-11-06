@@ -158,7 +158,7 @@ describe('Data Lake 꺼짐(IF_MODE_15=off) — 판단에 Lake 값을 쓰지 않�
 describe('데모 시드 — FF가 주인인 예시(진행된 점검 결과·수집 정책·모델 승인·중단 기준)', () => {
   let app: INestApplication;
   let http: () => any;
-  beforeAll(async () => ({ app, http } = await bootApp({ at: '2026-10-20T03:00:00.000Z', demoActivity: true })));
+  beforeAll(async () => ({ app, http } = await bootApp({ at: '2026-10-20T03:00:00.000Z', demoActivity: true, showcaseFill: false })));
   afterAll(() => app?.close());
 
   it('점검 결과 다섯 상태가 모두 있고 기한 지남이 있다, 수집 정책·모델 승인이 채워진다', async () => {

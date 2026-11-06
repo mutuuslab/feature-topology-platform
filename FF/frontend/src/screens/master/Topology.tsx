@@ -2,7 +2,6 @@
 // 그래프는 전체 Feature·관계를 한 화면에 두고, 고른 Feature(주소 feature)와 관계(주소 relation)를 강조한다.
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, GateBadge, PageHeader, Panel, Select, SummaryLine, Toolbar } from '../../design';
@@ -151,7 +150,6 @@ function CreateDependency() {
   const create = useApiMutation<{ dependencyId: string; verdict: string }>('createDependency', ['dependencies', 'topologyGraph', 'events', 'audit']);
   const [f, setF] = useState({ type: 'REQUIRES', sourceFeatureId: '', sourceVersion: '', targetFeatureId: '', targetVersion: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value.trim() }));
-  if (STATIC_MODE) return null;
   return (
     <Panel title={T.create} id="topo-create">
       <div className="ds-toolbar">

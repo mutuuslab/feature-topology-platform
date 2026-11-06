@@ -138,7 +138,7 @@ export function PostReviewForm({ killId, row }: { killId: string; row?: Review |
       <KeyValue rows={[{ k: R.col.review, v: row.review.summary, note: `${personName(row.review.reviewer)} · ${ROLE_LABEL[row.review.role as Role] ?? row.review.role} · ${when(row.review.at)}${row.review.late ? ` · ${R.late}` : ''}` }]} />
     );
   return (
-    <div style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="post-review">
+    <div className="ds-why-inline" style={{ display: 'grid', gap: 'var(--sp-2)' }} data-testid="post-review">
       {row && <p className="ds-field__hint">{`${R.col.due} ${when(row.due)} · ${R.status[row.status]} · ${R.excluded}`}</p>}
       {blocked && (
         <p className="ds-field__hint" role="status" data-testid="post-review-blocked">

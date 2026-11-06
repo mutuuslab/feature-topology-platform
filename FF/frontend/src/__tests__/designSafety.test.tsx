@@ -103,6 +103,8 @@ describe('승인 칸·누적 상한 (FFG-PLT-005·016·SEC-003)', () => {
     );
     expect(screen.getByText(/FFG-PLT-016/)).toBeTruthy();
     expect(screen.getByText('대기 02:31')).toBeTruthy();
+    // 회귀(2026-11-06 차단 시연): 서명 시각이 UTC(10:02:41)로 나와 같은 서랍의 한국 시각보다 9시간 앞서 보였다
+    expect(screen.getByText('19:02:41')).toBeTruthy();
     // 회귀(하네스 3판 시각 검토): 승인 칸에 역할 enum(OPS_LEAD)이 그대로 보였다 → 한글 라벨, 원문은 툴팁
     expect(screen.queryByText(/OPS_LEAD/)).toBeNull();
     expect(screen.getByTitle('OPS_LEAD').textContent).toBe(ROLE_LABEL.OPS_LEAD);

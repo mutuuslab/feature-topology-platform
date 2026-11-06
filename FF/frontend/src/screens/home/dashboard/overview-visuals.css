@@ -1,0 +1,139 @@
+/* 홈 수신 현황 그림 — 흐름 띠·내 차례·KPI 히어로·상태 막대·Top 목록. 대시보드 디자인 언어(docs/70-design-system/70-50) 기준.
+   색·간격은 토큰만, 그림 표식은 --mark-*(모양 병기), 숫자는 Mono tabular. 폭은 현황 상자 기준(컨테이너 질의) */
+.operation-overview { container: ov / inline-size; }
+.ov-eyebrow { margin: 0 0 var(--sp-3); font-size: var(--fs-xs); font-weight: 650; letter-spacing: .02em; color: var(--muted); }
+.ov-unit { font-size: .5em; font-weight: 600; margin-left: var(--sp-0h); color: var(--muted); letter-spacing: 0; }
+
+/* ── 맨 위: 흐름 띠 | 내 차례 ── */
+.ov-lead { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dash-gap); }
+@container ov (min-width: 860px) { .ov-lead { grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); } }
+.ov-flow, .ov-work { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: var(--sp-4); min-width: 0; }
+.ov-flow__steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+@container ov (min-width: 620px) { .ov-flow__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6); } }
+.ov-flow__steps li { position: relative; display: flex; gap: var(--sp-3); align-items: flex-start; min-width: 0; }
+@container ov (min-width: 620px) {
+  /* 단계 사이 화살표 — 장식 */
+  .ov-flow__steps li + li::before { content: ''; position: absolute; left: calc(-1 * var(--sp-6) + var(--sp-1)); top: 9px; width: var(--sp-2); height: var(--sp-2); border-top: 1px solid var(--chart-line); border-right: 1px solid var(--chart-line); transform: rotate(45deg); }
+}
+/* 단계 번호 — 의미 없는 색 대신 계기판 눈금처럼 무채 테두리 */
+.ov-flow__no { flex: none; display: grid; place-items: center; width: var(--sp-6); height: var(--sp-6); border-radius: 50%; border: 1px solid var(--line-strong); color: var(--ink-2); font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 700; }
+.ov-flow__body { display: grid; gap: var(--sp-1); min-width: 0; font-size: var(--fs-sm); }
+.ov-flow__body strong { font-size: var(--fs-xs); font-weight: 650; color: var(--muted); }
+/* 한글이 섞인 값 — SUIT + 숫자 폭 고정(한글을 Mono로 쓰지 않는다, 디자인 언어 §2) */
+.ov-flow__value { font-size: var(--fs-md); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+.ov-flow__sub { font-size: var(--fs-xs); color: var(--muted); }
+.ov-flow__steps li[data-tone='warn'] .ov-flow__sub { color: var(--warn); font-weight: 600; }
+.ov-flow__steps li[data-tone='warn'] .ov-flow__sub::before { content: ''; display: inline-block; width: var(--sp-2); height: var(--sp-2); margin-right: var(--sp-1h); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--mark-warn); vertical-align: -1px; }
+.ov-flow__body a { font-size: var(--fs-xs); justify-self: start; }
+.ov-work__counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-3); margin: 0 0 var(--sp-2); }
+.ov-work__counts > div { min-width: 0; }
+.ov-work__counts dt { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
+.ov-work__counts dd { margin: 0; font-family: var(--font-mono); font-size: var(--fs-kpi); font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums slashed-zero; color: var(--ink); }
+.ov-work__counts [data-hot] dd { color: var(--danger); }
+.ov-work__links { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); margin-top: var(--sp-3); font-size: var(--fs-sm); }
+
+/* ── KPI: 히어로 띠(면 그대로, 숫자만 크게 — 왼쪽 값 · 오른쪽 구성 막대·추세) + 보조 타일 한 줄 ── */
+.ov-kpi-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+.ov-hero { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--sp-3) var(--sp-8); padding: var(--sp-4) var(--sp-5); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); min-width: 0; }
+@container ov (min-width: 760px) { .ov-hero { grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr); } }
+.ov-hero__side { display: grid; gap: var(--sp-2); min-width: 0; }
+.ov-hero__grid { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2) var(--sp-4); align-items: start; }
+.ov-hero dt { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
+.ov-hero dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums slashed-zero; color: var(--ink); }
+.ov-hero__main dd { font-size: var(--fs-kpi-hero); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; }
+.ov-hero__main dd small { display: block; margin-top: var(--sp-1); font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.ov-hero__main { grid-column: 1; grid-row: 1; display: grid; gap: var(--sp-2); }
+/* 큰 숫자의 글꼴 상자(어센더)가 라벨과 겹치지 않게 — 라벨과 값 사이 8px(배치 하네스 글자 겹침) */
+.ov-hero__count { grid-column: 2; grid-row: 1; text-align: right; }
+.ov-hero__count dd { font-size: var(--fs-lg); font-weight: 650; }
+.ov-hero__bar { display: flex; gap: var(--sp-0h); height: var(--sp-2); border-radius: var(--r-sm); overflow: hidden; background: var(--track-bg); }
+.ov-hero__bar > span { min-width: 0; border-radius: var(--r-sm); }
+.ov-hero__bar [data-part='received'] { background: var(--mark-ok); }
+.ov-hero__bar [data-part='unknown'] { background: var(--mark-warn); }
+.ov-hero__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-4); }
+.ov-hero__legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); font-size: var(--fs-xs); color: var(--muted); }
+.ov-hero__legend li { display: inline-flex; align-items: center; gap: var(--sp-1h); }
+.ov-hero__legend li::before { content: ''; width: var(--sp-2); height: var(--sp-2); border-radius: 50%; background: var(--mark-ok); }
+.ov-hero__legend li[data-part='unknown']::before { background: transparent; box-shadow: inset 0 0 0 2px var(--mark-warn); }
+.ov-hero__legend b { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.ov-hero__trend { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.ov-hero__trend-label { font-size: var(--fs-xs); color: var(--muted); }
+.ov-hero__trend svg { display: block; width: 160px; height: 28px; overflow: visible; }
+.ov-hero__trend path { fill: none; stroke: var(--chart-line); stroke-width: 1.5; stroke-linejoin: round; }
+.ov-kpis { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); align-content: start; }
+@container ov (min-width: 520px) { .ov-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@container ov (min-width: 1000px) { .ov-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.ov-kpis > div { position: relative; min-width: 0; padding: var(--sp-3) var(--sp-4); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); display: grid; align-content: start; gap: var(--sp-1); }
+.ov-kpis > div[data-link]:hover { background: var(--surface-2); border-color: var(--line-strong); }
+.ov-kpis dt { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: var(--sp-1h); }
+.ov-kpis dt a { color: inherit; text-decoration: none; }
+/* 타일 전체가 링크 — 라벨 링크를 타일 크기로 늘린다(초점 고리는 타일 둘레) */
+.ov-kpis dt a::after { content: ''; position: absolute; inset: 0; border-radius: var(--r); }
+.ov-kpis dt a:focus-visible { outline: none; }
+.ov-kpis dt a:focus-visible::after { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ov-kpis > div[data-link] dt::after { content: '→'; margin-left: auto; color: var(--faint); }
+.ov-kpis dd { margin: 0; font-family: var(--font-mono); font-size: var(--fs-kpi); font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums slashed-zero; color: var(--ink); }
+/* 주의·위험 — 값 글자 의미색 + 라벨 앞 모양(○ 주의, ■ 위험). 0이면 붙이지 않는다(화면에서 data-tone을 뺀다) */
+.ov-kpis > div[data-tone] dt::before { content: ''; flex: none; width: var(--sp-2); height: var(--sp-2); }
+.ov-kpis > div[data-tone='warn'] dt::before { border-radius: 50%; box-shadow: inset 0 0 0 2px var(--mark-warn); }
+.ov-kpis > div[data-tone='danger'] dt::before { background: var(--mark-danger); }
+.ov-kpis > div[data-tone='warn'] dd { color: var(--warn); }
+.ov-kpis > div[data-tone='danger'] dd { color: var(--danger); }
+
+/* ── 국가·차종 상태 막대(이름 · 수 · 막대 · 비중·수신 · 지도) ── */
+.ov-groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dash-gap); }
+@container ov (min-width: 760px) { .ov-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ov-bars, .ov-top { min-width: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: var(--sp-4); }
+.ov-bars__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.ov-bars__head h3, .ov-top h3 { margin: 0; font-size: var(--fs-base); }
+.ov-bars__sum { font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--muted); }
+.ov-bars__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.ov-bars__list li { display: grid; grid-template-columns: minmax(64px, 7.5em) auto minmax(0, 1fr) auto; grid-template-areas: 'name num bar map' '. . meta .'; gap: var(--sp-0h) var(--sp-3); align-items: center; }
+.ov-bars__name { grid-area: name; min-width: 0; padding: var(--sp-1) 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); font-weight: 600; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.ov-bars__name:hover { color: var(--accent); }
+.ov-bars__num { grid-area: num; font-size: var(--fs-sm); font-weight: 700; text-align: right; }
+.ov-bars__track { grid-area: bar; min-width: 0; }
+.ov-bars__bar { display: flex; gap: var(--sp-0h); height: 12px; min-width: var(--sp-3); cursor: pointer; }
+.ov-bars__bar > span { min-width: var(--sp-0h); background: var(--operation-state); border-radius: var(--r-sm); }
+.ov-bars__bar:hover { filter: brightness(1.08); }
+.ov-bars__meta { grid-area: meta; font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--muted); }
+.ov-bars__map { grid-area: map; min-width: 32px; min-height: 24px; display: inline-flex; align-items: center; justify-content: center; padding: 0 var(--sp-1h); border-radius: var(--r-sm); font-size: var(--fs-xs); color: var(--accent); }
+.ov-bars__map:hover { background: var(--accent-soft); }
+
+/* ── Top 목록 ── */
+.ov-tops { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dash-gap); align-items: start; }
+@container ov (min-width: 940px) { .ov-tops { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ov-top { display: flex; flex-direction: column; gap: var(--sp-3); }
+.ov-top__counts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); }
+.ov-top__counts li { display: inline-flex; gap: var(--sp-1h); align-items: center; font-size: var(--fs-xs); color: var(--muted); }
+.ov-top__counts strong { font-family: var(--font-mono); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; color: var(--ink); }
+.ov-top__counts li[data-zero] { color: var(--faint); }
+.ov-top__counts li[data-zero] strong { color: var(--faint); font-weight: 500; }
+/* 종류 표식 — 거부·차단 ■ 위험, 미확인 ○ 주의 */
+.ov-top__counts li::before, .ov-top__kind::before { content: ''; flex: none; width: var(--sp-2); height: var(--sp-2); background: var(--mark-danger); }
+.ov-top__counts [data-kind='UNKNOWN']::before, .ov-top__list [data-kind='UNKNOWN'] .ov-top__kind::before { background: transparent; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--mark-warn); }
+.ov-top__list { list-style: none; margin: 0; padding: 0; display: grid; }
+.ov-top__list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-1) var(--sp-3); align-items: start; padding: var(--sp-2) 0; border-top: 1px solid var(--line); }
+.ov-top__list li:first-child { border-top: 0; }
+.ov-top__list li:has(.ov-top__num) { grid-template-columns: minmax(0, 1fr) auto; }
+.ov-top__list li:not(:has(.ov-top__kind)):not(:has(.ov-top__num)) { grid-template-columns: minmax(0, 1fr); }
+.ov-top__kind { display: inline-flex; align-items: center; gap: var(--sp-1h); font-size: var(--fs-xs); font-weight: 650; white-space: nowrap; color: var(--ink-2); }
+.ov-top__main { display: grid; gap: var(--sp-0h); min-width: 0; font-size: var(--fs-sm); }
+.ov-top__main a { overflow-wrap: anywhere; }
+.ov-top__main code { font-size: var(--fs-xs); }
+.ov-top__meta { font-size: var(--fs-xs); color: var(--muted); overflow-wrap: anywhere; }
+.ov-top__at { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--faint); font-variant-numeric: tabular-nums; }
+.ov-top__num { font-family: var(--font-mono); font-size: var(--fs-md); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+/* 회신 진행 — 진행은 정보색(대기를 녹색으로 칠하지 않는다) */
+.ov-top__gauge { display: block; height: var(--sp-1); border-radius: var(--r-sm); background: var(--track-bg); overflow: hidden; margin-top: var(--sp-1); }
+.ov-top__gauge > span { display: block; height: 100%; background: var(--mark-info); }
+.ov-top__lead { margin: 0; display: flex; align-items: center; gap: var(--sp-1h); font-size: var(--fs-sm); font-weight: 600; color: var(--warn); }
+.ov-top__lead::before { content: ''; flex: none; width: var(--sp-2); height: var(--sp-2); border-radius: 50%; box-shadow: inset 0 0 0 2px var(--mark-warn); }
+.ov-top__more { align-self: flex-start; }
+.ov-top__morelink { font-size: var(--fs-xs); }
+
+@container ov (max-width: 420px) {
+  .ov-hero__grid { grid-template-columns: minmax(0, 1fr); }
+  .ov-hero__count { grid-column: 1; grid-row: 2; text-align: left; }
+  .ov-bars__list li { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'name num map' 'bar bar bar' 'meta meta meta'; }
+}

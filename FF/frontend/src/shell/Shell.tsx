@@ -8,6 +8,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { procedures } from '../copy/procedures';
+import { sim as SIM } from '../copy/sim';
 import { DEMO_EXTRAS, OIDC_AUTH } from '../auth-mode';
 import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
 import { useMotion } from '../state/motion';
@@ -33,6 +34,8 @@ import './shell.css';
 
 // 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
 const ScreenProcedure = lazy(() => import('./ScreenProcedure'));
+// 공개 시연 사이트 — 이 브라우저의 시연 데이터를 처음 상태로(누를 때만 불러온다, 20-60)
+const DemoReset = lazy(() => import('./DemoReset'));
 
 const LS_PRESENT = 'ff.present';
 const LS_MYROLE = 'ff.myRole';
@@ -96,6 +99,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const [panelOpen, setPanelOpen] = usePersistent(LS_PANEL, !narrow);
   const [q, setQ] = useState('');
   const [procOpen, setProcOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   // 따라하기 진행 중이면 오른쪽에 가이드 패널 열(접으면 떠 있는 버튼만) · 표준 설명 모드는 html[data-explain]
   // 운영 빌드는 따라하기가 없다(D-RD-8) — 브라우저에 남은 진행 상태가 있어도 패널 자리를 열지 않는다
   const learnState = useLearn();
@@ -218,6 +222,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
           <Button variant="ghost" className="sh-lang" aria-label={ko.shell.language} title={ko.shell.language} onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>
             {lang.toUpperCase()}
           </Button>
+          {STATIC_MODE && <Button variant="ghost" icon="reset" aria-label={SIM.reset} title={SIM.reset} onClick={() => setResetOpen(true)} data-testid="demo-reset-open" />}
           <Button
             variant="ghost"
             icon="logout"
@@ -309,12 +314,6 @@ function ShellFrame({ children }: { children: ReactNode }) {
       )}
 
       <main className="sh-main" id="main" data-area={dept ? undefined : zone}>
-        {STATIC_MODE && (
-          <div className="ds-stale" role="status" data-static-demo>
-            <Icon name="alert" size={16} />
-            {ko.page.readOnly}
-          </div>
-        )}
         {sessionExpired && (
           <Suspense fallback={null}>
             <SessionBanner />
@@ -339,6 +338,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
       {procOpen && (
         <Suspense fallback={null}>
           <ScreenProcedure onClose={() => setProcOpen(false)} />
+        </Suspense>
+      )}
+      {resetOpen && (
+        <Suspense fallback={null}>
+          <DemoReset onClose={() => setResetOpen(false)} />
         </Suspense>
       )}
       <FeaturePeek />

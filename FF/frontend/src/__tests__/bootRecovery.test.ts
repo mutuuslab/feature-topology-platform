@@ -106,4 +106,12 @@ describe('React와 분리된 화면 복구', () => {
   it('첫 화면 추가 스크립트는 1KiB gzip보다 작다', () => {
     expect(gzipSync(boot).length).toBeLessThan(1024);
   });
+
+  // 회귀(2026-11-06 로컬 의존 점검): 공개 사이트 복구 안내가 'localhost로 접속했다면…' 로컬 PC 기준으로 쓰여 있었다
+  it('복구 안내는 접속 주소와 상관없이 쓴다 — localhost·127.0.0.1 안내 없음', () => {
+    const { window } = page(recovery, '/feature-topology-platform/recovery.html');
+    const text = window.document.body.textContent ?? '';
+    expect(text).not.toMatch(/localhost|127\.0\.0\.1/);
+    expect(text).toContain('다시 열어');
+  });
 });

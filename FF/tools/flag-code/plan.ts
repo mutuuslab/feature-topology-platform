@@ -20,7 +20,6 @@ const RETIRE_LATEST = Date.parse('2026-10-01T09:00:00+09:00');
 /** 기존 6개 시연 Flag의 Feature — 의도적 이상 상태를 넣지 않는다(20-96 화면·e2e 근거 유지) */
 export const DEMO_FEATURES = new Set(['FEAT-00022', 'FEAT-00024', 'FEAT-00027']);
 /** §5.5 Unleash 불일치 — 시연 동기화 기록을 r2로 둔다(정책은 데모 활동으로 r3까지 간다) */
-export const UNLEASH_MISMATCH = { flagKey: 'ivi_00027_detail', revision: 2 } as const;
 const AT = (s: string) => Date.parse(s);
 export const ANOMALY_AT = {
   callDeleted: [AT('2026-10-20T10:00:00+09:00'), AT('2026-10-27T10:00:00+09:00')],
@@ -88,6 +87,8 @@ export interface FeatureP {
   latest: VersionM;
   plan: PlanItem[];
   policies: PolicyM[];
+  /** 이 Feature의 모든 정책(같은 키의 재배포 포함) — 대사·Unleash 기록은 키의 현재 정책(currentPolicyOf)을 쓴다 */
+  allPolicies: PolicyM[];
   lastMergeAt: number;
 }
 export const sha = (s: string) => createHash('sha256').update(s, 'utf8').digest('hex');
@@ -101,6 +102,11 @@ export const numOf = (featureId: string) => Number(featureId.slice(5));
 export const implementAt = (approvedAt: number, num: number) => approvedAt + (1 + (num % 3)) * DAY + HOUR;
 export const mergeAt = (approvedAt: number, num: number) => implementAt(approvedAt, num) + 2 * HOUR;
 const CODE_LIFECYCLES = new Set(['APPROVED', 'DEVELOPING', 'VERIFIED', 'RELEASED', 'DEPRECATED']);
+
+const policyRank = (status: string) => (status === 'DEPLOYED' ? 0 : status === 'APPROVED' ? 1 : status === 'RETIRED' || status === 'REJECTED' ? 3 : 2);
+/** 키의 현재 정책 — 백엔드 대사(flag-coverage.service currentPolicy)와 같은 순서: 배포 > 승인 > 그 밖 > 퇴역·반려, 같으면 나중 정책(통합 12단계: 재배포한 키) */
+export const currentPolicyOf = (ps: PolicyM[], key: string): PolicyM | undefined =>
+  ps.filter((p) => p.flagKey === key).sort((a, b) => policyRank(a.status) - policyRank(b.status) || b.policyId.localeCompare(a.policyId))[0];
 
 export function buildFeatures(m: Model): FeatureP[] {
   const byFeature = new Map<string, VersionM[]>();
@@ -144,7 +150,7 @@ export function buildFeatures(m: Model): FeatureP[] {
       const ordinal = plan.filter((e) => e.controlPoint === x.controlPoint).length + 1;
       plan.push({ flagKey: x.flagKey, featureId, version: p.v.version, controlPoint: x.controlPoint, ordinal, package: pkg, source: 'POLICY', plannedAt: new Date(p.approvedAt).toISOString() });
     }
-    out.push({ featureId, num, repo: approved[0].v.showcase ? 'fleet' : 'main', pkg, versions: approved, latest, plan, policies: pol, lastMergeAt: Math.max(...approved.map((p) => p.mergeAt)) });
+    out.push({ featureId, num, repo: approved[0].v.showcase ? 'fleet' : 'main', pkg, versions: approved, latest, plan, policies: pol, allPolicies: m.policies.filter((x) => x.featureId === featureId), lastMergeAt: Math.max(...approved.map((p) => p.mergeAt)) });
   }
   return out;
 }
@@ -486,7 +492,7 @@ export function reconcileAll(features: FeatureP[], m: Model, a: Anomalies, mainS
   for (const key of [...keys].sort()) {
     const f = fs.find((x) => x.plan.some((e) => e.flagKey === key));
     const e = f?.plan.find((x) => x.flagKey === key);
-    const pol = f?.policies.find((p) => p.flagKey === key) ?? null;
+    const pol = f ? currentPolicyOf(f.allPolicies, key) ?? null : null;
     const current = latest.reduce((s, x) => s + count(x, key), 0);
     let lastSeen: { commit: string; at: string } | null = null;
     if (current === 0) for (const s of scans) if (count(s, key) > 0) lastSeen = { commit: s.commit, at: s.at };

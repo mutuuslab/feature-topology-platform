@@ -52,18 +52,25 @@ export function judge(chunks: Chunk[], initial: Set<string>, b: Budget): string[
   return out;
 }
 
-if (process.argv[1]?.endsWith('bundle-budget.ts')) {
-  const dist = join(FF, 'frontend', 'dist');
-  if (!existsSync(join(dist, 'index.html'))) {
-    console.error('budget  프론트 빌드가 없습니다 (build:frontend 먼저)');
-    process.exit(1);
-  }
+/** 빌드 폴더 하나 판정 — verify `budget`(일반 빌드)과 tools/static-build.ts(정적 공개본 빌드)가 같은 기준(harness/budgets.json)으로 쓴다 */
+export function budgetReport(dist: string): { line: string; bad: string[] } {
   const b = readJson<Budget & { firstScreenMs: number }>(join(FF, 'harness', 'budgets.json'));
   const { chunks, initial } = collectBudgetAssets(dist);
   const first = chunks.filter((c) => initial.has(c.file)).reduce((n, c) => n + c.gzip, 0);
   const bad = judge(chunks, initial, b);
   const max = chunks.filter((c) => !initial.has(c.file) && c.file.endsWith('.js') && !Object.keys(b.allow).some((a) => c.file.startsWith(a))).sort((x, y) => y.gzip - x.gzip)[0];
-  console.log(`budget  첫 화면 ${(first / 1024).toFixed(0)}/${b.initialGzipKiB} KiB · 화면 묶음 최대 ${max ? `${max.file} ${(max.gzip / 1024).toFixed(0)}` : '-'}/${b.chunkGzipKiB} KiB`);
+  return { line: `budget  첫 화면 ${(first / 1024).toFixed(1)}/${b.initialGzipKiB} KiB · 화면 묶음 최대 ${max ? `${max.file} ${(max.gzip / 1024).toFixed(1)}` : '-'}/${b.chunkGzipKiB} KiB`, bad };
+}
+
+// 사용: node tools/bundle-budget.ts [빌드 폴더] — 기본 frontend/dist(일반 빌드). 정적 공개본은 frontend/dist-static/<포트>/dist
+if (process.argv[1]?.endsWith('bundle-budget.ts')) {
+  const dist = process.argv[2] ? resolve(process.argv[2]) : join(FF, 'frontend', 'dist');
+  if (!existsSync(join(dist, 'index.html'))) {
+    console.error(`budget  프론트 빌드가 없습니다 (${dist} — build:frontend 먼저)`);
+    process.exit(1);
+  }
+  const { line, bad } = budgetReport(dist);
+  console.log(line);
   for (const x of bad) console.error(`  ✕ ${x}`);
   process.exit(bad.length ? 1 : 0);
 }

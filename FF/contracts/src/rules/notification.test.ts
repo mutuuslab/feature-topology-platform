@@ -1,6 +1,7 @@
 // 수신자 지정 알림 규칙 — 이벤트마다 명세서가 요구하는 내용 항목·수신자·제외 계정을 고정한다.
 import { describe, expect, it } from 'vitest';
 import * as N from './notification';
+import * as K from './notification-keys';
 import { accountKeys, accountOf, NOTIFICATION_ACCOUNTS, NOTIFICATION_RULES, receives, type NotificationContext } from './notification';
 
 const feature = { featureId: 'FEAT-00022', version: '1.0.0', name: '전방 거리 경고', ownerId: 'ADAS기획팀' };
@@ -79,8 +80,8 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
   });
 
   it('Feature DB 출처 점검 기한 지남 → Feature DB 관리자 역할(규칙표에 있다 — 실행 중에 더하지 않는다)', () => {
-    expect(Object.keys(NOTIFICATION_RULES)).toEqual(expect.arrayContaining([N.REFDB_REVIEW_DUE_EVENT, N.REFDB_REF_REJECTED_EVENT]));
-    const d = build(N.REFDB_REVIEW_DUE_EVENT, { aggregate: 'S07', payload: { sourceId: 'S07', title: 'ISO 26262', publisher: 'ISO', nextReviewAt: '2026-10-01', checkedAt: '2026-04-01' } });
+    expect(Object.keys(NOTIFICATION_RULES)).toEqual(expect.arrayContaining([K.REFDB_REVIEW_DUE_EVENT, K.REFDB_REF_REJECTED_EVENT]));
+    const d = build(K.REFDB_REVIEW_DUE_EVENT, { aggregate: 'S07', payload: { sourceId: 'S07', title: 'ISO 26262', publisher: 'ISO', nextReviewAt: '2026-10-01', checkedAt: '2026-04-01' } });
     expect(d).toMatchObject({ category: 'PROCEDURE', severity: 'WARNING', link: '/master/feature-db?tab=sources&source=S07' });
     expect(labels(d)).toEqual(['출처', '발행처', '다음 점검일', '최종 확인일']);
     expect(d!.recipients).toEqual([{ kind: 'role', role: 'REFDB_ADMIN' }]);
@@ -88,8 +89,8 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
 
   it('Feature DB 추가 요청 반려 → 그 행을 연결한 Feature의 Owner 팀, 반려한 본인 제외 · Feature가 없으면 알림 없음', () => {
     const payload = { refId: 'CO-RVC-001', nameKo: '원격 시동', changeId: 'RC-00001', reason: '중복', release: 'v1.4', by: 'usr-refadmin' };
-    expect(build(N.REFDB_REF_REJECTED_EVENT, { payload })).toBeNull();
-    const d = build(N.REFDB_REF_REJECTED_EVENT, { feature, payload });
+    expect(build(K.REFDB_REF_REJECTED_EVENT, { payload })).toBeNull();
+    const d = build(K.REFDB_REF_REJECTED_EVENT, { feature, payload });
     expect(d).toMatchObject({ category: 'APPROVAL', link: '/features/FEAT-00022/1.0.0', exclude: ['usr-refadmin'] });
     expect(d!.recipients).toEqual([{ kind: 'team', team: 'ADAS기획팀' }]);
     expect(labels(d)).toEqual(['Feature', '기준 행', '변경 요청', '반려 사유', '발행']);
@@ -106,5 +107,12 @@ describe('수신 계정·채널', () => {
     for (const a of NOTIFICATION_ACCOUNTS) expect(a).not.toHaveProperty('email');
     expect(accountOf('someone')).not.toHaveProperty('email');
     expect(Object.keys(N).filter((k) => /email|prefs/i.test(k))).toEqual([]);
+  });
+});
+
+describe('알림 이벤트 종류 — 화면 첫 묶음용 목록', () => {
+  // 상단바 종은 규칙표 대신 NOTIFICATION_EVENT_TYPES만 읽는다(첫 화면 예산). 규칙을 더하면 목록도 함께 — 빠지면 그 알림이 와도 종이 다시 읽지 않는다
+  it('규칙표의 키와 순서까지 같다', () => {
+    expect([...K.NOTIFICATION_EVENT_TYPES]).toEqual(Object.keys(NOTIFICATION_RULES));
   });
 });

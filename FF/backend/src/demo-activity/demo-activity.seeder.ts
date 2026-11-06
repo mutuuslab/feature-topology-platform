@@ -79,6 +79,7 @@ import { RestoreService } from '../domains/d03-safety/restore/restore.service';
 import { GateRepo } from '../domains/d01-policy/repos';
 import { VehicleRequestService } from '../domains/d02-runtime/vehicle-requests/vehicle-request.service';
 import { AdsStateService } from '../domains/d02-runtime/vehicle-runtime/ads-state.service';
+import { ShowcaseFillSeeder } from './showcase-fill.seeder';
 import type { Response } from 'express';
 import { NotificationService } from '../domains/d04-ops/event-history/notification.service';
 import { IntegrationErrorService } from '../domains/d04-ops/event-history/integration-error.service';
@@ -165,6 +166,7 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
     const out: Record<string, StepResult> = {};
     this.lastRun = out;
     const steps: [string, () => Promise<string> | string][] = [
+      ['showcaseProfiles', () => this.svc(ShowcaseFillSeeder).beforeSafety()],
       ['safety', () => this.confirmReleasedSafety()],
       ['procedures', () => this.procedures()],
       ['dashboards', () => this.dashboards()],

@@ -13,6 +13,7 @@ import { refSources as T, refSourceReview as SR } from '../../copy/refdb';
 import { AsyncView, Button, DataTable, ErrorNote, Field, Segmented, whyDisabled } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
+import { SourceTitleLinks } from './sourceLinks';
 
 const today = () => new Date().toISOString().slice(0, 10);
 /** 기본 다음 점검일 — 확인일에서 1년 뒤(엑셀 15_DB운영 5절 연 1회) */
@@ -82,13 +83,9 @@ export function SourcesPanel() {
               header: T.col.title,
               cell: (s) => (
                 <span className="ds-stack">
-                  {s.url ? (
-                    <a href={s.url} target="_blank" rel="noreferrer">
-                      {s.title}
-                    </a>
-                  ) : (
-                    <span>{s.title}</span>
-                  )}
+                  <span>
+                    <SourceTitleLinks url={s.url} title={s.title} />
+                  </span>
                   <span className="ds-field__hint">{[s.publisher, s.version, s.usedBy ? SR.used(s.usedBy) : ''].filter(Boolean).join(' · ')}</span>
                 </span>
               ),

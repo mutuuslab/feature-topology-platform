@@ -107,8 +107,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/policy-gate.ts:192",
-     "contracts/src/rules/compliance-profile.ts:52",
+     "contracts/src/rules/policy-gate.ts:193",
+     "contracts/src/rules/compliance-profile.ts:53",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:77"
     ],
     "tests": [
@@ -144,7 +144,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:124",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:128",
      "contracts/src/rules/lifecycle.ts:53",
      "backend/src/domains/d01-policy/registry/lifecycle.service.ts:161"
     ],
@@ -290,7 +290,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/policy-version.ts:59",
      "frontend/src/screens/policy/PolicyVersions.tsx:35",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:341"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:378"
     ],
     "tests": [
      "contracts/src/rules/policy-version.test.ts",
@@ -326,7 +326,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/lifecycle.ts:176",
      "backend/src/domains/d01-policy/registry/lifecycle.service.ts:124",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:225"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:262"
     ],
     "tests": [
      "backend/test/d01/policy.spec.ts",
@@ -360,7 +360,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d01-policy/topology/gate.service.ts:105",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:249",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:286",
      "contracts/src/rules/lifecycle.ts:160"
     ],
     "tests": [
@@ -398,7 +398,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "backend/src/domains/d03-safety/kill-switch/kill.service.ts:194",
-     "contracts/src/rules/policy-gate.ts:119",
+     "contracts/src/rules/policy-gate.ts:120",
      "backend/src/domains/d06-qsec/iam/post-review.service.ts:31"
     ],
     "tests": [
@@ -504,7 +504,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:129",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:138"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:149"
     ],
     "tests": [
      "backend/test/d03/delivery.spec.ts",
@@ -539,9 +539,9 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:143",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:57",
-     "contracts/src/rules/policy-gate.ts:160"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:154",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:66",
+     "contracts/src/rules/policy-gate.ts:161"
     ],
     "tests": [
      "backend/test/d03/delivery.spec.ts",
@@ -683,7 +683,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:223",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:234",
      "contracts/src/rules/status-v2.ts:103",
      "contracts/src/rules/deactivation.ts:133"
     ],
@@ -756,7 +756,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "frontend/src/data/twin/engine.ts:623",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:259"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270"
     ],
     "tests": [
      "frontend/src/__tests__/twinEngine.test.ts"
@@ -791,7 +791,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
      "contracts/src/rules/deactivation.ts:8",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:295"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:306"
     ],
     "tests": [
      "backend/test/d03/trial-expiry-kill.spec.ts",
@@ -864,7 +864,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "미구현",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:259",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270",
      "frontend/src/data/twin/engine.ts:623"
     ],
     "tests": [],
@@ -1175,7 +1175,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/status-v2.ts:71",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:245",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:256",
      "contracts/src/schemas/wire.ts:165"
     ],
     "tests": [
@@ -1210,7 +1210,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:304",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:315",
      "contracts/src/rules/kill-timeline.ts:33",
      "contracts/src/schemas/wire.ts:142"
     ],
@@ -1285,7 +1285,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:276",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:287",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:107",
      "contracts/src/rules/kill-timeline.ts:62"
     ],
@@ -1566,7 +1566,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "frontend/src/screens/ops/FleetLive.tsx:400",
+     "frontend/src/screens/ops/FleetLive.tsx:430",
      "frontend/src/components/liveMonitor.ts:80",
      "contracts/src/flags/p0.ts:224"
     ],
@@ -1602,7 +1602,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/status-v2.ts:99",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:245",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:256",
      "frontend/src/data/twin/engine.ts:728"
     ],
     "tests": [
@@ -1725,8 +1725,8 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:155",
-     "frontend/src/screens/ops/Deployments.tsx:277",
-     "frontend/src/screens/ops/FleetLive.tsx:75"
+     "frontend/src/screens/ops/Deployments.tsx:279",
+     "frontend/src/screens/ops/FleetLive.tsx:89"
     ],
     "tests": [
      "backend/test/d04/status-v2.spec.ts",
@@ -1839,7 +1839,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/kill-timeline.ts:47",
      "backend/src/domains/d04-ops/telemetry-ingest/safety-kpi.service.ts:154",
-     "contracts/src/rules/compliance-profile.ts:34"
+     "contracts/src/rules/compliance-profile.ts:35"
     ],
     "tests": [
      "contracts/src/rules/kill-timeline.test.ts",
@@ -2060,7 +2060,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "frontend/src/screens/ops/Deployments.tsx:281",
+     "frontend/src/screens/ops/Deployments.tsx:283",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:198"
     ],
     "tests": [],
@@ -2206,7 +2206,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
      "contracts/src/flags/evaluate.ts:107",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:295"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:306"
     ],
     "tests": [
      "backend/test/d03/trial-expiry-kill.spec.ts",
@@ -2244,7 +2244,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/policy-gate.ts:101",
+     "contracts/src/rules/policy-gate.ts:102",
      "contracts/src/rules/retirement.ts:59",
      "contracts/src/flags/openfeature.ts:141"
     ],
@@ -2281,7 +2281,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/compliance-profile.ts:7",
+     "contracts/src/rules/compliance-profile.ts:8",
      "tools/guide-sync.ts:244",
      "tools/standards.ts:2"
     ],

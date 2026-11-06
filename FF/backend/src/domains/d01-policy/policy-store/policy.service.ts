@@ -64,6 +64,9 @@ export class PolicyService implements OnModuleInit {
         createdAt: at,
         approvedBy: 'usr-approver',
         approvedAt: at,
+        // 배포 기록 — 부팅 동기화 게시본으로 차량에 간 판. 없으면 새 판을 배포한 뒤 이 판이 '이전에 배포된 적 없음'으로 복구 후보가 되지 못한다
+        deployedBy: 'usr-coordinator',
+        deployedAt: at,
         lastValidationId: null,
         stageBasisPoints: null,
         featureId: feature.featureId,
@@ -105,8 +108,9 @@ export class PolicyService implements OnModuleInit {
     const p = this.require(id);
     if (actor) this.recordView(actor, id);
     const runs = this.policies.runs(id);
-    const last = p.lastValidationId ? this.policies.run(p.lastValidationId) : undefined;
     const hash = policyHash(p);
+    // 검증 기록을 가리키지 않는 배포 정책(시드) — 지금 내용으로 남긴 사후 검증(recordMissingValidation)을 쓴다
+    const last = p.lastValidationId ? this.policies.run(p.lastValidationId) : runs.filter((r) => r.contentHash === hash).sort((a, b) => b.runId.localeCompare(a.runId))[0];
     const f = this.features.get(p.featureId, p.featureVersion);
     return {
       policy: p,
@@ -186,9 +190,11 @@ export class PolicyService implements OnModuleInit {
   async validate(actor: Actor, id: string) {
     const p = this.require(id);
     if (!(EDITABLE as readonly string[]).includes(p.status)) throw new DomainError('CONFLICT', `${p.status} 정책은 다시 검증하지 않습니다.`);
+    // 검증 시각 = 시작 시각 — 8종 검증기는 입출력 없이 바로 끝난다. 데모 시드가 지난 시각(Clock.at)으로 시작한 검증도 기록·감사가 그 시각에 남는다
+    const at = this.clock.iso();
     const results = await this.validation.run(p);
     const safety = this.safety.decide(results);
-    return this.db.tx(() => {
+    return this.clock.at(at, () => this.db.tx(() => {
       const run: ValidationRun = {
         runId: this.policies.nextRunId(),
         policyId: p.policyId,
@@ -196,7 +202,7 @@ export class PolicyService implements OnModuleInit {
         contentHash: policyHash(p),
         decision: safety.decision,
         reasons: safety.reasons,
-        at: this.clock.iso(),
+        at,
         by: actor.id,
         results,
       };
@@ -212,6 +218,37 @@ export class PolicyService implements OnModuleInit {
       if (quality && quality.result !== 'PASS')
         this.events.publish('quality.gate.failed', id, { policyId: id, runId: run.runId, revision: p.revision, contentHash: run.contentHash, result: quality.result, reasons: quality.findings.filter((f) => f.result !== 'INFO').map((f) => f.message) }, { componentId: 'D04-02', correlationId: actor.correlationId });
       return { policy: next, run };
+    }));
+  }
+
+  /**
+   * 검증 기록이 없는 배포 정책의 사후 검증 — 시드가 검증 기록 없이 배포 상태로 넣은 정책(lastValidationId 없음)에 같은 8종 검증기·판정으로
+   * 검증 기록을 남긴다. 정책 문서는 고치지 않는다 — 서명 게시본이 정책 문서 전체를 담아(lastValidationId 포함) 고치면 '서명 게시본과 같은 정책'
+   * 판정(Unleash 반영 등)이 깨진다. 상세(detail)는 같은 내용 해시의 이 기록을 쓴다. 승인 단계가 지난 정책이라 승인 요청 알림(policy.validated)은 내지 않는다
+   */
+  async recordMissingValidation(actor: Actor, id: string) {
+    const p = this.require(id);
+    const missing = (x: Policy) => x.status === 'DEPLOYED' && !x.lastValidationId && !this.policies.runs(x.policyId).some((r) => r.contentHash === policyHash(x));
+    if (!missing(p)) throw new DomainError('CONFLICT', `${id}은(는) 사후 검증 대상이 아닙니다(배포 상태이고 검증 기록이 없어야 합니다).`);
+    const results = await this.validation.run(p);
+    const safety = this.safety.decide(results);
+    return this.db.tx(() => {
+      const cur = this.require(id);
+      if (!missing(cur) || policyHash(cur) !== policyHash(p)) throw new DomainError('CONFLICT', `${id}이(가) 검증 중에 바뀌었습니다.`);
+      const run: ValidationRun = {
+        runId: this.policies.nextRunId(),
+        policyId: cur.policyId,
+        policyRevision: cur.revision,
+        contentHash: policyHash(cur),
+        decision: safety.decision,
+        reasons: safety.reasons,
+        at: this.clock.iso(),
+        by: actor.id,
+        results,
+      };
+      this.policies.insertRun(run);
+      this.audit.record(actor, 'POLICY_VALIDATE', id, { after: { runId: run.runId, decision: run.decision }, reason: `배포 전 검증 기록이 없는 정책 — 사후 검증${safety.reasons.length ? `: ${safety.reasons.join('; ')}` : ''}`, componentId: 'D06-04' });
+      return run;
     });
   }
 

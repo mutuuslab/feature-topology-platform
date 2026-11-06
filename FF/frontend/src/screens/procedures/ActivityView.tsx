@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ProcedureCompleteBody, RaciKey, WorkflowActivity, WorkflowDoc, WorkflowProcess, WorkflowWorkProduct } from '@ff/contracts';
 import { procedureGateText } from '@ff/contracts';
-import { STATIC_MODE, type ApiError } from '../../api/client';
+import type { ApiError } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { procedures as P } from '../../copy/procedures';
 import { useProgress } from '../../data/procedureProgress';
@@ -116,7 +116,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
     const body: ProcedureCompleteBody = {
       note: note.trim() || undefined,
       evidence: rows.filter((r) => r.name.trim() && r.ref.trim()).map((r) => ({ kind: 'LINK' as const, name: r.name.trim(), ref: r.ref.trim() })),
-      sign: sign && !STATIC_MODE,
+      sign,
     };
     try {
       await complete(a.id, body);
@@ -149,7 +149,6 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
         )}
       </div>
       <ErrorNote error={err} />
-      {STATIC_MODE && <p className="ds-field__hint">{P.complete.localOnly}</p>}
       <KeyValue
         rows={[
           { k: P.raci.R, v: names(a.raci.R) },
@@ -267,7 +266,7 @@ export function ActivityBody({ doc, a }: { doc: WorkflowDoc; a: WorkflowActivity
             {P.complete.addEvidence}
           </Button>
           <label className="pr-done pr-sign">
-            <input type="checkbox" checked={sign} disabled={STATIC_MODE} onChange={(e) => setSign(e.target.checked)} />
+            <input type="checkbox" checked={sign} onChange={(e) => setSign(e.target.checked)} />
             <span>{P.complete.sign}</span>
           </label>
           <p className="ds-field__hint">{P.complete.signHint}</p>

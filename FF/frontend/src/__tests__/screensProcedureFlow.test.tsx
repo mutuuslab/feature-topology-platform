@@ -2,6 +2,7 @@
 // 데이터는 docs/65-workflows 모델에서 생성된 모듈 그대로(모의 없음), 서버 상태만 fetch를 바꿔 넣는다.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { WORKFLOWS } from '../../../contracts/src/generated/workflows';
 import { AppProvider } from '../store';
@@ -48,6 +49,7 @@ function Where() {
 function mount(path: string, role = 'author') {
   localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
   return render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
     <MemoryRouter initialEntries={[path]}>
       <AppProvider>
         <Routes>
@@ -58,7 +60,8 @@ function mount(path: string, role = 'author') {
         </Routes>
         <Where />
       </AppProvider>
-    </MemoryRouter>,
+    </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

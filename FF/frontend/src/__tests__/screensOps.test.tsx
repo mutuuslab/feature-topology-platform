@@ -51,7 +51,7 @@ const FLEET = {
   items: [
     { vin: 'ego-01', label: '시연', scope: 'KR/NX4 PE/Premium', link: 'ONLINE', quality: 'TRUSTED', gleo: true, featureState: { 'FEAT-00022': 'SAFE_STOP' }, kills: ['FEAT-00022'], flags: [flag('care_00022_param', false, 'KILL_SWITCH')], last: null },
     { vin: 'KMH-NX4-0001', label: '구독', scope: 'KR/NX4 PE/Premium', link: 'ONLINE', quality: 'TRUSTED', gleo: false, featureState: {}, kills: [], flags: [flag('care_00022_param', true, 'POLICY_MATCH', true)], last: null },
-    { vin: 'KMH-NX4-0003', label: '단절', scope: 'KR/NX4 PE/Premium', link: 'OFFLINE', quality: 'STALE', gleo: false, featureState: {}, kills: [], flags: [], last: null },
+    { vin: 'KMH-NX4-0003', label: '단절', scope: 'KR/NX4 PE/Premium', link: 'OFFLINE', quality: 'STALE', gleo: false, featureState: {}, kills: [], flags: [], pending: ['care_00022_param'], last: null },
   ],
 };
 const PUB = { publicationId: 'PUB-00002', kind: 'KILL', status: 'DISPATCHED', confirmed: 1, denominator: 2, closedAt: null, createdAt: '2026-10-12T01:00:00.000Z', nodes: [], payload: { flagKey: null, featureId: 'FEAT-00022', targets: ['ego-01', 'lead-01'] } };
@@ -91,6 +91,31 @@ describe('Fleet 실시간 적용 현황', () => {
     expect(key.querySelector('.ds-key__value')?.textContent).toBe('1'); // 단절·STALE·미수신 차량 1대
     expect(key.textContent).not.toMatch(/모두 같습니다/);
   });
+  // 회귀(2026-11-06): 다른 차종 전용 flag(GN7 adas_00004_assist)가 생기자 NX4 lead-01의 그 칸이 '미수신'으로 나와 차단 시연 표가 거짓 미확인으로 가득했다.
+  // 배포 대상이 아닌 flag는 '—'(해당 없음), 받아야 할 게시본을 못 받은 flag(pending)만 미수신이고 핵심 메시지도 그것만 센다
+  it('배포 대상이 아닌 flag는 해당 없음 — 미수신·미확인으로 세지 않는다', async () => {
+    const rows = {
+      gleo: 'internal',
+      items: [
+        { vin: 'KMH-GN7-0001', label: 'GN7', scope: 'KR/GN7/Calligraphy', link: 'ONLINE', quality: 'TRUSTED', gleo: false, featureState: {}, kills: [], flags: [flag('adas_00004_assist', true)], pending: [], last: null },
+        { vin: 'lead-01', label: '선행', scope: 'KR/NX4 PE/Premium', link: 'ONLINE', quality: 'TRUSTED', gleo: false, featureState: {}, kills: ['FEAT-00022'], flags: [flag('care_00022_param', false, 'KILL_SWITCH')], pending: [], last: null },
+      ],
+    };
+    handler = (url) => {
+      if (url.startsWith('/api/fleet/runtime')) return { body: rows };
+      if (url.startsWith('/api/gleo/status')) return { body: { mode: 'internal', connected: false, lastError: null, messages: [] } };
+      return { body: { items: [] } };
+    };
+    mount('/fleet/live?tab=match', '/fleet/live', <FleetLive />); // 차량×flag 표는 '정책 값 대조' 탭(ADS-UI01, 통합 12단계)
+    const table = await screen.findByRole('table', { name: /차량 × flag/ });
+    const lead = within(table).getByRole('row', { name: /lead-01/ });
+    expect([...lead.querySelectorAll('.ds-fcell')].map((c) => c.getAttribute('data-v'))).toEqual(['na', 'safe']);
+    // 차단 중 차량은 대수가 적어도 표 맨 위 — 차단 직후 이 화면에서 차단한 차량이 스크롤 밖에 있었다
+    expect(within(table).getAllByRole('row')[1].textContent).toContain('lead-01');
+    expect(within(table).queryByText('미수신')).toBeNull();
+    const key = document.querySelector('[data-key-message]')!;
+    expect(key.getAttribute('data-tone')).toBe('ok');
+  });
 });
 
 describe('차량별 적용 상태', () => {
@@ -110,8 +135,10 @@ describe('차량별 적용 상태', () => {
     };
     mount('/fleet/vehicles/ego-01?tab=records', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />); // '정책 게시본·수신 기록' 탭
     expect(await screen.findByText('BOOT-ego-01-1')).toBeTruthy();
-    expect(screen.getByText('ON · POLICY_MATCH')).toBeTruthy();
-    expect(screen.getByText('OFF · KILL_SWITCH')).toBeTruthy();
+    // 평가 사유는 업무 말(코드는 툴팁) — 차단 시연 검토(2026-11-06)에서 'OFF · KILL_SWITCH'가 그대로 보였다
+    expect(screen.getByText('ON · 정책 일치').getAttribute('title')).toBe('POLICY_MATCH');
+    expect(screen.getByText('OFF · 긴급 차단').getAttribute('title')).toBe('KILL_SWITCH');
+    expect(screen.getByText('다름')).toBeTruthy(); // 서버 판단과 다름 열 — PASS/FAIL이 아니라 같음·다름
     expect(screen.getByText('REPLAY')).toBeTruthy();
     // 차량 발신 요청은 별도 탭
     cleanup();
@@ -399,6 +426,38 @@ describe('긴급 차단·복구 (요청 → 2인 승인, FFG-PLT-005·003)', () 
     fireEvent.click(within(pr).getByRole('button', { name: '사후 검토 기록' }));
     await waitFor(() => expect(posted('/api/kill-requests/KILL-00001/post-review')).toBeTruthy());
     expect(new Headers(posted('/api/kill-requests/KILL-00001/post-review')!.init!.headers).get('X-Actor-Role')).toBe('SECURITY_OFFICER');
+  });
+
+  // 회귀(2026-11-06 차단 시연 검토): 서랍 위쪽에 회신 요약이 없어 표까지 내려가야 했고, 사유 코드·봉투 표에 FIELD_FAULT·deactivate·epoch·cmd_auth가 그대로 보였다
+  it('차단 중 서랍 — 맨 위 회신 요약(반영·미수신·재전송), 사유·봉투는 업무 말(코드는 툴팁)', async () => {
+    const ACTIVE = {
+      ...REQUESTED,
+      status: 'ACTIVE',
+      vins: ['ego-01', 'lead-01', 'KMH-NX4-0003'],
+      publicationId: 'PUB-00009',
+      approvals: [{ approverId: 'usr-quality', role: 'FSM', platformRole: 'SAFETY_OFFICER', signedAt: '2026-10-12T01:02:41.000Z', kid: 'k', sig: 's' }],
+      command: { commandId: 'c3705a10-0000-0000-0000-000000000000', commandSeq: 11, kid: 'KEY-0002', envelopes: 3 },
+      delivery: { publicationId: 'PUB-00009', status: 'DISPATCHED', confirmed: 2, denominator: 3, nodes: [{ nodeId: 'ego-01', state: 'CONFIRMED', reason: 'READBACK_MATCH' }, { nodeId: 'lead-01', state: 'CONFIRMED', reason: 'READBACK_MATCH' }, { nodeId: 'KMH-NX4-0003', state: 'UNKNOWN', reason: 'NO_REPORT' }] },
+    };
+    const ENV = { command: null, envelopes: [{ request: 'deactivate', scope: { vehicle_ids: ['ego-01'] }, vehicle_auth: { key_epoch: 1, vehicle_seq: 3, cmd_auth: 'HaCQ45hXabcdef' } }] };
+    handler = (url) => {
+      if (url.startsWith('/api/kill-requests/KILL-00001/envelopes')) return { body: ENV };
+      if (url.startsWith('/api/kill-requests/KILL-')) return { body: ACTIVE };
+      if (url.startsWith('/api/kill-requests')) return { body: { items: [ACTIVE] } };
+      if (url.startsWith('/api/publications/PUB-00009')) return { body: { publication: { publicationId: 'PUB-00009' }, delivery: { attempts: 2 } } };
+    };
+    mount('/ops/kill?id=KILL-00001', '/ops/kill', <KillConsole />, 'operator');
+    const sum = await screen.findByTestId('kill-reply-summary');
+    await waitFor(() => expect(sum.textContent).toContain('재전송 1회'));
+    expect(sum.textContent).toContain('반영 2/3대');
+    expect(sum.textContent).toContain('미수신 1대');
+    const drawer = screen.getByTestId('kill-drawer');
+    expect(drawer.firstElementChild).toBe(sum); // 맨 위
+    expect(within(drawer).getByTitle('FIELD_FAULT').textContent).toBe('안전 · 현장 결함 보고');
+    const env = await within(drawer).findByRole('table', { name: '차량별 봉투' });
+    expect(env.textContent).toContain('차단');
+    expect(env.textContent).toContain('1세대 · 3번');
+    expect(env.textContent).not.toMatch(/deactivate|cmd_auth|epoch/);
   });
 });
 

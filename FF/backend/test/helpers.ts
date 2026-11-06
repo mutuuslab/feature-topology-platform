@@ -7,11 +7,13 @@ import { join } from 'node:path';
 import { AppModule } from '../src/app.module';
 
 /** 메모리 DB + v0.81 시드로 앱을 띄운다. 테스트마다 독립 DB. */
-export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?: Type<unknown>[]; at?: string; demoActivity?: boolean; costDemo?: boolean; flagCode?: boolean | string } = {}) {
+export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?: Type<unknown>[]; at?: string; demoActivity?: boolean; costDemo?: boolean; flagCode?: boolean | string; showcaseFill?: boolean } = {}) {
   process.env.FF_DB = ':memory:';
   process.env.FF_SEED = 'v0.81';
   // demoActivity — 데모 활동 시드(demo-activity.seeder.ts)는 기본 끔: 시험마다 빈 활동에서 시작해 번호(EXP-·INC-·POL-…)를 그대로 본다
   process.env.FF_DEMO_ACTIVITY = opts.demoActivity ? '1' : '0';
+  // 전시 빈 화면 채우기(showcase-fill, 데모 활동이 켜지면 함께 돈다) — 메모리 DB 부팅이 채우기를 기다려 30초를 넘길 수 있다. 쓰지 않는 시험은 false로 끈다(통합 12단계)
+  process.env.FF_SHOWCASE_FILL = opts.showcaseFill === false ? '0' : '1';
   // SW 개발비 산정 데모(BCM Feature 10개·과제 2건)는 기본으로 넣지 않는다 — 다른 시험의 Feature 수·감사 체인이 바뀌지 않게. 데모 서버·정적 스냅샷·e2e는 넣는다
   process.env.FF_COST_DEMO = opts.costDemo ? 'on' : 'off';
   // Flag 코드 연결 시연(20-97) — 기본 끔: 연결 저장소가 생기면 출시 관문이 코드 연결을 보므로 다른 시험의 출시 흐름이 바뀌지 않게. 문자열이면 그 픽스처 폴더

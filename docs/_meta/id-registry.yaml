@@ -87,6 +87,7 @@ architecture:
   ARC-FLAG-CODE-COVERAGE: "20-97 Flag 코드 연결·대사·통제(차량 SW 저장소)"
   ARC-UNLEASH-LIVE:    "20-98 Unleash 실제 런타임 통합"
   ARC-CLOUD-VM:        "20-99 클라우드 VM 공개 시연 배포"
+  ARC-BROWSER-SIM:     "20-60 공개 시연 사이트 브라우저 안 쓰기(시연 데이터 엔진)"
   INT-UNLEASH-VEHICLE: "80-98 차량 Unleash 서명 조회와 설치"
   INT-GRAFANA:         "80-80 Grafana Cloud 운영 관측·Closed loop"
 
@@ -165,6 +166,8 @@ screens:
   G9_insights:    [SCR-900, SCR-910, SCR-920]
   G10_admin:      [SCR-A00, SCR-A01, SCR-A10, SCR-A20, SCR-A30, SCR-A40, SCR-A50]
   patterns:       [PAT-EMPTY, PAT-LOAD, PAT-ERROR, PAT-NOPERM, PAT-RPANEL, PAT-QA]
+  # 대시보드 디자인 언어(2026-11-06) — docs/70-design-system/70-50
+  design_system:  [DS-DASHBOARD]
 
 # ── 플로 ──────────────────────────────────────────────────
 flows:

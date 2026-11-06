@@ -26,7 +26,6 @@ import {
   type VehicleGroup,
 } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
@@ -120,7 +119,7 @@ function RollbackForm({ d, me }: { d: DeploymentDetail; me: string }) {
   const conditions = { ...(useRate && { failureRate: { thresholdPercent: rate } }), ...(useDtc && { dtc: { codes: list(dtcCodes), types: dtcTypes } }) };
   const base = { deploymentId: d.deploymentId, targetTypes: ['POLICY_VERSION'], recovery: { policyId: recovery }, scope, approvers: [approver] };
   const m = mode === 'manual' ? createReq : createPlan;
-  const ready = !!recovery && !!approver && perm.ok && !STATIC_MODE && (mode === 'manual' ? reason.trim().length >= 2 : useRate || useDtc);
+  const ready = !!recovery && !!approver && perm.ok && (mode === 'manual' ? reason.trim().length >= 2 : useRate || useDtc);
   const p = preview.data;
   if (!eligible.length) return <p className="pv-lead">{F.noCandidate}</p>;
   return (
@@ -202,13 +201,13 @@ function RollbackForm({ d, me }: { d: DeploymentDetail; me: string }) {
       </Select>
       <p className="pv-lead">{F.approversHint}</p>
       <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
-        <Button disabled={!recovery || STATIC_MODE || preview.isPending} reason={whyDisabled([STATIC_MODE, ko.page.readOnly], [!recovery, ko.why.recovery])} onClick={() => preview.mutate({ body: { deploymentId: d.deploymentId, recovery: { policyId: recovery }, scope } })}>
+        <Button disabled={!recovery || preview.isPending} reason={whyDisabled([!recovery, ko.why.recovery])} onClick={() => preview.mutate({ body: { deploymentId: d.deploymentId, recovery: { policyId: recovery }, scope } })}>
           {F.preview}
         </Button>
         <Button
           variant="primary"
           disabled={!ready || m.isPending}
-          title={STATIC_MODE ? R.staticNote : perm.hint}
+          title={perm.hint}
           onClick={() => (mode === 'manual' ? createReq.mutate({ body: { ...base, reason } }) : createPlan.mutate({ body: { ...base, conditions } }))}
         >
           {mode === 'manual' ? F.submitManual : F.submitPlan}
@@ -476,7 +475,8 @@ export function RollbackScreen() {
         actions={
           <Select label={R.filterStatus} value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">{R.filterAll}</option>
-            {Object.entries(ROLLBACK_STATUS_LABEL).map(([k, v]) => (
+            {/* 서버 실행 기록은 실행 중(또는 재검증 실패)부터 남는다 — 늘 빈 결과인 '요청'은 고르지 않는다 */}
+            {Object.entries(ROLLBACK_STATUS_LABEL).filter(([k]) => k !== 'REQUESTED').map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>

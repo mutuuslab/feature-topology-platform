@@ -2,9 +2,13 @@
 // 상태를 아직 못 읽었거나 읽지 못하면 '모의'로 본다(실제처럼 보이는 쪽으로 틀리지 않게).
 // 데모 설치의 표시 방식이 seamless(80-50 D-ALM-17, 기본)면 모의 연계도 표시 없이 실제 연결처럼 보인다 — 운영 설치는 항상 표시한다.
 import type { ConnectionKey, ConnectionMode, ConnectionsResponse } from '@ff/contracts';
+import { STATIC_MODE } from './client';
 import { useApi } from './hooks';
 
-/** 화면 표시 — none(실제 연결, 표시 없음)·mock(데모 설치 '모의(연결 전)')·disconnected(운영 설치·꺼짐 '연결 안 됨') */
+/**
+ * 화면 표시 — none(실제 연결, 표시 없음)·mock(설치 모드를 아직 모름 '모의(연결 전)')·disconnected(운영 설치·꺼짐 '연결 안 됨').
+ * 데모 설치(정적 공개본 포함)의 모의 연계는 색·배지·문구로 드러내지 않는다(사용자 결정 D-ALM-17, 2026-11-05) — 운영 설치는 그대로 '연결 안 됨'.
+ */
 export type ConnectionLabel = 'none' | 'mock' | 'disconnected';
 
 export function connectionLabel(
@@ -15,6 +19,8 @@ export function connectionLabel(
   if (status?.mode === 'live') return 'none';
   if (installMode === 'demo' && presentation === 'seamless') return 'none';
   if (status?.mode === 'off' || installMode === 'production') return 'disconnected';
+  // 데모 설치는 모의 표시 없음이 기본(D-ALM-17) — 서버가 'labeled'(FF_DEMO_LABELS=on)일 때만 드러낸다. 공개 정적 사이트도 표시 없음
+  if ((installMode === 'demo' && presentation !== 'labeled') || STATIC_MODE) return 'none';
   return 'mock';
 }
 

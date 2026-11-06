@@ -194,6 +194,16 @@ describe('Feature Version 상세', () => {
     expect(meta.textContent).not.toMatch(/ASIL|ADAS상품기획팀|BL-00028/);
   });
 
+  // 정적 데모 빈 화면(2026-11-05): 감사 이력 탭이 Version 정확 일치만 읽어 안전 분류·Gate·분석 기록(#safety·#G1·#hara)이 빠지고 비었다
+  it('감사 이력 탭은 이 Version 아래 대상(#safety·#G1·#hara)까지 접두어로 읽는다', async () => {
+    handler = (url) => (url.includes('/api/audit') ? { body: { items: [{ id: 1, at: '2026-11-05T00:00:00.000Z', actorId: 'usr-quality', actorRole: 'SAFETY_OFFICER', action: 'ANALYSIS_HARA', target: 'FEAT-00013@0.3.0#hara', result: 'ALLOWED', reason: '이관', before: null, after: null }] } } : { body: DETAIL });
+    mount('/features/FEAT-00013/0.3.0?tab=audit', '/features/:id/:ver', <FeatureDetail />);
+    await waitFor(() => expect(calls.some((c) => c.url.includes('/api/audit?'))).toBe(true));
+    const url = calls.find((c) => c.url.includes('/api/audit?'))!.url;
+    expect(url).toContain('targetPrefix=FEAT-00013%400.3.0');
+    expect(url).not.toMatch(/[?&]target=/);
+  });
+
   it('자리표시(미발급·미입력)를 속성 옆에 표시한다', async () => {
     handler = () => ({ body: DETAIL });
     mount('/features/FEAT-00013/0.3.0', '/features/:id/:ver', <FeatureDetail />);

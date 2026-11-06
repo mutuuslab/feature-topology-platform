@@ -66,7 +66,9 @@ export class SbomService {
     return {
       bomFormat: 'CycloneDX',
       specVersion: '1.6',
-      serialNumber: `urn:uuid:${uuidOf(`${publicationId}|${pkg}`)}`,
+      // 일련번호는 게시본·Feature Version으로 정한다 — 패키지 해시(서명 시각 포함)를 섞으면 같은 시드라도 배포마다 바뀐다(정적 공개본 파일 이름, 2026-11-06).
+      // 패키지 결합은 아래 metadata.component.hashes(FFG-SBOM-003)가 맡는다
+      serialNumber: `urn:uuid:${uuidOf(`${publicationId}|${featureId}@${featureVersion}`)}`,
       version: 1,
       metadata: {
         timestamp: this.clock.iso(),

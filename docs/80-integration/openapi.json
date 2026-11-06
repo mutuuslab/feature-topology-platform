@@ -3185,7 +3185,7 @@
     },
     "/api/refdb/refs": {
       "get": {
-        "summary": "Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)",
+        "summary": "Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터와 다중 선택(쉼표 목록), 축별 수·조건 요약, offset·limit 페이지(금액 필드는 산정 역할만)",
         "tags": [
           "D01-01"
         ],
@@ -3241,6 +3241,62 @@
           },
           {
             "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "statuses",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "asils",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lifecycles",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "swStacks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tshirts",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleTypes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "regions",
             "in": "query",
             "required": false,
             "schema": {
@@ -9061,6 +9117,27 @@
           "D02-03"
         ],
         "operationId": "fleetRuntime",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/fleet/operation-summary": {
+      "get": {
+        "summary": "홈 차량 정책 수신 현황 요약 — 전체 차량 기준 건수·국가·차종 묶음·시각 분포와 표 첫 쪽(회신은 운영 데이터 열람 역할만)",
+        "tags": [
+          "D02-03"
+        ],
+        "operationId": "operationSummary",
         "parameters": [],
         "responses": {
           "200": {

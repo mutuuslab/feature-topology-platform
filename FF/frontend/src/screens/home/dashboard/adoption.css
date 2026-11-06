@@ -1,0 +1,86 @@
+/* 홈 'Feature 적용 현황' — 점 지도·깔때기·되감기. 색·간격은 토큰만(표식은 --mark-*, 대시보드 디자인 언어 §4·§5.5) */
+.ad { container: ad / inline-size; display: grid; gap: var(--sp-3); min-width: 0; padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.ad__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--sp-3) var(--sp-4); }
+.ad__head h3 { margin: 0; font-size: var(--fs-base); }
+.ad__key { margin: var(--sp-1) 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--sp-2); font-size: var(--fs-sm); color: var(--muted); }
+.ad__key-num { font-size: var(--fs-kpi); font-weight: 700; line-height: 1.1; color: var(--ink); letter-spacing: -0.02em; }
+.ad__key-of { font-size: var(--fs-md); font-weight: 600; color: var(--muted); margin-left: calc(-1 * var(--sp-2)); }
+.ad__pick { display: grid; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--muted); min-width: 0; }
+.ad__pick select { max-width: 100%; min-width: 0; }
+.ad__why { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); color: var(--muted); }
+.ad__why .ds-badge { --c: var(--info); }
+.ad__why .ds-badge[data-why='KILL'] { --c: var(--danger); }
+.ad__why .ds-badge[data-why='RECENT'] { --c: var(--faint); }
+.ad__body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-4); }
+@container ad (min-width: 760px) { .ad__body { grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); } }
+.ad__map { display: grid; gap: var(--sp-2); min-width: 0; }
+.ad__side { display: grid; gap: var(--sp-2); align-content: start; min-width: 0; }
+.ad__sub { margin: 0; font-size: var(--fs-xs); font-weight: 650; color: var(--muted); }
+
+/* 점 지도 — Canvas 한 장 + 묶음 이름표 */
+.ad-map { position: relative; min-height: 220px; border-radius: var(--r-sm); background: var(--surface-2); overflow: hidden; }
+.ad-map[data-clickable] { cursor: pointer; }
+.ad-map canvas { display: block; }
+.ad-map__label { position: absolute; transform: translate(-50%, -100%); padding: 0 var(--sp-1); border-radius: var(--r-sm); background: color-mix(in srgb, var(--surface) 88%, transparent); font-family: var(--font-mono); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; pointer-events: none; }
+.ad-map__label b { font-family: var(--font-sans); color: var(--ink); }
+.ad-map__tip { position: absolute; z-index: 1; width: 192px; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); box-shadow: var(--e-2); font-size: var(--fs-xs); pointer-events: none; }
+.ad-map__tip ul { list-style: none; margin: var(--sp-1) 0; padding: 0; display: grid; gap: var(--sp-0h); }
+.ad-map__tip li { display: grid; grid-template-columns: var(--sp-3) minmax(0, 1fr) auto; align-items: center; gap: var(--sp-1h); }
+.ad-map__tip small { color: var(--muted); }
+
+/* 상태 표식 — 범례·표·툴팁 공용(모양 병기) */
+.ad i[data-state] { width: 10px; height: 10px; display: inline-block; flex: none; background: var(--mark-ok); border-radius: 50%; }
+.ad i[data-state='CANARY'] { background: var(--mark-info); border-radius: 0; transform: rotate(45deg) scale(.86); }
+.ad i[data-state='DISABLED'] { background: var(--mark-danger); border-radius: 0; }
+.ad i[data-state='UNKNOWN'] { background: transparent; box-shadow: inset 0 0 0 2px var(--mark-warn); }
+.ad i[data-state='OFF'] { background: var(--mark-neutral); transform: scale(.6); }
+
+.ad-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); }
+.ad-legend button { display: inline-flex; align-items: center; gap: var(--sp-1h); min-height: 28px; padding: 0 var(--sp-2); border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--ink-2); font: inherit; font-size: var(--fs-xs); cursor: pointer; }
+.ad-legend button:hover { background: var(--surface-2); }
+.ad-legend button[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.ad-legend button:disabled { color: var(--faint); cursor: default; }
+.ad-legend .ds-mono { color: var(--ink); font-weight: 600; }
+
+/* 깔때기 — 단계마다 버튼 한 줄: 이름 · 수 · 막대 · 앞 단계 대비 */
+.ad-funnel { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
+.ad-funnel button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'name num' 'bar rate'; gap: var(--sp-1) var(--sp-3); align-items: center; padding: var(--sp-1h) var(--sp-2); border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.ad-funnel button:hover:not(:disabled) { background: var(--surface-2); }
+.ad-funnel button[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); }
+.ad-funnel button:disabled { cursor: default; color: var(--muted); }
+.ad-funnel__name { grid-area: name; font-size: var(--fs-sm); font-weight: 600; }
+.ad-funnel__num { grid-area: num; font-size: var(--fs-md); font-weight: 700; text-align: right; }
+.ad-funnel__bar { grid-area: bar; height: var(--sp-2); border-radius: var(--r-sm); background: var(--track-bg); overflow: hidden; }
+.ad-funnel__bar > span { display: block; height: 100%; background: var(--ink-2); border-radius: var(--r-sm); }
+.ad-funnel button[aria-pressed='true'] .ad-funnel__bar > span { background: var(--accent); }
+.ad-funnel__rate { grid-area: rate; font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; }
+.ad__clear { justify-self: start; padding: 0; border: 0; background: none; color: var(--accent); font: inherit; font-size: var(--fs-xs); cursor: pointer; }
+
+/* 되감기 — 누적 적용 곡선 + 사건 표식 + 끌기 */
+.ad-rewind { display: grid; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px solid var(--line); }
+.ad-rewind__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); font-size: var(--fs-sm); }
+.ad-rewind__clock { font-size: var(--fs-sm); font-weight: 600; }
+.ad-rewind__applied { color: var(--muted); }
+.ad-rewind__now { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; font-size: var(--fs-xs); cursor: pointer; }
+.ad-rewind__track { position: relative; height: 40px; }
+.ad-rewind__track svg { position: absolute; inset: 0 0 var(--sp-3); width: 100%; height: 28px; overflow: visible; }
+.ad-rewind__curve { fill: none; stroke: var(--chart-line); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.ad-rewind__marker { stroke: var(--mark-info); stroke-width: 1; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+.ad-rewind__marker[data-kind='KILL'] { stroke: var(--mark-danger); }
+.ad-rewind__marker[data-kind='RESTORE'] { stroke: var(--mark-ok); }
+.ad-rewind__cursor { stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.ad-rewind__track input { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; margin: 0; accent-color: var(--accent); }
+.ad-rewind__legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-4); font-size: var(--fs-xs); color: var(--muted); }
+.ad-rewind__legend li::before { content: ''; display: inline-block; width: var(--sp-3); height: 0; margin-right: var(--sp-1h); vertical-align: middle; border-top: 1px dashed var(--mark-info); }
+.ad-rewind__legend li[data-kind='KILL']::before { border-top-color: var(--mark-danger); }
+.ad-rewind__legend li[data-kind='RESTORE']::before { border-top-color: var(--mark-ok); }
+
+/* 한글이 섞인 수 — 글꼴은 SUIT, 숫자 폭만 고정(한글을 Mono로 쓰지 않는다) */
+.ad-num, .ad-rewind__applied, .ad__key { font-variant-numeric: tabular-nums; }
+
+/* 대체 표 */
+.ad__table summary { cursor: pointer; font-size: var(--fs-xs); color: var(--accent); }
+.ad__table table { width: 100%; margin-top: var(--sp-2); border-collapse: collapse; font-size: var(--fs-sm); }
+.ad__table th, .ad__table td { padding: var(--sp-1h) var(--sp-3); border-bottom: 1px solid var(--line); text-align: left; }
+.ad__table thead th { background: var(--surface-3); font-size: var(--fs-xs); color: var(--muted); font-weight: 600; }
+.ad__table .ad-num { text-align: right; }

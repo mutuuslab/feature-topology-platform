@@ -15,3 +15,7 @@
 .external-launcher__sources a { color: var(--ink-2); text-underline-offset: var(--sp-0h); }
 .external-launchers[data-compact] .external-launcher { padding: var(--sp-3) var(--sp-4); }
 @media (max-width: 850px) { .external-launchers { grid-template-columns: 1fr; } }
+/* 공식 로고 — 흰 받침 위에 원본 색 그대로(어두운 테마에서도 같은 모습) */
+.ext-brand-logo { display: inline-block; vertical-align: middle; background: var(--ext-logo-plate); border-radius: var(--r-sm); }
+.external-launcher__logo { width: auto; }
+.ext-brand-logo--inline { width: auto; margin-right: var(--sp-1h); }

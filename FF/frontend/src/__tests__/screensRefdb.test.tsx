@@ -9,6 +9,7 @@ import { FeatureDbScreen } from '../screens/refdb/RefList';
 import { RefDetailScreen } from '../screens/refdb/RefDetail';
 import { RefChangeDetailScreen, RefChangesScreen } from '../screens/refdb/Changes';
 import { featureDb as L, refChangeDetail as D, refChanges as C, refDetail as RD, refSources as S } from '../copy/refdb';
+import { workbook as WB } from '../copy/workbook';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -183,13 +184,12 @@ describe('Feature DB 목록', () => {
     expect(summary.textContent).toContain(`${L.q.stale} 12`);
     expect(summary.textContent).toContain('83.6%');
     expect(document.querySelector('.ds-kpis')).toBeNull();
-    // 컴포넌트는 도메인을 고르기 전에는 막혀 있고, 고르면 그 도메인의 컴포넌트만
-    const comp = screen.getByLabelText(L.component) as HTMLSelectElement;
-    expect(comp.disabled).toBe(true);
-    fireEvent.change(screen.getByLabelText(L.domain), { target: { value: 'Chassis & Vehicle Dynamics' } });
-    await waitFor(() => expect((screen.getByLabelText(L.component) as HTMLSelectElement).disabled).toBe(false));
-    const opts = [...(screen.getByLabelText(L.component) as HTMLSelectElement).options].map((o) => o.value);
-    expect(opts).toEqual(['', 'Brake control (ESC/ABS)']);
+    // 왼쪽 분류 트리 — 컴포넌트는 도메인을 고르기 전에는 숨어 있고, 고르면 그 도메인의 컴포넌트만 펼친다
+    const tree = screen.getByRole('navigation', { name: WB.tree });
+    expect(within(tree).queryByRole('button', { name: /^Brake control/ })).toBeNull();
+    fireEvent.click(within(tree).getByRole('button', { name: /^Chassis & Vehicle Dynamics/ }));
+    await waitFor(() => expect(within(tree).getByRole('button', { name: /^Brake control \(ESC\/ABS\)/ })).toBeTruthy());
+    expect(within(tree).queryByRole('button', { name: /^Seat control/ })).toBeNull();
     await waitFor(() => expect(calls.some((c) => c.url.includes('/api/refdb/refs?') && c.url.includes('domain=Chassis'))).toBe(true));
     // 상태 탭 수는 지금 조건의 패싯(행 2개) — 전체 품질 지표(1052·995)가 아니다
     const tab = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) }).querySelector('.ds-seg__count')?.textContent;

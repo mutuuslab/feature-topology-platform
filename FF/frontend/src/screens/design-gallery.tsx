@@ -4,6 +4,7 @@ import { FreshnessChip } from '../design/freshness';
 import { freshness as FR } from '../copy/freshness';
 import { useState } from 'react';
 import { DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, GATES, LIFECYCLE, REG_CLASSES, stageIndexOf, type GateId } from '@ff/contracts';
+import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { connections as CN } from '../copy/connections';
 import { errors as E } from '../copy/errors';
@@ -312,8 +313,9 @@ export default function DesignGallery() {
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <ErrorNextStep error={{ message: E.server, kind: 'server', status: 500, correlationId: 'c0ffee00-0000-4000-8000-000000000001' }} />
           <ErrorNextStep error={{ message: E.conflictFallback, kind: 'conflict', status: 409 }} />
+          {/* 공개 시연본은 모의 연계 표시를 보이지 않는다(D-ALM-17) — 견본도 운영 설치의 '연결 안 됨'만 */}
           <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-            <ConnectionBadge state="mock" system={CN.system.billing} />
+            {!STATIC_MODE && <ConnectionBadge state="mock" system={CN.system.billing} />}
             <ConnectionBadge state="disconnected" system={CN.system.datalake} />
           </div>
           <Pager page={pagerPage} pageSize={100} total={10000} onPage={setPagerPage} />

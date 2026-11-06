@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EXT_KIND_LABEL, JIRA_CR_STATUS, JIRA_EPIC_STATUS, type FeatureFlagRow } from '@ff/contracts';
-import { call, STATIC_MODE } from '../api/client';
+import { call } from '../api/client';
 import { usePlatformEvents } from '../api/stream';
 import { PLATFORM_ROLES } from '../api/actor';
 import { DEMO_ACCOUNTS } from '../data/demoAccounts';
@@ -10,7 +10,11 @@ import { Icon } from '../design/icons';
 import { when } from '../screens/shared';
 import { flagPublicationPath, flagReceiptVehiclePath, useFlagPublication } from '../screens/features/flag-publication';
 import { announceExternalChange, GITHUB_PR_URL, openExternalWindow, type ExternalSystem } from './links';
-import { externalTrace, featureHref, featureKey, featureTarget, fieldText, flagMapHref, itemContext, personText, validFlagRows, type ExternalFeature } from './trace';
+import { externalTrace, featureHref, featureKey, fieldText, flagMapHref, itemContext, personText } from './trace';
+import { useTraceSources } from './traceSources';
+import { ExtBrandLogo } from './brand';
+import { CbTrackers } from './CbTrackers';
+import { GitLabWorkspace } from './GitLabApp';
 import '../design/tokens.css';
 import '../design/design.css';
 import './external.css';
@@ -20,8 +24,7 @@ export interface MockExternalItem {
   updatedAt: string; updatedBy: string; comments: { at: string; by: string; text: string }[]; fields: Record<string, unknown>;
 }
 type Result = { outcome: string; summary: string };
-type ItemView = 'board' | 'list' | 'document' | 'table' | 'item';
-type RequirementIndex = { features: ExternalFeature[]; failed: string[] };
+type ItemView = 'board' | 'list' | 'trackers' | 'document' | 'table' | 'item';
 const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 const columnOf = (status: string) => /^(approved|verified|released|closed|done|deployed|deprecated|retired|rejected|rolled back)$/i.test(status) ? 2 : /progress|review|verification|develop/i.test(status) ? 1 : 0;
 const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('ko-KR') : T.confirm;
@@ -37,7 +40,9 @@ function ExternalFlagProgress({ row }: { row: FeatureFlagRow }) {
 }
 
 export function ExternalApp() {
-  return <QueryClientProvider client={cache}><ExternalWorkspace /></QueryClientProvider>;
+  // GitLab은 MR 열람 창(쓰기 없음) — JIRA·codeBeamer 작업 화면과 따로 그린다
+  const gitlab = new URLSearchParams(window.location.search).get('system') === 'gitlab';
+  return <QueryClientProvider client={cache}>{gitlab ? <GitLabWorkspace /> : <ExternalWorkspace />}</QueryClientProvider>;
 }
 
 function ItemProperties({ item, onParent, parentExists }: { item: MockExternalItem; onParent: (key: string) => void; parentExists: boolean }) {
@@ -64,54 +69,8 @@ function ItemProperties({ item, onParent, parentExists }: { item: MockExternalIt
 }
 
 function TracePanel({ item, siblings, role }: { item: MockExternalItem; siblings: MockExternalItem[]; role: string }) {
-  const featuresQuery = useQuery<ExternalFeature[], Error>({
-    queryKey: ['externalFeatures'],
-    queryFn: async ({ signal }) => {
-      const body = await call<{ items: ExternalFeature[] }>('listFeatures', { signal });
-      if (!Array.isArray(body?.items) || !body.items.every((feature) => featureTarget(feature.featureId, feature.version))) throw new Error(T.malformedFeatures);
-      return body.items;
-    },
-    staleTime: 60_000,
-  });
-  const flagsQuery = useQuery<FeatureFlagRow[], Error>({
-    queryKey: ['externalFlags'],
-    queryFn: async ({ signal }) => {
-      const rows = await call<FeatureFlagRow[]>('featureFlags', { signal });
-      if (!validFlagRows(rows)) throw new Error(T.malformedFlags);
-      return rows;
-    },
-    staleTime: 30_000,
-  });
   const needsRequirements = item.system === 'CODEBEAMER' && !!fieldText(item.fields.reqId);
-  const index = useQuery<RequirementIndex, Error>({
-    queryKey: ['externalRequirements', role, (featuresQuery.data ?? []).map(featureKey)],
-    enabled: needsRequirements && featuresQuery.isSuccess,
-    staleTime: 60_000,
-    queryFn: async ({ signal }) => {
-      const summaries = featuresQuery.data ?? [];
-      const features: ExternalFeature[] = [];
-      const failed: string[] = [];
-      let cursor = 0;
-      // 목록 API는 요구 ID를 생략한다. 실제 상세만 읽고, 창을 닫으면 중지하며, 동시 요청은 네 개로 제한한다.
-      await Promise.all(Array.from({ length: Math.min(4, summaries.length) }, async () => {
-        while (cursor < summaries.length) {
-          const summary = summaries[cursor++];
-          if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
-          try {
-            const body = await call<{ feature: ExternalFeature }>('featureDetail', { params: { id: summary.featureId, ver: summary.version }, role, signal });
-            const feature = body?.feature;
-            if (!feature || featureKey(feature) !== featureKey(summary) || !Array.isArray(feature.requirementIds) || !feature.requirementIds.every((id) => typeof id === 'string')) throw new Error(T.confirm);
-            features.push({ ...summary, requirementIds: feature.requirementIds });
-          } catch (error) {
-            if (signal.aborted) throw error;
-            failed.push(featureKey(summary));
-          }
-        }
-      }));
-      const byKey = new Map(features.map((feature) => [featureKey(feature), feature]));
-      return { features: summaries.flatMap((summary) => byKey.has(featureKey(summary)) ? [byKey.get(featureKey(summary))!] : []), failed };
-    },
-  });
+  const { featuresQuery, flagsQuery, index } = useTraceSources(role, needsRequirements);
   const data = externalTrace(item, needsRequirements ? index.data?.features ?? [] : featuresQuery.data ?? [], flagsQuery.data ?? [], siblings);
   const busy = featuresQuery.isPending || flagsQuery.isPending || (needsRequirements && featuresQuery.isSuccess && index.isPending);
   const error = featuresQuery.error ?? flagsQuery.error ?? (needsRequirements ? index.error : null);
@@ -155,13 +114,14 @@ export function ExternalWorkspace() {
   try { savedRole = JSON.parse(localStorage.getItem('fp.state.v2') ?? '{}').role ?? 'viewer'; } catch { /* 계정이 없으면 열람으로 연다. */ }
   const requestedRole = query.get('role') ?? savedRole;
   const role = Object.prototype.hasOwnProperty.call(PLATFORM_ROLES, requestedRole) ? requestedRole : 'viewer';
-  const readOnly = STATIC_MODE || role === 'viewer';
+  const readOnly = role === 'viewer';
   const identities = T.identities[system];
   const [externalUser, setExternalUser] = useState(() => (identities.find((i) => i.role === role) ?? identities[0]).id);
   const [selectedKey, setSelectedKey] = useState(query.get('key') ?? '');
   const [search, setSearch] = useState('');
   const [group, setGroup] = useState('');
-  const [view, setView] = useState<ItemView>(system === 'jira' ? 'board' : 'document');
+  // 기존 링크(항목 키 포함)는 기존 문서 보기로, 키 없이 열 때만 Trackers 화면을 기본으로 연다.
+  const [view, setView] = useState<ItemView>(system === 'jira' ? 'board' : query.get('key') ? 'document' : 'trackers');
   const [status, setStatus] = useState('');
   const [comment, setComment] = useState('');
   const [result, setResult] = useState<Result | null>(null);
@@ -179,6 +139,13 @@ export function ExternalWorkspace() {
   if (selected) permalink.searchParams.set('key', selected.key);
   const currentUrl = permalink.href;
   useEffect(() => { document.title = name + ' · ' + T.badge; }, [name]);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  // 좁은 화면에서 가로로 넘치는 탭 메뉴는 선택한 탭이 보이게 맞춘다.
+  useEffect(() => {
+    const box = tabsRef.current;
+    const active = box?.querySelector<HTMLElement>('[data-active]');
+    if (box && active && box.scrollWidth > box.clientWidth) box.scrollLeft = active.offsetLeft - (box.clientWidth - active.offsetWidth) / 2;
+  }, [view]);
   useEffect(() => { setStatus(selected?.status ?? ''); setComment(''); setResult(null); setCopyResult(''); }, [selected?.key]);
   useEffect(() => { setStatus(selected?.status ?? ''); }, [selected?.status]);
   useEffect(() => {
@@ -186,7 +153,7 @@ export function ExternalWorkspace() {
     if (selected && window.location.href !== currentUrl) window.history.replaceState(null, '', currentUrl);
   }, [selectedKey, selected?.key, currentUrl]);
   const change = useMutation<{ item: MockExternalItem; result: Result | null }, Error, { action: 'TRANSITION'; status: string } | { action: 'COMMENT'; comment: string }>({
-    mutationFn: (action) => readOnly ? Promise.reject(new Error(STATIC_MODE ? T.readOnly : T.viewerHint)) : call('mockExtAct', { params: { system }, role, body: { key: selected!.key, externalUser, deliver: true, ...action } }),
+    mutationFn: (action) => readOnly ? Promise.reject(new Error(T.viewerHint)) : call('mockExtAct', { params: { system }, role, body: { key: selected!.key, externalUser, deliver: true, ...action } }),
     onSuccess: async (response, action) => {
       setResult(response.result); if (action.action === 'COMMENT') setComment('');
       await Promise.all([itemsQuery.refetch(), ...(action.action === 'TRANSITION' ? [queryClient.invalidateQueries({ queryKey: ['externalFlags'] }), queryClient.invalidateQueries({ queryKey: ['externalFeatures'] })] : [])]);
@@ -221,27 +188,37 @@ export function ExternalWorkspace() {
   </section>;
   const properties = selected && <ItemProperties item={selected} onParent={select} parentExists={items.some((candidate) => candidate.key === selected.fields.parentKey)} />;
   const trace = selected && <TracePanel item={selected} siblings={items} role={role} />;
+  const share = <div className="external-share"><input className="ds-input" aria-label={T.currentUrl} readOnly value={currentUrl} onFocus={(event) => event.currentTarget.select()} /><button className="ds-btn" type="button" onClick={async () => { try { await navigator.clipboard.writeText(currentUrl); setCopyResult(T.copied); } catch { setCopyResult(T.copyFailed); } }}>{T.copyUrl}</button>{copyResult && <p role="status">{copyResult}</p>}</div>;
+  const identity = identities.find((entry) => entry.id === externalUser);
   return <div className="external-app" data-tool={system} data-view={view} data-external-demo="ff-external-demo-v1">
     <header className="external-header">
-      <div className="external-product"><a className="external-wordmark" href="/" aria-label={name + ' · ' + T.home}><Icon name={system === 'jira' ? 'grid' : 'book'} size={24} /><span>{name}</span></a><span className="external-demo-badge">{T.badge}</span></div>
+      <div className="external-product"><a className="external-wordmark" href="/" aria-label={name + ' · ' + T.home}><ExtBrandLogo system={system} height={system === 'jira' ? 32 : 27} /></a><span className="external-demo-badge">{T.badge}</span></div>
+      {system === 'codebeamer' && <p className="external-title">{T.cbTitle}</p>}
       <label className="external-search"><Icon name="search" size={16} /><input className="ds-input" aria-label={T.search} placeholder={T.search} value={search} onChange={(event) => setSearch(event.target.value)} /></label>
       <a href="/integration/connectors?tab=sync">{T.back}<Icon name="link" size={16} /></a>
+      {system === 'codebeamer' && <span className="external-user" title={identity?.label}><span className="external-avatar" aria-hidden="true">{externalUser.slice(0, 1).toUpperCase()}</span><span className="ds-sr">{T.externalUserLabel} </span>{externalUser}</span>}
     </header>
-    {system === 'codebeamer' && <div className="external-product-tabs" role="region" aria-label={T.tracker}>{T.productTabs.map((tab) => <button type="button" key={tab} data-active={tab === T.tracker || undefined} disabled={tab !== T.tracker} title={tab === T.tracker ? undefined : T.unsupported} onClick={() => setView('document')}>{tab}</button>)}</div>}
+    {system === 'codebeamer' && <div className="external-product-tabs" ref={tabsRef} role="region" aria-label={T.tracker}>{T.productTabs.map((tab) => {
+      // Trackers는 새 화면, Documents는 기존 문서 보기를 연다. 나머지 탭은 기존처럼 안내만 한다.
+      const live = tab === T.tracker || tab === T.documents;
+      const active = tab === T.documents ? view === 'document' : tab === T.tracker && view !== 'document';
+      return <button type="button" key={tab} data-active={active || undefined} aria-pressed={live ? active : undefined} disabled={!live} title={live ? undefined : T.unsupported} onClick={() => setView(tab === T.documents ? 'document' : 'trackers')}>{tab}</button>;
+    })}</div>}
     <div className="external-context" role="region" aria-label={T.currentItem}>
-      <div><span>{system === 'jira' ? T.project : T.tracker}</span><strong>{selected ? (system === 'jira' ? itemContext(selected).project : itemContext(selected).requirementGroup) ?? T.confirm : T.allItems}</strong><span> / </span><strong>{selected?.key ?? T.allItems}</strong></div>
-      <span>{system === 'codebeamer' && <>{T.workingSet} · {personText(selected?.fields.workingSet) ?? T.confirm} / </>}{T.platformActor} · {DEMO_ACCOUNTS.find((account) => account.key === role)?.label ?? T.viewer}</span>
+      {system === 'codebeamer' && <span className="external-context__mark" aria-hidden="true"><Icon name="layers" size={16} /></span>}
+      <div>{system === 'codebeamer' && <small className="external-context__path">{T.projectHeader} · {fieldText(selected?.fields.tracker) ?? T.confirm} › {T.tracker}</small>}<span>{system === 'jira' ? T.project : T.tracker}</span><strong>{selected ? (system === 'jira' ? itemContext(selected).project : itemContext(selected).requirementGroup) ?? T.confirm : T.allItems}</strong><span> / </span><strong>{selected?.key ?? T.allItems}</strong></div>
+      <span>{system === 'codebeamer' && <span className="external-context__icons" aria-hidden="true"><Icon name="filter" size={16} /><Icon name="grid" size={16} /><Icon name="link" size={16} /></span>}{system === 'codebeamer' && <>{T.workingSet} · {personText(selected?.fields.workingSet) ?? T.confirm} / </>}{T.platformActor} · {DEMO_ACCOUNTS.find((account) => account.key === role)?.label ?? T.viewer}</span>
     </div>
-    <div role="region" aria-label={T.badge}><div className="external-notice"><Icon name="link" size={16} /><p>{T.notice}</p></div>{STATIC_MODE && <p className="external-readonly" role="note">{T.readOnly}</p>}</div>
+    <div role="region" aria-label={T.badge}><div className="external-notice"><Icon name="link" size={16} /><p>{T.notice}</p></div></div>
     <main className="external-main">
       <div className="external-heading"><h1>{system === 'jira' ? T.issues : T.requirements}</h1><span>{T.refreshHint}</span></div>
       <div className="external-toolbar">
         <label className="external-group">{system === 'jira' ? T.project : T.requirementGroup}<select className="ds-input" aria-label={system === 'jira' ? T.project : T.requirementGroup} value={group} onChange={(event) => setGroup(event.target.value)}><option value="">{T.allItems}</option>{groups.map((value) => <option key={value}>{value}</option>)}</select></label>
-        <div className="external-view" role="group" aria-label={T.viewLabel}>{(system === 'jira' ? [['board', T.board], ['list', T.list], ['item', T.itemView]] : [['document', T.document], ['table', T.table], ['item', T.itemView]]).map(([mode, label]) => <button key={mode} type="button" aria-pressed={view === mode} onClick={() => setView(mode as ItemView)}>{label}</button>)}</div>
+        <div className="external-view" role="group" aria-label={T.viewLabel}>{(system === 'jira' ? [['board', T.board], ['list', T.list], ['item', T.itemView]] : [['trackers', T.trackerView], ['document', T.document], ['table', T.table], ['item', T.itemView]]).map(([mode, label]) => <button key={mode} type="button" aria-pressed={view === mode} onClick={() => setView(mode as ItemView)}>{label}</button>)}</div>
         <span className="external-result-count">{T.resultCount(visible.length, items.length)}</span>
         <button type="button" className="ds-btn" onClick={() => void itemsQuery.refetch()} disabled={itemsQuery.isFetching}>{T.retry}</button>
       </div>
-      {itemsQuery.isPending ? <p role="status">{T.loading}</p> : itemsQuery.isError ? <p className="external-error" role="alert">{itemsQuery.error.message}</p> : <div className="external-workspace" data-view={view}>
+      {itemsQuery.isPending ? <p role="status">{T.loading}</p> : itemsQuery.isError ? <p className="external-error" role="alert">{itemsQuery.error.message}</p> : view === 'trackers' ? <CbTrackers items={items} visible={visible} selected={selected} selectedKey={selectedKey} role={role} onSelect={(key) => select(key)} slots={{ share, workflow, trace, comments }} /> : <div className="external-workspace" data-view={view}>
         {view !== 'item' && <section className="external-collection" aria-label={system === 'jira' ? T.jiraItems : T.cbItems}>
           {!visible.length ? <p className="external-empty">{T.noItems}</p> : view === 'board' ? <div className="external-board">{T.columns.map((label, index) => <section key={label} className="external-column"><h2>{label}<span>{visible.filter((item) => columnOf(item.status) === index).length}</span></h2>{visible.filter((item) => columnOf(item.status) === index).map(itemButton)}</section>)}</div> : view === 'table' ? <table className="external-item-table"><caption>{T.cbItems}</caption><thead><tr><th>{T.currentItem}</th><th>{T.property.type}</th><th>{T.status}</th><th>{T.revision}</th></tr></thead><tbody>{visible.map((item) => <tr key={item.key} data-selected={item.key === selected?.key || undefined}><td><button type="button" onClick={() => select(item.key, true)}>{item.key}<strong>{item.title}</strong></button></td><td>{EXT_KIND_LABEL[item.kind] ?? item.kind}</td><td>{item.status}</td><td>r{item.revision}</td></tr>)}</tbody></table> : <div className="external-list">{system === 'codebeamer' ? [...new Set(visible.map((item) => groupOf(item) ?? T.confirm))].map((namespace) => <details open key={namespace} className="external-tree-group"><summary>{namespace}</summary>{visible.filter((item) => (groupOf(item) ?? T.confirm) === namespace).map(itemButton)}</details>) : visible.map(itemButton)}</div>}
         </section>}
@@ -249,7 +226,7 @@ export function ExternalWorkspace() {
           {!selected ? <p className="external-empty">{selectedKey ? T.notFound : T.select}</p> : <>
             <div className="external-detail__meta"><span className="external-key">{selected.key}</span><span>{EXT_KIND_LABEL[selected.kind] ?? selected.kind}</span><span>{T.revision} r{selected.revision}</span></div><h2>{selected.title}</h2>
             <p className="external-current-status" data-testid="external-current-status">{selected.status}</p><p className="external-updated">{T.updated} · {date(selected.updatedAt)} · {selected.updatedBy}</p>
-            <div className="external-share"><input className="ds-input" aria-label={T.currentUrl} readOnly value={currentUrl} onFocus={(event) => event.currentTarget.select()} /><button className="ds-btn" type="button" onClick={async () => { try { await navigator.clipboard.writeText(currentUrl); setCopyResult(T.copied); } catch { setCopyResult(T.copyFailed); } }}>{T.copyUrl}</button>{copyResult && <p role="status">{copyResult}</p>}</div>
+            {share}
             {system === 'codebeamer' && view === 'item' && properties}
             <section className="external-description"><h3>{T.description}</h3>{selected.body ? selected.body.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>{T.emptyBody}</p>}</section>
             {system === 'jira' && <>{trace}{comments}</>}
@@ -260,5 +237,6 @@ export function ExternalWorkspace() {
         </aside>}
       </div>}
     </main>
+    {system === 'codebeamer' && <footer className="external-footer"><span>{T.footer}</span><span>{T.refreshHint}</span><a href="/">{T.platform}</a></footer>}
   </div>;
 }

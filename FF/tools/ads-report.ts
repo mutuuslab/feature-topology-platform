@@ -37,8 +37,6 @@ interface Item {
   cases?: string[];
   /** 후속 교체 입력 — 뒤 단계 항목이 생기면 바꿔 쓸 입력(그 전에는 대체값). deps와 달리 단계 순서를 막지 않는다 */
   later?: string[];
-  /** 진행 상태(BACKLOG 상태 칸) — 없으면 대기 */
-  status?: string;
 }
 export interface Design {
   title: string;

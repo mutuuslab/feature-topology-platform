@@ -126,7 +126,7 @@ const REFDB_SCREENS = ['/master/feature-db', '/master/feature-db/:refId', '/mast
 const REFDB_TESTS = [
   'backend/test/d01/refdb-search-projection.spec.ts',
   ...['change', 'export', 'governance', 'harness', 'read', 'registration', 'release', 'seed'].map((x) => `backend/test/d01/refdb-${x}.spec.ts`),
-  ...['domain-alias', 'quality', 'registration-criteria', 'size', 'status-policy'].map((x) => `contracts/src/rules/refdb/${x}.test.ts`),
+  ...['domain-alias', 'explore', 'quality', 'registration-criteria', 'size', 'status-policy'].map((x) => `contracts/src/rules/refdb/${x}.test.ts`),
   'backend/test/kernel/refdb-ready.spec.ts', // 준비 점검 checks.refdb
   'backend/test/d05/epic-ref-ids.spec.ts', // JIRA Epic의 Feature DB ID
   'contracts/src/rules/access-refdb.test.ts',

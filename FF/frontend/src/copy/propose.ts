@@ -9,7 +9,6 @@ export const propose = {
     picked: (refId: string, included: number) => (included ? `대표 ${refId} · 포함 ${included}개` : `대표 ${refId}`),
     can: '등록하면 PROPOSED 0.1.0으로 시작합니다',
     cannot: 'Feature 작성자만 제안할 수 있습니다',
-    readOnly: '공개 데모 — 기준 기능을 고르고 등록 정보까지 볼 수 있고, 등록은 되지 않습니다',
     done: '등록했습니다 — 확인할 안내가 있습니다',
   },
   steps: { label: '등록 단계', pick: '기준 기능 고르기', confirm: '등록 정보 확인', no: (n: number) => `${n}단계` },

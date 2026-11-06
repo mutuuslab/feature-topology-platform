@@ -86,6 +86,20 @@ describe('알림 화면', () => {
       expect(ITEMS[0].fields[0].value).toBe('FPW.7-A01 Canary·Shadow 판정 기준 정의');
     } finally { ITEMS[0].fields = original; }
   });
+  // 회귀(2026-11-06 e2e 3초 ⑨): 배포 차단 알림의 실패 항목 'D06-03 CONDITIONAL'이 컴포넌트 코드 그대로 본문에 보였다
+  it('실패 항목의 컴포넌트 코드는 업무 이름으로, 코드는 툴팁·설명 모드로 보인다', async () => {
+    const original = ITEMS[0].fields;
+    ITEMS[0].fields = [{ label: '실패 항목', value: 'D06-03 CONDITIONAL' }];
+    try {
+      mount('approver', <NotificationsScreen />);
+      const cell = await screen.findByTitle('D06-03 CONDITIONAL');
+      expect(cell.querySelector('[data-explain-codes]')?.getAttribute('data-explain-codes')).toBe('D06-03');
+      const visible = [...cell.childNodes].map((c) => ((c as HTMLElement).querySelector?.('[data-explain-codes]') ? (c as HTMLElement).firstChild?.textContent : c.textContent)).join('');
+      expect(visible).not.toMatch(/D06-03/);
+      expect(visible).toContain('CONDITIONAL');
+    } finally { ITEMS[0].fields = original; }
+  });
+
   it('내 알림은 행위자 헤더로 읽고, 안 읽음만 보이다가 전체로 바꾸면 읽은 알림도 보인다', async () => {
     mount('approver', <NotificationsScreen />);
     expect(await screen.findByText('FEAT-00022 긴급 차단 승인 요청')).toBeTruthy();

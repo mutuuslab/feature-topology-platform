@@ -102,6 +102,27 @@ async function waitForDemoContinuation(local, require) {
   } finally { await client.end(); }
 }
 
+/** 전시 빈 화면 채우기(showcase-fill.seeder.ts) — 영속 DB에서는 부팅을 막지 않고 이어서 돈다. 끝나면 meta state가 RUNNING에서 바뀐다 */
+async function waitForShowcaseFill(local, require) {
+  const { Client } = require('pg');
+  const client = new Client({ connectionString: local.FF_DB_URL, connectionTimeoutMillis: 5000 });
+  await client.connect();
+  try {
+    const deadline = Date.now() + 120_000;
+    do {
+      const row = (await client.query("SELECT value FROM meta WHERE key = 'seed:showcase-fill'")).rows[0];
+      const state = row ? JSON.parse(row.value) : null;
+      if (state && state.state !== 'RUNNING') {
+        const failed = Object.entries(state.steps ?? {}).filter(([, note]) => String(note).startsWith('실패'));
+        assert.deepEqual(failed, [], 'Showcase fill steps failed');
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 500));
+    } while (Date.now() < deadline);
+    assert.fail('Showcase fill did not finish');
+  } finally { await client.end(); }
+}
+
 test('패키지 서버: Native PG·Unleash·Edge·차량 서명·UI·출처 제한·재시작 후 데이터', { timeout: 420_000 }, async () => {
   const dir = await mkdtemp(join(tmpdir(), 'ff-desktop-test-'));
   let server;
@@ -118,14 +139,16 @@ test('패키지 서버: Native PG·Unleash·Edge·차량 서명·UI·출처 제�
     const local = JSON.parse(await readFile(join(dir, 'runtime/connection.json'), 'utf8'));
     const require = createRequire(join(runtime, 'package.json'));
     await waitForDemoContinuation(local, require);
+    await waitForShowcaseFill(local, require);
     await waitForReplica(get);
     if (process.env.FF_SHOWCASE === '1') {
       const features = await (await get('/api/features')).json();
       const vehicles = await (await get('/api/vehicles')).json();
       assert.equal(features.total, 184);
       assert.equal(vehicles.items.length, Number(process.env.FF_SHOWCASE_VEHICLES ?? 480));
+      // 의존관계·되돌리기 계획의 +1은 전시 빈 화면 채우기(시연 Feature를 대상으로 하는 관계 1·자동 되돌리기 계획 1). 변경 기록은 근거 등록 개정이라 수가 같다
       for (const [path, count, role] of [
-        ['/api/dependencies', 59], ['/api/change-records', 2], ['/api/rollback-plans', 2],
+        ['/api/dependencies', 60], ['/api/change-records', 2], ['/api/rollback-plans', 3],
         ['/api/sync/runs', 7], ['/api/privacy/requests', 2, 'SECURITY_OFFICER'], ['/api/cost/projects', 24, 'COST_ESTIMATOR'],
       ]) {
         const response = await get(path, role ? { headers: { 'x-actor-id': 'usr-desktop-showcase', 'x-actor-role': role } } : undefined);

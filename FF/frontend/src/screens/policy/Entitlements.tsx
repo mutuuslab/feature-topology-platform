@@ -6,7 +6,6 @@ import { orders as OR } from '../../copy/ads-state';
 import { ordersMessage } from '../ads/state-messages';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, referenceCodes, TRIAL_PAGE_SIZE, TRIAL_STATES, trialListQuery, type ReferenceValue, type SegmentDimension, type TrialSource } from '@ff/contracts';
-import { STATIC_MODE } from '../../api/client';
 import { useConnectionLabel } from '../../api/connections';
 import { connections as CN } from '../../copy/connections';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -210,7 +209,7 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
           const opts = options(segment, refs.data?.items);
           if (!opts.length) return null;
           return (
-            <Select key={dim} label={T.dims[dim]} value={segment[dim] ?? ''} disabled={STATIC_MODE} onChange={(e) => reset(() => setSegment((s) => ({ ...s, [dim]: e.target.value || undefined, ...(dim === 'country' ? { region: undefined } : {}) })))}>
+            <Select key={dim} label={T.dims[dim]} value={segment[dim] ?? ''} onChange={(e) => reset(() => setSegment((s) => ({ ...s, [dim]: e.target.value || undefined, ...(dim === 'country' ? { region: undefined } : {}) })))}>
               <option value="">{T.any}</option>
               {opts.map((o) => (
                 <option key={o} value={o}>
@@ -222,7 +221,7 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
         })}
         <label className="ds-field ds-field--inline">
           <span className="ds-field__label">{T.search}</span>
-          <input className="ds-input ds-input--mono" value={q} disabled={STATIC_MODE} onChange={(e) => reset(() => setQ(e.target.value))} />
+          <input className="ds-input ds-input--mono" value={q} onChange={(e) => reset(() => setQ(e.target.value))} />
         </label>
       </Toolbar>
       {source !== 'FLEET' && <p className="ds-field__hint">{T.syntheticNote}</p>}
@@ -258,7 +257,7 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
                 header: '',
                 cell: (r) => {
                   if (r.source === 'SYNTHETIC') return null;
-                  const dis = !perm.ok || busy || STATIC_MODE;
+                  const dis = !perm.ok || busy;
                   if (r.state === 'OFFERED')
                     return (
                       <span className="ds-nowrap" style={{ display: 'inline-flex', gap: 'var(--sp-1)' }}>
@@ -302,7 +301,7 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
               {T.prev}
             </Button>
             <span className="ds-mono">{T.page((page - 1) * TRIAL_PAGE_SIZE + 1, Math.min(page * TRIAL_PAGE_SIZE, data.total), data.total)}</span>
-            <Button disabled={page * TRIAL_PAGE_SIZE >= data.total || STATIC_MODE} onClick={() => setPage((p) => p + 1)}>
+            <Button disabled={page * TRIAL_PAGE_SIZE >= data.total} onClick={() => setPage((p) => p + 1)}>
               {T.next}
             </Button>
           </div>
@@ -324,7 +323,6 @@ function OfferPanel({ catalogId, product }: { catalogId: string; product?: Produ
   const [vins, setVins] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const O = T.offer;
-  if (STATIC_MODE) return null;
   return (
     <Panel title={O.title} eyebrow={product ? `${catalogId} · ${product.name}` : catalogId} id="trial-offer">
       <p className="ds-field__hint">{O.lead}</p>

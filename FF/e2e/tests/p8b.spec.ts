@@ -48,9 +48,12 @@ test('이상 징후: 고장 보고 2대(ASIL B) → 긴급 차단 권고 → 확
   await expect(fb).toContainText('SCN-FEAT00022-FAULT-ONBOARD');
 });
 
-test('Unleash 연계: 배포 정책 동기화(모의 Unleash) → drift 없음 → 차량별 대조 불일치 0', async ({ page }) => {
+test('Unleash 연계: 배포 정책 동기화(모의 Unleash) → drift 없음 → 차량별 대조 불일치 0', async ({ page, request }) => {
   await asRole(page, 'coordinator'); // 출시 담당
-  await page.goto('/policies/POL-00002');
+  // care_00022_param의 지금 배포 정책 — 데모 시드가 같은 값의 새 판을 배포해 앞 판(POL-00002)은 복구 후보가 된다(2026-11-06)
+  const deployed = (await (await request.get(`${API}/api/policies?status=DEPLOYED`)).json()).items.find((p: { flagKey: string }) => p.flagKey === 'care_00022_param');
+  expect(deployed?.policyId).toMatch(/^POL-\d{5}$/);
+  await page.goto(`/policies/${deployed.policyId}`);
   const panel = page.getByRole('region', { name: 'Policy Tool 연계 (Unleash)' });
   await expect(panel).toContainText('country IN KR');
   await panel.getByRole('button', { name: 'Unleash 동기화' }).click();

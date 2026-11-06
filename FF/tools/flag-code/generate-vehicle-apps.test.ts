@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanFlagFiles } from '../../backend/src/domains/d01-policy/flag-code/scanner.ts';
-import { alignEvents, alignmentOf, buildEvaluations, buildEvents, buildFeatures, C, REPO_START, REPOS, selectAnomalies, type Model, type PolicyM, type VersionM } from './plan.ts';
+import { alignEvents, alignmentOf, buildEvaluations, buildEvents, buildFeatures, C, currentPolicyOf, REPO_START, REPOS, selectAnomalies, type Model, type PolicyM, type VersionM } from './plan.ts';
 import { git, scanCommits, writeRepo } from './repo-writer.ts';
 import { featureSource, featureTest, repoRootFiles } from './templates.ts';
 import { generate, isFastForward, refsOf, registryOf, stringify, testRepo } from './generate-vehicle-apps.ts';
@@ -230,4 +230,62 @@ test('정책 키 맞춤 — 픽스처는 현재 계획(정책 키)·맞춤 PR(�
   } finally {
     rmSync(tmp, { recursive: true, force: true, maxRetries: 5 });
   }
+});
+
+// 통합 12단계(static 시연 주인공 시드) 결함 — 맞춤 Feature가 둘 이상이면 첫 맞춤 PR부터 현재 계획으로 그리는데, 아직 맞추지 않은
+// 다른 Feature의 이력 키(생성 규칙 키)를 현재 계획에서 찾지 못해 생성기가 멈췄다('Cannot read properties of undefined (reading 'flagKey')')
+test('정책 키 맞춤 — 맞춤 Feature가 여럿이면 앞 맞춤 PR 동안 뒤 Feature는 이력 키 그대로 그린다', () => {
+  const history = fakeModel();
+  const base = buildFeatures(history);
+  const a = selectAnomalies(base);
+  const later2: PolicyM = { policyId: 'POL-00012', flagKey: 'ivi_00119_assist', featureId: 'FEAT-00119', featureVersion: '1.0.0', controlPoint: 'Flag', status: 'DEPLOYED', revision: 1, basisPoints: 5000, approvedAt: null, runtime: true };
+  const current = buildFeatures({ ...history, policies: [...history.policies, ...laterPolicies, later2] });
+  const al = alignmentOf(base, current, a);
+  assert.deepEqual(al.map((x) => x.featureId), ['FEAT-00113', 'FEAT-00119']);
+  const tmp = mkdtempSync(join(tmpdir(), 'ff-flag-align2-test-'));
+  try {
+    const past = buildEvents(base, a, 'main');
+    const scan = (w: ReturnType<typeof writeRepo>) => new Set(scanCommits(w.dir, REPOS[0].repository, [{ commit: w.main.at(-1)!.sha, ref: 'main', scannedAt: new Date(w.main.at(-1)!.at).toISOString() }])[0].usages.map((u) => u.flagKey));
+    const before = scan(writeRepo(join(tmp, 'past'), REPOS[0], base, past, REPO_START));
+    const after = scan(writeRepo(join(tmp, 'next'), REPOS[0], base, [...past, ...alignEvents(al, past)], REPO_START, current));
+    const rename = new Map(al.flatMap((x) => x.rename));
+    assert.ok(rename.has('ivi_00119_enable'), '뒤 Feature도 생성 키를 정책 키로 바꾼다');
+    const expected = new Set([...[...before].map((k) => rename.get(k) ?? k), ...al.flatMap((x) => x.added)]);
+    assert.deepEqual([...after].sort(), [...expected].sort(), '두 Feature 모두 맞춘 키로 스캔된다');
+  } finally {
+    rmSync(tmp, { recursive: true, force: true, maxRetries: 5 });
+  }
+});
+
+// 통합 12단계 결함 2 — 앞 Version이 정책 키(실행 중 정책)로 채운 제어점에, 승인 전 새 Version은 생성 규칙 키를 계획한다(백엔드 승인 훅과 같다).
+// 그래서 같은 제어점(Flag 1번)에 키가 둘이고, 구현에 runFeature가 두 번 생겨 차량 앱 시험·tsc가 실패했다 — 뒤 키는 다음 순번 함수로 그린다
+test('정책 키 맞춤 — 같은 제어점·순번의 키가 둘이어도 구현 함수 이름이 겹치지 않는다', () => {
+  const history = fakeModel();
+  const base = buildFeatures(history);
+  const a = selectAnomalies(base);
+  const next: PolicyM = { policyId: 'POL-00013', flagKey: 'ivi_00119_assist', featureId: 'FEAT-00119', featureVersion: '1.0.0', controlPoint: 'Flag', status: 'DEPLOYED', revision: 1, basisPoints: 5000, approvedAt: null, runtime: true };
+  const later = { ...history, versions: [...history.versions.map((x) => (x.featureId === 'FEAT-00119' ? { ...x, isLatest: false } : x)), v('FEAT-00119', '1.0.1', 'DEVELOPING', ['Flag', 'Signal'], 'IN', null)], policies: [...history.policies, next] };
+  const current = buildFeatures(later);
+  const f = current.find((x) => x.featureId === 'FEAT-00119')!;
+  assert.deepEqual(f.plan.filter((e) => e.controlPoint === 'Flag').map((e) => [e.flagKey, e.version, e.ordinal]), [['ivi_00119_assist', '1.0.0', 1], ['ivi_00119_enable', '1.0.1', 1]], '백엔드 승인 훅과 같은 계획');
+  const al = alignmentOf(base, current, a);
+  assert.deepEqual(al.map((x) => [x.featureId, x.rename, x.added]), [['FEAT-00119', [], ['ivi_00119_assist']]]);
+  const tmp = mkdtempSync(join(tmpdir(), 'ff-flag-align3-test-'));
+  try {
+    const past = buildEvents(base, a, 'main');
+    const w = writeRepo(join(tmp, 'next'), REPOS[0], base, [...past, ...alignEvents(al, past)], REPO_START, current);
+    assert.deepEqual(testRepo(w.dir), [], '맞춘 저장소도 시험·타입 검사를 통과한다');
+  } finally {
+    rmSync(tmp, { recursive: true, force: true, maxRetries: 5 });
+  }
+});
+
+// 통합 12단계 결함 3 — 같은 키를 다시 배포하면(앞 정책 RETIRED, 새 정책 DEPLOYED) 생성기는 첫 정책(가장 낮은 ID)만 봐서
+// Unleash 불일치 시연·대사가 백엔드(현재 정책 = 배포 > 승인 > 그 밖 > 퇴역, 같으면 나중)와 달랐다
+test('대사 — 키의 현재 정책은 백엔드와 같은 순서로 고른다(재배포한 키는 새 정책)', () => {
+  const p = (policyId: string, status: string): PolicyM => ({ policyId, flagKey: 'ivi_00111_banner', featureId: 'FEAT-00111', featureVersion: '1.0.0', controlPoint: 'Signal', status, revision: 1, basisPoints: 0, approvedAt: null, runtime: true });
+  assert.equal(currentPolicyOf([p('POL-00001', 'RETIRED'), p('POL-00009', 'DEPLOYED'), p('POL-00005', 'RETIRED')], 'ivi_00111_banner')!.policyId, 'POL-00009');
+  assert.equal(currentPolicyOf([p('POL-00001', 'VALIDATED'), p('POL-00002', 'APPROVED')], 'ivi_00111_banner')!.policyId, 'POL-00002');
+  assert.equal(currentPolicyOf([p('POL-00001', 'RETIRED'), p('POL-00002', 'RETIRED')], 'ivi_00111_banner')!.policyId, 'POL-00002', '같은 순위면 나중 정책');
+  assert.equal(currentPolicyOf([p('POL-00001', 'DEPLOYED')], 'other_key'), undefined);
 });

@@ -5,14 +5,27 @@
 import { useEffect, useState } from 'react';
 import { OpenFeature, ProviderEvents, type EvaluationDetails, type FlagValue } from '@openfeature/web-sdk';
 import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
-import { STATIC_MODE } from '../../api/client';
+import { ofrepSnapshotFile } from '@ff/contracts';
+import { readSnapshotFile, STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { p10 } from '../../copy/p10';
+import { localTime } from '../../data/people';
 import { KeyValue, Panel, RuleText, VerdictBadge } from '../../design';
 import { OpenFeatureScopeLink } from '../ext/OpenFeatureScope';
 
 const O = ko.openfeature;
 const DOMAIN = 'ff-console';
+
+interface BulkSnapshot {
+  flags?: { key: string; value: FlagValue; reason?: string; variant?: string; metadata?: Record<string, string | number | boolean> }[];
+}
+
+/** 정적 데모 — 스냅샷의 bulk 평가에서 웹 SDK가 줄 값을 만든다(bulk에 없는 키는 SDK처럼 FLAG_NOT_FOUND·기본값) */
+function detailsFromBulk(bulk: BulkSnapshot, flagKey: string): EvaluationDetails<FlagValue> {
+  const f = bulk.flags?.find((x) => x.key === flagKey);
+  if (!f) return { flagKey, value: false, reason: 'ERROR', errorCode: 'FLAG_NOT_FOUND', flagMetadata: {} } as EvaluationDetails<FlagValue>;
+  return { flagKey, value: f.value, reason: f.reason, variant: f.variant, flagMetadata: f.metadata ?? {} };
+}
 let ready: Promise<void> | null = null;
 
 /** provider는 앱 전체에서 한 번 — 폴링 간격은 시연에서 변경이 바로 보이도록 3초 */
@@ -27,8 +40,21 @@ export function OpenFeaturePanel({ vin, flagKey, serverValue, pollInterval = 300
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (STATIC_MODE) return;
     let alive = true;
+    // 정적 데모 — 스냅샷을 만들 때 이 차량(targetingKey)으로 받은 bulk 평가를 읽는다
+    if (STATIC_MODE) {
+      readSnapshotFile<{ bulk?: BulkSnapshot; evaluatedAt?: string }>(ofrepSnapshotFile(vin)).then(
+        (s) => {
+          if (!alive) return;
+          setDetails(detailsFromBulk(s.bulk ?? {}, flagKey));
+          setLog(s.evaluatedAt ? [{ at: localTime(s.evaluatedAt), type: O.snapshotEvent }] : []);
+        },
+        (e: Error) => alive && setError(e.message),
+      );
+      return () => {
+        alive = false;
+      };
+    }
     const client = OpenFeature.getClient(DOMAIN);
     const read = (type: string) => {
       if (!alive) return;
@@ -47,12 +73,6 @@ export function OpenFeaturePanel({ vin, flagKey, serverValue, pollInterval = 300
     };
   }, [vin, flagKey, pollInterval]);
 
-  if (STATIC_MODE)
-    return (
-      <Panel title={O.title} id="openfeature" tour="openfeature-client">
-        <p className="ds-field__hint">{O.staticNote}</p>
-      </Panel>
-    );
   // 경계 밖 — 단일 평가는 DISABLED(decided_by), 웹 SDK는 bulk에서 F2 이상 키가 빠져(FFG-OFT-005) 서버에 배포됐는데도 FLAG_NOT_FOUND
   const guarded = (details?.reason === 'DISABLED' && details.flagMetadata?.decided_by === 'vehicle_safety_guard') || (details?.errorCode === 'FLAG_NOT_FOUND' && serverValue !== null);
   const agree = details && serverValue !== null && !guarded ? details.value === serverValue : null;

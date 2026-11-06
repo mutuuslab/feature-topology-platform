@@ -1,5 +1,5 @@
 // 정적 데모(STATIC_MODE, 스냅샷만) — Feature DB 검색은 받아 둔 전체 목록에서 화면이 찾고(검색어 스냅샷이 없어 오류 상자가 떴다, 하네스 리뷰 F5),
-// 등록 화면은 읽기 전용 안내(역할과 상관없이) — 작성자에게 '작성자만 제안할 수 있습니다'가 보이던 결함(F6).
+// 등록 화면은 역할 규칙대로 안내 — 작성자에게 '작성자만 제안할 수 있습니다'가 보이던 결함(F6). 쓰기는 브라우저 안 시연 데이터(20-60).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -86,13 +86,18 @@ describe('정적 데모 — Feature DB 검색', () => {
   });
 });
 
-describe('정적 데모 — 등록 화면은 읽기 전용 안내', () => {
-  it("작성자에게도 '작성자만' 대신 공개 데모 안내, 추가 요청은 읽기 전용 이유와 함께 막힌다", async () => {
+describe('정적 데모 — 등록 화면은 브라우저 안 시연 데이터로 등록한다', () => {
+  // 2026-11-06 — 공개 사이트의 쓰기는 브라우저 안 시연 데이터가 처리한다(20-60). 권한은 서버와 같은 역할 규칙 — 읽기 전용 안내 없음
+  it("작성자에게는 등록 안내(읽기 전용 아님), 작성자가 아니면 '작성자만' 안내", async () => {
     mount('author', '/feature/propose', <ProposeScreen />);
     const btn = await screen.findByRole('button', { name: P.requestNew });
-    expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(P.key.readOnly);
+    expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(P.key.pick);
     expect(document.body.textContent).not.toContain(P.key.cannot);
-    await waitFor(() => expect(btn).toHaveProperty('disabled', true));
-    expect(screen.getByText(ko.page.readOnly, { selector: '.ds-btn-why__text' })).toBeTruthy();
+    await waitFor(() => expect(btn).toHaveProperty('disabled', false));
+    expect(document.body.textContent).not.toContain(ko.page.readOnly);
+    cleanup();
+    mount('viewer', '/feature/propose', <ProposeScreen />);
+    await screen.findByRole('button', { name: P.requestNew });
+    expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(P.key.cannot);
   });
 });

@@ -13,6 +13,7 @@ export const flags = {
   deliveryEvidence: '서명·배포 근거 확인', deliveryCreated: '게시본 생성', receiptWaiting: '차량으로부터 수신된 기록이 없습니다.',
   receiptNone: '차량 배포 뒤 실제 수신을 확인하세요.', receiptChecking: '현재 게시본의 차량 수신 근거를 조회 중입니다.',
   receiptUnverified: '현재 정책·게시본의 서명 근거를 다시 확인하세요.', receiptReadFailed: '차량 수신 근거를 읽지 못했습니다. 배포 상세에서 다시 확인하세요.',
+  killActive: (n: number, total: number) => `긴급 차단 중 — 반영 ${n}/${total}대`, killOpen: '차단 상세',
   receiptCount: (n: number, total: number) => `일치 회신 ${n}/${total}`, receiptLatest: '최근 수신', receiptRejected: '거부된 수신 기록',
   next: '다음 처리', importLabel: 'Git 스캔 JSON', importHint: 'CI에서 flags:scan으로 만든 JSON을 붙여 넣으세요. 같은 저장소·커밋은 기존 기록을 보존합니다.',
   importSubmit: '소스 연결 저장', importDone: 'Git 소스 연결을 저장했습니다.', invalid: 'JSON 형식을 확인하세요.', required: 'Git 스캔 JSON을 입력하세요.',

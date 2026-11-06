@@ -24,13 +24,13 @@ import { FlagSourceManifest } from './schemas/flag-source';
 import { CreateFlagPrBody, CreateFlagRemovalPrBody, CreateFlagRepositoryBody, FlagGateWaiverBody, FlagGateWaiverDecisionBody, GithubWebhookBody, RescanFlagRepositoryBody, UpdateFlagRepositoryBody, UploadFlagScanBody } from './schemas/flag-code';
 import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody, RestoreRequestBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
-import { NotificationReadAllBody } from './rules/notification';
+import { NotificationReadAllBody } from './rules/notification-keys';
 import { NotificationRuleBody, NotificationSendBody } from './rules/notification-rules';
 import { PipelineRunBody } from './rules/integration-error';
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
-import { LOCATION_VIEW_ROLES } from './rules/fleet-map';
+import { LOCATION_VIEW_ROLES } from './rules/location-view';
 import { FleetOnboardBody } from './rules/population';
 import { ContractBasisBody, DataAccessRequestBody } from './rules/data-act';
 import { ReferenceRetireBody, ReferenceValueBody, VehicleRegisterBody } from './rules/reference-data';
@@ -161,7 +161,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'baselineChecklist', method: 'GET', path: '/api/features/:id/versions/:ver/baseline-checklist', summary: 'BOM 확정 체크리스트', component: 'D01-01' },
 
   // Feature DB (D01-01 확장, docs/30-data-model/30-95) — 차종과 무관한 기준 기능 정의. Feature 등록은 기준 행을 대표 1 + 포함 N으로 참조한다
-  { name: 'listRefs', method: 'GET', path: '/api/refdb/refs', summary: 'Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터, offset·limit 페이지(금액 필드는 산정 역할만)', component: 'D01-01', query: ['q', 'domain', 'component', 'status', 'offset', 'limit', 'source'], personal: true },
+  { name: 'listRefs', method: 'GET', path: '/api/refdb/refs', summary: 'Feature DB 기준 행 검색 — 한글·영문 기능명·별칭·용어집·ID, 도메인·컴포넌트·상태 필터와 다중 선택(쉼표 목록), 축별 수·조건 요약, offset·limit 페이지(금액 필드는 산정 역할만)', component: 'D01-01', query: ['q', 'domain', 'component', 'status', 'offset', 'limit', 'source', 'statuses', 'asils', 'lifecycles', 'swStacks', 'tshirts', 'vehicleTypes', 'regions'], personal: true },
   { name: 'refDetail', method: 'GET', path: '/api/refdb/refs/:refId', summary: 'Feature DB 기준 행 상세 — 정의·근거·세부기능 후보·이 행을 쓰는 Feature(금액 필드는 산정 역할만)', component: 'D01-01', personal: true },
   { name: 'refTaxonomy', method: 'GET', path: '/api/refdb/taxonomy', summary: 'Feature DB 분류 — 도메인 10 → 클러스터 → 컴포넌트', component: 'D01-01' },
   { name: 'refSources', method: 'GET', path: '/api/refdb/sources', summary: 'Feature DB 출처 — 자료·발행처·버전·확인일·다음 점검일', component: 'D01-01' },
@@ -276,6 +276,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },
   { name: 'fleetRuntime', method: 'GET', path: '/api/fleet/runtime', summary: 'Fleet 실시간 적용 현황 — 차량별 적용 게시본·상태·서버 판단 비교', component: 'D02-03' },
+  { name: 'operationSummary', method: 'GET', path: '/api/fleet/operation-summary', summary: '홈 차량 정책 수신 현황 요약 — 전체 차량 기준 건수·국가·차종 묶음·시각 분포와 표 첫 쪽(회신은 운영 데이터 열람 역할만)', component: 'D02-03', personal: true },
   { name: 'fleetMap', method: 'GET', path: '/api/fleet/map', summary: '전세계 차량 지도 — 차량별 위치(약 1 km)·구독 상태·기능 활성, 국가별 집계. 위치는 데모 모의값, 열람 감사', component: 'D02-03', query: ['source', 'catalogId', 'flagKey', 'zoom', 'bbox'], personal: true, roles: [...LOCATION_VIEW_ROLES] },
   { name: 'fleetMapVehicle', method: 'GET', path: '/api/fleet/map/vehicles/:vin', summary: '지도 차량 상세 — 정밀 위치(약 10 m)·권한·플래그 적용, 열람마다 감사', component: 'D02-03', personal: true, roles: [...LOCATION_VIEW_ROLES], sample: { vin: 'KMH-NX4-0001' } },
   { name: 'fleetPopulation', method: 'GET', path: '/api/fleet/population', summary: '대상 차량 모집단 — 판매 → 서비스 시장 → 플랫폼 탑재 → 커넥티드 → 운행 중 깔때기(가정값 모델)·가중 표본 규모', component: 'D02-03' },
@@ -615,3 +616,12 @@ export function snapshotFile(url: string): string {
   const name = safe.length <= SNAPSHOT_NAME_MAX ? safe : `${safe.slice(0, SNAPSHOT_NAME_MAX - 15)}~${urlHash(url)}`;
   return 'api-snapshot/' + name + '.json';
 }
+
+/**
+ * 정적 데모 OFREP 평가 스냅샷(ROUTES 밖) — 차량(targetingKey)마다 한 파일: { bulk: bulk 평가 응답, flags: { flagKey: 단일 평가 응답 }, evaluatedAt }.
+ * 차량 × Flag마다 나누면 공개 배포(전시 차량 480대) 파일 수가 수천 개 늘어난다. 화면·snapshot:api 공용
+ */
+export const ofrepSnapshotFile = (targetingKey: string) => snapshotFile(`/api/ofrep/evaluate?targetingKey=${encodeURIComponent(targetingKey)}`);
+
+/** 정적 데모 가상검증 Evidence 파일 — 원래 형식(HTML·JSON·기록) 그대로 둔다. 화면·snapshot:api 공용 */
+export const virtualEvidenceSnapshotFile = (runId: string, name: string) => `api-snapshot/files/virtual/${runId.replace(/[^A-Za-z0-9._-]/g, '_')}/${name.replace(/[^A-Za-z0-9._-]/g, '_')}`;

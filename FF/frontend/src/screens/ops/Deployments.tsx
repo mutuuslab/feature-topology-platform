@@ -2,6 +2,7 @@
 import { lazy, Suspense, useState } from 'react';
 import type { ConvergenceView } from '@ff/contracts';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { useConnectionLabel } from '../../api/connections';
 import { connections as CN } from '../../copy/connections';
@@ -65,7 +66,8 @@ function Keys() {
 /** 시뮬레이터 회신이 멈췄는가(시험용 수동 시계로 띄운 데모 서버) — 회신 대기가 쌓이는 이유를 보인다(P4-3) */
 function useRepliesPaused() {
   const perm = usePermission(['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'RELEASE_MANAGER', 'AUDITOR']);
-  const ch = useApi<{ active: string; adapters: { id: string; status?: { replies?: string } }[] }>('vehicleChannel', {}, { enabled: perm.ok, retry: false });
+  // 설정 상태 읽기 — 정적 데모는 역할과 상관없이 받아 둔 스냅샷을 읽는다
+  const ch = useApi<{ active: string; adapters: { id: string; status?: { replies?: string } }[] }>('vehicleChannel', {}, { enabled: perm.ok || STATIC_MODE, retry: false });
   return !!ch.data && ch.data.active === 'sim' && ch.data.adapters.find((a) => a.id === 'sim')?.status?.replies === 'PAUSED';
 }
 
@@ -179,7 +181,7 @@ function OtaDelivery({ d }: { d: OtaDeliveryView }) {
       <KeyValue
         rows={[
           { k: O.row.job, v: <span className="ds-mono">{d.jobId}</span> },
-          { k: O.row.otaJob, v: <span className="ds-mono">{d.otaJobId ?? '—'}</span>, note: d.serverState ?? undefined },
+          { k: O.row.otaJob, v: <span className="ds-mono">{d.otaJobId ?? '—'}</span>, note: d.serverState ? <span title={d.serverState}>{O.state[d.serverState] ?? d.serverState}</span> : undefined },
           { k: O.row.attempts, v: <span className="ds-mono">{d.attempts}</span> },
           ...(d.nextAttemptAt ? [{ k: O.row.next, v: <span className="ds-mono ds-nowrap">{when(d.nextAttemptAt)}</span> }] : []),
           ...(d.lastError ? [{ k: O.row.error, v: <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)', wordBreak: 'break-all' }}>{`${d.lastError.code}${d.lastError.status ? ` · HTTP ${d.lastError.status}` : ''} — ${d.lastError.message}`}</span> }] : []),

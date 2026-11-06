@@ -1,9 +1,11 @@
 // 업무 절차 진행 상태 — 서버(활동 완료 API)가 정본이고, 화면은 낙관적으로 먼저 그린 뒤 저장한다.
-// 백엔드가 없거나 정적 데모(STATIC_MODE)면 localStorage만 쓴다(예전 ff.proc.done 키는 활동 ID로 옮긴다).
+// 백엔드에 닿지 않으면 완료 표시를 localStorage에만 쓴다(예전 ff.proc.done 키는 활동 ID로 옮긴다).
+// 정적 데모는 브라우저 안 시연 데이터(api/sim — 받아 둔 스냅샷 + 이 브라우저의 완료·취소)가 서버 대신 정본이다(설계 20-60).
 // 화면 패널·절차 상세·허브가 같은 상태를 보도록 외부 스토어로 둔다.
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ProcedureCompleteBody, ProcedureCompletion, ProcedureInboxView, ProcedureStateView, ProcedureSummary } from '@ff/contracts';
-import { call, STATIC_MODE, type ApiError } from '../api/client';
+import { call, type ApiError } from '../api/client';
 
 const KEY = 'ff.proc.done.v2';
 const OLD_KEY = 'ff.proc.done';
@@ -70,10 +72,6 @@ export type ProcedureSnapshot = ReturnType<typeof snapshot>;
 
 /** 서버 완료 상태를 한 번 읽는다 — 역할이 바뀌면 다시 읽는다. 실패해도 로컬 상태로 화면은 계속 동작한다. */
 function hydrate(role: string): void {
-  if (STATIC_MODE) {
-    status = 'ready';
-    return;
-  }
   if (loadedRole === role && status !== 'error' && status !== 'idle') return;
   if (hydrating) return;
   loadedRole = role;
@@ -83,7 +81,7 @@ function hydrate(role: string): void {
   hydrating = call<ProcedureStateView>('procedureState', { role })
     .then((s) => {
       items = s.items;
-      // 서버가 정본 — 이 브라우저에만 있던 완료는 서버에 없으면 지운다(정적 데모에서는 그대로 둔다)
+      // 서버가 정본 — 이 브라우저에만 있던 완료는 서버에 없으면 지운다
       const next: Done = Object.fromEntries(s.done.map((id) => [id, true]));
       if (!sameDone(done, next)) doneVersion += 1;
       done = next;
@@ -106,7 +104,7 @@ async function complete(role: string, activityId: string, body: ProcedureComplet
   if (done[activityId]) return;
   const before = { ...done };
   setDone({ ...done, [activityId]: true });
-  if (STATIC_MODE || offline) return;
+  if (offline) return;
   try {
     const r = await call<{ completion: ProcedureCompletion }>('completeProcedureActivity', { role, params: { id: activityId }, body });
     items = [...items.filter((i) => i.activityId !== activityId), r.completion];
@@ -138,7 +136,7 @@ async function undo(role: string, activityId: string): Promise<void> {
   const next = { ...done };
   delete next[activityId];
   setDone(next);
-  if (STATIC_MODE || offline) return;
+  if (offline) return;
   try {
     const s = await call<ProcedureStateView>('undoProcedureActivity', { role, params: { id: activityId } });
     items = s.items;
@@ -212,39 +210,33 @@ export interface InboxState {
   error: string | null;
 }
 
+/**
+ * 검토함·요약은 react-query 캐시 하나를 같이 쓴다 — 홈 한 번에 요약 8회·검토함 3회를 따로 읽던 것(2026-11-06 홈 속도 측정).
+ * 키에 완료 집합 버전(doneVersion)을 넣어 완료가 바뀔 때만 다시 읽는다(불러오는 중·오류 표시 변화로는 다시 읽지 않는다).
+ * 앞부분은 useApi 키([이름, {}, {}, 역할])와 같아 쓰기 뒤 이름으로 무효화하면 함께 다시 읽는다.
+ */
+const procQuery = <T,>(name: 'procedureInbox' | 'procedureSummary', role: string, v: number) => ({
+  queryKey: [name, {}, {}, role, v],
+  queryFn: ({ signal }: { signal: AbortSignal }) => call<T>(name, { role, signal }),
+  staleTime: 30_000,
+  retry: false,
+  // 다시 읽는 동안 앞 결과를 그대로 보인다(검토함이 '불러오는 중'으로 깜빡이지 않게)
+  placeholderData: keepPreviousData,
+});
+
 /** 내 검토함 — 서버가 계산한 준비 활동(수행·책임)과 SLA. 완료가 바뀌면 다시 읽는다. */
 export function useProcedureInbox(role: string): InboxState {
-  useSyncExternalStore(subscribe, () => doneVersion, () => doneVersion);
-  const [state, setState] = useState<InboxState>({ status: STATIC_MODE ? 'ready' : 'idle', data: null, error: null });
-  useEffect(() => {
-    if (STATIC_MODE) return;
-    let live = true;
-    setState((s) => ({ ...s, status: s.data ? s.status : 'loading' }));
-    call<ProcedureInboxView>('procedureInbox', { role })
-      .then((data) => live && setState({ status: 'ready', data, error: null }))
-      .catch((e: ApiError) => live && setState({ status: 'error', data: null, error: e.message }));
-    return () => {
-      live = false;
-    };
-  }, [role, doneVersion]);
-  return state;
+  const v = useSyncExternalStore(subscribe, () => doneVersion, () => doneVersion);
+  const q = useQuery<ProcedureInboxView, ApiError>(procQuery<ProcedureInboxView>('procedureInbox', role, v));
+  if (q.isError && !q.data) return { status: 'error', data: null, error: q.error.message };
+  return q.data ? { status: 'ready', data: q.data, error: null } : { status: 'loading', data: null, error: null };
 }
 
 /** 메뉴 배지용 요약 — 가볍게 한 번(할 일·검토·기한 초과) */
 export function useProcedureSummary(role: string, enabled = true): ProcedureSummary | null {
-  useSyncExternalStore(subscribe, () => doneVersion, () => doneVersion);
-  const [summary, setSummary] = useState<ProcedureSummary | null>(null);
-  useEffect(() => {
-    if (STATIC_MODE || !enabled) return;
-    let live = true;
-    call<ProcedureSummary>('procedureSummary', { role })
-      // 옛 백엔드·모의 응답(processes 없음)은 지도에 쓰지 않는다 — 잘못된 진행률보다 빈 상태가 낫다
-      .then((s) => live && setSummary(s && Array.isArray(s.processes) ? s : null))
-      // 백엔드가 없으면 배지를 그리지 않는다 — 실패로 화면을 흔들지 않는다
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, [role, enabled, doneVersion]);
-  return summary;
+  const v = useSyncExternalStore(subscribe, () => doneVersion, () => doneVersion);
+  // 백엔드가 없으면(오류) 배지를 그리지 않는다 — 실패로 화면을 흔들지 않는다
+  const q = useQuery<ProcedureSummary, ApiError>({ ...procQuery<ProcedureSummary>('procedureSummary', role, v), enabled });
+  // 옛 백엔드·모의 응답(processes 없음)은 지도에 쓰지 않는다 — 잘못된 진행률보다 빈 상태가 낫다
+  return enabled && q.data && Array.isArray(q.data.processes) ? q.data : null;
 }

@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { isAppPath, NOTIFICATION_CATEGORY_LABEL, NOTIFICATION_EVENT_TYPES, type Notification } from '@ff/contracts';
 import { STATIC_MODE } from '../api/client';
 import { useApi, useApiMutation } from '../api/hooks';
-import { usePlatformEvents } from '../api/stream';
+import { usePlatformLiveEvents } from '../api/stream';
 import { ko } from '../copy/ko';
 import { Button, Icon } from '../design';
 import { humanText, localTime } from '../data/people';
@@ -38,12 +38,13 @@ export function NotificationBell() {
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const q = useApi<Inbox>('notifications', { query: { limit: 6 } }, { enabled: !STATIC_MODE });
+  const q = useApi<Inbox>('notifications', { query: { limit: 6 } });
   // 배지 색: 평소에는 중립(모든 화면에서 가장 진한 요소였다), 긴급 차단이 걸려 있을 때만 위험색(3초 테스트 UX3-10).
   // 상업 비활성화(체험 만료 등)는 긴급 차단이 아니다 — 내 대시보드 핵심 메시지와 같은 기준
-  const kills = useApi<{ items: { reasonCategory?: string }[] }>('killRequests', { query: { status: 'ACTIVE' } }, { enabled: !STATIC_MODE });
+  const kills = useApi<{ items: { reasonCategory?: string }[] }>('killRequests', { query: { status: 'ACTIVE' } });
   const alarm = (kills.data?.items ?? []).some((k) => k.reasonCategory !== 'COMMERCIAL');
-  usePlatformEvents(NOTIFY_EVENTS, ['notifications', 'killRequests']);
+  // 이력(이벤트 500건)은 쓰지 않는다 — 새 이벤트가 오면 다시 읽기만(모든 화면에 떠 있는 종이 이력을 받던 것)
+  usePlatformLiveEvents(NOTIFY_EVENTS, ['notifications', 'killRequests']);
   const read = useApiMutation('readNotification', ['notifications']);
   const readAll = useApiMutation('readAllNotifications', ['notifications']);
   const unread = q.data?.unread ?? 0;
@@ -61,6 +62,7 @@ export function NotificationBell() {
   }, [open]);
 
   const go = (n: InboxItem) => {
+    // 정적 공개 사이트도 읽음은 이 브라우저의 시연 데이터에 남는다(20-60)
     if (!n.readAt) read.mutate({ params: { id: n.notificationId } });
     setOpen(false);
     // 앱 밖 주소로 저장된 링크는 알림함으로(열린 리다이렉트 차단)
@@ -79,13 +81,11 @@ export function NotificationBell() {
         <div className="sh-ntf__pop" role="dialog" aria-label={N.popoverTitle}>
           <div className="sh-ntf__head">
             <strong>{N.popoverTitle}</strong>
-            <Button variant="ghost" disabled={STATIC_MODE || unread === 0 || readAll.isPending} onClick={() => readAll.mutate({ body: {} })}>
+            <Button variant="ghost" disabled={unread === 0 || readAll.isPending} onClick={() => readAll.mutate({ body: {} })}>
               {N.markAll}
             </Button>
           </div>
-          {STATIC_MODE ? (
-            <p className="sh-ntf__empty">{N.staticNote}</p>
-          ) : (q.data?.items ?? []).length === 0 ? (
+          {!q.data ? null : q.data.items.length === 0 ? (
             <p className="sh-ntf__empty">{N.empty}</p>
           ) : (
             <ul className="sh-ntf__list">

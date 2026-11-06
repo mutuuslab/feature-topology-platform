@@ -42,3 +42,8 @@ test('TSX 인라인 style: 숫자·문자열 값 모두', () => {
   assert.equal(fixed, `<div style={{ padding: '4px 6px', gap: 8, borderRadius: 'var(--r-sm)', marginTop: 4, borderRadius: '50%' }} />`);
   assert.deepEqual(checkTsx(fixed), []);
 });
+
+test('간격 토큰을 반경에 쓰면 반경 위반 — var(--sp-1)은 4px라 반경 스케일(3·5·8) 밖이다', () => {
+  const found = checkCss('.bar { border-radius: var(--sp-1); }\n.ok { border-radius: var(--r-sm); padding: var(--sp-1); }');
+  assert.deepEqual(found.map((f) => `${f.line}:${f.kind}`), ['1:radius']);
+});

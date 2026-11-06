@@ -181,6 +181,7 @@
         "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/screensLearn.test.tsx",
         "frontend/src/__tests__/screensSafety.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts",
         "e2e/tests/learn.spec.ts"
       ]
     },
@@ -197,7 +198,8 @@
         "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
       ],
       "tested": [
-        "backend/test/d01/safety-profile.spec.ts"
+        "backend/test/d01/safety-profile.spec.ts",
+        "frontend/src/__tests__/simPolicyOps.test.ts"
       ]
     },
     {
@@ -434,6 +436,7 @@
         "backend/test/d01/policy.spec.ts",
         "backend/test/d01/rollout-stage.spec.ts",
         "backend/test/d03/delivery.spec.ts",
+        "backend/test/kernel/showcase-fill.spec.ts",
         "tools/ads-team.test.ts"
       ]
     },
@@ -612,7 +615,8 @@
         "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
-        "frontend/src/__tests__/screensOps.test.tsx"
+        "frontend/src/__tests__/screensOps.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts"
       ]
     },
     {
@@ -634,6 +638,7 @@
         "frontend/src/__tests__/bodyCodes.test.tsx",
         "frontend/src/__tests__/screensLearn.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts",
         "tools/lead-copy.test.ts"
       ]
     },
@@ -651,7 +656,8 @@
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d03/kill-v2.spec.ts",
-        "backend/test/d03/policy-gate.spec.ts"
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/simEngine.test.ts"
       ]
     },
     {
@@ -713,7 +719,8 @@
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
-        "backend/test/d03/policy-gate.spec.ts"
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/simEngine.test.ts"
       ]
     },
     {
@@ -729,7 +736,8 @@
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
-        "backend/test/d03/policy-gate.spec.ts"
+        "backend/test/d03/policy-gate.spec.ts",
+        "frontend/src/__tests__/simEngine.test.ts"
       ]
     },
     {
@@ -751,6 +759,7 @@
         "frontend/src/__tests__/bodyCodes.test.tsx",
         "frontend/src/__tests__/designSafety.test.tsx",
         "frontend/src/__tests__/screensOps.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts",
         "e2e/tests/ops.spec.ts"
       ]
     },
@@ -890,7 +899,8 @@
         "contracts/src/rules/policy-gate.test.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/screensP9.test.tsx",
-        "frontend/src/__tests__/screensSafety.test.tsx"
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts"
       ]
     },
     {
@@ -923,7 +933,8 @@
         "backend/src/domains/d06-qsec/vuln-monitor/sbom.service.ts"
       ],
       "tested": [
-        "contracts/src/rules/sbom.test.ts"
+        "contracts/src/rules/sbom.test.ts",
+        "backend/test/d06/sbom-serial.spec.ts"
       ]
     },
     {
@@ -979,7 +990,8 @@
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "frontend/src/__tests__/designSafety.test.tsx",
-        "frontend/src/__tests__/screensSafety.test.tsx"
+        "frontend/src/__tests__/screensSafety.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts"
       ]
     },
     {
@@ -1073,7 +1085,8 @@
       "section": "14_security_sotif.md · 14.7 규칙",
       "implemented": [
         "contracts/src/rules/ext.ts",
-        "backend/src/domains/d04-ops/incident-voc/incident.service.ts"
+        "backend/src/domains/d04-ops/incident-voc/incident.service.ts",
+        "frontend/src/api/sim/handlers/business.ts"
       ],
       "tested": [
         "contracts/src/rules/ext.test.ts",
@@ -1291,6 +1304,7 @@
         "backend/test/d02/support-activation.spec.ts",
         "backend/test/d02/vehicle-requests.spec.ts",
         "backend/test/d05/trials.spec.ts",
+        "frontend/src/__tests__/simBusiness.test.ts",
         "e2e/tests/policy.spec.ts"
       ]
     },

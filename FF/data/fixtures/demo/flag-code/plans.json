@@ -1,18 +1,18 @@
 {
   "asOf": "2026-11-06T00:00:00.000Z",
   "summary": {
-    "flags": 152,
-    "codeRequired": 143,
-    "connected": 134,
-    "releaseBlocking": 10,
+    "flags": 154,
+    "codeRequired": 145,
+    "connected": 136,
+    "releaseBlocking": 9,
     "byStatus": {
-      "OK": 132,
+      "OK": 135,
       "PR_OPEN": 4,
       "NO_CODE": 3,
       "CALL_DELETED": 2,
       "UNREGISTERED_KEY": 2,
       "DYNAMIC_KEY": 0,
-      "UNLEASH_MISMATCH": 1,
+      "UNLEASH_MISMATCH": 0,
       "STALE": 5,
       "REMOVAL_DUE": 3
     },
@@ -24,11 +24,11 @@
     },
     "byRepo": {
       "FREPO-001": {
-        "flags": 100,
-        "codeRequired": 91,
-        "connected": 82,
-        "releaseBlocking": 10,
-        "byStatus": {"OK":80,"PR_OPEN":4,"NO_CODE":3,"CALL_DELETED":2,"UNREGISTERED_KEY":2,"DYNAMIC_KEY":0,"UNLEASH_MISMATCH":1,"STALE":5,"REMOVAL_DUE":3},
+        "flags": 102,
+        "codeRequired": 93,
+        "connected": 84,
+        "releaseBlocking": 9,
+        "byStatus": {"OK":83,"PR_OPEN":4,"NO_CODE":3,"CALL_DELETED":2,"UNREGISTERED_KEY":2,"DYNAMIC_KEY":0,"UNLEASH_MISMATCH":0,"STALE":5,"REMOVAL_DUE":3},
         "fileFindings": {"DYNAMIC_KEY":{"files":1,"calls":2}}
       },
       "FREPO-002": {
@@ -75,9 +75,6 @@
         "ivi_00136_enable_2",
         "ivi_00027_banner"
       ],
-      "UNLEASH_MISMATCH": [
-        "ivi_00027_detail"
-      ],
       "SIGNATURE_INVALID_SPIKE": [
         "adas_00004_param"
       ]
@@ -85,13 +82,13 @@
   },
   "plans": [
     {
-      "flagKey": "adas_00001_enable",
+      "flagKey": "adas_00001_rspa",
       "featureId": "FEAT-00001",
       "version": "2.1.0",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "adas",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-03-12T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -118,13 +115,13 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "adas_00002_enable",
+      "flagKey": "adas_00002_pca",
       "featureId": "FEAT-00002",
       "version": "1.5.0",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "adas",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-03-14T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -162,13 +159,13 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "adas_00004_enable",
+      "flagKey": "adas_00004_assist",
       "featureId": "FEAT-00004",
       "version": "4.0.1",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "adas",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-03-18T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -184,13 +181,24 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "adas_00005_enable",
+      "flagKey": "adas_00004_enable",
+      "featureId": "FEAT-00004",
+      "version": "4.1.1",
+      "controlPoint": "Flag",
+      "ordinal": 1,
+      "package": "adas",
+      "source": "PLANNED",
+      "plannedAt": "2026-03-20T00:00:00.000Z",
+      "repoId": "FREPO-001"
+    },
+    {
+      "flagKey": "adas_00005_scc",
       "featureId": "FEAT-00005",
       "version": "5.4.2",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "adas",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-03-20T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -360,13 +368,13 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "chassis_00023_enable",
+      "flagKey": "care_00023_limit",
       "featureId": "FEAT-00023",
       "version": "1.0.0",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "chassis",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-04-07T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -525,13 +533,13 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "ivi_00030_enable",
+      "flagKey": "ivi_00030_detail",
       "featureId": "FEAT-00030",
       "version": "1.0.0",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "ivi",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-04-14T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -544,6 +552,17 @@
       "package": "ivi",
       "source": "PLANNED",
       "plannedAt": "2026-04-14T00:00:00.000Z",
+      "repoId": "FREPO-001"
+    },
+    {
+      "flagKey": "ivi_00030_enable",
+      "featureId": "FEAT-00030",
+      "version": "1.0.1",
+      "controlPoint": "Flag",
+      "ordinal": 1,
+      "package": "ivi",
+      "source": "PLANNED",
+      "plannedAt": "2026-04-15T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
     {
@@ -943,13 +962,13 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "adas_00144_enable",
+      "flagKey": "body_00144_svm",
       "featureId": "FEAT-00144",
       "version": "3.2.0",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "adas",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-07-23T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -965,13 +984,13 @@
       "repoId": "FREPO-001"
     },
     {
-      "flagKey": "adas_00145_enable",
+      "flagKey": "adas_00145_scc",
       "featureId": "FEAT-00145",
       "version": "5.4.2",
       "controlPoint": "Flag",
       "ordinal": 1,
       "package": "adas",
-      "source": "PLANNED",
+      "source": "POLICY",
       "plannedAt": "2026-07-25T00:00:00.000Z",
       "repoId": "FREPO-001"
     },
@@ -1185,7 +1204,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00200_review",
+      "flagKey": "adas_00200_dssad",
       "featureId": "FEAT-00200",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1218,7 +1237,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00204_review",
+      "flagKey": "adas_00204_siren",
       "featureId": "FEAT-00204",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1251,7 +1270,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00208_review",
+      "flagKey": "adas_00208_faceid",
       "featureId": "FEAT-00208",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1284,7 +1303,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00212_review",
+      "flagKey": "adas_00212_isla",
       "featureId": "FEAT-00212",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1317,7 +1336,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00216_review",
+      "flagKey": "adas_00216_curb",
       "featureId": "FEAT-00216",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1350,7 +1369,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00220_review",
+      "flagKey": "body_00220_rke",
       "featureId": "FEAT-00220",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1372,7 +1391,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00224_review",
+      "flagKey": "body_00224_trunk",
       "featureId": "FEAT-00224",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1394,7 +1413,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00228_review",
+      "flagKey": "body_00228_fueldoor",
       "featureId": "FEAT-00228",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1416,7 +1435,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00232_review",
+      "flagKey": "body_00232_panic",
       "featureId": "FEAT-00232",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1438,7 +1457,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00236_review",
+      "flagKey": "body_00236_console",
       "featureId": "FEAT-00236",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1460,7 +1479,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00240_review",
+      "flagKey": "body_00240_drivemode",
       "featureId": "FEAT-00240",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1482,7 +1501,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00244_review",
+      "flagKey": "body_00244_nearpark",
       "featureId": "FEAT-00244",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1504,7 +1523,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00248_review",
+      "flagKey": "body_00248_trailer",
       "featureId": "FEAT-00248",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1526,7 +1545,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00252_review",
+      "flagKey": "body_00252_coding",
       "featureId": "FEAT-00252",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1548,7 +1567,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00256_review",
+      "flagKey": "body_00256_puddle",
       "featureId": "FEAT-00256",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1570,7 +1589,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00260_review",
+      "flagKey": "body_00260_tailgate",
       "featureId": "FEAT-00260",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1592,7 +1611,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00264_review",
+      "flagKey": "body_00264_hvachmi",
       "featureId": "FEAT-00264",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1614,7 +1633,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00268_review",
+      "flagKey": "body_00268_defog",
       "featureId": "FEAT-00268",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1636,7 +1655,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00272_review",
+      "flagKey": "body_00272_bootloader",
       "featureId": "FEAT-00272",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1658,7 +1677,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00276_review",
+      "flagKey": "body_00276_recirc",
       "featureId": "FEAT-00276",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1680,7 +1699,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00280_review",
+      "flagKey": "body_00280_airquality",
       "featureId": "FEAT-00280",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1702,7 +1721,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00284_review",
+      "flagKey": "body_00284_readlamp",
       "featureId": "FEAT-00284",
       "version": "0.1.0",
       "controlPoint": "Flag",
@@ -1724,7 +1743,7 @@
       "repoId": "FREPO-002"
     },
     {
-      "flagKey": "showcase_00288_review",
+      "flagKey": "body_00288_dimming",
       "featureId": "FEAT-00288",
       "version": "0.1.0",
       "controlPoint": "Flag",

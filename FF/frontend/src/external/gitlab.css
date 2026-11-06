@@ -1,0 +1,61 @@
+/* GitLab MR 화면 구조(상단 바·MR 목록·상세+오른쪽 사이드바)를 공유 모의 원장에 적용한다. 색은 design/tokens.css의 --ext-gl-* 만 쓴다. */
+.gl-app { --tool-accent: var(--ext-gl-brand); --tool-ink: var(--ext-gl-link); font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif; }
+.gl-app a { color: var(--ext-gl-link); }
+.gl-pad { padding: var(--sp-4); }
+.gl-header { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3); min-height: 48px; padding: var(--sp-2) var(--sp-4); border-bottom: 1px solid var(--line-strong); border-top: var(--sp-0h) solid var(--ext-gl-brand); background: var(--surface); }
+.gl-app .gl-brand { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--ink); text-decoration: none; font-size: 17px; }
+.gl-project { display: inline-flex; align-items: center; gap: var(--sp-1); color: var(--ink-2); font-size: 13px; }
+.gl-search { position: relative; flex: 1; max-width: 480px; min-width: 160px; }
+.gl-search > svg { position: absolute; top: var(--sp-2); left: var(--sp-2); color: var(--muted); }
+.gl-search .ds-input { height: 32px; padding-left: var(--sp-8); font-size: 13px; }
+.gl-back { display: inline-flex; align-items: center; gap: var(--sp-1); margin-left: auto; font-size: 12px; white-space: nowrap; }
+.gl-main { display: grid; grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); align-items: start; min-width: 0; }
+.gl-list { border-right: 1px solid var(--line-strong); background: var(--surface); min-width: 0; }
+.gl-list h1 { margin: 0; padding: var(--sp-3) var(--sp-4) var(--sp-2); font-size: 18px; }
+.gl-tabs { display: flex; gap: var(--sp-1); padding: 0 var(--sp-4); border-bottom: 1px solid var(--line); }
+.gl-tabs button { display: inline-flex; gap: var(--sp-1); align-items: center; padding: var(--sp-2) var(--sp-2); border: 0; border-bottom: var(--sp-0h) solid transparent; background: transparent; color: var(--ink-2); font: inherit; cursor: pointer; }
+.gl-tabs button span { padding: 0 var(--sp-1h); border-radius: var(--r-pill); background: var(--surface-3); font-size: 12px; }
+.gl-tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ext-gl-brand); font-weight: 700; }
+.gl-list ul { list-style: none; margin: 0; padding: 0; max-height: 1100px; overflow-y: auto; }
+.gl-list li button { display: grid; gap: var(--sp-1); width: 100%; padding: var(--sp-2) var(--sp-4); border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.gl-list li button:hover { background: var(--surface-2); }
+.gl-list li button[aria-pressed="true"] { background: var(--info-soft); box-shadow: inset var(--sp-0h) 0 0 var(--ext-gl-brand); }
+.gl-list li strong { font-size: 14px; overflow-wrap: anywhere; }
+.gl-meta { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.gl-meta code, .gl-detail code { font-family: var(--font-mono); font-size: 12px; padding: 0 var(--sp-1); border-radius: var(--r-sm); background: var(--chip-code-bg); }
+.gl-state { justify-self: start; display: inline-block; margin-right: var(--sp-2); padding: 0 var(--sp-2); border-radius: var(--r-pill); font-size: 12px; font-weight: 650; color: var(--ok); background: var(--ok-soft); }
+.gl-state[data-state="merged"] { color: var(--ext-gl-merged); background: color-mix(in srgb, var(--ext-gl-merged) 12%, var(--surface)); }
+.gl-state[data-state="closed"] { color: var(--danger); background: var(--danger-soft); }
+.gl-detail { min-width: 0; padding: var(--sp-4) var(--sp-5); background: var(--surface); }
+.gl-title h2 { margin: 0 0 var(--sp-2); font-size: 20px; line-height: 1.3; overflow-wrap: anywhere; }
+.gl-iid { color: var(--muted); font-weight: 400; }
+.gl-title p { margin: 0; color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
+.gl-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--sp-5); margin-top: var(--sp-4); border-top: 1px solid var(--line); padding-top: var(--sp-4); }
+.gl-sections { display: grid; gap: var(--sp-4); min-width: 0; }
+.gl-sections section { border: 1px solid var(--line); border-radius: var(--r-sm); padding: var(--sp-3) var(--sp-4); }
+.gl-sections h3, .gl-linked h3 { margin: 0 0 var(--sp-2); font-size: 14px; }
+.gl-sections h3 span { margin-left: var(--sp-1); padding: 0 var(--sp-1h); border-radius: var(--r-pill); background: var(--surface-3); font-size: 12px; font-weight: 400; }
+.gl-hint { margin: 0 0 var(--sp-2); color: var(--muted); font-size: 12px; }
+.gl-pipeline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); margin: 0; }
+.gl-pipe-state { display: inline-flex; align-items: center; gap: var(--sp-1); padding: 0 var(--sp-2); border-radius: var(--r-pill); font-size: 12px; font-weight: 650; color: var(--ok); background: var(--ok-soft); }
+.gl-pipe-state[data-state="failed"] { color: var(--danger); background: var(--danger-soft); }
+.gl-pipe-state[data-state="running"], .gl-pipe-state[data-state="pending"] { color: var(--info); background: var(--info-soft); }
+.gl-statuses, .gl-files, .gl-flags { list-style: none; margin: var(--sp-2) 0 0; padding: 0; display: grid; gap: var(--sp-1h); }
+.gl-statuses li, .gl-files li, .gl-flags li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1) var(--sp-2); font-size: 13px; overflow-wrap: anywhere; }
+.gl-files li { padding: var(--sp-1h) var(--sp-2); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); }
+.gl-files li > span, .gl-statuses li > span:last-child { color: var(--muted); font-size: 12px; }
+.gl-activity { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); font-size: 13px; }
+.gl-activity time { color: var(--muted); font-size: 12px; }
+.gl-activity p { margin: var(--sp-1) 0 0; }
+.gl-side { display: grid; gap: var(--sp-4); align-content: start; }
+.gl-side dl { margin: 0; display: grid; gap: var(--sp-3); }
+.gl-side dl > div { border-bottom: 1px solid var(--line); padding-bottom: var(--sp-2); }
+.gl-side dt { color: var(--muted); font-size: 12px; font-weight: 650; }
+.gl-side dd { margin: var(--sp-1) 0 0; overflow-wrap: anywhere; }
+.gl-feature { display: grid; gap: var(--sp-1); padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line-strong); border-radius: var(--r-sm); text-decoration: none; }
+.gl-feature span { color: var(--ink); }
+@media (max-width: 900px) {
+  .gl-main, .gl-body { grid-template-columns: 1fr; }
+  .gl-list { border-right: 0; border-bottom: 1px solid var(--line-strong); }
+  .gl-list ul { max-height: 320px; }
+}

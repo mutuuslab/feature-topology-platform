@@ -139,3 +139,13 @@ for (const present of [false, true]) test(`레일 아이콘 실제 이동·로�
   await page.locator('.sh-brand').click();
   await expect(page).toHaveURL(/\/$/);
 });
+
+// 회귀(2026-11-06 차단 시연 검토): 알림 펼침의 '모두 읽음'이 상단 도구 아이콘 버튼 폭(32px)을 물려받아 글자가 세로로 쪼개졌다
+test('알림 펼침의 모두 읽음 버튼은 한 줄로 보인다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^알림 — / }).click();
+  const all = page.getByRole('dialog', { name: '최근 알림' }).getByRole('button', { name: '모두 읽음' });
+  const box = (await all.boundingBox())!;
+  expect(box.height).toBeLessThan(40);
+  expect(box.width).toBeGreaterThan(box.height);
+});

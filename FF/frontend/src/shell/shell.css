@@ -761,6 +761,13 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   justify-content: space-between;
   padding: 0 var(--sp-1) var(--sp-2);
 }
+/* 펼침 안의 글자 버튼('모두 읽음') — 상단 도구 아이콘 버튼 크기(.sh-tools .ds-btn 32px)를 물려받아 글자가 세로로 쪼개졌다 */
+.sh-tools .sh-ntf__pop .ds-btn,
+[data-present='on'] .sh-tools .sh-ntf__pop .ds-btn {
+  width: auto;
+  height: auto;
+  white-space: nowrap;
+}
 .sh-ntf__list {
   list-style: none;
   margin: 0;
@@ -896,6 +903,48 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
 /* 휴대폰(600 미만, 보기만) — 검색 칸은 숨긴다(명령 팔레트·검색은 데스크톱 조작). 메뉴는 왼쪽 레일로 연다 */
 @media (max-width: 599px) {
   .sh-search {
+    display: none;
+  }
+  /* 상단바 두 줄 — 한 줄(로고 137px + 부서·역할 301px + 도구 8개 288px)이 390 폭의 두 배라 도구 줄 상자 안에서 오른쪽(로그아웃·알림)이
+     잘려 보였다(2026-11-06). 첫 줄 로고·부서 선택(남는 폭에 맞춰 줄어듦), 둘째 줄 도구 버튼. 상단바 높이 변수도 함께 — 고정 패널 위치가 따라온다 */
+  .sh {
+    --topbar-h: calc(2 * 32px + 3 * var(--sp-2));
+  }
+  .sh-top {
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: flex-end;
+    row-gap: var(--sp-2);
+    padding-block: var(--sp-2);
+  }
+  .sh-top::after {
+    content: '';
+    flex-basis: 100%;
+    order: 1;
+  }
+  .sh-tools {
+    display: contents;
+  }
+  .sh-tools > * {
+    order: 2;
+  }
+  .sh-tools > .sh-dept {
+    order: 0;
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+  .sh-dept > *,
+  .sh-tools .sh-dept__select,
+  .sh-tools .sh-user select {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .sh-user {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .sh-user__avatar {
     display: none;
   }
   .sh-main {

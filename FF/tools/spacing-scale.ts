@@ -110,7 +110,8 @@ export function checkCss(text: string): Finding[] {
     if (bad.length) out.push({ line: lineAt(code, m.index!), kind: 'space', text: `${m[2]}: ${m[4].trim()}` });
   }
   for (const m of code.matchAll(CSS_RADIUS)) {
-    if (literalPx(m[4]).some((px) => px !== 0)) out.push({ line: lineAt(code, m.index!), kind: 'radius', text: `${m[2]}: ${m[4].trim()}` });
+    // 간격 토큰을 반경에 쓰면 3·5·8px 밖 반경이 된다(홈 히어로 막대 var(--sp-1)=4px, 2026-11-06 실서버 e2e ⑤)
+    if (literalPx(m[4]).some((px) => px !== 0) || /var\(--sp-/.test(m[4])) out.push({ line: lineAt(code, m.index!), kind: 'radius', text: `${m[2]}: ${m[4].trim()}` });
   }
   return out;
 }

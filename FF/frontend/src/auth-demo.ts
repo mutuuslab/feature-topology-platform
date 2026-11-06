@@ -14,7 +14,6 @@ export const DEMO_PW = 'FF';
 const KEY = 'ff.auth';
 /** 서버 게이트 세션으로 로그인했다 — 401이면 화면 로그인도 끝낸다 */
 const GATE_KEY = 'ff.auth.gate';
-const STATIC = import.meta.env.VITE_DATA_MODE === 'static';
 
 let version = 0;
 const listeners = new Set<() => void>();
@@ -31,9 +30,8 @@ const read = (): boolean => {
   }
 };
 
-/** 공개 데모 ID·비밀번호는 대소문자를 구분하지 않는다. ID의 앞뒤 공백만 지운다. */
-export function login(id: string, password: string): boolean {
-  if (id.trim().toUpperCase() !== DEMO_ID || password.toUpperCase() !== DEMO_PW) return false;
+/** 화면 로그인 표식(ff.auth)을 세운다 — 서버 게이트가 승인했을 때(auth-gate.ts)도 쓴다 */
+export function markAuthed(): true {
   try {
     localStorage.setItem(KEY, '1');
   } catch {
@@ -43,12 +41,23 @@ export function login(id: string, password: string): boolean {
   return true;
 }
 
+/** 공개 데모 ID·비밀번호는 대소문자를 구분하지 않는다. ID의 앞뒤 공백만 지운다. */
+export function login(id: string, password: string): boolean {
+  if (id.trim().toUpperCase() !== DEMO_ID || password.toUpperCase() !== DEMO_PW) return false;
+  return markAuthed();
+}
+
+// 공개 사이트 접속 게이트(Cloudflare Pages, FF/functions/_middleware.ts) — 정적 빌드의 로그인은 auth-gate.ts(로그인 누를 때 지연 로드)가 맡는다.
+// 빌드 상수지만 호출할 때 읽는다(시험이 vi.stubEnv로 바꾼다).
+export const staticSite = (): boolean => import.meta.env.VITE_DATA_MODE === 'static';
+
 /**
  * 로그인 — 백엔드가 있으면 먼저 서버 게이트에 묻는다. 200이면 서버 세션(httpOnly 쿠키), 401·403·429면 거절,
  * 게이트가 없는 백엔드(404)·정적 데모·연결 실패·프록시 오류(5xx)는 브라우저 판정(login)으로 넘어간다.
+ * 정적 사이트의 게이트(Pages 미들웨어)는 auth-gate.ts가 맡는다(DemoLoginForm이 나눈다).
  */
 export async function loginWithServer(id: string, password: string): Promise<boolean> {
-  if (STATIC) return login(id, password);
+  if (staticSite()) return login(id, password);
   let res: Response;
   try {
     res = await fetch('/api/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ id, password }) });
@@ -59,13 +68,11 @@ export async function loginWithServer(id: string, password: string): Promise<boo
   if (res.status === 404 || res.status >= 500) return login(id, password);
   if (!res.ok) return false;
   try {
-    localStorage.setItem(KEY, '1');
     localStorage.setItem(GATE_KEY, '1');
   } catch {
     /* 이 탭에서는 로그인 상태 */
   }
-  emit();
-  return true;
+  return markAuthed();
 }
 
 export function logout(): void {
@@ -76,8 +83,9 @@ export function logout(): void {
   } catch {
     /* noop */
   }
-  // 서버 게이트 세션도 지운다(응답을 기다리지 않는다 — 화면은 바로 로그인으로)
-  if (gate && !STATIC) void fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' }).catch(() => undefined);
+  // 정적 사이트는 Pages 게이트 쿠키를 지운다(게이트가 없으면 404 — 무시). 서버 게이트 세션도 지운다(응답을 기다리지 않는다 — 화면은 바로 로그인으로)
+  if (staticSite()) void fetch(`${import.meta.env.BASE_URL}__auth/logout`, { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(() => undefined);
+  else if (gate) void fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' }).catch(() => undefined);
   emit();
 }
 

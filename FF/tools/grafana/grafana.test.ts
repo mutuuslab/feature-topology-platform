@@ -380,7 +380,7 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
     assert.equal(state.policy.routes[0].mute_time_intervals, undefined);
     // 공개 시연(FF webhook·메일 없음) — 알림은 막고 경보는 그대로
     assert.equal(await provisionMain(['node', 'x', '--skip-public'], { GRAFANA_STACK_URL: env.GRAFANA_STACK_URL, GRAFANA_SA_TOKEN: env.GRAFANA_SA_TOKEN }), 0);
-    assert.equal(state.mute.name, QUIET_TIMING);
+    assert.equal((state.mute as { name?: string } | null)?.name, QUIET_TIMING); // 위 assert.equal(…, null)이 타입을 null로 좁힌다
     assert.deepEqual(state.policy.routes[0].mute_time_intervals, [QUIET_TIMING]);
     assert.equal(state.policy.routes[0].receiver, 'grafana-default-email');
     assert.equal(state.policy.routes.length, 2);

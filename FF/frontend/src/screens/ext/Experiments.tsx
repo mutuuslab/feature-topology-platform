@@ -2,7 +2,6 @@
 import { FreshnessChip } from '../../design/freshness';
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { STATIC_MODE } from '../../api/client';
 import { p10 } from '../../copy/p10';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
@@ -65,7 +64,7 @@ export function ExperimentsScreen() {
           const run = rows.filter((r) => r.status === 'RUNNING').length;
           return !list.data ? { tone: 'neutral', value: '—', text: X.key.running } : run ? { tone: 'neutral', value: run, text: X.key.running } : { tone: 'neutral', text: X.key.none };
         })()}
-        actions={STATIC_MODE ? undefined : <Button onClick={() => setCreating(true)}>{X.create}</Button>}
+        actions={<Button onClick={() => setCreating(true)}>{X.create}</Button>}
       />
       <Drawer open={creating} title={X.create} onClose={() => setCreating(false)}>
         <CreateForm onDone={() => setCreating(false)} />
@@ -176,7 +175,7 @@ function ExperimentDrawer({ id, onClose }: { id: string | null; onClose: () => v
           <p>{e.hypothesis}</p>
           <ErrorNote error={start.error ?? conclude.error} />
           {e.status === 'DRAFT' && (
-            <Button variant="primary" disabled={!perm.ok || start.isPending || STATIC_MODE} title={perm.hint} onClick={() => start.mutate({ params: { id: e.experimentId }, body: {} })}>
+            <Button variant="primary" disabled={!perm.ok || start.isPending} title={perm.hint} onClick={() => start.mutate({ params: { id: e.experimentId }, body: {} })}>
               {X.start}
             </Button>
           )}
@@ -202,7 +201,7 @@ function ExperimentDrawer({ id, onClose }: { id: string | null; onClose: () => v
               </Field>
               <div className="ds-toolbar">
                 {(['ADOPT', 'REJECT', 'EXTEND'] as const).map((d) => (
-                  <Button key={d} disabled={!perm.ok || reason.trim().length < 2 || conclude.isPending || STATIC_MODE} title={perm.hint} onClick={() => conclude.mutate({ params: { id: e.experimentId }, body: { decision: d, reason: reason.trim() } })}>
+                  <Button key={d} disabled={!perm.ok || reason.trim().length < 2 || conclude.isPending} title={perm.hint} onClick={() => conclude.mutate({ params: { id: e.experimentId }, body: { decision: d, reason: reason.trim() } })}>
                     {X.decisions[d]}
                   </Button>
                 ))}

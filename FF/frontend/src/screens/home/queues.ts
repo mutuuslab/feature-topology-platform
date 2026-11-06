@@ -85,7 +85,10 @@ const t = (iso: string | null) => (iso ? Date.parse(iso) : Number.POSITIVE_INFIN
 
 /** 급한 순서로 — 같은 묶음 안에서는 기한이 가까운 것, 그다음 오래 기다린 것 */
 export function byUrgency<T extends Pick<QueueItem, 'queue' | 'due' | 'since' | 'key'>>(items: readonly T[]): T[] {
-  return [...items].sort((a, b) => QUEUE_RANK[a.queue] - QUEUE_RANK[b.queue] || t(a.due) - t(b.due) || t(a.since) - t(b.since) || a.key.localeCompare(b.key));
+  // 시각은 한 번씩만 읽는다 — 비교마다 Date.parse를 부르면 대기열 수백 건에서 느렸다
+  const keyed = items.map((i) => ({ i, rank: QUEUE_RANK[i.queue], due: t(i.due), since: t(i.since) }));
+  keyed.sort((a, b) => a.rank - b.rank || a.due - b.due || a.since - b.since || a.i.key.localeCompare(b.i.key));
+  return keyed.map((k) => k.i);
 }
 
 /** 패널 순서 — 대기열 묶음도 급한 순서 */

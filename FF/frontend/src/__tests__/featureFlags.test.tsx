@@ -60,6 +60,21 @@ describe('Feature Flag 연결', () => {
     expect(within(receipt).queryByText(/10:00/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: T.import })).toBeDisabled();
   });
+  // 사용자 결정(2026-11-06): 5단계(차량 수신)에도 진행 중 긴급 차단 — 정책상 배포됐어도 차량에서는 꺼져 있음을 같은 자리에서 본다
+  it('진행 중 긴급 차단이면 차량 수신 단계에 반영 n/m과 차단 상세 링크를 보인다', async () => {
+    body = [{ ...row, publication: { publicationId: 'PUB-00001', status: 'PARTIAL', confirmed: 1, denominator: 2 }, kill: { killId: 'KILL-00003', confirmed: 1, denominator: 2 } }];
+    mount('viewer');
+    await screen.findByRole('heading', { name: row.flagKey });
+    const receipt = document.querySelector('[data-flag-stage="receipt"]') as HTMLElement;
+    expect(receipt).toHaveTextContent('긴급 차단 중 — 반영 1/2대');
+    expect(within(receipt).getByRole('link', { name: /차단 상세/ })).toHaveAttribute('href', '/ops/kill?id=KILL-00003');
+  });
+  it('차단이 없거나(null) 옛 스냅샷이라 칸이 없으면 차단 표시를 하지 않는다', async () => {
+    body = [{ ...row, kill: null }];
+    mount('viewer');
+    await screen.findByRole('heading', { name: row.flagKey });
+    expect(document.querySelector('.ff-kill')).toBeNull();
+  });
   it('이전 정책 개정이나 다른 게시본의 시각·VIN을 현재 수신으로 표시하지 않는다', async () => {
     body = [{ ...row, publication: { publicationId: 'PUB-00001', status: 'PARTIAL', confirmed: 1, denominator: 2 } }];
     const stale = detail(); stale.publication.payload.policy.revision = 1; publicationBody = stale;

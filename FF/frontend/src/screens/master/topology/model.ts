@@ -1,8 +1,9 @@
 // Topology 그래프 모델 — Feature(최신 Version 기준)·의존관계·사전점검 결과·Flag를 한 그래프로 묶는다(순수 함수, 화면·시험 공용).
 // 노드 = Feature ID 하나(Version은 목록으로), 간선 = 의존관계 하나. 도메인은 대표 기준 행 약어(목록 domain), 없으면 태그 대응표.
-import { GATES, OFFICIAL_DOMAINS } from '@ff/contracts';
+import { GATES, OFFICIAL_DOMAINS, type RelationType } from '@ff/contracts';
 
-export type DepType = 'REQUIRES' | 'EXCLUDES';
+/** 관계 유형 10종(contracts RelationType) — REQUIRES는 배치 순위·흐름, EXCLUDES는 묶음 표시, 나머지는 방향(대칭이면 양끝 막대)만 */
+export type DepType = RelationType;
 export type GateTone = 'PASS' | 'REVIEW' | 'FAIL' | 'UNJUDGED';
 export type VerdictTone = 'PASS' | 'CONDITIONAL' | 'FAIL' | 'PENDING';
 
@@ -338,8 +339,10 @@ export interface Filters {
   flagsOnly: boolean;
   verdict: '' | 'open' | 'FAIL';
   isolated: boolean;
+  /** 관계 유형(FR-DEP-004-002) — 비면 전체 */
+  types: ReadonlySet<string>;
 }
-export const NO_FILTERS: Filters = { domains: new Set(), asil: new Set(), lifecycle: '', flagsOnly: false, verdict: '', isolated: false };
+export const NO_FILTERS: Filters = { domains: new Set(), asil: new Set(), lifecycle: '', flagsOnly: false, verdict: '', isolated: false, types: new Set() };
 
 /** 필터 — 노드 조건(도메인·ASIL·Lifecycle·Flag)과 관계 조건(판정)을 함께. 관계 없는 Feature는 isolated일 때만 */
 export function applyFilters(model: TModel, f: Filters): TModel {
@@ -348,6 +351,7 @@ export function applyFilters(model: TModel, f: Filters): TModel {
   const edges = model.edges.filter((e) => {
     const s = model.nodes.get(e.source), t = model.nodes.get(e.target);
     if (!s || !t || !keepNode(s) || !keepNode(t)) return false;
+    if (f.types?.size && !f.types.has(e.type)) return false;
     if (f.verdict === 'open') return e.tone !== 'PASS';
     if (f.verdict === 'FAIL') return e.tone === 'FAIL';
     return true;

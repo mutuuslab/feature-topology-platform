@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as RPointerEvent } from 'react';
 import { GATE_META, type GateId } from '@ff/contracts';
 import { topologyGraph as G } from '../../../copy/topology-graph';
+import { RELATION_TYPES } from '../../../../../contracts/src/rules/relation-types';
 import { DOMAIN_NAME, type TEdge, type TModel, type TNode } from './model';
 import type { Layout, LEdge } from './layout';
 
@@ -560,7 +561,8 @@ const TONE_GLYPH: Record<string, string> = { CONDITIONAL: 'M0,-4a4,4 0 0 1 0,8Z'
 
 const EdgeView = memo(function EdgeView({ e, le, selected, on, dim, onSelect, onTip, onTipEnd }: { e: TEdge; le: LEdge; selected: boolean; on: boolean; dim: boolean; onSelect: (id: string) => void; onTip: (id: string, x: number, y: number) => void; onTipEnd: () => void }) {
   const tip = (ev: { clientX: number; clientY: number }) => onTip(e.id, ev.clientX, ev.clientY);
-  const marker = e.type === 'REQUIRES' ? { markerEnd: `url(#topo-ar-${e.tone})` } : { markerStart: `url(#topo-tee-${e.tone})`, markerEnd: `url(#topo-tee-${e.tone})` };
+  // 방향 있는 관계는 화살표(대상 쪽), 대칭 관계(excludes·duplicates)는 양끝 막대
+  const marker = !RELATION_TYPES[e.type]?.symmetric ? { markerEnd: `url(#topo-ar-${e.tone})` } : { markerStart: `url(#topo-tee-${e.tone})`, markerEnd: `url(#topo-tee-${e.tone})` };
   const notes = [e.mismatch ? 'V' : null, e.cycle ? '↻' : null, e.count && e.count > 1 ? `×${e.count}` : null].filter(Boolean) as string[];
   return (
     <g className="topo-edge" data-type={e.type} data-tone={e.tone} data-on={on || undefined} data-dim={dim || undefined} data-edge={e.id} onClick={() => onSelect(e.id)} onPointerEnter={tip} onPointerMove={tip} onPointerLeave={onTipEnd}>
@@ -613,7 +615,7 @@ function EdgeTip({ e, graph, x, y, w }: { e: TEdge; graph: TModel; x: number; y:
       </p>
       <p className="topo-tip__pair">
         <span>{s?.name ?? e.source}</span>
-        <span aria-hidden="true">{e.type === 'REQUIRES' ? '→' : '⇄'}</span>
+        <span aria-hidden="true">{RELATION_TYPES[e.type]?.symmetric ? '⇄' : '→'}</span>
         <span>{t?.name ?? e.target}</span>
       </p>
       <p className="topo-tip__ver"><code>{`${e.source}${e.sourceVersion ? `@${e.sourceVersion}` : ''}`}</code> · <code>{`${e.target}${e.targetVersion ? `@${e.targetVersion}` : ''}`}</code></p>

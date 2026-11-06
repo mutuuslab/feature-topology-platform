@@ -287,6 +287,8 @@ const ALL_ROUTES: AppRoute[] = [
   ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true } as AppRoute] : []),
   // 검토 포털 협의 요청 한 건 — '검토할 것 한 장'(W5 P5-1·P5-12), 포털 홈·요청 부서 홈에서 연다
   { path: '/consults/:id', element: named(() => import('./screens/workspaces/Consults'), 'ConsultScreen'), title: '협의 요청', group: 'home', parent: '/', components: ['D04-04'], v2: true },
+  // 추적 커버리지(P3) — Feature별 요구·필수 Test Evidence 비율, 요구 미연결·Evidence 미등록 Feature
+  { path: '/trace/coverage', element: def(() => import('./screens/master/TraceCoverage')), title: '추적 커버리지', group: 'verify', parent: '/trace/design', components: ['D01-02'], v2: true },
 ];
 
 export const routesFor = (desktop: boolean): AppRoute[] => (desktop ? ALL_ROUTES.filter((r) => !DESKTOP_EXCLUDED.has(r.path) && !(r.parent && DESKTOP_EXCLUDED.has(r.parent))) : ALL_ROUTES);

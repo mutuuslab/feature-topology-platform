@@ -8,6 +8,7 @@ import type { ExtRef } from '@ff/contracts';
 import { extSync } from '../../copy/ext-sync';
 import { analysis } from '../../copy/analysis';
 import { safetyCase as adsSafetyCase, traceAds as adsTrace } from '../../copy/ads-evidence';
+import { traceCopy } from '../../copy/trace-links';
 import { AsyncView, DataTable, ExtRefChip, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
 
 const M = ko.master;
@@ -46,7 +47,7 @@ export function DesignTraceScreen() {
   const T = M.trace;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} meta={<Link to="/trace/ads">{adsTrace.parentLink}</Link>} message={none ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> } : traceMessage(d)} />
+      <PageHeader codes="D01-02 · D06-07 · REQ → IMPL → VERIFY" title={T.title} lead={T.lead} meta={<><Link to="/trace/ads">{adsTrace.parentLink}</Link> · <Link to="/trace/coverage">{traceCopy.coverage.toCoverage}</Link></>} message={none ? { tone: 'neutral', text: ko.state.noFeatureTitle, action: <Link to="/feature/propose">{ko.state.proposeFirst}</Link> } : traceMessage(d)} />
       <Toolbar label={T.pick}>
         <Select label={T.pick} value={pick} onChange={(e) => setSp({ feature: e.target.value })}>
           {!!pick && !feats.data?.items.some((f) => `${f.featureId}@${f.version}` === pick) && <option value={pick}>{pick}</option>}

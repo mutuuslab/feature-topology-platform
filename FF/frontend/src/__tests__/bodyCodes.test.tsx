@@ -174,15 +174,13 @@ describe('UX3-06 정책 상세 — 제목·핵심 행동·보조 버튼', () => 
   });
 });
 
-describe('UX3-07 따라하기 허브 — 시작은 보조 버튼, 준비 중은 한 묶음', () => {
-  it('강조 버튼 없음 · 준비 중 개수는 요약 한 줄 · 본문에 시나리오 코드 없음', () => {
+describe('UX3-07 따라하기 허브 — 시작은 보조 버튼, 모든 시나리오가 카드', () => {
+  it('강조 버튼 없음 · 준비 중 묶음 없음 · 본문에 시나리오 코드 없음', () => {
     mount('/learn', '/learn', <LearnHub />);
     expect(document.querySelector('#root, body')!.querySelector('.ds-btn--primary'), '시작 버튼이 핵심 메시지보다 먼저 보이지 않게').toBeNull();
-    const planned = TUTORIALS.filter((t) => t.status !== 'ready').length;
-    expect(document.querySelector('.ds-summary')!.textContent).toContain(String(planned));
-    expect(document.querySelectorAll('.ds-learn-planned').length).toBe(1);
-    // '준비 중'은 요약 한 줄에만 — 카드마다 되풀이하지 않는다
-    expect((visibleText().match(/준비 중(?!인)/g) ?? []).length).toBe(1);
+    expect(document.querySelectorAll('.ds-learn-card').length).toBe(TUTORIALS.length);
+    expect(document.querySelector('.ds-learn-planned')).toBeNull();
+    expect(visibleText()).not.toMatch(/준비 중/);
     expect(visibleText()).not.toMatch(CODE);
   });
 });

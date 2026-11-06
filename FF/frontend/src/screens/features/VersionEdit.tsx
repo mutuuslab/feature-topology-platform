@@ -106,7 +106,7 @@ export function FeatureVersionActions({ f, latest }: { f: FeatureLike; latest: b
         </Button>
       )}
       {latest && f.lifecycle !== 'PROPOSED' && (
-        <Button disabled={!author.ok} title={author.hint} onClick={() => setOpen('version')}>
+        <Button disabled={!author.ok} title={author.hint} onClick={() => setOpen('version')} data-tour="version-new">
           {E.newVersion}
         </Button>
       )}

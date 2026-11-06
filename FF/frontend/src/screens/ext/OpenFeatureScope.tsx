@@ -58,7 +58,7 @@ export function OpenFeatureScopeScreen() {
                 { k: O.kpi.snapshot, v: d.snapshotVersion },
               ]}
             />
-            <Panel title={O.paths} id="of-paths">
+            <Panel title={O.paths} id="of-paths" tour="of-paths">
               <div className="ds-split">
                 <PathColumn title={O.ofPath} steps={O.ofPathSteps} tone="ok" />
                 <PathColumn title={O.guardPath} steps={O.guardPathSteps} tone="warn" />
@@ -89,7 +89,7 @@ export function OpenFeatureScopeScreen() {
                 ]}
               />
             </Panel>
-            <Panel title={O.catalog} id="of-catalog">
+            <Panel title={O.catalog} id="of-catalog" tour="of-catalog">
               <DataTable
                 caption={O.catalog}
                 rows={d.catalog}
@@ -112,9 +112,11 @@ export function OpenFeatureScopeScreen() {
                 ))}
               </ul>
             </Panel>
-            <Tabs tabs={[{ key: 'vehicle', label: O.vehicle }, { key: 'flagd', label: O.flagd }, { key: 'manifest', label: O.manifest }]} param="of">
-              {(tab) => (tab === 'flagd' ? <JsonPanel name="openfeatureFlagd" /> : tab === 'manifest' ? <ManifestPanel /> : <VehiclePanel />)}
-            </Tabs>
+            <div data-tour="of-export">
+              <Tabs tabs={[{ key: 'vehicle', label: O.vehicle }, { key: 'flagd', label: O.flagd }, { key: 'manifest', label: O.manifest }]} param="of">
+                {(tab) => (tab === 'flagd' ? <JsonPanel name="openfeatureFlagd" /> : tab === 'manifest' ? <ManifestPanel /> : <VehiclePanel />)}
+              </Tabs>
+            </div>
           </>
         )}
       </AsyncView>

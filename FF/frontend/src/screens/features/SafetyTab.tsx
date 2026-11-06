@@ -46,6 +46,12 @@ type Editable = Pick<
 >;
 const EDITABLE: (keyof Editable)[] = ['fClass', 'deactClass', 'regClass', 'flagType', ...TIME_KEYS, 'safeState', 'markets', 'expiresAt', 'retirementPlan', 'adsFeature', 'adsfType', 'gsrMandatory'];
 
+/** 저장된 분류 값 — 화면 상태로 단계 완료를 판정할 때 쓴다(따라하기: [data-saved~="rampMs=4000"]) */
+const savedOf = (p: SafetyProfile) =>
+  EDITABLE.filter((k) => !Array.isArray(p[k]))
+    .map((k) => `${k}=${p[k]}`)
+    .join(' ');
+
 /** 상세 머리말 배지 — 안전 분류 네 축 */
 export function SafetyBadges({ id, ver }: { id: string; ver: string }) {
   const q = useApi<View>('safetyProfile', { params: { id, ver } });
@@ -186,7 +192,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
               tour="safety-tab"
               actions={<ClassBadges f={merged.fClass} dc={merged.deactClass} r={merged.regClass} type={merged.flagType} short />}
             >
-              <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+              <div style={{ display: 'grid', gap: 'var(--sp-4)' }} data-saved={savedOf(p)} data-profile-status={p.status}>
                 <p className="ds-field__hint" style={{ margin: 0 }}>
                   {S.lead}
                 </p>
@@ -351,7 +357,7 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
           {/* 분석 근거(P3-3) — HARA·TARA·SOTIF·형식승인 판단, 대표 ASIL 변경 사유(P3-1), G7 SM·CSM 서명 */}
           <AnalysisPanel id={id} ver={ver} />
 
-          <Panel title={S.preview} id="safety-preview">
+          <Panel title={S.preview} id="safety-preview" tour="deact-preview">
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
               <div>
                 <span className="ds-eyebrow ds-eyebrow--ko">{S.previewSafety}</span>

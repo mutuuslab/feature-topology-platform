@@ -55,7 +55,7 @@ export function SecurityEventsPanel() {
   const q = useApi<{ items: { at: string; eventId: string; code: string; vehicle: string | null }[]; definitions: SecEventDef[] }>('securityEvents');
   const items = [...(q.data?.items ?? [])].reverse();
   return (
-    <Panel title={P.events} codes="D06-12 · FFG-SEC-007" id="sec-events">
+    <Panel title={P.events} codes="D06-12 · FFG-SEC-007" id="sec-events" tour="sec-events">
       <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()} rows={3}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <DataTable

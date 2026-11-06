@@ -1,13 +1,16 @@
 // 따라하기 진행 상태 — 화면 이동·새로고침에도 가이드 패널이 이어지도록 localStorage에 둔다. 여러 부품이 같은 값을 보도록 외부 저장소로 구독한다.
 import { useSyncExternalStore } from 'react';
 
-export type LearnMode = 'view' | 'auto' | 'self';
+/** view = 보기(화면을 옮겨 다니며 설명) · self = 직접 하기(내가 조작하고 화면 결과로 단계 완료를 판정) */
+export type LearnMode = 'view' | 'self';
 export interface LearnState {
   scenarioId: string;
   step: number;
   mode: LearnMode;
   startedAt: string;
   collapsed?: boolean;
+  /** 완료 판정을 통과한 단계 ID — 이전·다음으로 오가도 판정이 남는다 */
+  done?: string[];
 }
 
 const KEY = 'ff.learn.v1';

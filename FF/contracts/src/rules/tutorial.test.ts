@@ -2,7 +2,14 @@
 import { describe, expect, it } from 'vitest';
 import { REPORT_RULES } from './report-catalog-installed';
 import { clausesOf, clausesOfRules, reportRule, reportTest, standardFamily } from './standards';
-import { TUTORIALS } from './tutorial';
+import { onCheckPath, stepCheckMet, stepPath, TUTORIALS } from './tutorial';
+import { DEMO_PERSONAS } from './duty-separation';
+
+/** 문구 속 예시 데이터 ID — 경로의 /features/FEAT-00022/1.0.0은 FEAT-00022@1.0.0 */
+const ID = /FEAT-\d{5}(?:\/\d+\.\d+\.\d+)?|\b(?:POL|KILL|ANM|RH|ENT|PUB|RET|CAT|INC)-\d{5}\b|CVE-\d{4}-\d{4,}|\b(?:KMH|HMA|TMA)-[A-Z0-9]+-\d{4}\b|\b(?:ego|lead)-\d{2}\b|\b(?:care|ivi)_\d{5}_[a-z]+\b/g;
+const idsIn = (text: string) => (text.match(ID) ?? []).map((x) => x.replace('/', '@'));
+/** Version 없이 쓴 Feature ID는 그 Feature의 어느 Version이든 적혀 있으면 된다 */
+const has = (declared: Set<string>, id: string) => declared.has(id) || (/^FEAT-\d{5}$/.test(id) && [...declared].some((d) => d.startsWith(`${id}@`)));
 
 describe('보고서 카탈로그 생성 모듈', () => {
   it('규칙 181개·시험 60개, ID 유일', () => {
@@ -28,16 +35,62 @@ describe('따라하기 시나리오 표', () => {
     }
     expect(missing).toEqual([]);
   });
-  it('준비된 시나리오는 단계가 있고, 단계마다 할 일·이유·규칙·화면·앵커가 있다 — 단계 ID 유일', () => {
-    for (const t of TUTORIALS.filter((x) => x.status === 'ready')) {
-      expect(t.steps.length).toBeGreaterThan(2);
+  it('모든 시나리오에 단계가 있고, 단계마다 할 일·이유·규칙·화면·앵커·역할이 있다 — 단계 ID 유일', () => {
+    expect(TUTORIALS.length).toBe(12);
+    for (const t of TUTORIALS) {
+      expect(t.steps.length, t.id).toBeGreaterThan(2);
+      expect(t.before && t.after, `${t.id} 적용 전·후`).toBeTruthy();
       expect(new Set(t.steps.map((s) => s.id)).size).toBe(t.steps.length);
       for (const s of t.steps) {
-        expect([s.doKo, s.whyKo, s.expectKo, s.route, s.anchor, s.targetKo, s.role].every(Boolean)).toBe(true);
-        expect(s.pendingKo ?? '').not.toMatch(/\b[UF]\d\b/); // 사용자에게 내부 단계 번호(U3·F1)를 보이지 않는다
+        expect([s.doKo, s.whyKo, s.expectKo, s.route, s.anchor, s.targetKo, s.role].every(Boolean), `${t.id}/${s.id}`).toBe(true);
+        expect(Object.keys(DEMO_PERSONAS), `${t.id}/${s.id} 역할`).toContain(s.role);
         expect(s.rules.length).toBeGreaterThan(0);
+        expect(s.route.startsWith('/'), `${t.id}/${s.id}`).toBe(true);
+        // 사용자 문구에 내부 단계 번호(U3·F1)·준비 중 표시를 쓰지 않는다
+        expect([s.doKo, s.whyKo, s.expectKo, s.title].join(' '), `${t.id}/${s.id}`).not.toMatch(/\b[UF]\d에서|준비 중|연결 전/);
       }
     }
+  });
+  it('조작·실패 단계는 화면 결과로 완료를 판정한다 — 판정 경로가 없으면 단계 화면에서 판정', () => {
+    const missing: string[] = [];
+    for (const t of TUTORIALS)
+      for (const s of t.steps) {
+        if (s.kind !== 'observe' && !s.check) missing.push(`${t.id}/${s.id}`);
+        if (!s.check) continue;
+        expect(s.check.selector.length && s.check.doneKo.length, `${t.id}/${s.id}`).toBeTruthy();
+        if (s.check.text) expect(() => new RegExp(s.check!.text!)).not.toThrow();
+        if (!s.check.path) expect(onCheckPath(s, stepPath(s))).toBe(true);
+        else expect(() => new RegExp(s.check!.path!)).not.toThrow();
+      }
+    expect(missing).toEqual([]);
+  });
+  it('문구·경로 속 예시 데이터 ID는 refs에 적었거나 앞 단계가 만든다(시드 존재는 백엔드 시험)', () => {
+    const bad: string[] = [];
+    for (const t of TUTORIALS) {
+      const made = new Set<string>();
+      for (const s of t.steps) {
+        // 앞 단계에서 적었거나 만든 ID는 뒤 단계 문구에 다시 나와도 된다
+        for (const r of s.refs ?? []) made.add(r);
+        const declared = made;
+        for (const id of idsIn([s.route, s.doKo, s.expectKo, s.targetKo].join(' '))) if (!has(declared, id)) bad.push(`${t.id}/${s.id}: ${id}`);
+        for (const c of s.creates ?? []) made.add(c);
+      }
+      for (const id of idsIn(t.summaryKo)) if (!has(new Set(t.steps.flatMap((s) => [...(s.refs ?? []), ...(s.creates ?? [])])), id)) bad.push(`${t.id} 요약: ${id}`);
+    }
+    expect(bad).toEqual([]);
+  });
+  it('판정 함수 — 선택자·문구로 판정, 잘못된 선택자는 미완료', () => {
+    const root = (texts: string[]) => ({
+      querySelectorAll: (q: string) => {
+        if (q === 'bad[') throw new Error('invalid selector');
+        return texts.map((textContent) => ({ textContent }));
+      },
+    });
+    expect(stepCheckMet({ selector: 'li', doneKo: 'x' }, root(['a']))).toBe(true);
+    expect(stepCheckMet({ selector: 'li', doneKo: 'x' }, root([]))).toBe(false);
+    expect(stepCheckMet({ selector: 'li', text: '해제됨', doneKo: 'x' }, root(['차단 중', '상태 해제됨']))).toBe(true);
+    expect(stepCheckMet({ selector: 'li', text: '해제됨', doneKo: 'x' }, root(['차단 중']))).toBe(false);
+    expect(stepCheckMet({ selector: 'bad[', doneKo: 'x' }, root(['a']))).toBe(false);
   });
   it('보고서 케이스 시나리오 CS-01~11을 모두 다룬다(CS-05는 CS-07과 함께)', () => {
     const covered = new Set(TUTORIALS.map((t) => t.cs).filter(Boolean));

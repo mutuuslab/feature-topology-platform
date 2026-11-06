@@ -163,13 +163,13 @@ function RecordDrawer({ kind, id, ver, onClose }: { kind: AnalysisKind; id: stri
   );
 }
 
-function KindRow({ kind, v, id, ver, readOnly }: { kind: AnalysisKind; v: AnalysisView; id: string; ver: string; readOnly: boolean }) {
+function KindRow({ kind, v, id, ver, readOnly, tour }: { kind: AnalysisKind; v: AnalysisView; id: string; ver: string; readOnly: boolean; tour?: string }) {
   const perm = usePermission([ANALYSIS_AUTHOR_ROLE[kind] as Role]);
   const [open, setOpen] = useState(false);
   const r = v.current[kind];
   const older = (v.history ?? []).filter((h) => h.kind === kind).length - (r ? 1 : 0);
   return (
-    <li data-kind={kind} data-state={!r ? 'INFO' : r.valid ? 'PASS' : 'FAIL'} style={{ gridTemplateColumns: readOnly ? '22px 1fr' : '22px 1fr auto', alignItems: 'start' }}>
+    <li data-kind={kind} data-state={!r ? 'INFO' : r.valid ? 'PASS' : 'FAIL'} data-tour={tour} style={{ gridTemplateColumns: readOnly ? '22px 1fr' : '22px 1fr auto', alignItems: 'start' }}>
       <Icon name={r?.valid ? 'check' : 'alert'} size={16} />
       <span style={{ display: 'grid', gap: 'var(--sp-1)', flex: 1 }}>
         <strong>{A.kind[kind]}</strong>
@@ -265,7 +265,7 @@ export function AnalysisPanel({ id, ver }: { id: string; ver: string }) {
             </p>
             <ul className="ds-check">
               {ANALYSIS_KINDS.map((k) => (
-                <KindRow key={k} kind={k} v={v} id={id} ver={ver} readOnly={readOnly} />
+                <KindRow key={k} kind={k} v={v} id={id} ver={ver} readOnly={readOnly} tour={k === 'HOMOLOGATION' ? 'analysis-homologation' : k === 'SOTIF' ? 'analysis-sotif' : undefined} />
               ))}
             </ul>
             <G7Signoffs v={v} id={id} ver={ver} readOnly={readOnly} />

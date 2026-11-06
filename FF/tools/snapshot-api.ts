@@ -377,6 +377,16 @@ async function main() {
   await save('securityEvents');
   // P11 — Flag Retirement·감독 기록·데이터·규제 기록
   for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
+  // 표준 따라하기 단계가 여는 상세 — 차단 상세·봉투·시간 기록·복원 근거, 이상 건 상세, 시나리오 Feature의 차단 미리보기(요청 폼의 첫 질의 모양)
+  const kills = await save('killRequests');
+  for (const k of kills.items as { killId: string; featureId: string }[]) {
+    for (const m of ['killDetail', 'killEnvelopes', 'killTimeline']) await save(m, { id: k.killId });
+    await save('evidenceLedger', {}, { featureId: k.featureId });
+  }
+  const anomalies = await save('anomalies');
+  for (const a of anomalies.items as { anomalyId: string }[]) await save('anomalyDetail', { id: a.anomalyId });
+  for (const [featureId, featureVersion] of [['FEAT-00015', '1.2.0'], ['FEAT-00028', '1.0.0'], ['FEAT-00001', '2.2.0']])
+    for (const reasonCategory of ['SAFETY', 'SECURITY', 'COMMERCIAL']) await save('killPreview', {}, { featureId, featureVersion, reasonCategory });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

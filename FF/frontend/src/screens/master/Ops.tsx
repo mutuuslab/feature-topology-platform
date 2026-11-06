@@ -165,20 +165,22 @@ export function SupplierScreen() {
         </Select>
       </Toolbar>
       <AsyncView state={asyncState(q, mine.length === 0)} error={q.error} onRetry={() => q.refetch()}>
-        <DataTable
-          caption={S.title}
-          rows={mine}
-          rowKey={(r) => `${r.swId}@${r.version}`}
-          columns={[
-            { key: 's', header: C.sw, cell: (r) => <span className="ds-mono ds-nowrap">{r.swId}</span> },
-            { key: 'v', header: C.version, cell: (r) => <span className="ds-mono">{r.version}</span> },
-            { key: 'a', header: C.artifact, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.artifactId}</span> },
-            { key: 'c', header: C.checksum, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{String(r.checksum ?? '—').slice(0, 18)}</span> },
-            { key: 'e', header: C.ecu, cell: (r) => <span className="ds-mono ds-nowrap">{r.ecuPno}</span> },
-            { key: 'l', header: C.lifecycle, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.lifecycle}</span> },
-            { key: 'f', header: C.features, cell: (r) => <span className="ds-chips">{featuresOf(r).map(fref)}</span> },
-          ]}
-        />
+        <div data-tour="supplier-sw">
+          <DataTable
+            caption={S.title}
+            rows={mine}
+            rowKey={(r) => `${r.swId}@${r.version}`}
+            columns={[
+              { key: 's', header: C.sw, cell: (r) => <span className="ds-mono ds-nowrap">{r.swId}</span> },
+              { key: 'v', header: C.version, cell: (r) => <span className="ds-mono">{r.version}</span> },
+              { key: 'a', header: C.artifact, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.artifactId}</span> },
+              { key: 'c', header: C.checksum, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{String(r.checksum ?? '—').slice(0, 18)}</span> },
+              { key: 'e', header: C.ecu, cell: (r) => <span className="ds-mono ds-nowrap">{r.ecuPno}</span> },
+              { key: 'l', header: C.lifecycle, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.lifecycle}</span> },
+              { key: 'f', header: C.features, cell: (r) => <span className="ds-chips">{featuresOf(r).map(fref)}</span> },
+            ]}
+          />
+        </div>
       </AsyncView>
     </div>
   );
@@ -323,7 +325,7 @@ function SbomPanel() {
   const rows = [...(q.data?.items ?? [])].reverse();
   const [open, setOpen] = useState<string | null>(null);
   return (
-    <Panel title={S.sbom} codes="D06-11 · FFG-SBOM-002·003" id="sec-sbom">
+    <Panel title={S.sbom} codes="D06-11 · FFG-SBOM-002·003" id="sec-sbom" tour="sec-sbom">
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={3}>
         <DataTable
           caption={S.sbom}
@@ -367,7 +369,7 @@ function VexPanel() {
   const [f, setF] = useState({ vulnId: '', affects: '', state: 'under_investigation', justification: 'code_not_reachable' });
   const rows = [...(q.data?.items ?? [])].reverse();
   return (
-    <Panel title={S.vex} codes="D06-11 · VEX" id="sec-vex">
+    <Panel title={S.vex} codes="D06-11 · VEX" id="sec-vex" tour="sec-vex">
       <form
         style={{ display: 'grid', gap: 'var(--sp-2)', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', alignItems: 'end' }}
         onSubmit={(e) => {
@@ -566,7 +568,7 @@ function ProfilesTab() {
           { k: C.kpi.sums, v: C.years(ret.yearsAfterProductionEnd) },
         ]}
       />
-      <Panel title={C.simTitle} codes="FFG-GEN-003" id="cp-sim">
+      <Panel title={C.simTitle} codes="FFG-GEN-003" id="cp-sim" tour="cp-sim">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-3)', alignItems: 'flex-end' }}>
           <Select label={C.sim.market} value={sim.market} onChange={(e) => setSim({ ...sim, market: e.target.value })}>
             {[...markets, 'KR', 'OTHER'].filter((m, i, a) => a.indexOf(m) === i).map((m) => (
@@ -599,6 +601,7 @@ function ProfilesTab() {
           <span>{verdict.detail}</span>
         </div>
       </Panel>
+      <div data-tour="cp-profiles">
       <DataTable
         caption={C.title}
         rows={COMPLIANCE_PROFILES}
@@ -613,6 +616,7 @@ function ProfilesTab() {
           { key: 'st', header: C.col.status, cell: (p) => <Done ok={p.status === 'CONFIRMED'} title={p.status} otherwise={<VerdictBadge value="CONDITIONAL" label={p.status} />} />, sort: (p) => p.status },
         ]}
       />
+      </div>
     </div>
   );
 }

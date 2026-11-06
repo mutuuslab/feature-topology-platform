@@ -12,7 +12,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:250",
         "contracts/src/rules/variant.ts:52",
-        "backend/src/domains/d05-ext/billing/billing.controller.ts:36"
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:42"
       ],
       "tests": [
         "backend/test/d05/trials.spec.ts",
@@ -98,7 +98,7 @@
       "verdict": "부분",
       "current": "구매 전환 직전 지원 조건을 재확인하고, 과금 모의는 멱등 키(체험권:요금제)로 주문·권리를 한 번만 만든다.",
       "evidence": [
-        "backend/src/domains/d05-ext/billing/billing.controller.ts:38",
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:45",
         "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:196",
         "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:206"
       ],
@@ -183,7 +183,7 @@
       "evidence": [
         "backend/src/domains/d01-policy/activation/activation.service.ts:36",
         "contracts/src/flags/evaluate.ts:126",
-        "backend/src/domains/d05-ext/billing/billing.controller.ts:20"
+        "backend/src/domains/d05-ext/billing/billing.controller.ts:21"
       ],
       "tests": [
         "backend/test/d05/trials.spec.ts"
@@ -502,7 +502,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/incident-voc/incident.service.ts:69",
         "contracts/src/rules/kill-timeline.ts:43",
-        "backend/src/kernel/audit.service.ts:289"
+        "backend/src/kernel/audit.service.ts:293"
       ],
       "tests": [
         "contracts/src/rules/kill-timeline.test.ts",
@@ -644,7 +644,7 @@
       "current": "해외공장(IF-12) 주문의 레거시 옵션 코드를 FEAT ID로 해석하고 미해석 코드를 남길 뿐, 생산라인 최종 검사(EOL)에서 주문 옵션과 실제 부품·SW·승인 구성을 대조하는 기능은 없다.",
       "evidence": [
         "contracts/src/rules/ext.ts:249",
-        "backend/src/domains/d05-ext/legacy/legacy.service.ts:42",
+        "backend/src/domains/d05-ext/legacy/legacy.service.ts:45",
         "backend/src/kernel/migrations.ts:331"
       ],
       "tests": [

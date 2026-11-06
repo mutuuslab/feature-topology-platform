@@ -6,6 +6,7 @@ import {
   bumpVersion,
   changedKeys,
   compareVersion,
+  fieldChanges,
   gatesToRejudge,
   SCOPE_KEYS,
   type CreateFeatureBody,
@@ -276,7 +277,8 @@ export class RegistryService {
       if (linked) this.refs.saveLinks(next);
       const changed = changedKeys(f, body as any);
       this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changed), after: { ...pick(next, changed), ...(linked ? refAuditDetail(linked, duplicateReason) : {}) }, componentId: 'D01-01' });
-      this.events.publish('feature.updated', target, { featureId, version, changed }, { componentId: 'D01-01', correlationId: actor.correlationId });
+      // 변경 항목·변경 전후 값(필드 단위, 민감 값 가림) — 이벤트 이력에 남는다(FR-EVT-001-004)
+      this.events.publish('feature.updated', target, { featureId, version, changed, changes: fieldChanges(pick(f, changed), pick(next, changed)) }, { componentId: 'D01-01', correlationId: actor.correlationId });
       return linked ? { ...next, warnings: linked.warnings } : next;
     });
   }

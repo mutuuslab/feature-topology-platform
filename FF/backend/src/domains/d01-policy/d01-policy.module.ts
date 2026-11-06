@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { TrustModule } from '../d06-qsec/pki-kms/trust.module';
 import { AuditHistoryController, AuditHistoryService } from './audit-history/audit-history.controller';
+import { AuditExportController, HistoryExportService, ValidationExportController } from './audit-history/history-export.service';
 import { CatalogController } from './catalog/catalog.controller';
 import { CatalogService } from './catalog/catalog.service';
 import { BaselineService } from './registry/baseline.service';
@@ -36,7 +37,7 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -55,7 +56,7 @@ import { FlagSourceController, FlagSourceService } from './policy-store/flag-sou
     // Feature DB 연결(30-95 §5.3) — 등록·수명주기가 기준 행 상태를 본다. 저장소는 상태 없는 DB 접근이라 여기서도 만든다(RefdbModule과 순환 import 없이)
     RefdbRepository,
     FeatureRefLinker,
-    AuditHistoryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService,
+    AuditHistoryService, HistoryExportService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService,
     AnalysisEvidenceService, // 분석 근거(W3) — HARA·TARA·SOTIF·형식승인 영향, G7 서명
     FlagSourceService,
   ],

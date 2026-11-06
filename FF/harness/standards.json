@@ -766,6 +766,7 @@
       ],
       "tested": [
         "contracts/src/rules/policy-gate.test.ts",
+        "backend/test/ads/defects.spec.ts",
         "backend/test/d05/openfeature.spec.ts"
       ]
     },

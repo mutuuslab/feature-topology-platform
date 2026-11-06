@@ -1,5 +1,5 @@
 // /features/:id/:ver — Feature Version 상세 (v2). Lifecycle 전이·Gate 판정·의존관계·구현 추적·Baseline·감사.
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { GATES, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -33,6 +33,7 @@ import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { FeatureRefsTab } from './FeatureRefsTab';
 import { FeatureFlagHighlight, FeatureFlagsTab } from './FeatureFlags';
 import { flags as flagCopy } from '../../copy/flags';
+import { evaluations as evaluationsCopy } from '../../copy/records';
 import { featureRefsTab } from '../../copy/propose';
 import { RefWarningList, type RefWarning } from '../refdb/common';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
@@ -47,6 +48,8 @@ import { useFeatureTrace } from './ExtLinksTab';
 import { useExternalChanges } from '../../external/useExternalChanges';
 
 const T = ko.detail;
+// 평가 운영 데이터 탭(B5) — 탭을 열 때만 읽는다
+const EvaluationsTab = lazy(() => import('./EvaluationsTab'));
 // Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
 const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'baselineId', 'ownerId', 'tags', 'asil', 'upgVc', 'functions', 'swIds', 'swVersions', 'ecuPnos', 'controlPoints', 'dependencyIds'] as const;
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines'];
@@ -149,6 +152,7 @@ export default function FeatureDetail() {
               tabs={[
                 { key: 'overview', label: T.tabs.overview },
                 { key: 'flags', label: flagCopy.tab },
+                { key: 'evaluations', label: evaluationsCopy.tab },
                 { key: 'refs', label: featureRefsTab.tab, count: d.feature.featureRefs?.length ?? 0 },
                 { key: 'safety', label: T.tabs.safety },
                 { key: 'gates', label: T.tabs.gates, count: Object.keys(d.gates).length },
@@ -164,6 +168,10 @@ export default function FeatureDetail() {
                   <Overview d={d} />
                 ) : tab === 'flags' ? (
                   <FeatureFlagsTab id={id} ver={ver} />
+                ) : tab === 'evaluations' ? (
+                  <Suspense fallback={<AsyncView state="loading">{null}</AsyncView>}>
+                    <EvaluationsTab id={id} />
+                  </Suspense>
                 ) : tab === 'refs' ? (
                   <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
                 ) : tab === 'safety' ? (

@@ -926,4 +926,38 @@ CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REA
 CREATE INDEX vehicle_envelope_kill ON vehicle_envelope (kill_id, request);
 `,
   },
+  {
+    // 수신자 규칙 — 이벤트별 추가 수신자(개인·역할·팀). 기본 수신자는 contracts 규칙표, 여기는 운영자가 더한 것만(바꾼 사유는 감사)
+    name: '101_notification_rule_recipient',
+    sql: `
+CREATE TABLE notification_rule_recipient (event_type TEXT NOT NULL, rkey TEXT NOT NULL, added_by TEXT NOT NULL, added_at TEXT NOT NULL, PRIMARY KEY (event_type, rkey));
+`,
+  },
+  {
+    // Feature별 평가 운영 데이터 — 평가 span을 일(UTC) · flag · 평가 경로 · 앱 · 환경 · 결과 · 분기값으로 센다(span은 보존 기간 뒤 지워져도 집계는 남는다)
+    name: '102_flag_eval_daily',
+    sql: `
+CREATE TABLE flag_eval_daily (day TEXT NOT NULL, flag_key TEXT NOT NULL, source TEXT NOT NULL, app_name TEXT NOT NULL, environment TEXT NOT NULL, result TEXT NOT NULL, variant TEXT NOT NULL, n INTEGER NOT NULL CHECK (n >= 0), PRIMARY KEY (day, flag_key, source, app_name, environment, result, variant));
+CREATE INDEX flag_eval_daily_flag ON flag_eval_daily (flag_key, day);
+`,
+  },
+  {
+    // 연계·과금·서명·파이프라인 오류 이력 — 실패한 변경은 롤백되므로 독립 기록. 추가만(수정·삭제 금지)
+    name: '103_integration_error',
+    sql: `
+CREATE TABLE integration_error (id INTEGER PRIMARY KEY AUTOINCREMENT, error_id TEXT NOT NULL UNIQUE, at TEXT NOT NULL, system TEXT NOT NULL, error_type TEXT NOT NULL, target TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX integration_error_system_at ON integration_error (system, at);
+CREATE INDEX integration_error_at ON integration_error (at);
+CREATE TRIGGER integration_error_no_update BEFORE UPDATE ON integration_error BEGIN SELECT RAISE(ABORT, 'integration_error는 추가만 가능'); END;
+CREATE TRIGGER integration_error_no_delete BEFORE DELETE ON integration_error BEGIN SELECT RAISE(ABORT, 'integration_error는 추가만 가능'); END;
+`,
+  },
+  {
+    // CI/CD 파이프라인 실행 결과(IF-13) — 실행 ID별 마지막 상태(시작 → 성공·실패)
+    name: '104_pipeline_run',
+    sql: `
+CREATE TABLE pipeline_run (run_id TEXT PRIMARY KEY, feature_id TEXT, status TEXT NOT NULL, received_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX pipeline_run_feature ON pipeline_run (feature_id, received_at);
+`,
+  },
 ];

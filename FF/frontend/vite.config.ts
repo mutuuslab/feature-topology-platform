@@ -48,10 +48,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // 스키마·산정 순수 함수·서명 캐시 선언은 초기화 부수효과가 없다. 필요한 폼이 로드될 때만 묶고, 카탈로그 설치 등 다른 모듈의 실행은 유지한다.
+      // 알림 규칙표·수신자 규칙·감사 내보내기·평가 집계·오류 이력 규칙도 순수 표·함수다 — 상단바 종은 notification-keys만 읽는다(첫 화면 예산)
       treeshake: {
         moduleSideEffects: (id) => {
           const path = id.replace(/\\/g, '/');
-          return path.includes('/contracts/src/schemas/') || path.includes('/contracts/src/rules/cost/') || path.endsWith('/contracts/src/rules/gate-evidence.ts') || path.endsWith('/contracts/src/rules/unleash-snapshot.ts') || path.endsWith('/contracts/src/rules/unleash.ts') || path.endsWith('/contracts/src/rules/ext-sync.ts') ? false : null;
+          return path.includes('/contracts/src/schemas/') || path.includes('/contracts/src/rules/cost/') || path.endsWith('/contracts/src/rules/gate-evidence.ts') || path.endsWith('/contracts/src/rules/unleash-snapshot.ts') || path.endsWith('/contracts/src/rules/unleash.ts') || path.endsWith('/contracts/src/rules/ext-sync.ts') || /\/contracts\/src\/rules\/(notification|notification-rules|audit-export|evaluation-stats|integration-error)\.ts$/.test(path) ? false : null;
         },
       },
       // 두 개의 독립 엔트리: 플랫폼(index.html)과 Twin 콘솔(twin.html).

@@ -85,7 +85,7 @@ flowchart LR
 | FPW.7-A12 | Release Sign-off(출시 책임 확인) | R Feature Owner · A Feature Owner · C Safety Manager · I Release Manager, 상품 Owner | WP-G7-DECISION, WP-CANARY-PLAN, WP-SC-REVIEW | WP-RELEASE-SIGNOFF | `signRelease`, `/features/:id/:ver` | FFG-LCY-001 |
 | FPW.7-A09 | 출시 전이 | R Release Manager · A Release Manager · C Feature Owner · I 운영 조직, 상품 Owner | WP-G7-DECISION, WP-RELEASE-SIGNOFF | WP-RELEASE-RECORD | `transition`, `/features/:id/:ver` | – |
 | FPW.7-A10 | 상품 고객 출시 승인 | R 상품 Owner · A 상품 Owner · C Feature Owner · I 상품 기획, 운영 조직 | WP-RELEASE-RECORD, WP-PRODUCT-APPROVAL | WP-PRODUCT-RELEASE | `productTransition`, `/products/:id/:ver` | – |
-| FPW.7-A11 | Canary 활성화·단계적 확대 | R 운영 조직 · A 운영 조직 · C Safety Manager, Release Manager · I Feature Owner, 품질 조직 | WP-RELEASE-RECORD, WP-CANARY-PLAN | WP-ROLLOUT-RECORD | `stageRollout`, `/activation/decide`, `/fleet/live` | FFG-LCY-009, FFG-TST-010 |
+| FPW.7-A11 | Canary 활성화·단계적 확대 | R 운영 조직 · A 운영 조직 · C Safety Manager, Release Manager · I Feature Owner, 품질 조직 | WP-RELEASE-RECORD, WP-CANARY-PLAN | WP-ROLLOUT-RECORD | `stageRollout`, `/activation/decide`, `/fleet/live`, `/features/:id/:ver`, `/notifications` | FFG-LCY-009, FFG-TST-010 |
 
 ### 수행 절차와 완료 기준
 

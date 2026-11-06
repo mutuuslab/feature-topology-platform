@@ -24,6 +24,8 @@ import { FlagSourceManifest } from './schemas/flag-source';
 import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody, RestoreRequestBody } from './schemas/ops';
 import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
 import { NotificationReadAllBody } from './rules/notification';
+import { NotificationRuleBody, NotificationSendBody } from './rules/notification-rules';
+import { PipelineRunBody } from './rules/integration-error';
 import { RunVirtualBody } from './rules/virtual';
 import { MetricPlanBody } from './rules/safety-kpi';
 import { DATA_CATEGORY_ACCESS } from './rules/data-catalog';
@@ -65,6 +67,13 @@ export const REFDB_CHANGE_REQUESTERS: Role[] = ROLES.filter((r) => r !== 'VEHICL
 const ReasonBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
 
 export type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
+/** 수신자 규칙의 추가 수신자를 바꿀 수 있는 역할 — 운영 리더·출시 담당(알림 운영) */
+export const NOTIFICATION_RULE_EDITORS: Role[] = ['OPS_LEAD', 'RELEASE_MANAGER'];
+/** 알림을 직접 보낼 수 있는 역할 — Feature·배포·운영·안전 업무 담당. 조회 전용(감사)·Feature DB 전담(관리·검토)·산정 역할은 빠진다(Feature DB 역할의 고유 쓰기 권한 0, 30-95 §8.1) */
+export const NOTIFICATION_SENDERS: Role[] = ['FEATURE_AUTHOR', 'SAFETY_OFFICER', 'VARIANT_OWNER', 'FEATURE_APPROVER', 'IMPLEMENTER', 'RELEASE_MANAGER', 'BOM_APPROVER', 'PRODUCT_AUTHOR', 'PRODUCT_APPROVER', 'GATE_JUDGE', 'OPERATOR', 'SECURITY_OFFICER', 'OPS_LEAD', 'REGULATORY_OWNER'];
+/** 감사·검증 이력 내보내기를 받을 수 있는 역할 — 감사 조회·운영 리더·보안·법규·기능안전·출시 담당(외부 감사 대응) */
+export const AUDIT_EXPORT_ROLES: Role[] = ['AUDITOR', 'OPS_LEAD', 'SECURITY_OFFICER', 'REGULATORY_OWNER', 'SAFETY_OFFICER', 'RELEASE_MANAGER'];
 
 export interface RouteDef {
   /** 프론트 API 클라이언트 함수 이름 */
@@ -108,10 +117,14 @@ export const ROUTES: RouteDef[] = [
   { name: 'authDemoLogin', method: 'POST', path: '/api/auth/demo-login', summary: '공개 데모 게이트 로그인 — 데모 ID·비밀번호로 서버 세션 쿠키(FF_DEMO_GATE=on, 20-99). 출처 확인·실패 제한', component: 'KERNEL', body: DemoLoginBody, public: true },
   { name: 'systemConnections', method: 'GET', path: '/api/system/connections', summary: '외부 연결 상태(과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
-  { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력 — after(순번) 커서 페이지 나눔·nextCursor, recent=1 최근 창(순번 오름차순)', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit', 'recent'] },
+  { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력 — after(순번) 커서 페이지 나눔·nextCursor, recent=1 최근 창(순번 오름차순)', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit', 'recent', 'from', 'to'] },
   { name: 'notifications', method: 'GET', path: '/api/notifications', summary: '내 알림 — 개인·역할·Owner 팀 수신자, 안 읽음 수·범주별 집계', component: 'D04-04', query: ['unread', 'category', 'limit'], personal: true },
   { name: 'readNotification', method: 'POST', path: '/api/notifications/:id/read', summary: '알림 읽음 표시(계정별)', component: 'D04-04', roles: HUMAN_ROLES, body: EmptyBody },
   { name: 'readAllNotifications', method: 'POST', path: '/api/notifications/read-all', summary: '알림 모두 읽음(범주 선택)', component: 'D04-04', roles: HUMAN_ROLES, body: NotificationReadAllBody },
+  { name: 'notificationRules', method: 'GET', path: '/api/notifications/rules', summary: '수신자 규칙 — 이벤트별 기본 수신자(규칙)와 추가 수신자(개인·역할·팀 설정)', component: 'D04-04' },
+  { name: 'setNotificationRule', method: 'PUT', path: '/api/notifications/rules/:eventType', summary: '이벤트 추가 수신자 바꾸기(개인·역할·팀, 사유 감사)', component: 'D04-04', roles: NOTIFICATION_RULE_EDITORS, body: NotificationRuleBody },
+  { name: 'sendNotification', method: 'POST', path: '/api/notifications/send', summary: '알림 직접 보내기 — 사람·역할·팀 지정(본인 제외)', component: 'D04-04', roles: NOTIFICATION_SENDERS, body: NotificationSendBody },
+  { name: 'integrationErrors', method: 'GET', path: '/api/integrations/errors', summary: '연계·과금·서명·파이프라인 오류 이력 — 오류 유형·시점·대상 시스템·내용(추가만)', component: 'D04-04', query: ['system', 'from', 'to', 'limit'] },
   { name: 'eventStream', method: 'GET', path: '/api/events/stream', summary: '이벤트 실시간 스트림 (SSE)', component: 'D04-04', query: ['types'], stream: true },
   { name: 'safetyProfiles', method: 'GET', path: '/api/safety-profiles', summary: '안전 분류 목록 (보고서 5.7)', component: 'D01-01', query: ['featureId'] },
   { name: 'safetyProfile', method: 'GET', path: '/api/features/:id/versions/:ver/safety', summary: '안전 분류 + 조합 검사 (FFG-CLS-009)', component: 'D01-01' },
@@ -119,7 +132,9 @@ export const ROUTES: RouteDef[] = [
   { name: 'confirmSafetyProfile', method: 'POST', path: '/api/features/:id/versions/:ver/safety/confirm', summary: '안전 분류 확정 — Safety Manager 개인 서명', component: 'D01-01', roles: ['SAFETY_OFFICER'], body: SafetyConfirmBody },
   { name: 'releaseSignoff', method: 'GET', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off(출시 책임 확인) 조회 — 현재 G8·G9 판정에 묶인 서명인지', component: 'D01-01' },
   { name: 'signRelease', method: 'POST', path: '/api/features/:id/versions/:ver/release-signoff', summary: 'Release Sign-off — Feature Owner가 G8·G9 PASS 뒤 출시 책임을 개인 서명으로 확인(보고서 6.1 G7)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: ReleaseSignoffBody },
-  { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력 — 최신순, cursor 페이지 나눔(응답 nextCursor)', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit', 'cursor', 'targetPrefix', 'action'] },
+  { name: 'audit', method: 'GET', path: '/api/audit', summary: '감사 이력 — 최신순, cursor 페이지 나눔(응답 nextCursor)', component: 'D01-10', query: ['target', 'actorId', 'result', 'limit', 'cursor', 'targetPrefix', 'action', 'from', 'to'] },
+  { name: 'auditExport', method: 'GET', path: '/api/audit/export', summary: '감사 이력 내보내기 — 기간 지정 CSV·JSON, 행마다 체인 해시·파일 SHA-256·내보내기 키 서명(민감 값 가림)', component: 'D01-10', query: ['from', 'to', 'format', 'action', 'actorId', 'targetPrefix'], roles: AUDIT_EXPORT_ROLES },
+  { name: 'auditPolicyStats', method: 'GET', path: '/api/audit/policy-stats', summary: '정책 운영 현황 — 정책별 조회·수정·승인·배포 횟수와 최종 행위 일시(감사 이력 집계)', component: 'D01-10', query: ['policyId'] },
   { name: 'auditChain', method: 'GET', path: '/api/audit/chain', summary: '감사 해시 체인 무결성 (FFG-PLT-015)', component: 'D01-10' },
 
   // 업무 절차 실행 (docs/65-workflows) — 완료는 서버 저장·감사·이벤트, 검토함은 내 역할 기준
@@ -134,6 +149,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'createFeature', method: 'POST', path: '/api/features', summary: 'Feature 등록 (PROPOSED 0.1.0)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: CreateFeatureBody },
   { name: 'featureVersions', method: 'GET', path: '/api/features/:id', summary: 'Feature의 버전들', component: 'D01-01' },
   { name: 'createVersion', method: 'POST', path: '/api/features/:id/versions', summary: '새 Version 생성', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: CreateVersionBody },
+  { name: 'featureEvaluations', method: 'GET', path: '/api/features/:id/evaluations', summary: 'Feature 평가 운영 데이터 — 일 단위 평가·활성·비활성·분기값 횟수, 평가 경로(앱·차량 SDK·Unleash Edge·플랫폼 판단)·앱·환경별', component: 'D04-03', query: ['days'], sample: { id: 'FEAT-00022' } },
   { name: 'featureDetail', method: 'GET', path: '/api/features/:id/versions/:ver', summary: 'Feature 버전 상세 — 전이 미리 보기(transitions)는 묻는 사람의 역할로 판정한다(행위자 헤더)', component: 'D01-01', personal: true },
   { name: 'updateDraft', method: 'PATCH', path: '/api/features/:id/versions/:ver', summary: 'PROPOSED 초안 수정', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'SAFETY_OFFICER', 'VARIANT_OWNER', 'IMPLEMENTER'], body: UpdateDraftBody },
   { name: 'transition', method: 'POST', path: '/api/features/:id/versions/:ver/transitions', summary: 'Lifecycle 전이', component: 'D01-01', roles: ['FEATURE_APPROVER', 'RELEASE_MANAGER', 'GATE_JUDGE'], body: TransitionBody },
@@ -193,7 +209,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'importFlagSources', method: 'POST', path: '/api/flag-sources', summary: '개발자·CI 소스 스냅샷 가져오기', component: 'D01-06', roles: ['IMPLEMENTER'], body: FlagSourceManifest },
   { name: 'createPolicy', method: 'POST', path: '/api/policies', summary: '정책 작성 (DRAFT)', component: 'D01-06', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER'], body: CreatePolicyBody },
   { name: 'validations', method: 'GET', path: '/api/policies/validations', summary: '검증 이력 (8종 결과·근거)', component: 'D06-04', query: ['policyId'] },
-  { name: 'policyDetail', method: 'GET', path: '/api/policies/:id', summary: '정책 상세·마지막 검증·승인 적격성', component: 'D01-06' },
+  { name: 'validationsExport', method: 'GET', path: '/api/policies/validations/export', summary: '검증 이력 내보내기 — 기간 지정 CSV·JSON, 파일 SHA-256·내보내기 키 서명', component: 'D06-04', query: ['from', 'to', 'format', 'policyId'], roles: AUDIT_EXPORT_ROLES },
+  { name: 'policyDetail', method: 'GET', path: '/api/policies/:id', summary: '정책 상세·마지막 검증·승인 적격성 — 묻는 사람의 승인 적격성, 조회는 감사(조회자·정책·일시)', component: 'D01-06', personal: true },
   { name: 'updatePolicy', method: 'PATCH', path: '/api/policies/:id', summary: '정책 수정 (새 개정본·재검증 필요)', component: 'D01-06', roles: ['FEATURE_AUTHOR', 'IMPLEMENTER'], body: UpdatePolicyBody },
   { name: 'policyRevisions', method: 'GET', path: '/api/policies/:id/revisions', summary: '정책 버전 목록 (개정본마다 내용 보존)', component: 'D01-06' },
   { name: 'policyRevision', method: 'GET', path: '/api/policies/:id/revisions/:revision', summary: '정책 버전 내용', component: 'D01-06' },
@@ -236,6 +253,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'recordFlagRetirementStep', method: 'POST', path: '/api/flag-retirements/:id/steps', summary: 'Retirement 2~6단계 기록 — 순서·완료 조건, 5단계 Registry 퇴역(ID 재사용 금지)', component: 'D01-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER', 'IMPLEMENTER', 'REGULATORY_OWNER'], body: RetirementStepBody },
   { name: 'changeRecords', method: 'GET', path: '/api/change-records', summary: '변경 기록 감사 — AI 생성 표시·도구·범위, 검토·정적 분석·시험·커버리지 근거 누락(FFG-CODE-030)', component: 'D04-01', query: ['swId'] },
   { name: 'registerChangeRecord', method: 'POST', path: '/api/change-records', summary: 'CI/CD(IF-13) 변경 기록 등록 — 추가만', component: 'D04-01', roles: ['IMPLEMENTER', 'SYSTEM'], body: ChangeRecordBody },
+  { name: 'pipelineRuns', method: 'GET', path: '/api/pipeline/runs', summary: 'CI/CD 파이프라인 실행 결과(IF-13) — 실행 ID·환경·상태·실패 단계·사유', component: 'D04-01', query: ['featureId', 'status'] },
+  { name: 'recordPipelineRun', method: 'POST', path: '/api/pipeline/runs', summary: 'CI/CD 파이프라인 실행 결과 수신(IF-13) — 실패면 오류 이력·담당자 알림', component: 'D04-01', roles: ['IMPLEMENTER', 'SYSTEM'], body: PipelineRunBody },
   { name: 'integrationCalls', method: 'GET', path: '/api/integrations/calls', summary: '외부 연계 호출 기록 (IF-05·IF-13, 멱등 키)', component: 'D04-01', query: ['ifId', 'key'] },
   { name: 'readbacks', method: 'GET', path: '/api/telemetry/readbacks', summary: '차량 회신 (readback) 기록', component: 'D04-03', query: ['publicationId', 'vin'], personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   { name: 'ingestReadback', method: 'POST', path: '/api/telemetry/readback', summary: 'IF-06 차량 회신 수집', component: 'D04-03', roles: ['SYSTEM'], body: ReadbackBody },

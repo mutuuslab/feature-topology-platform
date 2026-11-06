@@ -83,6 +83,8 @@ export function evaluationSpan(e: {
   snapshotVersion: string | null;
   at: string;
   traceSeed: string;
+  /** 평가를 보낸 애플리케이션 식별(appName·environment, FR-OPD-002-001) — 보낸 값이 있을 때만 */
+  app?: { appName?: unknown; environment?: unknown };
 }): OtelSpan {
   const hex = (n: number) => Array.from({ length: n }, (_, i) => ((e.traceSeed.charCodeAt(i % e.traceSeed.length) * 31 + i * 7) % 16).toString(16)).join('');
   const attributes: Record<string, string | number | boolean> = {
@@ -95,6 +97,8 @@ export function evaluationSpan(e: {
   if (e.variant) attributes['feature_flag.result.variant'] = e.variant;
   if (e.errorType) attributes['error.type'] = e.errorType;
   if (e.snapshotVersion) attributes['feature_flag.version'] = e.snapshotVersion;
+  if (typeof e.app?.appName === 'string' && e.app.appName) attributes['ffp.app.name'] = e.app.appName.slice(0, 64);
+  if (typeof e.app?.environment === 'string' && e.app.environment) attributes['deployment.environment.name'] = e.app.environment.slice(0, 64);
   return { traceId: hex(32), spanId: hex(16), name: 'feature_flag.evaluation', startTime: e.at, attributes };
 }
 

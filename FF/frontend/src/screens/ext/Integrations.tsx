@@ -1,7 +1,7 @@
 // /integration/connectors — 외부 연계 현황 (D05-01): IF-01~13 연결 방식·호출, IF-01 ALM 요구사항, IF-08 협력사 납품, IF-11 OTel span, 호출 기록.
 // /integration/sync — 데이터 동기화 (D05-02): 대상별 시장·방향·이전 심사, 대사 실행·차이.
 // /integration/legacy — Legacy 연계 (D05-03) + Legacy-SDV (D05-07).
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
 import { connectionLabel, useConnections } from '../../api/connections';
@@ -14,8 +14,11 @@ import { AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, Expla
 import { ComponentList, usePermission } from '../shared';
 import { extSync } from '../../copy/ext-sync';
 import { ExtSyncTab } from './ExtSyncTab';
+import { integrationErrors } from '../../copy/records';
 
 const G = p10.integrations;
+// 오류 이력 탭(B6) — 탭을 열 때만 읽는다
+const IntegrationErrorsTab = lazy(() => import('./IntegrationErrorsTab'));
 const S = p10.sync;
 const L = p10.legacy;
 
@@ -41,8 +44,8 @@ export function IntegrationsScreen() {
     <div className="ds-screen">
       <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={!sync.data ? { tone: 'neutral', value: '—', text: extSync.sync.key.ok } : attention ? { tone: 'warn', value: attention, text: extSync.sync.key.attention } : !exchanged ? { tone: 'neutral', text: extSync.sync.key.idle } : { tone: 'ok', text: extSync.sync.key.ok }}
         meta={sys.data ? G.key(mock, items.length - mock) : undefined} />
-      <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] }))]}>
-        {(tab) => (tab === 'sync' ? <ExtSyncTab quiet={!!sync.data && !attention && !exchanged} /> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
+      <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] })), { key: 'errors', label: integrationErrors.tab }]}>
+        {(tab) => (tab === 'sync' ? <ExtSyncTab quiet={!!sync.data && !attention && !exchanged} /> : tab === 'errors' ? <Suspense fallback={<AsyncView state="loading">{null}</AsyncView>}><IntegrationErrorsTab /></Suspense> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
       </Tabs>
     </div>
   );

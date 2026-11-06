@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 199,
-      "부분": 252,
-      "미구현": 172,
+      "구현": 225,
+      "부분": 246,
+      "미구현": 152,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 99,
-        "부분": 76,
-        "미구현": 61,
+        "구현": 105,
+        "부분": 74,
+        "미구현": 57,
         "범위 밖": 3
       },
       {
@@ -29,37 +29,37 @@
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 52,
+        "구현": 53,
         "부분": 29,
-        "미구현": 28,
+        "미구현": 27,
         "범위 밖": 0
       },
       {
         "sheet": "04_배포·운영·데이터",
         "leaves": 78,
-        "구현": 9,
-        "부분": 44,
-        "미구현": 25,
+        "구현": 22,
+        "부분": 42,
+        "미구현": 14,
         "범위 밖": 0
       },
       {
         "sheet": "05_시스템 연계·확장",
         "leaves": 34,
-        "구현": 5,
-        "부분": 15,
-        "미구현": 14,
+        "구현": 9,
+        "부분": 14,
+        "미구현": 11,
         "범위 밖": 0
       },
       {
         "sheet": "06_품질·보안·운영",
         "leaves": 87,
-        "구현": 17,
-        "부분": 41,
-        "미구현": 29,
+        "구현": 19,
+        "부분": 40,
+        "미구현": 28,
         "범위 밖": 0
       }
     ],
-    "traced": 45,
+    "traced": 71,
     "untracedImplemented": 155,
     "defects": 0,
     "decisionsPending": 9,
@@ -141,6 +141,55 @@
       ],
       "tested": []
     },
+    "FR-CON-001-003": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification-gaps.test.ts",
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-AUD-001-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-AUD-001-002": {
+      "implemented": [
+        "contracts/src/rules/audit-export.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-AUD-002-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/audit-history/history-export.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-AUD-002-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/audit-history/audit-history.controller.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-AUD-002-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/audit-history/history-export.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
     "FR-RTE-001-004": {
       "implemented": [
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
@@ -173,6 +222,15 @@
       "tested": [
         "contracts/src/rules/notification.test.ts",
         "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-DSV-003-005": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification-gaps.test.ts",
+        "backend/test/d04/notify-recipients.spec.ts"
       ]
     },
     "FR-KSW-003-003": {
@@ -348,6 +406,66 @@
       ],
       "tested": []
     },
+    "FR-OPD-001-005": {
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/evaluation-stats.test.ts",
+        "backend/test/d04/evaluation-stats.spec.ts"
+      ]
+    },
+    "FR-OPD-001-006": {
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-OPD-001-007": {
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-OPD-001-008": {
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-OPD-002-001": {
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/evaluation-stats.spec.ts"
+      ]
+    },
+    "FR-OPD-003-001": {
+      "implemented": [
+        "backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/evaluation-stats.test.ts",
+        "backend/test/d04/evaluation-stats.spec.ts"
+      ]
+    },
+    "FR-EVT-001-004": {
+      "implemented": [
+        "contracts/src/rules/audit-export.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-EVT-002-004": {
+      "implemented": [
+        "backend/src/domains/d04-ops/event-history/event-history.controller.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
     "FR-EVT-003-003": {
       "implemented": [
         "contracts/src/rules/notification.ts"
@@ -356,12 +474,99 @@
         "contracts/src/rules/notification.test.ts"
       ]
     },
+    "FR-CICD-001-001": {
+      "implemented": [
+        "backend/src/domains/d04-ops/pipeline-link/pipeline-run.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CICD-001-002": {
+      "implemented": [
+        "backend/src/domains/d04-ops/pipeline-link/pipeline-run.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CICD-001-003": {
+      "implemented": [
+        "backend/src/domains/d04-ops/pipeline-link/pipeline-run.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CICD-001-006": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification-gaps.test.ts",
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-QGV-003-005": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification-gaps.test.ts",
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-LGCY-001-007": {
+      "implemented": [
+        "backend/src/domains/d04-ops/event-history/integration-error.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-LGCY-001-008": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification-gaps.test.ts",
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
     "FR-DSYN-001-004": {
       "implemented": [
         "contracts/src/rules/notification.ts"
       ],
       "tested": [
         "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-BIL-001-003": {
+      "implemented": [
+        "backend/src/domains/d04-ops/event-history/integration-error.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-BIL-001-004": {
+      "implemented": [
+        "contracts/src/rules/notification.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/notification-gaps.test.ts",
+        "backend/test/d04/notify-recipients.spec.ts",
+        "frontend/src/__tests__/requirementGaps.test.tsx"
+      ]
+    },
+    "FR-VHM-002-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/audit-history/history-export.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-SDM-001-001": {
+      "implemented": [
+        "backend/src/domains/d04-ops/event-history/integration-error.service.ts"
+      ],
+      "tested": [
+        "backend/test/d04/notify-recipients.spec.ts"
       ]
     }
   },

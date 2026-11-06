@@ -3,7 +3,7 @@
 // 커버리지가 올라가 Lifecycle DEVELOPING→VERIFIED 자동 전이 조건이 채워질 수 있다(같은 트랜잭션).
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { SafetyProfileService } from '../registry/safety-profile.service';
-import { deployStartBasisPoints, effectiveBasisPoints, LIFECYCLE_RANK, oddRestrictionFindings, policyChangeLog, policyDiff, POLICY_EDITABLE, PolicySpec, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
+import { deployStartBasisPoints, effectiveBasisPoints, fieldChanges, LIFECYCLE_RANK, policySpecOf, oddRestrictionFindings, policyChangeLog, policyDiff, POLICY_EDITABLE, PolicySpec, type CreatePolicyBody, type Policy, type PolicyDecisionBody, type UpdatePolicyBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -17,6 +17,10 @@ import { PolicyRepo, policyHash, type ValidationRun } from '../policy-repos';
 import { LifecycleService } from '../registry/lifecycle.service';
 import { FeatureRepo } from '../repos';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
+import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
+
+/** 같은 사람이 같은 정책을 다시 조회해도 이 시간 안이면 조회 감사를 한 번만 남긴다(화면 재조회·새로고침 잡음) */
+const VIEW_AUDIT_WINDOW_MS = 10 * 60_000;
 
 const EDITABLE = POLICY_EDITABLE;
 
@@ -35,6 +39,7 @@ export class PolicyService implements OnModuleInit {
     private readonly clock: Clock,
     private readonly secureDeploy: SecureDeployService,
     private readonly flags: SafetyProfileService,
+    private readonly errors: IntegrationErrorService,
   ) {}
 
   /**
@@ -96,6 +101,7 @@ export class PolicyService implements OnModuleInit {
 
   detail(id: string, actor?: Actor) {
     const p = this.require(id);
+    if (actor) this.recordView(actor, id);
     const runs = this.policies.runs(id);
     const last = p.lastValidationId ? this.policies.run(p.lastValidationId) : undefined;
     const hash = policyHash(p);
@@ -145,6 +151,17 @@ export class PolicyService implements OnModuleInit {
     });
   }
 
+  /**
+   * 정책 조회 감사 — 조회자·정책·일시. 같은 사람이 10분 안에 다시 연 조회는 한 번만 남긴다(화면 재조회 잡음).
+   * @req FR-AUD-001-001
+   */
+  private recordView(actor: Actor, id: string) {
+    if (actor.role === 'VEHICLE' || actor.role === 'SYSTEM') return;
+    const since = new Date(this.clock.now().getTime() - VIEW_AUDIT_WINDOW_MS).toISOString();
+    if (this.db.get("SELECT 1 FROM audit WHERE target = ? AND action = 'POLICY_VIEW' AND actor_id = ? AND at >= ? LIMIT 1", id, actor.id, since)) return;
+    this.db.tx(() => this.audit.record(actor, 'POLICY_VIEW', id, { componentId: 'D01-06' }));
+  }
+
   update(actor: Actor, id: string, body: UpdatePolicyBody): Policy {
     const p = this.require(id);
     if (!(EDITABLE as readonly string[]).includes(p.status)) {
@@ -155,7 +172,10 @@ export class PolicyService implements OnModuleInit {
       const next: Policy = { ...p, ...Object.fromEntries(Object.entries(body).filter(([, v]) => v !== undefined)), status: 'DRAFT', revision: p.revision + 1 } as Policy;
       next.contentHash = policyHash(next);
       this.policies.update(next, { kind: 'UPDATE', by: actor.id, at: this.clock.iso() });
-      this.audit.record(actor, 'POLICY_UPDATE', id, { before: { revision: p.revision, contentHash: p.contentHash }, after: { revision: next.revision, contentHash: next.contentHash }, componentId: 'D01-06' });
+      // 수정 항목·변경 전후 값(필드 단위) — 감사와 이벤트 이력에 함께 남긴다(민감 값은 가림)
+      const changes = fieldChanges(policySpecOf(p as unknown as Record<string, unknown>), policySpecOf(next as unknown as Record<string, unknown>));
+      this.audit.record(actor, 'POLICY_UPDATE', id, { before: { revision: p.revision, contentHash: p.contentHash }, after: { revision: next.revision, contentHash: next.contentHash, changes }, componentId: 'D01-06' });
+      this.events.publish('policy.updated', id, { policyId: id, flagKey: next.flagKey, featureId: next.featureId, revision: next.revision, changes }, { componentId: 'D01-06', correlationId: actor.correlationId });
       return next;
     });
   }
@@ -183,6 +203,12 @@ export class PolicyService implements OnModuleInit {
       this.policies.update(next);
       this.audit.record(actor, 'POLICY_VALIDATE', id, { after: { runId: run.runId, decision: run.decision }, reason: safety.reasons.join('; ') || undefined, componentId: 'D06-04' });
       this.events.publish('policy.validated', id, { runId: run.runId, decision: run.decision, results: results.map((r) => ({ componentId: r.componentId, result: r.result })) }, { componentId: 'D06-04', correlationId: actor.correlationId });
+      // 충돌 탐지(D06-01 충돌 발견) → 정책 Owner·관리자 알림(FR-CON-001-003), 품질 Gate(D04-02) 실패 → 담당자 알림(FR-QGV-003-005)
+      const conflicts = results.flatMap((r) => r.findings.filter((f) => f.code === 'CONFLICT' && f.result === 'FAIL').map((f) => f.message));
+      if (conflicts.length) this.events.publish('policy.conflict.detected', id, { policyId: id, runId: run.runId, conflicts }, { componentId: 'D06-01', correlationId: actor.correlationId });
+      const quality = results.find((r) => r.componentId === 'D04-02');
+      if (quality && quality.result !== 'PASS')
+        this.events.publish('quality.gate.failed', id, { policyId: id, runId: run.runId, revision: p.revision, contentHash: run.contentHash, result: quality.result, reasons: quality.findings.filter((f) => f.result !== 'INFO').map((f) => f.message) }, { componentId: 'D04-02', correlationId: actor.correlationId });
       return { policy: next, run };
     });
   }
@@ -225,23 +251,33 @@ export class PolicyService implements OnModuleInit {
       this.audit.failed(actor, 'POLICY_DEPLOY', id, odd.map((x) => x.message).join(' · '), 'D01-06');
       throw new DomainError('GUARD_FAILED', odd.map((x) => x.message).join(' · '), { rule: 'FFG-SOT-002', findings: odd });
     }
-    return this.db.tx(() => {
-      const prev = this.policies.deployed(p.flagKey);
-      if (prev && prev.policyId !== p.policyId) {
-        this.policies.update({ ...prev, status: 'RETIRED' });
-        this.audit.record(actor, 'POLICY_RETIRE', prev.policyId, { before: { status: 'DEPLOYED' }, after: { status: 'RETIRED' }, reason: `${p.policyId}로 대체`, componentId: 'D01-06' });
+    try {
+      return this.db.tx(() => {
+        const prev = this.policies.deployed(p.flagKey);
+        if (prev && prev.policyId !== p.policyId) {
+          this.policies.update({ ...prev, status: 'RETIRED' });
+          this.audit.record(actor, 'POLICY_RETIRE', prev.policyId, { before: { status: 'DEPLOYED' }, after: { status: 'RETIRED' }, reason: `${p.policyId}로 대체`, componentId: 'D01-06' });
+        }
+        // F2 이상은 Canary에서 시작한다(FFG-LCY-009) — 단계 값은 해시 밖이라 승인 내용은 그대로
+        const fClass = this.flags.list(p.featureId).find((x) => x.version === p.featureVersion)?.fClass ?? null;
+        const canary = deployStartBasisPoints(fClass, effectiveBasisPoints({ ...p, stageBasisPoints: null }));
+        const now = this.clock.iso();
+        const next: Policy = { ...p, status: 'DEPLOYED', deployedBy: actor.id, deployedAt: now, ...(canary != null ? { stageBasisPoints: canary, stagedAt: now } : { stageBasisPoints: null, stagedAt: null }) };
+        this.policies.update(next);
+        this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash, stage: next.stageBasisPoints, fClass }, reason, componentId: 'D01-06' });
+        const pub = this.secureDeploy.publishPolicy(next, actor);
+        this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, stage: next.stageBasisPoints, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
+        return { ...next, publicationId: pub.publicationId };
+      });
+    } catch (err) {
+      // 서명 실패 — 배포 트랜잭션은 롤백됐다(정책은 배포되지 않음). 실패 사유·일시를 감사와 오류 이력에 남기고 보안 담당에게 알린다
+      const signing = err instanceof DomainError ? (err.details as { signing?: string } | undefined)?.signing : undefined;
+      if (signing) {
+        this.audit.failed(actor, 'POLICY_DEPLOY', id, `정책 서명 실패 — ${(err as Error).message}`, 'D06-10');
+        this.errors.record(actor, { system: 'SIGNING', errorType: signing === 'KEY_EXPIRED' ? 'KEY_EXPIRED' : 'SIGN_FAILED', target: id, message: (err as Error).message, featureId: p.featureId });
       }
-      // F2 이상은 Canary에서 시작한다(FFG-LCY-009) — 단계 값은 해시 밖이라 승인 내용은 그대로
-      const fClass = this.flags.list(p.featureId).find((x) => x.version === p.featureVersion)?.fClass ?? null;
-      const canary = deployStartBasisPoints(fClass, effectiveBasisPoints({ ...p, stageBasisPoints: null }));
-      const now = this.clock.iso();
-      const next: Policy = { ...p, status: 'DEPLOYED', deployedBy: actor.id, deployedAt: now, ...(canary != null ? { stageBasisPoints: canary, stagedAt: now } : { stageBasisPoints: null, stagedAt: null }) };
-      this.policies.update(next);
-      this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash, stage: next.stageBasisPoints, fClass }, reason, componentId: 'D01-06' });
-      const pub = this.secureDeploy.publishPolicy(next, actor);
-      this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, stage: next.stageBasisPoints, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
-      return { ...next, publicationId: pub.publicationId };
-    });
+      throw err;
+    }
   }
 
   /**

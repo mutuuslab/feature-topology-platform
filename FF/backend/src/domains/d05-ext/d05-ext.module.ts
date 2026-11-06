@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { OtelExporter } from '../../adapters/if-mocks/otel.exporter';
 import { D01PolicyModule } from '../d01-policy/d01-policy.module';
+import { IntegrationErrorModule } from '../d04-ops/event-history/integration-error.module';
 import { OfrepController, OfrepService } from './api-gateway/ofrep.controller';
 import { OpenFeatureController, OpenFeatureGovService } from './api-gateway/openfeature.controller';
 import { BillingController, BillingService } from './billing/billing.controller';
@@ -9,7 +10,7 @@ import { BizMetricsController, BizMetricsService } from './biz-metrics/biz-metri
 import { DataActController, DataActService } from './api-gateway/data-act.service';
 
 @Module({
-  imports: [D01PolicyModule],
+  imports: [D01PolicyModule, IntegrationErrorModule],
   controllers: [OfrepController, OpenFeatureController, BillingController, BizMetricsController, DataActController],
   providers: [OtelExporter, OfrepService, OpenFeatureGovService, BillingService, BizMetricsService, DataActService],
   exports: [OfrepService],

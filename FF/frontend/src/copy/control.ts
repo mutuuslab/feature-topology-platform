@@ -86,7 +86,7 @@ export const control = {
     notAfter: '만료',
     fingerprint: '공개키 지문',
     since: '만든 때',
-    purposeName: { policy: '정책 배포', activate: '기능 활성화', kill: '긴급 차단', restore: '복원', sync: '상태 동기화', gate: '정책 게이트 판정' } as Record<string, string>,
+    purposeName: { policy: '정책 배포', activate: '기능 활성화', kill: '긴급 차단', restore: '복원', sync: '상태 동기화', gate: '정책 게이트 판정', export: '감사·이력 내보내기' } as Record<string, string>,
     rotateBody: '고른 용도의 새 키로 이후 게시본을 서명합니다. 이전 키는 검증 전용으로 남아 이미 배포한 게시본은 계속 검증됩니다. 품질·운영 담당에게 알림이 갑니다.',
     status: { ACTIVE: '서명 중', RETIRED: '검증 전용' } as Record<string, string>,
     approverKeys: '승인자 서명 키',

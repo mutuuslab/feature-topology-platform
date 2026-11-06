@@ -12,9 +12,10 @@ import { FieldPortalController, FieldPortalService } from './d05-ext/field-porta
 import { LegacySdvController, LegacySdvService } from './d05-ext/legacy-sdv/legacy-sdv.service';
 import { LegacyController, LegacyService } from './d05-ext/legacy/legacy.service';
 import { OpsLoopModule } from './ops-loop.module';
+import { IntegrationErrorModule } from './d04-ops/event-history/integration-error.module';
 
 @Module({
-  imports: [D01PolicyModule, OpsLoopModule],
+  imports: [D01PolicyModule, OpsLoopModule, IntegrationErrorModule],
   controllers: [IntegrationController, ExperimentController, IncidentController, SyncController, LegacyController, LegacySdvController, FieldPortalController],
   providers: [OtelExporter, ExternalSystems, ExperimentRepo, ExperimentService, IncidentService, SyncService, LegacyService, LegacySdvService, FieldPortalService],
   exports: [ExternalSystems, IncidentService, ExperimentService],

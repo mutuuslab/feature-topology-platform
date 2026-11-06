@@ -1,20 +1,30 @@
 // 수신자 지정 알림 (D04-04 이벤트 이력 추적) — 플랫폼 이벤트가 기록되는 같은 트랜잭션에서 contracts 규칙표(NOTIFICATION_RULES)로
 // 알림을 만들고 수신자 키·제외 계정을 저장한다. 채널은 화면(Web) 알림만 — 계정별 목록·읽음(사용자 결정 D-RD-7: 메일 없음).
 // 끄는 설정이 없으므로 승인 요청·긴급(CRITICAL)을 포함한 모든 알림이 받는 사람 목록에 항상 남는다.
-import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Injectable, OnModuleInit, Param, Post, Put, Query } from '@nestjs/common';
 import {
   accountKeys,
   accountOf,
   HUMAN_ROLES,
+  NOTIFICATION_RULE_EDITORS,
+  NOTIFICATION_RULE_SPECS,
   NOTIFICATION_RULES,
+  NOTIFICATION_SENDERS,
+  NOTIFICATION_SENT_EVENT,
   NotificationCategory,
   NotificationReadAllBody,
+  NotificationRuleBody,
+  NotificationSendBody,
   recipientKey,
+  RecipientSchema,
+  type NotificationRuleView,
+  type Recipient,
   type Notification,
   type NotificationContext,
   type NotificationCategory as Category,
 } from '@ff/contracts';
-import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
+import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
+import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
@@ -29,6 +39,15 @@ export interface InboxItem extends Notification {
   readAt: string | null;
 }
 
+/** 저장 키 → 수신자 — 'user:usr-x' · 'role:OPERATOR' · 'team:ADAS기획팀'. 읽을 수 없으면 null */
+export function recipientOfKey(k: string): Recipient | null {
+  const i = k.indexOf(':');
+  const kind = k.slice(0, i);
+  const v = k.slice(i + 1);
+  const r = RecipientSchema.safeParse(kind === 'user' ? { kind, id: v } : kind === 'role' ? { kind, role: v } : { kind, team: v });
+  return r.success ? (r.data as Recipient) : null;
+}
+
 @Injectable()
 @PlatformComponent('D04-04')
 export class NotificationService implements OnModuleInit {
@@ -39,6 +58,7 @@ export class NotificationService implements OnModuleInit {
     private readonly policies: PolicyRepo,
     private readonly kills: KillRepo,
     @Inject(DB) private readonly db: Db,
+    private readonly audit: AuditService,
   ) {}
 
   onModuleInit() {
@@ -51,7 +71,9 @@ export class NotificationService implements OnModuleInit {
     if (!rule) return null;
     const draft = rule.build(this.context(ev, rule.needs));
     if (!draft) return null;
-    const n: Notification = { ...draft, notificationId: this.nextId(), eventSeq: ev.seq, eventType: ev.type, aggregate: ev.aggregate, createdAt: ev.at };
+    // 수신자 규칙의 추가 수신자(운영자가 더한 개인·역할·팀) — 기본 수신자는 그대로, 더하기만 한다
+    const added = this.addedRecipients(ev.type);
+    const n: Notification = { ...draft, recipients: [...draft.recipients, ...added], notificationId: this.nextId(), eventSeq: ev.seq, eventType: ev.type, aggregate: ev.aggregate, createdAt: ev.at };
     this.touched();
     this.db.run('INSERT INTO notification (notification_id, event_seq, category, severity, created_at, doc) VALUES (?, ?, ?, ?, ?, ?)', n.notificationId, n.eventSeq, n.category, n.severity, n.createdAt, JSON.stringify(n));
     for (const k of new Set(n.recipients.map(recipientKey))) this.db.run('INSERT INTO notification_recipient (notification_id, rkey) VALUES (?, ?)', n.notificationId, k);
@@ -210,6 +232,64 @@ export class NotificationService implements OnModuleInit {
     });
     return { read: unread.length };
   }
+  // ─── 수신자 규칙·직접 보내기(기능명세서 B1 — 특정 사람·역할·팀 지정) ───
+
+  /** 이벤트의 추가 수신자 — 저장 키(user:·role:·team:)를 수신자로 */
+  private addedRecipients(eventType: string): Recipient[] {
+    return this.db
+      .all<{ rkey: string }>('SELECT rkey FROM notification_rule_recipient WHERE event_type = ? ORDER BY rkey', eventType)
+      .map((r) => recipientOfKey(r.rkey))
+      .filter((r): r is Recipient => !!r);
+  }
+
+  /** 수신자 규칙 — 이벤트별 기본 수신자(contracts 규칙표, 끌 수 없음) + 추가 수신자(설정) */
+  rules(): { items: NotificationRuleView[]; teams: string[] } {
+    const rows = this.db.all<{ event_type: string; rkey: string; added_by: string; added_at: string }>('SELECT event_type, rkey, added_by, added_at FROM notification_rule_recipient ORDER BY event_type, rkey');
+    const items = NOTIFICATION_RULE_SPECS.map((s) => {
+      const mine = rows.filter((r) => r.event_type === s.event);
+      const last = mine.reduce<(typeof mine)[number] | null>((a, r) => (!a || r.added_at > a.added_at ? r : a), null);
+      return { ...s, added: mine.map((r) => recipientOfKey(r.rkey)).filter((r): r is Recipient => !!r), updatedBy: last?.added_by ?? null, updatedAt: last?.added_at ?? null };
+    });
+    return { items, teams: this.ownerTeams() };
+  }
+
+  /** Feature Owner 팀 목록 — 팀 수신자는 이 안에서만 고른다(오타로 아무도 받지 않는 규칙을 막는다) */
+  private ownerTeams(): string[] {
+    return this.db.all<{ owner: string }>("SELECT DISTINCT json_extract(doc, '$.ownerId') AS owner FROM feature_version ORDER BY owner").map((r) => r.owner).filter(Boolean);
+  }
+
+  /** 추가 수신자 바꾸기 — 이벤트 하나의 목록을 통째로 바꾼다(빈 목록 = 추가 없음). 전후 목록·사유는 감사에 남는다 */
+  setRule(actor: Actor, eventType: string, body: NotificationRuleBody): NotificationRuleView {
+    if (!NOTIFICATION_RULES[eventType]) throw new DomainError('NOT_FOUND', `${eventType} 이벤트에는 알림 규칙이 없습니다.`);
+    const teams = new Set(this.ownerTeams());
+    const unknown = body.recipients.filter((r) => r.kind === 'team' && !teams.has(r.team)).map((r) => (r as { team: string }).team);
+    if (unknown.length) throw new DomainError('VALIDATION', `등록된 Feature Owner 팀이 아닙니다: ${unknown.join(', ')}`, { field: 'recipients' });
+    const keys = [...new Set(body.recipients.map(recipientKey))].sort();
+    return this.db.tx(() => {
+      const before = this.addedRecipients(eventType).map(recipientKey);
+      this.db.run('DELETE FROM notification_rule_recipient WHERE event_type = ?', eventType);
+      const at = this.clock.iso();
+      for (const k of keys) this.db.run('INSERT INTO notification_rule_recipient (event_type, rkey, added_by, added_at) VALUES (?, ?, ?, ?)', eventType, k, actor.id, at);
+      this.audit.record(actor, 'NOTIFICATION_RULE_UPDATE', eventType, { before: { recipients: before }, after: { recipients: keys }, reason: body.reason, componentId: 'D04-04' });
+      this.events.publish('notification.rule.updated', eventType, { eventType, recipients: keys, by: actor.id, reason: body.reason }, { componentId: 'D04-04', correlationId: actor.correlationId });
+      return this.rules().items.find((r) => r.event === eventType)!;
+    });
+  }
+
+  /** 직접 보내기 — 고른 사람·역할·팀에게 화면 알림 하나(보낸 사람은 받지 않는다). 이벤트·감사와 같은 트랜잭션 */
+  send(actor: Actor, body: NotificationSendBody): { notificationId: string; recipients: Recipient[] } {
+    const teams = new Set(this.ownerTeams());
+    const unknown = body.recipients.filter((r) => r.kind === 'team' && !teams.has(r.team)).map((r) => (r as { team: string }).team);
+    if (unknown.length) throw new DomainError('VALIDATION', `등록된 Feature Owner 팀이 아닙니다: ${unknown.join(', ')}`, { field: 'recipients' });
+    return this.db.tx(() => {
+      const ev = this.events.publish(NOTIFICATION_SENT_EVENT, `direct:${actor.id}`, { ...body, sentBy: actor.id }, { componentId: 'D04-04', correlationId: actor.correlationId });
+      const row = this.db.get<{ notification_id: string }>('SELECT notification_id FROM notification WHERE event_seq = ?', ev.seq);
+      if (!row) throw new DomainError('VALIDATION', '받을 사람이 없습니다.');
+      this.audit.record(actor, 'NOTIFICATION_SEND', row.notification_id, { after: { title: body.title, recipients: body.recipients.map(recipientKey) }, componentId: 'D04-04' });
+      return { notificationId: row.notification_id, recipients: body.recipients };
+    });
+  }
+
 }
 
 @Controller('api/notifications')
@@ -221,6 +301,26 @@ export class NotificationController {
     const c = category ? NotificationCategory.safeParse(category) : null;
     if (c && !c.success) throw new DomainError('VALIDATION', `알 수 없는 알림 범주입니다: ${category}`);
     return this.n.inbox(actor, { unread: unread === '1' || unread === 'true', category: c?.data, limit: limit ? Number(limit) || 100 : 100 });
+  }
+
+  @Get('rules')
+  rules() {
+    return this.n.rules();
+  }
+
+  @Put('rules/:eventType')
+  @Roles(...NOTIFICATION_RULE_EDITORS)
+  @AuditAction('NOTIFICATION_RULE_UPDATE')
+  setRule(@CurrentActor() actor: Actor, @Param('eventType') eventType: string, @Body(new ZodPipe(NotificationRuleBody)) body: NotificationRuleBody) {
+    return this.n.setRule(actor, eventType, body);
+  }
+
+  @Post('send')
+  @HttpCode(201)
+  @Roles(...NOTIFICATION_SENDERS)
+  @AuditAction('NOTIFICATION_SEND')
+  send(@CurrentActor() actor: Actor, @Body(new ZodPipe(NotificationSendBody)) body: NotificationSendBody) {
+    return this.n.send(actor, body);
   }
 
   @Post('read-all')

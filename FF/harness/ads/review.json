@@ -70,7 +70,7 @@
     "FFP-F004": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d01-policy/policy-store/policy.service.ts:116",
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts:122",
         "contracts/src/rules/lifecycle.ts:53",
         "backend/src/domains/d01-policy/registry/lifecycle.service.ts:157"
       ],
@@ -145,7 +145,7 @@
       "evidence": [
         "contracts/src/rules/policy-version.ts:59",
         "frontend/src/screens/policy/PolicyVersions.tsx:35",
-        "backend/src/domains/d01-policy/policy-store/policy.service.ts:296"
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts:332"
       ],
       "tests": [
         "contracts/src/rules/policy-version.test.ts",
@@ -162,7 +162,7 @@
       "evidence": [
         "contracts/src/rules/lifecycle.ts:167",
         "backend/src/domains/d01-policy/registry/lifecycle.service.ts:120",
-        "backend/src/domains/d01-policy/policy-store/policy.service.ts:197"
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts:223"
       ],
       "tests": [
         "backend/test/d01/policy.spec.ts",
@@ -180,7 +180,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d01-policy/topology/gate.service.ts:105",
-        "backend/src/domains/d01-policy/policy-store/policy.service.ts:221",
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts:247",
         "contracts/src/rules/lifecycle.ts:155"
       ],
       "tests": [
@@ -260,7 +260,7 @@
     "FFP-F014": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:123",
+        "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:129",
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:138"
       ],
       "tests": [
@@ -321,7 +321,7 @@
       "evidence": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
         "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-        "contracts/src/routes.ts:203"
+        "contracts/src/routes.ts:224"
       ],
       "tests": [
         "backend/test/d03/delivery.spec.ts"
@@ -979,7 +979,7 @@
       "evidence": [
         "backend/src/domains/d06-qsec/scenario-validation/virtual-run.repo.ts:43",
         "contracts/src/rules/virtual.ts:86",
-        "contracts/src/rules/validators.ts:105"
+        "contracts/src/rules/validators.ts:106"
       ],
       "tests": [
         "backend/test/d06/virtual.spec.ts",
@@ -1024,7 +1024,7 @@
     "FFP-F055": {
       "verdict": "부분",
       "evidence": [
-        "contracts/src/rules/validators.ts:105",
+        "contracts/src/rules/validators.ts:106",
         "contracts/src/rules/tool-qualification.ts:73",
         "contracts/src/rules/virtual.ts:106"
       ],
@@ -1124,9 +1124,9 @@
     "FFP-F060": {
       "verdict": "부분",
       "evidence": [
-        "backend/src/kernel/audit.service.ts:534",
-        "backend/src/kernel/audit.service.ts:506",
-        "backend/src/kernel/audit.service.ts:318"
+        "backend/src/kernel/audit.service.ts:540",
+        "backend/src/kernel/audit.service.ts:512",
+        "backend/src/kernel/audit.service.ts:322"
       ],
       "tests": [
         "backend/test/kernel/audit-chain.spec.ts"
@@ -1189,7 +1189,7 @@
       "evidence": [
         "contracts/src/rules/policy-gate.ts:101",
         "contracts/src/rules/retirement.ts:59",
-        "contracts/src/flags/openfeature.ts:137"
+        "contracts/src/flags/openfeature.ts:141"
       ],
       "tests": [
         "backend/test/d01/retirement.spec.ts",

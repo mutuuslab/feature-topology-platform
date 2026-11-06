@@ -49,6 +49,10 @@ export interface AuditQuery {
   targetPrefix?: string;
   /** 행위 이름 일치(REFDB_CHANGE_DECIDE …) */
   action?: string;
+  /** 기간 — 이 시각 이상(ISO) */
+  from?: string;
+  /** 기간 — 이 시각 미만(ISO) */
+  to?: string;
 }
 
 export const AUDIT_GENESIS = 'GENESIS';
@@ -498,6 +502,8 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     if (q.result) (where.push('result = ?'), params.push(q.result));
     if (q.targetPrefix) (where.push("target LIKE ? ESCAPE '\\'"), params.push(`${q.targetPrefix.replace(/[\\%_]/g, (c) => `\\${c}`)}%`));
     if (q.action) (where.push('action = ?'), params.push(q.action));
+    if (q.from) (where.push('at >= ?'), params.push(q.from));
+    if (q.to) (where.push('at < ?'), params.push(q.to));
     const sql = `SELECT * FROM audit ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY id DESC LIMIT ${Math.min(q.limit ?? 200, 1000)}`;
     return this.db.all<any>(sql, ...params).map((r) => ({
       id: r.id,

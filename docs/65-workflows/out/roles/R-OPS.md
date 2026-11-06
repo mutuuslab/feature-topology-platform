@@ -43,7 +43,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: 앞 활동 완료
 - 입력: WP-RELEASE-RECORD, WP-CANARY-PLAN → 출력: WP-ROLLOUT-RECORD
-- 플랫폼: `stageRollout`, `/activation/decide`, `/fleet/live`
+- 플랫폼: `stageRollout`, `/activation/decide`, `/fleet/live`, `/features/:id/:ver`, `/notifications`
 1. 승인 범위 안에서 Canary Cohort부터 활성화를 적용한다
 2. 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다
 3. 중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다

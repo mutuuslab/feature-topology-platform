@@ -53,6 +53,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/deployments",
      "/verify/compliance",
      "/fleet/live",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -158,6 +159,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/activation/decide",
      "/experiments",
      "/fleet/live",
+     "/notifications",
      "/flag-retirements",
      "/supplier/portal",
      "/admin/security",
@@ -258,6 +260,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/artifacts",
      "/validations/virtual",
      "/experiments",
+     "/notifications",
      "/ops/anomalies",
      "/ops/incidents",
      "/audit/oversight",
@@ -422,6 +425,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -453,6 +457,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/activation/decide",
      "/fleet/live",
+     "/features/:id/:ver",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -461,7 +467,6 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/audit"
     ],
     "reference": [
-     "/features/:id/:ver",
      "/integration/connectors",
      "/experiments",
      "/admin/approval",

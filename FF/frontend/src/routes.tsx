@@ -113,6 +113,7 @@ const ALL_ROUTES: AppRoute[] = [
   // 데스크톱 배포본에서는 빌드 단계에서 빠진다(화면 청크도 만들지 않는다)
   ...(DESKTOP_BUILD ? [] : [{ path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true } as AppRoute]),
   { path: '/notifications', element: named(() => import('./screens/home/Notifications'), 'NotificationsScreen'), title: '알림', group: 'home', menu: '/notifications', components: ['D04-04'], v2: true },
+  { path: '/notifications/rules', element: named(() => import('./screens/home/NotificationRules'), 'NotificationRulesScreen'), title: '알림 수신자 규칙', group: 'home', parent: '/notifications', components: ['D04-04'], v2: true },
   { path: '/admin/notifications', element: legacyTo('/notifications'), title: '알림 (이전 주소)', group: 'home', parent: '/notifications' },
   { path: '/login', element: legacyTo('/'), title: '로그인 (이전 주소)', group: 'home', parent: '/' },
   { path: '/onboarding', element: legacyTo('/'), title: '시작하기 (이전 주소)', group: 'home', parent: '/' },

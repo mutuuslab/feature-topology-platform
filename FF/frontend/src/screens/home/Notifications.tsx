@@ -7,6 +7,7 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { notifyRules } from '../../copy/records';
 import { AsyncView, Button, ErrorNote, ExplainCodes, PageHeader, Panel, Segmented, Select } from '../../design';
 import { NOTIFY_EVENTS, SeverityBadge, t16, type Inbox, type InboxItem } from '../../shell/NotificationBell';
 import { humanText } from '../../data/people';
@@ -59,6 +60,9 @@ function ChannelNote() {
     <Panel title={N.channel.title} id="ntf-channel">
       <p className="ntf-lead">{N.channel.lead}</p>
       <p className="ds-field__hint">{N.channel.note}</p>
+      <Link className="ds-btn" to="/notifications/rules" data-ui="toNotificationRules">
+        {notifyRules.toRules}
+      </Link>
     </Panel>
   );
 }

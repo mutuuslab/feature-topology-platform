@@ -219,7 +219,8 @@ export const KillRejectBody = z.object({ reason: z.string().trim().min(2).max(50
 export type KillRejectBody = z.infer<typeof KillRejectBody>;
 
 /** 서명 키 용도 — 용도마다 kid를 분리하고 다른 용도의 키로 서명한 명령은 무효(보고서 v1.1 FFG-SEC-002, 8.2 "kid별 알고리즘·용도 고정") */
-export const KEY_PURPOSES = ['policy', 'activate', 'kill', 'restore', 'sync', 'gate'] as const;
+// export — 감사·검증 이력 내보내기 파일 서명(B4). 차량 명령에는 쓰지 않는다(차량 신뢰 앵커 목록 밖)
+export const KEY_PURPOSES = ['policy', 'activate', 'kill', 'restore', 'sync', 'gate', 'export'] as const;
 export const KeyPurpose = z.enum(KEY_PURPOSES);
 export type KeyPurpose = z.infer<typeof KeyPurpose>;
 

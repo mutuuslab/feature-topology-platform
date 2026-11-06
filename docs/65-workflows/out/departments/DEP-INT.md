@@ -63,7 +63,7 @@ last_updated: 2026-11-05
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
 | FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW` → Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | `/features/:id/:ver` | 1차 |
 | FPW.7-A09 출시 전이 | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Release Sign-off 기록 `WP-RELEASE-SIGNOFF` → 출시 전이 기록 `WP-RELEASE-RECORD` | `/features/:id/:ver` | 1차 |
-| FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | C (Release Manager) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live` | 1차 |
+| FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | C (Release Manager) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live`, `/features/:id/:ver` 외 1 | 1차 |
 | FPW.8-A10 단계적 복원·관측 | FPW.8 운영·긴급 차단·복원 | C (Release Manager) | 복원 승인 기록 `WP-RESTORE-DECISION` → 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` | `/fleet/live` | 1차 |
 | FPW.9-A02 Flag Retirement 요청 | FPW.9 사후 검토·Flag Retirement | C (Release Manager, 통합 조직) | Feature 등록 기록 `WP-FEAT-REG` → Flag Retirement 요청 `WP-RETIRE-REQ` | `/flag-retirements` | 1차 |
 | FPW.9-A03 Flag Retirement 승인 | FPW.9 사후 검토·Flag Retirement | C (Release Manager) · I (통합 조직) | Flag Retirement 요청 `WP-RETIRE-REQ` → Retirement 승인 기록 `WP-RETIRE-APPROVAL` | `/flag-retirements` | 1차 |
@@ -102,4 +102,4 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/deployments`
-- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/baselines`, `/activation/decide`, `/experiments`, `/fleet/live`, `/flag-retirements`, `/supplier/portal`, `/admin/security`, `/integration/openfeature`
+- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/admin/approval`, `/baselines`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/flag-retirements`, `/supplier/portal`, `/admin/security`, `/integration/openfeature`

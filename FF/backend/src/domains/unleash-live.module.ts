@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, Inject, Injectable, Module, Param, Post, Res } from '@nestjs/common';
-import { canonicalJson, OfrepBody, UNLEASH_SNAPSHOT_TTL_MS, unleashContext, unleashDrift, type SignedUnleashSnapshot, type UnleashPlan } from '@ff/contracts';
+import { canonicalJson, OfrepBody, UNLEASH_ENVIRONMENT, UNLEASH_SNAPSHOT_TTL_MS, unleashContext, unleashDrift, type SignedUnleashSnapshot, type UnleashPlan } from '@ff/contracts';
 import type { Response } from 'express';
 import { UnleashEdgeClient, type EdgeFeatures } from '../adapters/unleash/edge.client';
 import { CurrentActor, VehicleEndpoint, type Actor } from '../kernel/actor';
@@ -14,6 +14,7 @@ import { SafetyProfileService } from './d01-policy/registry/safety-profile.servi
 import { PolicyModule } from './d01-policy/policy-store/policy.module';
 import { UnleashSyncService } from './d01-policy/policy-store/unleash-sync.service';
 import { DeliveryModule } from './delivery.module';
+import { countEvaluations } from './d04-ops/telemetry-ingest/evaluation-stats.service';
 import { VehicleRequestService } from './d02-runtime/vehicle-requests/vehicle-request.service';
 import { HsmService } from './d06-qsec/pki-kms/hsm.service';
 import { TrustModule } from './d06-qsec/pki-kms/trust.module';
@@ -79,6 +80,8 @@ export class VehicleUnleashService {
     return this.db.tx(() => {
       const sequence = this.db.get<{ value: number }>('INSERT INTO vehicle_unleash_sequence (vin, value) VALUES (?, 1) ON CONFLICT(vin) DO UPDATE SET value = vehicle_unleash_sequence.value + 1 RETURNING value', vin)!.value;
       const now = this.clock.now().getTime();
+      // Feature별 평가 운영 데이터(D04-03) — Edge가 평가한 flag마다 1건(서명본과 같은 트랜잭션)
+      countEvaluations(this.db, flags.map((f) => ({ at: new Date(now).toISOString(), flagKey: f.flagKey, source: 'UNLEASH_EDGE' as const, appName: 'vehicle-unleash', environment: UNLEASH_ENVIRONMENT, result: f.value ? ('ON' as const) : ('OFF' as const), variant: f.value ? 'on' : 'off' })));
       const payload: SignedUnleashSnapshot['payload'] = { schema: 'FF-UNLEASH-SNAPSHOT/1', source: 'UNLEASH_EDGE', vin, sequence, issuedAt: new Date(now).toISOString(), expiresAt: new Date(now + UNLEASH_SNAPSHOT_TTL_MS).toISOString(), flags };
       let signature = this.hsm.signDetached('activate', canonicalJson(payload));
       const key = this.pki.publicKey(signature.kid)!;

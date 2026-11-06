@@ -2,7 +2,7 @@
 // 받는 사람 판정은 서버(D04-04) — 이 계정(역할 전환기의 사람)이 개인·역할·Owner 팀으로 받는 알림만 온다.
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { NOTIFICATION_CATEGORY_LABEL, NOTIFICATION_RULES, type Notification } from '@ff/contracts';
+import { NOTIFICATION_CATEGORY_LABEL, NOTIFICATION_EVENT_TYPES, type Notification } from '@ff/contracts';
 import { STATIC_MODE } from '../api/client';
 import { useApi, useApiMutation } from '../api/hooks';
 import { usePlatformEvents } from '../api/stream';
@@ -11,7 +11,8 @@ import { Button, Icon } from '../design';
 import { humanText, localTime } from '../data/people';
 
 const N = ko.notify;
-export const NOTIFY_EVENTS = Object.keys(NOTIFICATION_RULES);
+// 알림을 만드는 이벤트 목록 — 규칙표(NOTIFICATION_RULES)는 첫 화면에 싣지 않는다(contracts 시험이 두 목록을 맞춘다)
+export const NOTIFY_EVENTS = [...NOTIFICATION_EVENT_TYPES];
 export interface InboxItem extends Notification {
   readAt: string | null;
 }

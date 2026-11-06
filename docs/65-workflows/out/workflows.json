@@ -913,6 +913,7 @@
      "/deployments",
      "/verify/compliance",
      "/fleet/live",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -1881,6 +1882,7 @@
      "/activation/decide",
      "/experiments",
      "/fleet/live",
+     "/notifications",
      "/flag-retirements",
      "/supplier/portal",
      "/admin/security",
@@ -2806,6 +2808,7 @@
      "/master/artifacts",
      "/validations/virtual",
      "/experiments",
+     "/notifications",
      "/ops/anomalies",
      "/ops/incidents",
      "/audit/oversight",
@@ -4335,6 +4338,7 @@
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -4785,6 +4789,8 @@
     "primary": [
      "/activation/decide",
      "/fleet/live",
+     "/features/:id/:ver",
+     "/notifications",
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
@@ -4793,7 +4799,6 @@
      "/audit"
     ],
     "reference": [
-     "/features/:id/:ver",
      "/integration/connectors",
      "/experiments",
      "/admin/approval",
@@ -12623,7 +12628,9 @@
       ],
       "screens": [
        "/activation/decide",
-       "/fleet/live"
+       "/fleet/live",
+       "/features/:id/:ver",
+       "/notifications"
       ],
       "gates": [],
       "anchor": null,

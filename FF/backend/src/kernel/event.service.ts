@@ -70,11 +70,14 @@ export class EventService {
     return full;
   }
 
-  list(q: { after?: number; type?: string; aggregate?: string; limit?: number; recent?: boolean } = {}): PlatformEvent[] {
+  list(q: { after?: number; type?: string; aggregate?: string; limit?: number; recent?: boolean; from?: string; to?: string } = {}): PlatformEvent[] {
     const where = ['seq > ?'];
     const params: (string | number)[] = [q.after ?? 0];
     if (q.type) (where.push('type = ?'), params.push(q.type));
     if (q.aggregate) (where.push('aggregate = ?'), params.push(q.aggregate));
+    // 발생 기간 — from 이상·to 미만(ISO). 일치하는 이벤트가 없으면 빈 목록(FR-EVT-002-004)
+    if (q.from) (where.push('at >= ?'), params.push(q.from));
+    if (q.to) (where.push('at < ?'), params.push(q.to));
     const rows = this.db.all<any>(`SELECT * FROM events WHERE ${where.join(' AND ')} ORDER BY seq ${q.recent ? 'DESC' : 'ASC'} LIMIT ${Math.min(q.limit ?? 200, 1000)}`, ...params);
     // 최근 창도 SSE와 같은 순번 오름차순으로 보낸다. 기본 after 커서 조회는 앞에서부터 유지한다.
     if (q.recent) rows.reverse();

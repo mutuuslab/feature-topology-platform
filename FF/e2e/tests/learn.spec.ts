@@ -204,7 +204,8 @@ test('KILL-DC2 직접 하기: 요청 → 요청자 승인 거부 → 2인 승인
 
   // 7 차량 Guard의 DC2 단계 — 시뮬레이터가 경고 → 램프 → DISABLED를 보고한다
   await atStep(page, '차량의 DC2 단계');
-  await expect(page).toHaveURL(/\/fleet\/vehicles\/KMH-NX4-0004$/);
+  // 상태 보고 v2는 차량 화면의 '정책 게시본·수신 기록' 탭에 있다 — 단계가 그 탭을 연다
+  await expect(page).toHaveURL(/\/fleet\/vehicles\/KMH-NX4-0004\?tab=records$/);
   await expect(page.locator('[data-tour="vehicle-status-v2"]')).toContainText('DISABLED', { timeout: 20_000 });
   await passAndNext(page);
 

@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { ConvergenceView, CustomerStateView, FleetAxisView, OrdersView, VehicleFeatureStateView, VehicleVerdictsView } from '@ff/contracts';
+import { stepPath, TUTORIALS } from '@ff/contracts';
 import { AppProvider } from '../store';
 import { FleetLive, VehicleRuntimeScreen } from '../screens/ops/FleetLive';
 import { DeploymentDetail } from '../screens/ops/Deployments';
@@ -142,6 +143,24 @@ describe('차량별 적용 상태 — 6축(기본 탭)', () => {
     expect(table.querySelector('[data-axis="INSTALL"]')!.textContent).toContain('부분 실패');
     expect(table.querySelector('[data-axis="INSTALL"]')!.textContent).not.toContain('호환');
     expect(table.querySelector('[data-axis="DELIVERY"]')!.textContent).toContain('수신');
+  });
+});
+
+describe('차량 화면 탭 분할 — 따라하기 단계가 대상 탭을 연다', () => {
+  // 상태 보고 v2는 기본 탭(6축)이 아니라 '정책 게시본·수신 기록' 탭에 있다 — 단계 경로가 ?tab=로 그 탭을 열어야 대상을 찾는다
+  const steps = TUTORIALS.flatMap((t) => t.steps.filter((s) => /^\/fleet\/vehicles\/[^/]+$/.test(stepPath(s))).map((s) => ({ id: `${t.id}/${s.id}`, route: s.route, anchor: s.anchor })));
+  it('차량 화면을 가리키는 단계가 있다', () => expect(steps.length).toBeGreaterThan(0));
+  it.each(steps)('$id — $route 에서 $anchor 대상이 보인다', async ({ route, anchor }) => {
+    const base = vehicleHandler();
+    handler = (url) => (new URL(url, 'http://t').pathname.endsWith('/status') ? { body: { features: [], recent: [] } } : base(url));
+    mount(route, '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    await waitFor(() => expect(document.querySelector(`[data-tour="${anchor}"]`)).toBeTruthy());
+  });
+  it('기본 탭에는 상태 보고 v2가 없다 — 탭 없이 열면 대상을 찾지 못한다', async () => {
+    handler = vehicleHandler();
+    mount('/fleet/vehicles/KMH-GN7-0001', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    await screen.findByRole('table', { name: /고속도로 주행 보조 2 — 6축 상태/ });
+    expect(document.querySelector('[data-tour="vehicle-status-v2"]')).toBeNull();
   });
 });
 

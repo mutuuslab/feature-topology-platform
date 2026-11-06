@@ -30,6 +30,8 @@ for (const c of CONDITIONS.filter((x) => x.name !== '1536')) {
     await page.setViewportSize({ width: c.w, height: c.h });
     await page.addInitScript((present) => localStorage.setItem('ff.present', present ? '1' : '0'), c.present);
     await page.goto('/_design');
+    // 갤러리 화면 묶음이 그려진 뒤에 패널을 찾는다 — 그리기 전에 찾으면 '패널 없음'
+    await expect(page.locator(`#${PANELS[0]}-h`)).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
     // 기능안전 패널보다 앞의 갤러리 패널은 숨긴다 — 앞 패널 높이가 바뀌면(2026-10-25 업무 절차 흐름도 표본) 이 패널이 소수점 픽셀만큼
     // 내려앉아 글자가 다시 래스터화돼 내용 변화 없이 기준과 어긋났다. 비교 대상은 이 패널 자신이다

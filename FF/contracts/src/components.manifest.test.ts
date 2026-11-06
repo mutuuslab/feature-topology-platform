@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { COMPONENTS, DOMAINS, INTERFACES } from './components.manifest';
-import { routeUrl, SNAPSHOT_NAME_MAX, snapshotFile } from './routes';
+import { ofrepSnapshotFile, routeUrl, SNAPSHOT_NAME_MAX, snapshotFile, virtualEvidenceSnapshotFile } from './routes';
 
 describe('컴포넌트 manifest (PPT v0.50 42개 + D07-01 SW 개발비 산정)', () => {
   it('정확히 43개(PPT 42 + D07-01)이고 ID·이름이 중복되지 않는다', () => {
@@ -66,5 +66,11 @@ describe('요청 URL·정적 스냅샷 파일 이름 (프론트·snapshot:api �
     expect(snapshotFile(long('x'))).toBe(snapshotFile(long('x')));
     // 짧은 이름은 그대로(기존 스냅샷 이름 유지)
     expect(snapshotFile('/api/features')).toBe('api-snapshot/features.json');
+  });
+  it('ROUTES 밖 정적 응답(OFREP 평가·가상검증 Evidence)도 안전한 이름이다', () => {
+    expect(ofrepSnapshotFile('ego-01')).toBe('api-snapshot/ofrep_evaluate_targetingKey_ego-01.json');
+    expect(ofrepSnapshotFile('HMA NX4/1')).toBe('api-snapshot/ofrep_evaluate_targetingKey_HMA_20NX4_2F1.json');
+    expect(virtualEvidenceSnapshotFile('VV-00001', 'report.html')).toBe('api-snapshot/files/virtual/VV-00001/report.html');
+    expect(virtualEvidenceSnapshotFile('../x', 'a b.html')).toBe('api-snapshot/files/virtual/.._x/a_b.html');
   });
 });

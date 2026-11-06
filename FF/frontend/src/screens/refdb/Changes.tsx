@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { refChangeDutyBlocker, type RefChange, type RefChangeStatus, type RefFieldDiff, type RefQuality, type RefReviewOpinion, type RefRelease } from '@ff/contracts';
 import { canAct } from '../../api/actor';
-import { STATIC_MODE, type ApiError } from '../../api/client';
+import type { ApiError } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { CHANGE_STATUS_LABEL, featureDb as FD, KIND_LABEL, OPINION_LABEL, refChangeAudit as AU, refChangeDetail as D, refChanges as T, refDetail as RD, refPublish as PB, refReleaseCols as RC } from '../../copy/refdb';
 import { auditActionKo } from '../../copy/audit';
@@ -86,7 +86,7 @@ function Releases() {
   const release = pick || latest;
   const [error, setError] = useState<ApiError | null>(null);
   const [busy, setBusy] = useState(false);
-  const why = whyDisabled([STATIC_MODE, T.exportStatic], [!release, T.exportNone]);
+  const why = whyDisabled([!release, T.exportNone]);
   return (
     <Panel
       title={T.releases}

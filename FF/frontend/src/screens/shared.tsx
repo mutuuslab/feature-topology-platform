@@ -55,12 +55,22 @@ export function when(iso: string | null | undefined): string {
   return `${k.slice(0, 10)} ${k.slice(11, 16)}`;
 }
 
-/** 현재 역할로 이 작업을 할 수 있는지와 안내 문구 */
+/** 현재 역할로 이 작업을 할 수 있는지와 안내 문구 — 정적 공개 사이트도 같은 역할 규칙(쓰기는 브라우저 안 시연 데이터가 처리, 20-60) */
 export function usePermission(allowed: readonly Role[]) {
   const { role } = useAppShell();
-  const ok = !STATIC_MODE && canAct(role, allowed);
-  const hint = STATIC_MODE ? ko.page.readOnly : ok ? undefined : ko.page.noPermission(allowed.map((r) => ROLE_LABEL[r]).join(' · '));
+  const ok = canAct(role, allowed);
+  const hint = ok ? undefined : ko.page.noPermission(allowed.map((r) => ROLE_LABEL[r]).join(' · '));
   return { ok, hint, role };
+}
+
+/** 읽기 화면 표시 조건 — 정적 데모는 공개 읽기본이라 모든 읽기를 보인다(쓰기는 usePermission이 역할로 가른다) */
+export const canRead = (role: string, allowed: readonly Role[]) => STATIC_MODE || canAct(role, allowed);
+
+/** 현재 역할로 이 읽기 화면을 볼 수 있는지 — 표시·조회 enabled 조건에만 쓴다 */
+export function useReadPermission(allowed: readonly Role[]) {
+  const { role } = useAppShell();
+  const ok = canRead(role, allowed);
+  return { ok, hint: ok ? undefined : ko.page.noPermission(allowed.map((r) => ROLE_LABEL[r]).join(' · ')), role };
 }
 
 /** 예외만 강조(UX3-02) — 충족이면 작은 표시(툴팁에 원문), 미충족만 배지 */

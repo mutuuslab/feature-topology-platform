@@ -10,7 +10,7 @@ export const connections = {
   use: { billing: '체험 → 구독·구매 결제', ota: '배포 캠페인 요청(IF-05)', datalake: '차량 데이터 적재' } as Record<string, string>,
   panel: {
     title: '외부 연결 상태',
-    lead: '아직 실제 시스템에 연결되지 않은 연계입니다.',
+    lead: '플랫폼이 결과를 주고받는 외부 시스템입니다.',
     col: { system: '연결', use: '쓰는 곳', state: '상태' },
     live: '연결됨',
   },

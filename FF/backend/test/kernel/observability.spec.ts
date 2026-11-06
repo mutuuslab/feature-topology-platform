@@ -52,10 +52,15 @@ describe('관측 — 앱 조립(main.ts와 같은 createApp)', () => {
   const http = () => request(app.getHttpServer());
   beforeAll(async () => {
     process.env.FF_DB = ':memory:';
+    // 데모 활동·전시 채우기는 이 시험과 무관 — 메모리 DB는 그 시드(차량 회신 대기)가 끝날 때까지 부팅을 기다려 hook 30초를 넘겼다(2026-11-06)
+    process.env.FF_DEMO_ACTIVITY = '0';
     app = await createApp({ logger: false });
     await app.init();
   });
-  afterAll(() => app.close());
+  afterAll(async () => {
+    delete process.env.FF_DEMO_ACTIVITY;
+    await app.close();
+  });
 
   it('상관 ID — 받은 값은 그대로 돌려주고, 없거나 형식이 틀리면 새로 만든다', async () => {
     expect((await http().get('/api/health/live').set('X-Correlation-Id', 'req-abc_123')).headers['x-correlation-id']).toBe('req-abc_123');

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { incidentVehicleScope } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { p10 } from '../../copy/p10';
 import { control as CT } from '../../copy/control';
@@ -52,7 +51,7 @@ export function IncidentsScreen() {
           return !list.data ? { tone: 'neutral', value: '—', text: I.key.open } : n ? { tone: 'warn', value: n, text: I.key.open } : { tone: 'ok', text: I.key.clean };
         })()}
         actions={
-          <Button variant="primary" disabled={!perm.ok || importVoc.isPending || STATIC_MODE} title={perm.hint} onClick={() => importVoc.mutate({ body: {} })}>
+          <Button variant="primary" disabled={!perm.ok || importVoc.isPending} title={perm.hint} onClick={() => importVoc.mutate({ body: {} })}>
             {I.importVoc}
           </Button>
         }
@@ -119,7 +118,6 @@ function IncidentForm() {
   const fv = useApi<{ versions: { version: string; country: string; vehicleModel: string; trim: string }[] }>('featureVersions', { params: { id: featureId } }, { enabled: ready, retry: false });
   const veh = useApi<{ vehicle: { country: string; vehicleModel: string; trim: string } | null }>('vehicleRuntime', { params: { vin } }, { enabled: ready, retry: false });
   const scope = ready && fv.data && (veh.data || veh.isError) ? incidentVehicleScope(vin, featureId, veh.data?.vehicle ?? null, fv.data.versions) : null;
-  if (STATIC_MODE) return null;
   return (
     <Panel title={I.create} id="incident-create">
       <div className="ds-toolbar">
@@ -262,7 +260,6 @@ function FieldCase({ vin }: { vin: string }) {
   const create = useApiMutation<IncidentRow>('createFieldCase', ['fieldVehicle', 'incidents', 'anomalies', 'events', 'audit']);
   const [f, setF] = useState({ featureId: '', category: 'NO_ACTIVATION', severity: 'WARNING', summary: '', dealer: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
-  if (STATIC_MODE) return null;
   return (
     <Panel title={F.caseTitle} id="field-case">
       <div className="ds-toolbar">

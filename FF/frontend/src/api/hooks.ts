@@ -4,19 +4,23 @@ import { useAppShell } from '../store';
 import type { AsyncState } from '../design';
 import { ApiError, call, isPersonal, type CallOptions } from './client';
 
+/** 조회 하나의 캐시 키·읽기 — useApi와 미리 읽기(prefetchQuery)가 같은 키를 쓰게 */
+export function apiQuery<T = any>(name: string, opts: Pick<CallOptions, 'params' | 'query'>, role: string) {
+  const personal = isPersonal(name);
+  return {
+    // 계정마다 다른 조회(내 알림)는 역할을 바꾸면 다시 읽는다
+    queryKey: personal ? [name, opts.params ?? {}, opts.query ?? {}, role] : [name, opts.params ?? {}, opts.query ?? {}],
+    queryFn: ({ signal }: { signal: AbortSignal }) => call<T>(name, { ...opts, signal, ...(personal ? { role } : {}) }),
+  };
+}
+
 export function useApi<T = any>(
   name: string,
   opts: Pick<CallOptions, 'params' | 'query'> = {},
   q: Omit<UseQueryOptions<T, ApiError>, 'queryKey' | 'queryFn'> = {},
 ) {
   const { role } = useAppShell();
-  const personal = isPersonal(name);
-  return useQuery<T, ApiError>({
-    // 계정마다 다른 조회(내 알림)는 역할을 바꾸면 다시 읽는다
-    queryKey: personal ? [name, opts.params ?? {}, opts.query ?? {}, role] : [name, opts.params ?? {}, opts.query ?? {}],
-    queryFn: ({ signal }) => call<T>(name, { ...opts, signal, ...(personal ? { role } : {}) }),
-    ...q,
-  });
+  return useQuery<T, ApiError>({ ...apiQuery<T>(name, opts, role), ...q });
 }
 
 /** 변경 — 성공하면 invalidate에 적은 API 이름으로 시작하는 쿼리를 다시 읽는다 */

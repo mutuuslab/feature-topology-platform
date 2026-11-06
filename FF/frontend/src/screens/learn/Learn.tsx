@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 /** 준비된 시나리오를 앞에 — 지금 따라 할 수 있는 것이 먼저 보이게 */
 const readyFirst = (a: Tutorial, b: Tutorial) => Number(b.status === 'ready') - Number(a.status === 'ready');
 import { clausesOfRules, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
+import { STATIC_MODE } from '../../api/client';
 import { useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
@@ -15,6 +16,10 @@ const L = ko.learn;
 /** 운영 빌드 검사 표식(tools/prod-bundle.test.ts) — 운영 설치는 이 화면을 싣지 않는다(결정 D-RD-8) */
 const LEARN_MARKER = 'ff-learn-v1';
 const PATHS = ['ALL', 'BASIS', 'DESIGN', 'BUILD', 'VERIFY_OPERATE'] as const;
+/** 정적 공개본에 싣는 시나리오 — 준비된 것만(빈 껍데기 '준비 중' 카드를 내놓지 않는다, 2026-11-05) */
+const SHOWN = STATIC_MODE ? TUTORIALS.filter((t) => t.status === 'ready') : TUTORIALS;
+/** 정적 공개본의 진행 방식 — 보기만(자동·직접 하기는 플랫폼이 단계를 실행해야 한다) */
+const MODES = STATIC_MODE ? (['view'] as const) : (['view', 'auto', 'self'] as const);
 
 /** 제목 끝의 케이스 번호 '(CS-05)'는 본문에서 뺀다 — 번호는 트랙 표시의 툴팁·설명 모드에 있다(UX3-01) */
 const titleOf = (t: Tutorial) => t.title.replace(/\s*\(CS-\d+\)$/, '');
@@ -88,13 +93,13 @@ function hubMessage(running: Tutorial | undefined, ready: Tutorial[]): KeyMessag
 export function LearnHub() {
   const [sp, setSp] = useSearchParams();
   const path = (sp.get('path') ?? 'ALL') as (typeof PATHS)[number];
-  const list = TUTORIALS.filter((t) => path === 'ALL' || t.readingPath === path).sort(readyFirst);
+  const list = SHOWN.filter((t) => path === 'ALL' || t.readingPath === path).sort(readyFirst);
   const open = list.filter((t) => t.status === 'ready');
   const planned = list.filter((t) => t.status !== 'ready');
   const st = useLearn();
   const running = st ? tutorialById(st.scenarioId) : undefined;
   const ready = TUTORIALS.filter((t) => t.status === 'ready');
-  const counts = useMemo(() => Object.fromEntries(PATHS.map((p) => [p, TUTORIALS.filter((t) => p === 'ALL' || t.readingPath === p).length])), []);
+  const counts = useMemo(() => Object.fromEntries(PATHS.map((p) => [p, SHOWN.filter((t) => p === 'ALL' || t.readingPath === p).length])), []);
   // 예시 데이터가 없는 설치(고객 운영 — 시드 없음)면 시나리오 ID가 이 설치에 없다고 먼저 알린다(출시 준비 RD-OPS-02)
   const health = useApi<{ seed: string | null }>('health');
   const noSample = !!health.data && !health.data.seed;
@@ -110,7 +115,8 @@ export function LearnHub() {
         label={L.pathLabel}
         value={path}
         onChange={(v) => setSp(v === 'ALL' ? {} : { path: v }, { replace: true })}
-        options={PATHS.map((p) => ({ value: p, label: L.path[p], count: counts[p] }))}
+        // 시나리오가 없는 경로는 내놓지 않는다(정적 공개본은 준비된 시나리오만 싣는다)
+        options={PATHS.filter((p) => counts[p] > 0).map((p) => ({ value: p, label: L.path[p], count: counts[p] }))}
       />
       {planned.length > 0 && <SummaryLine label={L.title} items={[{ k: L.status.planned, v: planned.length }]} />}
       {open.length > 0 && (
@@ -192,7 +198,7 @@ export function LearnRun() {
         <div style={{ display: 'grid', gap: 'var(--sp-4)', alignContent: 'start' }}>
           <Panel title={L.modes} id="learn-modes">
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-              {(['view', 'auto', 'self'] as const).map((m) => (
+              {MODES.map((m) => (
                 <div key={m} style={{ display: 'grid', gap: 4 }}>
                   <Button variant={m === 'view' && !running ? 'primary' : 'default'} icon={m === 'view' ? 'play' : undefined} disabled={m !== 'view' || !t.steps.length} onClick={start} data-tour={m === 'view' ? 'learn-start' : undefined}>
                     {m === 'view' && running ? L.resumeRun(st!.step + 1, t.steps.length) : L.mode[m]}

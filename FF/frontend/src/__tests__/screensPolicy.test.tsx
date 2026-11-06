@@ -209,7 +209,8 @@ describe('활성화 판단', () => {
     const steps = document.querySelectorAll('.ds-trace li');
     expect([...steps].map((s) => s.getAttribute('data-step'))).toEqual(['DEPLOYED', 'KILL', 'APPLICABILITY', 'ENTITLEMENT', 'TARGETING', 'COHORT', 'DECIDE']);
     // Fleet 전체 — 문맥이 지연된 차량은 HOLD(Safe Default)
-    expect(await screen.findByText('CONTEXT_UNKNOWN')).toBeTruthy();
+    // 사유는 업무 말, 코드는 툴팁(2026-11-06)
+    expect((await screen.findByText('문맥 불명 — Safe Default')).getAttribute('title')).toBe('CONTEXT_UNKNOWN');
     await waitFor(() => expect(screen.getByText(/TARGETING_MATCH/)).toBeTruthy());
     const ofrep = calls.find((c) => c.url.startsWith('/ofrep/v1/evaluate/flags/care_00022_param'))!;
     expect(JSON.parse(String(ofrep.init?.body))).toEqual({ context: { targetingKey: 'ego-01' } });
@@ -244,7 +245,8 @@ describe('활성화 판단', () => {
     expect(emptyFlag.length).toBeGreaterThanOrEqual(2); // Fleet 차량 2대(+ 선택 차량 판단)
     expect(emptyFlag.filter((x) => x.state.fetchStatus !== 'idle' || x.state.status !== 'pending' || x.state.errorUpdateCount > 0).map((x) => x.queryKey)).toEqual([]);
     releasePolicies();
-    expect(await screen.findByText('CONTEXT_UNKNOWN')).toBeTruthy();
+    // 사유는 업무 말, 코드는 툴팁(2026-11-06)
+    expect((await screen.findByText('문맥 불명 — Safe Default')).getAttribute('title')).toBe('CONTEXT_UNKNOWN');
     const decides = calls.filter((c) => String(c.url).startsWith('/api/activation/decide')).map((c) => new URL(c.url, 'http://x').searchParams.get('flagKey'));
     expect(decides.length).toBeGreaterThan(0);
     expect(decides.filter((f) => !f)).toEqual([]);

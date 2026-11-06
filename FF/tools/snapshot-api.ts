@@ -2,15 +2,17 @@
 // 빌드된 백엔드를 보조 포트에 띄워(메모리 DB·v0.81 시드) v2 화면이 실제로 보내는 요청 모양 그대로 받아 둔다.
 // 요청 URL·파일 이름 규칙은 @ff/contracts의 routeUrl·snapshotFile 하나를 프론트와 공유한다.
 import { spawn } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FF } from './lib.ts';
+import { report, scanDirs, type Leak } from './local-leaks.ts';
 
 const require = createRequire(import.meta.url);
-const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+const { ROUTES, routeUrl, snapshotFile, ofrepSnapshotFile, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
 /** 비어 있는 포트 — OS가 고른다. 고정 포트(예전 9199)는 여러 작업 폴더의 e2e:static이 함께 돌면 다른 폴더의 백엔드(다른 커밋·다른 데이터)에서 스냅샷을 받았다 */
 async function freePort(): Promise<number> {
@@ -26,7 +28,8 @@ async function freePort(): Promise<number> {
 
 let PORT = 0;
 let BASE = '';
-const OUT = join(FF, 'frontend', 'public');
+// 출력 폴더(그 아래 api-snapshot/) — SNAPSHOT_OUT으로 바꾼다(tools/static-build.ts가 포트별 폴더로, 같은 폴더의 다른 작업과 겹치지 않게)
+const OUT = process.env.SNAPSHOT_OUT ? resolve(process.env.SNAPSHOT_OUT) : join(FF, 'frontend', 'public');
 /** 정적 데모 검색용 전체 목록 한 쪽 — frontend screens/refdb/refSearch.ts STATIC_SEARCH_PAGE(= 서버 REF_PAGE_MAX)와 같다 */
 const STATIC_SEARCH_PAGE = 200;
 
@@ -40,34 +43,129 @@ export function claimSnapshotFile(written: Map<string, string>, file: string, ur
   written.set(file, url);
 }
 
+/**
+ * 로컬 PC 흔적 게이트 — 단독 실행(npm run snapshot:api, 배포 CI의 snapshot 단계)도 static-build와 같은 검사로 실패시킨다.
+ * 흔적이 있는 스냅샷은 지워 공개 폴더(frontend/public → vite 빌드)에 남기지 않는다(2026-11-06 — 고치기 전 백엔드 dist로 찍은 스냅샷이 public에 남았다)
+ */
+export function assertSnapshotClean(dir: string, scan: (dirs: string[]) => Leak[] = scanDirs): void {
+  const leaks = scan([dir]);
+  if (!leaks.length) return;
+  rmSync(dir, { recursive: true, force: true });
+  throw new Error(`스냅샷에 빌드 PC 흔적이 있어 지웠습니다(${dir}) — 응답 경로를 고치고 백엔드를 다시 빌드한 뒤 다시 만드세요\n${report(leaks)}`);
+}
+
+/** 정적 공개본의 감사 다음 쪽 커서 — 쪽 순번(2부터). 서버 커서(마지막 id)는 감사 건수로 값이 달라져 파일 이름이 배포마다 바뀌었다(2026-11-06).
+ *  정적 데모에서 커서는 다음 쪽 파일을 찾는 열쇠일 뿐이다(화면은 받은 nextCursor를 그대로 돌려보낸다) */
+export const staticAuditCursor = (page: number) => `page-${page}`;
+
+/** 가상검증 Evidence 임시 폴더(start가 만들고 끝나면 지운다) */
+let EVIDENCE = '';
+
 // 우리 백엔드가 먼저 끝나면(포트 충돌 등) 다른 서버에 묻지 않고 바로 멈춘다
 let serverExit: number | null = null;
+let serverSignal: string | null = null;
+/** 우리 백엔드가 포트를 잡았다(시작 로그) — 같은 포트의 다른 서버 health에 속지 않게 */
+let serverReady = false;
+/** 백엔드 출력 마지막 줄들 — 도중에 끝나면 'fetch failed' 한 줄 대신 원인을 보인다(2026-11-06) */
+const serverTail: string[] = [];
+const TAIL_LINES = 30;
+export function pushTail(tail: string[], chunk: string, max = TAIL_LINES): void {
+  for (const line of chunk.split(/\r?\n/)) if (line.trim()) tail.push(line.replace(/\x1b\[[0-9;]*m/g, ''));
+  tail.splice(0, Math.max(0, tail.length - max));
+}
+/** 백엔드가 끝났을 때의 오류 문구 — 종료 코드·신호·포트·마지막 출력 */
+export function backendGoneMessage(stage: string, exit: { code: number | null; signal: string | null }, port: number, tail: string[]): string {
+  const how = exit.signal ? `신호 ${exit.signal}` : `종료 ${exit.code}`;
+  const hint = tail.some((l) => /EADDRINUSE/.test(l)) ? ' — 포트가 이미 쓰이고 있습니다(SNAPSHOT_PORT를 비워 빈 포트를 쓰세요)' : exit.signal ? ' — 바깥에서 끝냈습니다(감싼 timeout·작업 관리자 등)' : '';
+  return `스냅샷용 백엔드가 ${stage} 끝났습니다(${how}, 포트 ${port})${hint}\n마지막 출력:\n${tail.join('\n') || '(없음)'}`;
+}
+const gone = (stage: string) => new Error(backendGoneMessage(stage, { code: serverExit, signal: serverSignal }, PORT, serverTail));
+
+/** 빌드 PC에서 넘기는 환경 — OS 기본값과 배포 시드(cloudflare.yml의 snapshot:api 앞 변수)만 */
+const SNAPSHOT_ENV_PASS = /^(PATH|PATHEXT|SYSTEMROOT|WINDIR|COMSPEC|SYSTEMDRIVE|TEMP|TMP|TMPDIR|HOME|USERPROFILE|LANG|LC_ALL|FF_SHOWCASE|FF_SHOWCASE_VEHICLES|FF_SYNTHETIC|FF_BUILD_SHA)$/i;
+
+/**
+ * 스냅샷 백엔드 환경 — 빌드 PC 환경(실 Unleash·GLEO 브로커·외부 연계 URL·토큰·DB·CARLA Python·운영 모드)이 공개 스냅샷에 섞이지 않게
+ * 허용 목록만 넘기고, 스냅샷에 필요한 값은 강제한다(로컬 의존 점검 2026-11-06). TZ는 공개 배포(CI, UTC)와 같게
+ */
+export function snapshotServerEnv(src: Record<string, string | undefined>, port: number, sim: Record<string, string>): Record<string, string> {
+  const pass = Object.fromEntries(Object.entries(src).filter((e): e is [string, string] => e[1] !== undefined && SNAPSHOT_ENV_PASS.test(e[0])));
+  return { ...pass, TZ: 'UTC', UNLEASH_MODE: 'mock', GLEO_MODE: 'internal', PORT: String(port), FF_DB: ':memory:', FF_SEED: 'v0.81', ...sim };
+}
 
 /** 보조 백엔드 시작 — 직접 실행할 때만(시험은 claimSnapshotFile만 읽는다) */
 async function start() {
   PORT = process.env.SNAPSHOT_PORT ? Number(process.env.SNAPSHOT_PORT) : await freePort(); // 8000 금지
   BASE = `http://127.0.0.1:${PORT}`;
+  // 가상검증 실행 기록 — 정적 배포에는 CARLA 검증 서버가 없다. 같은 입출력 계약의 시험 대역(결정적)으로 실행 기록·Evidence를 만들고,
+  // 서버 연결 탐침은 실패로 둔다(정적 데모의 검증 서버 상태는 '미연결'이 맞다). Evidence는 찍고 버리는 임시 폴더에 둔다
+  EVIDENCE = mkdtempSync(join(tmpdir(), 'ff-snapshot-evidence-'));
+  const sim = { SIM_MODE: 'auto', CARLA_RUNNER: join(FF, 'backend', 'test', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FAKE_SIM_PROBE_FAIL: '1', FF_EVIDENCE_DIR: EVIDENCE };
   const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', join(FF, 'backend', 'dist', 'main.js')], {
-    env: { ...process.env, PORT: String(PORT), FF_DB: ':memory:', FF_SEED: 'v0.81' },
-    stdio: 'ignore',
+    env: snapshotServerEnv(process.env, PORT, sim),
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
-  server.once('exit', (code) => (serverExit = code ?? -1));
+  const onOut = (d: Buffer) => {
+    const s = d.toString();
+    if (s.includes('Feature Platform backend →')) serverReady = true;
+    pushTail(serverTail, s);
+  };
+  server.stdout!.on('data', onOut);
+  server.stderr!.on('data', onOut);
+  server.once('exit', (code, signal) => {
+    serverExit = code ?? -1;
+    serverSignal = signal;
+  });
   return server;
+}
+
+/** 우리 백엔드에 요청 — 도중에 끝났으면 바로, 연결이 끊기면 그 URL과 백엔드 상태를 담아 멈춘다 */
+async function call(url: string, init?: RequestInit): Promise<Response> {
+  if (serverExit !== null) throw gone('도중에');
+  try {
+    return await fetch(BASE + url, init);
+  } catch (e) {
+    await new Promise((r) => setTimeout(r, 200)); // 종료 이벤트가 따라 들어올 틈
+    if (serverExit !== null) throw gone(`${url} 요청 중에`);
+    throw new Error(`${url} 요청 실패: ${(e as Error).message}${(e as { cause?: { code?: string } }).cause?.code ? ` (${(e as { cause: { code: string } }).cause.code})` : ''}`);
+  }
 }
 
 // 역할이 걸린 조회(보안 이벤트·Data Act·차량 상태 등)는 그 경로가 허용하는 첫 역할로 받는다 — 정적 데모는 읽기 전용 공개본이다
 async function get<T = any>(url: string, name?: string, headers?: Record<string, string>): Promise<T> {
   const role = (ROUTES.find((x: { name: string }) => x.name === name) as { roles?: string[] } | undefined)?.roles?.[0];
-  const r = await fetch(BASE + url, { headers: { ...(role ? { 'X-Actor-Id': 'usr-snapshot', 'X-Actor-Role': role } : {}), ...headers } });
+  const r = await call(url, { headers: { ...(role ? { 'X-Actor-Id': 'usr-snapshot', 'X-Actor-Role': role } : {}), ...headers } });
   if (!r.ok) throw new Error(`${url} → ${r.status}`);
   return r.json() as Promise<T>;
 }
 
+let posts = 0;
 /** 쓰기 요청(보조 백엔드 전용) — 정적 데모에 보일 예시 데이터를 만든다 */
 async function post<T = any>(url: string, headers: Record<string, string>, body: unknown): Promise<T> {
-  const r = await fetch(BASE + url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `snapshot-${url}-${Date.now()}`, ...headers }, body: JSON.stringify(body) });
+  const r = await call(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `snapshot-${url}-${Date.now()}-${++posts}`, ...headers }, body: JSON.stringify(body) });
   if (!r.ok) throw new Error(`POST ${url} → ${r.status} ${await r.text()}`);
   return r.json() as Promise<T>;
+}
+
+/** OFREP 평가(POST, 읽기 전용 조회) — 화면처럼 오류 응답(404 FLAG_NOT_FOUND 등)도 본문 그대로 둔다 */
+async function ofrep(path: string, targetingKey: string): Promise<unknown> {
+  const r = await call(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey } }) });
+  const body = await r.json();
+  if (!r.ok && r.status !== 404) throw new Error(`POST ${path} → ${r.status} ${JSON.stringify(body)}`);
+  return body;
+}
+
+/** 데모 기본 계정(Feature 설계) — 개인 조회(업무 절차·알림)는 이 계정으로 찍는다. 팀이 '*'라 모든 Owner 팀 알림을 받는다 */
+const PROC_ACTOR = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
+
+/**
+ * 알림 조회 — 화면이 보내는 질의 모양 그대로(키 순서 unread·category·limit): 상단 종 { limit: 6 }, 알림 센터 집계 { limit: 500 },
+ * 목록 { unread?, category?, limit: 200 } — 안 읽음/전체 × 전체 범주/범주별
+ */
+export function notificationQueries(categories: readonly string[]): Record<string, string | number | boolean | undefined>[] {
+  const out: Record<string, string | number | boolean | undefined>[] = [{ limit: 6 }, { limit: 500 }];
+  for (const unread of [true, undefined]) for (const category of [undefined, ...categories]) out.push({ unread, category, limit: 200 });
+  return out;
 }
 
 type Save = (name: string, params?: Record<string, string>, query?: Record<string, any>, headers?: Record<string, string>) => Promise<any>;
@@ -87,6 +185,10 @@ async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: str
   const REVIEWER = { 'X-Actor-Id': 'usr-approver', 'X-Actor-Role': 'DOMAIN_REVIEWER' };
   const demo = await post<{ changeId: string }>('/api/refdb/changes', AUTHOR, { kind: 'MODIFY', refId: 'CH-BRK-009', after: { tshirt: 'M' }, reason: '사내 실적(EPB 연계 2건) 반영 — 규모 S → M' });
   await post(`/api/refdb/changes/${demo.changeId}/reviews`, REVIEWER, { opinion: 'AGREE', comment: '사내 실적 근거 확인 — 동의' });
+  // 보완 의견 — 요청자(Feature 설계 계정)에게 '보완 필요' 알림(승인 범주)이 간다. 정적 데모 알림 센터·종에 보인다
+  const own = (await get<{ items: { changeId: string; requestedBy: string; status: string; reviews: unknown[] }[] }>('/api/refdb/changes')).items.find((c) => c.requestedBy === AUTHOR['X-Actor-Id'] && c.status === 'REVIEW' && !c.reviews.length && c.changeId !== demo.changeId);
+  if (!own) throw new Error('보완 의견을 남길 변경 요청(Feature 설계 계정, 검토 중)이 시드에 없습니다 — 알림 승인 범주를 채울 수 없습니다');
+  await post(`/api/refdb/changes/${own.changeId}/reviews`, REVIEWER, { opinion: 'REVISE', comment: '근거 출처 보강 필요 — 사내 실적 자료를 붙여 다시 요청해 주세요' });
 
   await save('refQuality');
   const taxonomy = await save('refTaxonomy');
@@ -160,14 +262,26 @@ async function costSnapshots(save: Save) {
   for (const b of basis.items as { version: string }[]) await save('costBasis', { version: b.version });
 }
 
+/**
+ * 보조 백엔드 기동 대기(ms) — 전시 시드(FF_SHOWCASE)는 기동에 45~50초 걸린다. 예전 60초(0.5초 × 120)는 느린 PC·동시 빌드에서 넘었다.
+ * 기본 300초, SNAPSHOT_START_TIMEOUT_MS로 바꾼다(최소 180초)
+ */
+export function startDeadlineMs(env: Record<string, string | undefined> = process.env): number {
+  const v = Number(env.SNAPSHOT_START_TIMEOUT_MS);
+  return Number.isFinite(v) && v > 0 ? Math.max(v, 180_000) : 300_000;
+}
+
 async function main() {
-  for (let i = 0; ; i++) {
-    if (serverExit !== null) throw new Error(`스냅샷용 백엔드가 시작하지 못했습니다(종료 ${serverExit}, 포트 ${PORT})`);
+  const deadline = Date.now() + startDeadlineMs();
+  for (;;) {
+    if (serverExit !== null) throw gone('시작하기 전에');
     try {
       await get('/api/health');
-      break;
+      // health가 와도 우리 백엔드가 시작 로그를 내기 전이면 같은 포트의 다른 서버다 — 기다린다
+      if (serverReady) break;
+      throw new Error('우리 백엔드가 아직 포트를 잡지 않았습니다');
     } catch (e) {
-      if (i >= 120) throw new Error(`스냅샷용 백엔드가 응답하지 않습니다(포트 ${PORT}): ${(e as Error).message}`);
+      if (Date.now() > deadline) throw new Error(`스냅샷용 백엔드가 ${Math.round(startDeadlineMs() / 1000)}초 안에 응답하지 않습니다(포트 ${PORT}): ${(e as Error).message}`);
       await new Promise((r) => setTimeout(r, 500));
     }
   }
@@ -186,6 +300,12 @@ async function main() {
     return body;
   };
 
+  // 가상검증 실행 기록(시험 대역, start 참고) — 키트 Feature 정책마다 한 번. 다른 조회보다 먼저 만들어 이력·이벤트에 함께 찍힌다
+  const KIT = 'FEAT-00022';
+  // 전시 채우기(사후 검증)가 이미 돌린 정책은 건너뛴다 — 같은 실행을 두 번 남기지 않게
+  for (const p of (await get<{ items: { policyId: string }[] }>(routeUrl('listPolicies', {}, { featureId: KIT }))).items)
+    if (!(await get<{ items: unknown[] }>(routeUrl('virtualRuns', {}, { policyId: p.policyId }))).items.length) await post('/api/virtual-validations', PROC_ACTOR, { policyId: p.policyId });
+
   // 공통
   await save('health');
   await save('components');
@@ -200,7 +320,7 @@ async function main() {
   await save('audit', {}, { limit: 500 });
 
   // 업무 절차 — 개인 조회(내 차례·요약)라 데모 기본 역할(Feature 설계)로 찍는다. 정적 데모는 읽기 전용.
-  const PROC = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
+  const PROC = PROC_ACTOR;
   await save('procedureState', {}, {}, PROC);
   await save('procedureSummary', {}, {}, PROC);
   await save('procedureInbox', {}, {}, PROC);
@@ -237,7 +357,7 @@ async function main() {
   await consultSnapshots(save);
   await costSnapshots(save);
   // BOM·Catalog
-  await save('baselineRequests');
+  const baselineRequests = await save('baselineRequests');
   await save('baselines');
   const products = await save('listProducts');
   for (const p of products.items) await save('productDetail', { id: p.catalogId, ver: p.version });
@@ -268,7 +388,12 @@ async function main() {
   // 체험권 차량 목록(상태별 첫 쪽)·체험 전환 분석(나눠 보기 기준별) — 화면과 같은 질의 함수로 키를 맞춘다
   for (const source of ['ALL', 'FLEET', 'SYNTHETIC'] as const) {
     for (const state of ['', ...TRIAL_STATES]) await save('trials', {}, trialListQuery({ catalogId: 'CAT-00019', source, state }));
-    for (const groupBy of ['', ...SEGMENT_DIMENSIONS]) {
+    // 성향·검색어·다음 쪽 — 전체 표(출처 ALL, 200건씩 모든 쪽)를 받아 두면 시연 엔진이 서버 규칙으로 계산한다(api/sim/trial-list.ts)
+    if (source === 'ALL') {
+      const first = (await save('trials', {}, trialTableQuery('CAT-00019', 1))) as { total: number };
+      for (let page = 2; (page - 1) * TRIAL_TABLE_PAGE < first.total; page++) await save('trials', {}, trialTableQuery('CAT-00019', page));
+    }
+    for (const groupBy of ['', ...SEGMENT_DIMENSIONS] as const) {
       await save('trialAnalytics', {}, trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }));
       // 기간 1년·5년 — 26주(기본)는 요청에 넣지 않는다
       for (const weeks of [52, 260]) await save('trialAnalytics', {}, { ...trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }), weeks });
@@ -297,26 +422,31 @@ async function main() {
   const pubs = await save('publications');
   for (const kind of ['POLICY', 'KILL', 'RESTORE']) await save('publications', {}, { kind });
   for (const p of pubs.items) await save('publicationDetail', { id: p.publicationId });
-  await save('killRequests');
-  // 롤백(D03-04) — 배포 목록·배포별 상세·이력(정적 데모에는 실행 기록이 없다)
+  const kills = await save('killRequests');
+  // 롤백(D03-04) — 배포 목록·배포별 상세·이력(실행 기록 상세는 아래 '상세 서랍')
   const rbDeps = await save('rollbackDeployments');
   for (const d of rbDeps.items) if (d.deploymentId) await save('rollbackDeployment', { deploymentId: d.deploymentId });
-  await save('rollbacks');
+  const rollbacks = await save('rollbacks');
   await save('rollbackRequests', {}, { status: 'REQUESTED' }); // 롤백 화면 핵심 메시지 — 승인 대기 건수
   await save('killRequests', {}, { status: 'ACTIVE' });
   await save('killPreview', {}, { featureId: 'FEAT-00022', featureVersion: '1.0.0' });
-  // 가상검증(CARLA) — 정적 배포에는 검증 서버가 없다(상태는 미연결로 찍힌다)
-  await save('simStatus');
-  await save('virtualScenarios', {}, { featureId: 'FEAT-00022' });
-  await save('virtualRuns');
-  for (const p of policies.items as { policyId: string; featureId: string }[]) if (p.featureId === 'FEAT-00022') await save('virtualRuns', {}, { policyId: p.policyId });
+  // 가상검증(CARLA) — 정적 배포에는 검증 서버가 없다(상태는 미연결로 찍힌다). 공개본에는 운영자용 연결 정보(호스트·포트·실행기·Python 경로)를 싣지 않는다
+  const sim = await save('simStatus');
+  writeFileSync(join(OUT, snapshotFile(routeUrl('simStatus'))), JSON.stringify(publicSimStatus(sim)));
+  // 시나리오·조합 계획 — 정책 상세의 가상검증 패널(정책의 Feature)·조합 시험은 Feature마다 묻는다(키트 밖 Feature는 시나리오 0건 → 패널을 그리지 않는다)
+  const featureIds = [...new Set((all.items as { featureId: string }[]).map((f) => f.featureId))];
+  for (const featureId of featureIds) await save('virtualScenarios', {}, { featureId });
+  const vruns = await save('virtualRuns');
+  // 정책 상세 가상검증 패널 — 모든 정책(시나리오가 없는 Feature도 조회는 나간다)
+  for (const p of policies.items as { policyId: string }[]) await save('virtualRuns', {}, { policyId: p.policyId });
   await save('listPolicies', {}, { featureId: 'FEAT-00022' });
   // P8b — 이상 징후·품질 피드백·IAM·Variant·지원 조건·Unleash(모의)
-  await save('anomalies');
+  const anomalies = await save('anomalies');
   await save('qualityFeedback');
   await save('iamRoles');
   await save('iamDenials');
-  await save('variantMatrix', { featureId: 'FEAT-00022', version: '1.0.0' });
+  // Variant 지원 조건 — 차량별 지원 표의 Feature 링크·입력이 여는 모든 Feature Version
+  for (const f of all.items as { featureId: string; version: string }[]) await save('variantMatrix', { featureId: f.featureId, version: f.version });
   for (const v of vehicles.items) await save('vehicleSupport', { vin: v.vin });
   await save('unleashStatus');
   for (const p of policies.items) await save('policyUnleash', { id: p.policyId });
@@ -347,7 +477,7 @@ async function main() {
     await save('vehicleOpenFeature', { vin: v.vin });
   }
   await save('readbacks');
-  await save('experiments');
+  const experiments = await save('experiments');
   await save('incidents');
   for (const m of ['syncTargets', 'legacyMappings', 'legacyOrders', 'legacyVehicles', 'integrationSystems', 'supplierDeliveries', 'openfeatureScope', 'openfeatureManifest', 'openfeatureFlagd', 'integrationCalls']) await save(m);
   await save('integrationCalls', {}, { ifId: 'IF-04' }); // Home integration status.
@@ -366,9 +496,10 @@ async function main() {
   for (const f of all.items as { featureId: string; version: string }[]) await save('extFeatureTrace', { id: f.featureId, ver: f.version });
   const targets = await get('/api/sync/targets');
   for (const t of (targets.items ?? targets) as { targetId: string }[]) await save('syncRuns', {}, { targetId: t.targetId });
-  await save('virtualCombinations', {}, { featureId: 'FEAT-00022' });
-  await save('safetyKpi');
-  await save('safetyKpiAnnex1', { featureId: 'FEAT-00022', version: '1.0.0' });
+  for (const featureId of featureIds) await save('virtualCombinations', {}, { featureId });
+  // 운행 중 감시 지표 — 행을 열면 부속서 1 정기 보고를 읽는다(목록의 모든 Feature Version)
+  const kpi = await save('safetyKpi');
+  for (const it of kpi.items as { featureId: string; version: string }[]) await save('safetyKpiAnnex1', { featureId: it.featureId, version: it.version });
   // 보안·인증서 — SBOM serial은 부팅마다 달라 같은 실행의 목록에서 본문을 받는다
   await save('hsmStatus');
   const sboms = await save('sbomList');
@@ -377,16 +508,187 @@ async function main() {
   await save('securityEvents');
   // P11 — Flag Retirement·감독 기록·데이터·규제 기록
   for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
+
+  // 상세 서랍·패널 — 목록에 나오는 모든 행(행을 열면 '데모에 없는 데이터' 오류 상자였다)
+  for (const a of anomalies.items as { anomalyId: string }[]) await save('anomalyDetail', { id: a.anomalyId });
+  for (const x of experiments.items as { experimentId: string }[]) await save('experiment', { id: x.experimentId });
+  for (const k of kills.items as { killId: string; featureId: string }[]) {
+    const d = await save('killDetail', { id: k.killId });
+    // 명령이 발행된 차단만 봉투·시간 기록·사후 검토를 그린다
+    if (d.command) {
+      await save('killEnvelopes', { id: k.killId });
+      await save('killTimeline', { id: k.killId });
+    }
+    // 복원 요청 폼의 재검증 Evidence 후보
+    await save('evidenceLedger', {}, { featureId: k.featureId });
+  }
+  for (const r of baselineRequests.items as { requestId: string }[]) await save('baselineRequest', { rid: r.requestId });
+  for (const x of rollbacks.items as { executionId: string }[]) await save('rollbackExecution', { id: x.executionId });
+  // 알림 링크(?request=·?plan=)가 여는 요청·계획 — 상태와 상관없이 모두
+  for (const r of (await get<{ items: { requestId: string }[] }>(routeUrl('rollbackRequests'))).items) await save('rollbackRequest', { id: r.requestId });
+  for (const p of (await get<{ items: { planId: string }[] }>(routeUrl('rollbackPlans'))).items) await save('rollbackPlan', { id: p.planId });
+  // 가상검증 실행 상세 + Evidence 파일(보고서·판정·기록)은 원래 형식 그대로
+  if (!vruns.items.length) throw new Error('가상검증 실행 기록이 없습니다 — 정적 데모 가상검증 화면이 비어 보입니다');
+  for (const r of vruns.items as { runId: string }[]) {
+    const d = await save('virtualRunDetail', { id: r.runId });
+    for (const f of (d.evidence?.files ?? []) as { name: string }[]) {
+      const res = await call(routeUrl('virtualRunFile', { id: r.runId, name: f.name }));
+      if (!res.ok) throw new Error(`가상검증 Evidence ${r.runId}/${f.name} → ${res.status}`);
+      const file = join(OUT, virtualEvidenceSnapshotFile(r.runId, f.name));
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, Buffer.from(await res.arrayBuffer()));
+    }
+  }
+  // Unleash 판단 비교(정책 상세 '판단 비교' 버튼) — 배포된 정책만 누를 수 있다
+  for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('unleashEvaluation', { id: p.policyId });
+  // 차량 전달 채널(배포 화면의 회신 멈춤 안내) — 설정 상태 읽기
+  await save('vehicleChannel');
+
+  // OFREP·OpenFeature(활성화 판단 화면) — 차량마다 한 파일: 배포 flag 단일 평가(OFREP 응답 패널)와 bulk 평가(웹 SDK가 받는 값). 평가 시각은 스냅샷 시각
+  for (const v of vehicles.items as { vin: string }[]) {
+    const flags: Record<string, unknown> = {};
+    for (const flagKey of flagKeys) flags[flagKey] = await ofrep(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, v.vin);
+    const rel = ofrepSnapshotFile(v.vin);
+    claimSnapshotFile(written, rel, `/ofrep/v1/evaluate#${v.vin}`);
+    writeFileSync(join(OUT, rel), JSON.stringify({ bulk: await ofrep('/ofrep/v1/evaluate/flags', v.vin), flags, evaluatedAt: new Date().toISOString() }));
+    n++;
+  }
+
+  // 알림 — 데모 기본 계정(PROC_ACTOR)이 받는 알림. 범주마다 안 읽은 건이 남게 오래된 것 하나씩만 읽음으로 두어 '안 읽음'·'전체'가 갈린다
+  const inbox = (q: Record<string, unknown>) => get<{ items: { notificationId: string; category: string; readAt: string | null }[] }>(routeUrl('notifications', {}, q as Record<string, string>), 'notifications', PROC_ACTOR);
+  const before = (await inbox({ limit: 500 })).items;
+  for (const c of new Set(before.map((x) => x.category))) {
+    const rows = before.filter((x) => x.category === c);
+    if (rows.length > 1) await post(routeUrl('readNotification', { id: rows.at(-1)!.notificationId }), PROC_ACTOR, {});
+  }
+  const after = (await inbox({ limit: 500 })).items;
+  if (!after.length || !after.some((x) => x.readAt) || !after.some((x) => !x.readAt)) throw new Error(`정적 데모 알림이 비었거나 한쪽뿐입니다(전체 ${after.length}) — 알림 센터가 빈 상태로 보입니다`);
+  for (const c of new Set(after.map((x) => x.category))) if (!after.some((x) => x.category === c && !x.readAt)) throw new Error(`알림 범주 ${c}에 안 읽은 건이 없습니다`);
+  for (const q of notificationQueries(NOTIFICATION_CATEGORIES)) await save('notifications', {}, q, PROC_ACTOR);
+
+  // 운영 지표 탭 — Prometheus 텍스트(스냅샷을 찍는 동안 받은 요청)를 JSON으로 감싸 둔다. 마지막에 받아야 위 조회가 모두 들어간다
+  const metricsUrl = routeUrl('healthMetrics');
+  const metrics = await call(metricsUrl, { headers: { Accept: 'text/plain' } });
+  const text = await metrics.text();
+  if (!metrics.ok || !text.includes('# TYPE ff_http_')) throw new Error(`${metricsUrl} → ${metrics.status} (Prometheus 지표 없음)`);
+  claimSnapshotFile(written, snapshotFile(metricsUrl), metricsUrl);
+  writeFileSync(join(OUT, snapshotFile(metricsUrl)), JSON.stringify({ text, capturedAt: new Date().toISOString() }));
+  n++;
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
+  // F2 — 읽기 권한 분리·정적 안내 제거(2026-11-05): 개인정보 요청 목록, 감사 이력 다음 쪽, Feature DB 내보내기 파일
+  {
+    const fs = await import('node:fs');
+    const f2 = n;
+    // 쓰기는 요청마다 다른 멱등 키로(같은 밀리초에 같은 주소를 두 번 보내도 앞 응답을 되받지 않게)
+    const send = async <T = any>(url: string, headers: Record<string, string>, body: unknown): Promise<T> => {
+      const r = await call(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': `snapshot-f2-${crypto.randomUUID()}`, ...headers }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error(`POST ${url} → ${r.status} ${await r.text()}`);
+      return r.json() as Promise<T>;
+    };
+    // 개인정보 요청 — 처리 완료·거절·처리 대기 예시. 처리는 요청자와 다른 보안 담당자(4안 원칙). 찍고 버리는 보조 백엔드다
+    const CSM = { 'X-Actor-Id': 'usr-integrator', 'X-Actor-Role': 'SECURITY_OFFICER' };
+    const CSM2 = { 'X-Actor-Id': 'usr-security-deputy', 'X-Actor-Role': 'SECURITY_OFFICER' };
+    const ask = (body: unknown) => send<{ requestId: string }>(routeUrl('createPrivacyRequest'), CSM, body);
+    const done = await ask({ subjectKind: 'USER', subjectId: 'usr-retired-0412', basis: 'EMPLOYMENT_END', reason: '퇴직자 계정 정리 — 인사 통보' });
+    await send(routeUrl('executePrivacyRequest', { id: done.requestId }), CSM2, {});
+    const no = await ask({ subjectKind: 'USER', subjectId: 'usr-partner-0927', basis: 'CONTRACT_END', reason: '협력사 계약 종료' });
+    await send(routeUrl('rejectPrivacyRequest', { id: no.requestId }), CSM2, { reason: '계약 분쟁 증빙 보존 기간 중 — 법무 확인 뒤 다시 요청' });
+    await ask({ subjectKind: 'VEHICLE', subjectId: (vehicles.items as { vin: string }[])[0].vin, basis: 'DATA_SUBJECT_REQUEST', reason: '차량 소유자 본인 삭제 요청' });
+    await save('privacyRequests');
+    // 감사 이력 다음 쪽 — 화면 '더 불러오기'가 조건 없는 목록의 커서({ limit, cursor } 순서)로 읽는다. 커서는 id 키셋이라 첫 쪽 뒤에 쌓인 기록과 섞이지 않는다.
+    // 서버 커서(마지막 id)는 그때까지 쌓인 감사 건수로 값이 달라져 파일 이름이 배포마다 바뀌었다 — 공개본에는 쪽 순번 커서(staticAuditCursor)로 바꿔 둔다(2026-11-06 시드 결정성)
+    const auditPage = (cursor?: string) => routeUrl('audit', {}, cursor ? { limit: 500, cursor } : { limit: 500 });
+    let prevUrl = auditPage();
+    let prev = JSON.parse(fs.readFileSync(join(OUT, snapshotFile(prevUrl)), 'utf8')) as { nextCursor?: string | null };
+    for (let i = 2; prev.nextCursor && i < 402; i++) {
+      const body = await get<{ nextCursor?: string | null }>(auditPage(prev.nextCursor), 'audit');
+      const alias = staticAuditCursor(i);
+      fs.writeFileSync(join(OUT, snapshotFile(prevUrl)), JSON.stringify({ ...prev, nextCursor: alias }));
+      prevUrl = auditPage(alias);
+      claimSnapshotFile(written, snapshotFile(prevUrl), prevUrl);
+      prev = body;
+      n++;
+    }
+    fs.writeFileSync(join(OUT, snapshotFile(prevUrl)), JSON.stringify(prev));
+    // Feature DB 내보내기 — 발행본마다 받은 파일(screens/refdb/common.tsx staticExportFile과 같은 이름). 금액 열은 산정 역할만이라 관리자 역할로 받는다
+    const releases = await get<{ items: { release: string }[] }>(routeUrl('refReleases'), 'refReleases');
+    for (const { release } of releases.items) {
+      const url = routeUrl('exportRefdb', {}, { format: 'xlsx', release });
+      const r = await call(url, { headers: { 'X-Actor-Id': 'usr-snapshot', 'X-Actor-Role': 'REFDB_ADMIN' } });
+      if (!r.ok) throw new Error(`${url} → ${r.status}`);
+      fs.writeFileSync(join(OUT, snapshotFile(url).replace(/\.json$/, '.xlsx')), Buffer.from(await r.arrayBuffer()));
+      n++;
+    }
+    console.log(`snapshot:api F2 — ${n - f2}개 더`);
+  }
+  // F4 — 홈 성능(2026-11-05): 홈은 차량·회신·게시본 전체 목록 대신 요약 하나(operationSummary)와 감사 이력 20건만 읽는다.
+  //      위에서 찍은 전체 목록 파일로 서버와 같은 함수(contracts operationSummary)를 돌려 만든다 — 거르면 읽는 전체 목록과 숫자가 어긋나지 않게.
+  //      정적 데모는 역할과 상관없이 회신을 보인다(회신 포함 요약). 감사 20건은 감사 화면 첫 쪽(limit 500)의 앞부분이다
+  {
+    const fs = await import('node:fs');
+    const { adoptionEvaluations, operationSummary } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+    // 'Feature 적용 현황'(2026-11-06) 실제 사용 단계 — 서버 요약과 같이 최근 평가 span 500건을 가명 subject로 차량에 되짚는다(가명 함수는 백엔드 그대로)
+    const { vehiclePseudonym } = require(join(FF, 'backend', 'dist', 'kernel', 'crypto.js')) as { vehiclePseudonym: (vin: string) => string };
+    const read = (name: string, query: Record<string, string | number> = {}) => JSON.parse(fs.readFileSync(join(OUT, snapshotFile(routeUrl(name, {}, query))), 'utf8'));
+    const items = (name: string, query?: Record<string, string | number>) => read(name, query).items;
+    const runtime = read('fleetRuntime');
+    const spans = (await get<{ items: unknown[] }>(routeUrl('otelSpans', {}, { name: 'feature_flag.evaluation', limit: 500 }), 'otelSpans')).items as Parameters<typeof adoptionEvaluations>[0];
+    const evaluations = adoptionEvaluations(spans, new Map((runtime.items as { vin: string }[]).map((r) => [vehiclePseudonym(r.vin), r.vin])));
+    const input = { runtime: runtime.items, vehicles: items('vehicles'), policies: items('listPolicies'), features: items('listFeatures'), publications: items('publications'), readbacks: items('readbacks'), syncs: items('integrationCalls', { ifId: 'IF-04' }), evaluations };
+    const write = (name: string, query: Record<string, string | number>, body: unknown) => {
+      const url = routeUrl(name, {}, query);
+      claimSnapshotFile(written, snapshotFile(url), url);
+      fs.writeFileSync(join(OUT, snapshotFile(url)), JSON.stringify(body));
+      n++;
+    };
+    write('operationSummary', {}, operationSummary(input, new Date().toISOString(), true));
+    const audit = read('audit', { limit: 500 }) as { items: { id: number }[] };
+    const first = audit.items.slice(0, 20);
+    write('audit', { limit: 20 }, { items: first, nextCursor: first.length === 20 ? Buffer.from(JSON.stringify({ id: first[19].id })).toString('base64url') : null });
+  }
+
+  // F3 — 전시 빈 화면 채우기(2026-11-05): Feature 상세 '감사 이력' 탭은 이 Version 아래 대상(#safety 안전 분류·#G1 Gate·#hara 분석)까지
+  //      접두어로 읽는다(화면 질의 순서 { targetPrefix, limit }). 채운 데이터 자체(배포·차단·복원·변경 요청 등)는 백엔드 시드가 만들어 위 조회가 담는다
+  {
+    const f3 = n;
+    for (const f of all.items as { featureId: string; version: string }[]) await save('audit', {}, { targetPrefix: `${f.featureId}@${f.version}`, limit: 100 });
+    console.log(`snapshot:api F3 — ${n - f3}개 더`);
+  }
+
+  // 시연 주인공(2026-11-06 사용자 결정, Flag 노출 계획 G2~G4) — adas_00004_assist 정책마다 단계 이력(감사 ROLLOUT_STAGE, 질의 순서
+  //      { target, action, limit })과 정책 감사 이력, 주인공 Feature의 이상 징후(차단 목록은 위에서 찍었다). 데이터가 빠지면 정적 데모가 대본대로 안 되므로 실패시킨다
+  {
+    const hero = n;
+    const FLAG = 'adas_00004_assist';
+    const mine = (policies.items as { policyId: string; flagKey: string; featureVersion: string; status: string }[]).filter((p) => p.flagKey === FLAG);
+    let stages = 0;
+    for (const p of mine) {
+      stages += ((await save('audit', {}, { target: p.policyId, action: 'ROLLOUT_STAGE', limit: 20 })).items as { result: string }[]).filter((a) => a.result === 'ALLOWED').length;
+      await save('audit', {}, { target: p.policyId, limit: 100 });
+    }
+    await save('anomalies', {}, { featureId: 'FEAT-00004' });
+    const versions = new Set(mine.map((p) => p.featureVersion));
+    const killed = (kills.items as { featureId: string; status: string }[]).some((k) => k.featureId === 'FEAT-00004' && k.status === 'ACTIVE');
+    if (stages < 3 || !versions.has('4.1.1') || !killed || !mine.some((p) => p.status === 'DEPLOYED'))
+      throw new Error(`시연 주인공 데이터가 비었습니다(${FLAG} 단계 이력 ${stages}건, Version ${[...versions].join('·') || '없음'}, 차단 ${killed ? '있음' : '없음'})`);
+    console.log(`snapshot:api 주인공 — ${n - hero}개 더(단계 이력 ${stages}건)`);
+  }
 }
 
 // 직접 실행(npm run snapshot:api)일 때만 — Windows는 드라이브 글자 대소문자가 다를 수 있다
 if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase()) {
   const server = await start();
   await main()
+    .then(() => {
+      assertSnapshotClean(join(OUT, 'api-snapshot'));
+      console.log('snapshot:api — 로컬 PC 흔적 0건');
+    })
     .catch((e) => {
       console.error('snapshot:api 실패:', e.message);
       process.exitCode = 1;
     })
-    .finally(() => server.kill());
+    .finally(() => {
+      server.kill();
+      rmSync(EVIDENCE, { recursive: true, force: true });
+    });
 }

@@ -12,6 +12,7 @@ import { lists as L } from '../../copy/lists';
 import { AsyncView, Button, ChainStatus, DataTable, ErrorNote, EventStream, KeyValue, PageHeader, Panel, RuleText, Segmented, Select, Toolbar, VerdictBadge, type StreamItem } from '../../design';
 import { ComponentName, ProcedureText, when } from '../shared';
 import { AuditLog } from './AuditLog';
+import { localTime } from '../../data/people';
 import type { AuditEntry } from '../types';
 
 const RESULTS = ['ALLOWED', 'DENIED', 'FAILED'] as const;
@@ -108,7 +109,8 @@ export function AuditScreen() {
         {nextCursor && (
           <div className="ds-pager">
             <span>{L.loaded(rows.length)}</span>
-            <Button onClick={loadMore} disabled={loading || STATIC_MODE} reason={STATIC_MODE ? L.staticMore : undefined}>
+            {/* 정적 공개본도 다음 쪽을 받아 둔 스냅샷(조건 없는 목록의 모든 쪽)에서 읽는다(2026-11-05) */}
+            <Button onClick={loadMore} disabled={loading}>
               {loading ? L.loadingMore : L.loadMore}
             </Button>
           </div>
@@ -148,14 +150,17 @@ const summarize = (p: unknown) => {
   if (typeof o.activityName === 'string') return o.activityName;
   // 알려진 필드가 없어도 빈 칸으로 두지 않는다 — 앞의 두 값을 보인다
   const kv = Object.entries(o).filter(([, v]) => v != null && typeof v !== 'object').slice(0, 2);
-  return kv.length ? kv.map(([k, v]) => `${k}: ${String(v)}`).join(' · ') : '—';
+  // ISO 시각은 화면 표기(한국 시각, 분까지)로 — 'T…Z' 원문은 좁은 칸에서 날짜가 두 줄로 갈렸다(2026-11-06 보존 작업 이벤트)
+  return kv.length ? kv.map(([k, v]) => `${k}: ${String(v).replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})/g, (t) => localTime(t))}`).join(' · ') : '—';
 };
 
 export function EventsScreen() {
   const q = useApi<{ items: PlatformEvent[] }>('events', { query: { limit: 500, recent: '1' } });
   const { items: live, status: sse } = usePlatformLiveEvents([''], ['events'], 200);
   const rows = q.data?.items ?? [];
-  const stream: StreamItem[] = live.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
+  // 정적 공개본 — 실시간 연결 대신 받아 둔 최근 이벤트를 흐름으로 보인다(빈 패널 금지, 2026-11-05)
+  const flow = STATIC_MODE ? [...rows].sort((a, b) => a.seq - b.seq).slice(-50) : live;
+  const stream: StreamItem[] = flow.map((e) => ({ seq: e.seq, at: e.at, type: e.type, aggregate: e.aggregate, summary: summarize(e.payload) }));
   return (
     <div className="ds-screen">
       <PageHeader codes="D04-04 · EVENT HISTORY" title={ko.events.title} lead={ko.events.lead} message={{ tone: 'neutral', value: q.data ? q.data.items.length : '—', text: ko.events.key }}

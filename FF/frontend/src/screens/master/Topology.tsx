@@ -2,7 +2,6 @@
 // 그래프: 고른 Feature를 가운데, 관계 거리(1·2·3)마다 동심원에 놓는다. REQUIRES는 실선·화살표, EXCLUDES는 점선(대칭).
 import { useEffect, useId, useMemo, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { topologyMotion as M } from '../../copy/topology-motion';
@@ -305,7 +304,6 @@ function CreateDependency() {
   const create = useApiMutation<{ dependencyId: string; verdict: string }>('createDependency', ['dependencies', 'topologyGraph', 'events', 'audit']);
   const [f, setF] = useState({ type: 'REQUIRES', sourceFeatureId: '', sourceVersion: '', targetFeatureId: '', targetVersion: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value.trim() }));
-  if (STATIC_MODE) return null;
   return (
     <Panel title={T.create} id="topo-create">
       <div className="ds-toolbar">

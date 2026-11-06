@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FeatureRefLink, FeatureRefRole } from '@ff/contracts';
 import { useQueries } from '@tanstack/react-query';
-import { call, isPersonal, STATIC_MODE } from '../../api/client';
+import { call, isPersonal } from '../../api/client';
 import { fieldErrors } from '../../api/field-errors';
 import { useApi, useApiMutation } from '../../api/hooks';
 import { featureRefsTab as T, propose as P } from '../../copy/propose';
@@ -122,7 +122,7 @@ export function RefLinkEditor({ f, links, onClose }: { f: DraftFeature; links: F
         <ErrorNote error={save.error} />
       )}
       <div className="ds-toolbar">
-        <Button variant="primary" data-ui="saveFeatureRefs" disabled={!!why || STATIC_MODE || save.isPending} reason={why} onClick={() => submit(false)}>
+        <Button variant="primary" data-ui="saveFeatureRefs" disabled={!!why || save.isPending} reason={why} onClick={() => submit(false)}>
           {T.edit.save}
         </Button>
         <Button variant="ghost" onClick={onClose}>

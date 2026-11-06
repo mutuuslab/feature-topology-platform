@@ -2,6 +2,7 @@
 // 값은 보고서 2.3 표(초기 Profile) 그대로이고, 법규 담당이 원문을 확인해 갱신하면 Version을 올린다(같은 Version 내용은 바꾸지 않는다).
 // 상태가 '확인(CONFIRMED)'이 아닌 시장에서는 F2 이상 활성화·복원을 막고, 비활성화는 막지 않는다(위험을 줄이는 조치까지 막지 않게).
 // 명령 와이어(kill_command v2)는 보고서 JSON Schema와 같아 Profile 필드가 없다 — Profile 버전은 게이트 기록(감사·원장 이벤트)에 남긴다.
+import { requestKo } from './command-request';
 import type { Market } from '../schemas/wire';
 
 export type ProfileStatus = 'CONFIRMED' | 'VERIFY_REQUIRED';
@@ -56,7 +57,7 @@ export function profileFinding(i: { market: string; request: string; fClass: str
   const safety = i.fClass == null || i.fClass >= 'F2';
   const unconfirmed = [...(m ? (m.status === 'CONFIRMED' ? [] : [`${m.profileId} ${PROFILE_STATUS_LABEL[m.status]}`]) : [`${i.market} ${PROFILE_STATUS_LABEL.UNKNOWN}`]), ...(ads && ads.status !== 'CONFIRMED' ? [`ADS ${PROFILE_STATUS_LABEL[ads.status]}`] : [])];
   if (!widening || !safety || !unconfirmed.length)
-    return { rule: 'FFG-GEN-003', ok: true, detail: !widening ? `${i.request}: 시장 Profile 상태와 무관하게 허용(비활성화는 막지 않는다)` : `${used.map((p) => `${p.profileId} ${p.version}`).join(', ') || i.market} 확인`, profiles: used };
+    return { rule: 'FFG-GEN-003', ok: true, detail: !widening ? `${requestKo(i.request)} — 시장 Profile 상태와 무관하게 허용(비활성화는 막지 않는다)` : `${used.map((p) => `${p.profileId} ${p.version}`).join(', ') || i.market} 확인`, profiles: used };
   return { rule: 'FFG-GEN-003', ok: false, detail: `${i.request}: ${unconfirmed.join(', ')} — F2 이상 활성화·복원 차단(원문 확인 뒤 Profile 갱신 필요)`, profiles: used };
 }
 

@@ -2,6 +2,7 @@
 // 데이터는 docs/65-workflows 모델에서 생성된 모듈 그대로 쓴다(모의 없음).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { __resetProcedureStore } from '../data/procedureProgress';
@@ -20,6 +21,7 @@ afterEach(() => {
 function mount(path: string, role = 'author', extra?: React.ReactNode) {
   localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
   return render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
     <MemoryRouter initialEntries={[path]}>
       <AppProvider>
         <Routes>
@@ -28,7 +30,8 @@ function mount(path: string, role = 'author', extra?: React.ReactNode) {
           <Route path="/features/:id/:ver" element={extra ?? <div />} />
         </Routes>
       </AppProvider>
-    </MemoryRouter>,
+    </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -203,13 +206,15 @@ describe('이 화면의 업무 절차 패널', () => {
   function panel(path: string, role: string) {
     localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
     return render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
       <MemoryRouter initialEntries={[path]}>
         <AppProvider>
           <Routes>
             <Route path="*" element={<ScreenProcedure onClose={() => undefined} />} />
           </Routes>
         </AppProvider>
-      </MemoryRouter>,
+      </MemoryRouter>
+      </QueryClientProvider>,
     );
   }
 

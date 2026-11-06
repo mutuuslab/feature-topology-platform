@@ -6,7 +6,7 @@ import { ERASURE_BASES, PRIVACY_SUBJECT_KINDS, type PersonalDataStore, type Priv
 import { ko } from '../../copy/ko';
 import { privacy as PV } from '../../copy/privacy';
 import { AsyncView, Button, DangerConfirm, DataTable, ErrorNote, ExplainCodes, Field, KeyValue, PageHeader, Panel, Select, Tabs, VerdictBadge } from '../../design';
-import { usePermission, when } from '../shared';
+import { usePermission, useReadPermission, when } from '../shared';
 
 const T = ko.p11.data;
 const mono = (s: string | number | null | undefined) => <span className="ds-mono ds-nowrap">{s ?? '—'}</span>;
@@ -302,7 +302,7 @@ interface PrivacyInventory {
 /** 개인정보 — 목록·보존 기한·정보주체 요청(내보내기·삭제 요청)·요청 목록(실행·거절) */
 function Privacy() {
   const inv = useApi<PrivacyInventory>('privacyInventory');
-  const reader = usePermission(['SECURITY_OFFICER', 'AUDITOR']);
+  const reader = useReadPermission(['SECURITY_OFFICER', 'AUDITOR']);
   const d = inv.data;
   const C = PV.col;
   return (

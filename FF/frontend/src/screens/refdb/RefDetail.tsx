@@ -9,6 +9,7 @@ import { refChangeForm as F, refDetail as T, KIND_LABEL, CHANGE_STATUS_LABEL, re
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Icon, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Segmented, SummaryLine, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { changePath, FeatureLink, RefChip, RefChips, RefStatusBadge, TextLink, type RefDetailPolicy, type RefDetailResponse, type RefRowView, type RefUsage } from './common';
+import { SourceTitleLinks } from './sourceLinks';
 
 const REQUESTERS = ['FEATURE_AUTHOR', 'FEATURE_APPROVER', 'PRODUCT_AUTHOR', 'IMPLEMENTER', 'VARIANT_OWNER', 'REFDB_ADMIN', 'DOMAIN_REVIEWER'] as const;
 
@@ -238,13 +239,7 @@ function Sources({ r, sources }: { r: RefRowView; sources: RefSource[] }) {
               <li key={id} data-source={id}>
                 <span className="ds-mono">{id}</span>{' '}
                 {s ? (
-                  s.url ? (
-                    <a href={s.url} target="_blank" rel="noreferrer">
-                      {[s.title, s.publisher, s.version].filter(Boolean).join(' · ')}
-                    </a>
-                  ) : (
-                    [s.title, s.publisher, s.version].filter(Boolean).join(' · ')
-                  )
+                  <SourceTitleLinks url={s.url} title={[s.title, s.publisher, s.version].filter(Boolean).join(' · ')} />
                 ) : (
                   <span className="ds-field__hint">{T.sourceUnknown}</span>
                 )}

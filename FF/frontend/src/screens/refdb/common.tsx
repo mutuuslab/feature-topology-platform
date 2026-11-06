@@ -1,9 +1,10 @@
 // Feature DB 화면 공통 — 응답 모양, 상태 배지(정책 안내 툴팁), 내 행위자, 내보내기 파일 받기.
 // 상태 → 허용 규칙은 contracts REF_STATUS_POLICY 하나(등록 화면·승인 전이·산정 과제와 같은 표).
-import { REF_STATUS_POLICY, type FeatureRefRow, type RefQuality, type RefChangeStatus, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
+import { snapshotFile, REF_STATUS_POLICY, type FeatureRefRow, type RefQuality, type RefChangeStatus, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
 import { Link } from 'react-router-dom';
 import { actorFor } from '../../api/actor';
-import { pathOf, toApiError, VIEW_ROLES, type ApiError } from '../../api/client';
+import { ApiError, pathOf, STATIC_MODE, toApiError, VIEW_ROLES } from '../../api/client';
+import { errors as E } from '../../copy/errors';
 import { OIDC_AUTH } from '../../auth-mode';
 import { useApi } from '../../api/hooks';
 import { CHANGE_STATUS_LABEL, featureDb as FD, refDetail as RD, refQualityCopy as QC } from '../../copy/refdb';
@@ -175,16 +176,21 @@ export function TextLink({ to, children }: { to: string; children: string }) {
 /** 화면 역할의 행위자 ID — 직무 분리(요청자·검토자 ≠ 승인자, contracts refChangeDuty) 판단에 쓴다 */
 export const myActorId = (role: string) => actorFor(role).id;
 
+/** 정적 공개본의 내보내기 파일 — 스냅샷 이름 규칙에 확장자만 xlsx(tools/snapshot-api.ts가 발행본마다 같은 이름으로 받아 둔다) */
+export const staticExportFile = (url: string) => snapshotFile(url).replace(/\.json$/, '.xlsx');
+
 /**
  * 내보내기 파일 받기 — call()은 JSON만 읽으므로 직접 받는다. 금액 열은 서버가 역할로 정하므로 행위자 머리글을 붙인다.
- * 서버가 아직 JSON만 주면(xlsx 준비 전) JSON 파일로 받는다.
+ * 서버가 아직 JSON만 주면(xlsx 준비 전) JSON 파일로 받는다. 정적 공개본은 받아 둔 파일을 내려받는다(2026-11-05).
  */
 export async function downloadExport(role: string, release: string | null): Promise<void> {
   const url = pathOf('exportRefdb', {}, { format: 'xlsx', release });
   const a = actorFor(role, VIEW_ROLES.exportRefdb);
   const headers: Record<string, string> = { 'X-Actor-Role': a.role };
   if (!OIDC_AUTH) headers['X-Actor-Id'] = a.id;
-  const res = await fetch(url, { headers });
+  const res = STATIC_MODE ? await fetch(import.meta.env.BASE_URL + staticExportFile(url)) : await fetch(url, { headers });
+  // 정적 호스팅은 없는 파일에 SPA 대체 응답(index.html, 200)을 준다 — 받은 파일로 내리지 않는다
+  if (STATIC_MODE && (!res.ok || (res.headers.get('content-type') ?? '').includes('text/html'))) throw new ApiError(404, 'NOT_FOUND', E.notInSnapshot);
   if (!res.ok) {
     let data: unknown = null;
     try {

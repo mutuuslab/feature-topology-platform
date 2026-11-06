@@ -1,15 +1,17 @@
-// readiness: RD-UX-04 — 모의 연계(과금·OTA·Data Lake)는 화면에 '모의(연결 전)'·'연결 안 됨'으로 보인다. 상태는 서버 설정(/api/system/connections).
+// readiness: RD-UX-04 — 모의 연계(과금·OTA·Data Lake)는 운영 설치에서 '연결 안 됨'으로 보인다. 상태는 서버 설정(/api/system/connections).
+// 데모 설치의 모의 연계는 드러내지 않는다(사용자 결정 D-ALM-17, 2026-11-05) — 꺼진 연결(Data Lake)만 '연결 안 됨'.
 // 알림 메일은 채널 자체가 없다(사용자 결정 D-RD-7: 화면 알림만) — 연결 표에도 알림 화면에도 메일이 없다.
 import { expect, test, type Page } from '@playwright/test';
 import { connections as CN } from '../../frontend/src/copy/connections';
 
 const connectionsPanel = (page: Page) => page.locator('section').filter({ has: page.getByRole('heading', { name: CN.panel.title }) });
 
-test('외부 연계 현황 — 연결 상태 표에 과금·OTA는 모의, Data Lake는 연결 안 됨, 메일 행은 없다(실제 서버 응답)', async ({ page }) => {
+test('외부 연계 현황 — 데모 설치: 과금·OTA는 모의 표시 없이 연결됨, Data Lake는 연결 안 됨, 메일 행은 없다(실제 서버 응답)', async ({ page }) => {
   await page.goto('/integration/connectors?tab=systems');
   const panel = connectionsPanel(page);
   await expect(panel).toBeVisible();
-  for (const key of ['billing', 'ota'] as const) await expect(panel.getByRole('row').filter({ hasText: CN.system[key] })).toContainText(CN.label.mock);
+  for (const key of ['billing', 'ota'] as const) await expect(panel.getByRole('row').filter({ hasText: CN.system[key] })).toContainText(CN.panel.live);
+  await expect(panel.locator('[data-connection="mock"]')).toHaveCount(0);
   await expect(panel.getByRole('row').filter({ hasText: CN.system.datalake })).toContainText(CN.label.disconnected);
   await expect(panel.getByRole('row').filter({ hasText: '메일' })).toHaveCount(0);
 });

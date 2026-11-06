@@ -25,6 +25,12 @@ export function PubStatus({ status }: { status: string }) {
   return <VerdictBadge value={PUB_VERDICT[status] ?? '미판정'} label={pubStatusLabel(status)} />;
 }
 
+/** Evidence 화면 이름 — 데이터셋 원본 ID(SAMPLE-EV-000190-TEST-RESULT)는 '시험 결과 보고서 EV-000190'. 모르는 모양은 그대로 */
+export const evidenceLabel = (ref: string) => {
+  const m = /^SAMPLE-EV-(\d+)-([A-Z][A-Z-]*)$/.exec(ref);
+  return m && CT.evidenceKind[m[2]] ? CT.evidenceName(CT.evidenceKind[m[2]], m[1]) : ref;
+};
+
 /** 차량 노드 상태·사유 이름 */
 export const nodeStateLabel = (state: string) => CT.pub.node[state] ?? state;
 export const nodeReasonLabel = (reason: string) => {

@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
-import { STATIC_MODE, call } from '../../api/client';
+import { ofrepSnapshotFile } from '@ff/contracts';
+import { STATIC_MODE, call, readSnapshotFile } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { pickAvailableValue } from '../../data/first-run';
@@ -44,10 +45,13 @@ export function ActivationScreen() {
   const [ofrep, setOfrep] = useState<unknown>(null);
   useEffect(() => {
     setOfrep(null);
-    if (STATIC_MODE || !eligible) return;
+    if (!eligible) return;
     const controller = new AbortController();
-    fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey: vin } }) })
-      .then((r) => r.json())
+    // 정적 데모는 스냅샷을 만들 때 같은 요청(차량·Flag)으로 받아 둔 응답을 읽는다
+    (STATIC_MODE
+      ? readSnapshotFile<{ flags?: Record<string, unknown> }>(ofrepSnapshotFile(vin), controller.signal).then((s) => s.flags?.[flagKey] ?? null)
+      : fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey: vin } }) }).then((r) => r.json())
+    )
       .then((value) => { if (!controller.signal.aborted) setOfrep(value); }, () => { if (!controller.signal.aborted) setOfrep(null); });
     return () => controller.abort();
   }, [vin, flagKey, eligible, q.dataUpdatedAt]);
@@ -119,7 +123,7 @@ export function ActivationScreen() {
                     { key: 'l', header: ko.registry.col.name, cell: (x) => <span style={{ fontSize: 'var(--fs-xs)' }}>{x.v.label}</span> },
                     { key: 'q', header: 'Context', cell: (x) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{x.v.quality}</span> },
                     { key: 'd', header: A.result, cell: (x) => (x.r ? <VerdictBadge value={DECISION_VERDICT[x.r.result.decision] ?? '미판정'} /> : '…') },
-                    { key: 'why', header: ko.audit.col.reason, cell: (x) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{x.r?.result.reason ?? ''}</span> },
+                    { key: 'why', header: ko.audit.col.reason, cell: (x) => <span style={{ fontSize: 'var(--fs-xs)' }} title={x.r?.result.reason}>{x.r ? (A.reason[x.r.result.reason] ?? x.r.result.reason) : ''}</span> },
                   ]}
                 />
                 <Pager page={currentPage} pageSize={25} total={filtered.length} onPage={setFleetPage} label={A.fleet} />
@@ -127,7 +131,8 @@ export function ActivationScreen() {
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', alignContent: 'start' }}>
                 <OpenFeaturePanel vin={vin} flagKey={flagKey} serverValue={d.result.value} />
                 <Panel title={A.ofrep} codes="IF-10" eyebrow={`POST /ofrep/v1/evaluate/flags/${flagKey}`} id="ofrep">
-                  <pre className="ds-code" tabIndex={0}>{STATIC_MODE ? A.ofrepStatic : ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
+                  {STATIC_MODE && <p className="ds-field__hint">{A.ofrepSnapshot}</p>}
+                  <pre className="ds-code" tabIndex={0} data-testid="ofrep-response">{ofrep ? JSON.stringify(ofrep, null, 2) : '…'}</pre>
                 </Panel>
               </div>
             </div>

@@ -108,3 +108,10 @@ describe('수신 계정·채널', () => {
     expect(Object.keys(N).filter((k) => /email|prefs/i.test(k))).toEqual([]);
   });
 });
+
+describe('알림 이벤트 종류 — 화면 첫 묶음용 목록', () => {
+  // 상단바 종은 규칙표 대신 NOTIFICATION_EVENT_TYPES만 읽는다(첫 화면 예산). 규칙을 더하면 목록도 함께 — 빠지면 그 알림이 와도 종이 다시 읽지 않는다
+  it('규칙표의 키와 순서까지 같다', () => {
+    expect([...N.NOTIFICATION_EVENT_TYPES]).toEqual(Object.keys(NOTIFICATION_RULES));
+  });
+});

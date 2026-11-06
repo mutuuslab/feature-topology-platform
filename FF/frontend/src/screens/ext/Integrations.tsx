@@ -3,7 +3,6 @@
 // /integration/legacy — Legacy 연계 (D05-03) + Legacy-SDV (D05-07).
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { STATIC_MODE } from '../../api/client';
 import { connectionLabel, useConnections } from '../../api/connections';
 import type { ConnectionStatus } from '@ff/contracts';
 import { connections as CN } from '../../copy/connections';
@@ -117,11 +116,11 @@ function AlmTab() {
       <Toolbar label={G.tabs.alm}>
         <label className="ds-field ds-field--inline">
           <span className="ds-field__label">{G.feature}</span>
-          <input className="ds-input ds-input--mono" value={featureId} onChange={(e) => setF(e.target.value.trim().toUpperCase())} disabled={STATIC_MODE} style={{ width: 120 }} />
+          <input className="ds-input ds-input--mono" value={featureId} onChange={(e) => setF(e.target.value.trim().toUpperCase())} style={{ width: 120 }} />
         </label>
         <label className="ds-field ds-field--inline">
           <span className="ds-field__label">{G.version}</span>
-          <input className="ds-input ds-input--mono" value={version} onChange={(e) => setV(e.target.value.trim())} disabled={STATIC_MODE} style={{ width: 80 }} />
+          <input className="ds-input ds-input--mono" value={version} onChange={(e) => setV(e.target.value.trim())} style={{ width: 80 }} />
         </label>
       </Toolbar>
       <AsyncView state={none ? 'empty' : asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody } : undefined}>
@@ -252,7 +251,7 @@ export function DataSyncScreen() {
               key: 'a',
               header: '',
               cell: (r) => (
-                <Button disabled={!perm.ok || run.isPending || STATIC_MODE} title={perm.hint} onClick={(e) => (e.stopPropagation(), run.mutate({ body: { targetId: r.targetId } }, { onSuccess: () => setOpen(r.targetId) }))}>
+                <Button disabled={!perm.ok || run.isPending} title={perm.hint} onClick={(e) => (e.stopPropagation(), run.mutate({ body: { targetId: r.targetId } }, { onSuccess: () => setOpen(r.targetId) }))}>
                   {S.run}
                 </Button>
               ),
@@ -332,7 +331,7 @@ export function LegacyScreen() {
         actions={
           <span style={{ display: 'inline-flex', gap: 'var(--sp-1)' }}>
             {(['TMA', 'HMA', 'HMGC'] as const).map((p) => (
-              <Button key={p} disabled={!perm.ok || imp.isPending || STATIC_MODE} title={perm.hint} onClick={() => imp.mutate({ body: { plant: p } })}>
+              <Button key={p} disabled={!perm.ok || imp.isPending} title={perm.hint} onClick={() => imp.mutate({ body: { plant: p } })}>
                 {L.import(p)}
               </Button>
             ))}
@@ -384,7 +383,7 @@ function LegacySdvPanel() {
           <option value="1">{L.enable}</option>
           <option value="0">{L.disable}</option>
         </Select>
-        <Button variant="primary" disabled={!perm.ok || !pick || tr.isPending || STATIC_MODE} title={perm.hint} onClick={() => tr.mutate({ body: { vin: pick, featureId, enable } })}>
+        <Button variant="primary" disabled={!perm.ok || !pick || tr.isPending} title={perm.hint} onClick={() => tr.mutate({ body: { vin: pick, featureId, enable } })}>
           {L.plan}
         </Button>
       </div>

@@ -1,11 +1,11 @@
 // 감사 기록 표 — 감사 화면(/audit)과 Feature 상세 감사 탭이 함께 쓴다(UX3-02: 역할 한글 라벨, 예외만 배지).
 // 보강(W5 P5-6): 행위는 한글 이름(원 코드값은 툴팁), 전후 값 한 칸(금액은 서버가 감사에 남기지 않는다).
-import { auditActionKo, auditPlus as AP } from '../../copy/audit';
+import { AUDIT_KEY_KO, auditActionKo, auditPlus as AP } from '../../copy/audit';
 import { ko } from '../../copy/ko';
 import { DataTable, RuleText, VerdictBadge } from '../../design';
 import { CodeFreeText, Done, ProcedureText, roleText, when } from '../shared';
 import type { AuditEntry } from '../types';
-import { personLabel, personName } from '../../data/people';
+import { humanText, localTime, personLabel, personName } from '../../data/people';
 
 /** 결과 — 예외(거부·실패)만 배지, 허용은 작은 표시(UX3-02). 필터와 같은 낱말(ko.audit.results) */
 function AuditResult({ result }: { result: AuditEntry['result'] }) {
@@ -14,9 +14,32 @@ function AuditResult({ result }: { result: AuditEntry['result'] }) {
   return <VerdictBadge value={result === 'DENIED' ? 'CONDITIONAL' : 'FAIL'} label={label} />;
 }
 
-const shown = (v: unknown) => (v == null || v === '' ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v));
+// 객체 값은 항목 사이(쉼표·콜론 뒤)를 띄어 쓴다 — 띄어쓰기 없는 긴 JSON은 칸 폭에서 아무 데나 끊겨 날짜(2026-10-07…)가 두 줄로 갈렸다(2026-11-06 보존 작업 감사)
+const json = (v: unknown) =>
+  JSON.stringify(v)
+    .replace(/,(?=["{[])/g, ', ')
+    .replace(/":(?=\S)/g, '": ')
+    .replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})/g, (t) => localTime(t));
+const shown = (v: unknown) => (v == null || v === '' ? '—' : typeof v === 'object' ? json(v) : String(v));
 const clip = (t: string, n = 60) => (t.length > n ? `${t.slice(0, n - 1)}…` : t);
 const line = (k: string, b: Record<string, unknown>, a: Record<string, unknown>) => (k in b ? `${k}: ${shown(b[k])} → ${shown(a[k])}` : `${k}: ${shown(a[k])}`);
+// 화면 줄 — 아는 키는 업무 말·값도 사람 말로(계정 ID → 이름, 차량 수 → n대, 사유 분류/코드 → 한글). 원래 키·값은 툴팁(line)
+const K = ko.kill;
+const say = (k: string, v: unknown): string => {
+  if (v == null || v === '') return '—';
+  if (k === 'vins' && typeof v === 'number') return AP.vehicles(v);
+  if (k === 'kid' && typeof v === 'string' && /^APR-usr-/.test(v)) return AP.approverKey(personName(v.slice(4)));
+  if (k === 'reason' && typeof v === 'string' && /^[A-Z]+\/[A-Z0-9_]+$/.test(v)) {
+    const [cat, code] = v.split('/');
+    return `${K.reasonCategories[cat] ?? cat} · ${K.reasonCodes[code] ?? code}`;
+  }
+  if (Array.isArray(v) && v.every((x) => typeof x === 'string')) return v.join(', ');
+  return typeof v === 'string' ? humanText(v) : shown(v);
+};
+const sayLine = (k: string, b: Record<string, unknown>, a: Record<string, unknown>) => {
+  const label = AUDIT_KEY_KO[k] ?? k;
+  return k in b ? `${label}: ${say(k, b[k])} → ${say(k, a[k])}` : `${label}: ${say(k, a[k])}`;
+};
 
 /** 전후 값 — 바뀐 키마다 '키: 전 → 후'(전이 없으면 '키: 후'), 앞의 세 개만 보이고 나머지는 수(전체는 툴팁) */
 export function AuditChange({ before, after }: { before: unknown; after: unknown }) {
@@ -29,7 +52,7 @@ export function AuditChange({ before, after }: { before: unknown; after: unknown
       {keys.slice(0, 3).map((k) => (
         <span key={k}>
           {/* 값 안의 규칙·컴포넌트 코드는 설명 모드로(UX3-01) */}
-          <CodeFreeText text={clip(line(k, b, a))} />
+          <CodeFreeText text={clip(sayLine(k, b, a))} />
         </span>
       ))}
       {keys.length > 3 && <span className="ds-field__hint">{AP.more(keys.length - 3)}</span>}

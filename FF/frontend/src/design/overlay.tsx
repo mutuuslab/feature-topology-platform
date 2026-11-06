@@ -111,7 +111,12 @@ export function DangerConfirm({ open, title, body, confirmWord, actionLabel, onC
           <p style={{ margin: 0 }}>{body}</p>
           {children}
           <label style={{ display: 'grid', gap: 6, fontSize: 'var(--fs-sm)' }}>
-            {ko.danger.typeToConfirm(confirmWord)}
+            {/* 입력할 값은 고정폭 — 본문 글꼴(SUIT)은 0이 O처럼 보여 FEAT-OOO22로 읽혔다 */}
+            <span>
+              {ko.danger.typeToConfirm('\u0000').split('\u0000')[0]}
+              <b className="ds-mono">{confirmWord}</b>
+              {ko.danger.typeToConfirm('\u0000').split('\u0000')[1]}
+            </span>
             <input className="ds-input ds-input--mono" value={typed} onChange={(e) => setTyped(e.target.value)} aria-invalid={typed.length > 0 && !ok} autoComplete="off" spellCheck={false} />
           </label>
           {typed.length > 0 && !ok && <span style={{ color: 'var(--danger)', fontSize: 'var(--fs-xs)' }}>{ko.danger.mismatch}</span>}

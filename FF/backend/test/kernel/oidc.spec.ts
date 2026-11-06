@@ -52,6 +52,8 @@ beforeAll(async () => {
   Object.assign(process.env, {
     FF_DB: ':memory:',
     FF_SEED: 'v0.81',
+    // 데모 활동·전시 채우기는 이 시험과 무관 — 메모리 DB는 그 시드(차량 회신 대기)가 끝날 때까지 부팅을 기다려 hook 30초를 넘겼다(2026-11-06)
+    FF_DEMO_ACTIVITY: '0',
     FF_AUTH: 'oidc',
     OIDC_ISSUER: idp.issuer,
     OIDC_CLIENT_ID: 'ff-platform',

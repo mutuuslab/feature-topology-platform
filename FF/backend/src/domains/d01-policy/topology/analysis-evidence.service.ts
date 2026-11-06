@@ -218,6 +218,28 @@ export class AnalysisEvidenceService implements OnApplicationBootstrap {
   }
 
   /**
+   * 이관 기록 — 기존 시스템에서 옮긴 분석 문서(provenance IMPORT, 플랫폼 gate 키로 봉인). 출시 뒤 Version도 받는다 — 새로 쓰는 것이 아니라
+   * 그때의 기록을 옮긴 것이다(개인 서명 기록은 record). 이미 지금 기록이 있는 종류는 덮지 않는다. 감사·이벤트는 record와 같은 경로.
+   */
+  importRecord(actor: Actor, kind: AnalysisKind, featureId: string, version: string, body: HaraBody | TaraBody | SotifBody | HomologationBody): AnalysisRecord | null {
+    this.require(featureId, version);
+    if (this.latest(featureId, version)[kind]) return null;
+    const target = `${featureId}@${version}#${kind.toLowerCase()}`;
+    const { reason, ...rest } = body as { reason: string } & Record<string, unknown>;
+    const docId = typeof rest.docId === 'string' ? rest.docId : null;
+    delete rest.docId;
+    return this.db.tx(() => {
+      const unsigned = this.draft(kind, featureId, version, docId, rest, reason, { id: actor.id, role: ANALYSIS_AUTHOR_ROLE[kind] }, 'IMPORT');
+      const s = this.hsm.signDetached('gate', jcs(unsigned));
+      const r: AnalysisRecord = { ...unsigned, kid: s.kid, sig: s.value };
+      this.insert(r);
+      this.audit.record(actor, ACTION[kind], target, { after: { recordId: r.recordId, docId, kid: s.kid, provenance: 'IMPORT' }, reason, componentId: 'D01-02' });
+      this.events.publish('analysis.recorded', `${featureId}@${version}`, { recordId: r.recordId, kind, by: actor.id, provenance: 'IMPORT' }, { componentId: 'D01-02', correlationId: actor.correlationId });
+      return r;
+    });
+  }
+
+  /**
    * G7 서명 — SM은 지금의 HARA가, CSM은 보안 관련이면 지금의 TARA가 있어야 한다. 다른 역할의 유효한 서명과 같은 사람이면 거부(두 사람 원칙).
    * @rule FFG-LCY-001 — G7 Safety/Security Gate 결정의 승인자 두 역할
    */

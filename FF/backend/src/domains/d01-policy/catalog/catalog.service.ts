@@ -1,6 +1,9 @@
 // Feature Catalog (D01-03) — 상품 마스터·상품 Version·구성 Baseline (상세설계서 §4, 표 21·22).
 // Feature 정의·BOM 스냅샷은 참조만. Feature 상태 변화는 상품 상태를 자동으로 바꾸지 않는다(다음 상품 전이 때 확인).
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { z } from 'zod';
 import {
   BASELINE_ELIGIBLE,
   bumpVersion,
@@ -26,10 +29,28 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, ProductRepo, TopologyRepo } from '../repos';
+import { DEMO_FIXTURES } from '../../../kernel/seed';
+
+/** 데이터셋 상품의 승인 이력(data/fixtures/demo/product-approvals.json) — 원천 xlsx에 없는 작성자·구성 승인·고객 출시 승인과 그 시각 */
+const ProductApprovalHistory = z
+  .object({
+    catalogId: z.string().regex(/^CAT-\d{5}$/),
+    version: z.string().regex(/^\d+\.\d+\.\d+$/),
+    lifecycle: z.string(),
+    createdBy: z.string().min(1),
+    createdAt: z.string().datetime(),
+    config: z.object({ by: z.string().min(1), at: z.string().datetime() }).strict().nullable(),
+    release: z.object({ by: z.string().min(1), at: z.string().datetime() }).strict().nullable(),
+  })
+  .strict()
+  .array();
+export type ProductApprovalHistory = z.infer<typeof ProductApprovalHistory>;
+export const PRODUCT_APPROVALS_META = 'seed:product-approvals';
+const IMPORTER = { id: 'system:dataset', role: 'SYSTEM', correlationId: 'seed-product-approvals' } as Actor;
 
 @Injectable()
 @PlatformComponent('D01-03')
-export class CatalogService {
+export class CatalogService implements OnApplicationBootstrap {
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly products: ProductRepo,
@@ -40,6 +61,44 @@ export class CatalogService {
     private readonly events: EventService,
     private readonly clock: Clock,
   ) {}
+
+  /** 데이터셋 시드면 상품 승인 이력을 한 번 가져온다(FF_SEED=none·5년 운영 데이터셋은 빼고, DB마다 한 번) */
+  onApplicationBootstrap() {
+    if (process.env.FF_SEED === 'none' || process.env.FF_DATASET === 'ops5y') return;
+    const file = join(process.env.FF_DEMO_FIXTURES ?? DEMO_FIXTURES, 'product-approvals.json');
+    if (!existsSync(file) || this.db.get('SELECT 1 FROM meta WHERE key = ?', PRODUCT_APPROVALS_META)) return;
+    this.importApprovalHistory(ProductApprovalHistory.parse(JSON.parse(readFileSync(file, 'utf8'))));
+  }
+
+  /**
+   * 데이터셋 상품의 승인 이력 — 상품 상세 '승인과 다음 담당'이 비던 것(원천 xlsx에 승인자가 없다). 작성자·구성 승인자·고객 출시 승인자를 적고,
+   * 감사에는 그 시각으로 가져온 기록(PRODUCT_APPROVAL_IMPORT)을 남긴다. 상태 순서(작성 < 구성 승인 < 고객 출시 승인)와 직무 분리(두 승인자가 다름)를 확인하고,
+   * 이미 이력이 있는 행(앱에서 승인한 상품)은 건드리지 않는다
+   */
+  importApprovalHistory(rows: ProductApprovalHistory) {
+    let done = 0;
+    this.db.tx(() => {
+      for (const r of rows) {
+        const p = this.products.get(r.catalogId, r.version);
+        if (!p || p.lifecycle !== r.lifecycle) continue;
+        const m = this.products.meta(r.catalogId, r.version);
+        if (m.createdBy || m.configApprovedBy || m.releaseApprovedBy) continue;
+        if (r.config && r.config.at <= r.createdAt) throw new Error(`${r.catalogId}@${r.version}: 구성 승인 시각이 작성보다 앞섭니다`);
+        if (r.release && (!r.config || r.release.at <= r.config.at)) throw new Error(`${r.catalogId}@${r.version}: 고객 출시 승인은 구성 승인 뒤여야 합니다`);
+        if (r.release && r.config && r.release.by === r.config.by) throw new Error(`${r.catalogId}@${r.version}: 구성 승인자와 고객 출시 승인자는 달라야 합니다`);
+        const target = `${r.catalogId}@${r.version}`;
+        this.products.setOrigin(r.catalogId, r.version, r.createdBy, r.createdAt);
+        for (const [kind, a] of [['CONFIG', r.config], ['RELEASE', r.release]] as const) {
+          if (!a) continue;
+          this.products.setApprover(r.catalogId, r.version, kind, a.by);
+          this.clock.at(a.at, () => this.audit.record(IMPORTER, 'PRODUCT_APPROVAL_IMPORT', target, { after: { kind, approvedBy: a.by, approvedAt: a.at, createdBy: r.createdBy }, reason: '데이터셋 상품의 승인 이력 가져옴', componentId: 'D01-03' }));
+        }
+        done++;
+      }
+      this.db.run('INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING', PRODUCT_APPROVALS_META, JSON.stringify({ at: this.clock.iso(), products: done }));
+    });
+    return done;
+  }
 
   /** 확정 Baseline → 구성 검증 입력 (Feature의 현재 Lifecycle 포함) */
   private refs(): Map<string, BaselineRef> {

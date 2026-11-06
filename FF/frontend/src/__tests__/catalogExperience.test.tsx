@@ -141,9 +141,21 @@ describe('Catalog product experience', () => {
   it('reports missing composition and absent approvals without fabricating Features or people', () => {
     mount(<><CatalogAssembly product={PRODUCT} composition={{ result: 'FAIL', issues: [], features: [] }} /><CatalogApproval product={PRODUCT} meta={{ createdBy: null, configApprovedBy: null, releaseApprovedBy: null }} transitions={[{ to: 'RELEASED', ko: '고객 출시 승인', approval: 'RELEASE' }]} eligibility={{ eligible: false, reasons: ['구성 검증'] }} /></>);
     expect(screen.getByText(C.noFeatures)).toBeTruthy();
-    expect(screen.getAllByText(C.noApproval)).toHaveLength(2);
+    // 검증 완료(VERIFIED) 상품 — 구성 승인은 지난 단계라 '기록 없음', 고객 출시 승인은 아직 단계 전(2026-11-06)
+    expect(screen.getAllByText(C.noApproval)).toHaveLength(1);
+    expect(screen.getByText(C.releasePending)).toBeTruthy();
     expect(screen.getByText(/고객 출시 승인 · 고객 출시 승인 담당/)).toBeTruthy();
     expect(calls).toHaveLength(0);
+  });
+
+  it('shows dataset approvers and keeps not-yet-reached approval stages apart from missing records', () => {
+    mount(<CatalogApproval product={{ ...PRODUCT, lifecycle: 'DEVELOPING' }} meta={{ createdBy: 'usr-commerce', configApprovedBy: 'usr-approver', releaseApprovedBy: null }} transitions={[]} eligibility={{ eligible: false, reasons: [] }} />);
+    expect(screen.queryByText(C.noApproval)).toBeNull();
+    expect(screen.getByText(C.releasePending)).toBeTruthy();
+    cleanup();
+    mount(<CatalogApproval product={{ ...PRODUCT, lifecycle: 'PROPOSED' }} meta={{ createdBy: 'usr-commerce', configApprovedBy: null, releaseApprovedBy: null }} transitions={[]} eligibility={{ eligible: false, reasons: [] }} />);
+    expect(screen.getByText(C.configPending)).toBeTruthy();
+    expect(screen.queryByText(C.noApproval)).toBeNull();
   });
 
   it('a card never turns a missing feature count or price into a zero', () => {

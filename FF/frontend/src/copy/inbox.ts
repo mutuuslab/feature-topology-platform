@@ -33,6 +33,8 @@ export const QUEUE_ROLE: Record<QueueKey, string> = {
 export const SLOT_LABEL: Record<string, string> = { FSM: 'Safety Manager(FSM)', CSM: '사이버보안(CSM)', OPS_LEAD: '운영 리더', PRODUCT_OWNER: '상품 Owner', QA: '품질', REGULATORY: '법규' };
 
 export const inbox = {
+  /** 내 차례 칸 — 행동 자격(판정 결과 PASS·승인됨과 다른 색·말) */
+  reviewable: '검토 가능',
   slot: (label: string) => `${label} 칸으로 승인`,
   ownDefinition: '내가 작성한 제안은 승인할 수 없습니다(직무 분리)',
   reviewed: '이미 검토 의견을 냈습니다',
@@ -71,11 +73,8 @@ export const homeWork = {
   handoffGo: (name: string) => `${name} 화면 열기`,
 };
 
-/** 부서 전환 — 역할이 바뀌면 알린다(P4-9) */
-export const deptNotice = {
-  changed: (from: string, to: string) => `역할이 ${from} → ${to}(으)로 바뀌었습니다`,
-  restored: (to: string) => `전체 보기 — 원래 역할 ${to}(으)로 돌아왔습니다`,
-};
+// 부서 전환 알림(deptNotice)은 copy/departments.ts — 앱 상태(store)가 첫 화면에서 쓰는데 이 파일 전체(업무함 문구)를 끌어오지 않게
+export { deptNotice } from './departments';
 
 /** Feature 상세 '다음 차례' 카드(P1-6) */
 export const nextTurn = {

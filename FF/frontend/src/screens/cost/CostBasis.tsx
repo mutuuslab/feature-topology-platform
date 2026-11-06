@@ -6,7 +6,7 @@ import type { CostBasis } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { costBasis as T } from '../../copy/cost';
 import { AsyncView, Button, DataTable, DiffView, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, whyDisabled } from '../../design';
-import { usePermission, when } from '../shared';
+import { usePermission, useReadPermission, when } from '../shared';
 import { BackLink, COST_MONEY, money, pct } from './common';
 import { CostCalibration } from './CostCalibration';
 
@@ -38,7 +38,8 @@ function flatten(x: unknown, prefix = '', out: Record<string, unknown> = {}): Re
 
 export function CostBasisScreen() {
   const list = useApi<{ items: BasisMeta[]; latest: string | null }>('costBasisList');
-  const money$ = usePermission(COST_MONEY);
+  // 금액 보기는 읽기 — 정적 데모에서도 보인다(초안·발행 버튼은 admin이 막는다)
+  const money$ = useReadPermission(COST_MONEY);
   const admin = usePermission(ADMIN);
   const items = list.data?.items ?? [];
   const [picked, setPicked] = useState<string | null>(null);

@@ -3,6 +3,7 @@
 // 원격 DC2만 쓴 기준선 실행은 차량 내 감지와 나란히 비교 타임라인으로 보인다(보고서 v1.1 CS-01) — FFG-TST-009 · FFG-LCY-006
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { virtualEvidenceSnapshotFile } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
@@ -47,7 +48,8 @@ export interface VRun {
   safety?: { deactClass: string; takeoverMs: number; rampMs: number; faultRampMs: number; faultTolerantTimeMs: number } | null;
   criteria: { id: string; label: string; unit: string; op: string; limit: number; status: 'pass' | 'fail' | 'pending' | 'na'; value: number | null; at: number | null; deciding: boolean }[];
   evaluation: { value: boolean; decision: string; reason: string } | null;
-  evidence: { files: { name: string; sha256: string; bytes: number }[] } | null;
+  /** sourceRunId — 공개 시연에서 기록된 실행을 다시 쓴 결과는 그 실행의 Evidence 파일을 연다 */
+  evidence: { files: { name: string; sha256: string; bytes: number }[]; sourceRunId?: string } | null;
   error: string | null;
   at: string;
   by: string;
@@ -140,7 +142,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
               ]}
             />
           )}
-          {r.evidence && !STATIC_MODE && (
+          {r.evidence && (
             <div>
               <h3 className="ds-eyebrow">{T.evidence}</h3>
               <ul className="ds-check">
@@ -148,7 +150,7 @@ function RunDrawer({ id, onClose }: { id: string | null; onClose: () => void }) 
                   <li key={f.name} data-state="INFO">
                     <Icon name="book" size={16} />
                     <span>
-                      <a href={fileUrl(r.runId, f.name)} target="_blank" rel="noreferrer" className="ds-mono">
+                      <a href={fileUrl(r, f.name)} target="_blank" rel="noreferrer" className="ds-mono">
                         {f.name}
                       </a>
                       <span className="ds-check__detail ds-mono">{`sha256:${f.sha256.slice(0, 12)}… · ${f.bytes} B`}</span>
@@ -373,34 +375,44 @@ export function CompareTimeline({ onboard, remote, faultAt }: { onboard: VRun | 
 }
 
 /** 정책 상세의 가상검증 패널 — 이 정책 내용으로 돌린 실행만 검증기 근거가 된다 */
-const fileUrl = (runId: string, name: string) => `/api/virtual-validations/${runId}/files/${encodeURIComponent(name)}`;
+// 정적 데모는 스냅샷을 만들 때 받아 둔 Evidence 파일(원래 형식)을 연다
+const fileUrl = (run: Pick<VRun, 'runId' | 'evidence'>, name: string) =>
+  STATIC_MODE ? import.meta.env.BASE_URL + virtualEvidenceSnapshotFile(run.evidence?.sourceRunId ?? run.runId, name) : `/api/virtual-validations/${run.runId}/files/${encodeURIComponent(name)}`;
 
-/** 차량 내 감지 실행의 Evidence 보고서(CARLA 주행 시계열) — 정적 배포에는 Evidence 파일이 없어 안내만 */
+/** 차량 내 감지 실행의 Evidence 보고서(CARLA 주행 시계열) — 실행 기록이 없을 때만 안내 */
 function ReportLink({ run }: { run: VRun | null }) {
   const has = !!run?.evidence?.files.some((f) => f.name === 'report.html');
-  if (!run || !has || STATIC_MODE)
+  if (!run || !has)
     return (
       <span className="ds-field__hint" data-testid="sim-report" data-tour="sim-report">
         {T.reportNone}
       </span>
     );
   return (
-    <a href={fileUrl(run.runId, 'report.html')} target="_blank" rel="noreferrer" title={`${run.runId} · ${run.testId ?? ''}`} data-testid="sim-report" data-tour="sim-report">
+    <a href={fileUrl(run, 'report.html')} target="_blank" rel="noreferrer" title={`${run.runId} · ${run.testId ?? ''}`} data-testid="sim-report" data-tour="sim-report">
       {T.reportOnboard} ↗
     </a>
   );
 }
 
+/** 공개 정적 데모 스냅샷에는 운영자용 연결 정보(호스트·포트·실행기)가 없다(contracts publicSimStatus) */
 interface SimStatus {
   available: boolean;
   mode: string;
   simulator: string;
-  host: string;
-  port: number;
+  host?: string;
+  port?: number;
   server: { version: string; map: string; synchronous: boolean; vehicles: number; foreignVehicles: number } | null;
-  runner: string;
+  runner?: string;
   reason: string | null;
   queue: { running: number; waiting: number };
+}
+
+/** 시뮬레이터 이름·버전·맵 — 서버가 응답하면 그 값, 아니면 마지막 실행의 재현 정보(도구 Version 'ff-carla 1.0 · CARLA 0.9.16 · Town04') */
+export function simulatorLabel(sim: SimStatus | undefined, last: VRun | null): string {
+  if (sim?.server) return `${sim.simulator} ${sim.server.version} · ${sim.server.map}`;
+  const version = last?.repro?.toolVersion.match(/CARLA\s+(\d[\w.]*)/)?.[1];
+  return [sim?.simulator ?? 'CARLA', version].filter(Boolean).join(' ') + (last?.repro?.map ? ` · ${last.repro.map}` : '');
 }
 
 export function VirtualPanel({ policy }: { policy: { policyId: string; featureId: string; contentHash: string } }) {
@@ -474,11 +486,24 @@ export function VirtualValidationScreen() {
   const pick = policyId || pols.at(-1)?.policyId || '';
   const rows = runs.data?.items ?? [];
   const message = virtualMessage(status.data, latestOf(rows, 'FAULT_ONBOARD'));
+  const carlaRuns = rows.filter((r) => r.source === 'carla');
+  const lastRun = [...carlaRuns].sort((a, b) => b.at.localeCompare(a.at) || b.runId.localeCompare(a.runId))[0] ?? null;
   return (
     <div className="ds-screen">
       <PageHeader codes="D06-03 · D04-02 · CARLA" title={T.title} lead={T.lead} message={message} actions={<ReportLink run={latestOf(rows, 'FAULT_ONBOARD')} />} />
-      <Panel title={T.status} id="sim" tour="sim-status" actions={status.data && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
-        {status.data && (
+      {/* 공개 정적 데모에는 검증 서버가 없다 — 연결 판정 대신 기록을 본다는 안내(실행 기록은 아래 표) */}
+      <Panel title={T.status} id="sim" tour="sim-status" actions={status.data && !STATIC_MODE && <VerdictBadge value={status.data.available ? 'PASS' : 'FAIL'} />}>
+        {/* 공개본은 실행 기록 기준(시뮬레이터·상태·마지막 실행) — 빌드 PC의 호스트·포트·실행기 경로는 보이지 않는다 */}
+        {status.data && STATIC_MODE && (
+          <KeyValue
+            rows={[
+              { k: T.simulator, v: <span className="ds-mono">{simulatorLabel(status.data, lastRun)}</span> },
+              { k: T.status, v: <span className="ds-mono">{T.recorded}</span>, note: T.recordedNote },
+              ...(lastRun ? [{ k: T.lastRun, v: <span className="ds-mono">{when(lastRun.at)}</span>, note: T.lastRunNote(carlaRuns.length) }] : []),
+            ]}
+          />
+        )}
+        {status.data && !STATIC_MODE && (
           <KeyValue
             rows={[
               { k: T.status, v: <span className="ds-mono">{status.data.available ? T.available : T.unavailable}</span>, note: status.data.reason ?? (status.data.available ? undefined : T.startHint) },

@@ -2,6 +2,7 @@
 // 규칙 순서·조건은 코드 패키지 tools/platform_policy_gate.py의 evaluate()와 같다 — tools/gate-parity.ts가 같은 사례로 두 구현을 규칙 단위로 대조한다.
 // 차량(LPC·Safety Guard)이 안전 관련 검사를 모두 다시 하고, 여기는 플랫폼만 할 수 있는 검사(Registry 상태·등급 정합, 승인·역할과 원장의 Kill 승인자,
 // 유효기간, 명령 순번, 이동 시간 창 누적 상한, 시장·법규 사전조건, Evidence)를 더한다. 대량 조치 상한은 서명 HSM 정책 엔진이 다시 집행한다(FFG-SEC-003).
+import { requestKo } from './command-request';
 import type { DeactClass, FClass } from '../schemas/safety';
 import { KillCommandV2, wireErrors } from '../schemas/wire';
 
@@ -101,13 +102,13 @@ export function evaluateGate(cmd: KillCommandV2, registry: GateRegistry, now: Da
   // FFG-ADS-010 폐기된 기능은 다시 켜거나 복원할 수 없다
   if (reg.status === 'DECOMMISSIONED') {
     const ok = req === 'deactivate';
-    add('FFG-ADS-010', ok, ok ? '폐기 기능의 비활성화' : `폐기된 기능의 ${req}는 금지(UN ADS GTR 제안 5.3.2.16(e))`);
+    add('FFG-ADS-010', ok, ok ? '폐기 기능의 비활성화' : `폐기된 기능의 ${requestKo(req)}는 금지(UN ADS GTR 제안 5.3.2.16(e))`);
   }
 
   // FFG-PLT-003 등급은 Registry 데이터 — 운영자가 고르지 않는다
   {
     const ok = feat.deact_class === reg.deact_class && feat.f_class === reg.f_class;
-    add('FFG-PLT-003', ok, ok ? 'f_class·deact_class가 Registry와 같음' : `선언 ${feat.f_class}/${feat.deact_class} ≠ Registry ${reg.f_class}/${reg.deact_class}`);
+    add('FFG-PLT-003', ok, ok ? 'F 등급·비활성화 등급이 Registry와 같음' : `선언 ${feat.f_class}/${feat.deact_class} ≠ Registry ${reg.f_class}/${reg.deact_class}`);
   }
 
   // FFG-PLT-004 DC4·법규 의무 기능은 런타임 Flag가 아니다 — 원격 요청 자체를 받지 않는다
@@ -181,7 +182,7 @@ export function evaluateGate(cmd: KillCommandV2, registry: GateRegistry, now: Da
     add(
       'FFG-SEC-003',
       ok,
-      ok ? `${req}: ${pol.kill_window_hours} h 창 누적 ${total}대(상한 ${reg.max_per_window})` : `${req}: 창 누적 ${total}대 > 상한 ${reg.max_per_window} — FSM + CSM 승인과 단계 실행 필요`,
+      ok ? `${requestKo(req)} — ${pol.kill_window_hours}시간 누적 ${total}대(상한 ${reg.max_per_window}대)` : `${requestKo(req)} — ${pol.kill_window_hours}시간 누적 ${total}대 > 상한 ${reg.max_per_window}대 — FSM + CSM 승인과 단계 실행 필요`,
     );
   }
 

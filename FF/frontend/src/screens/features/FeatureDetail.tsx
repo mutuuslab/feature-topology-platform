@@ -1,9 +1,11 @@
 // /features/:id/:ver — Feature Version 상세 (v2). Lifecycle 전이·Gate 판정·의존관계·구현 추적·Baseline·감사.
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { GATES, type Lifecycle } from '@ff/contracts';
+import { GATES, ROLE_LABEL, ruleFor, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
+import { actorFor } from '../../api/actor';
+import { useAppShell } from '../../store';
 import { ko } from '../../copy/ko';
 import { extSync } from '../../copy/ext-sync';
 import { NotFound } from '../../components/patterns';
@@ -56,7 +58,8 @@ export default function FeatureDetail() {
   const { id = '', ver = '' } = useParams();
   const nav = useNavigate();
   const q = useApi<Detail>('featureDetail', { params: { id, ver } });
-  const d = q.data;
+  const { role } = useAppShell();
+  const d = q.data && STATIC_MODE ? forActor(q.data, role) : q.data;
   const external = useFeatureTrace(id, ver);
   const [transitionTo, setTransitionTo] = useState<Lifecycle | null>(null);
   // 막지 않은 기준 행 경고(전이·새 Version 응답 warnings) — 그 Version에서만 보인다. 새 Version은 이동할 때 state로 넘겨받는다
@@ -125,8 +128,7 @@ export default function FeatureDetail() {
                     <Button
                       key={t.to}
                       variant={t.to === 'DEPRECATED' || t.to === 'RETIRED' ? 'default' : 'primary'}
-                      disabled={STATIC_MODE || !!roleBlocker(t)}
-                      title={STATIC_MODE ? ko.page.readOnly : undefined}
+                      disabled={!!roleBlocker(t)}
                       reason={roleBlocker(t)?.code === 'ROLE' ? NT.roleBlocked(t.roles.join('·')) : roleBlocker(t)?.message}
                       onClick={() => setTransitionTo(t.to)}
                     >
@@ -191,6 +193,25 @@ export default function FeatureDetail() {
       )}
     </div>
   );
+}
+
+/**
+ * 정적 공개본 — 받아 둔 상세의 전이 미리 보기는 행위자 없이 찍혔다. 역할·직무 분리 막힘만 지금 역할로 다시 판정한다
+ * (서버 evaluateTransition과 같은 규칙: 경로 역할 중 맡은 첫 역할, 작성자 본인 승인 금지). 쓰기는 브라우저 안 시연 데이터가 처리한다(20-60)
+ */
+function forActor(d: Detail, persona: string): Detail {
+  const a = actorFor(persona);
+  return {
+    ...d,
+    transitions: d.transitions.map((t) => {
+      const rule = ruleFor(d.feature.lifecycle as Lifecycle, t.to as Lifecycle);
+      if (!rule || t.auto) return t;
+      const rest = t.blockers.filter((b) => b.code !== 'ROLE' && b.code !== 'SEPARATION_OF_DUTY');
+      const roleBlock = rule.roles.includes(a.role) ? [] : [{ code: 'ROLE', message: `허용 역할이 아닙니다 (${rule.roles.map((r) => ROLE_LABEL[r]).join(' · ')})` }];
+      const sod = d.meta?.createdBy && d.meta.createdBy === a.id ? [{ code: 'SEPARATION_OF_DUTY', message: '작성자는 자기 Feature 버전을 승인·출시할 수 없습니다.' }] : [];
+      return { ...t, blockers: [...rest, ...roleBlock, ...sod] as typeof t.blockers };
+    }),
+  };
 }
 
 function Overview({ d }: { d: Detail }) {
@@ -332,7 +353,8 @@ export function Checklist({ items }: { items: ChecklistItem[] }) {
 }
 
 function AuditTab({ target }: { target: string }) {
-  const q = useApi<{ items: AuditEntry[] }>('audit', { query: { target, limit: 100 } });
+  // 이 Version의 기록 전부 — Version 자체(전이·기준선)와 그 아래 대상(#safety 안전 분류·#G1 Gate·#hara 분석)까지
+  const q = useApi<{ items: AuditEntry[] }>('audit', { query: { targetPrefix: target, limit: 100 } });
   return (
     <AsyncView state={asyncState(q, (q.data?.items.length ?? 0) === 0)} error={q.error}>
       <AuditLog rows={q.data?.items ?? []} />

@@ -35,6 +35,7 @@ const P: Record<string, string> = {
   minimize: 'M5 15h10',
   target: 'M10 4a6 6 0 1 0 0 12 6 6 0 0 0 0-12ZM10 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM10 1.5V4M10 16v2.5M1.5 10H4M16 10h2.5',
   logout: 'M12 3h3a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-3M4 10h8M9.5 7l3 3-3 3',
+  reset: 'M4.5 9a5.5 5.5 0 1 1 1.6 4.4M4 4.5V9h4.5',
 };
 
 export type IconName = keyof typeof P;

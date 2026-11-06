@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RETIREMENT_STEPS, ROLE_LABEL, type Role } from '@ff/contracts';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';
@@ -222,7 +221,7 @@ function StepForm({ r, step }: { r: Retirement; step: StepKey }) {
         </>
       )}
       <ErrorNote error={rec.error} />
-      <Button variant="primary" disabled={!perm.ok || STATIC_MODE || rec.isPending} title={perm.hint} onClick={() => rec.mutate({ params: { id: r.retirementId }, body })}>
+      <Button variant="primary" disabled={!perm.ok || rec.isPending} title={perm.hint} onClick={() => rec.mutate({ params: { id: r.retirementId }, body })}>
         {T.record}
       </Button>
     </div>

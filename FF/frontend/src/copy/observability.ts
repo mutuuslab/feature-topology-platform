@@ -4,7 +4,6 @@ export const observability = {
   metrics: '처리 지표', traces: '평가 요청 추적', logs: '이벤트 기록', readbacks: '차량 회신',
   requests: 'HTTP 요청', errors: 'HTTP 오류', latency: '평균 처리 시간', route: '처리 경로',
   metricsUnavailable: '지표 수집에 접근하지 못했습니다. 운영 환경에서는 관리자의 수집 연결이 필요합니다.',
-  staticMetrics: '정적 시연에서는 서버 처리 지표를 수집하지 않습니다.',
   unknown: '미확인', noData: '조회된 기록이 없습니다.',
   search: 'VIN·게시본·Flag·요청 ID 검색', refresh: '기록 새로 고침',
   malformed: '수집 기록의 형식이 올바르지 않습니다. 원장을 다시 확인하세요.',

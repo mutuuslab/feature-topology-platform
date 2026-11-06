@@ -2,7 +2,7 @@
 // P10-C3: 레거시 인메모리 모델(구 Feature 시드·CR·제안·Revision·활성화·실시간 시뮬레이션 틱)을 걷어냈다.
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type Dispatch, type ReactNode } from 'react';
 import { permMatrix, profileOf, roleLabel, roles } from './data/refdata';
-import { deptNotice } from './copy/inbox';
+import { deptNotice } from './copy/departments';
 import { ALL_DEPARTMENTS, departmentById, isDepartment } from './data/departments';
 
 export interface AppState {

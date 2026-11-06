@@ -3,7 +3,7 @@
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
 // W2(담당자 E2E P2-3·P3-6): 정의 승인·Feature DB 검토·Release Sign-off·출시·배포·Gate 판정·사후 검토 대기열을 더하고, 급한 순서·기한·
 // 사람 이름·한국 시각으로 보인다. 대기열 조건은 contracts(rules/work-queue), 부서·순서는 ./queues.
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type Role, type WorkQueues } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
@@ -14,7 +14,7 @@ import { KIND_LABEL } from '../../copy/refdb';
 import { procedures as PR } from '../../copy/procedures';
 import { useProcedureSummary } from '../../data/procedureProgress';
 import { localTime, personLabel, personName, remaining } from '../../data/people';
-import { AsyncView, type AsyncState, DataTable, LifecycleBadge, PageHeader, Panel, Segmented, VerdictBadge, type KeyMessageSpec } from '../../design';
+import { AsyncView, type AsyncState, DataTable, LifecycleBadge, PageHeader, Panel, Segmented, StatusGlyph, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
 import { OIDC_AUTH } from '../../auth-mode';
 import { departmentById } from '../../data/departments';
@@ -101,52 +101,56 @@ export function useInbox() {
     const s = request === 'deactivate' ? { requestedBy: k.requestedBy, approvals: (k.approvals ?? []) as never[], plan } : { requestedBy: rr!.requestedBy, approvals: rr!.approvals as never[], plan, excluded: (k.approvals ?? []).map((a) => a.approverId) };
     return approvalCheck(s, { id: me.id, roles: reportRoles });
   };
-  const w = wq.data ?? {};
-  const items: Item[] = byUrgency([
-    ...(bl.data?.items ?? []).map((r) => base({ key: r.requestId, queue: 'baseline', item: `${r.featureId} ${r.version}`, detail: r.requestId, since: r.requestedAt, who: r.requestedBy, mine: has('BOM_APPROVER') && r.requestedBy !== me.id, to: `/baselines?request=${r.requestId}`, featureId: r.featureId })),
-    ...(pol.data?.items ?? []).map((p) => base({ key: p.policyId, queue: 'policy', item: `${p.policyId} · ${p.flagKey}`, detail: `${p.featureId} ${p.featureVersion}`, since: p.createdAt, who: p.createdBy, mine: has('FEATURE_APPROVER') && p.createdBy !== me.id, to: `/policies/${p.policyId}`, featureId: p.featureId })),
-    ...(approved.data?.items ?? []).map((p) => base({ key: `deploy:${p.policyId}`, queue: 'deploy', item: `${p.policyId} · ${p.flagKey}`, detail: IX.deploy(p.flagKey), since: p.approvedAt ?? p.createdAt, who: p.createdBy, mine: has('RELEASE_MANAGER') || has('OPERATOR'), to: `/policies/${p.policyId}`, featureId: p.featureId })),
-    ...(prod.data?.items ?? [])
-      .filter((p) => p.lifecycle === 'PROPOSED' || p.lifecycle === 'VERIFIED')
-      .map((p) => base({ key: `${p.catalogId}@${p.version}`, queue: 'product', item: `${p.catalogId} ${p.version}`, detail: `${p.name} · ${p.lifecycle === 'PROPOSED' ? '구성 승인' : '고객 출시 승인'}`, mine: has('PRODUCT_APPROVER'), to: `/products/${p.catalogId}/${p.version}` })),
-    ...(w.definitions ?? []).map((f) => {
-      const own = !!f.createdBy && f.createdBy === me.id;
-      return base({ key: `def:${f.featureId}@${f.version}`, queue: 'definition', item: `${f.featureId} ${f.version}`, detail: IX.definition(f.createdBy ? personName(f.createdBy) : f.ownerId), since: f.since, who: f.createdBy, mine: has('FEATURE_APPROVER') && !own, why: own ? IX.ownDefinition : null, to: `/features/${f.featureId}/${f.version}`, featureId: f.featureId });
-    }),
-    ...(changes.data?.items ?? [])
-      .filter((c) => c.status === 'REVIEW')
-      .map((c) => {
-        const block = refChangeDutyBlocker(c, me.id, 'REVIEW');
-        const done = (c.reviews ?? []).some((r) => r.reviewerId === me.id);
-        return base({ key: `ref:${c.changeId}`, queue: 'refReview', item: `${c.changeId} · ${c.refId}`, detail: IX.refReview(KIND_LABEL[c.kind as keyof typeof KIND_LABEL] ?? c.kind, personName(c.requestedBy)), since: c.requestedAt, who: c.requestedBy, mine: has('DOMAIN_REVIEWER') && !block && !done, why: block ?? (done ? IX.reviewed : null), to: `/master/feature-db/changes/${c.changeId}` });
+  // 대기열(수백 건)을 모아 급한 순서로 — 조회가 바뀔 때만. 홈은 조회가 하나씩 올 때마다 다시 그려 매번 모으고 정렬했다
+  const items: Item[] = useMemo(() => {
+    const w = wq.data ?? {};
+    return byUrgency([
+      ...(bl.data?.items ?? []).map((r) => base({ key: r.requestId, queue: 'baseline', item: `${r.featureId} ${r.version}`, detail: r.requestId, since: r.requestedAt, who: r.requestedBy, mine: has('BOM_APPROVER') && r.requestedBy !== me.id, to: `/baselines?request=${r.requestId}`, featureId: r.featureId })),
+      ...(pol.data?.items ?? []).map((p) => base({ key: p.policyId, queue: 'policy', item: `${p.policyId} · ${p.flagKey}`, detail: `${p.featureId} ${p.featureVersion}`, since: p.createdAt, who: p.createdBy, mine: has('FEATURE_APPROVER') && p.createdBy !== me.id, to: `/policies/${p.policyId}`, featureId: p.featureId })),
+      ...(approved.data?.items ?? []).map((p) => base({ key: `deploy:${p.policyId}`, queue: 'deploy', item: `${p.policyId} · ${p.flagKey}`, detail: IX.deploy(p.flagKey), since: p.approvedAt ?? p.createdAt, who: p.createdBy, mine: has('RELEASE_MANAGER') || has('OPERATOR'), to: `/policies/${p.policyId}`, featureId: p.featureId })),
+      ...(prod.data?.items ?? [])
+        .filter((p) => p.lifecycle === 'PROPOSED' || p.lifecycle === 'VERIFIED')
+        .map((p) => base({ key: `${p.catalogId}@${p.version}`, queue: 'product', item: `${p.catalogId} ${p.version}`, detail: `${p.name} · ${p.lifecycle === 'PROPOSED' ? '구성 승인' : '고객 출시 승인'}`, mine: has('PRODUCT_APPROVER'), to: `/products/${p.catalogId}/${p.version}` })),
+      ...(w.definitions ?? []).map((f) => {
+        const own = !!f.createdBy && f.createdBy === me.id;
+        return base({ key: `def:${f.featureId}@${f.version}`, queue: 'definition', item: `${f.featureId} ${f.version}`, detail: IX.definition(f.createdBy ? personName(f.createdBy) : f.ownerId), since: f.since, who: f.createdBy, mine: has('FEATURE_APPROVER') && !own, why: own ? IX.ownDefinition : null, to: `/features/${f.featureId}/${f.version}`, featureId: f.featureId });
       }),
-    ...(w.signoffs ?? []).map((f) => base({ key: `sign:${f.featureId}@${f.version}`, queue: 'signoff', item: `${f.featureId} ${f.version}`, detail: f.stale ? IX.signedStale : `${f.name} — ${IX.signoff}`, since: f.since, mine: has('FEATURE_AUTHOR'), to: `/features/${f.featureId}/${f.version}`, featureId: f.featureId })),
-    ...(w.releasable ?? []).map((f) => base({ key: `rel:${f.featureId}@${f.version}`, queue: 'release', item: `${f.featureId} ${f.version}`, detail: `${f.name} — ${IX.release(personName(f.signedBy))}`, since: f.since, who: f.signedBy, mine: has('RELEASE_MANAGER'), to: `/features/${f.featureId}/${f.version}`, featureId: f.featureId })),
-    ...(w.gates ?? []).map((g) => base({ key: `gate:${g.featureId}@${g.version}:${g.gate}`, queue: 'gate', item: `${g.featureId} ${g.version}`, detail: `${IX.gate(g.gate, GATE_META[g.gate].name)} · ${g.name}`, since: g.since, mine: has('GATE_JUDGE') || has('SAFETY_OFFICER'), to: `/features/${g.featureId}/${g.version}?tab=gates`, featureId: g.featureId, gate: g.gate })),
-    ...(w.classifications ?? []).map((p) => base({ key: `safety:${p.featureId}@${p.version}`, queue: 'safety', item: `${p.featureId} ${p.version}`, detail: `${IX.classification(p.fClass)} · ${p.name}`, since: p.since, mine: has('SAFETY_OFFICER'), to: `/features/${p.featureId}/${p.version}?tab=safety`, featureId: p.featureId })),
-    ...(w.homologations ?? []).map((f) => base({ key: `homologation:${f.featureId}@${f.version}`, queue: 'homologation', item: `${f.featureId} ${f.version}`, detail: f.name, since: f.since, mine: has('REGULATORY_OWNER'), to: `/features/${f.featureId}/${f.version}?tab=safety#safety-analysis-h`, featureId: f.featureId })),
-    ...(kills.data?.items ?? [])
-      .filter((k) => k.status === 'REQUESTED')
-      .map((k) => {
-        const c = killCheck(k, 'deactivate');
-        const slot = c.ok ? IX.slot(SLOT_LABEL[c.role] ?? c.role) : null;
-        return base({ key: `kill:${k.killId}`, queue: 'kill', item: k.killId, detail: `${k.featureId} ${k.featureVersion} · ${IX.approvals((k.approvals ?? []).length, 2)}`, since: k.requestedAt, who: k.requestedBy, mine: c.ok, why: 'message' in c ? c.message : null, slot, due: k.expiresAt ?? null, to: `/ops/kill?id=${k.killId}`, featureId: k.featureId });
-      }),
-    ...(kills.data?.items ?? [])
-      .filter((k) => k.status === 'ACTIVE' && k.restoreRequest?.status === 'REQUESTED')
-      .map((k) => {
-        const c = killCheck(k, 'restore');
-        const slot = c.ok ? IX.slot(SLOT_LABEL[c.role] ?? c.role) : null;
-        return base({ key: `restore:${k.killId}`, queue: 'restore', item: k.killId, detail: `${k.featureId} ${k.featureVersion} · ${IX.approvals(k.restoreRequest!.approvals.length, 2)}`, since: k.restoreRequest!.requestedAt, who: k.restoreRequest!.requestedBy, mine: c.ok, why: 'message' in c ? c.message : null, slot, to: `/ops/kill?id=${k.killId}`, featureId: k.featureId });
-      }),
-    ...(reviews.data?.items ?? [])
-      .filter((r) => r.status !== 'REVIEWED')
-      .map((r) => {
-        const block = postReviewBlocker(r, me.id);
-        return base({ key: `post:${r.killId}`, queue: 'postReview', item: r.killId, detail: `${r.featureId} · ${IX.postReview(personName(r.requestedBy))}`, who: r.requestedBy, due: r.due, mine: POST_REVIEW_ROLES.some(has) && !block, why: block, to: '/audit/oversight#post-reviews-h', featureId: r.featureId });
-      }),
-    ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${c.field}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER'), to: '/integration/connectors?tab=sync' })),
-  ]);
+      ...(changes.data?.items ?? [])
+        .filter((c) => c.status === 'REVIEW')
+        .map((c) => {
+          const block = refChangeDutyBlocker(c, me.id, 'REVIEW');
+          const done = (c.reviews ?? []).some((r) => r.reviewerId === me.id);
+          return base({ key: `ref:${c.changeId}`, queue: 'refReview', item: `${c.changeId} · ${c.refId}`, detail: IX.refReview(KIND_LABEL[c.kind as keyof typeof KIND_LABEL] ?? c.kind, personName(c.requestedBy)), since: c.requestedAt, who: c.requestedBy, mine: has('DOMAIN_REVIEWER') && !block && !done, why: block ?? (done ? IX.reviewed : null), to: `/master/feature-db/changes/${c.changeId}` });
+        }),
+      ...(w.signoffs ?? []).map((f) => base({ key: `sign:${f.featureId}@${f.version}`, queue: 'signoff', item: `${f.featureId} ${f.version}`, detail: f.stale ? IX.signedStale : `${f.name} — ${IX.signoff}`, since: f.since, mine: has('FEATURE_AUTHOR'), to: `/features/${f.featureId}/${f.version}`, featureId: f.featureId })),
+      ...(w.releasable ?? []).map((f) => base({ key: `rel:${f.featureId}@${f.version}`, queue: 'release', item: `${f.featureId} ${f.version}`, detail: `${f.name} — ${IX.release(personName(f.signedBy))}`, since: f.since, who: f.signedBy, mine: has('RELEASE_MANAGER'), to: `/features/${f.featureId}/${f.version}`, featureId: f.featureId })),
+      ...(w.gates ?? []).map((g) => base({ key: `gate:${g.featureId}@${g.version}:${g.gate}`, queue: 'gate', item: `${g.featureId} ${g.version}`, detail: `${IX.gate(g.gate, GATE_META[g.gate].name)} · ${g.name}`, since: g.since, mine: has('GATE_JUDGE') || has('SAFETY_OFFICER'), to: `/features/${g.featureId}/${g.version}?tab=gates`, featureId: g.featureId, gate: g.gate })),
+      ...(w.classifications ?? []).map((p) => base({ key: `safety:${p.featureId}@${p.version}`, queue: 'safety', item: `${p.featureId} ${p.version}`, detail: `${IX.classification(p.fClass)} · ${p.name}`, since: p.since, mine: has('SAFETY_OFFICER'), to: `/features/${p.featureId}/${p.version}?tab=safety`, featureId: p.featureId })),
+      ...(w.homologations ?? []).map((f) => base({ key: `homologation:${f.featureId}@${f.version}`, queue: 'homologation', item: `${f.featureId} ${f.version}`, detail: f.name, since: f.since, mine: has('REGULATORY_OWNER'), to: `/features/${f.featureId}/${f.version}?tab=safety#safety-analysis-h`, featureId: f.featureId })),
+      ...(kills.data?.items ?? [])
+        .filter((k) => k.status === 'REQUESTED')
+        .map((k) => {
+          const c = killCheck(k, 'deactivate');
+          const slot = c.ok ? IX.slot(SLOT_LABEL[c.role] ?? c.role) : null;
+          return base({ key: `kill:${k.killId}`, queue: 'kill', item: k.killId, detail: `${k.featureId} ${k.featureVersion} · ${IX.approvals((k.approvals ?? []).length, 2)}`, since: k.requestedAt, who: k.requestedBy, mine: c.ok, why: 'message' in c ? c.message : null, slot, due: k.expiresAt ?? null, to: `/ops/kill?id=${k.killId}`, featureId: k.featureId });
+        }),
+      ...(kills.data?.items ?? [])
+        .filter((k) => k.status === 'ACTIVE' && k.restoreRequest?.status === 'REQUESTED')
+        .map((k) => {
+          const c = killCheck(k, 'restore');
+          const slot = c.ok ? IX.slot(SLOT_LABEL[c.role] ?? c.role) : null;
+          return base({ key: `restore:${k.killId}`, queue: 'restore', item: k.killId, detail: `${k.featureId} ${k.featureVersion} · ${IX.approvals(k.restoreRequest!.approvals.length, 2)}`, since: k.restoreRequest!.requestedAt, who: k.restoreRequest!.requestedBy, mine: c.ok, why: 'message' in c ? c.message : null, slot, to: `/ops/kill?id=${k.killId}`, featureId: k.featureId });
+        }),
+      ...(reviews.data?.items ?? [])
+        .filter((r) => r.status !== 'REVIEWED')
+        .map((r) => {
+          const block = postReviewBlocker(r, me.id);
+          return base({ key: `post:${r.killId}`, queue: 'postReview', item: r.killId, detail: `${r.featureId} · ${IX.postReview(personName(r.requestedBy))}`, who: r.requestedBy, due: r.due, mine: POST_REVIEW_ROLES.some(has) && !block, why: block, to: '/audit/oversight#post-reviews-h', featureId: r.featureId });
+        }),
+      ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${c.field}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER'), to: '/integration/connectors?tab=sync' })),
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 역할·조회 응답이 같으면 결과도 같다
+  }, [role, bl.data, pol.data, approved.data, prod.data, wq.data, kills.data, reviews.data, changes.data, sync.data]);
   const failed = queries.find((q) => q.isError && !optional(q));
   // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다
   const state: AsyncState = failed ? asyncState(failed) : queries.some((q) => q.isPending) ? 'loading' : items.length ? 'ready' : 'empty';
@@ -175,7 +179,11 @@ export function MineCell({ r }: { r: Item }) {
   if (r.mine)
     return (
       <span className="ds-nowrap">
-        <VerdictBadge value="PASS" />
+        {/* 행동 자격 — 판정 결과(녹색 PASS·승인됨)와 다른 강조색·말로 보인다(디자인 검토 2026-11-05) */}
+        <span className="ds-badge" data-turn="mine" style={{ '--c': 'var(--accent)' } as CSSProperties}>
+          <StatusGlyph kind="DOT" />
+          <span className="ds-badge__ko">{IX.reviewable}</span>
+        </span>
         {r.slot && <span className="ds-field__hint"> {r.slot}</span>}
       </span>
     );

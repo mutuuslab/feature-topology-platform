@@ -5,21 +5,27 @@ import { Link } from 'react-router-dom';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_CATEGORY_LABEL, type NotificationCategory } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { usePlatformEvents } from '../../api/stream';
+import { usePlatformLiveEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, ErrorNote, ExplainCodes, PageHeader, Panel, Segmented, Select } from '../../design';
 import { NOTIFY_EVENTS, SeverityBadge, t16, type Inbox, type InboxItem } from '../../shell/NotificationBell';
 import { humanText } from '../../data/people';
+import { ComponentName } from '../shared';
 
 const N = ko.notify;
 
 /** 활동 이름은 기본 화면에, 원문과 절차 코드는 tooltip/설명 모드에 보존한다. 알림 원장은 바꾸지 않는다. */
 function NotificationValue({ value }: { value: string }) {
   const activity = /^(FPW\.\d+-A\d+)\s+(.+)$/.exec(value);
-  return activity ? <span title={value}>{humanText(activity[2])}<ExplainCodes codes={[activity[1]]} /></span> : <>{humanText(value)}</>;
+  if (activity) return <span title={value}>{humanText(activity[2])}<ExplainCodes codes={[activity[1]]} /></span>;
+  // 검증 실패 항목 등 컴포넌트 코드(D06-03 …)는 업무 이름으로, 코드는 툴팁·설명 모드로(본문 코드 금지 UX3-01)
+  const parts = value.split(/\b(D0\d-\d{2})\b/);
+  if (parts.length === 1) return <>{humanText(value)}</>;
+  return <span title={value}>{parts.map((x, i) => (i % 2 ? <ComponentName key={i} id={x} /> : <span key={i}>{humanText(x)}</span>))}</span>;
 }
 
 function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: boolean }) {
+  // 정적 데모는 읽기 전용 — 읽음 표시는 보이되 누를 수 없고, 열기는 읽음 처리 없이 화면만 연다
   return (
     <li className="ntf-row" data-unread={!n.readAt || undefined} data-testid="notification-row">
       <div className="ntf-row__meta">
@@ -67,15 +73,19 @@ export function NotificationsScreen() {
   const [view, setView] = useState<'unread' | 'all'>('unread');
   const [category, setCategory] = useState<NotificationCategory | ''>('');
   const query = { unread: view === 'unread' || undefined, category: category || undefined, limit: 200 };
-  const q = useApi<Inbox>('notifications', { query }, { enabled: !STATIC_MODE });
+  const q = useApi<Inbox>('notifications', { query });
   // 범주별 안 읽음 수와 전체 수는 거르지 않은 목록에서
-  const totals = useApi<Inbox>('notifications', { query: { limit: 500 } }, { enabled: !STATIC_MODE });
-  usePlatformEvents(NOTIFY_EVENTS, ['notifications']);
+  const totals = useApi<Inbox>('notifications', { query: { limit: 500 } });
+  // 새 알림이 오면 다시 읽기만 — 이벤트 이력은 쓰지 않는다
+  usePlatformLiveEvents(NOTIFY_EVENTS, ['notifications']);
   const read = useApiMutation('readNotification', ['notifications']);
   const readAll = useApiMutation('readAllNotifications', ['notifications']);
   const items = q.data?.items ?? [];
   const unread = totals.data?.unread ?? 0;
   const byCategory = totals.data?.byCategory ?? {};
+  // 정적 데모(한 계정 기준 스냅샷)는 받은 알림이 있는 범주만 고르게 한다 — 빈 범주를 골라 빈 목록이 보이지 않게
+  const present = new Set((totals.data?.items ?? []).map((n) => n.category));
+  const categories = STATIC_MODE && totals.data ? NOTIFICATION_CATEGORIES.filter((c) => present.has(c)) : NOTIFICATION_CATEGORIES;
 
   return (
     <>
@@ -83,9 +93,9 @@ export function NotificationsScreen() {
         codes={N.eyebrow}
         title={N.title}
         lead={N.lead}
-        message={STATIC_MODE ? { tone: 'neutral', text: N.key.static } : !totals.data ? { tone: 'neutral', value: '—', text: N.key.unread } : unread ? { tone: 'warn', value: unread, text: N.key.unread } : { tone: 'ok', text: N.key.clear }}
+        message={!totals.data ? { tone: 'neutral', value: '—', text: N.key.unread } : unread ? { tone: 'warn', value: unread, text: N.key.unread } : { tone: 'ok', text: N.key.clear }}
         actions={
-          <Button icon="check" disabled={STATIC_MODE || unread === 0 || readAll.isPending} onClick={() => readAll.mutate({ body: category ? { category } : {} })}>
+          <Button icon="check" disabled={unread === 0 || readAll.isPending} onClick={() => readAll.mutate({ body: category ? { category } : {} })}>
             {N.markAll}
           </Button>
         }
@@ -104,7 +114,7 @@ export function NotificationsScreen() {
             />
             <Select label={N.categoryLabel} value={category} onChange={(e) => setCategory(e.target.value as NotificationCategory | '')}>
               <option value="">{N.allCategories}</option>
-              {NOTIFICATION_CATEGORIES.map((c) => (
+              {categories.map((c) => (
                 <option key={c} value={c}>
                   {NOTIFICATION_CATEGORY_LABEL[c]}
                   {byCategory[c] ? ` (${byCategory[c]})` : ''}
@@ -114,8 +124,8 @@ export function NotificationsScreen() {
           </div>
           <ErrorNote error={read.error ?? readAll.error} />
           <AsyncView
-            state={STATIC_MODE ? 'empty' : asyncState(q, items.length === 0)}
-            empty={{ body: STATIC_MODE ? N.staticNote : view === 'unread' ? N.emptyUnread : N.empty }}
+            state={asyncState(q, items.length === 0)}
+            empty={{ body: view === 'unread' ? N.emptyUnread : N.empty }}
             onRetry={() => q.refetch()}
           >
             <ul className="ntf-list" aria-label={N.title}>

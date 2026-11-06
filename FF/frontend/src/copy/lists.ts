@@ -9,5 +9,4 @@ export const lists = {
   loadingMore: '불러오는 중…',
   loaded: (n: number) => `${n.toLocaleString('ko-KR')}건 표시`,
   end: '마지막 기록까지 모두 표시했습니다.',
-  staticMore: '데모에서는 첫 페이지만 볼 수 있습니다.',
 };

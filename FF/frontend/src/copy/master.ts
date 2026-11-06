@@ -199,11 +199,11 @@ export const master = {
   },
   define: {
     key: { open: '등록 진행 중인 Feature', none: '등록 진행 중인 Feature가 없습니다' },
-    title: 'Feature 등록',
+    title: 'Feature 등록 현황',
     lead: '등록 중인 Feature Version과 남은 일.',
     col: { feature: 'Feature', lifecycle: '상태', owner: '담당', gates: 'Gate PASS', next: '다음 할 일' },
     next: { PROPOSED: 'G1~G3 판정 → Feature 승인', APPROVED: 'Control Point·구현 연결', DEVELOPING: 'G4~G7 판정·정책 등록', VERIFIED: 'G8·G9 → 출시 승인' } as Record<string, string>,
     gatePass: (n: number) => `${n}/9`,
-    newProposal: '새 Feature 제안',
+    newProposal: '새 Feature 등록',
   },
 } as const;

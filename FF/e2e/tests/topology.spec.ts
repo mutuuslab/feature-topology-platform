@@ -81,8 +81,10 @@ test('그래프: 도메인 레인·카드 노드·직교 간선 — 노드를 �
   await expect(target).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.ds-topo-node[data-dim]').first()).toBeAttached();
   await expect(page.getByRole('complementary', { name: '선택 정보' })).toContainText('전방 안전거리');
-  await page.waitForTimeout(500); // 화면 이동 모션(320ms)이 끝난 뒤
   const neighbor = page.locator('[data-node="FEAT-00145"] .topo-card').first();
+  // 화면 이동 모션(320ms)이 끝난 뒤 — 카드 위치가 연달아 같을 때까지
+  let last = '';
+  await expect.poll(async () => { const b = JSON.stringify(await neighbor.boundingBox()); const same = b === last && b !== 'null'; last = b; return same; }, { intervals: [100] }).toBe(true);
   await neighbor.click();
   await expect(page).toHaveURL(/feature=FEAT-00145/);
   await expect(page.locator('[data-node="FEAT-00145"]')).toHaveAttribute('aria-pressed', 'true');

@@ -3,7 +3,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   BASELINE_ELIGIBLE,
+  billOfFeatures,
   bumpVersion,
+  catalogueBlocker,
   evaluateProductGuards,
   PRODUCT_TRANSITIONS,
   productRuleFor,
@@ -14,6 +16,7 @@ import {
   type CreateProductBody,
   type CreateProductVersionBody,
   type Lifecycle,
+  type PleRef,
   type ProductRow,
   type UpdateProductDraftBody,
   type ValidateCompositionBody,
@@ -26,6 +29,8 @@ import { DB, type Db } from '../../../kernel/db';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { BaselineRepo, FeatureRepo, ProductRepo, TopologyRepo } from '../repos';
+import { RefdbRepository } from '../refdb/refdb.repository';
+import { PleRepo } from '../ple/ple.repo';
 
 @Injectable()
 @PlatformComponent('D01-03')
@@ -39,6 +44,8 @@ export class CatalogService {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly refdb: RefdbRepository,
+    private readonly ple: PleRepo,
   ) {}
 
   /** 확정 Baseline → 구성 검증 입력 (Feature의 현재 Lifecycle 포함) */
@@ -51,8 +58,28 @@ export class CatalogService {
     return m;
   }
 
+  /** 확정 Baseline 요약 — 26580 bill-of-features(PleService)가 같은 입력을 쓴다 */
+  baselineRefs(): Map<string, BaselineRef> {
+    return this.refs();
+  }
+
   validate(body: ValidateCompositionBody): CompositionResult {
     return validateComposition({ product: body, baselines: this.refs(), dependencies: this.topology.all(), carriedOver: body.carriedOver });
+  }
+
+  /** 26580 카탈로그 제약 판정(bill-of-features) — 구성 승인 막힘(D-26580-2). 상품 화면 버튼 사유와 서버 거부가 같은 판정 */
+  private catalogueOf(p: ProductRow) {
+    const all = this.features.all();
+    const carriedOver = p.lifecycle === 'PROPOSED' ? [] : p.baselineIds;
+    return billOfFeatures({
+      product: p,
+      baselines: this.refs(),
+      dependencies: this.topology.all(),
+      carriedOver,
+      features: new Map(all.map((f) => [`${f.featureId}@${f.version}`, f])),
+      refsById: new Map(this.refdb.listRefs().map((r) => [r.refId, r as PleRef])),
+      variabilities: this.ple.allVariabilities(),
+    }).issues.filter((i) => i.origin === 'CATALOGUE');
   }
 
   private compositionOf(p: ProductRow): CompositionResult {
@@ -109,10 +136,12 @@ export class CatalogService {
     return this.clock.kst().slice(0, 10);
   }
 
-  private guardsFor(p: ProductRow, to: Lifecycle, composition: CompositionResult): string[] {
+  private guardsFor(p: ProductRow, to: Lifecycle, composition: CompositionResult, catalogue?: ReturnType<CatalogService['catalogueOf']>): string[] {
     const rule = productRuleFor(p.lifecycle, to);
     if (!rule) return [`${p.lifecycle} → ${to} 전이는 정의되어 있지 않습니다.`];
-    return evaluateProductGuards(rule, { composition, today: this.today(), validFrom: p.validFrom, validTo: p.validTo });
+    // 카탈로그 제약은 그것을 보는 전이(구성 승인)에서만 계산한다
+    const cat = catalogue ?? (rule.guards.includes('CATALOGUE_PASS') ? this.catalogueOf(p) : undefined);
+    return evaluateProductGuards(rule, { composition, catalogue: cat, today: this.today(), validFrom: p.validFrom, validTo: p.validTo });
   }
 
   create(actor: Actor, body: CreateProductBody) {
@@ -175,8 +204,10 @@ export class CatalogService {
     if (rule!.approval && meta.createdBy === actor.id) fail('SEPARATION_OF_DUTY', '상품 작성자는 자기 상품을 승인할 수 없습니다.');
     if (rule!.approval === 'RELEASE' && meta.configApprovedBy === actor.id) fail('SEPARATION_OF_DUTY', '구성 승인자와 고객 출시 승인자는 달라야 합니다.');
     const composition = this.compositionOf(p);
-    const blockers = this.guardsFor(p, to, composition);
-    if (blockers.length) fail('GUARD_FAILED', `전이할 수 없습니다: ${blockers.join(' / ')}`, { blockers, composition });
+    const catalogue = rule!.guards.includes('CATALOGUE_PASS') ? this.catalogueOf(p) : undefined;
+    const blockers = this.guardsFor(p, to, composition, catalogue);
+    // 카탈로그 제약 위반(D-26580-2)은 같은 GUARD_FAILED에 거부 이유 코드 CATALOGUE_CONSTRAINT — 화면 사유 문장(catalogueBlocker)과 같다
+    if (blockers.length) fail('GUARD_FAILED', `전이할 수 없습니다: ${blockers.join(' / ')}`, { blockers, composition, ...(catalogueBlocker(catalogue) ? { code: 'CATALOGUE_CONSTRAINT', catalogue: catalogue!.filter((i) => i.severity === 'FAIL') } : {}) });
 
     return this.db.tx(() => {
       let cur = this.apply(actor, p, to, reason);

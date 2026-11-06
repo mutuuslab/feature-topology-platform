@@ -77,7 +77,7 @@
       "current": "상품이 국가·차종·트림 단위로 만들어지고 구성 승인과 출시 승인이 다른 승인자로 분리되며, 미확인 시장 Profile은 F2+ 활성화를 막는다.",
       "evidence": [
         "contracts/src/rules/catalog.ts:41",
-        "backend/src/domains/d01-policy/catalog/catalog.service.ts:119",
+        "backend/src/domains/d01-policy/catalog/catalog.service.ts:148",
         "contracts/src/rules/compliance-profile.ts:51"
       ],
       "tests": [

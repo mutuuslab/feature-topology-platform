@@ -27,10 +27,11 @@ last_updated: 2026-11-05
 - 프로세스: FPW.7 출시·활성화·단계적 확대
 - 시작: G6 배포 완료
 - 입력: WP-G6-DECISION → 출력: WP-PRODUCT
-- 플랫폼: `createProduct`, `validateComposition`, `offerTrials`, `/products/new`, `/entitlements`
+- 플랫폼: `createProduct`, `validateComposition`, `checkBillOfFeatures`, `offerTrials`, `/products/new`, `/entitlements`, `/products/bill-of-features`, `/products/configurator`
 1. 상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다
 2. 구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다
-3. 체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다
+3. Bill-of-Features 점검으로 카탈로그 제약(기준 행 선행·배타, 하위 feature의 상위, 대안 중복)을 보고, 제품 구성기로 켜질 Flag·SW를 미리 본다
+4. 체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다
 - [ ] 구성 검증 결과에 충돌이 없다
 
 ## 2. 협의·통보 받는 활동

@@ -1,0 +1,90 @@
+/* ISO/IEC 26580 정합 화면(20-60) — 등록 단계 띠·자동 채움 표·카탈로그 트리·Bill-of-Features 격자. 색·간격은 tokens.css 토큰만. */
+
+/* ── 등록 진행 단계: 번호 원 + 이름 + 한 줄 설명, 지난 단계는 통과 색, 지금 단계는 강조색 막대 ── */
+.reg-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-1); counter-reset: none; }
+.reg-steps__item { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: var(--sp-2); align-items: start; padding: var(--sp-2) var(--sp-3); border-top: 3px solid var(--line-strong); color: var(--muted); }
+.reg-steps__no { grid-row: span 2; display: inline-grid; place-items: center; inline-size: 24px; block-size: 24px; border-radius: var(--r-pill); border: 1px solid var(--line-strong); font-family: var(--font-mono); font-size: var(--fs-xs); background: var(--surface); }
+.reg-steps__name { font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); }
+.reg-steps__hint { font-size: var(--fs-xs); color: var(--muted); }
+.reg-steps__item[data-state='done'] { border-top-color: var(--ok); }
+.reg-steps__item[data-state='done'] .reg-steps__no { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); }
+.reg-steps__item[data-state='current'] { border-top-color: var(--accent); color: var(--ink); }
+.reg-steps__item[data-state='current'] .reg-steps__no { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.reg-steps__item[data-state='current'] .reg-steps__name { color: var(--ink); }
+.reg-steps--compact .reg-steps__hint { display: none; }
+.reg-steps--compact .reg-steps__item { padding: var(--sp-1) var(--sp-2); }
+@media (max-width: 900px) {
+  .reg-steps { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* 미니 진행 막대(목록 칸) — 다섯 칸 */
+.reg-mini { display: inline-flex; gap: var(--sp-0h); align-items: center; }
+.reg-mini__seg { inline-size: 18px; block-size: 6px; border-radius: var(--r-pill); background: var(--track-bg); }
+.reg-mini__seg[data-state='done'] { background: var(--ok); }
+.reg-mini__seg[data-state='current'] { background: var(--accent); }
+.reg-mini__label { margin-inline-start: var(--sp-2); font-size: var(--fs-xs); color: var(--ink-2); white-space: nowrap; }
+
+/* ── ① 이름·설명으로 찾기 ── */
+.intent { border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface-2); padding: var(--sp-3) var(--sp-4); display: grid; gap: var(--sp-2); }
+.intent__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
+.intent__row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-3); align-items: center; padding: var(--sp-2) var(--sp-3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.intent__name { font-weight: 600; }
+.intent__why { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-1); }
+
+/* ── ② 자동 채움 ── */
+.af { display: grid; gap: var(--sp-4); }
+.af__table { inline-size: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.af__table th, .af__table td { text-align: start; padding: var(--sp-1h) var(--sp-2); border-bottom: 1px solid var(--line); vertical-align: top; }
+.af__table th { font-weight: 600; color: var(--ink-2); background: var(--surface-2); }
+.af__src { color: var(--muted); font-size: var(--fs-xs); }
+.af__src b { color: var(--ink-2); font-weight: 600; }
+.af__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); }
+.af__box { border: 1px solid var(--line); border-radius: var(--r); padding: var(--sp-3); background: var(--surface); display: grid; gap: var(--sp-2); align-content: start; }
+.af__box h3 { margin: 0; font-size: var(--fs-md); }
+.af__chips { display: flex; flex-wrap: wrap; gap: var(--sp-1h); list-style: none; margin: 0; padding: 0; }
+.af__chip { border: 1px solid var(--line-strong); background: var(--surface); border-radius: var(--r-pill); padding: var(--sp-1) var(--sp-3); font-size: var(--fs-sm); cursor: pointer; color: var(--ink); }
+.af__chip[aria-pressed='true'] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.af__chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.af__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); font-size: var(--fs-sm); }
+.af__list li { display: flex; flex-wrap: wrap; gap: var(--sp-1h); align-items: baseline; }
+.af__profile { border: 1px solid var(--line-strong); border-radius: var(--r); padding: var(--sp-3) var(--sp-4); background: var(--surface-2); display: grid; gap: var(--sp-3); }
+.af__profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-3); }
+
+/* ── 26580 하위 메뉴 ── */
+.ple-nav { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: center; padding: var(--sp-1) 0; }
+.ple-nav__label { font-size: var(--fs-xs); color: var(--muted); margin-inline-end: var(--sp-2); }
+.ple-nav a { padding: var(--sp-1) var(--sp-3); border-radius: var(--r-pill); border: 1px solid var(--line); color: var(--ink-2); text-decoration: none; font-size: var(--fs-sm); }
+.ple-nav a[aria-current='page'] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.ple-nav a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ── 카탈로그 트리 ── */
+.cat-tree { display: grid; gap: var(--sp-3); }
+.cat-domain { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.cat-domain > summary { display: flex; gap: var(--sp-3); align-items: baseline; padding: var(--sp-2) var(--sp-3); cursor: pointer; font-weight: 600; }
+.cat-domain > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cat-domain__counts { font-weight: 400; font-size: var(--fs-xs); color: var(--muted); }
+.cat-comp { padding: 0 var(--sp-3) var(--sp-3); }
+.cat-comp h3 { margin: var(--sp-2) 0 var(--sp-1); font-size: var(--fs-sm); color: var(--ink-2); }
+.cat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
+.cat-list .cat-list { margin-inline-start: var(--sp-5); padding-inline-start: var(--sp-3); border-inline-start: 2px solid var(--line); margin-top: var(--sp-1); }
+.cat-node { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-2); padding: var(--sp-1h) var(--sp-2); border-radius: var(--r-sm); background: var(--surface-2); }
+.cat-node[data-role='SUB'] { background: var(--surface); border: 1px dashed var(--line-strong); }
+.cat-node__name { font-weight: 600; }
+.cat-node__meta { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: center; justify-content: flex-end; }
+.cat-node__real { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--sp-1); font-size: var(--fs-xs); }
+
+/* ── Bill-of-Features 격자(상품 × 주요 feature) ── */
+.bof-grid-wrap { overflow: auto; max-block-size: 60vh; border: 1px solid var(--line); border-radius: var(--r); }
+.bof-grid { border-collapse: separate; border-spacing: 0; font-size: var(--fs-xs); }
+.bof-grid th, .bof-grid td { padding: var(--sp-1) var(--sp-1h); border-bottom: 1px solid var(--line); border-inline-end: 1px solid var(--line); text-align: center; }
+.bof-grid thead th { position: sticky; top: 0; background: var(--surface-2); z-index: 1; writing-mode: vertical-rl; transform: rotate(180deg); max-block-size: 160px; white-space: nowrap; font-weight: 600; }
+.bof-grid tbody th { position: sticky; inset-inline-start: 0; background: var(--surface); text-align: start; white-space: nowrap; z-index: 1; }
+.bof-grid td[data-on='true'] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.bof-grid td[data-result='FAIL'], .bof-grid th[data-result='FAIL'] { box-shadow: inset 3px 0 0 var(--danger); }
+.bof-issues { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); }
+.bof-issues li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-2); padding: var(--sp-2); border-radius: var(--r-sm); background: var(--surface-2); border-inline-start: 3px solid var(--warn); font-size: var(--fs-sm); }
+.bof-issues li[data-severity='FAIL'] { border-inline-start-color: var(--danger); background: var(--danger-soft); }
+.flag-on { color: var(--ok); font-weight: 600; }
+.flag-off { color: var(--muted); }
+/* 자동 채움 이력 '직접 입력'(제안 없던 칸을 사람이 채움) — 고침과 구별 */
+.ds-ref-mark[data-ref-mark='added'] { border-style: dashed; color: var(--ink); font-weight: 600; }

@@ -78,7 +78,7 @@ export function searchLocally<T extends RefSearchRow>(rows: readonly T[], q: Ref
 }
 
 /** 정적 데모 — 스냅샷의 전체 목록(쪽 200개씩)을 한 번 받아 둔다 */
-async function loadAll<T>(signal: AbortSignal): Promise<T[]> {
+export async function loadAll<T>(signal: AbortSignal): Promise<T[]> {
   const first = await call<RefSearchResponse<T>>('listRefs', { query: { offset: undefined, limit: STATIC_SEARCH_PAGE }, signal });
   const rows = [...first.items];
   for (let offset = STATIC_SEARCH_PAGE; offset < first.total; offset += STATIC_SEARCH_PAGE) rows.push(...(await call<RefSearchResponse<T>>('listRefs', { query: { offset, limit: STATIC_SEARCH_PAGE }, signal })).items);

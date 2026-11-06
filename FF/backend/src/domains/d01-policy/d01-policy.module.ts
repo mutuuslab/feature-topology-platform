@@ -37,10 +37,14 @@ import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/
 import { FlagSourceController, FlagSourceService } from './policy-store/flag-source.service';
 import { FlagCodeStore } from './flag-code/flag-code.store';
 import { FlagCoverageService } from './flag-code/flag-coverage.service';
+import { PleController, PleFeatureController } from './ple/ple.controller';
+import { PleRepo } from './ple/ple.repo';
+import { PleSeed } from './ple/ple-seed';
+import { PleService } from './ple/ple.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -66,6 +70,10 @@ import { FlagCoverageService } from './flag-code/flag-coverage.service';
     // Flag 코드 연결 대사(20-97) — Lifecycle 출시 관문·정책 게시 관문·Feature Flag 탭이 함께 쓴다
     FlagCodeStore,
     FlagCoverageService,
+    // ISO/IEC 26580 정합(20-60) — 등록 자동 채움·변이 프로필·카탈로그·bill-of-features·구성기·공유 자산
+    PleRepo,
+    PleService,
+    PleSeed,
   ],
   exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService],
 })

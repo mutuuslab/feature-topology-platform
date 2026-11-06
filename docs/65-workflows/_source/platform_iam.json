@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9252/admin/iam",
+  "iam_url": "http://localhost:9352/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-06T13:06:02.200Z",
+  "fetched_at": "2026-11-06T20:21:31.700Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-integ\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-06T13:05:25.917Z",
+  "contracts_dist_mtime": "2026-11-06T20:20:46.115Z",
   "ff_git": {
-   "head": "e3e160c32265e600be8e4561cc27ebf7c5a038b1",
-   "dirty_files": 41
+   "head": "76140266f7507168d032eed047f67842d95b70f2",
+   "dirty_files": 21
   },
-  "iam_sha256": "9f55db5dc44718f3a16ce56d7001e662fc0f516d3d993ad4c328d308fbe29c5c"
+  "iam_sha256": "0eb12af87fd5f1db090dcf7fb7016a20c3de93cb00644a2ea57eb323994ad941"
  },
  "roles": [
   {
@@ -441,6 +441,17 @@
    "component": "D01-01",
    "roles": [
     "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "checkBillOfFeatures",
+   "method": "POST",
+   "path": "/api/ple/bill-of-features/check",
+   "summary": "BoF 점검",
+   "component": "D01-03",
+   "roles": [
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER"
    ]
   },
   {
@@ -2383,7 +2394,7 @@
   },
   {
    "path": "/feature/propose",
-   "title": "Feature 제안",
+   "title": "Feature 등록",
    "group": "feature"
   },
   {
@@ -2397,8 +2408,18 @@
    "group": "feature"
   },
   {
+   "path": "/features/catalogue",
+   "title": "Feature 카탈로그",
+   "group": "feature"
+  },
+  {
+   "path": "/features/shared-assets",
+   "title": "공유 자산 추적",
+   "group": "feature"
+  },
+  {
    "path": "/master/define",
-   "title": "Feature 등록",
+   "title": "Feature 등록 현황",
    "group": "feature"
   },
   {
@@ -2559,6 +2580,16 @@
   {
    "path": "/procurement/sw-cost/:estId",
    "title": "SW 개발비 산정 과제",
+   "group": "release"
+  },
+  {
+   "path": "/products/bill-of-features",
+   "title": "Bill-of-Features",
+   "group": "release"
+  },
+  {
+   "path": "/products/configurator",
+   "title": "제품 구성기",
    "group": "release"
   },
   {

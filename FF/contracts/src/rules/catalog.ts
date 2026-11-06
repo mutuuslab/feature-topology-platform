@@ -108,7 +108,7 @@ export function validateComposition(input: CompositionInput): CompositionResult 
 
 // ── 상품 Lifecycle (표 17) ─────────────────────────────────────────────
 
-export type ProductGuard = 'COMPOSITION_PASS' | 'SOME_NOT_RELEASED' | 'ALL_RELEASED' | 'VALIDITY_SET' | 'VALIDITY_ENDED';
+export type ProductGuard = 'COMPOSITION_PASS' | 'CATALOGUE_PASS' | 'SOME_NOT_RELEASED' | 'ALL_RELEASED' | 'VALIDITY_SET' | 'VALIDITY_ENDED';
 
 export interface ProductTransitionRule {
   from: Lifecycle;
@@ -122,7 +122,7 @@ export interface ProductTransitionRule {
 }
 
 export const PRODUCT_TRANSITIONS: ProductTransitionRule[] = [
-  { from: 'PROPOSED', to: 'APPROVED', roles: ['PRODUCT_APPROVER'], auto: false, guards: ['COMPOSITION_PASS'], ko: '구성 승인', approval: 'CONFIG' },
+  { from: 'PROPOSED', to: 'APPROVED', roles: ['PRODUCT_APPROVER'], auto: false, guards: ['COMPOSITION_PASS', 'CATALOGUE_PASS'], ko: '구성 승인', approval: 'CONFIG' },
   { from: 'APPROVED', to: 'DEVELOPING', roles: ['SYSTEM'], auto: true, guards: ['SOME_NOT_RELEASED'], ko: '구성 Feature 출시 대기' },
   { from: 'APPROVED', to: 'VERIFIED', roles: ['PRODUCT_APPROVER'], auto: false, guards: ['COMPOSITION_PASS', 'ALL_RELEASED'], ko: '상품 검증 완료' },
   { from: 'DEVELOPING', to: 'VERIFIED', roles: ['PRODUCT_APPROVER'], auto: false, guards: ['COMPOSITION_PASS', 'ALL_RELEASED'], ko: '상품 검증 완료' },
@@ -134,9 +134,25 @@ export const PRODUCT_TRANSITIONS: ProductTransitionRule[] = [
 
 export interface ProductGuardContext {
   composition: CompositionResult;
+  /** 26580 카탈로그 제약 판정(bill-of-features issues, origin CATALOGUE) — 구성 승인 막힘(D-26580-2). 없으면 판정 안 함 */
+  catalogue?: readonly CatalogueGuardIssue[];
   today: string; // YYYY-MM-DD
   validFrom: string | null;
   validTo: string | null;
+}
+
+/** bill-of-features 판정 중 구성 승인에 쓰는 부분(rules/ple/bill-of-features BofIssue의 부분 형태 — 순환 import 없이) */
+export interface CatalogueGuardIssue {
+  code: string;
+  severity: 'FAIL' | 'WARN';
+  origin: 'CATALOGUE' | 'COMPOSITION';
+  message: string;
+}
+
+/** 구성 승인 막힘 문장 — 화면 버튼 사유와 서버 거부(GUARD_FAILED, details.code CATALOGUE_CONSTRAINT)가 같은 문장. 위반이 없으면 null */
+export function catalogueBlocker(issues: readonly CatalogueGuardIssue[] | undefined): string | null {
+  const fails = (issues ?? []).filter((i) => i.origin === 'CATALOGUE' && i.severity === 'FAIL');
+  return fails.length ? `카탈로그 제약 위반 ${fails.length}건 — 고친 뒤 구성 승인하세요: ${fails.map((i) => i.message).join(' / ')}` : null;
 }
 
 export function evaluateProductGuards(rule: ProductTransitionRule, ctx: ProductGuardContext): string[] {
@@ -145,6 +161,10 @@ export function evaluateProductGuards(rule: ProductTransitionRule, ctx: ProductG
   for (const g of rule.guards) {
     if (g === 'COMPOSITION_PASS' && ctx.composition.result !== 'PASS')
       out.push(`구성 검증 FAIL: ${ctx.composition.issues.filter((i) => i.severity === 'FAIL').map((i) => i.message).join(' / ')}`);
+    if (g === 'CATALOGUE_PASS') {
+      const b = catalogueBlocker(ctx.catalogue);
+      if (b) out.push(b);
+    }
     if (g === 'ALL_RELEASED' && notReleased.length) out.push(`아직 RELEASED가 아닌 Feature: ${notReleased.map((f) => `${f.featureId} ${f.version}(${f.lifecycle})`).join(', ')}`);
     if (g === 'SOME_NOT_RELEASED' && !notReleased.length) out.push('모든 Feature가 RELEASED — 개발 대기 불필요');
     if (g === 'VALIDITY_SET' && !(ctx.validFrom && ctx.validTo)) out.push('출시 상품은 유효 시작·종료일이 필요합니다.');

@@ -936,6 +936,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
+     "/features/catalogue",
      "/features/:id/:ver",
      "/master/artifacts",
      "/integration/connectors",
@@ -944,6 +945,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/experiments",
      "/products/new",
      "/entitlements",
+     "/products/bill-of-features",
+     "/products/configurator",
      "/products/:id/:ver",
      "/activation/decide",
      "/admin/approval",
@@ -1490,6 +1493,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/feature-db",
      "/variant-conditions",
      "/arch/topology",
+     "/features/catalogue",
      "/analysis/impact",
      "/master/artifacts",
      "/integration/connectors",
@@ -2305,6 +2309,7 @@ export const WORKFLOWS: WorkflowDoc = {
     "primary": [
      "/variant-conditions",
      "/arch/topology",
+     "/features/catalogue",
      "/baselines",
      "/config/compat",
      "/master/feature-db/changes/:id",
@@ -2992,6 +2997,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/features",
      "/master/feature-db",
      "/variant-conditions",
+     "/features/catalogue",
      "/trace/design",
      "/change/cr",
      "/integration/connectors",
@@ -5665,6 +5671,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "대표(PRIMARY) 기준 행 1개와 포함(INCLUDED) 행 ID, 연결 당시 Feature DB 발행 버전",
       "기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그·규제와 '수정됨' 표시",
+      "자동 채움 출처(기준 행 열·카탈로그·규칙)와 칸별 결정(그대로·고침·사람이 채움), 누가·언제",
+      "Feature 프로필(ISO/IEC 26580) — 카탈로그 위치·상위 feature, 선택 유형·변이성·결합 시점, 변이점",
       "대표 ASIL과 다른 ASIL을 고른 경우 변경 전후 값과 사유",
       "연결 행 상태 경고(검토 필요·폐기 예정·요청 중)와 대체 행 안내"
      ]
@@ -5765,15 +5773,15 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "steps": [
       "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
-      "등록 1단계에서 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
-      "2단계에서 기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그를 확인하고, ASIL을 바꾸면 사유를 적는다",
+      "등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
+      "2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다",
       "관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다",
       "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
       "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
      ],
      "checks": [
       "Registry에 PROPOSED Version이 생기고 소유자가 지정되었다",
-      "대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다",
+      "대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다. 자동 채움 칸마다 출처와 결정이 이력에 남았다",
       "만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다"
      ],
      "platform": {
@@ -5838,10 +5846,12 @@ export const WORKFLOWS: WorkflowDoc = {
      "steps": [
       "적용 차종·Trim·시장을 PLM 기준정보와 대조해 지원 조건을 등록한다",
       "다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다",
-      "Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다"
+      "Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다",
+      "Feature 카탈로그에서 주요·하위 feature 자리와 기준 행 선행·배타 제약을 보고, 관련 Feature 후보를 필요·배타 관계로 확정한다"
      ],
      "checks": [
-      "모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다"
+      "모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다",
+      "하위 feature는 상위 feature 기준 행이 있고, 변이점이 공유 자산과 맞다"
      ],
      "platform": {
       "actions": [
@@ -5849,7 +5859,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "screens": [
        "/variant-conditions",
-       "/arch/topology"
+       "/arch/topology",
+       "/features/catalogue"
       ],
       "gates": [],
       "anchor": "variant-conditions",
@@ -12882,6 +12893,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "steps": [
       "상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다",
       "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다",
+      "Bill-of-Features 점검으로 카탈로그 제약(기준 행 선행·배타, 하위 feature의 상위, 대안 중복)을 보고, 제품 구성기로 켜질 Flag·SW를 미리 본다",
       "체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다"
      ],
      "checks": [
@@ -12891,11 +12903,14 @@ export const WORKFLOWS: WorkflowDoc = {
       "actions": [
        "createProduct",
        "validateComposition",
+       "checkBillOfFeatures",
        "offerTrials"
       ],
       "screens": [
        "/products/new",
-       "/entitlements"
+       "/entitlements",
+       "/products/bill-of-features",
+       "/products/configurator"
       ],
       "gates": [],
       "anchor": null,
@@ -12939,11 +12954,13 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "steps": [
       "상품 작성자가 아닌 상품 Owner가 구성과 판매 조건을 검토한다",
+      "상품 화면의 Bill-of-Features에서 카탈로그 제약 위반을 확인한다 — 위반이 있으면 구성 승인이 막히므로 작성자에게 구성 보완을 돌려보낸다",
       "승인하면 구성 승인 전이를 하고, 반려하면 사유를 남긴다",
       "고객 출시 승인은 구성 승인자와 다른 사람이 하도록 승인 후보를 지정한다"
      ],
      "checks": [
-      "구성 승인자가 상품 작성자와 다르다"
+      "구성 승인자가 상품 작성자와 다르다",
+      "카탈로그 제약 위반(선행·배타·대안 중복)이 없다"
      ],
      "platform": {
       "actions": [

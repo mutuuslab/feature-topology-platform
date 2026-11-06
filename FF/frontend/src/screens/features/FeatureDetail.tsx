@@ -31,6 +31,7 @@ import { AuditLog } from '../governance/AuditLog';
 import { ReleaseSignoffBar } from './ReleaseSignoff';
 import { EpicChip, ExtLinksTab, RequirementChips } from './ExtLinksTab';
 import { FeatureRefsTab } from './FeatureRefsTab';
+import { FeatureProfilePanel } from '../ple/FeatureProfilePanel';
 import { FeatureFlagHighlight, FeatureFlagsTab } from './FeatureFlags';
 import { flags as flagCopy } from '../../copy/flags';
 import { evaluations as evaluationsCopy } from '../../copy/records';
@@ -181,7 +182,10 @@ export default function FeatureDetail() {
                     <EvaluationsTab id={id} />
                   </Suspense>
                 ) : tab === 'refs' ? (
-                  <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
+                  <>
+                    <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
+                    <FeatureProfilePanel featureId={d.feature.featureId} version={d.feature.version} />
+                  </>
                 ) : tab === 'safety' ? (
                   // 안전 분류 탭 — 보고서 v1.1 안전 속성 + ADS 분류·Lifecycle 단계별 책임자·시장 기준선(ADS-UI12)
                   <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>

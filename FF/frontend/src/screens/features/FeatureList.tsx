@@ -7,6 +7,8 @@ import { extSync } from '../../copy/ext-sync';
 import { ko } from '../../copy/ko';
 import { ExtRefChip } from '../../design/ext-ref';
 import { AsyncView, ClassBadges, DataTable, IdChip, LifecycleBadge, PageHeader, Segmented, Select, SummaryLine, Toolbar } from '../../design';
+import { homeEntry as HE } from '../../copy/ple';
+import { PleNav } from '../ple/PleNav';
 import { MiniGates, scopeOf, Segments } from '../shared';
 import type { FeatureList as FeatureListT } from '../types';
 
@@ -105,7 +107,13 @@ export default function FeatureList() {
               }
             : { tone: 'neutral', value: '—', text: T.key.proposed }
         }
+        actions={
+          <Link className="ds-btn ds-btn--primary" to="/feature/propose" data-ui="registerFeature">
+            {HE.register}
+          </Link>
+        }
       />
+      <PleNav />
       {/* 전체 개수는 보조 요약으로 — 핵심 메시지는 행동이 필요한 수(3초 테스트 S4: "68 Feature · Version 80개"는 개수뿐) */}
       <SummaryLine items={[{ k: T.kpiIds, v: all.data ? stats.ids : '—' }, { k: T.kpiVersions, v: all.data ? stats.versions : '—' }]} />
 

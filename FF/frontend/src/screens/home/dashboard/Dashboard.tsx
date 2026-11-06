@@ -456,6 +456,10 @@ function HeaderActions({ api, minutes, onRefresh, onEdit, onDialog, editBtn }: {
   const mine = api.current.mine;
   return (
     <div className="jd-actions">
+      <Link className="jd-btn jd-btn--primary" to="/feature/propose" data-ui="dashboard-register">
+        <Glyph name="plus" />
+        {B.register}
+      </Link>
       <button type="button" className="jd-btn jd-btn--subtle jd-refresh" onClick={onRefresh} title={B.refresh}>
         <Glyph name="refresh" />
         <span>{B.refreshed(minutes)}</span>

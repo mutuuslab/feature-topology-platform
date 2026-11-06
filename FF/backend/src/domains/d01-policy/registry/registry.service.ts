@@ -12,6 +12,7 @@ import {
   type CreateFeatureBody,
   type CreateVersionBody,
   type FeatureVersionRow,
+  type FeatureVariability,
   type UpdateDraftBody,
 } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
@@ -25,6 +26,7 @@ import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '
 import { LifecycleService } from './lifecycle.service';
 import { pageOf } from '../../../kernel/paging';
 import { FeatureRefLinker, regulationsOf, type RefLinkResult, type RefWarning } from './feature-refs';
+import { PleService } from '../ple/ple.service';
 
 /** 대표(PRIMARY, 없으면 첫) 기준 행의 도메인 약어 */
 export const domainOfRefs = (refs: readonly { refId: string; role?: string }[] | undefined): string | null => {
@@ -60,6 +62,7 @@ export class RegistryService {
     private readonly clock: Clock,
     private readonly safety: SafetyProfileService,
     private readonly refs: FeatureRefLinker,
+    private readonly ple: PleService,
   ) {}
 
   /** gateStatus — 목록은 GateRepo.latestStatuses로 한 번에 읽어 넘긴다(버전마다 Gate 질의를 하면 N+1) */
@@ -181,6 +184,7 @@ export class RegistryService {
       });
     }
     let linked: RefLinkResult;
+    const existing = this.features.all(); // 자동 채움 다시 계산의 입력(새 Feature가 들어가기 전, 20-60 §5.4)
     try {
       linked = this.checkRefs(body);
     } catch (e) {
@@ -220,6 +224,7 @@ export class RegistryService {
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
       this.refs.saveLinks(f); // 기준 행 → Feature 역참조 색인(§5.3) — 같은 트랜잭션
       this.safety.ensure(f.featureId, f.version); // 안전 분류 초안 — 앞 Version 값을 잇거나 추정(보고서 5.7)
+      this.ple.recordCreate(actor, f, body, linked.primary, existing); // 26580 자동 채움 출처·칸별 결정·변이 프로필(같은 트랜잭션)
       const target = `${f.featureId}@${f.version}`;
       this.audit.record(actor, 'FEATURE_CREATE', target, { after: { ...f, ...refAuditDetail(linked, body.duplicateReason) }, componentId: 'D01-01' });
       this.events.publish(
@@ -265,7 +270,8 @@ export class RegistryService {
   updateDraft(actor: Actor, featureId: string, version: string, input: UpdateDraftBody) {
     const f = this.lifecycle.require(featureId, version);
     // 중복 확인·사유는 판정 입력일 뿐 — Feature 문서에 저장하지 않는다
-    const { confirmDuplicate: _confirm, duplicateReason, ...body } = input;
+    // 변이 프로필(26580)은 Feature 문서가 아니라 feature_variability에 둔다
+    const { confirmDuplicate: _confirm, duplicateReason, variability: _variability, ...body } = input;
     const target = `${featureId}@${version}`;
     if (f.lifecycle !== 'PROPOSED') {
       this.audit.failed(actor, 'FEATURE_UPDATE', target, `${f.lifecycle} 버전 수정 시도`, 'D01-01');
@@ -282,6 +288,7 @@ export class RegistryService {
     return this.db.tx(() => {
       const next = this.withLinks(this.merge(f, { ...body, ...impl }), linked);
       this.features.update(next);
+      this.ple.recordUpdate(actor, f, next, input); // 바꾼 칸·변이 프로필 이력(20-60 §5.4)
       if (linked) this.refs.saveLinks(next);
       const changed = changedKeys(f, body as any);
       this.audit.record(actor, 'FEATURE_UPDATE', target, { before: pick(f, changed), after: { ...pick(next, changed), ...(linked ? refAuditDetail(linked, duplicateReason) : {}) }, componentId: 'D01-01' });
@@ -299,6 +306,9 @@ export class RegistryService {
     if (base.lifecycle === 'RETIRED') throw new DomainError('GUARD_FAILED', 'RETIRED Feature에서는 새 Version을 만들 수 없습니다.');
     const latest = this.features.versions(featureId).at(-1)!.version;
     const version = bumpVersion(latest, body.bump);
+    // 변이 프로필(26580)은 Feature 문서 밖 — 떼어 두었다가 새 Version에 잇는다
+    const { variability, ...rest } = body.changes as typeof body.changes & { variability?: FeatureVariability };
+    body = { ...body, changes: rest as typeof body.changes };
     const changed = changedKeys(base, body.changes as any);
     const impl = this.implLinks(actor, 'FEATURE_VERSION_CREATE', `${featureId}@${body.baseVersion}`, base, body.changes);
     // 기준 행 연결은 앞 버전에서 복사한다(§5.3) — 바꾸면 다시 판정
@@ -311,6 +321,7 @@ export class RegistryService {
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });
       this.refs.saveLinks(f); // 앞 버전 연결(또는 바뀐 연결)을 새 버전 색인으로
       this.safety.ensure(f.featureId, f.version, base.version); // 안전 분류 초안 — 기준 Version 값을 잇는다(보고서 5.7, DRAFT)
+      this.ple.recordVersion(actor, base, f, variability);
       const target = `${featureId}@${version}`;
       const rejudge = gatesToRejudge(changed, base.lifecycle);
       this.audit.record(actor, 'FEATURE_VERSION_CREATE', target, { before: { baseVersion: base.version }, after: { version, changed, rejudge, ...(warnings.length ? { refWarnings: warnings } : {}) }, reason: body.reason, componentId: 'D01-01' });

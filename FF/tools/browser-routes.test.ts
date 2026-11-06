@@ -35,6 +35,21 @@ test('운영 빌드는 설명(summary)도 뺀다 — 경로·권한·필수 질�
   assert.match(out, /requiredQuery: \[['"]q['"]\]/);
 });
 
+// 26580 쪽 시험(같은 규칙을 따로 구현했던 판) — 표 밖 summary·component·개인별·본문은 그대로 둔다
+test('운영 빌드 표는 요약문을 빼고, 표 밖 값·component·필수 질의는 남긴다', () => {
+  const output = browserRouteSource(`
+    import { Body } from './schemas';
+    export const ROUTES = [{ name: 'write', method: 'POST', path: '/x', summary: '긴 설명 문장', component: 'D01-01', roles: ['A'], body: Body, personal: true, requiredQuery: ['q'] }];
+    export const other = { summary: '표 밖 값은 그대로' };
+  `, { dropSummary: true });
+  assert.doesNotMatch(output, /긴 설명 문장/);
+  assert.match(output, /표 밖 값은 그대로/);
+  assert.match(output, /path: ['"]\/x['"]/);
+  assert.match(output, /roles: \[['"]A['"]\]/);
+  assert.match(output, /component: ['"]D01-01['"]/);
+  assert.match(output, /requiredQuery: \[['"]q['"]\]/);
+});
+
 test('지원하지 않는 표 모양을 조용히 건너뛰지 않는다', () => {
   assert.throws(() => browserRouteSource('export const ROUTES = makeRoutes();'), /배열/);
   assert.throws(() => browserRouteSource('export const ROUTES = [...OTHER];'), /객체/);

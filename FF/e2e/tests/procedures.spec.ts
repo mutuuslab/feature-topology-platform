@@ -22,7 +22,8 @@ test('메인 화면 — 업무 절차 지도에 14개 절차·Gate·내 차례�
   const nodes = page.locator('.pm-node');
   // 메인 지도는 HARA(FPW.2) 제외 — 13개(Feature DB 운영 FPW.14 포함)
   await expect(nodes).toHaveCount(13);
-  await expect(page.getByText(/HARA/)).toHaveCount(0);
+  // 지도 안만 본다 — 같은 화면의 감사 가젯에는 다른 시험이 남긴 ANALYSIS_HARA 기록이 보일 수 있다(공유 백엔드)
+  await expect(page.locator('.pm-map').getByText(/HARA/)).toHaveCount(0);
   const first = page.locator('.pm-node').first();
   await expect(first).toHaveAccessibleName(/Feature 등록·분류/);
   await expect(first).toContainText('G1');

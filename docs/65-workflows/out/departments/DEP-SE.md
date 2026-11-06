@@ -42,7 +42,7 @@ last_updated: 2026-11-05
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
 | FPW.1-A01 Feature 등록·초안 작성 | FPW.1 Feature 등록·분류 | C (아키텍트, 요구 Owner) | Feature DB 발행본 `WP-REFDB-RELEASE`, Feature 제안·변경요청 `WP-FEAT-PROPOSAL` → Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK` | `/master/define`, `/feature/propose`, `/features` 외 1 | 1차 |
-| FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1 Feature 등록·분류 | C (아키텍트) | Feature 등록 기록 `WP-FEAT-REG` → 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | `/variant-conditions`, `/arch/topology` | 1차 |
+| FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1 Feature 등록·분류 | C (아키텍트) | Feature 등록 기록 `WP-FEAT-REG` → 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | `/variant-conditions`, `/arch/topology`, `/features/catalogue` | 1차 |
 | FPW.1-A03 안전 분류(네 축) 확정 | FPW.1 Feature 등록·분류 | C (아키텍트) · I (요구 Owner) | Feature 등록 기록 `WP-FEAT-REG`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 안전 분류(네 축) `WP-SAFETY-PROFILE` | `/features/:id/:ver` | 1차 |
 | FPW.1-A05 G1 등록·분류 판정 | FPW.1 Feature 등록·분류 | I (요구 Owner) | Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 법규 등급 판정 기록 `WP-REG-CLASS` → G1 Decision Record `WP-G1-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.1-A06 Feature DB 추가 요청 | FPW.1 Feature 등록·분류 | C (도메인 검토자) | Feature 제안·변경요청 `WP-FEAT-PROPOSAL`, Feature DB 발행본 `WP-REFDB-RELEASE` → Feature DB 추가 요청 `WP-REF-ADD-REQ` | `/feature/propose` | 1차 |
@@ -104,7 +104,7 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/config/odd`, `/policies/:id`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/code-repositories`, `/integration/code-scans`, `/integration/openfeature`, `/master/feature-db/:refId`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/code-repositories`, `/integration/code-scans`, `/integration/openfeature`, `/master/feature-db/:refId`
 
 ## 4. 부서 겸직 직무 분리
 

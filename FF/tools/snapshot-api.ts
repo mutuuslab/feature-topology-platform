@@ -469,6 +469,16 @@ async function main() {
   for (const x of all.items as { featureId: string; version: string }[]) await save('adsClassification', { id: x.featureId, ver: x.version });
   // 확대 판정 — 판정 입력이 있는 배포 정책만(없으면 404, 화면은 패널을 그리지 않는다)
   for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('adsPolicyExpansion', { id: p.policyId }).catch(() => undefined);
+  // ISO/IEC 26580 정합(docs/20-architecture/20-60) — 카탈로그·Bill-of-Features(상품마다)·제품 구성기·공유 자산·등록 현황·Feature 프로필
+  await save('featureCatalogue');
+  const bof = await save('billOfFeaturesPortfolio');
+  for (const p of bof.items as { catalogId: string; version: string }[]) {
+    await save('billOfFeatures', { id: p.catalogId, ver: p.version });
+    await save('productConfiguration', { id: p.catalogId, ver: p.version });
+  }
+  await save('sharedAssets');
+  await save('featureRegistrations');
+  for (const f of all.items as { featureId: string; version: string }[]) await save('featureVariability', { id: f.featureId, ver: f.version });
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

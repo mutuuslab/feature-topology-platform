@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { patchOf } from './patch';
 import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
 import { AsilDeviation, FeatureRefLinkInputs } from './refdb';
+import { FeatureVariability } from './ple';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
 
@@ -28,6 +29,8 @@ export const CreateFeatureBody = z.object({
   /** 같은 국가·차종·트림에 같은 대표 기준 행이 이미 있을 때(409 REFDB_DUPLICATE_IN_SCOPE) 사유와 함께 확인 */
   confirmDuplicate: z.boolean().optional(),
   duplicateReason: z.string().trim().min(2).max(500).optional(),
+  /** 26580 변이 프로필(20-60 §5.2) — 없으면 서버가 대표 기준 행에서 제안한 값을 남긴다 */
+  variability: FeatureVariability.optional(),
 });
 export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
 

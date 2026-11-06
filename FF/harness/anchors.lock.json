@@ -3,7 +3,7 @@
   "anchors": {
     "backend/src/adapters/gleo/gleo.adapter.ts:69": "81572f1ee484",
     "backend/src/domains/d01-policy/activation/activation.service.ts:36": "933b0a40f37e",
-    "backend/src/domains/d01-policy/catalog/catalog.service.ts:119": "827c1e8068fa",
+    "backend/src/domains/d01-policy/catalog/catalog.service.ts:148": "827c1e8068fa",
     "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:173": "fcef4ce194d0",
     "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:196": "466150974b97",
     "backend/src/domains/d01-policy/entitlement/entitlement.service.ts:206": "e1772776cccd",
@@ -97,7 +97,7 @@
     "contracts/src/flags/evaluate.ts:89": "787dfe238f61",
     "contracts/src/flags/openfeature.ts:141": "3a60e9aeda2e",
     "contracts/src/flags/p0.ts:224": "7ea76095e2f8",
-    "contracts/src/routes.ts:229": "51076901f3de",
+    "contracts/src/routes.ts:241": "51076901f3de",
     "contracts/src/rules/access.ts:20": "e3c7c36215b1",
     "contracts/src/rules/attestation.ts:1": "956f0196c7bd",
     "contracts/src/rules/attestation.ts:44": "99b7f73781a0",

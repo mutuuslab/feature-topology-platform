@@ -95,6 +95,8 @@ const costBasis = () => import('./screens/cost/CostBasis');
 const refdbList = () => import('./screens/refdb/RefList');
 const refdbDetail = () => import('./screens/refdb/RefDetail');
 const refdbChanges = () => import('./screens/refdb/Changes');
+// ISO/IEC 26580 제품 라인 화면(docs/20-architecture/20-60) — 카탈로그·Bill-of-Features·제품 구성기·공유 자산
+const pleScreens = () => import('./screens/ple/PleScreens');
 
 /** Windows 데스크톱(Tauri) 배포본 — `VITE_FF_DESKTOP=1`로 빌드한다(tools/desktop-prepare.mjs). */
 export const DESKTOP_BUILD = import.meta.env.VITE_FF_DESKTOP === '1';
@@ -125,13 +127,15 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/home/customize', element: legacyTo('/'), title: '홈 꾸미기 (이전 주소)', group: 'home', parent: '/' },
 
   // 2 Feature 정의
-  { path: '/feature/propose', element: named(homeScreens, 'ProposeScreen'), title: 'Feature 제안', group: 'feature', menu: '/feature/propose', v2: true },
+  { path: '/feature/propose', element: named(homeScreens, 'ProposeScreen'), title: 'Feature 등록', group: 'feature', menu: '/feature/propose', v2: true },
   { path: '/features', element: def(() => import('./screens/features/FeatureList')), title: 'Feature Registry', group: 'feature', menu: '/features', components: ['D01-01'], v2: true },
   { path: '/features/:id/:ver', element: def(() => import('./screens/features/FeatureDetail')), title: 'Feature Version 상세', group: 'feature', parent: '/features', components: ['D01-01', 'D01-02'], v2: true },
+  { path: '/features/catalogue', element: named(pleScreens, 'CatalogueScreen'), title: 'Feature 카탈로그', group: 'feature', parent: '/features', components: ['D01-01'], v2: true },
+  { path: '/features/shared-assets', element: named(pleScreens, 'SharedAssetsScreen'), title: '공유 자산 추적', group: 'feature', parent: '/features', components: ['D01-02'], v2: true },
   { path: '/catalog', element: legacyTo('/features'), title: 'Feature 카탈로그 (이전 주소)', group: 'feature', parent: '/features' },
   { path: '/feature/:id', element: legacyTo('/features'), title: 'Feature 상세 (이전 주소)', group: 'feature', parent: '/features' },
   { path: '/lifecycle', element: legacyTo('/features'), title: 'Lifecycle 보드 (이전 주소)', group: 'feature', parent: '/features' },
-  { path: '/master/define', element: named(homeScreens, 'DefineScreen'), title: 'Feature 등록', group: 'feature', menu: '/master/define', components: ['D01-01'], v2: true },
+  { path: '/master/define', element: named(homeScreens, 'DefineScreen'), title: 'Feature 등록 현황', group: 'feature', menu: '/master/define', components: ['D01-01'], v2: true },
   { path: '/change/cr', element: named(traceScreens, 'ChangesScreen'), title: '변경요청', group: 'feature', menu: '/change/cr', components: ['D01-01'], v2: true },
   { path: '/change/cr/:id', element: legacyTo('/change/cr'), title: '변경요청 상세 (이전 주소)', group: 'feature', parent: '/change/cr' },
   { path: '/change/baseline', element: legacyTo('/change/cr'), title: 'Baseline 비교 (이전 주소)', group: 'feature', parent: '/change/cr' },
@@ -198,6 +202,8 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/procurement/sw-cost', element: named(costList, 'SwCostScreen'), title: 'SW 개발비 산정', group: 'release', menu: '/procurement/sw-cost', components: ['D07-01'], v2: true },
   { path: '/procurement/sw-cost/basis', element: named(costBasis, 'CostBasisScreen'), title: '계수·단가 표', group: 'release', parent: '/procurement/sw-cost', components: ['D07-01'], v2: true },
   { path: '/procurement/sw-cost/:estId', element: named(costDetail, 'CostDetailScreen'), title: 'SW 개발비 산정 과제', group: 'release', parent: '/procurement/sw-cost', components: ['D07-01'], v2: true },
+  { path: '/products/bill-of-features', element: named(pleScreens, 'BillOfFeaturesScreen'), title: 'Bill-of-Features', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
+  { path: '/products/configurator', element: named(pleScreens, 'ConfiguratorScreen'), title: '제품 구성기', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/new', element: named(products, 'ProductCompose'), title: '새 상품 구성', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/:id/:ver', element: named(products, 'ProductDetail'), title: '상품 Version 상세', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/commerce/offer', element: legacyTo('/products/new'), title: '상품 구성 (이전 주소)', group: 'release', parent: '/products' },

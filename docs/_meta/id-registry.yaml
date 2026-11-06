@@ -82,6 +82,7 @@ architecture:
   ARC-TAXONOMY:        "30-70 Taxonomy L0~L5"
   ARC-FEATURE-REFDB:   "30-95 Feature DB — Feature 등록 정보 원천"
   ARC-COST-ESTIMATION: "20-94 SW 개발비 산정 (선택 모듈)"
+  ARC-ISO-26580:       "20-60 ISO/IEC 26580 feature 기반 PLE 정합 — 등록 자동 채움·카탈로그·Bill-of-Features"
   ARC-FLAG-SOURCE:     "20-96 Feature Flag Git 소스·정책·회신 연결"
   ARC-FLAG-CODE-COVERAGE: "20-97 Flag 코드 연결·대사·통제(차량 SW 저장소)"
   ARC-UNLEASH-LIVE:    "20-98 Unleash 실제 런타임 통합"

@@ -116,6 +116,10 @@
   background: var(--jd-brand);
   color: var(--jd-brand-ink);
 }
+/* 머리의 주요 행동(새 Feature 등록)은 링크 — 밑줄 없이 단추처럼 */
+a.jd-btn {
+  text-decoration: none;
+}
 .jd-btn--primary:hover {
   background: var(--jd-brand-hover);
   color: var(--jd-brand-ink);

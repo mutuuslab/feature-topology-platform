@@ -17,6 +17,7 @@ export type ErrorCode =
   | 'IDEMPOTENCY_IN_PROGRESS'
   | 'REFDB_LINK_REQUIRED'
   | 'REFDB_DUPLICATE_IN_SCOPE'
+  | 'API_VERSION_RETIRED'
   | VehicleReject
   | 'INTERNAL';
 
@@ -37,6 +38,8 @@ const STATUS: Record<ErrorCode, number> = {
   REFDB_LINK_REQUIRED: 400,
   /** 같은 국가·차종·트림에 같은 대표 기준 행 — 사유와 함께 확인하면 등록(§6.2, R-3) */
   REFDB_DUPLICATE_IN_SCOPE: 409,
+  /** 지원이 끝난 API 버전(X-Api-Version) — Sunset 머리글과 옮길 버전 안내(FR-AGW-001-007) */
+  API_VERSION_RETIRED: 410,
   ...VEHICLE_REJECT,
   INTERNAL: 500,
 };

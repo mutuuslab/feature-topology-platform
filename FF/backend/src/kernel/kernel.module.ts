@@ -27,6 +27,7 @@ import { TelemetryMetrics } from './telemetry-metrics';
 import { Scheduler } from './scheduler';
 import { DbSharedState, SHARED_STATE } from './shared-state';
 import { VehicleAuthService } from './vehicle-auth';
+import { ApiKeyAuth } from './auth/api-key';
 
 @Global()
 @Module({
@@ -84,8 +85,9 @@ import { VehicleAuthService } from './vehicle-auth';
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
+    ApiKeyAuth, // 외부 시스템 API 키(D05-01) — 역할 가드가 쓴다
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink, ApiKeyAuth],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

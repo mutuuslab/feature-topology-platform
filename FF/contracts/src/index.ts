@@ -11,3 +11,5 @@ export * from './rules/ads-config';
 export * from './rules/ads-evidence';
 export * from './rules/ads-state';
 export * from './rules/ads-change';
+// 런타임 OpenAPI 명세 — 서버만(화면 묶음 제외)
+export * from './rules/openapi-doc';

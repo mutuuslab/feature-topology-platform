@@ -1,7 +1,7 @@
 // Legacy-SDV Interface (D05-07) — 런타임 Flag 평가가 없는 비SDV(레거시) 차량에 Feature를 켜고 끌 때의 다리.
 // 서명 정책·OTA 대신 딜러 진단기 코딩 계획을 만든다. 원격 긴급 차단·Safe Default가 없으므로 안전 관련(F2 이상) Feature는 거부한다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Post } from '@nestjs/common';
-import { legacyPlan, TranslateLegacyBody } from '@ff/contracts';
+import { legacyPlan, toLegacyCodingMessage, TranslateLegacyBody } from '@ff/contracts';
 import { z } from 'zod';
 import { ExternalSystems } from '../../../adapters/if-mocks/external-systems';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -12,6 +12,8 @@ import { DomainError } from '../../../kernel/errors';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.service';
 import { FeatureRepo } from '../../d01-policy/repos';
+import { Clock } from '../../../kernel/clock';
+import { appendLegacyMessage } from './legacy-message-log';
 
 @Injectable()
 @PlatformComponent('D05-07')
@@ -22,6 +24,7 @@ export class LegacySdvService {
     private readonly features: FeatureRepo,
     private readonly safety: SafetyProfileService,
     private readonly audit: AuditService,
+    private readonly clock: Clock,
   ) {}
 
   vehicles() {
@@ -35,9 +38,18 @@ export class LegacySdvService {
     if (!f) throw new DomainError('NOT_FOUND', `${body.featureId}을(를) 찾을 수 없습니다.`);
     const profile = this.safety.ensure(f.featureId, f.version);
     const plan = legacyPlan(v, { featureId: f.featureId, fClass: profile.fClass, controlPoints: f.controlPoints }, body.enable);
-    const out = { vin: v.vin, featureId: f.featureId, version: f.version, fClass: profile.fClass, enable: body.enable, ...plan };
-    if (!plan.supported) this.audit.failed(actor, 'LEGACY_CODING_PLAN', `${v.vin}:${f.featureId}`, plan.reason!, 'D05-07');
-    else this.db.tx(() => this.audit.record(actor, 'LEGACY_CODING_PLAN', `${v.vin}:${f.featureId}`, { after: { enable: body.enable, commands: plan.commands }, componentId: 'D05-07' }));
+    // SDV → Legacy 메시지(FR-SDVI-001-002) — 코딩 명령을 레거시 코딩 형식(LGC-CODING-1)에 싣는다. 변환 불가도 사유·시각을 기록
+    const message = plan.supported ? toLegacyCodingMessage(v.vin, plan.commands) : null;
+    const out = { vin: v.vin, featureId: f.featureId, version: f.version, fClass: profile.fClass, enable: body.enable, ...plan, message };
+    const log = { at: this.clock.iso(), direction: 'SDV_TO_LEGACY' as const, system: null, vin: v.vin, formatIn: 'SDV-FEATURE-STATE-1', actorId: actor.id };
+    if (!plan.supported) {
+      this.audit.failed(actor, 'LEGACY_CODING_PLAN', `${v.vin}:${f.featureId}`, plan.reason!, 'D05-07');
+      appendLegacyMessage(this.db, { ...log, formatOut: null, status: 'FAILED', reason: plan.reason!, output: null });
+    } else
+      this.db.tx(() => {
+        this.audit.record(actor, 'LEGACY_CODING_PLAN', `${v.vin}:${f.featureId}`, { after: { enable: body.enable, commands: plan.commands }, componentId: 'D05-07' });
+        appendLegacyMessage(this.db, { ...log, formatOut: 'LGC-CODING-1', status: 'CONVERTED', reason: null, output: message });
+      });
     return out;
   }
 }

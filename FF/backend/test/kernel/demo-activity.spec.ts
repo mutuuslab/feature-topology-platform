@@ -71,7 +71,8 @@ describe('데모 활동 시드 — 켠 부팅', () => {
     const op = (await b.http().get('/api/notifications?limit=500').set({ 'X-Actor-Id': 'usr-operator', 'X-Actor-Role': 'OPERATOR' }).expect(200)).body.items as any[];
     expect(op.some((n) => n.eventType === 'notification.sent')).toBe(true);
     const errs = (await b.http().get('/api/integrations/errors').expect(200)).body;
-    expect(errs.counts).toMatchObject({ LEGACY: 1, BILLING: 1, PIPELINE: 1 });
+    // BILLING 2 = 데모 활동의 과금 실패 1 + P2 시드의 정산 전송 실패 1(ext-gateway.seed.ts)
+    expect(errs.counts).toMatchObject({ LEGACY: 1, BILLING: 2, PIPELINE: 1 });
     expect(await items('/api/pipeline/runs?featureId=FEAT-00022')).toHaveLength(2);
     const ivi = (await b.http().get('/api/features/FEAT-00024/evaluations').expect(200)).body;
     expect(ivi.totals.evaluations).toBeGreaterThan(10_000);

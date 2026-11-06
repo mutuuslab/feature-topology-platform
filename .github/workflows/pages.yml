@@ -30,6 +30,9 @@ jobs:
         env:
           GITHUB_PAGES: '1'
           VITE_DATA_MODE: static
+          VITE_GRAFANA_PUBLIC_URL: ${{ vars.GRAFANA_PUBLIC_URL }}
+          VITE_GRAFANA_FEATURE_PUBLIC_URL: ${{ vars.GRAFANA_FEATURE_PUBLIC_URL }}
+          VITE_GRAFANA_URL: ${{ vars.GRAFANA_URL }}
       - run: cp dist/index.html dist/404.html   # SPA 라우팅 fallback
       - uses: actions/upload-pages-artifact@v3
         with:

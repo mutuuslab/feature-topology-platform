@@ -20,6 +20,11 @@ jobs:
           node-version: 24
       - name: Install & build
         working-directory: FF
+        # Grafana 공개 대시보드 링크(80-80) — grafana-provision 워크플로가 출력한 값을 저장소 변수로 넣는다. 비면 화면에서 링크를 숨긴다
+        env:
+          VITE_GRAFANA_PUBLIC_URL: ${{ vars.GRAFANA_PUBLIC_URL }}
+          VITE_GRAFANA_FEATURE_PUBLIC_URL: ${{ vars.GRAFANA_FEATURE_PUBLIC_URL }}
+          VITE_GRAFANA_URL: ${{ vars.GRAFANA_URL }}
         # 공개 조회용 데모 — 전시 차량 480대와 풍부한 시나리오를 격리 시드에서 만든다. 실행 중 고객 DB는 읽지 않는다.
         run: |
           npm ci

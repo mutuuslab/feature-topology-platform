@@ -1,7 +1,7 @@
 // IF-04 Policy Tool 연계 (D01-06 정책 저장·버전 관리) — 배포된 정책을 Unleash 정의로 내보내고, 차량별 판단을 대조하고, 서버 쪽 변경(drift)을 찾는다.
 // hfp-feature-lifecycle js/unleash.js deploy()의 TS 이식: flag 생성(없으면 생성, 보관됐으면 복구) → 태그 → REQUIRES 의존 → 전략 교체 → 환경 on/off,
 // 첫 실패 단계에서 멈춘다. 결과는 외부 연계 호출 기록(IF-04)·감사·이벤트에 남는다. FP가 원천이고 Unleash는 사본이다(UL-OSS).
-import { Controller, Get, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, Inject, Injectable, Optional, Param, Post } from '@nestjs/common';
 import { canonicalJson, cohortBucket, effectiveBasisPoints, planUnleash, unleashContext, unleashDrift, UNLEASH_ENVIRONMENT, UNLEASH_PROJECT, type Policy, type UnleashPlan } from '@ff/contracts';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
 import { UnleashGateway, type UnleashResult } from '../../../adapters/unleash/unleash.client';
@@ -10,6 +10,7 @@ import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
+import { TelemetryMetrics } from '../../../kernel/telemetry-metrics';
 import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { ActivationService } from '../activation/activation.service';
@@ -48,6 +49,7 @@ export class UnleashSyncService {
     private readonly events: EventService,
     private readonly pki: PkiService,
     private readonly publications: PublicationRepo,
+    @Optional() private readonly metrics?: TelemetryMetrics,
   ) {}
 
   private get u() {
@@ -99,11 +101,14 @@ export class UnleashSyncService {
     const plan = await this.plan(p);
     const { result, server } = await this.server(plan);
     const lastSync = this.ifCalls.list({ ifId: 'IF-04' }).find((c) => (c.request as any)?.policyId === id) ?? null;
+    const drift = result.state === 'OK' || result.state === 'NOT_FOUND' ? unleashDrift(plan, server) : null;
+    // 운영 지표 ff_unleash_drift(80-80) — 대조할 수 있었을 때만 남긴다
+    if (drift) this.metrics?.drift(p.flagKey, drift.length > 0);
     return {
       status: await this.status(),
       plan,
       server: result.state === 'OK' || result.state === 'NOT_FOUND' ? server : null,
-      drift: result.state === 'OK' || result.state === 'NOT_FOUND' ? unleashDrift(plan, server) : null,
+      drift,
       serverError: result.state === 'OK' || result.state === 'NOT_FOUND' ? null : result.why,
       lastSync,
     };

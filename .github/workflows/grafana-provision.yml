@@ -1,0 +1,81 @@
+# Grafana Cloud 프로비저닝(80-80) — 수동 실행: 폴더·대시보드 7개(+공개본)·공개 대시보드·경보 규칙·연락처·알림 정책.
+# 공개 URL과 FF 빌드 변수 명령(gh variable set …)을 실행 요약에 남긴다. 비밀이 없으면 '비밀 없음'으로 실패한다.
+# 설정 검사(대시보드 JSON 최신·PromQL 문법·Alloy 설정·compose 덧붙임)는 관련 파일이 바뀌는 push마다 돈다.
+# workflow_dispatch는 기본 브랜치에 이 파일이 있어야 보인다 — 그 전 첫 실행은 feat/grafana-telemetry 브랜치 push가 프로비저닝까지 한다(멱등).
+name: Grafana 프로비저닝
+on:
+  workflow_dispatch:
+    inputs:
+      skip_alerts:
+        description: 경보·연락처·알림 정책은 건너뛰기
+        type: boolean
+        default: false
+  push:
+    paths:
+      - 'FF/deploy/grafana/**'
+      - 'FF/tools/grafana/**'
+      - 'FF/contracts/src/rules/telemetry-metrics.ts'
+      - 'FF/deploy/cloud-vm/compose.grafana.yml'
+      - 'FF/docker/unleash/compose.grafana.yml'
+      - '.github/workflows/grafana-*.yml'
+permissions:
+  contents: read
+jobs:
+  config-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: FF
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 대시보드·경보 저장본 최신
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/grafana/build-dashboards.ts --check
+      - name: PromQL 문법(promtool)
+        run: |
+          node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/grafana/build-dashboards.ts --promtool "$RUNNER_TEMP/promql.yml"
+          docker run --rm -v "$RUNNER_TEMP:/w:ro" --entrypoint promtool prom/prometheus:v3.5.0 check rules /w/promql.yml
+      - name: Alloy 설정 문법
+        run: docker run --rm -v "$PWD/deploy/grafana/alloy:/w:ro" grafana/alloy:v1.21.0 fmt /w/config.alloy > /dev/null
+      - name: compose 덧붙임(docker/unleash platform 프로필)
+        working-directory: FF/docker/unleash
+        env:
+          PG_ADMIN_PASSWORD: x
+          FF_DB_PASSWORD: x
+          UNLEASH_DB_PASSWORD: x
+          UNLEASH_ADMIN_TOKEN: x
+          UNLEASH_EDGE_BACKEND_TOKEN: x
+          UNLEASH_EDGE_FRONTEND_TOKEN: x
+          UNLEASH_ADMIN_PASSWORD: x
+          GRAFANA_OTLP_URL: https://otlp-gateway.example.grafana.net/otlp
+          GRAFANA_OTLP_INSTANCE_ID: '1'
+          GRAFANA_OTLP_TOKEN: x
+          FF_METRICS_TOKEN: x
+        run: docker compose -f docker-compose.yml -f compose.grafana.yml --profile platform config --quiet
+  provision:
+    needs: config-check
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/feat/grafana-telemetry')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: FF
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 폴더·대시보드·공개 대시보드·경보
+        env:
+          GRAFANA_STACK_URL: ${{ secrets.GRAFANA_STACK_URL }}
+          GRAFANA_SA_TOKEN: ${{ secrets.GRAFANA_SA_TOKEN }}
+          FF_PUBLIC_URL: ${{ vars.FF_PUBLIC_URL }}
+          FF_GRAFANA_WEBHOOK_URL: ${{ vars.FF_GRAFANA_WEBHOOK_URL }}
+          FF_GRAFANA_WEBHOOK_SECRET: ${{ secrets.FF_GRAFANA_WEBHOOK_SECRET }}
+          FF_GRAFANA_WEBHOOK_TOKEN: ${{ secrets.FF_GRAFANA_WEBHOOK_TOKEN }}
+          GRAFANA_ALERT_EMAIL: ${{ vars.GRAFANA_ALERT_EMAIL }}
+          SKIP_ALERTS: ${{ inputs.skip_alerts && '--skip-alerts' || '' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/grafana/provision.ts $SKIP_ALERTS

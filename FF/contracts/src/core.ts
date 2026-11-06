@@ -90,3 +90,5 @@ export * from './rules/cost/engine';
 export * from './schemas/cost';
 export * from './schemas/flag-source';
 export * from './rules/unleash-snapshot';
+export * from './rules/telemetry-metrics';
+export * from './schemas/ops-observation';

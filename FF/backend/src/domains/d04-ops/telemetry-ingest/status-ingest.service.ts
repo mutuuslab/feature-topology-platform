@@ -152,7 +152,7 @@ export class StatusIngestService implements OnModuleInit {
         this.events.publish(
           'vehicle.status.accepted',
           vin,
-          { vin, featureId, state: r.state, requestResult: r.request_result, rejectCode: r.reject_code ?? null, action: result.action.kind, timeSync: r.time_sync ?? null, keyEpoch: r.key_epoch ?? null, dtc: r.dtc ?? [] },
+          { vin, featureId, state: r.state, requestResult: r.request_result, rejectCode: r.reject_code ?? null, action: result.action.kind, timeSync: r.time_sync ?? null, keyEpoch: r.key_epoch ?? null, dtc: r.dtc ?? [], via },
           { componentId: 'D04-03' },
         );
         if (result.action.kind === 'REISSUE_SAME') this.events.publish('vehicle.status.reissue', vin, { vin, featureId, commandId: last?.commandId ?? null }, { componentId: 'D04-03' });
@@ -160,7 +160,7 @@ export class StatusIngestService implements OnModuleInit {
         this.events.publish(
           'vehicle.status.rejected',
           vin,
-          { vin, featureId, step: result.violation!.step, code: result.violation!.code, message: result.violation!.message },
+          { vin, featureId, step: result.violation!.step, code: result.violation!.code, message: result.violation!.message, via },
           { componentId: 'D04-03' },
         );
       }

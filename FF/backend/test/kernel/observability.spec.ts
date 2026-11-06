@@ -73,7 +73,8 @@ describe('관측 — 앱 조립(main.ts와 같은 createApp)', () => {
     expect(text).toMatch(/ff_http_requests_total\{method="GET",route="\/api\/features\/:id\/versions\/:ver",status="200"\} 2/);
     // 없는 경로는 값 없이 unmatched 하나로
     expect(text).toMatch(/ff_http_requests_total\{method="GET",route="unmatched",status="404"\} 1/);
-    expect(text).not.toContain('FEAT-00022');
+    // 경로 값은 HTTP 지표에 없다(Feature ID는 운영 지표의 Feature 라벨로만 나온다 — 80-80)
+    expect(text.split('\n').filter((l) => l.startsWith('ff_http_')).join('\n')).not.toContain('FEAT-00022');
     expect(text).toContain('ff_process_resident_memory_bytes');
   });
 });

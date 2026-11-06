@@ -6,6 +6,7 @@
 import type { LoggerService } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { metricDef, METRIC_SERIES_LIMIT, OTHER_LABEL, type TelemetryMetricDef } from '@ff/contracts';
 import { isProduction } from './runtime-config';
 
 type Env = Record<string, string | undefined>;
@@ -56,12 +57,117 @@ export class JsonLogger implements LoggerService {
   }
 }
 
+/** 라벨 값 — Prometheus 텍스트 이스케이프, 64자 상한(긴 값이 시계열을 키우지 않게) */
+const labelValue = (v: unknown) => String(v ?? '').slice(0, 64).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, ' ');
+
+type Series = { labels: string[]; value: number; hist?: { buckets: number[]; sum: number; count: number } };
+
+/**
+ * 카탈로그(@ff/contracts TELEMETRY_METRICS) 지표 등록부 — 카탈로그에 없는 이름은 받지 않는다(대시보드·경보와 이름이 어긋나지 않게).
+ * 지표마다 시계열 수 상한(METRIC_SERIES_LIMIT)을 넘는 새 라벨 조합은 모두 "_other"로 합치고 ff_metrics_series_dropped_total로 센다.
+ * gauge는 수집기(onCollect)가 긁을 때마다 다시 채운다.
+ */
+export class MetricRegistry {
+  private readonly series = new Map<string, Map<string, Series>>();
+  private readonly collectors: (() => void)[] = [];
+  constructor(private readonly limit = METRIC_SERIES_LIMIT) {}
+
+  private def(name: string): TelemetryMetricDef {
+    const d = metricDef(name);
+    if (!d) throw new Error(`카탈로그에 없는 지표: ${name}`);
+    return d;
+  }
+  private slot(d: TelemetryMetricDef, labels: Record<string, unknown>): Series {
+    const fam = this.series.get(d.name) ?? new Map<string, Series>();
+    this.series.set(d.name, fam);
+    let vals = d.labels.map((l) => labelValue(labels[l]));
+    let key = vals.join('\u0001');
+    if (!fam.has(key) && fam.size >= this.limit) {
+      vals = d.labels.map(() => OTHER_LABEL);
+      key = vals.join('\u0001');
+      if (d.name !== 'ff_metrics_series_dropped_total') this.inc('ff_metrics_series_dropped_total', { metric: d.name });
+    }
+    let s = fam.get(key);
+    if (!s) {
+      s = { labels: vals, value: 0, ...(d.type === 'histogram' ? { hist: { buckets: (d.buckets ?? []).map(() => 0), sum: 0, count: 0 } } : {}) };
+      fam.set(key, s);
+    }
+    return s;
+  }
+  inc(name: string, labels: Record<string, unknown> = {}, by = 1) {
+    const d = this.def(name);
+    if (d.type !== 'counter') throw new Error(`${name}은(는) counter가 아니다`);
+    if (!(by >= 0)) return;
+    this.slot(d, labels).value += by;
+  }
+  set(name: string, labels: Record<string, unknown>, value: number) {
+    const d = this.def(name);
+    if (d.type !== 'gauge') throw new Error(`${name}은(는) gauge가 아니다`);
+    this.slot(d, labels).value = value;
+  }
+  observe(name: string, labels: Record<string, unknown>, value: number) {
+    const d = this.def(name);
+    if (d.type !== 'histogram' || !Number.isFinite(value)) return;
+    const h = this.slot(d, labels).hist!;
+    // 칸별 개수(누적 아님) — 텍스트로 낼 때 누적한다. 마지막 경계보다 크면 +Inf 칸(count에만)
+    const i = (d.buckets ?? []).findIndex((b) => value <= b);
+    if (i >= 0) h.buckets[i]++;
+    h.sum += value;
+    h.count++;
+  }
+  /** gauge 한 지표의 시계열을 비운다 — 수집기가 다시 채우기 전에(사라진 조합이 남지 않게) */
+  clear(name: string) {
+    this.series.delete(this.def(name).name);
+  }
+  onCollect(fn: () => void) {
+    this.collectors.push(fn);
+  }
+  /** 시험·점검용 — 라벨 일부로 값 합 */
+  value(name: string, match: Record<string, string> = {}): number {
+    const d = this.def(name);
+    let n = 0;
+    for (const s of this.series.get(name)?.values() ?? []) if (Object.entries(match).every(([k, v]) => s.labels[d.labels.indexOf(k)] === v)) n += s.hist ? s.hist.count : s.value;
+    return n;
+  }
+  text(): string {
+    for (const c of this.collectors) {
+      try {
+        c();
+      } catch {
+        // 수집기 하나가 실패해도 나머지 지표는 낸다
+      }
+    }
+    const lines: string[] = [];
+    for (const [name, fam] of this.series) {
+      const d = this.def(name);
+      lines.push(`# HELP ${name} ${d.help}`, `# TYPE ${name} ${d.type}`);
+      for (const s of fam.values()) {
+        const lab = d.labels.map((l, i) => `${l}="${s.labels[i]}"`);
+        const base = lab.join(',');
+        if (!s.hist) lines.push(`${name}${base ? `{${base}}` : ''} ${s.value}`);
+        else {
+          const pre = base ? `${base},` : '';
+          let cum = 0;
+          (d.buckets ?? []).forEach((b, i) => {
+            cum += s.hist!.buckets[i];
+            lines.push(`${name}_bucket{${pre}le="${b}"} ${cum}`);
+          });
+          lines.push(`${name}_bucket{${pre}le="+Inf"} ${s.hist.count}`, `${name}_sum${base ? `{${base}}` : ''} ${s.hist.sum.toFixed(6)}`, `${name}_count${base ? `{${base}}` : ''} ${s.hist.count}`);
+        }
+      }
+    }
+    return lines.length ? lines.join('\n') + '\n' : '';
+  }
+}
+
 /** 프로세스 안 지표 — 단일 인스턴스 전제(RD-OPS-14). 경로는 라우트 틀(:id)로 묶어 종류 수를 제한한다 */
 export class Metrics {
   private readonly counts = new Map<string, number>();
   private readonly hist = new Map<string, { buckets: number[]; sum: number; count: number }>();
   static readonly BUCKETS = [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10];
   private readonly started = Date.now();
+  /** 차량 수신·긴급 차단·Flag 평가 등 카탈로그 지표(80-80) */
+  readonly registry = new MetricRegistry();
 
   observe(method: string, route: string, status: number, seconds: number) {
     const k = `method="${method}",route="${route}",status="${status}"`;
@@ -86,7 +192,7 @@ export class Metrics {
     lines.push('# TYPE ff_process_uptime_seconds gauge', `ff_process_uptime_seconds ${((Date.now() - this.started) / 1000).toFixed(0)}`);
     lines.push('# TYPE ff_process_resident_memory_bytes gauge', `ff_process_resident_memory_bytes ${mem.rss}`);
     lines.push('# TYPE ff_process_heap_used_bytes gauge', `ff_process_heap_used_bytes ${mem.heapUsed}`);
-    return lines.join('\n') + '\n';
+    return lines.join('\n') + '\n' + this.registry.text();
   }
 }
 

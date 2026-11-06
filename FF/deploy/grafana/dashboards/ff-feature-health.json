@@ -1,0 +1,1707 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus(Grafana Cloud 지표)",
+      "type": "datasource",
+      "pluginId": "prometheus"
+    },
+    {
+      "name": "DS_LOKI",
+      "label": "Loki(Grafana Cloud 로그)",
+      "type": "datasource",
+      "pluginId": "loki"
+    },
+    {
+      "name": "DS_TEMPO",
+      "label": "Tempo(Grafana Cloud 추적)",
+      "type": "datasource",
+      "pluginId": "tempo"
+    }
+  ],
+  "uid": "ff-feature-health",
+  "title": "Feature 운영 건강도",
+  "description": "Feature·Version별 사용·문제·차이 신호와 개선 후보 — 운영 신호 → 개선 후보 → Feature Owner 검토 → 변경 요청/새 Version → 효과 확인(Closed loop)",
+  "tags": [
+    "ff",
+    "feature",
+    "closed-loop"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "feature",
+        "label": "Feature",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(ff_feature_active_vehicles, feature)",
+        "query": {
+          "query": "label_values(ff_feature_active_vehicles, feature)",
+          "refId": "feature-var"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1
+      },
+      {
+        "name": "feature_version",
+        "label": "Version",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(ff_feature_active_vehicles{feature=~\"$feature\"}, feature_version)",
+        "query": {
+          "query": "label_values(ff_feature_active_vehicles{feature=~\"$feature\"}, feature_version)",
+          "refId": "feature_version-var"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1
+      },
+      {
+        "name": "country",
+        "label": "국가",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(ff_feature_active_vehicles{feature=~\"$feature\"}, country)",
+        "query": {
+          "query": "label_values(ff_feature_active_vehicles{feature=~\"$feature\"}, country)",
+          "refId": "country-var"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1
+      },
+      {
+        "name": "vehicle_model",
+        "label": "차종",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(ff_feature_active_vehicles{feature=~\"$feature\",country=~\"$country\"}, vehicle_model)",
+        "query": {
+          "query": "label_values(ff_feature_active_vehicles{feature=~\"$feature\",country=~\"$country\"}, vehicle_model)",
+          "refId": "vehicle_model-var"
+        },
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1
+      },
+      {
+        "name": "ff_url",
+        "label": "FF 주소",
+        "type": "constant",
+        "query": "https://feature-topology.pages.dev",
+        "hide": 2,
+        "current": {
+          "text": "https://feature-topology.pages.dev",
+          "value": "https://feature-topology.pages.dev"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "name": "정책 배포·단계 확대",
+        "expr": "sum by (type) (increase(ff_events_total{type=~\"policy.deployed|policy.restored|rollout.staged\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "{{type}}",
+        "textFormat": "정책 배포·복원·단계 확대 — FF 정책 화면에서 확인"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "긴급 차단",
+        "expr": "sum(increase(ff_events_total{type=\"kill.issued\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "긴급 차단 발령",
+        "textFormat": "FF 긴급 차단·복구 화면(/ops/kill)"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "green",
+        "name": "복원",
+        "expr": "sum(increase(ff_events_total{type=\"kill.released\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "차단 해제(복원)",
+        "textFormat": ""
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "name": "기한 초과",
+        "expr": "sum(increase(ff_events_total{type=\"kill.overdue\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "차단 기한 초과",
+        "textFormat": "기한 안에 끝 상태가 아닌 차량이 있다"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": false,
+        "iconColor": "purple",
+        "name": "Grafana 경보 → FF 운영 관찰",
+        "expr": "sum(increase(ff_events_total{type=\"ops.observation.recorded\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "운영 관찰 기록",
+        "textFormat": ""
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "FF 운영 대시보드",
+      "type": "dashboards",
+      "tags": [
+        "ff"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true
+    },
+    {
+      "title": "FF에서 열기",
+      "type": "link",
+      "url": "${ff_url}/features",
+      "targetBlank": true,
+      "icon": "external link"
+    },
+    {
+      "title": "런북",
+      "type": "link",
+      "url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md",
+      "targetBlank": true,
+      "icon": "doc"
+    }
+  ],
+  "panels": [
+    {
+      "type": "row",
+      "title": "한눈에 — 4축 입력 지표(IF-15)",
+      "id": 1,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Feature Version 4축",
+      "description": "동작(적용 성공·거부)·문제(DTC·고장·안전 이벤트)·개선(사용률·수동 끄기)·위험(이상 징후·보안·결측). 칸 색이 주황·빨강이면 개선 후보 — Feature를 누르면 FF Feature 상세, 오른쪽 링크는 이 대시보드의 해당 Feature로 좁힌다. 판정(정상·주의·조치 필요·판단 불가)은 FF가 한다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (feature, feature_version, indicator) (ff_feature_health_indicator{feature=~\"$feature\",feature_version=~\"$feature_version\",indicator=~\"delivery_success_rate|status_rejected_rate|dtc_vehicle_rate|fault_rate_per_1k|usage_rate|manual_off_rate|anomaly_open_count|data_missing_rate\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "red"
+                    },
+                    {
+                      "value": 0.3,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 0.5,
+                      "color": "green"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "manual_off_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 0.1,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 0.15,
+                      "color": "red"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delivery_success_rate"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "red"
+                    },
+                    {
+                      "value": 0.98,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 0.99,
+                      "color": "green"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fault_rate_per_1k"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "value": null,
+                      "color": "green"
+                    },
+                    {
+                      "value": 5,
+                      "color": "orange"
+                    },
+                    {
+                      "value": 8,
+                      "color": "red"
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "feature"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "FF에서 Feature 열기",
+                    "url": "${ff_url}/features/${__data.fields.feature}",
+                    "targetBlank": true
+                  },
+                  {
+                    "title": "이 Feature의 운영 건강도",
+                    "url": "/d/ff-feature-health?var-feature=${__data.fields.feature}&var-feature_version=${__data.fields.feature_version}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {},
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "indicator",
+            "rowField": "feature",
+            "valueField": "Value"
+          }
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "사용 — 잘 쓰이는가(개선 축)",
+      "id": 3,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "panels": []
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "활성 차량(Version별)",
+      "description": "Feature가 켜져 있는 차량. 개선 후보: 같은 시장의 비슷한 Feature보다 낮으면 발견성(HMI 노출)이나 기본값 설계를 본다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 11
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version) (ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"})",
+          "legendFormat": "{{feature}} {{feature_version}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "사용률(활성/대상)",
+      "description": "IF-15 usage_rate. 개선 후보: 30% 아래가 이어지면 \"사용률 저조\" 경보 — 기능 가치·안내 문구·기본 켜짐 여부를 Feature Owner가 검토한다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 11
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (feature, feature_version) (ff_feature_health_indicator{feature=~\"$feature\",feature_version=~\"$feature_version\",indicator=\"usage_rate\"})",
+          "legendFormat": "{{feature}} {{feature_version}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "red"
+              },
+              {
+                "value": 0.3,
+                "color": "orange"
+              },
+              {
+                "value": 0.5,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "사용 시간(활성 차량당 분/시간)",
+      "description": "켜진 차량이 실제로 쓰는 시간. 개선 후보: 활성은 높은데 사용 시간이 짧으면 켜 두기만 하고 실제 작동 조건(ODD)에 거의 들지 않는 것.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_usage_seconds_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) * 3600 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) / 60",
+          "legendFormat": "{{feature}} {{feature_version}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "m",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "사용 빈도(활성 차량당 켜짐/시간)",
+      "description": "켜짐 횟수. 개선 후보: 빈도가 높고 사용 시간이 짧으면 자주 꺼지고 다시 켜지는 것 — 조건 경계(히스테리시스) 조정 후보.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_activations_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) * 3600 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h]))",
+          "legendFormat": "{{feature}} {{feature_version}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "수동 끄기 비율",
+      "description": "켜짐 대비 운전자가 직접 끈 비율. 개선 후보: 15% 이상이면 \"운전자가 자주 끔\" — 개입 강도·경고음·민감도 파라미터 검토(변경 요청 → 새 Version).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version, country) (rate(ff_feature_manual_off_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) / sum by (feature, feature_version, country) (rate(ff_feature_activations_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h]))",
+          "legendFormat": "{{feature}} {{feature_version}} {{country}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 0.1,
+                "color": "orange"
+              },
+              {
+                "value": 0.15,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "이탈(켜고 60초 안에 끔)",
+      "description": "켜자마자 끄는 비율. 개선 후보: 10% 이상이면 첫 경험(첫 안내·화면 가림·오작동 인상) 문제 — UX 개선 후보.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version, country) (rate(ff_feature_quick_off_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) / sum by (feature, feature_version, country) (rate(ff_feature_activations_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h]))",
+          "legendFormat": "{{feature}} {{feature_version}} {{country}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 0.06,
+                "color": "orange"
+              },
+              {
+                "value": 0.1,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "문제 — 고장·폴백이 늘었는가(문제 축)",
+      "id": 10,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "폴백 비율(차종별)",
+      "description": "Safe Default로 떨어진 비율을 차종별로. 개선 후보: 한 차종만 높으면 그 차종의 신호·ECU 조합 지원 문제 — 변형 조건(지원 조건) 재검토.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version, vehicle_model) (rate(ff_feature_fallbacks_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\",reason!=\"KILL_SWITCH\"}[1h])) / sum by (feature, feature_version, vehicle_model) (rate(ff_feature_activations_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h]))",
+          "legendFormat": "{{feature}} {{feature_version}} {{vehicle_model}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 0.03,
+                "color": "orange"
+              },
+              {
+                "value": 0.06,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "폴백 사유",
+      "description": "CONTEXT_UNKNOWN(문맥 없음)·ERROR_SAFE_DEFAULT(평가 오류)·NOT_SUPPORTED(미지원 조합)·KILL_SWITCH(긴급 차단). 개선 후보: NOT_SUPPORTED가 많으면 대상 정의(Targeting)가 실제 차량 구성보다 넓다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (reason) (increase(ff_feature_fallbacks_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[$__rate_interval]))",
+          "legendFormat": "{{reason}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 70,
+            "showPoints": "never",
+            "spanNulls": true,
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "오류율 — 출시 전후(Version 비교)",
+      "description": "활성 1천 대·시간당 오류를 Version별로. 개선 후보: 새 Version이 이전 Version보다 1.5배 이상이면 \"출시 후 오류 증가\" — 결함 등록(JIRA)·롤백 판단.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 44
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version) (rate(ff_feature_errors_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) * 3600 / sum by (feature, feature_version) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) * 1000",
+          "legendFormat": "{{feature}} {{feature_version}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "DTC(활성 1천 대·시간당)",
+      "description": "Feature 관련 DTC. 개선 후보: 특정 Version·차종에서만 오르면 그 조합의 HW·SW 통합 문제.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 44
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, feature_version, vehicle_model) (rate(ff_feature_dtc_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) * 3600 / sum by (feature, feature_version, vehicle_model) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[1h])) * 1000",
+          "legendFormat": "{{feature}} {{feature_version}} {{vehicle_model}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "links": [
+            {
+              "title": "FF에서 Feature 열기",
+              "url": "${ff_url}/features/${__field.labels.feature}/${__field.labels.feature_version}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "차이 — 국가·차종·SW·코호트",
+      "id": 15,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "panels": []
+    },
+    {
+      "id": 16,
+      "type": "bargauge",
+      "title": "국가·차종별 활성 비율 차이",
+      "description": "시장·차종의 등록 차량 대비 Feature 활성 차량(24시간 평균). 개선 후보: 같은 Feature가 한 시장만 낮으면 현지화(언어·법규 경고·도로 특성)를 본다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 53
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (feature, country, vehicle_model) (avg_over_time(ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\"}[24h])) / on (country, vehicle_model) group_left sum by (country, vehicle_model) (ff_vehicles_registered)",
+          "legendFormat": "{{feature}} {{country}} {{vehicle_model}}",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "red"
+              },
+              {
+                "value": 0.1,
+                "color": "orange"
+              },
+              {
+                "value": 0.2,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      }
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "SW 버전별 수신 거부(같은 Feature)",
+      "description": "이 Feature 상태 보고의 SW 버전별 거부율 — 특정 SW에서만 오르면 그 SW 배포를 의심한다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 53
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (sw_version) (rate(ff_vehicle_status_reports_total{feature=~\"$feature\",result=\"rejected\",country=~\"$country\"}[1h])) / sum by (sw_version) (rate(ff_vehicle_status_reports_total{feature=~\"$feature\",country=~\"$country\"}[1h]))",
+          "legendFormat": "SW {{sw_version}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Canary 대 대조군(DTC 상대위험)",
+      "description": "적용군/대조군 DTC 비. 2를 넘으면 Canary 이상 — 확대 중단(FF 정책 단계 확대 HOLD). 자세히는 Canary 단계 배포 대시보드.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 62
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "(sum by (feature) (rate(ff_feature_dtc_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\",cohort=\"treatment\"}[2h])) / sum by (feature) (ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\",cohort=\"treatment\"})) / (sum by (feature) (rate(ff_feature_dtc_total{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\",cohort=\"control\"}[2h])) / sum by (feature) (ff_feature_active_vehicles{feature=~\"$feature\",feature_version=~\"$feature_version\",country=~\"$country\",vehicle_model=~\"$vehicle_model\",cohort=\"control\"}))",
+          "legendFormat": "{{feature}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 1.5,
+                "color": "orange"
+              },
+              {
+                "value": 2,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "links": [
+        {
+          "title": "Canary 단계 배포",
+          "url": "/d/ff-canary?${__url_time_range}",
+          "targetBlank": false
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "데이터 신선도·결측",
+      "description": "Lake 데이터셋 지연과 결측률. 지연이 30분을 넘거나 결측이 5%를 넘으면 위 신호로 판정하지 않는다(판단 불가).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 62
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "max by (dataset) (ff_lake_freshness_seconds)",
+          "legendFormat": "{{dataset}} 지연",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 900,
+                "color": "orange"
+              },
+              {
+                "value": 1800,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "line+area"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "FF로 돌아간 개선 후보",
+      "id": 20,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 70
+      },
+      "panels": []
+    },
+    {
+      "id": 21,
+      "type": "table",
+      "title": "개선 후보 경보(최근 7일)",
+      "description": "Grafana 경보가 FF 운영 관찰로 들어간 기록(축·상태). FF에서 Feature 상세 → 운영 지표, 이상 징후(/ops/anomalies)로 이어서 담당(Feature Owner)이 검토한다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 71
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (axis, status) (increase(ff_ops_observations_total[7d]))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {},
+      "links": [
+        {
+          "title": "FF 이상 징후",
+          "url": "${ff_url}/ops/anomalies",
+          "targetBlank": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

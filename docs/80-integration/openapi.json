@@ -16024,6 +16024,102 @@
         }
       }
     },
+    "/api/webhooks/grafana/alerts": {
+      "post": {
+        "summary": "Grafana 경보 webhook 수신 — 토큰·HMAC 확인, 중복 버림, 운영 관찰(개선 후보) 기록·이상 징후 신호(80-80)",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "grafanaAlertWebhook",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {
+                  "nullable": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ops/observations": {
+      "get": {
+        "summary": "Grafana 경보로 들어온 운영 관찰(개선 후보) — Feature·축·상태로 거르기",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "opsObservations",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "axis",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/integrations/otel/spans": {
       "get": {
         "summary": "IF-11 OpenTelemetry 수집기 (모의) — 평가·이벤트 span",

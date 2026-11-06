@@ -1,0 +1,45 @@
+# 공개 데모 Grafana 시연 데이터(80-80) — 15분마다 결정적 시연 시계열(FF 시연 데이터와 같은 ID)을 '지금' 기준으로
+# Grafana Cloud OTLP 게이트웨이(지표·로그·추적)에 보낸다. 로컬 PC·FF 서버에 기대지 않는다. 의존성 설치 없음(Node 24 타입 스트리핑).
+# 비밀(GRAFANA_OTLP_URL·GRAFANA_OTLP_INSTANCE_ID·GRAFANA_OTLP_TOKEN)이 없으면 '비밀 없음'으로 실패한다 — 건너뛰기로 성공 처리하지 않는다.
+# 예약 실행은 기본 브랜치(main)의 이 파일로만 돈다 — 병합 전에는 feat/grafana-telemetry push마다 한 번(최근 60분) 보낸다.
+name: Grafana 시연 데이터
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  push:
+    branches: [feat/grafana-telemetry]
+    paths:
+      - 'FF/tools/grafana/**'
+      - 'FF/deploy/grafana/demo-catalog.json'
+      - 'FF/contracts/src/rules/telemetry-metrics.ts'
+      - '.github/workflows/grafana-demo.yml'
+  workflow_dispatch:
+    inputs:
+      window:
+        description: 보낼 창(분, 1~60) — 예약이 늦게 돌면 겹쳐 보내 빈 구간을 막는다
+        required: false
+        default: '30'
+permissions:
+  contents: read
+concurrency:
+  group: grafana-demo
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: FF
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 시연 시계열 전송(Grafana Cloud OTLP)
+        env:
+          GRAFANA_OTLP_URL: ${{ secrets.GRAFANA_OTLP_URL }}
+          GRAFANA_OTLP_INSTANCE_ID: ${{ secrets.GRAFANA_OTLP_INSTANCE_ID }}
+          GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
+          WINDOW: ${{ inputs.window || (github.event_name == 'push' && '60') || '30' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/grafana/push-demo-metrics.ts --window "$WINDOW" --events 15

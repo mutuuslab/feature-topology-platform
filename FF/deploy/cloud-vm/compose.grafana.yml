@@ -1,0 +1,40 @@
+# 선택 덧붙임 — Grafana Cloud로 지표·로그·추적 보내기(80-80). .env에 deploy/grafana/grafana.env.example 항목을 채운 뒤
+#   FF_COMPOSE_EXTRA='-f compose.grafana.yml'   (다른 덧붙임과 함께면 공백으로 잇는다)
+# Alloy는 backend 망(앱·Edge)과 바깥으로 나가는 telemetry 망에만 붙는다 — 호스트 포트를 열지 않는다.
+services:
+  app:
+    environment:
+      FF_METRICS_TOKEN: '${FF_METRICS_TOKEN:?FF_METRICS_TOKEN — openssl rand -hex 24}'
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
+      OTEL_SERVICE_NAME: ff-platform
+      FF_GRAFANA_WEBHOOK_SECRET: ${FF_GRAFANA_WEBHOOK_SECRET:-}
+      FF_GRAFANA_WEBHOOK_TOKEN: ${FF_GRAFANA_WEBHOOK_TOKEN:-}
+
+  alloy:
+    image: grafana/alloy:v1.21.0
+    restart: unless-stopped
+    command: ['run', '--server.http.listen-addr=127.0.0.1:12345', '--storage.path=/var/lib/alloy/data', '--disable-reporting', '/etc/alloy/config.alloy']
+    environment:
+      GRAFANA_OTLP_URL: '${GRAFANA_OTLP_URL:?GRAFANA_OTLP_URL — 스택 OpenTelemetry 화면의 Endpoint}'
+      GRAFANA_OTLP_INSTANCE_ID: '${GRAFANA_OTLP_INSTANCE_ID:?GRAFANA_OTLP_INSTANCE_ID — 같은 화면의 Instance ID}'
+      GRAFANA_OTLP_TOKEN: '${GRAFANA_OTLP_TOKEN:?GRAFANA_OTLP_TOKEN — 같은 화면에서 만든 쓰기 토큰}'
+      FF_METRICS_TOKEN: '${FF_METRICS_TOKEN:?FF_METRICS_TOKEN}'
+      FF_METRICS_TARGET: app:9101
+      FF_INSTANCE_ID: ${FF_INSTANCE_ID:-ff-cloud-demo}
+    volumes:
+      - ../grafana/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+    networks: [backend, telemetry]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    logging:
+      driver: json-file
+      options: { max-size: '20m', max-file: '3' }
+
+networks:
+  telemetry: {}
+
+volumes:
+  alloy-data:

@@ -63,7 +63,7 @@ export class AnomalyService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'vehicle.status.rejected', 'kill.overdue', 'incident.sotif.triggered', 'vehicle.config.mismatch']).subscribe((e) => {
+    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'vehicle.status.rejected', 'kill.overdue', 'incident.sotif.triggered', 'vehicle.config.mismatch', 'ops.observation.recorded']).subscribe((e) => {
       try {
         this.on(e);
       } catch (err) {
@@ -91,6 +91,11 @@ export class AnomalyService implements OnModuleInit {
     // 차단 기한 초과 — 끝 상태에 닿지 않은 차량(FFG-SEC-004·DEAC-013)
     if (e.type === 'kill.overdue') {
       for (const vin of p.vins as string[]) this.signal({ kind: 'DELIVERY', featureId: p.featureId, vin, code: 'PENDING_OVERDUE', severity: 'WARNING', at: e.at, ref: p.killId });
+      return;
+    }
+    // Grafana 경보(80-80) — 규칙이 ff_anomaly_kind를 단 Feature 경보만(수신 서비스가 이미 걸렀다). ref로 운영 관찰을 되찾는다
+    if (e.type === 'ops.observation.recorded') {
+      if (p.anomalyKind && p.featureId && p.status === 'firing') this.signal({ kind: p.anomalyKind, featureId: p.featureId, vin: null, code: `GRAFANA:${p.rule}`.slice(0, 120), severity: p.severity, at: e.at, ref: p.observationId });
       return;
     }
     if (e.type === 'vehicle.fault.reported') return this.signal({ kind: 'FEATURE_FAULT', featureId: p.featureId, vin: e.aggregate, code: p.code, severity: p.severity, at: e.at, ref: e.id });

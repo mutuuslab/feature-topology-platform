@@ -1,6 +1,7 @@
 /* ADS 구성 화면(ODD 프로파일·승인 조합·VIN 지원 판정) — 색·간격은 tokens.css 토큰만 */
 .adsc-stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-3);
   align-content: start;
 }

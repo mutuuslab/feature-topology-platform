@@ -5,6 +5,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import type { AdsDetermination, AdsIncidentSummary, AdsIncidentView, AdsMarketDeadline, AdsPeriodicReport, AdsReportStatus, Role } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { incidentReports as T } from '../../copy/ads-evidence';
+import { personName } from '../../data/people';
 import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, SummaryLine, Tabs, type KeyMessageSpec } from '../../design';
 import { BlockedAction, CaseTimeline, UnknownMark, VerdictReason, type VerdictTone } from '../../design/ads';
 import { usePermission, when } from '../shared';
@@ -159,7 +160,7 @@ function MarketTable({ markets }: { markets: AdsMarketDeadline[] }) {
           {
             key: 'st',
             header: M.state,
-            cell: (m) => (m.status === 'APPROVED' ? <VerdictReason tone="ok" label={T.approved(m.approvedBy ?? '—', when(m.approvedAt))} /> : <VerdictReason tone="unknown" label={T.draft} />),
+            cell: (m) => (m.status === 'APPROVED' ? <VerdictReason tone="ok" label={T.approved(personName(m.approvedBy), when(m.approvedAt))} /> : <VerdictReason tone="unknown" label={T.draft} />),
           },
           { key: 'b', header: M.basis, cell: (m) => m.basis, minor: true },
         ]}
@@ -227,7 +228,7 @@ export function IncidentReportDetail() {
                 rows={[
                   { k: D.feature, v: <IdChip id={d.featureId} version={d.featureVersion} to={`/features/${d.featureId}/${d.featureVersion}`} />, note: d.featureName },
                   { k: D.vin, v: <span className="ds-mono">{d.vin}</span>, note: d.summary },
-                  { k: D.market, v: d.market, note: d.deadlineRegistered && d.deadline ? T.approved(d.deadline.approvedBy ?? '—', when(d.deadline.approvedAt)) : T.unregistered },
+                  { k: D.market, v: d.market, note: d.deadlineRegistered && d.deadline ? T.approved(personName(d.deadline.approvedBy), when(d.deadline.approvedAt)) : T.unregistered },
                   { k: D.occurred, v: d.occurredAt ? <span className="ds-mono">{when(d.occurredAt)}</span> : D.occurredUnknown },
                   { k: D.aware, v: <span className="ds-mono">{when(d.awareAt)}</span>, note: <NoticeCell r={d} /> },
                   { k: T.col.due, v: <DueCell r={d} /> },
@@ -301,8 +302,12 @@ function OpsRecords({ d }: { d: DetailResp }) {
   const rows = [
     { key: 'aware', at: d.awareAt, actor: '—', action: D.recAware, result: '' },
     ...(d.firstNoticeAt ? [{ key: 'notice', at: d.firstNoticeAt, actor: '—', action: D.recNotice, result: '' }] : []),
-    ...d.determinations.map((x) => ({ key: `det-${x.version}`, at: x.decidedAt, actor: x.decidedBy, action: D.recDecision(T.status[x.decision], x.version), result: x.reason })),
-    ...d.audit.map((a, i) => ({ key: `audit-${i}`, at: a.at, actor: a.actor, action: a.action, result: a.result })),
+    ...d.determinations.map((x) => ({ key: `det-${x.version}`, at: x.decidedAt, actor: personName(x.decidedBy), action: D.recDecision(T.status[x.decision], x.version), result: x.reason })),
+    // 감사 이력 — 성공한 확정은 위 확정 기록과 같은 행위라 한 번만(거부·실패만 더한다). 행위·결과는 글자로(감사 코드 그대로 쓰지 않는다)
+    ...d.audit
+      .map((a, i) => ({ a, i }))
+      .filter(({ a }) => !(a.action === 'ADS_INCIDENT_DETERMINE' && a.result === 'ALLOWED'))
+      .map(({ a, i }) => ({ key: `audit-${i}`, at: a.at, actor: personName(a.actor), action: D.auditActions[a.action] ?? D.auditActionOther, result: D.auditResults[a.result] ?? D.auditResultOther })),
   ].sort((a, b) => a.at.localeCompare(b.at));
   return (
     <Panel title={D.audit} id="ads-incident-audit">
@@ -314,7 +319,7 @@ function OpsRecords({ d }: { d: DetailResp }) {
         pageSize={0}
         columns={[
           { key: 'at', header: D.auditAt, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.at)}</span> },
-          { key: 'actor', header: D.auditActor, cell: (r) => <span className="ds-mono">{r.actor}</span> },
+          { key: 'actor', header: D.auditActor, cell: (r) => r.actor },
           { key: 'action', header: D.auditAction, cell: (r) => r.action },
           { key: 'result', header: D.auditResult, cell: (r) => r.result || '—' },
         ]}

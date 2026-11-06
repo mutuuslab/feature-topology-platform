@@ -4,8 +4,9 @@
 import type { ExpansionView } from '@ff/contracts';
 import { useApi } from '../../api/hooks';
 import { adsChange } from '../../copy/ads-change';
+import { personName } from '../../data/people';
 import { Panel, SummaryLine } from '../../design';
-import { BlockedAction, fmtAt, FreshnessChip, SimulatedDataNotice, StageCounts, VerdictReason, type VerdictTone } from '../../design/ads';
+import { BlockedAction, fmtAt, FreshnessChip, SimulatedDataNotice, StageCounts, TableScroll, VerdictReason, type VerdictTone } from '../../design/ads';
 import { usePermission } from '../shared';
 import './ads-change.css';
 
@@ -42,59 +43,63 @@ export function ExpansionPanel({ policyId }: { policyId: string }) {
             { key: 'unconfirmed', label: E.unconfirmed, count: v.unconfirmed, tone: 'unknown', note: E.unconfirmedNote },
           ]}
         />
-        <table className="ads-axes">
-          <caption className="ads-axes__caption">{E.metrics}</caption>
-          <tbody>
-            {v.metrics.map((m) => (
-              <tr key={m.key} data-metric={m.key}>
-                <th scope="row">{E.metricName[m.key] ?? m.key}</th>
-                <td className="ads-mono">{E.metricValue(m.value, m.threshold)}</td>
-                <td>{m.breached ? <VerdictReason tone="danger" label={E.breached} /> : null}</td>
-                <td>
-                  <FreshnessChip state={r.staleMetrics.includes(m.key) ? 'DELAYED' : m.observedAt ? 'FRESH' : 'UNOBSERVED'} observedAt={m.observedAt} staleAfterMs={m.staleAfterMs} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <TableScroll label={E.metrics}>
+          <table className="ads-axes">
+            <caption className="ads-axes__caption">{E.metrics}</caption>
+            <tbody>
+              {v.metrics.map((m) => (
+                <tr key={m.key} data-metric={m.key}>
+                  <th scope="row">{E.metricName[m.key] ?? m.key}</th>
+                  <td className="ads-mono">{E.metricValue(m.value, m.threshold)}</td>
+                  <td>{m.breached ? <VerdictReason tone="danger" label={E.breached} /> : null}</td>
+                  <td>
+                    <FreshnessChip state={r.staleMetrics.includes(m.key) ? 'DELAYED' : m.observedAt ? 'FRESH' : 'UNOBSERVED'} observedAt={m.observedAt} staleAfterMs={m.staleAfterMs} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableScroll>
         <details className="adc-combos" open={blocking.size > 0}>
           <summary>
             {E.combos} · {E.combosHint}
           </summary>
-          <table className="ads-axes">
-            <caption className="ads-axes__caption">{E.combos}</caption>
-            <thead>
-              <tr>
-                <th scope="col">{E.comboCol.combo}</th>
-                <th scope="col">{E.comboCol.active}</th>
-                <th scope="col">{E.comboCol.usage}</th>
-                <th scope="col">{E.comboCol.errors}</th>
-                <th scope="col">{E.comboCol.samples}</th>
-                <th scope="col">{E.comboCol.window}</th>
-                <th scope="col">{E.comboCol.verdict}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {v.combos.map((c) => {
-                const cv = r.combos.find((x) => x.comboId === c.comboId)?.verdict ?? 'OK';
-                return (
-                  <tr key={c.comboId} data-combo={cv}>
-                    <th scope="row">{c.comboId}</th>
-                    <td className="ads-mono">{c.vehicleActive.toLocaleString('ko-KR')}</td>
-                    <td className="ads-mono">{c.usageConfirmed.toLocaleString('ko-KR')}</td>
-                    <td className="ads-mono">{c.errors}</td>
-                    <td className="ads-mono">{`${c.samples.toLocaleString('ko-KR')} / ${c.minSamples.toLocaleString('ko-KR')}`}</td>
-                    <td>{E.hours(c.windowHours)}</td>
-                    <td>
-                      <VerdictReason tone={cv === 'OK' ? 'ok' : cv === 'ALERT' ? 'danger' : 'warn'} label={E.comboVerdict[cv]} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <TableScroll label={E.combos}>
+            <table className="ads-axes">
+              <caption className="ads-axes__caption">{E.combos}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{E.comboCol.combo}</th>
+                  <th scope="col">{E.comboCol.active}</th>
+                  <th scope="col">{E.comboCol.usage}</th>
+                  <th scope="col">{E.comboCol.errors}</th>
+                  <th scope="col">{E.comboCol.samples}</th>
+                  <th scope="col">{E.comboCol.window}</th>
+                  <th scope="col">{E.comboCol.verdict}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {v.combos.map((c) => {
+                  const cv = r.combos.find((x) => x.comboId === c.comboId)?.verdict ?? 'OK';
+                  return (
+                    <tr key={c.comboId} data-combo={cv}>
+                      <th scope="row">{c.comboId}</th>
+                      <td className="ads-mono">{c.vehicleActive.toLocaleString('ko-KR')}</td>
+                      <td className="ads-mono">{c.usageConfirmed.toLocaleString('ko-KR')}</td>
+                      <td className="ads-mono">{c.errors}</td>
+                      <td className="ads-mono">{`${c.samples.toLocaleString('ko-KR')} / ${c.minSamples.toLocaleString('ko-KR')}`}</td>
+                      <td>{E.hours(c.windowHours)}</td>
+                      <td>
+                        <VerdictReason tone={cv === 'OK' ? 'ok' : cv === 'ALERT' ? 'danger' : 'warn'} label={E.comboVerdict[cv]} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </TableScroll>
         </details>
-        <p className="adc-note">{v.frozen ? E.frozen(v.frozen.reason, v.frozen.scope, v.frozen.by, fmtAt(v.frozen.at)) : E.notFrozen}</p>
+        <p className="adc-note">{v.frozen ? E.frozen(v.frozen.reason, v.frozen.scope, personName(v.frozen.by), fmtAt(v.frozen.at)) : E.notFrozen}</p>
         {r.verdict !== 'EXPAND' ? <BlockedAction label={E.action} reason={r.reason === 'METRIC_DELAY' ? E.blockedDelay(staleMin) : E.blockedOther(reason)} /> : null}
         {!perm.ok ? <p className="adc-note">{E.noPermission}</p> : null}
         {v.assumed ? <SimulatedDataNotice /> : null}

@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { type AdsCaseEvidenceView, type AdsEvidenceManifest, type AdsReviewFinding, type AdsSafetyCaseView, type AdsSupport, type AdsConfigBinding, type Role } from '@ff/contracts';
 import { ADS_REVIEWER_NOT_INDEPENDENT } from '../../../../contracts/src/rules/ads-evidence';
 import { actorFor } from '../../api/actor';
+import { personName } from '../../data/people';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { safetyCase as T } from '../../copy/ads-evidence';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar, type KeyMessageSpec } from '../../design';
@@ -221,7 +222,7 @@ function FindingTable({ rows, onOpen }: { rows: AdsReviewFinding[]; onOpen: (man
         { key: 'sev', header: F.severity, cell: (f) => <VerdictReason tone={f.severity === 'MAJOR' ? 'danger' : 'neutral'} label={F.sev[f.severity]} /> },
         { key: 'st', header: F.status, cell: (f) => <VerdictReason tone={f.status === 'OPEN' ? (f.severity === 'MAJOR' ? 'danger' : 'warn') : 'ok'} label={F.st[f.status]} reason={f.closeReason ?? undefined} /> },
         { key: 'sum', header: F.summary, cell: (f) => f.summary },
-        { key: 'rev', header: F.reviewer, cell: (f) => <span className="ds-mono">{f.reviewer}</span> },
+        { key: 'rev', header: F.reviewer, cell: (f) => personName(f.reviewer) },
         { key: 'ind', header: F.independence, cell: (f) => <VerdictReason tone={f.reviewerIndependent ? 'ok' : 'danger'} label={f.reviewerIndependent ? F.independent : F.notIndependent} /> },
         { key: 'at', header: F.opened, cell: (f) => <span className="ds-mono ds-nowrap">{when(f.openedAt)}</span>, minor: true },
       ]}
@@ -262,8 +263,8 @@ function ManifestDrawer({ id, onClose }: { id: string | null; onClose: () => voi
                 { k: M.result, v: m.result, note: M.originV[m.origin] },
                 { k: M.digest, v: <span className="ds-mono">{m.resultDigest.slice(0, 19)}</span> },
                 { k: M.ledger, v: m.evidenceRef ? <Link className="ds-mono" to={`/verify/evidence?ref=${encodeURIComponent(m.evidenceRef)}`}>{m.evidenceRef}</Link> : '—', note: m.gateRecordId ?? undefined },
-                { k: M.review, v: m.review.status === 'APPROVED' ? M.reviewed(m.review.by ?? '—', when(m.review.at)) : M.pending },
-                { k: M.author, v: <span className="ds-mono">{m.author}</span>, note: when(m.authoredAt) },
+                { k: M.review, v: m.review.status === 'APPROVED' ? M.reviewed(personName(m.review.by), when(m.review.at)) : M.pending },
+                { k: M.author, v: personName(m.author), note: when(m.authoredAt) },
                 { k: M.linked, v: <span className="ds-mono">{m.linkedNodes.join(' · ')}</span> },
               ]}
             />

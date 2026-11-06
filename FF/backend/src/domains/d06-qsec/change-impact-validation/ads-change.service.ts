@@ -176,7 +176,12 @@ export class AdsChangeService implements OnModuleInit {
     const p = path as AdsImpactPath;
     const d = this.docs().find((x) => x.impactId === impactId);
     if (!d) throw new DomainError('NOT_FOUND', `${impactId}이(가) 없습니다.`);
-    if (actor.role !== PATH_CLOSER[p]) throw new DomainError('FORBIDDEN', `이 승인 경로는 ${PATH_CLOSER[p] === 'SAFETY_OFFICER' ? '기능안전 담당자' : '사이버보안 담당자'}만 종결할 수 있습니다.`);
+    if (actor.role !== PATH_CLOSER[p]) {
+      const why = `이 승인 경로는 ${PATH_CLOSER[p] === 'SAFETY_OFFICER' ? '기능안전 담당자' : '사이버보안 담당자'}만 종결할 수 있습니다.`;
+      // 경로 담당이 아닌 거부도 감사 이력에 남긴다(가드가 아닌 서비스 판정이라 직접)
+      this.audit.denied(actor, 'ADS_IMPACT_PATH_CLOSE', `${impactId}/${p}`, why, 'D06-05');
+      throw new DomainError('FORBIDDEN', why);
+    }
     const before = this.view(d);
     if (before.cls.primary === 'UNKNOWN') throw new DomainError('PRECONDITION_FAILED', '변경 종류를 판단할 수 없어 승인 경로를 종결할 수 없습니다 — 바뀐 ECU·모델 정보를 먼저 입력하세요.');
     const item = before.paths.find((x) => x.path === p)!;

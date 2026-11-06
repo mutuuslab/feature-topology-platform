@@ -183,34 +183,45 @@ export interface AxisRow {
   past?: ReactNode;
 }
 
+/** 넓은 표 상자 — 좁은 폭에서 본문 밖으로 잘리지 않고 이 상자 안에서 가로 스크롤(키보드로도 닿게 포커스 가능한 영역) */
+export function TableScroll({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="ads-scroll" role="region" tabIndex={0} aria-label={U.scrollTable(label)}>
+      {children}
+    </div>
+  );
+}
+
 /** 6축 표 — 축 이름이 행 머리(th scope=row) */
 export function AxisStateTable({ caption, rows }: { caption: string; rows: AxisRow[] }) {
   return (
-    <table className="ads-axes" data-axis-table>
-      <caption className="ads-axes__caption">{caption}</caption>
-      <thead>
-        <tr>
-          <th scope="col">{U.axis}</th>
-          <th scope="col">{U.value}</th>
-          <th scope="col">{U.owner}</th>
-          <th scope="col">{U.observed}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr key={r.key} data-axis={r.key}>
-            <th scope="row">{r.axis}</th>
-            <td>
-              <span className="ads-axes__value">{r.value}</span>
-              {r.vehicleReported ? <span className="ads-axes__tag">{U.vehicleReported}</span> : null}
-              {r.past ? <span className="ads-axes__past">{r.past}</span> : null}
-            </td>
-            <td>{r.owner}</td>
-            <td>{r.observed}</td>
+    <TableScroll label={caption}>
+      <table className="ads-axes" data-axis-table>
+        <caption className="ads-axes__caption">{caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{U.axis}</th>
+            <th scope="col">{U.value}</th>
+            <th scope="col">{U.owner}</th>
+            <th scope="col">{U.observed}</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.key} data-axis={r.key}>
+              <th scope="row">{r.axis}</th>
+              <td>
+                <span className="ads-axes__value">{r.value}</span>
+                {r.vehicleReported ? <span className="ads-axes__tag">{U.vehicleReported}</span> : null}
+                {r.past ? <span className="ads-axes__past">{r.past}</span> : null}
+              </td>
+              <td>{r.owner}</td>
+              <td>{r.observed}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </TableScroll>
   );
 }
 
@@ -241,32 +252,34 @@ export interface TimelineRow {
 export function CaseTimeline({ caption, rows, showOwner = true }: { caption: string; rows: TimelineRow[]; showOwner?: boolean }) {
   const T = U.timeline;
   return (
-    <table className="ads-timeline" data-case-timeline>
-      <caption className="ads-axes__caption">{caption}</caption>
-      <thead>
-        <tr>
-          <th scope="col">{T.vehicleAt}</th>
-          <th scope="col">{T.serverAt}</th>
-          <th scope="col">{T.stage}</th>
-          {showOwner ? <th scope="col">{T.owner}</th> : null}
-          <th scope="col">{T.note}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr key={r.key} data-warn={r.warn ? '' : undefined}>
-            <td className="ads-mono">{fmtAt(r.vehicleAt)}</td>
-            <td className="ads-mono">{fmtAt(r.serverAt)}</td>
-            <th scope="row">
-              {r.warn ? <StatusGlyph kind="FAIL" /> : null}
-              {r.stage}
-            </th>
-            {showOwner ? <td>{r.owner ?? T.noOwner}</td> : null}
-            <td>{r.note ?? '—'}</td>
+    <TableScroll label={caption}>
+      <table className="ads-timeline" data-case-timeline>
+        <caption className="ads-axes__caption">{caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{T.vehicleAt}</th>
+            <th scope="col">{T.serverAt}</th>
+            <th scope="col">{T.stage}</th>
+            {showOwner ? <th scope="col">{T.owner}</th> : null}
+            <th scope="col">{T.note}</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.key} data-warn={r.warn ? '' : undefined}>
+              <td className="ads-mono">{fmtAt(r.vehicleAt)}</td>
+              <td className="ads-mono">{fmtAt(r.serverAt)}</td>
+              <th scope="row">
+                {r.warn ? <StatusGlyph kind="FAIL" /> : null}
+                {r.stage}
+              </th>
+              {showOwner ? <td>{r.owner ?? T.noOwner}</td> : null}
+              <td>{r.note ?? '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </TableScroll>
   );
 }
 

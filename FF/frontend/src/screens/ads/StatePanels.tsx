@@ -8,7 +8,7 @@ import { asyncState, useApi } from '../../api/hooks';
 import { ads } from '../../copy/ads';
 import { axesTab, axisWords, convergence as CV, customerTab as CT, fleetAxes as FA, orders as OR, verdictsTab as VT } from '../../copy/ads-state';
 import { AsyncView, DataTable, DiffView, Drawer, IdChip, KeyValue, Panel, Segmented, StatusGlyph, SummaryLine } from '../../design';
-import { AxisStateTable, BlockedAction, CaseTimeline, fmtAt, FreshnessChip, relAgo, SimulatedDataNotice, StageCounts, UnknownMark, VerdictReason, type Segment, type SegTone } from '../../design/ads';
+import { AxisStateTable, BlockedAction, CaseTimeline, fmtAt, FreshnessChip, relAgo, SimulatedDataNotice, StageCounts, TableScroll, UnknownMark, VerdictReason, type Segment, type SegTone } from '../../design/ads';
 import './ads-state.css';
 
 const A = ads.axes;
@@ -141,67 +141,71 @@ export function VerdictsPanel({ view, now = Date.now() }: { view: VehicleVerdict
                 {combo.text}
               </p>
             ) : null}
-            <table className="ads-axes" data-verdict-table>
-              <caption className="ads-axes__caption">{VT.caption(name)}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{VT.col.action}</th>
-                  <th scope="col">{VT.col.verdict}</th>
-                  <th scope="col">{VT.col.observed}</th>
-                  <th scope="col">{VT.col.source}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((v) => (
-                  <tr key={v.action} data-action={v.action} data-verdict={v.stale ? 'UNCONFIRMED' : v.verdict}>
-                    <th scope="row">{VERDICT_ACTION_LABEL[v.action]}</th>
-                    <td>
-                      {v.stale ? (
-                        <>
-                          <UnknownMark kind="UNCONFIRMED" reason={axesTab.unconfirmedAt(relAgo(v.observedAt, now))} />
-                          <span className="ads-axes__past">{ads.ui.thenReported(VERDICT_LABEL[v.verdict])}</span>
-                        </>
-                      ) : v.verdict === 'UNKNOWN' ? (
-                        <UnknownMark kind="UNDECIDABLE" reason={reasonLabel(v.reasonCodes[0])} />
-                      ) : (
-                        <VerdictReason tone={v.verdict === 'ALLOW' ? 'ok' : 'danger'} label={VERDICT_LABEL[v.verdict]} reason={v.verdict === 'ALLOW' ? undefined : reasonLabel(v.reasonCodes[0])} code={v.reasonCodes[0]} />
-                      )}
-                      <span className="ads-axes__tag">{ads.ui.vehicleReported}</span>
-                    </td>
-                    <td>
-                      <FreshnessChip state={v.stale ? 'DELAYED' : 'FRESH'} observedAt={v.observedAt} staleAfterMs={v.staleAfterMs} now={now} />
-                    </td>
-                    <td>{v.simulated ? <SimulatedDataNotice text={axesTab.simulated} /> : ads.ui.vehicleReported}</td>
+            <TableScroll label={VT.caption(name)}>
+              <table className="ads-axes" data-verdict-table>
+                <caption className="ads-axes__caption">{VT.caption(name)}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{VT.col.action}</th>
+                    <th scope="col">{VT.col.verdict}</th>
+                    <th scope="col">{VT.col.observed}</th>
+                    <th scope="col">{VT.col.source}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {items.map((v) => (
+                    <tr key={v.action} data-action={v.action} data-verdict={v.stale ? 'UNCONFIRMED' : v.verdict}>
+                      <th scope="row">{VERDICT_ACTION_LABEL[v.action]}</th>
+                      <td>
+                        {v.stale ? (
+                          <>
+                            <UnknownMark kind="UNCONFIRMED" reason={axesTab.unconfirmedAt(relAgo(v.observedAt, now))} />
+                            <span className="ads-axes__past">{ads.ui.thenReported(VERDICT_LABEL[v.verdict])}</span>
+                          </>
+                        ) : v.verdict === 'UNKNOWN' ? (
+                          <UnknownMark kind="UNDECIDABLE" reason={reasonLabel(v.reasonCodes[0])} />
+                        ) : (
+                          <VerdictReason tone={v.verdict === 'ALLOW' ? 'ok' : 'danger'} label={VERDICT_LABEL[v.verdict]} reason={v.verdict === 'ALLOW' ? undefined : reasonLabel(v.reasonCodes[0])} code={v.reasonCodes[0]} />
+                        )}
+                        <span className="ads-axes__tag">{ads.ui.vehicleReported}</span>
+                      </td>
+                      <td>
+                        <FreshnessChip state={v.stale ? 'DELAYED' : 'FRESH'} observedAt={v.observedAt} staleAfterMs={v.staleAfterMs} now={now} />
+                      </td>
+                      <td>{v.simulated ? <SimulatedDataNotice text={axesTab.simulated} /> : ads.ui.vehicleReported}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableScroll>
           </Panel>
         );
       })}
       {(view.unreported ?? []).map((u) => (
         <Panel key={u.featureId} title={u.featureName} eyebrow={u.featureId} id={`verdicts-${u.featureId}`}>
-          <table className="ads-axes" data-verdict-table>
-            <caption className="ads-axes__caption">{VT.caption(u.featureName)}</caption>
-            <thead>
-              <tr>
-                <th scope="col">{VT.col.action}</th>
-                <th scope="col">{VT.col.verdict}</th>
-                <th scope="col">{VT.col.observed}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr data-verdict="UNREPORTED">
-                <th scope="row">{VT.allActions}</th>
-                <td>
-                  <UnknownMark kind="UNCONFIRMED" reason={VT.unreportedReason} />
-                </td>
-                <td>
-                  <FreshnessChip state="UNOBSERVED" observedAt={null} staleAfterMs={u.staleAfterMs} now={now} />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <TableScroll label={VT.caption(u.featureName)}>
+            <table className="ads-axes" data-verdict-table>
+              <caption className="ads-axes__caption">{VT.caption(u.featureName)}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{VT.col.action}</th>
+                  <th scope="col">{VT.col.verdict}</th>
+                  <th scope="col">{VT.col.observed}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-verdict="UNREPORTED">
+                  <th scope="row">{VT.allActions}</th>
+                  <td>
+                    <UnknownMark kind="UNCONFIRMED" reason={VT.unreportedReason} />
+                  </td>
+                  <td>
+                    <FreshnessChip state="UNOBSERVED" observedAt={null} staleAfterMs={u.staleAfterMs} now={now} />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </TableScroll>
         </Panel>
       ))}
     </div>

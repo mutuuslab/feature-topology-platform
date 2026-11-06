@@ -5,8 +5,9 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { type ConfigSet, type OddCondition, type OddProfile, type VehicleConfigReport } from '@ff/contracts';
-import { classifyVehicleConfig, compareDeploySettings, countVerdicts, decideEligibility, ELIGIBILITY_LABEL, ELIGIBILITY_STATES, oddApprovalBlockedReason, oddConditionDiff, siteStatus, validateOddProfile } from '../../../contracts/src/rules/ads-config';
+import { classifyVehicleConfig, compareDeploySettings, countVerdicts, decideEligibility, ELIGIBILITY_LABEL, ELIGIBILITY_STATES, oddApprovalBlockedReason, oddConditionDiff, ODD_SELF_APPROVAL, siteStatus, validateOddProfile } from '../../../contracts/src/rules/ads-config';
 import { AppProvider } from '../store';
+import { DEMO_ACCOUNTS } from '../data/demoAccounts';
 import OddProfilesScreen from '../screens/ads/OddProfiles';
 import CompatSetsScreen from '../screens/ads/CompatSets';
 import { ActivationScreen } from '../screens/policy/Runtime';
@@ -148,6 +149,25 @@ describe('ODD 프로파일 /config/odd', () => {
     fireEvent.click(screen.getByRole('button', { name: '프로파일 승인' }));
     await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.url).toBe('/api/odd-profiles/ODD-FEAT-00004-v2/approve'));
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ reason: '시험 결과 검토' });
+  });
+
+  it('직무 분리 — 초안 작성자인 기능안전 담당은 승인 대신 막힘 사유, 승인 기록은 계정 ID가 아니라 이름', async () => {
+    const me = DEMO_ACCOUNTS.find((a) => a.key === 'quality')!.id;
+    const own = profile({ profileId: 'ODD-FEAT-00004-v2', version: 2, status: 'DRAFT', basedOn: 'ODD-FEAT-00004-v1', createdBy: me, approvedBy: null, approvedAt: null, approvalReason: null, conditions: [EXCL, sp('LE', 100, 'km/h')] });
+    handler = (url, init) => (url.startsWith('/api/odd-profiles/ODD-FEAT-00004-v2') ? { body: detail(own, V1) } : oddHandler(undefined, [V1, own])(url, init));
+    mount('quality', '/config/odd', <OddProfilesScreen />);
+    const blocked = await waitFor(() => {
+      const b = document.querySelector('[data-blocked-action]');
+      expect(b).toBeTruthy();
+      return b!;
+    });
+    expect(blocked.textContent).toContain(ODD_SELF_APPROVAL);
+    expect(screen.queryByLabelText('승인 사유')).toBeNull();
+    cleanup();
+    handler = oddHandler();
+    const { container } = mount('viewer', '/config/odd?profile=ODD-FEAT-00004-v1', <OddProfilesScreen />);
+    await screen.findAllByText('요청자');
+    expect(container.textContent).not.toMatch(/usr-/);
   });
 });
 

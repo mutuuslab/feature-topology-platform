@@ -6,7 +6,7 @@ import { CLASS_GAPS, LIFECYCLE_OWNER_STATES, LIFECYCLE_TO_OWNER_STATE } from '..
 import { asyncState, useApi } from '../../api/hooks';
 import { adsChange } from '../../copy/ads-change';
 import { AsyncView, IdChip, KeyValue, Panel, StatusGlyph, SummaryLine, type KeyMessageSpec } from '../../design';
-import { BlockedAction, fmtAt, SimulatedDataNotice, UnknownMark, VerdictReason } from '../../design/ads';
+import { BlockedAction, fmtAt, SimulatedDataNotice, TableScroll, UnknownMark, VerdictReason } from '../../design/ads';
 import { usePermission } from '../shared';
 import './ads-change.css';
 
@@ -83,61 +83,65 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
             </div>
           </Panel>
           <Panel title={L.lcOwners} id="ads-lc-owners">
-            <table className="ads-axes">
-              <caption className="ads-axes__caption">{L.lcOwners}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{L.lcCol.state}</th>
-                  <th scope="col">{L.lcCol.owner}</th>
-                  <th scope="col">{L.lcCol.now}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {LIFECYCLE_OWNER_STATES.map((s) => (
-                  <tr key={s} data-lc-owner={s}>
-                    <th scope="row">{L.lcState[s]}</th>
-                    <td>{c?.lifecycleOwners?.[s] ?? <span className="adc-tag" data-tone="warn">{L.noOwner}</span>}</td>
-                    <td>{nowState === s ? L.current : ''}</td>
+            <TableScroll label={L.lcOwners}>
+              <table className="ads-axes">
+                <caption className="ads-axes__caption">{L.lcOwners}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{L.lcCol.state}</th>
+                    <th scope="col">{L.lcCol.owner}</th>
+                    <th scope="col">{L.lcCol.now}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {LIFECYCLE_OWNER_STATES.map((s) => (
+                    <tr key={s} data-lc-owner={s}>
+                      <th scope="row">{L.lcState[s]}</th>
+                      <td>{c?.lifecycleOwners?.[s] ?? <span className="adc-tag" data-tone="warn">{L.noOwner}</span>}</td>
+                      <td>{nowState === s ? L.current : ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableScroll>
           </Panel>
           {/* 시장 기준선 — 미분류 Feature는 출시 시장을 정하기 전이라 영역을 그리지 않는다 */}
           {(v.baselines ?? []).length || done ? (
           <Panel title={B.title} id="ads-baselines">
             {(v.baselines ?? []).length ? (
               <div className="adc-stack">
-                <table className="ads-axes">
-                  <caption className="ads-axes__caption">{B.caption}</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">{B.market}</th>
-                      <th scope="col">{B.type}</th>
-                      <th scope="col">{B.regs}</th>
-                      <th scope="col">{B.odd}</th>
-                      <th scope="col">{B.status}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(v.baselines ?? []).map((b) => (
-                      <tr key={b.market} data-market={b.market}>
-                        <th scope="row">{b.market}</th>
-                        <td>{B.typeValue[b.approvalType]}</td>
-                        <td className="ads-mono">{b.regulations.map((r) => `${r.reg} ${r.series}`).join(' · ')}</td>
-                        <td>{b.oddProfileRef ? <IdChip id={b.oddProfileRef} to="/config/odd" copy={false} /> : '—'}</td>
-                        <td>
-                          {b.approvalStatus === 'UNKNOWN' ? (
-                            <UnknownMark kind="UNDECIDABLE" reason={B.unknownReason} />
-                          ) : (
-                            <VerdictReason tone={b.approvalStatus === 'APPROVED' ? 'ok' : 'warn'} label={B.statusValue[b.approvalStatus]} />
-                          )}
-                          {b.note ? <span className="adc-note"> {b.note}</span> : null}
-                        </td>
+                <TableScroll label={B.caption}>
+                  <table className="ads-axes">
+                    <caption className="ads-axes__caption">{B.caption}</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">{B.market}</th>
+                        <th scope="col">{B.type}</th>
+                        <th scope="col">{B.regs}</th>
+                        <th scope="col">{B.odd}</th>
+                        <th scope="col">{B.status}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {(v.baselines ?? []).map((b) => (
+                        <tr key={b.market} data-market={b.market}>
+                          <th scope="row">{b.market}</th>
+                          <td>{B.typeValue[b.approvalType]}</td>
+                          <td className="ads-mono">{b.regulations.map((r) => `${r.reg} ${r.series}`).join(' · ')}</td>
+                          <td>{b.oddProfileRef ? <IdChip id={b.oddProfileRef} to="/config/odd" copy={false} /> : '—'}</td>
+                          <td>
+                            {b.approvalStatus === 'UNKNOWN' ? (
+                              <UnknownMark kind="UNDECIDABLE" reason={B.unknownReason} />
+                            ) : (
+                              <VerdictReason tone={b.approvalStatus === 'APPROVED' ? 'ok' : 'warn'} label={B.statusValue[b.approvalStatus]} />
+                            )}
+                            {b.note ? <span className="adc-note"> {b.note}</span> : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </TableScroll>
                 <p className="adc-note">{B.source}</p>
                 {(v.baselines ?? []).some((b) => b.assumed) ? <SimulatedDataNotice text={B.assumed} /> : null}
               </div>

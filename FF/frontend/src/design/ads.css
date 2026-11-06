@@ -204,6 +204,15 @@
 }
 
 /* ── 6축 표·타임라인 ─────────────────────────────── */
+/* 넓은 표 상자 — 좁은 폭(390·1024)에서 본문 밖으로 잘리지 않고 이 안에서 가로 스크롤 */
+.ads-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.ads-scroll:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
 .ads-axes,
 .ads-timeline {
   width: 100%;

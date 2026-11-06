@@ -12,6 +12,8 @@ import {
   CONFIG_REPORT_STALE_MS,
   CreateConfigSetBody,
   countVerdicts,
+  mergeSecurityMin,
+  ODD_SELF_APPROVAL,
   oddApprovalBlockedReason,
   oddConditionDiff,
   siteStatus,
@@ -171,6 +173,11 @@ export class AdsConfigService implements OnModuleInit {
       this.audit.failed(actor, 'ODD_PROFILE_APPROVE', target, '이미 승인된 ODD 프로파일', 'D02-01');
       throw new DomainError('CONFLICT', '이미 승인된 ODD 프로파일입니다 — 바꾸려면 새 버전 초안을 만드세요.');
     }
+    // 직무 분리 — 초안 작성자는 기능안전 담당이어도 자기 초안을 승인하지 않는다
+    if (p.createdBy && p.createdBy === actor.id) {
+      this.audit.denied(actor, 'ODD_PROFILE_APPROVE', target, ODD_SELF_APPROVAL, 'D02-01');
+      throw new DomainError('SEPARATION_OF_DUTY', ODD_SELF_APPROVAL);
+    }
     const issues = validateOddProfile(p);
     const blocked = oddApprovalBlockedReason(issues);
     if (blocked) {
@@ -247,7 +254,11 @@ export class AdsConfigService implements OnModuleInit {
   createSet(actor: Actor, body: CreateConfigSetBody) {
     const target = `${body.featureId}@${body.featureVersion}#config-set`;
     if (!this.features.get(body.featureId, body.featureVersion)) throw new DomainError('NOT_FOUND', `${body.featureId} ${body.featureVersion}을(를) 찾을 수 없습니다.`);
-    const blocked = configSetRegistrationBlocker(body);
+    // 보안 최소 버전 하한 — 기존 승인 조합(같은 SW)의 최소 버전 아래로는 요청 본문이 낮출 수 없다(빠뜨리거나 낮춘 값은 하한으로 올린다)
+    const swIds = new Set(body.ecuSw.map((s) => s.swId));
+    const floor = this.sets().reduce((acc, s) => mergeSecurityMin(acc, s.securityMin.filter((m) => swIds.has(m.swId))), [] as ConfigSet['securityMin']);
+    const securityMin = mergeSecurityMin(floor, body.securityMin);
+    const blocked = configSetRegistrationBlocker({ ecuSw: body.ecuSw, securityMin });
     if (blocked) {
       this.audit.failed(actor, 'CONFIG_SET_CREATE', target, blocked, 'D02-01');
       throw new DomainError('GUARD_FAILED', blocked, { blockers: [{ code: 'SECURITY_MIN_VIOLATION', message: blocked, ref: body.ecuSw.map((s) => s.swId).join(',') }] });
@@ -258,7 +269,7 @@ export class AdsConfigService implements OnModuleInit {
     }
     const n = this.db.all<{ set_id: string }>('SELECT set_id FROM ads_config_set WHERE feature_id = ?', body.featureId).length;
     const { reason, ...rest } = body;
-    const doc: ConfigSet = { ...rest, setId: `CFG-${body.featureId}-${String(n + 1).padStart(2, '0')}`, status: 'APPROVED', approvedBy: actor.id, approvedAt: this.clock.iso() };
+    const doc: ConfigSet = { ...rest, securityMin, setId: `CFG-${body.featureId}-${String(n + 1).padStart(2, '0')}`, status: 'APPROVED', approvedBy: actor.id, approvedAt: this.clock.iso() };
     return this.db.tx(() => {
       this.db.run('INSERT INTO ads_config_set (set_id, feature_id, feature_version, doc) VALUES (?, ?, ?, ?)', doc.setId, doc.featureId, doc.featureVersion, JSON.stringify(doc));
       this.audit.record(actor, 'CONFIG_SET_CREATE', doc.setId, { after: doc, reason, componentId: 'D02-01' });

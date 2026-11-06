@@ -166,6 +166,9 @@ export function oddApprovalBlockedReason(issues: OddIssue[]): string | null {
   return `의미 검증 오류 ${issues.length}건(${shorts.join(', ')})이 남아 승인할 수 없습니다 — 초안에서 고친 뒤 다시 검증하세요.`;
 }
 
+/** 직무 분리 — 초안 작성자는 자기 프로파일을 승인하지 않는다(기능안전 담당이어도) */
+export const ODD_SELF_APPROVAL = '초안 작성자는 자기 ODD 프로파일을 승인할 수 없습니다 — 다른 기능안전 담당자가 승인합니다.';
+
 /** 배포 설정 한 줄(정책 매개변수)과 승인 상한 비교 */
 export interface DeploySetting {
   settingId: string;
@@ -316,9 +319,24 @@ export function belowSecurityMin(sw: { swId: string; version: string }[], mins: 
   return out;
 }
 
-/** 조합 등록 검사 — ECU SW 하나라도 보안 최소 버전보다 낮으면 등록 거부(ux ADS-UI05 primaryAction) */
+/** 보안 최소 버전 합치기 — SW마다 높은 쪽(요청으로 낮출 수 없다). 비교할 수 없으면 앞(기존) 값을 둔다 */
+export function mergeSecurityMin(base: ConfigSet['securityMin'], extra: ConfigSet['securityMin']): ConfigSet['securityMin'] {
+  const out = new Map(base.map((m) => [m.swId, m]));
+  for (const m of extra) {
+    const cur = out.get(m.swId);
+    if (!cur || semverCompare(m.version, cur.version) === 1) out.set(m.swId, m);
+  }
+  return [...out.values()];
+}
+
+/** 조합 등록 검사 — ECU SW 하나라도 보안 최소 버전보다 낮거나 비교할 수 없으면 등록 거부(ux ADS-UI05 primaryAction, 판단 불가는 통과로 보지 않는다) */
 export function configSetRegistrationBlocker(set: Pick<ConfigSet, 'ecuSw' | 'securityMin'>): string | null {
-  return belowSecurityMin(set.ecuSw, set.securityMin).length ? 'ECU SW 하나가 보안 최소 버전보다 낮아 이 조합을 등록할 수 없습니다.' : null;
+  if (belowSecurityMin(set.ecuSw, set.securityMin).length) return 'ECU SW 하나가 보안 최소 버전보다 낮아 이 조합을 등록할 수 없습니다.';
+  const uncomparable = set.ecuSw.some((s) => {
+    const m = set.securityMin.find((x) => x.swId === s.swId);
+    return !!m && semverCompare(s.version, m.version) === null;
+  });
+  return uncomparable ? 'ECU SW 버전을 보안 최소 버전과 비교할 수 없어 이 조합을 등록할 수 없습니다.' : null;
 }
 
 /** 복구 후보 — '승인 조합으로 복구 가능/불가'(이전 버전 복귀를 기본 해법처럼 쓰지 않는다, ux ADS-UI05) */

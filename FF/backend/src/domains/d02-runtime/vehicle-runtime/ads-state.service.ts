@@ -504,9 +504,10 @@ export class AdsStateService implements OnModuleInit {
 
   customerState(vin: string): CustomerStateView {
     const fs = this.featureState(vin).features;
-    const kills = this.db.all<{ doc: string }>("SELECT doc FROM kill_request WHERE status = 'ACTIVE'").map((r) => JSON.parse(r.doc) as { killId: string; featureId: string; vins?: string[] });
+    // 차단 대상 — KillRepo.killed와 같은 판정: 의존 포함 Feature 목록(featureIds) × 차량 범위
+    const kills = this.db.all<{ doc: string }>("SELECT doc FROM kill_request WHERE status = 'ACTIVE'").map((r) => JSON.parse(r.doc) as { killId: string; featureId: string; featureIds?: string[]; vins?: string[] });
     const features: CustomerFeatureState[] = fs.map((x) => {
-      const kill = kills.find((k) => k.featureId === x.featureId && (k.vins ?? []).includes(vin)) ?? null;
+      const kill = kills.find((k) => (k.featureIds ?? [k.featureId]).includes(x.featureId) && (k.vins ?? []).includes(vin)) ?? null;
       const ent = this.entitlementAxis(vin, x.featureId);
       const cat = ent.catalogId ? this.catalog(ent.catalogId) : null;
       const kind = x.entitlement.value === 'TRIAL' ? '체험' : cat?.saleType ?? '구매';

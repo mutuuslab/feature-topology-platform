@@ -103,3 +103,44 @@ test('변경: 긴급 차단 요청 미리보기 — 서명 대상 digest는 서�
   await expect(preview).toBeVisible({ timeout: 15_000 });
   await expect(preview).toContainText('서명 대상 digest');
 });
+
+// 좁은 폭·계정 ID(하네스 리뷰 2026-11-06) — 1024에서 본문 가로 넘침 없음, 390에서 넓은 ADS 표·행은 본문 밖으로 잘리지 않고 자기 상자 안에서 가로 스크롤.
+// 화면 글자에 계정 ID(usr-*)를 쓰지 않는다(이름으로). 공용 부품(ds-kv 등)의 좁은 폭 넘침은 이 시험 밖(narrow.spec).
+const ADS_SCREENS = ['/config/odd', '/config/compat', '/ops/incident-reports', '/ops/incident-reports/ADSI-2026-0001', '/verify/safety-case', '/trace/ads', '/analysis/impact', '/analysis/impact?tab=release', '/fleet/vehicles/KMH-GN7-0001', '/fleet/vehicles/ego-01?tab=verdicts'];
+const ADS_WIDE = 'table.ads-axes, table.ads-timeline, .adsc-stack, .adc-stack, .adc-row, .adsc-row';
+
+const clipped = (page: Page) =>
+  page.evaluate((sel) => {
+    const main = document.querySelector('#main') as HTMLElement;
+    const limit = main.getBoundingClientRect().left + main.clientWidth + 1;
+    const out: string[] = [];
+    for (const el of main.querySelectorAll<HTMLElement>(sel)) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.right <= limit) continue;
+      let p = el.parentElement;
+      let boxed = false;
+      for (; p && p !== main; p = p.parentElement) {
+        if (['auto', 'scroll'].includes(getComputedStyle(p).overflowX) && p.getBoundingClientRect().right <= limit) {
+          boxed = true;
+          break;
+        }
+      }
+      if (!boxed) out.push(`${el.tagName.toLowerCase()}.${el.className} right=${Math.round(r.right)} > ${Math.round(limit)}`);
+    }
+    return { mainOver: main.scrollWidth - main.clientWidth, out, text: main.innerText };
+  }, ADS_WIDE);
+
+for (const url of ADS_SCREENS) {
+  test(`좁은 폭: ${url} — 1024 본문 넘침 없음, 390 넓은 표는 자기 상자 안, 계정 ID 없음`, async ({ page }) => {
+    for (const width of [1024, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(url);
+      await expect(page.locator('#main [data-key-message]')).toBeVisible();
+      await expect(page.locator('#main [data-state="loading"], #main [aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
+      const c = await clipped(page);
+      expect(c.out, `${width}px 잘린 ADS 요소`).toEqual([]);
+      if (width === 1024) expect(c.mainOver, '1024px 본문 가로 넘침').toBeLessThanOrEqual(1);
+      expect(c.text).not.toMatch(/\busr-[a-z0-9]/);
+    }
+  });
+}

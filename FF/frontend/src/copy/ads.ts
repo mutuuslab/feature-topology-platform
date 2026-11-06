@@ -61,6 +61,7 @@ export const ui = {
   },
   stage: { sum: (n: number) => `합 ${n}`, mismatch: '구간 합이 분모와 다릅니다' },
   vehicleReported: '차량 보고',
+  scrollTable: (caption: string) => `${caption} 표 — 가로 스크롤`,
   owner: '판단 주체',
   axis: '축',
   value: '현재 값',

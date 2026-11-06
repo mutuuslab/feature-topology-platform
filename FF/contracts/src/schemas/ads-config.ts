@@ -5,7 +5,8 @@ import { z } from 'zod';
 export const ApproveOddProfileBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
 export type ApproveOddProfileBody = z.infer<typeof ApproveOddProfileBody>;
 
-const Ver = z.string().regex(/^\d+\.\d+\.\d+$/);
+/** x.y.z — 앞자리 0은 받지 않는다(semverCompare가 비교하지 못해 보안 최소 버전 검사를 지나가던 결함) */
+const Ver = z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
 const Ref = z.object({ id: z.string().min(1).max(80), version: z.string().min(1).max(40) }).strict();
 
 /** 승인 조합 등록(차량 사양·Variant 담당) — ECU SW가 보안 최소 버전보다 낮으면 서버가 거부 */

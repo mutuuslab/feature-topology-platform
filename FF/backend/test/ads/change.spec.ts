@@ -44,6 +44,9 @@ describe('변경 영향 — 변경 종류·승인 경로 (ADS-BE08)', () => {
   it('승인 경로 종결은 정해진 역할만 — 다른 역할은 403, 맞는 역할은 종결·감사 기록', async () => {
     await app.http().post('/api/change-impacts/CI-0002/paths/REHARA/close').set(actor('usr-author', 'FEATURE_AUTHOR')).send({ reason: '시험' }).expect(403);
     await app.http().post('/api/change-impacts/CI-0002/paths/REHARA/close').set(actor('usr-csm', 'SECURITY_OFFICER')).send({ reason: '사이버보안 담당자가 재-HARA 종결 시도' }).expect(403);
+    // 경로 담당이 아닌 거부도 감사 이력에 남는다(실패한 승인도 기록)
+    const denied = (await app.http().get('/api/audit?target=CI-0002/REHARA').set(actor('usr-auditor', 'AUDITOR')).expect(200)).body;
+    expect(JSON.stringify(denied)).toContain('DENIED');
     const r = await app.http().post('/api/change-impacts/CI-0002/paths/SUMS/close').set(actor('usr-csm', 'SECURITY_OFFICER')).send({ reason: 'RXSWIN 갱신 기록', ref: 'SUMS-0022' }).expect(201);
     expect(r.body.paths.find((p: { path: string }) => p.path === 'SUMS').status).toBe('DONE');
     await app.http().post('/api/change-impacts/CI-0002/paths/SUMS/close').set(actor('usr-csm', 'SECURITY_OFFICER')).send({ reason: '다시' }).expect(409);

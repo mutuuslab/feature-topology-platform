@@ -115,6 +115,23 @@ describe('ADS 사건 보고 (ADS-UI07)', () => {
     expect(container.textContent).toContain('보고 대상 확정·보고 초안 작성·제출 기록은 안전·법규 담당 역할이 할 수 있습니다.');
   });
 
+  it('운영 감사 기록 — 계정 ID·감사 행위 코드를 보이지 않고, 확정 기록은 감사 이력과 겹쳐 두 번 나오지 않는다', async () => {
+    const audit = [
+      { at: ago(DAY), actor: 'usr-steward', role: 'REGULATORY_OWNER', action: 'ADS_INCIDENT_DETERMINE', result: 'ALLOWED' },
+      { at: ago(DAY - 60_000), actor: 'usr-ops', role: 'OPERATOR', action: 'ADS_INCIDENT_DETERMINE', result: 'DENIED' },
+    ];
+    handler = (url) => (url.startsWith('/api/incident-reports/ADSI-2026-0001') ? { body: { ...detail('ADSI-2026-0001'), audit } } : undefined);
+    const { container } = mount('operator', '/ops/incident-reports/ADSI-2026-0001', '/ops/incident-reports/:id', <IncidentReportDetail />);
+    await screen.findByText('DSSAD 기록은 차량 소관 — 상관 ID 링크');
+    const text = container.textContent ?? '';
+    expect(text).not.toMatch(/usr-/);
+    expect(text).not.toContain('ADS_INCIDENT_DETERMINE');
+    const rows = [...container.querySelectorAll('section[aria-labelledby="ads-incident-audit-h"] tbody tr')].map((r) => r.textContent ?? '');
+    expect(rows.filter((t) => t.includes('보고 대상 확정 1판'))).toHaveLength(1);
+    expect(rows.filter((t) => t.includes('보고 대상 확정'))).toHaveLength(2);
+    expect(rows.some((t) => t.includes('거부'))).toBe(true);
+  });
+
   it('보고 대상 확정 — 법규 담당이 사유와 함께 기록한다', async () => {
     handler = (url, init) => {
       if (init?.method === 'POST') return { status: 201, body: detail('ADSI-2026-0003') };
@@ -175,6 +192,8 @@ describe('Safety Case 근거 지도 (ADS-UI08)', () => {
     expect(screen.getAllByRole('treeitem').length).toBe(8);
     expect(container.querySelector('.ds-summary')!.textContent).toContain('Evidence 없는 주장 1/2');
     expect(container.textContent).toContain('원본 Safety Case는 안전 조직 소유');
+    // 검토자·작성자는 계정 ID가 아니라 이름으로
+    expect(container.textContent).not.toMatch(/usr-/);
     // 키보드 — 왼쪽 화살표로 접으면 아래 항목이 사라진다
     const c1 = container.querySelector('[data-node="C01"]') as HTMLElement;
     fireEvent.keyDown(c1, { key: 'ArrowLeft' });
@@ -199,6 +218,7 @@ describe('Safety Case 근거 지도 (ADS-UI08)', () => {
     fireEvent.click(await screen.findByText('C01-A1-E1 내용'));
     await screen.findByText('SAMPLE-EV-000062-VARIANT-CHECK');
     expect(author.baseElement.textContent).toContain(ADS_REVIEWER_NOT_INDEPENDENT);
+    expect(author.baseElement.textContent).not.toMatch(/usr-/);
     cleanup();
     mount('safety2', '/verify/safety-case', '/verify/safety-case', <SafetyCaseScreen />);
     fireEvent.click(await screen.findByText('C01-A1-E1 내용'));

@@ -10,7 +10,7 @@ import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { adsChange as C } from '../../copy/ads-change';
 import { ads } from '../../copy/ads';
 import { AsyncView, Button, Drawer, ErrorNote, Field, IdChip, Panel, Select, StatusGlyph, SummaryLine, type KeyMessageSpec } from '../../design';
-import { BlockedAction, ChangeKindBadge, fmtAt, relAgo, SimulatedDataNotice, UnknownMark } from '../../design/ads';
+import { BlockedAction, ChangeKindBadge, fmtAt, relAgo, SimulatedDataNotice, TableScroll, UnknownMark } from '../../design/ads';
 import { usePermission } from '../shared';
 import './ads-change.css';
 
@@ -105,59 +105,61 @@ export function ApprovalPathsTab() {
             ]}
           />
           <Panel id="ads-paths">
-            <table className="ads-axes">
-              <caption className="ads-axes__caption">{C.table}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{C.col.change}</th>
-                  <th scope="col">{C.col.kind}</th>
-                  {ADS_IMPACT_PATHS.map((p) => (
-                    <th key={p} scope="col">
-                      {C.path[p]}
-                    </th>
-                  ))}
-                  <th scope="col">{C.col.owner}</th>
-                  <th scope="col">{C.col.opened}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {d.items.map((v) => (
-                  <tr key={v.impactId} data-impact={v.impactId} data-change-kind={v.cls.primary}>
-                    <th scope="row">
-                      <div className="adc-path">
-                        <span>{v.title}</span>
-                        <span className="adc-row">
-                          <IdChip id={v.featureId} version={v.version} to={`/features/${v.featureId}/${v.version}`} copy={false} />
-                          <span className="adc-note">{v.name}</span>
-                        </span>
-                        {v.reharaRequestIds.length ? <span className="adc-note">{C.reharaReq(v.reharaRequestIds.join(', '))}</span> : null}
-                      </div>
-                    </th>
-                    <td>
-                      <KindCell v={v} />
-                    </td>
-                    {v.paths.map((p) => (
-                      <td key={p.path}>
-                        {v.cls.primary === 'UNKNOWN' ? (
-                          <UnknownMark kind="UNDECIDABLE" />
-                        ) : (
-                          <>
-                            <PathCell p={p} />
-                            {p.status === 'OPEN' && closer.ok && mine.includes(p.closer) ? (
-                              <Button variant="ghost" onClick={() => setClosing({ v, p: p.path })}>
-                                {C.close}
-                              </Button>
-                            ) : null}
-                          </>
-                        )}
-                      </td>
+            <TableScroll label={C.table}>
+              <table className="ads-axes">
+                <caption className="ads-axes__caption">{C.table}</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{C.col.change}</th>
+                    <th scope="col">{C.col.kind}</th>
+                    {ADS_IMPACT_PATHS.map((p) => (
+                      <th key={p} scope="col">
+                        {C.path[p]}
+                      </th>
                     ))}
-                    <td>{v.assignee ?? '—'}</td>
-                    <td className="ads-mono">{relAgo(v.openedAt)}</td>
+                    <th scope="col">{C.col.owner}</th>
+                    <th scope="col">{C.col.opened}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {d.items.map((v) => (
+                    <tr key={v.impactId} data-impact={v.impactId} data-change-kind={v.cls.primary}>
+                      <th scope="row">
+                        <div className="adc-path">
+                          <span>{v.title}</span>
+                          <span className="adc-row">
+                            <IdChip id={v.featureId} version={v.version} to={`/features/${v.featureId}/${v.version}`} copy={false} />
+                            <span className="adc-note">{v.name}</span>
+                          </span>
+                          {v.reharaRequestIds.length ? <span className="adc-note">{C.reharaReq(v.reharaRequestIds.join(', '))}</span> : null}
+                        </div>
+                      </th>
+                      <td>
+                        <KindCell v={v} />
+                      </td>
+                      {v.paths.map((p) => (
+                        <td key={p.path}>
+                          {v.cls.primary === 'UNKNOWN' ? (
+                            <UnknownMark kind="UNDECIDABLE" />
+                          ) : (
+                            <>
+                              <PathCell p={p} />
+                              {p.status === 'OPEN' && closer.ok && mine.includes(p.closer) ? (
+                                <Button variant="ghost" onClick={() => setClosing({ v, p: p.path })}>
+                                  {C.close}
+                                </Button>
+                              ) : null}
+                            </>
+                          )}
+                        </td>
+                      ))}
+                      <td>{v.assignee ?? '—'}</td>
+                      <td className="ads-mono">{relAgo(v.openedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableScroll>
           </Panel>
           {known.filter((v) => reharaAfterRelease(v) > 0).map((v) => (
             <div key={v.impactId} className="adc-row" data-sign-blocked={v.impactId}>
@@ -315,22 +317,26 @@ export function ReleaseDiffTab() {
                   <ChangeKindBadge key={k} kind={k} />
                 ))}
               </div>
-              <table className="ads-axes adc-diff" data-release-diff={d.releaseId}>
-                <caption className="ads-axes__caption">{R.caption(d.after.version, d.before.version)}</caption>
-                {head}
-                <tbody>
-                  <DiffRows rows={main} />
-                </tbody>
-              </table>
-              <details className="adc-term" open={termChanged > 0}>
-                <summary>{R.termHead(d.summary.termination.dc, d.summary.termination.fallback, d.summary.termination.mrc)}</summary>
-                <table className="ads-axes adc-diff">
-                  <caption className="ads-axes__caption">{R.group.TERMINATION}</caption>
+              <TableScroll label={R.caption(d.after.version, d.before.version)}>
+                <table className="ads-axes adc-diff" data-release-diff={d.releaseId}>
+                  <caption className="ads-axes__caption">{R.caption(d.after.version, d.before.version)}</caption>
                   {head}
                   <tbody>
-                    <DiffRows rows={term.filter(visible)} />
+                    <DiffRows rows={main} />
                   </tbody>
                 </table>
+              </TableScroll>
+              <details className="adc-term" open={termChanged > 0}>
+                <summary>{R.termHead(d.summary.termination.dc, d.summary.termination.fallback, d.summary.termination.mrc)}</summary>
+                <TableScroll label={R.group.TERMINATION}>
+                  <table className="ads-axes adc-diff">
+                    <caption className="ads-axes__caption">{R.group.TERMINATION}</caption>
+                    {head}
+                    <tbody>
+                      <DiffRows rows={term.filter(visible)} />
+                    </tbody>
+                  </table>
+                </TableScroll>
               </details>
               <SimulatedDataNotice text={C.assumed} />
             </>

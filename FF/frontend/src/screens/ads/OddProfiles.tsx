@@ -3,12 +3,15 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { type DeployComparison, type LimitVerdict, type OddCondition, type OddIssue, type OddProfile, type OddProfileListItem, type OddSite, type SiteStatus } from '@ff/contracts';
-import { LIMIT_VERDICT_LABEL, ODD_AXES, ODD_AXIS_LABEL, oddConditionText, SITE_STATUS_LABEL } from '../../../../contracts/src/rules/ads-config';
+import { LIMIT_VERDICT_LABEL, ODD_AXES, ODD_AXIS_LABEL, ODD_SELF_APPROVAL, oddConditionText, SITE_STATUS_LABEL } from '../../../../contracts/src/rules/ads-config';
+import { actorFor } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { odd as O } from '../../copy/ads-config';
+import { personName } from '../../data/people';
 import { ApprovalSlots, AsyncView, Button, DataTable, DiffView, ErrorNote, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, Tabs, type KeyMessageSpec } from '../../design';
 import { BlockedAction, ChangeKindBadge, UnknownMark, VerdictReason, type VerdictTone } from '../../design/ads';
+import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
 import './ads-config.css';
 
@@ -177,12 +180,15 @@ function ConditionsTab({ d }: { d: Detail }) {
 function Approval({ d }: { d: Detail }) {
   const p = d.profile;
   const perm = usePermission(['SAFETY_OFFICER']);
+  const { role } = useAppShell();
   const approve = useApiMutation('approveOddProfile', INVALIDATE);
   const [reason, setReason] = useState('');
   if (p.status === 'APPROVED')
-    return <ApprovalSlots requester={{ id: p.createdBy }} slots={[{ role: O.approval.role, approver: p.approvedBy && p.approvedAt ? { id: p.approvedBy, signedAt: p.approvedAt } : null }]} />;
+    return <ApprovalSlots requester={{ id: p.createdBy, name: personName(p.createdBy) }} slots={[{ role: O.approval.role, approver: p.approvedBy && p.approvedAt ? { id: p.approvedBy, name: personName(p.approvedBy), signedAt: p.approvedAt } : null }]} />;
   if (d.blockedReason) return <BlockedAction label={O.approval.action} reason={d.blockedReason} />;
   if (!perm.ok) return <BlockedAction label={O.approval.action} reason={STATIC_MODE ? O.approval.readOnly : O.approval.noPermission} />;
+  // 직무 분리 — 초안 작성자는 자기 초안을 승인하지 않는다(서버도 같은 사유로 거부)
+  if (actorFor(role, ['SAFETY_OFFICER']).id === p.createdBy) return <BlockedAction label={O.approval.action} reason={ODD_SELF_APPROVAL} />;
   return (
     <div className="adsc-row">
       <Field label={O.approval.reason}>

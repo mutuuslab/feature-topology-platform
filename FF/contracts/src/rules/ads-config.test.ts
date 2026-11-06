@@ -6,6 +6,7 @@ import {
   compareToLimit,
   compatSummary,
   configSetRegistrationBlocker,
+  mergeSecurityMin,
   countVerdicts,
   decideEligibility,
   eligibilityState,
@@ -139,6 +140,11 @@ describe('승인 조합 대조', () => {
     expect(recoveryCandidateVerdict(SET, { swId: 'SW-CARE-SDIST-APP', version: '1.2.0' }).allowed).toBe(true);
     expect(configSetRegistrationBlocker({ ecuSw: [{ ecuPno: 'E', swId: 'SW-CARE-SDIST-APP', version: '1.1.0' }], securityMin: SET.securityMin })).toBe('ECU SW 하나가 보안 최소 버전보다 낮아 이 조합을 등록할 수 없습니다.');
     expect(configSetRegistrationBlocker(SET)).toBeNull();
+    // 비교할 수 없는 버전(앞자리 0)은 통과로 보지 않는다
+    expect(configSetRegistrationBlocker({ ecuSw: [{ ecuPno: 'E', swId: 'SW-CARE-SDIST-APP', version: '01.1.0' }], securityMin: SET.securityMin })).toBe('ECU SW 버전을 보안 최소 버전과 비교할 수 없어 이 조합을 등록할 수 없습니다.');
+    // 하한 합치기 — SW마다 높은 쪽, 요청으로 낮출 수 없다
+    expect(mergeSecurityMin([{ swId: 'A', version: '1.2.0' }], [{ swId: 'A', version: '1.0.0' }, { swId: 'B', version: '2.0.0' }])).toEqual([{ swId: 'A', version: '1.2.0' }, { swId: 'B', version: '2.0.0' }]);
+    expect(mergeSecurityMin([{ swId: 'A', version: '1.2.0' }], [{ swId: 'A', version: '1.10.0' }])).toEqual([{ swId: 'A', version: '1.10.0' }]);
   });
 });
 

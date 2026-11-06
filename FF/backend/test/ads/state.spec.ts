@@ -147,6 +147,14 @@ describe('ADS 상태 — 데모 시드 위 읽기 API', () => {
     expect(() => db.run('DELETE FROM safety_verdict')).toThrow(/추가만/);
     expect(() => db.run("UPDATE vehicle_feature_report SET runtime_state = 'ACTIVE'")).toThrow(/추가만/);
   });
+
+  it('고객 상태의 사용 제한 — 의존 Feature로 함께 막힌 차단(featureIds)도 제한으로 보인다(KillRepo.killed와 같은 판정)', async () => {
+    const db = ctx.get<Db>(DB);
+    const k = { killId: 'KILL-09001', featureId: 'FEAT-00099', featureIds: ['FEAT-00099', 'FEAT-00022'], vins: ['ego-01'], status: 'ACTIVE' };
+    db.run('INSERT INTO kill_request (kill_id, feature_id, status, doc) VALUES (?, ?, ?, ?)', k.killId, k.featureId, k.status, JSON.stringify(k));
+    const ego = (await ctx.http().get('/api/vehicles/ego-01/customer-state').expect(200)).body.features.find((x: { featureId: string }) => x.featureId === 'FEAT-00022');
+    expect(ego).toMatchObject({ restricted: true, killId: 'KILL-09001' });
+  });
 });
 
 describe('ADS 상태 — 데모 활동 위 실제 게시본', () => {

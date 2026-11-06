@@ -1,6 +1,7 @@
 /* ADS 변경 화면 — 승인 경로 표·릴리스 비교 강조 행·분류 패널(색·간격은 토큰만) */
 .adc-stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-3);
 }
 .adc-row {
@@ -8,6 +9,13 @@
   gap: var(--sp-2);
   flex-wrap: wrap;
   align-items: center;
+  min-width: 0;
+}
+/* 긴 릴리스 이름 선택 상자가 좁은 폭에서 본문 밖으로 나가지 않게 */
+.adc-row > .ds-field,
+.adc-row .ds-select {
+  min-width: 0;
+  max-width: 100%;
 }
 .adc-path {
   display: grid;

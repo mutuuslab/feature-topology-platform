@@ -87,6 +87,38 @@ describe('승인 조합 (ADS-BE10)', () => {
     const ok = await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, ecuSw: [{ ecuPno: '99211-NX400', swId: 'SW-CARE-SDIST-APP', version: '1.2.1' }], oddProfileId: 'ODD-FEAT-00022-v1' }).expect(201);
     expect(ok.body.setId).toBe('CFG-FEAT-00022-02');
   });
+
+  it('등록 — 보안 최소 버전은 요청 본문으로 낮출 수 없다(같은 Feature 승인 조합의 최소 버전이 하한), 앞자리 0 버전은 형식 오류', async () => {
+    const body = {
+      featureId: 'FEAT-00022', featureVersion: '1.0.0',
+      hw: [{ ecuPno: '99211-NX400', hwRevision: 'Rev.B' }],
+      ecuSw: [{ ecuPno: '99211-NX400', swId: 'SW-CARE-SDIST-APP', version: '1.1.0' }],
+      reason: '보안 최소 버전 생략 시도',
+    };
+    // 본문에 보안 최소 버전을 빼거나 낮춰도 기존 승인 조합의 하한(SW-CARE-SDIST-APP 1.2.0)으로 거부
+    expect((await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, securityMin: [] }).expect(422)).body.error.message).toBe('ECU SW 하나가 보안 최소 버전보다 낮아 이 조합을 등록할 수 없습니다.');
+    await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, securityMin: [{ swId: 'SW-CARE-SDIST-APP', version: '1.0.0' }] }).expect(422);
+    // 01.1.0 — 비교할 수 없는 버전이 보안 검사를 지나가지 않는다
+    await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, ecuSw: [{ ecuPno: '99211-NX400', swId: 'SW-CARE-SDIST-APP', version: '01.1.0' }], securityMin: [{ swId: 'SW-CARE-SDIST-APP', version: '1.2.0' }] }).expect(400);
+    // 저장된 조합은 하한을 그대로 들고 있다
+    const ok = await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, ecuSw: [{ ecuPno: '99211-NX400', swId: 'SW-CARE-SDIST-APP', version: '1.3.0' }], securityMin: [] }).expect(201);
+    expect(ok.body.securityMin).toEqual(expect.arrayContaining([{ swId: 'SW-CARE-SDIST-APP', version: '1.2.0' }]));
+  });
+});
+
+describe('ODD 프로파일 승인 — 직무 분리', () => {
+  it('초안 작성자는 기능안전 담당이어도 자기 초안을 승인할 수 없다(거부 기록), 다른 담당자는 승인', async () => {
+    const db = app.get<Db>(DB);
+    const base = JSON.parse(db.get<{ doc: string }>("SELECT doc FROM ads_odd_profile WHERE profile_id = 'ODD-FEAT-00022-v1'")!.doc);
+    const draft = { ...base, profileId: 'ODD-FEAT-00022-v2', version: 2, status: 'DRAFT', basedOn: 'ODD-FEAT-00022-v1', createdBy: 'usr-safety', approvedBy: null, approvedAt: null };
+    db.run('INSERT INTO ads_odd_profile (profile_id, feature_id, feature_version, version, status, doc) VALUES (?, ?, ?, ?, ?, ?)', draft.profileId, draft.featureId, draft.featureVersion, 2, 'DRAFT', JSON.stringify(draft));
+    const r = await app.http().post('/api/odd-profiles/ODD-FEAT-00022-v2/approve').set(SAFETY).send({ reason: '자기 초안 승인' }).expect(403);
+    expect(r.body.error.code).toBe('SEPARATION_OF_DUTY');
+    const audit = (await app.http().get('/api/audit?target=ODD-FEAT-00022-v2').set(actor('usr-auditor', 'AUDITOR')).expect(200)).body;
+    expect(JSON.stringify(audit)).toContain('DENIED');
+    const ok = await app.http().post('/api/odd-profiles/ODD-FEAT-00022-v2/approve').set(actor('usr-safety2', 'SAFETY_OFFICER')).send({ reason: '독립 승인' }).expect(201);
+    expect(ok.body.profile).toMatchObject({ status: 'APPROVED', approvedBy: 'usr-safety2' });
+  });
 });
 
 describe('VIN 지원 판정 (ORC-BE02)', () => {

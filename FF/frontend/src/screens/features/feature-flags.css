@@ -20,6 +20,9 @@
 .ff-flow li > span:last-child { font-size: var(--fs-xs); color: var(--muted); }
 .ff-flow__step { font-weight: 700; }
 .ff-flow small { color: var(--muted); font-size: var(--fs-xs); }
+/* 진행 중 긴급 차단 — 차량 수신 단계 맨 위에 경고 띠로(정책상 ON이어도 차량에서는 꺼져 있다) */
+.ff-kill { display: grid; gap: 2px; padding: var(--sp-2); border: 1px solid var(--warn); border-radius: var(--r-sm); background: var(--warn-soft); color: var(--warn); }
+.ff-kill a { font-size: var(--fs-xs); }
 .ff-card__next { display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3); margin: 0; padding: var(--sp-2) var(--sp-4); background: var(--surface-2); }
 .ff-sources { display: grid; padding: 0 var(--sp-4); }
 .ff-source { display: grid; gap: var(--sp-2); padding: var(--sp-4) 0; min-width: 0; overflow-wrap: anywhere; }

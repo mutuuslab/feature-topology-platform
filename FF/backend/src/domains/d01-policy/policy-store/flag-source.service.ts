@@ -1,6 +1,6 @@
 // Git 호출 위치는 개발자/CI가 가져온 스냅샷이다. 원격 저장소 검증이나 차량 적용의 증명으로 취급하지 않는다.
 import { Body, Controller, Get, Inject, Injectable, OnApplicationBootstrap, Post, Query } from '@nestjs/common';
-import { canonicalJson, FeatureFlagsQuery, FlagSourceImport, FlagSourceManifest, flagSourceUrl, type FeatureFlagRow, type FlagSourceLocation, type Policy, type Publication } from '@ff/contracts';
+import { canonicalJson, FeatureFlagsQuery, flagKillOf, FlagSourceImport, FlagSourceManifest, flagSourceUrl, type FeatureFlagRow, type FlagKillSource, type FlagSourceLocation, type Policy, type Publication } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -137,6 +137,13 @@ export class FlagSourceService implements OnApplicationBootstrap {
       const scope = policyKey(embedded);
       if (!publications.has(scope)) publications.set(scope, p);
     }
+    // 5단계(차량 수신)에 보일 진행 중 긴급 차단 — 차단 게시본의 회신 집계와 함께(rules/flag-kill, 브라우저 시뮬레이터와 같은 규칙)
+    const kills: FlagKillSource[] = this.db.all<{ doc: string }>("SELECT doc FROM kill_request WHERE status = 'ACTIVE'").map((row) => {
+      const k = JSON.parse(row.doc) as FlagKillSource & { publicationId?: string | null };
+      const pub = k.publicationId ? this.db.get<{ doc: string }>('SELECT doc FROM publication WHERE publication_id = ?', k.publicationId) : undefined;
+      const p = pub ? (JSON.parse(pub.doc) as Publication) : null;
+      return { ...k, delivery: p ? { confirmed: p.confirmed, denominator: p.denominator } : null };
+    });
     const rows: FeatureFlagRow[] = [];
     for (const policy of selected.values()) {
       if ((parsedQuery.data.featureId && policy.featureId !== parsedQuery.data.featureId) || (parsedQuery.data.version && policy.featureVersion !== parsedQuery.data.version)) continue;
@@ -147,6 +154,7 @@ export class FlagSourceService implements OnApplicationBootstrap {
         policy: { policyId: policy.policyId, status: policy.status, revision: policy.revision, controlPoint: policy.controlPoint },
         sources: usages.get(policy.flagKey) ?? [],
         publication: publication ? { publicationId: publication.publicationId, status: publication.status, confirmed: publication.confirmed, denominator: publication.denominator } : null,
+        kill: flagKillOf(policy.featureId, kills),
       });
     }
     if (!parsedQuery.data.featureId && !parsedQuery.data.version) for (const [flagKey, sources] of usages) {

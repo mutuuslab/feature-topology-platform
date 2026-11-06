@@ -1,6 +1,7 @@
 // /fleet/live — Fleet 실시간 적용 현황 (D02-03 차량 런타임 · D04-03 회신 수집 · D06-08 서명 배포)
 // /fleet/vehicles/:vin — 차량별 적용 상태 (차량 측 판단 vs 서버 판단)
 // 모든 값은 백엔드 차량 런타임·게시본에서 온다. 화면은 다시 계산하지 않는다. SSE로 배포·차단 이벤트가 오면 새로 고친다.
+import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
@@ -16,6 +17,8 @@ import { SupportPanel } from '../admin/Access';
 const F = ko.fleet;
 const V = ko.vehicle;
 const STREAM = ['publication.', 'vehicle.', 'kill.', 'virtual.'];
+/** 차량 × flag 표 한 번에 그리는 줄 — 수백 대를 다 그리면 표 하나가 수천 칸이라 메뉴를 열 때 멈췄다(CPU 4배 느림 3초) */
+const MATRIX_PAGE = 60;
 
 interface FleetRow {
   vin: string;
@@ -27,6 +30,8 @@ interface FleetRow {
   featureState: Record<string, string>;
   kills: string[];
   flags: { flagKey: string; publicationId: string | null; sequence: number | null; local: { value: boolean; reason: string }; server: { value: boolean; reason: string } | null; drift: boolean }[];
+  /** 마지막 정책 게시본의 대상인데 아직 꾸러미가 없는 flag — 이것만 미수신. 대상이 아닌 flag는 해당 없음 */
+  pending?: string[];
   last: { at: string; publicationId: string; kind: string; result: string; detail: string } | null;
 }
 interface Pub extends Delivery {
@@ -35,8 +40,15 @@ interface Pub extends Delivery {
   payload: { flagKey: string | null; featureId: string; targets: string[] };
 }
 
-function Cell({ f }: { f: FleetRow['flags'][number] | undefined }) {
-  if (!f) return <span className="ds-fcell">{F.noBundle}</span>;
+function Cell({ f, pending }: { f: FleetRow['flags'][number] | undefined; pending: boolean }) {
+  if (!f)
+    return pending ? (
+      <span className="ds-fcell">{F.noBundle}</span>
+    ) : (
+      <span className="ds-fcell" data-v="na" title={F.notTarget}>
+        —
+      </span>
+    );
   const v = f.local.reason === 'KILL_SWITCH' ? 'safe' : f.local.value ? 'on' : 'off';
   return (
     <span className="ds-fcell" data-v={v} data-drift={f.drift} title={`${f.local.reason}${f.drift ? ` · ${F.drift}: ${f.server?.reason}` : ''}`}>
@@ -53,13 +65,22 @@ export function FleetLive() {
   const kills = useApi<{ items: { killId: string }[] }>('killRequests', { query: { status: 'ACTIVE' } });
   const gleo = useApi<{ mode: 'off' | 'internal' | 'ws'; connected: boolean; lastError: string | null; messages: { dir: string; at: string; msg: { type: string } }[] }>('gleoStatus');
   const live = usePlatformEvents(STREAM, ['fleetRuntime', 'publications', 'killRequests', 'gleoStatus']);
-  const rows = fleet.data?.items ?? [];
-  const flagKeys = [...new Set(rows.flatMap((r) => r.flags.map((f) => f.flagKey)))].sort();
+  const [shown, setShown] = useState(MATRIX_PAGE);
+  // 다른 조회(게시본·이벤트)가 올 때마다 수백 대를 다시 훑지 않게 차량 목록이 바뀔 때만 센다.
+  // 한 쪽보다 많으면 앞쪽만 그리므로 차단 중 차량 → 서버 판단과 다른 차량 → 미확인 차량을 위에 둔다(같은 묶음 안은 받은 순서).
+  // 차단 중 차량은 대수가 적어도 위로 — 긴급 차단 직후 이 화면을 열면 차단한 차량이 표 아래(스크롤 밖)에 있었다
+  const { rows, flagKeys, ordered, drift, unsure } = useMemo(() => {
+    const rows = fleet.data?.items ?? [];
+    const flagKeys = [...new Set(rows.flatMap((r) => r.flags.map((f) => f.flagKey)))].sort();
+    // 다른 차종·코호트의 flag가 없는 것은 미수신이 아니다 — 받아야 할 게시본을 못 받은(pending) 차량만 센다
+    const isUnsure = (r: FleetRow) => r.quality !== 'TRUSTED' || !!r.pending?.length;
+    const rank = (r: FleetRow) => (r.kills.length ? 0 : r.flags.some((f) => f.drift) ? 1 : isUnsure(r) ? 2 : 3);
+    const ordered = rows.map((r, i) => ({ r, i, k: rank(r) })).sort((a, b) => a.k - b.k || a.i - b.i).map((x) => x.r);
+    return { rows, flagKeys, ordered, drift: rows.reduce((n, r) => n + r.flags.filter((f) => f.drift).length, 0), unsure: rows.filter(isUnsure).length };
+  }, [fleet.data]);
   const pubRows = (pubs.data?.items ?? []).slice(0, 12);
   const inflight = pubRows.filter((p) => !p.closedAt).length;
-  const drift = rows.reduce((n, r) => n + r.flags.filter((f) => f.drift).length, 0);
-  // 차량 측 값을 받지 못했거나(미수신) 신뢰할 수 없는 차량 — 이들이 있으면 "모두 같다"고 말할 수 없다
-  const unsure = rows.filter((r) => r.quality !== 'TRUSTED' || flagKeys.some((k) => !r.flags.some((f) => f.flagKey === k))).length;
+  // 차량 측 값을 받지 못했거나(미수신) 신뢰할 수 없는 차량(unsure) — 이들이 있으면 "모두 같다"고 말할 수 없다
   return (
     <div className="ds-screen">
       <PageHeader
@@ -93,7 +114,7 @@ export function FleetLive() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
+                {ordered.slice(0, shown).map((r) => (
                   <tr key={r.vin}>
                     <th scope="row">
                       <Link to={`/fleet/vehicles/${encodeURIComponent(r.vin)}`} className="ds-mono">
@@ -108,17 +129,27 @@ export function FleetLive() {
                     </td>
                     {flagKeys.map((k) => (
                       <td key={k}>
-                        <Cell f={r.flags.find((f) => f.flagKey === k)} />
+                        <Cell f={r.flags.find((f) => f.flagKey === k)} pending={!!r.pending?.includes(k)} />
                       </td>
                     ))}
                     <td className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>
-                      {Object.entries(r.featureState).map(([fid, st]) => `${fid} ${st}`).join(' · ') || (r.last ? '—' : CT.vehicle.noState)}
+                      {Object.entries(r.featureState).map(([fid, st]) => `${fid} ${V.guard[st] ?? st}`).join(' · ') || (r.last ? '—' : CT.vehicle.noState)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {rows.length > MATRIX_PAGE && (
+            <div className="ds-toolbar" style={{ marginTop: 'var(--sp-2)', fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
+              <span>{F.showing(Math.min(shown, rows.length), rows.length)}</span>
+              {shown < rows.length && (
+                <button type="button" className="ds-btn" onClick={() => setShown((n) => n + MATRIX_PAGE)}>
+                  {F.more}
+                </button>
+              )}
+            </div>
+          )}
         </AsyncView>
       </Panel>
       <div className="ds-split">
@@ -215,7 +246,7 @@ export function VehicleRuntimeScreen() {
                     { k: 'SW', v: <span className="ds-mono">{d.vehicle.swVersion}</span> },
                     { k: 'Context', v: <span className="ds-mono">{`${F.link[d.vehicle.link as 'ONLINE']} · ${d.vehicle.quality}${d.vehicle.gleo ? ' · GLEO' : ''}`}</span> },
                     { k: V.boot, v: <span className="ds-mono">{d.runtime.bootId}</span> },
-                    { k: V.kills, v: <span className="ds-mono">{Object.entries(d.runtime.featureState).map(([f, s]) => `${f} ${s}`).join(' · ') || (d.runtime.log.length ? '—' : CT.vehicle.noState)}</span>, note: missedMin !== null ? CT.pub.waitingShort(missedMin) : undefined },
+                    { k: V.kills, v: <span title={Object.entries(d.runtime.featureState).map(([f, s]) => `${f} ${s}`).join(' · ')}>{Object.entries(d.runtime.featureState).map(([f, s]) => `${f} ${V.guard[s] ?? s}`).join(' · ') || (d.runtime.log.length ? '—' : CT.vehicle.noState)}</span>, note: missedMin !== null ? CT.pub.waitingShort(missedMin) : undefined },
                   ]}
                 />
               </Panel>
@@ -241,9 +272,9 @@ export function VehicleRuntimeScreen() {
                 rowKey={(e) => e.flagKey}
                 columns={[
                   { key: 'f', header: 'flagKey', cell: (e) => <span className="ds-mono">{e.flagKey}</span> },
-                  { key: 'l', header: V.local, cell: (e) => <span className="ds-fcell" data-v={e.local.reason === 'KILL_SWITCH' ? 'safe' : e.local.value ? 'on' : 'off'}>{`${e.local.value ? 'ON' : 'OFF'} · ${e.local.reason}`}</span> },
-                  { key: 's', header: V.server, cell: (e) => (e.server ? <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{`${e.server.value ? 'ON' : 'OFF'} · ${e.server.reason}`}</span> : '—') },
-                  { key: 'd', header: F.drift, cell: (e) => <VerdictBadge value={e.drift ? 'FAIL' : 'PASS'} /> },
+                  { key: 'l', header: V.local, cell: (e) => <span className="ds-fcell" data-v={e.local.reason === 'KILL_SWITCH' ? 'safe' : e.local.value ? 'on' : 'off'} title={e.local.reason}>{`${e.local.value ? 'ON' : 'OFF'} · ${ko.activation.reason[e.local.reason] ?? e.local.reason}`}</span> },
+                  { key: 's', header: V.server, cell: (e) => (e.server ? <span style={{ fontSize: 'var(--fs-xs)' }} title={e.server.reason}>{`${e.server.value ? 'ON' : 'OFF'} · ${ko.activation.reason[e.server.reason] ?? e.server.reason}`}</span> : '—') },
+                  { key: 'd', header: F.drift, cell: (e) => <VerdictBadge value={e.drift ? 'FAIL' : 'PASS'} label={e.drift ? V.differs : V.same} /> },
                 ]}
               />
             </Panel>

@@ -2,7 +2,7 @@
 // hfp-feature-lifecycle js/unleash.js deploy()의 TS 이식: flag 생성(없으면 생성, 보관됐으면 복구) → 태그 → REQUIRES 의존 → 전략 교체 → 환경 on/off,
 // 첫 실패 단계에서 멈춘다. 결과는 외부 연계 호출 기록(IF-04)·감사·이벤트에 남는다. FP가 원천이고 Unleash는 사본이다(UL-OSS).
 import { Controller, Get, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
-import { canonicalJson, cohortBucket, effectiveBasisPoints, planUnleash, unleashContext, unleashDrift, UNLEASH_ENVIRONMENT, UNLEASH_PROJECT, type Policy, type UnleashPlan } from '@ff/contracts';
+import { canonicalJson, cohortBucket, effectiveBasisPoints, planUnleash, unleashContext, unleashPartial, unleashDrift, UNLEASH_ENVIRONMENT, UNLEASH_PROJECT, type Policy, type UnleashPlan } from '@ff/contracts';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
 import { UnleashGateway, type UnleashResult } from '../../../adapters/unleash/unleash.client';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -73,11 +73,16 @@ export class UnleashSyncService {
     const requires = out.filter((d) => d.type === 'REQUIRES').map((d) => ({ featureId: d.targetFeatureId, flagKeys: deployedFlags(d.targetFeatureId) }));
     const excludes = [...new Set([...out.filter((d) => d.type === 'EXCLUDES').map((d) => d.targetFeatureId), ...this.topology.incoming(f.featureId).filter((d) => d.type === 'EXCLUDES').map((d) => d.sourceFeatureId)])];
     let cohortMembers: string[] | null = null;
-    if (p.rollout.mode === 'COHORT') {
-      // FP-COHORT-1 서명 코호트 목록 — 등록 Fleet 중 효과 비율 안에 드는 차량
+    if (unleashPartial(p)) {
+      // FP-COHORT-1 서명 코호트 목록 — 등록 Fleet 중 효과 비율 안에 드는 차량과 지정 Canary 차량(평가기 evaluateFlag와 같은 규칙).
+      // 지정 Canary 차량을 빼면 플랫폼은 켜고 Unleash는 끄는 차량이 생겼다(2026-11-06). 문맥 품질이 낮은 차량은 평가기도 판정 불명이라 넣지 않는다
       const bp = effectiveBasisPoints(p);
       cohortMembers = [];
-      for (const v of this.fleet.vehicles()) if ((await cohortBucket('1', p.flagKey, p.rollout.salt, v.vin)) < bp) cohortMembers.push(v.vin);
+      if (bp > 0)
+        for (const v of this.fleet.vehicles()) {
+          if (v.quality !== 'TRUSTED') continue;
+          if (v.canary || (await cohortBucket('1', p.flagKey, p.rollout.salt, v.vin)) < bp) cohortMembers.push(v.vin);
+        }
     }
     const plan = planUnleash({ policy: p, scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim }, requires, excludes, cohortMembers });
     const signed = this.publications.list({ kind: 'POLICY' }).some((pub) => canonicalJson(pub.payload.policy) === canonicalJson(p) && this.pki.verify(pub.payload, pub.signature, undefined, 'policy').valid);

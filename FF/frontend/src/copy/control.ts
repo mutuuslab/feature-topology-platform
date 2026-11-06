@@ -27,7 +27,7 @@ export const control = {
     signAs: '서명 역할',
     signAsHint: '이 승인 칸에 기록될 역할입니다 — 같은 사람이 두 역할을 가져도 한 칸만 채웁니다',
     pair: (roles: string) => `이 차단은 ${roles} 2인이 승인합니다`,
-    restorePair: (roles: string) => `복원은 차단을 승인하지 않은 ${roles}을(를) 포함한 2인이 승인합니다`,
+    restorePair: (roles: string) => `복원은 차단을 승인하지 않은 2인이 승인합니다 — ${roles} 포함`,
     csmOnly: '남은 칸은 사이버보안(CSM)만 — F2 이상 안전·보안 차단은 기능안전과 사이버보안이 함께 승인합니다',
     candidates: '지금 승인할 수 있는 사람',
     candidatesNone: '지금 이 칸을 채울 수 있는 사람이 없습니다',
@@ -54,6 +54,16 @@ export const control = {
     stages: '단계적 복원 기록',
     stageCol: { no: '단계', cohort: '차량', evidence: 'Evidence', pub: '복구 게시본', at: '승인 시각' },
     requested: (evidence: string, n: number) => `재검증 ${evidence} · 이번 단계 ${n}대`,
+  },
+  // 차단 상세 서랍 맨 위 — 회신 요약(반영 n/대상 m · 미수신 · 재전송). 미수신은 회신 없음(NO_REPORT) 차량, 재전송은 전달 작업 다시 보내기 횟수
+  // 데이터셋 Evidence 번호(SAMPLE-EV-000190-TEST-RESULT)는 이관 원본 ID — 화면은 문서 이름과 번호, 원래 ID는 툴팁
+  evidenceKind: { 'FEATURE-DEFINE': 'Feature 정의서', 'REQ-TRACE': '요구사항 추적표', 'VARIANT-CHECK': '사양 적용 점검표', 'CONTROL-MAP': '제어 매핑표', 'SAFETY-SECURITY': '안전·보안 분석서', 'SUPPLIER-ACCEPT': '협력사 인수 시험서', 'TEST-RESULT': '시험 결과 보고서', 'OTA-READINESS': 'OTA 준비 점검표', 'OPS-READINESS': '운영 준비 점검표' } as Record<string, string>,
+  evidenceName: (kind: string, no: string) => `${kind} EV-${no}`,
+  reply: {
+    title: { KILL: '차단 회신', RESTORE: '복원 회신' } as Record<string, string>,
+    applied: (n: number, total: number) => `반영 ${n}/${total}대`,
+    missing: (n: number) => `미수신 ${n}대`,
+    retries: (n: number) => `재전송 ${n}회`,
   },
   pub: {
     status: { SIGNED: '서명됨', DISPATCHED: '회신 대기', CONFIRMED: '적용 확인', PARTIAL: '일부 확인', TIMEOUT: '회신 기한 지남', DIVERGED: '불일치' } as Record<string, string>,

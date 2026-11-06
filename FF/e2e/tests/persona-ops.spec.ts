@@ -3,6 +3,7 @@
 //   → 시뮬레이터 차량 회신 CONFIRMED(배포·차량 상세가 채워짐) → 복원 전망(두 번째 Safety Manager·운영 리더)
 //   → 재검증 Evidence·Canary Cohort로 단계적 복원(차단 승인자 막힘, safety2·opslead 승인) → 감사(조회)가 사후 검토.
 import { expect, test, type Page } from '@playwright/test';
+import { holdKillLock } from './kill-lock';
 
 test.use({ viewport: { width: 1366, height: 768 } });
 
@@ -36,6 +37,12 @@ async function drawerOverflow(page: Page) {
   });
 }
 
+let release: (() => void) | undefined;
+test.afterEach(() => {
+  release?.();
+  release = undefined;
+});
+
 test.beforeEach(async ({ page }) => {
   page.setDefaultTimeout(15_000);
   await page.goto('/_design');
@@ -43,6 +50,7 @@ test.beforeEach(async ({ page }) => {
 
 test('관제실 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → 단계적 복원(재검증 Evidence·Cohort, safety2·opslead) → 감사 사후 검토', async ({ page }) => {
   test.setTimeout(240_000);
+  release = await holdKillLock(); // 같은 Feature를 차단하는 ops.spec과 차례를 둔다
   // ── 1. 운영자 요청(OTA·서비스운영) ──
   await as(page, 'operator', 'DEP-OPS');
   await page.goto('/ops/kill');
@@ -115,7 +123,7 @@ test('관제실 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → �
   // 차량 상세 — 차단 상태가 채워지고 '판단 불가'가 아니다
   await page.goto('/fleet/vehicles/ego-01');
   await expect(page.locator('[data-key-message]')).not.toContainText('판단 불가');
-  await expect(page.getByText(/FEAT-00022 DISABLED/)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/FEAT-00022 긴급 차단/)).toBeVisible({ timeout: 20_000 });
 
   // ── 5. 복원 — 운영자: 재검증 Evidence·Canary Cohort(ego-01)로 1단계(P4-7) ──
   await as(page, 'operator', 'DEP-OPS');

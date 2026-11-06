@@ -177,7 +177,9 @@ describe('live Unleash replication queue', () => {
       const auto = app.get(UnleashAutoSyncService);
       await auto.whenIdle();
       const deployed = policies.all().filter((p) => p.status === 'DEPLOYED');
-      expect(deployed).toHaveLength(5);
+      // 커널 시드 3 + 데모 활동 2 + 시연 주인공 1(adas_00004_assist, 전시 빈 화면 채우기 — 수동 시계에서도 시드, 2026-11-06)
+      expect(deployed).toHaveLength(6);
+      expect(deployed.map((p) => p.flagKey)).toContain('adas_00004_assist');
       expect(deployed.map((p) => p.flagKey)).toContain('ivi_00027_banner');
       expect(deployed.map((p) => p.flagKey)).toContain('ivi_00027_detail');
       for (const p of deployed) {

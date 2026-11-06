@@ -86,6 +86,8 @@ export const FeatureFlagRow = z.object({
   policy: z.object({ policyId: z.string(), status: PolicyStatus, revision: z.number().int(), controlPoint: ControlPointType }).strict().nullable(),
   sources: z.array(FlagSourceLocation),
   publication: z.object({ publicationId: z.string(), status: PublicationStatus, confirmed: z.number().int().min(0), denominator: z.number().int().min(0) }).strict().nullable(),
+  /** 이 Flag의 Feature를 차단 중인 긴급 차단(rules/flag-kill) — 옛 스냅샷에는 없다 */
+  kill: z.object({ killId: z.string(), confirmed: z.number().int().min(0), denominator: z.number().int().min(0) }).strict().nullable().optional(),
 }).strict();
 export type FeatureFlagRow = z.infer<typeof FeatureFlagRow>;
 

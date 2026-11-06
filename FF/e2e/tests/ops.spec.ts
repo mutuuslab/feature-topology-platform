@@ -1,6 +1,7 @@
 // PoC ④⑥ 배포·차단 전달 + CARLA 가상검증 끝단 흐름 — 실제 백엔드(전용 9111, 실제 타이머)와 v2 화면.
 // 긴급 차단은 lead-01만 대상으로 한다 — ego-01은 policy.spec의 체험권 흐름이 병렬로 쓴다.
 import { expect, test, type Page } from '@playwright/test';
+import { holdKillLock } from './kill-lock';
 
 async function asRole(page: Page, role: string) {
   await page.evaluate((r) => {
@@ -10,11 +11,19 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
+let release: (() => void) | undefined;
+test.afterEach(() => {
+  release?.();
+  release = undefined;
+});
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
 test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급 전달 → 회신 CONFIRMED → Fleet → 복원 요청 → 다른 2인 승인 → 복구', async ({ page }) => {
+  test.setTimeout(240_000); // 다른 차단 시험이 끝나기를 기다릴 수 있다(차례 잠금)
+  release = await holdKillLock();
   await asRole(page, 'operator');
   await page.goto('/ops/kill');
   // 요청 폼은 머리의 행동 버튼으로 여는 Drawer(UX3-03)
@@ -51,21 +60,23 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
     await expect(drawer.locator('.ds-approvals__slot[data-done]')).toHaveCount(role === 'quality' ? 1 : 2);
   }
   await expect(drawer).toContainText('차단 중');
-  await expect(drawer).toContainText('서명된 명령');
+  await expect(drawer).toContainText('서명된 차단 명령');
   await expect(drawer.getByRole('table', { name: '차량별 봉투' })).toContainText('lead-01');
   await expect(drawer.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
   await expect(drawer).toContainText('적용 확인');
 
   // Fleet 실시간 적용 현황 — lead-01은 차량 측에서 Safe(차단) 상태
+  // 차단한 flag(care_00022_param) 열로 찾는다 — 다른 차종 전용 flag(GN7 adas_00004_assist 등)가 앞 열에 올 수 있다
   await page.goto('/fleet/live');
-  const row = page.getByRole('row', { name: /lead-01/ });
-  await expect(row.locator('.ds-fcell').first()).toHaveAttribute('data-v', 'safe');
-  await expect(
-    page
-      .getByRole('row', { name: /KMH-NX4-0001/ })
-      .locator('.ds-fcell')
-      .first(),
-  ).not.toHaveAttribute('data-v', 'safe');
+  const matrix = page.getByRole('table', { name: /차량 × flag/ });
+  await expect(matrix.getByRole('columnheader', { name: 'care_00022_param' })).toBeVisible();
+  const col = (await matrix.getByRole('columnheader').allTextContents()).indexOf('care_00022_param') - 1; // 차량 머리칸(rowheader) 다음부터 칸
+  expect(col).toBeGreaterThan(0);
+  const cellOf = (vin: RegExp) => matrix.getByRole('row', { name: vin }).getByRole('cell').nth(col).locator('.ds-fcell');
+  await expect(cellOf(/lead-01/)).toHaveAttribute('data-v', 'safe');
+  await expect(cellOf(/KMH-NX4-0001/)).not.toHaveAttribute('data-v', 'safe');
+  // 다른 차종 전용 flag 칸은 미수신이 아니다(해당 없음)
+  await expect(matrix.getByRole('row', { name: /lead-01/ })).not.toContainText('미수신');
 
   // 서명 배포 현황 — 차단 게시본은 차단 용도 키로 서명 검증 통과
   await page.goto('/deployments');

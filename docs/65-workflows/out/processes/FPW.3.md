@@ -34,12 +34,14 @@ flowchart LR
   end
   subgraph R_INT["통합 조직"]
     FPW_3_A05["A05 구현 연결 입력"]
+    FPW_3_A06["A06 외부 연계 동기화·충돌 해결"]
   end
   FPW_3_A01 --> FPW_3_A02
   FPW_3_A02 --> FPW_3_A03
   FPW_3_A02 --> FPW_3_A05
   FPW_3_A03 --> FPW_3_A04
-  FPW_3_A05 --> FPW_3_A04
+  FPW_3_A05 --> FPW_3_A06
+  FPW_3_A06 --> FPW_3_A04
 ```
 
 ## 2. 활동
@@ -50,6 +52,7 @@ flowchart LR
 | FPW.3-A02 | 양방향 추적성 점검 | R 요구 Owner · A 요구 Owner · C 아키텍트, 시험 조직 · I Safety Manager | WP-SAFETY-REQ | WP-TRACE-REPORT | `/trace/design` | FFG-LCY-004 |
 | FPW.3-A03 | 요구 검토 판정 등록 | R 품질 조직 · A 요구 Owner · C Safety Manager · I Feature Owner | WP-SAFETY-REQ, WP-TRACE-REPORT | WP-REQ-REVIEW | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
 | FPW.3-A05 | 구현 연결 입력 | R 통합 조직, Feature Owner · A 통합 조직 · C 아키텍트, 기준정보 담당 · I 요구 Owner, 시험 조직 | WP-SAFETY-REQ | WP-IMPL-LINK | `updateDraft`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | – |
+| FPW.3-A06 | 외부 연계 동기화·충돌 해결 | R 통합 조직 · A 통합 조직 · C 요구 Owner, Feature Owner · I Safety Manager | WP-IMPL-LINK | WP-EXT-SYNC | `resolveExtConflict`, `/integration/connectors`, `/features/:id/:ver` | – |
 | FPW.3-A04 | G3 판정·Feature 정의 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I 아키텍트, 기준정보 담당, 시험 조직 | WP-REQ-REVIEW, WP-G1-DECISION, WP-G2-DECISION, WP-REF-LINK, WP-IMPL-LINK | WP-G3-DECISION | `transition`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
 
 ### 수행 절차와 완료 기준
@@ -88,6 +91,18 @@ flowchart LR
 완료 기준:
 - [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
 
+#### FPW.3-A06 외부 연계 동기화·충돌 해결
+1. 외부 연계 현황의 연계 동기화 탭에서 이 Version의 codeBeamer 요구·JIRA Epic 연결과 받은 함·보낼 함·열린 충돌을 확인한다
+2. codeBeamer 요구가 개정되어 G2 재검토 표시가 붙었으면 요구 담당과 안전 담당에게 재검토를 요청한다
+3. JIRA에서 들어온 Epic·변경요청 상태 변경이 거부되었으면 받은 함의 사유(권한·전이 규칙·계정 매핑)를 외부 담당에게 알린다
+4. 실패한 보낼 함 작업은 연결 설정·워크플로 전이·권한 원인을 고치고 다음 재시도에서 보내졌는지 확인한다
+5. 충돌은 플랫폼 값 다시 보내기와 외부 값 다시 시도 중 하나를 사유와 함께 고른다. 외부 값은 플랫폼 가드를 다시 거친다
+6. 정의 승인 뒤에도 외부 요구 개정·상태 변경·충돌이 생기면 같은 확인을 다시 한다
+
+완료 기준:
+- [ ] 열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다
+- [ ] Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다
+
 #### FPW.3-A04 G3 판정·Feature 정의 승인
 1. G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다
 2. 판정 근거를 정리해 G3 판정을 남긴다
@@ -108,6 +123,7 @@ flowchart LR
 | WP-REQ-REVIEW | 요구 검토 판정 기록 | 산출 | 요구 특성(검증 가능성·일관성·완전성) 검토 결과; Requirement Gate 판정과 판정자 서명 |
 | WP-G3-DECISION | G3 Decision Record·정의 승인 | 산출 | G3 판정과 근거 Evidence ID; PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람) |
 | WP-IMPL-LINK | 구현 연결(Function·SW·제어기) | 산출 | Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값; VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos) |
+| WP-EXT-SYNC | 외부 연계 동기화·충돌 처리 기록 | 산출 | codeBeamer 요구·JIRA Epic·GitLab MR과 Feature Version의 연결·상태 대조 결과; 받은 함에서 거부된 외부 변경과 사유(권한·전이 규칙·계정 매핑); 충돌마다 고른 값(플랫폼 값·외부 값)과 처리자·사유 |
 
 ## 4. 진입·완료 기준
 

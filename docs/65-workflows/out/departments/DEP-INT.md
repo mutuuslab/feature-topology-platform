@@ -36,13 +36,15 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 7 · 책임 8 · 협의 14 · 통보 18 (활동 37개)
+수행 8 · 책임 9 · 협의 14 · 통보 19 (활동 39개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
 | FPW.2-A04 형식승인 영향 1차 판단 | FPW.2 HARA·변경 영향 판단 | I (Release Manager) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` | 플랫폼 밖 | 1차 |
 | FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | R·A (통합 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
+| FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3 안전요구 확정 | R·A (통합 조직) | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → 외부 연계 동기화·충돌 처리 기록 `WP-EXT-SYNC` | `/integration/connectors`, `/features/:id/:ver` | 1차 |
 | FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | C (통합 조직) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
+| FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4 안전 설계·정책 설계 | I (Release Manager) | – → 정책 근거 변경요청(CR) 연결 `WP-POLICY-CR` | `/policies/:id`, `/integration/connectors` | 1차 |
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | I (Release Manager) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5 검증·V&V | I (통합 조직) | G4 Decision Record `WP-G4-DECISION`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 검증 계획(독립성 수준) `WP-VV-PLAN` | 플랫폼 밖 | 1차 |
 | FPW.5-A02 시나리오·허용 조합 정의 | FPW.5 검증·V&V | I (통합 조직) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` | `/arch/topology`, `/validations` | 1차 |
@@ -83,6 +85,7 @@ last_updated: 2026-11-05
 | 방향 | 보내는 활동 | 받는 활동 | 상대 부서 | 넘기는 산출물 | 범위 |
 |---|---|---|---|---|---|
 | 받음 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | 시스템엔지니어링팀 | – | 1차 |
+| 받음 | FPW.3-A05 구현 연결 입력 | FPW.3-A06 외부 연계 동기화·충돌 해결 | 상품기획팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
 | 받음 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5-A03 통합 시험·SEooC 가정 확인 | 기능안전팀 | 검증 계획(독립성 수준) `WP-VV-PLAN` | 1차 |
 | 받음 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | PLM·기준정보팀 | 출시 Baseline `WP-RELEASE-BASELINE` | 1차 |
 | 받음 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6-A06 G6 서명 배포 실행 | 품질팀 | OTA Gate 판정 기록 `WP-OTA-GATE` | 1차 |
@@ -90,7 +93,7 @@ last_updated: 2026-11-05
 | 받음 | FPW.9-A04 코드·설정·시험 삭제 기록 | FPW.9-A05 Lifecycle 종료 전이 | 상품기획팀 | Retirement 단계 기록 `WP-RETIRE-LOG` | 1차 |
 | 받음 | FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10-A07 EOL 프로비저닝 검증 | 품질팀 | 입고 검사 결과 `WP-INTAKE-RESULT` | 2차 초안 |
 | 받음 | FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10-A07 EOL 프로비저닝 검증 | 시험·검증팀 | 입고 검사 결과 `WP-INTAKE-RESULT` | 2차 초안 |
-| 보냄 | FPW.3-A05 구현 연결 입력 | FPW.3-A04 G3 판정·Feature 정의 승인 | 시스템엔지니어링팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
+| 보냄 | FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3-A04 G3 판정·Feature 정의 승인 | 시스템엔지니어링팀 | – | 1차 |
 | 보냄 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5-A04 비활성화·결함 주입 시험 수행 | 시험·검증팀 | 통합 검증 기록 `WP-INTEGRATION-REC` | 1차 |
 | 보냄 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6-A05 OTA Gate 판정 등록 | 품질팀 | 서명 배포 패키지 `WP-SIGNED-PACKAGE` | 1차 |
 | 보냄 | FPW.7-A09 출시 전이 | FPW.7-A10 상품 고객 출시 승인 | 상품기획팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |

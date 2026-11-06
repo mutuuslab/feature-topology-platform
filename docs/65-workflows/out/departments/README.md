@@ -41,9 +41,9 @@ last_updated: 2026-11-05
 
 | 부서 | 맡는 역할 | 화면 유형 | 데모 계정 | 1차 수행·책임 |
 |---|---|---|---|---|
-| [상품기획팀](DEP-PDP.md) | Feature Owner, 상품 기획, 상품 Owner | 기획팀 | author, commerce, approver, productowner | 13 |
+| [상품기획팀](DEP-PDP.md) | Feature Owner, 상품 기획, 상품 Owner | 기획팀 | author, commerce, approver, productowner | 14 |
 | [시스템엔지니어링팀](DEP-SE.md) | 요구 Owner, 아키텍트, 도메인 검토자 | 엔지니어링 콘솔 | approver, integrator | 10 |
-| [SW통합·릴리스팀](DEP-INT.md) | 통합 조직, Release Manager | 엔지니어링 콘솔 | coordinator, integrator | 7 |
+| [SW통합·릴리스팀](DEP-INT.md) | 통합 조직, Release Manager | 엔지니어링 콘솔 | coordinator, integrator | 8 |
 | [PLM·기준정보팀](DEP-PLM.md) | 기준정보 담당, Feature DB 관리자 | 엔지니어링 콘솔 | steward | 2 |
 | [기능안전팀](DEP-FS.md) | Safety Manager | 심사 결재함 | quality, safety2, integrator | 16 |
 | [차량사이버보안팀](DEP-CS.md) | CSM | 심사 결재함 | integrator | 2 |
@@ -63,11 +63,11 @@ last_updated: 2026-11-05
 
 | 부서 | FPW.1 | FPW.2 | FPW.3 | FPW.4 | FPW.5 | FPW.6 | FPW.7 | FPW.8 | FPW.9 | FPW.10* | FPW.11* | FPW.12* | FPW.13* | FPW.14* |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C1 I2 | C1 I1 | I3 | R1 A1 I3 | R5 A6 C6 I8 | C1 I6 | R2 A2 C2 I2 | – | – | – | I2 | R1 A1 I4 |
-| 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C3 I2 | R3 A4 C1 I3 | C2 I1 | C1 | – | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C3 I2 |
-| SW통합·릴리스팀 | – | I1 | R1 A1 | C1 I1 | R1 A1 C2 I3 | R2 A3 C3 | R1 A1 C1 I4 | C1 | R1 A1 C3 I2 | R1 A1 C2 I3 | C1 I3 | I1 | – | – |
+| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C1 I1 | I3 | R1 A1 I3 | R5 A6 C6 I8 | C1 I6 | R2 A2 C2 I2 | – | – | – | I2 | R1 A1 I4 |
+| 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C4 I2 | R3 A4 C2 I4 | C2 I1 | C1 | – | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C3 I2 |
+| SW통합·릴리스팀 | – | I1 | R2 A2 | C1 I2 | R1 A1 C2 I3 | R2 A3 C3 | R1 A1 C1 I4 | C1 | R1 A1 C3 I2 | R1 A1 C2 I3 | C1 I3 | I1 | – | – |
 | PLM·기준정보팀 | R1 I3 | – | C1 I1 | C1 | – | R1 A1 I1 | – | – | – | C1 | – | – | – | R3 A3 I3 |
-| 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I1 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R2 A2 C4 | R3 A4 C6 I1 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 |
+| 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I2 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R2 A2 C4 | R3 A4 C6 I1 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 |
 | 차량사이버보안팀 | – | R1 A1 C2 | – | C2 | – | C2 | – | R1 C4 I1 | – | C3 | R4 A5 C1 | – | R1 C3 | – |
 | 법규인증팀 | R1 A1 C1 | R1 A1 C1 I1 | – | – | – | R1 A1 C1 I1 | R1 A1 C1 I1 | R1 A1 C3 I3 | – | R1 C1 | C1 I1 | R2 A2 C1 | R3 A3 C1 | C1 |
 | 시험·검증팀 | – | C1 I1 | C1 I3 | I2 | R3 A4 C2 | – | C3 | C1 | C2 | R1 C1 | – | – | – | – |

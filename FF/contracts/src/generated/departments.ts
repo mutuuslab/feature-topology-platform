@@ -31,6 +31,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/features/:id/:ver",
      "/master/artifacts",
      "/integration/connectors",
+     "/policies/:id",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -63,9 +64,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 12,
-    "A": 13,
-    "C": 17,
+    "R": 13,
+    "A": 14,
+    "C": 18,
     "I": 33
    }
   },
@@ -119,8 +120,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 9,
     "A": 10,
-    "C": 19,
-    "I": 16
+    "C": 21,
+    "I": 17
    }
   },
   {
@@ -164,10 +165,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 7,
-    "A": 8,
+    "R": 8,
+    "A": 9,
     "C": 14,
-    "I": 18
+    "I": 19
    }
   },
   {
@@ -250,12 +251,12 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/variant-conditions",
      "/trace/design",
      "/change/cr",
+     "/integration/connectors",
      "/master/control-points",
      "/policies/:id",
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
-     "/integration/connectors",
      "/experiments",
      "/ops/anomalies",
      "/ops/incidents",
@@ -272,7 +273,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R": 17,
     "A": 17,
     "C": 34,
-    "I": 8
+    "I": 9
    }
   },
   {

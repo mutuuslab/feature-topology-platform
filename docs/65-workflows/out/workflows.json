@@ -474,6 +474,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.3-A04",
      "process": "FPW.3",
      "part": "C",
@@ -488,6 +497,16 @@
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -872,6 +891,7 @@
      "/features/:id/:ver",
      "/master/artifacts",
      "/integration/connectors",
+     "/policies/:id",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -917,7 +937,12 @@
      },
      {
       "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "to": "FPW.3-A06",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
       "department": "DEP-SE"
      },
      {
@@ -965,6 +990,11 @@
      {
       "from": "FPW.3-A02",
       "to": "FPW.3-A05",
+      "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A06",
       "department": "DEP-SE"
      },
      {
@@ -1143,6 +1173,15 @@
      "firstScope": true
     },
     {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.3-A04",
      "process": "FPW.3",
      "part": "R",
@@ -1171,6 +1210,16 @@
      "parts": [
       "R",
       "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C",
       "I"
      ],
      "firstScope": true
@@ -1380,6 +1429,11 @@
       "department": "DEP-PDP"
      },
      {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A06",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.4-A04",
       "to": "FPW.4-A05",
       "department": "DEP-QA"
@@ -1407,13 +1461,13 @@
       "department": "DEP-QA"
      },
      {
-      "from": "FPW.3-A05",
+      "from": "FPW.3-A06",
       "to": "FPW.3-A04",
       "department": "DEP-INT"
      },
      {
-      "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
       "department": "DEP-PDP"
      },
      {
@@ -1464,11 +1518,30 @@
      "firstScope": true
     },
     {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.4-A01",
      "process": "FPW.4",
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
      ],
      "firstScope": true
     },
@@ -1817,7 +1890,7 @@
    "handoffs": {
     "out": [
      {
-      "from": "FPW.3-A05",
+      "from": "FPW.3-A06",
       "to": "FPW.3-A04",
       "department": "DEP-SE"
      },
@@ -1847,6 +1920,11 @@
       "from": "FPW.3-A02",
       "to": "FPW.3-A05",
       "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A06",
+      "department": "DEP-PDP"
      },
      {
       "from": "FPW.5-A01",
@@ -2243,6 +2321,15 @@
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
      ],
      "firstScope": true
     },
@@ -2712,12 +2799,12 @@
      "/variant-conditions",
      "/trace/design",
      "/change/cr",
+     "/integration/connectors",
      "/master/control-points",
      "/policies/:id",
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
-     "/integration/connectors",
      "/experiments",
      "/ops/anomalies",
      "/ops/incidents",
@@ -7601,6 +7688,18 @@
       "Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값",
       "VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)"
      ]
+    },
+    {
+     "key": "WP-EXT-SYNC",
+     "name": "외부 연계 동기화·충돌 처리 기록",
+     "en": "ALM Sync & Conflict Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "codeBeamer 요구·JIRA Epic·GitLab MR과 Feature Version의 연결·상태 대조 결과",
+      "받은 함에서 거부된 외부 변경과 사유(권한·전이 규칙·계정 매핑)",
+      "충돌마다 고른 값(플랫폼 값·외부 값)과 처리자·사유"
+     ]
     }
    ],
    "activities": [
@@ -7843,6 +7942,67 @@
      },
      "slaHours": null,
      "next": [
+      "FPW.3-A06"
+     ]
+    },
+    {
+     "id": "FPW.3-A06",
+     "name": "외부 연계 동기화·충돌 해결",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-REQ",
+       "R-FO"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-IMPL-LINK"
+     ],
+     "outputs": [
+      "WP-EXT-SYNC"
+     ],
+     "steps": [
+      "외부 연계 현황의 연계 동기화 탭에서 이 Version의 codeBeamer 요구·JIRA Epic 연결과 받은 함·보낼 함·열린 충돌을 확인한다",
+      "codeBeamer 요구가 개정되어 G2 재검토 표시가 붙었으면 요구 담당과 안전 담당에게 재검토를 요청한다",
+      "JIRA에서 들어온 Epic·변경요청 상태 변경이 거부되었으면 받은 함의 사유(권한·전이 규칙·계정 매핑)를 외부 담당에게 알린다",
+      "실패한 보낼 함 작업은 연결 설정·워크플로 전이·권한 원인을 고치고 다음 재시도에서 보내졌는지 확인한다",
+      "충돌은 플랫폼 값 다시 보내기와 외부 값 다시 시도 중 하나를 사유와 함께 고른다. 외부 값은 플랫폼 가드를 다시 거친다",
+      "정의 승인 뒤에도 외부 요구 개정·상태 변경·충돌이 생기면 같은 확인을 다시 한다"
+     ],
+     "checks": [
+      "열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다",
+      "Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다"
+     ],
+     "platform": {
+      "actions": [
+       "resolveExtConflict"
+      ],
+      "screens": [
+       "/integration/connectors",
+       "/features/:id/:ver"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
       "FPW.3-A04"
      ]
     },
@@ -7915,7 +8075,7 @@
     }
    ],
    "layout": {
-    "width": 1366.0,
+    "width": 1646.0,
     "height": 294.0,
     "lanes": [
      {
@@ -7923,7 +8083,7 @@
       "label": "요구 Owner",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -7931,7 +8091,7 @@
       "label": "품질 조직",
       "x": 0.0,
       "y": 98.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -7939,7 +8099,7 @@
       "label": "통합 조직",
       "x": 0.0,
       "y": 196.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -7966,7 +8126,7 @@
       "id": "FPW.3-A04",
       "kind": "action",
       "label": "G3 판정·Feature 정의 승인",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -7990,6 +8150,15 @@
       "h": 66.0
      },
      {
+      "id": "FPW.3-A06",
+      "kind": "action",
+      "label": "외부 연계 동기화·충돌 해결",
+      "x": 1038.0,
+      "y": 212.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.3-S1",
       "kind": "start",
       "label": "시작",
@@ -8002,7 +8171,7 @@
       "id": "FPW.3-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
+      "x": 1520.0,
       "y": 40.0,
       "w": 18.0,
       "h": 18.0
@@ -8095,22 +8264,22 @@
         147.0
        ],
        [
-        1026.0,
+        1306.0,
         147.0
        ],
        [
-        1026.0,
+        1306.0,
         49.0
        ],
        [
-        1038.0,
+        1318.0,
         49.0
        ]
       ]
      },
      {
       "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "to": "FPW.3-A06",
       "kind": "flow",
       "points": [
        [
@@ -8118,15 +8287,30 @@
         245.0
        ],
        [
-        1026.0,
+        1038.0,
+        245.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A06",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
         245.0
        ],
        [
-        1026.0,
+        1306.0,
+        245.0
+       ],
+       [
+        1306.0,
         49.0
        ],
        [
-        1038.0,
+        1318.0,
         49.0
        ]
       ]
@@ -8137,11 +8321,11 @@
       "kind": "end",
       "points": [
        [
-        1226.0,
+        1506.0,
         49.0
        ],
        [
-        1240.0,
+        1520.0,
         49.0
        ]
       ]
@@ -8149,13 +8333,13 @@
     ],
     "joins": [
      [
-      1026.0,
+      1306.0,
       147.0
      ]
     ]
    },
    "departmentLayout": {
-    "width": 1366.0,
+    "width": 1646.0,
     "height": 294.0,
     "lanes": [
      {
@@ -8163,7 +8347,7 @@
       "label": "시스템엔지니어링팀",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -8171,7 +8355,7 @@
       "label": "품질팀",
       "x": 0.0,
       "y": 98.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
@@ -8179,7 +8363,7 @@
       "label": "SW통합·릴리스팀",
       "x": 0.0,
       "y": 196.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -8206,7 +8390,7 @@
       "id": "FPW.3-A04",
       "kind": "action",
       "label": "G3 판정·Feature 정의 승인",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 16.0,
       "w": 188.0,
       "h": 66.0
@@ -8230,6 +8414,15 @@
       "h": 66.0
      },
      {
+      "id": "FPW.3-A06",
+      "kind": "action",
+      "label": "외부 연계 동기화·충돌 해결",
+      "x": 1038.0,
+      "y": 212.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
       "id": "FPW.3-S1",
       "kind": "start",
       "label": "시작",
@@ -8242,7 +8435,7 @@
       "id": "FPW.3-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
+      "x": 1520.0,
       "y": 40.0,
       "w": 18.0,
       "h": 18.0
@@ -8335,22 +8528,22 @@
         147.0
        ],
        [
-        1026.0,
+        1306.0,
         147.0
        ],
        [
-        1026.0,
+        1306.0,
         49.0
        ],
        [
-        1038.0,
+        1318.0,
         49.0
        ]
       ]
      },
      {
       "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "to": "FPW.3-A06",
       "kind": "flow",
       "points": [
        [
@@ -8358,15 +8551,30 @@
         245.0
        ],
        [
-        1026.0,
+        1038.0,
+        245.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A06",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
         245.0
        ],
        [
-        1026.0,
+        1306.0,
+        245.0
+       ],
+       [
+        1306.0,
         49.0
        ],
        [
-        1038.0,
+        1318.0,
         49.0
        ]
       ]
@@ -8377,11 +8585,11 @@
       "kind": "end",
       "points": [
        [
-        1226.0,
+        1506.0,
         49.0
        ],
        [
-        1240.0,
+        1520.0,
         49.0
        ]
       ]
@@ -8389,7 +8597,7 @@
     ],
     "joins": [
      [
-      1026.0,
+      1306.0,
       147.0
      ]
     ]
@@ -8485,6 +8693,17 @@
      "content": [
       "설계 적합성 판정과 근거 Evidence ID",
       "독립 검토자 서명과 아키텍트 책임 확인"
+     ]
+    },
+    {
+     "key": "WP-POLICY-CR",
+     "name": "정책 근거 변경요청(CR) 연결",
+     "en": "Policy Change Request Link",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "정책 ID와 근거 JIRA 변경요청(CR) 키·상태",
+      "JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유"
      ]
     }
    ],
@@ -8602,6 +8821,62 @@
       "screens": [
        "/policies/new",
        "/policies"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.4-A06"
+     ]
+    },
+    {
+     "id": "FPW.4-A06",
+     "name": "정책 근거 변경요청(CR) 연결",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-ARC"
+      ],
+      "I": [
+       "R-REQ",
+       "R-REL"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-POLICY-CR"
+     ],
+     "steps": [
+      "정책 상세의 변경요청 패널에서 근거 JIRA 변경요청(CR) 키를 골라 정책에 연결한다. 근거 CR이 없으면 JIRA에 만든 뒤 연결한다",
+      "외부 연계 현황에서 CR 상태와 연결된 정책·Feature Version을 확인한다",
+      "승인자에게 CR을 알린다. JIRA에서 CR을 승인·반려해도 검증 GO 정책이고 정책 승인 권한이 있는 매핑된 계정일 때만 정책 결정으로 반영된다",
+      "거부되어 CR 상태가 되돌아가면 받은 함의 사유를 CR 담당에게 알리고 플랫폼에서 승인하도록 안내한다"
+     ],
+     "checks": [
+      "승인 대상 정책에 근거 CR이 연결되어 있고 CR 상태가 정책 결정과 맞다"
+     ],
+     "platform": {
+      "actions": [
+       "linkPolicyChangeRequest"
+      ],
+      "screens": [
+       "/policies/:id",
+       "/integration/connectors"
       ],
       "gates": [],
       "anchor": null,
@@ -8796,39 +9071,328 @@
     }
    ],
    "layout": {
-    "width": 1366.0,
-    "height": 392.0,
+    "width": 1646.0,
+    "height": 490.0,
     "lanes": [
      {
       "role": "R-ARC",
       "label": "아키텍트",
       "x": 0.0,
       "y": 0.0,
-      "w": 1366.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0.0,
+      "y": 98.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
       "role": "R-REQ",
       "label": "요구 Owner",
       "x": 0.0,
-      "y": 98.0,
-      "w": 1366.0,
+      "y": 196.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0.0,
-      "y": 196.0,
-      "w": 1366.0,
+      "y": 294.0,
+      "w": 1646.0,
       "h": 98.0
      },
      {
       "role": "R-QA",
       "label": "품질 조직",
       "x": 0.0,
+      "y": 392.0,
+      "w": 1646.0,
+      "h": 98.0
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.4-A01",
+      "kind": "action",
+      "label": "차량 내 감시·안전기제 설계",
+      "x": 198.0,
+      "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-A03",
+      "kind": "action",
+      "label": "Flag 정책 작성·검증",
+      "x": 478.0,
+      "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-A06",
+      "kind": "action",
+      "label": "정책 근거 변경요청(CR) 연결",
+      "x": 758.0,
+      "y": 114.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-A04",
+      "kind": "action",
+      "label": "정책 승인",
+      "x": 1038.0,
+      "y": 212.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-A02",
+      "kind": "action",
+      "label": "플랫폼 도구 신뢰도 분류",
+      "x": 1038.0,
+      "y": 310.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-A05",
+      "kind": "action",
+      "label": "G4 설계 독립 검토·판정",
+      "x": 1318.0,
+      "y": 408.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146.0,
+      "y": 40.0,
+      "w": 18.0,
+      "h": 18.0
+     },
+     {
+      "id": "FPW.4-S2",
+      "kind": "start",
+      "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+      "x": 986.0,
+      "y": 334.0,
+      "w": 18.0,
+      "h": 18.0
+     },
+     {
+      "id": "FPW.4-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520.0,
+      "y": 432.0,
+      "w": 18.0,
+      "h": 18.0
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.4-S1",
+      "to": "FPW.4-A01",
+      "kind": "start",
+      "points": [
+       [
+        164.0,
+        49.0
+       ],
+       [
+        198.0,
+        49.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-S2",
+      "to": "FPW.4-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        1004.0,
+        343.0
+       ],
+       [
+        1038.0,
+        343.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A01",
+      "to": "FPW.4-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386.0,
+        49.0
+       ],
+       [
+        478.0,
+        49.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A06",
+      "kind": "flow",
+      "points": [
+       [
+        666.0,
+        49.0
+       ],
+       [
+        746.0,
+        49.0
+       ],
+       [
+        746.0,
+        147.0
+       ],
+       [
+        758.0,
+        147.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946.0,
+        147.0
+       ],
+       [
+        1026.0,
+        147.0
+       ],
+       [
+        1026.0,
+        245.0
+       ],
+       [
+        1038.0,
+        245.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        245.0
+       ],
+       [
+        1306.0,
+        245.0
+       ],
+       [
+        1306.0,
+        441.0
+       ],
+       [
+        1318.0,
+        441.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        343.0
+       ],
+       [
+        1306.0,
+        343.0
+       ],
+       [
+        1306.0,
+        441.0
+       ],
+       [
+        1318.0,
+        441.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A05",
+      "to": "FPW.4-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506.0,
+        441.0
+       ],
+       [
+        1520.0,
+        441.0
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1306.0,
+      343.0
+     ]
+    ]
+   },
+   "departmentLayout": {
+    "width": 1646.0,
+    "height": 392.0,
+    "lanes": [
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0.0,
+      "y": 98.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0.0,
+      "y": 196.0,
+      "w": 1646.0,
+      "h": 98.0
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0.0,
       "y": 294.0,
-      "w": 1366.0,
+      "w": 1646.0,
       "h": 98.0
      }
     ],
@@ -8855,6 +9419,15 @@
       "id": "FPW.4-A04",
       "kind": "action",
       "label": "정책 승인",
+      "x": 1038.0,
+      "y": 16.0,
+      "w": 188.0,
+      "h": 66.0
+     },
+     {
+      "id": "FPW.4-A06",
+      "kind": "action",
+      "label": "정책 근거 변경요청(CR) 연결",
       "x": 758.0,
       "y": 114.0,
       "w": 188.0,
@@ -8864,7 +9437,7 @@
       "id": "FPW.4-A02",
       "kind": "action",
       "label": "플랫폼 도구 신뢰도 분류",
-      "x": 758.0,
+      "x": 1038.0,
       "y": 212.0,
       "w": 188.0,
       "h": 66.0
@@ -8873,7 +9446,7 @@
       "id": "FPW.4-A05",
       "kind": "action",
       "label": "G4 설계 독립 검토·판정",
-      "x": 1038.0,
+      "x": 1318.0,
       "y": 310.0,
       "w": 188.0,
       "h": 66.0
@@ -8891,7 +9464,7 @@
       "id": "FPW.4-S2",
       "kind": "start",
       "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
-      "x": 706.0,
+      "x": 986.0,
       "y": 236.0,
       "w": 18.0,
       "h": 18.0
@@ -8900,7 +9473,7 @@
       "id": "FPW.4-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240.0,
+      "x": 1520.0,
       "y": 334.0,
       "w": 18.0,
       "h": 18.0
@@ -8928,11 +9501,11 @@
       "kind": "trigger",
       "points": [
        [
-        724.0,
+        1004.0,
         245.0
        ],
        [
-        758.0,
+        1038.0,
         245.0
        ]
       ]
@@ -8954,7 +9527,7 @@
      },
      {
       "from": "FPW.4-A03",
-      "to": "FPW.4-A04",
+      "to": "FPW.4-A06",
       "kind": "flow",
       "points": [
        [
@@ -8976,8 +9549,8 @@
       ]
      },
      {
-      "from": "FPW.4-A04",
-      "to": "FPW.4-A05",
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
       "kind": "flow",
       "points": [
        [
@@ -8990,10 +9563,33 @@
        ],
        [
         1026.0,
-        343.0
+        49.0
        ],
        [
         1038.0,
+        49.0
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226.0,
+        49.0
+       ],
+       [
+        1306.0,
+        49.0
+       ],
+       [
+        1306.0,
+        343.0
+       ],
+       [
+        1318.0,
         343.0
        ]
       ]
@@ -9004,19 +9600,19 @@
       "kind": "flow",
       "points": [
        [
-        946.0,
+        1226.0,
         245.0
        ],
        [
-        1026.0,
+        1306.0,
         245.0
        ],
        [
-        1026.0,
+        1306.0,
         343.0
        ],
        [
-        1038.0,
+        1318.0,
         343.0
        ]
       ]
@@ -9027,11 +9623,11 @@
       "kind": "end",
       "points": [
        [
-        1226.0,
+        1506.0,
         343.0
        ],
        [
-        1240.0,
+        1520.0,
         343.0
        ]
       ]
@@ -9039,241 +9635,8 @@
     ],
     "joins": [
      [
-      1026.0,
+      1306.0,
       245.0
-     ]
-    ]
-   },
-   "departmentLayout": {
-    "width": 1366.0,
-    "height": 294.0,
-    "lanes": [
-     {
-      "department": "DEP-SE",
-      "label": "시스템엔지니어링팀",
-      "x": 0.0,
-      "y": 0.0,
-      "w": 1366.0,
-      "h": 98.0
-     },
-     {
-      "department": "DEP-FS",
-      "label": "기능안전팀",
-      "x": 0.0,
-      "y": 98.0,
-      "w": 1366.0,
-      "h": 98.0
-     },
-     {
-      "department": "DEP-QA",
-      "label": "품질팀",
-      "x": 0.0,
-      "y": 196.0,
-      "w": 1366.0,
-      "h": 98.0
-     }
-    ],
-    "nodes": [
-     {
-      "id": "FPW.4-A01",
-      "kind": "action",
-      "label": "차량 내 감시·안전기제 설계",
-      "x": 198.0,
-      "y": 16.0,
-      "w": 188.0,
-      "h": 66.0
-     },
-     {
-      "id": "FPW.4-A03",
-      "kind": "action",
-      "label": "Flag 정책 작성·검증",
-      "x": 478.0,
-      "y": 16.0,
-      "w": 188.0,
-      "h": 66.0
-     },
-     {
-      "id": "FPW.4-A04",
-      "kind": "action",
-      "label": "정책 승인",
-      "x": 758.0,
-      "y": 16.0,
-      "w": 188.0,
-      "h": 66.0
-     },
-     {
-      "id": "FPW.4-A02",
-      "kind": "action",
-      "label": "플랫폼 도구 신뢰도 분류",
-      "x": 758.0,
-      "y": 114.0,
-      "w": 188.0,
-      "h": 66.0
-     },
-     {
-      "id": "FPW.4-A05",
-      "kind": "action",
-      "label": "G4 설계 독립 검토·판정",
-      "x": 1038.0,
-      "y": 212.0,
-      "w": 188.0,
-      "h": 66.0
-     },
-     {
-      "id": "FPW.4-S1",
-      "kind": "start",
-      "label": "시작",
-      "x": 146.0,
-      "y": 40.0,
-      "w": 18.0,
-      "h": 18.0
-     },
-     {
-      "id": "FPW.4-S2",
-      "kind": "start",
-      "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
-      "x": 706.0,
-      "y": 138.0,
-      "w": 18.0,
-      "h": 18.0
-     },
-     {
-      "id": "FPW.4-E1",
-      "kind": "end",
-      "label": "종료",
-      "x": 1240.0,
-      "y": 236.0,
-      "w": 18.0,
-      "h": 18.0
-     }
-    ],
-    "edges": [
-     {
-      "from": "FPW.4-S1",
-      "to": "FPW.4-A01",
-      "kind": "start",
-      "points": [
-       [
-        164.0,
-        49.0
-       ],
-       [
-        198.0,
-        49.0
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-S2",
-      "to": "FPW.4-A02",
-      "kind": "trigger",
-      "points": [
-       [
-        724.0,
-        147.0
-       ],
-       [
-        758.0,
-        147.0
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A01",
-      "to": "FPW.4-A03",
-      "kind": "flow",
-      "points": [
-       [
-        386.0,
-        49.0
-       ],
-       [
-        478.0,
-        49.0
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A03",
-      "to": "FPW.4-A04",
-      "kind": "flow",
-      "points": [
-       [
-        666.0,
-        49.0
-       ],
-       [
-        758.0,
-        49.0
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A04",
-      "to": "FPW.4-A05",
-      "kind": "flow",
-      "points": [
-       [
-        946.0,
-        49.0
-       ],
-       [
-        1026.0,
-        49.0
-       ],
-       [
-        1026.0,
-        245.0
-       ],
-       [
-        1038.0,
-        245.0
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A02",
-      "to": "FPW.4-A05",
-      "kind": "flow",
-      "points": [
-       [
-        946.0,
-        147.0
-       ],
-       [
-        1026.0,
-        147.0
-       ],
-       [
-        1026.0,
-        245.0
-       ],
-       [
-        1038.0,
-        245.0
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A05",
-      "to": "FPW.4-E1",
-      "kind": "end",
-      "points": [
-       [
-        1226.0,
-        245.0
-       ],
-       [
-        1240.0,
-        245.0
-       ]
-      ]
-     }
-    ],
-    "joins": [
-     [
-      1026.0,
-      147.0
      ]
     ]
    }

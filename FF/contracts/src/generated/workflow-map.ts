@@ -28,7 +28,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G3"
    ],
-   "activities": 5
+   "activities": 6
   },
   {
    "id": "FPW.4",
@@ -37,7 +37,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G4"
    ],
-   "activities": 5
+   "activities": 6
   },
   {
    "id": "FPW.5",

@@ -52,6 +52,14 @@ process:
       content:
         - 설계 적합성 판정과 근거 Evidence ID
         - 독립 검토자 서명과 아키텍트 책임 확인
+    - key: WP-POLICY-CR
+      name: 정책 근거 변경요청(CR) 연결
+      en: Policy Change Request Link
+      kind: output
+      retained: true
+      content:
+        - 정책 ID와 근거 JIRA 변경요청(CR) 키·상태
+        - JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유
   activities:
     - id: FPW.4-A01
       name: 차량 내 감시·안전기제 설계
@@ -84,6 +92,22 @@ process:
       checks:
         - 최신 개정본의 분야별 검증이 모두 통과했다
       platform: {actions: [createPolicy, updatePolicy, validatePolicy], screens: [/policies/new, /policies]}
+      next: [FPW.4-A06]
+    - id: FPW.4-A06
+      name: 정책 근거 변경요청(CR) 연결
+      outcomes: [O3]
+      rules: []
+      raci: {R: [R-FO], A: R-FO, C: [R-ARC], I: [R-REQ, R-REL]}
+      inputs: []
+      outputs: [WP-POLICY-CR]
+      steps:
+        - 정책 상세의 변경요청 패널에서 근거 JIRA 변경요청(CR) 키를 골라 정책에 연결한다. 근거 CR이 없으면 JIRA에 만든 뒤 연결한다
+        - 외부 연계 현황에서 CR 상태와 연결된 정책·Feature Version을 확인한다
+        - 승인자에게 CR을 알린다. JIRA에서 CR을 승인·반려해도 검증 GO 정책이고 정책 승인 권한이 있는 매핑된 계정일 때만 정책 결정으로 반영된다
+        - 거부되어 CR 상태가 되돌아가면 받은 함의 사유를 CR 담당에게 알리고 플랫폼에서 승인하도록 안내한다
+      checks:
+        - 승인 대상 정책에 근거 CR이 연결되어 있고 CR 상태가 정책 결정과 맞다
+      platform: {actions: [linkPolicyChangeRequest], screens: [/policies/:id, /integration/connectors]}
       next: [FPW.4-A04]
     - id: FPW.4-A04
       name: 정책 승인

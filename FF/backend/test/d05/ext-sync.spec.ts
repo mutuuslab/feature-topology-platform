@@ -3,7 +3,12 @@
 //   받기: JIRA Epic·CR 변경 → 가드를 탄 요청(반영/거부·되돌림), codeBeamer 요구 개정 → G2 재검토, GitLab MR 병합·파이프라인 → 변경 기록
 //   안전장치: 서명 위조 401, 같은 webhook 두 번 → 한 번만, 매핑 없는 외부 계정 거부, 바깥이 몰래 바뀌면 충돌 → 사람이 고름
 import { INestApplication } from '@nestjs/common';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { ExtAdapters, ExtPartialWriteError, PLATFORM_USER } from '../../src/domains/d05-ext/api-gateway/ext-sync/adapters';
+import { ExtSyncRepo } from '../../src/domains/d05-ext/api-gateway/ext-sync/ext-sync.repo';
+import { ExtSyncService } from '../../src/domains/d05-ext/api-gateway/ext-sync/ext-sync.service';
+import { Scheduler } from '../../src/kernel/scheduler';
+import { hmac } from '../../src/domains/d05-ext/api-gateway/ext-sync/normalize';
 import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
 import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
 
@@ -151,6 +156,118 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     expect((await epicOf('FEAT-00004', '4.1.0')).syncState).toBe('SYNCED');
   });
 
+
+  // 회귀(2026-11-05, 80-50 A1 모의 서버 기동 점검): 상태 거울 쓰기가 실패하면(워크플로 전이 없음 등) run()의 catch를 빠져나가
+  // 주기 drain이 거부되고 처리되지 않은 거부로 백엔드 프로세스가 죽었다(return this.mirrorStatus(...)에 await가 없었음).
+  it('거울 쓰기가 외부 오류로 실패해도 drain은 끝나고 작업은 재시도로 남는다(프로세스가 죽지 않음)', async () => {
+    const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+    const target = epics.find((e: any) => e.status === 'Released' && e.expected === 'Released' && !/^FEAT-0000[24]@/.test(e.feature));
+    expect(target).toBeTruthy();
+    const [id, ver] = target.feature.split('@');
+    const jira = app.get(ExtAdapters).of('JIRA');
+    const spy = vi.spyOn(jira, 'write').mockRejectedValueOnce(new Error("JIRA: 'Deprecated'(으)로 가는 워크플로 전이가 없습니다"));
+    try {
+      await http().post(`/api/features/${id}/versions/${ver}/transitions`).set(RELEASE).send({ to: 'DEPRECATED', reason: '후속 버전으로 대체' }).expect(200);
+      const r = (await drain()).body;
+      expect(r.failed).toBeGreaterThanOrEqual(1);
+      const jobs = (await http().get('/api/integrations/sync/outbox?system=jira').expect(200)).body.items;
+      expect(JSON.stringify(jobs)).toContain('워크플로 전이가 없습니다');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  // 회귀(2026-11-05, 80-50 A1 모의 JIRA 계약 시험): live JIRA Cloud는 플랫폼 서비스 계정의 메아리를 이름이 아니라 accountId로 보낸다.
+  // 'feature-platform' 이름으로만 알아보던 플랫폼은 자기가 한 전이를 '매핑 없는 계정'으로 거부하고 되돌리려 했다.
+  it('live: 서비스 계정(accountId)으로 온 메아리는 매핑 없음으로 거부하지 않고 관측만 맞춘다', async () => {
+    const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+    const target = epics.find((e: any) => e.status === 'Released' && e.expected === 'Released' && !/^FEAT-0000[24]@/.test(e.feature));
+    expect(target).toBeTruthy();
+    const [id, ver] = target.feature.split('@');
+    const saved = { IF_MODE_14: process.env.IF_MODE_14, JIRA_SERVICE_ACCOUNT: process.env.JIRA_SERVICE_ACCOUNT };
+    Object.assign(process.env, { IF_MODE_14: 'live', JIRA_SERVICE_ACCOUNT: '557058:ff-sync-0001' });
+    try {
+      const raw = JSON.stringify({ webhookEvent: 'jira:issue_updated', user: { accountId: '557058:ff-sync-0001' }, issue: { key: target.key, fields: { summary: target.feature, issuetype: { name: 'Epic' }, status: { name: 'Deprecated' }, updated: '2026-10-12T03:00:00.000Z' } }, changelog: { items: [{ field: 'status', fromString: 'Released', toString: 'Deprecated' }] } });
+      const r = await http().post('/api/webhooks/jira').set({ 'content-type': 'application/json', 'x-hub-signature': hmac('JIRA', raw), 'x-atlassian-webhook-identifier': 'echo-svc-1' }).send(raw).expect(202);
+      expect(r.body).toMatchObject({ key: target.key, outcome: 'IGNORED', summary: '플랫폼이 쓴 변경의 알림' });
+      expect(await lifecycleOf(id, ver)).toBe('RELEASED');
+    } finally {
+      for (const [k, v] of Object.entries(saved)) if (v === undefined) delete process.env[k];
+      else process.env[k] = v;
+    }
+  });
+
+  // Epic 거울 작업 찾기 — 다음 재시도를 지금으로 당겨(requeue) 백오프를 기다리지 않는다
+  const epicJob = (id: string, ver: string) => get<ExtSyncRepo>(ExtSyncRepo).jobs({ system: 'JIRA', limit: 1000 }).find((j) => j.job.op === 'EPIC_MIRROR' && j.job.featureId === id && j.job.version === ver)!;
+  const releasedEpic = async () => {
+    const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+    const used = new Set(get<ExtSyncRepo>(ExtSyncRepo).jobs({ system: 'JIRA', limit: 1000 }).filter((j) => j.job.op === 'EPIC_MIRROR').map((j: any) => `${j.job.featureId}@${j.job.version}`));
+    return epics.find((e: any) => e.status === 'Released' && e.expected === 'Released' && !/^FEAT-0000[24]@/.test(e.feature) && !used.has(e.feature));
+  };
+
+  // 회귀(2026-11-06 하네스 리뷰): 실제 JIRA에서 Epic 전이 경로 중간에 막히면 앞 단계는 이미 반영돼 개정이 바뀐다.
+  // 보낼 함은 마지막 관측(낡은 개정)을 기대값으로 재시도해 자기 전이를 '외부 변경'으로 보고 충돌을 열었다(사람이 고를 일이 아닌데).
+  it('거울 쓰기가 일부만 반영되고 실패하면 지금 모습을 관측으로 두고 재시도한다 — 자기 쓰기로 충돌을 열지 않음', async () => {
+    const target = await releasedEpic();
+    expect(target).toBeTruthy();
+    const [id, ver] = target.feature.split('@');
+    const adapters = app.get(ExtAdapters);
+    const jira = adapters.of('JIRA');
+    // 실제 어댑터가 경로의 앞 단계만 간 뒤 막힌 것과 같은 모습 — 외부 상태·개정은 바뀌고 일부 반영 오류가 온다
+    const spy = vi.spyOn(jira, 'write').mockImplementationOnce(async (key) => {
+      adapters.store.update('JIRA', key, PLATFORM_USER, { status: 'In Verification' });
+      throw new ExtPartialWriteError("JIRA: 'Deprecated'(으)로 가는 워크플로 전이가 없습니다", (await jira.read(key))!);
+    });
+    try {
+      await http().post(`/api/features/${id}/versions/${ver}/transitions`).set(RELEASE).send({ to: 'DEPRECATED', reason: '후속 버전으로 대체' }).expect(200);
+      expect((await drain()).body.failed).toBeGreaterThanOrEqual(1);
+    } finally {
+      spy.mockRestore();
+    }
+    get<ExtSyncRepo>(ExtSyncRepo).requeue(epicJob(id, ver).jobId);
+    const r = (await drain()).body;
+    expect(r.conflicts).toBe(0);
+    expect(epicJob(id, ver).status).toBe('DONE');
+    expect((await mockItem('jira', target.key)).status).toBe('Deprecated');
+    const conflicts = (await http().get('/api/integrations/sync/conflicts').expect(200)).body.items;
+    expect(conflicts.filter((c: any) => c.key === target.key)).toHaveLength(0);
+  });
+
+  // 회귀(2026-11-06 하네스 리뷰): Epic 거울 작업은 작업에 외부 키가 없어(featureId·version) 재시도를 다 써도 Epic 동기화 상태가 SYNCED로 남았다
+  it('Epic 거울 작업이 재시도를 다 쓰고 실패하면 그 Epic의 동기화 상태가 실패로 보인다', async () => {
+    const target = await releasedEpic();
+    expect(target).toBeTruthy();
+    const [id, ver] = target.feature.split('@');
+    const spy = vi.spyOn(app.get(ExtAdapters).of('JIRA'), 'write').mockRejectedValue(new Error('JIRA POST /transitions → 503'));
+    try {
+      await http().post(`/api/features/${id}/versions/${ver}/transitions`).set(RELEASE).send({ to: 'DEPRECATED', reason: '후속 버전으로 대체' }).expect(200);
+      for (let i = 0; i < 6 && epicJob(id, ver).status === 'PENDING'; i++) {
+        get<ExtSyncRepo>(ExtSyncRepo).requeue(epicJob(id, ver).jobId);
+        await drain();
+      }
+    } finally {
+      spy.mockRestore();
+    }
+    expect(epicJob(id, ver)).toMatchObject({ status: 'FAILED', error: expect.stringContaining('503') });
+    const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+    expect(epics.find((e: any) => e.key === target.key)).toMatchObject({ syncState: 'FAILED' });
+  });
+
+  // 회귀(2026-11-06 하네스 리뷰): 주기 drain이 거부되면(예상 못 한 오류) .finally만 있어 처리되지 않은 거부로 프로세스가 죽고
+  // 다음 주기도 잡히지 않았다 — 한 주기의 실패는 기록하고 다음 주기를 잡는다
+  it('주기 drain 한 번이 거부돼도 거부가 새지 않고 다음 주기를 잡는다', async () => {
+    const svc = get<ExtSyncService>(ExtSyncService);
+    const scheduler = get<Scheduler>(Scheduler);
+    const drainSpy = vi.spyOn(svc, 'drain').mockRejectedValueOnce(new Error('database is locked'));
+    const after = vi.spyOn(scheduler, 'after').mockImplementation(() => {});
+    try {
+      await expect(svc.pollTick()).resolves.toBeUndefined();
+      expect(after).toHaveBeenCalledTimes(1);
+    } finally {
+      drainSpy.mockRestore();
+      after.mockRestore();
+    }
+  });
 
   describe('새 Feature 한 건으로 — 요구 연결·CR ↔ 정책 승인·요구 개정·MR 병합', () => {
     let fid: string;

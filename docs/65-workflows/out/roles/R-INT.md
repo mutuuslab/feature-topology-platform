@@ -41,6 +41,20 @@ last_updated: 2026-11-05
 4. 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
 - [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
 
+### FPW.3-A06 외부 연계 동기화·충돌 해결 — 수행·책임
+- 프로세스: FPW.3 안전요구 확정
+- 시작: 앞 활동 완료
+- 입력: WP-IMPL-LINK → 출력: WP-EXT-SYNC
+- 플랫폼: `resolveExtConflict`, `/integration/connectors`, `/features/:id/:ver`
+1. 외부 연계 현황의 연계 동기화 탭에서 이 Version의 codeBeamer 요구·JIRA Epic 연결과 받은 함·보낼 함·열린 충돌을 확인한다
+2. codeBeamer 요구가 개정되어 G2 재검토 표시가 붙었으면 요구 담당과 안전 담당에게 재검토를 요청한다
+3. JIRA에서 들어온 Epic·변경요청 상태 변경이 거부되었으면 받은 함의 사유(권한·전이 규칙·계정 매핑)를 외부 담당에게 알린다
+4. 실패한 보낼 함 작업은 연결 설정·워크플로 전이·권한 원인을 고치고 다음 재시도에서 보내졌는지 확인한다
+5. 충돌은 플랫폼 값 다시 보내기와 외부 값 다시 시도 중 하나를 사유와 함께 고른다. 외부 값은 플랫폼 가드를 다시 거친다
+6. 정의 승인 뒤에도 외부 요구 개정·상태 변경·충돌이 생기면 같은 확인을 다시 한다
+- [ ] 열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다
+- [ ] Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다
+
 ### FPW.5-A03 통합 시험·SEooC 가정 확인 — 수행·책임
 - 프로세스: FPW.5 검증·V&V
 - 시작: 앞 활동 완료

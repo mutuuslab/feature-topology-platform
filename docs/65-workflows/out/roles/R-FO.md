@@ -82,6 +82,17 @@ last_updated: 2026-11-05
 4. 외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다
 - [ ] VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
 
+### FPW.4-A06 정책 근거 변경요청(CR) 연결 — 수행·책임
+- 프로세스: FPW.4 안전 설계·정책 설계
+- 시작: 앞 활동 완료
+- 입력: – → 출력: WP-POLICY-CR
+- 플랫폼: `linkPolicyChangeRequest`, `/policies/:id`, `/integration/connectors`
+1. 정책 상세의 변경요청 패널에서 근거 JIRA 변경요청(CR) 키를 골라 정책에 연결한다. 근거 CR이 없으면 JIRA에 만든 뒤 연결한다
+2. 외부 연계 현황에서 CR 상태와 연결된 정책·Feature Version을 확인한다
+3. 승인자에게 CR을 알린다. JIRA에서 CR을 승인·반려해도 검증 GO 정책이고 정책 승인 권한이 있는 매핑된 계정일 때만 정책 결정으로 반영된다
+4. 거부되어 CR 상태가 되돌아가면 받은 함의 사유를 CR 담당에게 알리고 플랫폼에서 승인하도록 안내한다
+- [ ] 승인 대상 정책에 근거 CR이 연결되어 있고 CR 상태가 정책 결정과 맞다
+
 ### FPW.6-A01 출시 Baseline 확정 요청 — 수행·책임
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
@@ -167,6 +178,7 @@ last_updated: 2026-11-05
 - FPW.2-A05 G2 HARA 영향 판정 (통보)
 - FPW.3-A01 안전요구 도출·명세 (통보)
 - FPW.3-A03 요구 검토 판정 등록 (통보)
+- FPW.3-A06 외부 연계 동기화·충돌 해결 (협의)
 - FPW.3-A04 G3 판정·Feature 정의 승인 (협의)
 - FPW.4-A03 Flag 정책 작성·검증 (협의)
 - FPW.4-A05 G4 설계 독립 검토·판정 (통보)

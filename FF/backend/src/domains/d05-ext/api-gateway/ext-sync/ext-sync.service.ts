@@ -4,7 +4,7 @@
 // 받기: webhook(서명 확인 → 정규화 → 중복 버림)을 주인 규칙(contracts SYNC_OWNERSHIP)으로 처리한다.
 //   주인이 외부인 사실(요구 내용·CR 흐름·MR·파이프라인)은 그대로 반영, 주인이 플랫폼인 사실(Lifecycle·정책 승인)은
 //   매핑된 플랫폼 행위자의 "요청"으로 같은 서비스 경로(가드·직무 분리·감사)를 탄다. 거부되면 외부 값을 되돌리고 사유를 댓글로 남긴다.
-import { Inject, Injectable, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
 import {
   CreateFeatureBody,
   EPIC_SCOPE_LABEL,
@@ -49,11 +49,12 @@ import { LifecycleService } from '../../../d01-policy/registry/lifecycle.service
 import { RegistryService } from '../../../d01-policy/registry/registry.service';
 import { FeatureRepo } from '../../../d01-policy/repos';
 import { ChangeRecordService } from '../../../d04-ops/pipeline-link/change-record.service';
-import { ExtAdapters, modeOf, PLATFORM_USER, type RemoteItem, type WriteResult } from './adapters';
+import { ExtAdapters, ExtPartialWriteError, modeOf, PLATFORM_USER, type RemoteItem, type WriteResult } from './adapters';
 import { ExtSyncRepo, type ConflictRow, type InboxRow, type OutboxJob, type OutboxOp } from './ext-sync.repo';
 import { extUrl, MockExtStore } from './mock-ext.store';
 import { isProduction, seedOf } from '../../../../kernel/runtime-config';
 import { applyExtLiveConfig } from './live-config';
+import { isServiceAccount } from './live-adapters';
 import { deliveryIdOf, hmac, normalize, verifyWebhook } from './normalize';
 import { demoChangeRequestContent, demoEpicContent, demoRequirementContent } from './demo-seed-content';
 
@@ -115,12 +116,16 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   onApplicationBootstrap() {
     // 운영 모드는 예시 항목을 넣지 않는다(출시 준비 RD-OPS-01)
     if ((process.env.FF_EXT_SYNC_SEED ?? (isProduction() ? '0' : '1')) !== '0' && this.repo.itemCount() === 0) this.seed();
-    if (!this.scheduler.manual && process.env.FF_EXT_SYNC_DRAIN !== 'off') {
-      const tick = () => {
-        void this.drain().finally(() => this.scheduler.after(DRAIN_MS, tick));
-      };
-      this.scheduler.after(DRAIN_MS, tick);
-    }
+    if (!this.scheduler.manual && process.env.FF_EXT_SYNC_DRAIN !== 'off') this.scheduler.after(DRAIN_MS, () => void this.pollTick());
+  }
+
+  private readonly log = new Logger('ExtSync');
+  /** 주기 drain 한 번 — 예상 못 한 거부도 여기서 끝낸다(처리되지 않은 거부는 프로세스를 죽인다). 다음 주기는 늘 잡는다 */
+  pollTick(): Promise<void> {
+    return this.drain()
+      .then(() => undefined)
+      .catch((e: unknown) => this.log.error(`보낼 함 주기 처리 실패 — 다음 주기에 다시 봅니다: ${e instanceof Error ? e.message : String(e)}`))
+      .finally(() => this.scheduler.after(DRAIN_MS, () => void this.pollTick()));
   }
 
   // ───────────────────────── 외부 계정 ─────────────────────────
@@ -241,12 +246,15 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
               this.observe(it, 'SYNCED');
               this.repo.link('JIRA', it.key, 'FEATURE', fid(f.featureId, f.version), PLATFORM_USER);
             });
+            // 만들었지만 원하는 상태까지 못 갔으면(live 워크플로 거부) 연결한 뒤 거울 쓰기로 이어 간다 — 실패는 재시도, 다시 만들지 않음
+            if (it.status.toLowerCase() !== desired.toLowerCase()) return await this.mirrorStatus(j, it.key, desired, op.comment);
             return this.done(j);
           }
-          return this.mirrorStatus(j, key, desired, op.comment);
+          // await — 그냥 돌려주면 거부가 아래 catch를 빠져나가 drain이 거부되고 프로세스가 죽는다(2026-11-05 회귀)
+          return await this.mirrorStatus(j, key, desired, op.comment);
         }
         case 'CR_STATUS':
-          return this.mirrorStatus(j, op.key, op.status, op.comment);
+          return await this.mirrorStatus(j, op.key, op.status, op.comment);
         case 'COMMENT': {
           const r = await a.write(op.key, { comment: op.text }, null);
           if (r.ok) this.observe(r.item, 'SYNCED');
@@ -297,8 +305,11 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
         }
       }
     } catch (e) {
+      // 일부만 반영된 쓰기 — 지금 외부 모습을 마지막 관측으로 둔다(재시도가 자기 쓰기를 외부 변경으로 보고 충돌을 열지 않게)
+      if (e instanceof ExtPartialWriteError) this.observe(e.item, 'PENDING');
       this.repo.retry(j, e instanceof Error ? e.message : String(e));
-      const k = 'key' in j.job ? j.job.key : null;
+      // Epic 거울 작업은 외부 키 대신 Feature를 갖는다 — 연결된 Epic의 상태를 실패로
+      const k = 'key' in j.job ? j.job.key : j.job.op === 'EPIC_MIRROR' ? (this.linkedKeys('FEATURE', fid(j.job.featureId, j.job.version), 'JIRA', 'EPIC')[0] ?? null) : null;
       if (k && this.repo.job(j.jobId)?.status === 'FAILED') this.repo.setState(j.system, k, 'FAILED');
       return 'failed';
     }
@@ -369,7 +380,9 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const deliveryId = deliveryIdOf(system, headers, raw);
     const dup = this.repo.seen(system, deliveryId);
     if (dup) return { ...dup, duplicate: true };
-    const change = normalize(system, deliveryId, body);
+    const normalized = normalize(system, deliveryId, body);
+    // live — 플랫폼 서비스 계정이 한 변경의 메아리는 외부 사람 이름이 아니라 그 계정의 외부 ID로 온다(JIRA Cloud accountId)
+    const change = normalized && modeOf(system) === 'live' && isServiceAccount(system, normalized.externalUser) ? { ...normalized, externalUser: PLATFORM_USER } : normalized;
     const now = this.clock.iso();
     if (!change) {
       const row: InboxRow = { system, deliveryId, receivedAt: now, key: '-', outcome: 'IGNORED', summary: '이 연계와 무관한 이벤트', externalUser: '' };

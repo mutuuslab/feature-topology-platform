@@ -36,7 +36,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 9 · 책임 10 · 협의 19 · 통보 16 (활동 33개)
+수행 9 · 책임 10 · 협의 21 · 통보 17 (활동 35개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -54,9 +54,11 @@ last_updated: 2026-11-05
 | FPW.3-A02 양방향 추적성 점검 | FPW.3 안전요구 확정 | R·A (요구 Owner) · C (아키텍트) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 추적성 점검 결과 `WP-TRACE-REPORT` | `/trace/design` | 1차 |
 | FPW.3-A03 요구 검토 판정 등록 | FPW.3 안전요구 확정 | A (요구 Owner) | 안전요구·추적 연결 `WP-SAFETY-REQ`, 추적성 점검 결과 `WP-TRACE-REPORT` → 요구 검토 판정 기록 `WP-REQ-REVIEW` | `/features/:id/:ver` | 1차 |
 | FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | C (아키텍트) · I (요구 Owner) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
+| FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3 안전요구 확정 | C (요구 Owner) | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → 외부 연계 동기화·충돌 처리 기록 `WP-EXT-SYNC` | `/integration/connectors`, `/features/:id/:ver` | 1차 |
 | FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | R·A (요구 Owner) · I (아키텍트) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | R·A (아키텍트) · I (요구 Owner) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
 | FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | R·A (아키텍트) · I (요구 Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies` | 1차 |
+| FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4 안전 설계·정책 설계 | C (아키텍트) · I (요구 Owner) | – → 정책 근거 변경요청(CR) 연결 `WP-POLICY-CR` | `/policies/:id`, `/integration/connectors` | 1차 |
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | R·A (요구 Owner) · I (아키텍트) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4 안전 설계·정책 설계 | C (아키텍트) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | `/arch/components` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
@@ -80,14 +82,15 @@ last_updated: 2026-11-05
 |---|---|---|---|---|---|
 | 받음 | FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 | FPW.2-A03 SOTIF 분석 갱신 | 기능안전팀 | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` | 1차 |
 | 받음 | FPW.3-A03 요구 검토 판정 등록 | FPW.3-A04 G3 판정·Feature 정의 승인 | 품질팀 | 요구 검토 판정 기록 `WP-REQ-REVIEW` | 1차 |
-| 받음 | FPW.3-A05 구현 연결 입력 | FPW.3-A04 G3 판정·Feature 정의 승인 | SW통합·릴리스팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
-| 받음 | FPW.3-A05 구현 연결 입력 | FPW.3-A04 G3 판정·Feature 정의 승인 | 상품기획팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
+| 받음 | FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3-A04 G3 판정·Feature 정의 승인 | SW통합·릴리스팀 | – | 1차 |
+| 받음 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4-A04 정책 승인 | 상품기획팀 | – | 1차 |
 | 받음 | FPW.9-A02 Flag Retirement 요청 | FPW.9-A03 Flag Retirement 승인 | 상품기획팀 | Flag Retirement 요청 `WP-RETIRE-REQ` | 1차 |
 | 받음 | FPW.14-A01 변경 요청 작성 | FPW.14-A02 자동 점검·도메인 검토 | 상품기획팀 | 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | 2차 초안 |
 | 보냄 | FPW.2-A03 SOTIF 분석 갱신 | FPW.2-A05 G2 HARA 영향 판정 | 기능안전팀 | SOTIF 분석 `WP-SOTIF-ANALYSIS` | 1차 |
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A03 요구 검토 판정 등록 | 품질팀 | 추적성 점검 결과 `WP-TRACE-REPORT` | 1차 |
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | SW통합·릴리스팀 | – | 1차 |
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | 상품기획팀 | – | 1차 |
+| 보냄 | FPW.4-A03 Flag 정책 작성·검증 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | 상품기획팀 | – | 1차 |
 | 보냄 | FPW.4-A04 정책 승인 | FPW.4-A05 G4 설계 독립 검토·판정 | 품질팀 | Flag 정책(검증·승인본) `WP-POLICY` | 1차 |
 | 보냄 | FPW.9-A03 Flag Retirement 승인 | FPW.9-A04 코드·설정·시험 삭제 기록 | 상품기획팀 | Retirement 승인 기록 `WP-RETIRE-APPROVAL` | 1차 |
 | 보냄 | FPW.14-A02 자동 점검·도메인 검토 | FPW.14-A03 변경 승인·반려 | PLM·기준정보팀 | 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | 2차 초안 |

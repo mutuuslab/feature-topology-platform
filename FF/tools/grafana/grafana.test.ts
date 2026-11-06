@@ -333,6 +333,8 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
     if (url === '/api/v1/provisioning/contact-points' && m === 'GET') return { json: [...state.contacts.values()] };
     if (url.startsWith('/api/v1/provisioning/contact-points')) return (state.contacts.set(json.uid, json), { status: m === 'POST' ? 202 : 202, json });
     if (url.startsWith('/api/v1/provisioning/mute-timings')) return m === 'GET' ? (state.mute ? { json: state.mute } : { status: 404, json: {} }) : ((state.mute = json), { status: 201, json });
+    if (url === '/api/v1/provisioning/alert-rules' && m === 'GET') return { json: [...state.groups.values()].flatMap((g: any) => g.rules) };
+    if (url === '/api/ds/query' && m === 'POST') return { json: { results: Object.fromEntries(json.queries.map((q: any) => [q.refId, { frames: [{ data: { values: [[1], [q.expr.includes('registered') ? 480 : 12.5]] } }] }])) } };
     if (url === '/api/v1/provisioning/policies') return m === 'GET' ? { json: state.policy } : ((state.policy = json), { status: 202, json: {} });
     return { status: 404, json: { message: `no route ${m} ${url}` } };
   });
@@ -387,6 +389,7 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
   assert.match(text, new RegExp(`공개 ff-vehicle-telemetry: ${srv.base.replace(/[.]/g, '\\.')}/public-dashboards/tokffvehicletelemetrypublic`));
   assert.match(text, /gh variable set GRAFANA_PUBLIC_URL --body ".+\/public-dashboards\/tokffvehicletelemetrypublic"/);
   assert.match(text, /gh variable set GRAFANA_FEATURE_PUBLIC_URL/);
+  assert.match(text, /확인: FF 경보 규칙 15\/15개 · 상태 보고 수락\(1시간\) 12\.5 · 등록 차량 480/);
 });
 
 test('provision: 데이터 소스 선택·알림 정책 병합 단위', () => {

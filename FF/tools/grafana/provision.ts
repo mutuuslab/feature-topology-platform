@@ -194,6 +194,32 @@ export function buildVariables(r: ProvisionResult, stack: string): Record<string
   };
 }
 
+/** 확인용 대표 쿼리 — 시연 데이터(또는 설치 서버 지표)가 실제로 들어왔는가 */
+export const CHECK_QUERIES: Record<string, string> = {
+  '상태 보고 수락(1시간)': 'sum(increase(ff_vehicle_status_reports_total{result="accepted"}[1h]))',
+  '등록 차량': 'sum(ff_vehicles_registered)',
+  'Feature 활성 차량': 'sum(ff_feature_active_vehicles)',
+};
+
+/** 올린 뒤 실제 상태 — FF 경보 규칙 수(GET)와 대표 쿼리 값(/api/ds/query) */
+export async function verifyStack(g: Grafana, ds: DataSources) {
+  const rules: Json[] = (await g.must('GET', '/api/v1/provisioning/alert-rules')) ?? [];
+  const ff = rules.filter((r) => r.labels?.ff_source === 'feature-platform');
+  const values: Record<string, number | null> = {};
+  const now = Date.now();
+  const res = await g.must('POST', '/api/ds/query', {
+    from: String(now - 3_600_000),
+    to: String(now),
+    queries: Object.values(CHECK_QUERIES).map((expr, i) => ({ refId: `Q${i}`, datasource: { type: 'prometheus', uid: ds.prom.uid }, expr, instant: true, range: false, intervalMs: 60000, maxDataPoints: 1 })),
+  });
+  Object.keys(CHECK_QUERIES).forEach((name, i) => {
+    const frames: Json[] = res?.results?.[`Q${i}`]?.frames ?? [];
+    const nums = frames.flatMap((f) => (f.data?.values ?? []).slice(1).flat()).filter((v: unknown) => typeof v === 'number') as number[];
+    values[name] = nums.length ? nums.reduce((a, b) => a + b, 0) : null;
+  });
+  return { ffRules: ff.length, expectedRules: alertRules().length, missingRules: alertRules().map((r) => r.uid).filter((u) => !ff.some((x) => x.uid === u)), values };
+}
+
 export async function main(argv = process.argv, env: Env = process.env, fetchImpl: typeof fetch = fetch): Promise<number> {
   const missing = PROVISION_SECRETS.filter((k) => !env[k]?.trim());
   if (missing.length) {
@@ -208,9 +234,19 @@ export async function main(argv = process.argv, env: Env = process.env, fetchImp
   }
   const r = await provision(env, { dryRun: argv.includes('--dry-run'), skipAlerts: argv.includes('--skip-alerts'), skipPublic: argv.includes('--skip-public') }, fetchImpl);
   const vars = buildVariables(r, env.GRAFANA_STACK_URL!);
+  let check: Awaited<ReturnType<typeof verifyStack>> | null = null;
+  if (!argv.includes('--dry-run')) {
+    try {
+      check = await verifyStack(new Grafana(env.GRAFANA_STACK_URL!.trim(), env.GRAFANA_SA_TOKEN!.trim(), fetchImpl), r.datasources);
+    } catch (e) {
+      r.errors.push(`확인 실패: ${(e as Error).message}`);
+    }
+    if (check && !argv.includes('--skip-alerts') && check.missingRules.length) r.errors.push(`경보 규칙이 없다: ${check.missingRules.join(', ')}`);
+  }
   const lines = [
     `데이터 소스: 지표 ${r.datasources.prom.name} · 로그 ${r.datasources.loki?.name ?? '— (로그 패널은 지표 소스로 대체)'} · 추적 ${r.datasources.tempo?.name ?? '—'}`,
     `대시보드 ${r.dashboards.length}개 · 경보 그룹 ${r.alertGroups.join(', ') || '건너뜀'} · 연락처 ${r.contactPoints.join(', ') || (r.quiet ? `없음 — 알림 보내지 않음(묵음 ${QUIET_TIMING}, Grafana 경보 목록에만)` : '스택 기본')}`,
+    ...(check ? [`확인: FF 경보 규칙 ${check.ffRules}/${check.expectedRules}개 · ${Object.entries(check.values).map(([k, v]) => `${k} ${v === null ? '값 없음' : Math.round(v * 10) / 10}`).join(' · ')}`] : []),
     ...Object.entries(r.publicUrls).map(([uid, url]) => `공개 ${uid}: ${url}`),
     '',
     'FF 빌드 변수(코디네이터가 실행):',

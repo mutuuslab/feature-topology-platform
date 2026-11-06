@@ -84,6 +84,7 @@ architecture:
   ARC-COST-ESTIMATION: "20-94 SW 개발비 산정 (선택 모듈)"
   ARC-FLAG-SOURCE:     "20-96 Feature Flag Git 소스·정책·회신 연결"
   ARC-UNLEASH-LIVE:    "20-98 Unleash 실제 런타임 통합"
+  ARC-BROWSER-SIM:     "20-60 공개 시연 사이트 브라우저 안 쓰기(시연 데이터 엔진)"
   INT-UNLEASH-VEHICLE: "80-98 차량 Unleash 서명 조회와 설치"
 
 # ── 엔티티 (18, 4 그룹) ────────────────────────────────────
@@ -161,6 +162,8 @@ screens:
   G9_insights:    [SCR-900, SCR-910, SCR-920]
   G10_admin:      [SCR-A00, SCR-A01, SCR-A10, SCR-A20, SCR-A30, SCR-A40, SCR-A50]
   patterns:       [PAT-EMPTY, PAT-LOAD, PAT-ERROR, PAT-NOPERM, PAT-RPANEL, PAT-QA]
+  # 대시보드 디자인 언어(2026-11-06) — docs/70-design-system/70-50
+  design_system:  [DS-DASHBOARD]
 
 # ── 플로 ──────────────────────────────────────────────────
 flows:

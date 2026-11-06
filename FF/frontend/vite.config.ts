@@ -26,6 +26,8 @@ function deployHeaders(): Record<string, string> {
 }
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
+  // 정적 하네스(tools/static-build.ts)는 포트별 공개 폴더(스냅샷 포함)로 빌드한다 — 같은 폴더의 다른 작업이 public/api-snapshot을 바꿔도 겹치지 않게
+  publicDir: process.env.FF_PUBLIC_DIR || 'public',
   plugins: [{
     name: 'browser-route-metadata',
     enforce: 'pre',
@@ -47,11 +49,13 @@ export default defineConfig({
   preview: { proxy: BACKEND_PROXY, headers: deployHeaders() },
   build: {
     rollupOptions: {
-      // 스키마·산정 순수 함수·서명 캐시 선언은 초기화 부수효과가 없다. 필요한 폼이 로드될 때만 묶고, 카탈로그 설치 등 다른 모듈의 실행은 유지한다.
+      // 계약(contracts/src)은 순수 선언·함수뿐이라 초기화 부수효과가 없다 — 쓰는 export가 있는 모듈만 묶는다(입구 core.ts가 모두 다시 내보내도
+      // 쓰지 않는 규칙 모듈이 첫 화면에 실리지 않게). 부수효과가 있는 것은 보고서 카탈로그 설치(report-catalog-installed.ts) 하나뿐이고 화면 입구(web.ts)는 거치지 않는다.
+      // 2026-11-06 측정: 정적 첫 화면 314 → 292 KiB(알림·개인정보·롤백 규칙 등 통째로 실리던 모듈이 빠짐). 시험: tools/bundle-budget.test.ts
       treeshake: {
         moduleSideEffects: (id) => {
           const path = id.replace(/\\/g, '/');
-          return path.includes('/contracts/src/schemas/') || path.includes('/contracts/src/rules/cost/') || path.endsWith('/contracts/src/rules/gate-evidence.ts') || path.endsWith('/contracts/src/rules/unleash-snapshot.ts') || path.endsWith('/contracts/src/rules/unleash.ts') || path.endsWith('/contracts/src/rules/ext-sync.ts') ? false : null;
+          return path.includes('/contracts/src/') && !path.endsWith('/contracts/src/rules/report-catalog-installed.ts') ? false : null;
         },
       },
       // 두 개의 독립 엔트리: 플랫폼(index.html)과 Twin 콘솔(twin.html).

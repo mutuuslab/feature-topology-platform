@@ -95,6 +95,13 @@ def test_replay_missing_file_is_input_error(tmp_path):
     assert code == 2 and '기록 파일이 없습니다' in out['error']
 
 
+def test_replay_evidence_relative_path_uses_evidence_dir(tmp_path, monkeypatch):
+    # 재현 정보의 재생 명령은 evidence/<시험 ID>/... (로컬 절대 경로 없음) — Evidence 저장 폴더(FF_EVIDENCE_DIR) 기준으로 찾는다
+    monkeypatch.setenv('FF_EVIDENCE_DIR', str(tmp_path))
+    code, out = cli('', '--replay', 'evidence/TEST-X/carla_recording.log', '--info')
+    assert code == 2 and str(tmp_path / 'TEST-X' / 'carla_recording.log') in out['error']
+
+
 def test_recording_summary_reads_carla_0916_info():
     sys.path.insert(0, str(CLI.parent))
     from ffcarla.recorder import recording_summary

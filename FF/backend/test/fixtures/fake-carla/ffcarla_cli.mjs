@@ -62,7 +62,7 @@ const runs = pkg.scenarios.map((sc, i) => {
   const recording = resolve(dir, 'carla_recording.log');
   const repro = process.env.FAKE_SIM_NO_REPRO
     ? null
-    : { toolVersion: 'ff-carla 1.0 (test double) · CARLA 0.9.16 · Town04', scenarioHash: sha(JSON.stringify(sc)), scriptHash: SCRIPT_HASH, seed: sc.seed ?? 0, stepS: 0.05, map: 'Town04', replay: `python sim/carla/ffcarla_cli.py --replay "${recording}"`, safety: S };
+    : { toolVersion: 'ff-carla 1.0 (test double) · CARLA 0.9.16 · Town04', scenarioHash: sha(JSON.stringify(sc)), scriptHash: SCRIPT_HASH, seed: sc.seed ?? 0, stepS: 0.05, map: 'Town04', replay: `python sim/carla/ffcarla_cli.py --replay "evidence/${testId}/carla_recording.log"`, safety: S }; // 실제 실행기처럼 Evidence 저장 폴더 기준
   const evaluation = pkg.evaluation ?? null;
   writeFileSync(join(dir, 'verdict.json'), JSON.stringify({ testId, overall, policy: { contentHash: pkg.policy.contentHash }, vehicle: pkg.fleet.find((v) => v.vin === pkg.vehicle), evaluation, criteria, repro }));
   writeFileSync(join(dir, 'report.html'), `<html><body><h1>${testId}</h1></body></html>`);

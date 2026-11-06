@@ -123,7 +123,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
       const vin = typeof v2.vehicle_pseudonym === 'string' ? this.vinOf(v2.vehicle_pseudonym) : null;
       if (!vin) return void (this.lastError = '알 수 없는 차량 가명의 status_report v2 — 버림');
       const r = this.statusIngest.ingest(vin, data, 'GLEO');
-      if (r.accepted && r.featureId) {
+      if (r.accepted && !r.duplicate && r.featureId) {
         const s = this.runtime.get(vin);
         s.featureState[r.featureId] = (data as { state: string }).state;
         s.log.push({ at: this.clock.iso(), publicationId: '-', kind: 'GLEO', result: 'APPLIED', detail: `status_report v2 ${(data as { state: string }).state}` });

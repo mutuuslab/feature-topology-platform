@@ -10,8 +10,8 @@
 //   가명 처리(redactRows)는 칸 값만 바꾸고 소금을 지운다 — 행 해시가 그대로라 체인이 통과하고, 소금이 없어 지운 값을 다시 맞혀 볼 수 없다.
 //   바꾼 행은 audit_redaction에 바뀐 뒤 내용 해시로, 그 묶음 전체 해시는 체인 안의 처리 기록(PRIVACY_REDACT)에 남는다 — 처리 기록 없이
 //   바꾸거나 소금만 지우면 검증이 잡는다(redaction). 소금은 DB 권한자에게 비밀이 아니다 — 위조는 여전히 고정점(②)이 잡는다.
-import { Inject, Injectable, OnApplicationBootstrap, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
-import { appendFileSync, existsSync, readFileSync } from 'node:fs';
+import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { closeSync, existsSync, fstatSync, openSync, readFileSync, readSync, writeSync } from 'node:fs';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { canonicalJson, redactIdentifiers } from '@ff/contracts';
 import { sha256hex } from './crypto';
@@ -58,9 +58,11 @@ export interface ChainReport {
   verified: number;
   head: string | null;
   /** 처음 어긋난 행 — 내용이 바뀌었거나(hash) 앞 행과 끊겼다(prev), 기억한 끝과 다르다(head), 서명한 고정점과 다르다(anchor) */
-  broken: { id: number; kind: 'hash' | 'prev' | 'head' | 'anchor' | 'redaction' } | null;
-  /** DB 밖 고정점 — 파일이 설정됐는가, 확인한 고정점 수, 마지막 고정 시각 */
-  anchors: { configured: boolean; checked: number; lastAt: string | null };
+  /** range — 끝·고정점 불일치일 때 의심 구간(마지막으로 맞은 고정점 다음 행 ~ 어긋난 행, ADS-BE19) */
+  broken: { id: number; kind: 'hash' | 'prev' | 'head' | 'anchor' | 'redaction'; range?: { from: number; to: number } } | null;
+  /** DB 밖 고정점 — 파일이 설정됐는가, 확인한 고정점 수, 마지막 고정 시각, 체인과 맞는 마지막 고정점.
+   *  failing — 이 프로세스의 고정점 쓰기가 실패하는 중(처음 실패 시각·마지막 오류). 다음 감사 쓰기·주기에서 다시 고정하면 사라진다 */
+  anchors: { configured: boolean; checked: number; lastAt: string | null; lastMatched?: { id: number; at: string; kid: string | null } | null; failing?: { at: string; message: string } };
 }
 
 export interface AuditAnchor {
@@ -69,12 +71,32 @@ export interface AuditAnchor {
   hash: string;
   count: number;
   instance: string | null;
+  /** 체인 키 식별자(FF_AUDIT_KEY_ID, 없으면 키 지문) — 키는 DB·고정점 밖(KMS/HSM)에 둔다. 옛 고정점에는 없다 */
+  kid?: string;
   mac: string;
 }
 
 /** 고정점 주기 — 기본 60분(FF_AUDIT_ANCHOR_MIN) */
 const ANCHOR_MS = () => Math.max(1, Number(process.env.FF_AUDIT_ANCHOR_MIN) || 60) * 60_000;
-const anchorMac = (key: string, a: Omit<AuditAnchor, 'mac'>) => createHmac('sha256', key).update(canonicalJson({ at: a.at, id: a.id, hash: a.hash, count: a.count, instance: a.instance })).digest('hex');
+/** 고정 간격(행) — 기본 1(감사 쓰기마다, ADS-BE19). 늘리면 최대 미고정 구간이 그만큼 — 주기(FF_AUDIT_ANCHOR_MIN)와 먼저 닿는 쪽 */
+const ANCHOR_ROWS = () => Math.max(1, Math.floor(Number(process.env.FF_AUDIT_ANCHOR_ROWS) || 1));
+/** kid가 있는 고정점은 kid까지 서명한다(옛 고정점은 kid 없이 — 그대로 검증된다) */
+const anchorMac = (key: string, a: Omit<AuditAnchor, 'mac'>) =>
+  createHmac('sha256', key)
+    .update(canonicalJson({ at: a.at, id: a.id, hash: a.hash, count: a.count, instance: a.instance, ...(a.kid ? { kid: a.kid } : {}) }))
+    .digest('hex');
+const keyIdOf = (key: string) => process.env.FF_AUDIT_KEY_ID?.trim() || `fp:${sha256hex(`ff-audit-kid|${key}`).slice(0, 16)}`;
+
+type AnchorMatch = { lastMatched: AuditAnchor | null; firstBad: AuditAnchor | null };
+/** 고정점 대조 — 체인과 맞는 마지막 고정점(파일 순서로 처음 어긋나기 전), 처음 어긋난 고정점. m을 넘기면 앞 묶음에 이어서 본다 */
+function matchAnchors(list: AuditAnchor[], hashAt: (id: number) => string | undefined, m: AnchorMatch = { lastMatched: null, firstBad: null }): AnchorMatch {
+  for (const a of list) {
+    if (hashAt(a.id) !== a.hash) return { lastMatched: m.lastMatched, firstBad: a };
+    if (!m.lastMatched || a.id >= m.lastMatched.id) m = { lastMatched: a, firstBad: null };
+  }
+  return m;
+}
+const matchedInfo = (a: AuditAnchor | null) => (a ? { id: a.id, at: a.at, kid: a.kid ?? null } : null);
 
 /** 체인 v2의 식별 칸 — 가명 처리가 값을 바꿀 수 있는 칸(칸 이름, 열, 칸 해시 열) */
 export const REDACTABLE = [
@@ -147,6 +169,14 @@ export const chainHash = (prev: string, row: unknown) => sha256hex(`${prev}\n${c
 export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApplicationShutdown {
   /** 이 프로세스가 마지막으로 커밋을 본 체인 끝 */
   private head: { id: number; hash: string } | null = null;
+  /** 이 프로세스가 마지막으로 고정한 행 id·그때 행 수(재시작하면 첫 쓰기에서 다시 고정) */
+  private anchoredId: number | null = null;
+  private anchoredCount: number | null = null;
+  /** 고정점 파일을 연 채로 이어 쓴다 — 쓰기마다 열고 닫으면(appendFileSync) Windows에서 감사 쓰기가 약 24배 느려졌다(하네스 리뷰 2026-11-06) */
+  private anchorOut: { file: string; fd: number } | null = null;
+  /** 고정점 쓰기 실패 중 — 처음 실패 시각·마지막 오류(체인 보고에 싣는다) */
+  private anchorFailing: { at: string; message: string } | null = null;
+  private readonly log = new Logger('AuditAnchor');
 
   constructor(
     @Inject(DB) private readonly db: Db,
@@ -165,14 +195,15 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     this.anchor();
     if (this.scheduler.manual || !this.anchorFile()) return;
     const tick = () => {
-      this.anchor();
+      this.tryAnchor(true);
       this.scheduler.after(ANCHOR_MS(), tick);
     };
     this.scheduler.after(ANCHOR_MS(), tick);
   }
 
   onApplicationShutdown() {
-    this.anchor();
+    this.tryAnchor(true);
+    this.closeAnchorOut();
   }
 
   private anchorFile(): { file: string; key: string } | null {
@@ -181,15 +212,84 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     return file && key ? { file, key } : null;
   }
 
-  /** 지금 끝을 서명해 고정점 파일에 한 줄 더한다(설정이 없거나 체인이 비었으면 아무것도 안 한다). 남긴 고정점을 돌려준다 */
-  anchor(): AuditAnchor | null {
+  /**
+   * 지금 끝을 서명해 고정점 파일에 한 줄 더한다(설정이 없거나 체인이 비었으면 아무것도 안 한다). 남긴 고정점을 돌려준다.
+   * full — 행 수를 처음부터 센다(부팅·주기·종료·호출). 쓰기마다 고정은 마지막 고정 뒤 늘어난 행만 더한다 — 감사 100만 행에서 쓰기마다
+   * count(*)가 행 수에 비례해 느려졌다(추가 전용이라 같은 값, 주기 고정이 처음부터 다시 맞춘다)
+   */
+  anchor(full = true): AuditAnchor | null {
     const cfg = this.anchorFile();
-    const tail = this.db.get<{ id: number; hash: string | null; n: number }>('SELECT id, hash, (SELECT count(*) FROM audit) AS n FROM audit ORDER BY id DESC LIMIT 1');
-    if (!cfg || !tail?.hash) return null;
-    const body = { at: this.clock.iso(), id: tail.id, hash: tail.hash, count: tail.n, instance: process.env.FF_INSTANCE_ID ?? null };
+    if (!cfg) return null;
+    const tail = this.db.get<{ id: number; hash: string | null }>('SELECT id, hash FROM audit ORDER BY id DESC LIMIT 1');
+    if (!tail?.hash) return null;
+    const since = !full && this.anchoredId !== null && this.anchoredCount !== null && tail.id >= this.anchoredId ? this.anchoredId : null;
+    const n =
+      since === null
+        ? Number(this.db.get<{ n: number }>('SELECT count(*) AS n FROM audit WHERE id <= ?', tail.id)?.n ?? 0)
+        : this.anchoredCount! + Number(this.db.get<{ n: number }>('SELECT count(*) AS n FROM audit WHERE id > ? AND id <= ?', since, tail.id)?.n ?? 0);
+    const body = { at: this.clock.iso(), id: tail.id, hash: tail.hash, count: n, instance: process.env.FF_INSTANCE_ID ?? null, kid: keyIdOf(cfg.key) };
     const a: AuditAnchor = { ...body, mac: anchorMac(cfg.key, body) };
-    appendFileSync(cfg.file, JSON.stringify(a) + '\n');
+    this.appendAnchor(cfg.file, JSON.stringify(a) + '\n');
+    this.anchoredId = a.id;
+    this.anchoredCount = n;
+    this.anchorFailing = null;
     return a;
+  }
+
+  /** 고정점 한 줄 쓰기 — 연 파일에 이어 쓴다. 처음 열 때 파일이 줄 중간에서 끝났으면(쓰는 중 중단) 새 줄에서 시작한다. 실패하면 닫고 다음에 다시 연다 */
+  private appendAnchor(file: string, line: string) {
+    if (this.anchorOut?.file !== file) {
+      this.closeAnchorOut();
+      const fd = openSync(file, 'a+');
+      try {
+        const size = fstatSync(fd).size;
+        const last = Buffer.alloc(1);
+        if (size > 0 && readSync(fd, last, 0, 1, size - 1) === 1 && last[0] !== 0x0a) line = '\n' + line;
+      } catch (e) {
+        closeSync(fd);
+        throw e;
+      }
+      this.anchorOut = { file, fd };
+    }
+    const buf = Buffer.from(line);
+    try {
+      const n = writeSync(this.anchorOut!.fd, buf);
+      if (n !== buf.length) throw new Error(`고정점 일부만 썼습니다(${n}/${buf.length} 바이트)`);
+    } catch (e) {
+      this.closeAnchorOut();
+      throw e;
+    }
+  }
+
+  private closeAnchorOut() {
+    if (!this.anchorOut) return;
+    try {
+      closeSync(this.anchorOut.fd);
+    } catch {
+      /* 이미 닫힘 */
+    }
+    this.anchorOut = null;
+  }
+
+  /** 실패해도 던지지 않는 고정 — 커밋 뒤·주기·종료에서. 실패는 체인 보고(anchors.failing)와 로그에 남기고 다음 기회에 다시 고정한다 */
+  private tryAnchor(full: boolean) {
+    try {
+      this.anchor(full);
+    } catch (e) {
+      const message = (e as Error)?.message ?? String(e);
+      if (!this.anchorFailing) this.log.error(`감사 고정점을 쓰지 못했습니다 — ${message}`);
+      this.anchorFailing = { at: this.anchorFailing?.at ?? this.clock.iso(), message };
+    }
+  }
+
+  /**
+   * 커밋된 감사 쓰기 뒤(ADS-BE19) — 마지막 고정 뒤 ANCHOR_ROWS행이 쌓였으면 끝을 고정한다. 한 커밋의 여러 행은 한 번만.
+   * 이미 커밋된 뒤라 던지지 않는다 — 고정점 파일 문제로 요청이 500이 되거나 같은 커밋의 다른 후속(이벤트 전달)이 끊기던 결함
+   */
+  private anchorAfterWrite(tailId: number) {
+    if (!this.anchorFile()) return;
+    if (!this.anchorFailing && tailId - (this.anchoredId ?? 0) < ANCHOR_ROWS()) return;
+    this.tryAnchor(false);
   }
 
   private backfill() {
@@ -228,12 +328,28 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     if (badBatch !== null) return fail(rows.length, prev, badBatch, 'redaction');
     const end = rows.length ? prev : null;
     const at = new Map(rows.map((r) => [r.id as number, r.hash as string]));
-    // ① 기억한 끝 — 그 행이 없거나 hash가 다르면 끝 행을 지웠거나 바꿔치기했다
-    if (this.head && at.get(this.head.id) !== this.head.hash) return fail(rows.length, end, this.head.id, 'head');
-    // ② 서명한 고정점 — 서명이 틀리거나, 고정한 행이 없거나 hash가 다르면 체인을 다시 계산했다
-    if (anchors.broken !== null) return fail(rows.length, end, anchors.broken, 'anchor');
-    for (const a of anchors.list) if (at.get(a.id) !== a.hash) return fail(rows.length, end, a.id, 'anchor');
-    return { ok: true, verified: rows.length, head: end, broken: null, anchors: anchors.info };
+    return this.endChecks(rows.length, end, anchors, (id) => at.get(id));
+  }
+
+  /**
+   * 체인 끝 판정 — ① 기억한 끝: 그 행이 없거나 hash가 다르면 끝 행을 지웠거나 바꿔치기했다.
+   * ② 서명한 고정점: 서명이 틀리거나, 고정한 행이 없거나 hash가 다르면 체인을 다시 계산했다.
+   * 맞는 마지막 고정점(lastMatched)과 의심 구간(range: 그 다음 행 ~ 어긋난 행)을 함께 돌려준다(ADS-BE19).
+   */
+  private endChecks(verified: number, end: string | null, anchors: ReturnType<AuditService['anchorsReport']>, hashAt: (id: number) => string | undefined, matched?: AnchorMatch): ChainReport {
+    const m = matched ?? matchAnchors(anchors.list, hashAt);
+    const info = { ...anchors.info, lastMatched: matchedInfo(m.lastMatched), ...(this.anchorFailing ? { failing: { ...this.anchorFailing } } : {}) };
+    const fail = (id: number, kind: 'head' | 'anchor'): ChainReport => ({
+      ok: false,
+      verified,
+      head: end,
+      broken: { id, kind, ...(id > 0 ? { range: { from: Math.min((m.lastMatched?.id ?? 0) + 1, id), to: id } } : {}) },
+      anchors: info,
+    });
+    if (this.head && hashAt(this.head.id) !== this.head.hash) return fail(this.head.id, 'head');
+    if (anchors.broken !== null) return fail(anchors.broken, 'anchor');
+    if (m.firstBad) return fail(m.firstBad.id, 'anchor');
+    return { ok: true, verified, head: end, broken: null, anchors: info };
   }
 
   private chainRun: Promise<ChainReport> | null = null;
@@ -275,11 +391,17 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     const badBatch = redactionBatchFault(red.batches, (id) => this.db.get<any>('SELECT * FROM audit WHERE id = ?', id));
     if (badBatch !== null) return fail(verified, end, badBatch, 'redaction');
     const hashAt = (id: number) => this.db.get<{ hash: string | null }>('SELECT hash FROM audit WHERE id = ?', id)?.hash ?? undefined;
+    // 고정점 대조도 묶음으로 — 쓰기마다 고정이면 고정점이 행 수만큼이라 고정점마다 한 번씩 조회하면(N+1) 이벤트 루프를 오래 막는다
+    let m: AnchorMatch = { lastMatched: null, firstBad: null };
+    for (let i = 0; i < anchors.list.length && !m.firstBad; i += chunk) {
+      const part = anchors.list.slice(i, i + chunk);
+      const ids = [...new Set(part.map((a) => Number(a.id)).filter(Number.isFinite))];
+      const at = new Map(ids.length ? this.db.all<{ id: number; hash: string | null }>(`SELECT id, hash FROM audit WHERE id IN (${ids.map(() => '?').join(',')})`, ...ids).map((r) => [Number(r.id), r.hash ?? undefined]) : []);
+      m = matchAnchors(part, (id) => at.get(Number(id)), m);
+      if (i + chunk < anchors.list.length) await new Promise<void>((res) => setImmediate(res));
+    }
     // ① 기억한 끝 · ② 서명한 고정점 — verifyChain과 같다(검증한 행의 hash와 비교)
-    if (this.head && hashAt(this.head.id) !== this.head.hash) return fail(verified, end, this.head.id, 'head');
-    if (anchors.broken !== null) return fail(verified, end, anchors.broken, 'anchor');
-    for (const a of anchors.list) if (hashAt(a.id) !== a.hash) return fail(verified, end, a.id, 'anchor');
-    return { ok: true, verified, head: end, broken: null, anchors: anchors.info };
+    return this.endChecks(verified, end, anchors, hashAt, m);
   }
 
   /** 개인정보 처리 묶음 — 행마다 가장 나중 묶음의 내용 해시, 묶음마다 든 행 */
@@ -451,6 +573,7 @@ export class AuditService implements OnModuleInit, OnApplicationBootstrap, OnApp
     const tail = this.db.get<{ id: number; hash: string }>('SELECT id, hash FROM audit ORDER BY id DESC LIMIT 1')!;
     this.db.afterCommit(() => {
       if (!this.head || tail.id > this.head.id) this.head = tail;
+      this.anchorAfterWrite(tail.id);
     });
   }
 }

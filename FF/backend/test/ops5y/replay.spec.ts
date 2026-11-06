@@ -36,7 +36,8 @@ const LAUNCHES: Launches = {
     { month: 2, featureId: 'FEAT-00001', version: '2.2.0', catalogId: 'CAT-00017' },
   ],
   trialCampaigns: [{ fromMonth: 0, catalogId: 'CAT-00019', monthlyShare: 0.5 }],
-  incidents: [{ month: 1, day: 20, featureId: 'FEAT-00022', code: 'RADAR_BIAS', kill: true }],
+  // FEAT-00025(EU)는 안전 프로파일에 sbomRef가 없다 — 복원은 출시 때 정책 배포 게시본의 SBOM을 참조한다(5년 재생 결정 ①)
+  incidents: [{ month: 1, day: 20, featureId: 'FEAT-00022', code: 'RADAR_BIAS', kill: true }, { month: 2, day: 25, featureId: 'FEAT-00025', code: 'GAP_SENSOR_DRIFT', kill: true }],
   rollbacks: [{ month: 3, day: 5, featureId: 'FEAT-00001', reason: '2.2.0 배포 후 현장 보고 — 2.1.0으로 복구' }],
 };
 
@@ -90,6 +91,9 @@ describe('5년 운영 재생 — 짧은 재생', () => {
     for (const op of ['신차 등록', '정책 배포', '단계 확대', '체험 제안', '체험 수락', '차량 보고', '이상 징후 확인', '긴급 차단 승인', '복원 승인', '롤백 실행', 'JIRA 변경요청', 'GitLab 병합', 'GitLab 파이프라인', 'codeBeamer 요구 개정', '연계 보내기']) expect(ops[op] ?? 0, op).toBeGreaterThan(0);
     expect(report.kills[0]).toMatchObject({ featureId: 'FEAT-00022' });
     expect(report.kills[0].restoredAt).not.toBeNull();
+    // 5년 재생 결정 ① — sbomRef 없는 EU 기능도 차단 뒤 복원된다(복원 막힘 발견 0)
+    expect(report.kills.find((k) => k.featureId === 'FEAT-00025')?.restoredAt).toBeTruthy();
+    expect(report.findings.filter((f) => f.kind === '복원 막힘')).toEqual([]);
     expect(report.receivers).toBeGreaterThan(0);
   });
 

@@ -5,10 +5,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { vehiclePseudonym } from '../../src/kernel/crypto';
 import { DB, type Db } from '../../src/kernel/db';
-import { actor, bootApp } from '../helpers';
+import { Clock } from '../../src/kernel/clock';
+import { Scheduler } from '../../src/kernel/scheduler';
+import { actor, bootApp, killV2, restoreV2 } from '../helpers';
 
 /** 운영 중 계속 커지는 표 — 요청마다 통째로 읽으면 안 된다 */
-const BIG = ['audit', 'events', 'vehicle', 'notification', 'notification_recipient', 'status_report', 'vehicle_delivery', 'vehicle_request', 'readback', 'entitlement', 'gate_record'];
+const BIG = ['audit', 'events', 'vehicle', 'notification', 'notification_recipient', 'status_report', 'vehicle_delivery', 'vehicle_request', 'readback', 'entitlement', 'gate_record', 'vehicle_envelope', 'vehicle_feature_status'];
 /** 알고 남긴 전체 훑기 — 이유가 있어야 한다(목록 화면의 '전체' 응답 등은 시험 대상 요청에 넣지 않는다) */
 const ALLOWED: { sql: RegExp; why: string }[] = [
   { sql: /^SELECT vin FROM vehicle$/, why: '가명 → VIN 표를 차량이 늘 때 한 번 만든다(FleetRepo.vinByPseudonym 캐시)' },
@@ -115,5 +117,15 @@ describe.skipIf(!!process.env.FF_TEST_PG_URL)('질의 계획 — 주요 API가 �
         .expect(201),
     );
     expect(issued.filter((c) => /^SELECT doc FROM vehicle ORDER BY vin$/.test(c.sql.trim()))).toEqual([]);
+  });
+
+  it('긴급 차단 목록·상세 — 복원 집계(재판정 근거 없음, ADS-BE03)가 차량 봉투·상태 표를 통째로 훑지 않는다', async () => {
+    const clock = app.get(Clock);
+    const k = await killV2(app.http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '질의 계획 시험(복원)', confirm: 'FEAT-00022' });
+    app.get(Scheduler).flush(8_000);
+    clock.set(new Date(clock.now().getTime() + 8_000));
+    await restoreV2(app.http, k.killId);
+    expect((await app.http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.restore).toMatchObject({ activeWithoutRedecision: expect.any(Number) });
+    for (const run of [() => app.http().get('/api/kill-requests').expect(200), () => app.http().get(`/api/kill-requests/${k.killId}`).expect(200)]) expect((await scansOf(run)).scans).toEqual([]);
   });
 });

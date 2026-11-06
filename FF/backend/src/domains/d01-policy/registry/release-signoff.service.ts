@@ -74,9 +74,9 @@ export class ReleaseSignoffService {
   /** 서명 — 연결된 기준 행이 폐기 예정·폐기면 막지 않고 응답 warnings와 감사에 남긴다(대체 행 안내, 사용자 결정 2026-11-04 #9) */
   sign(actor: Actor, featureId: string, version: string, reason: string): ReleaseSignoffView & { warnings?: RefWarning[] } {
     const target = `${featureId}@${version}#release-signoff`;
-    const fail = (msg: string, code: 'NOT_FOUND' | 'GUARD_FAILED' | 'CONFLICT'): never => {
+    const fail = (msg: string, code: 'NOT_FOUND' | 'GUARD_FAILED' | 'CONFLICT', details?: Record<string, unknown>): never => {
       this.audit.failed(actor, ACTION, target, msg, 'D01-01');
-      throw new DomainError(code, msg);
+      throw new DomainError(code, msg, details);
     };
     const f = this.features.get(featureId, version);
     if (!f) return fail(`${featureId} ${version}을(를) 찾을 수 없습니다.`, 'NOT_FOUND');
@@ -85,7 +85,11 @@ export class ReleaseSignoffService {
     if (typeof gates === 'string') return fail(gates, 'GUARD_FAILED');
     // FFP-F007 — 영향 검토(재-HARA) 미완료 변경은 서명 단계로 승격하지 않는다
     const open = this.rehara.open(featureId, version);
-    if (open.length) return fail(`재-HARA 요청 ${open.map((r) => `${r.requestId}(${r.condition})`).join(', ')}이 열려 있습니다 — 영향 검토(G2 재판정)를 마친 뒤 서명합니다.`, 'GUARD_FAILED');
+    // ADS-BE06 — 출시 전이와 같은 사유 코드(REHARA_OPEN, details.blockers)로 응답한다
+    if (open.length) {
+      const msg = `재-HARA 요청 ${open.map((r) => `${r.requestId}(${r.condition})`).join(', ')}이 열려 있습니다 — 영향 검토(G2 재판정)를 마친 뒤 서명합니다.`;
+      return fail(msg, 'GUARD_FAILED', { blockers: open.map((r) => ({ code: 'REHARA_OPEN', message: msg, ref: r.requestId })) });
+    }
     if (this.view(featureId, version).valid) return fail('현재 G8·G9 판정에 대한 Release Sign-off가 이미 있습니다.', 'CONFLICT');
     const unsigned: ReleaseSignoff = {
       featureId,

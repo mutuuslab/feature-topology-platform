@@ -27,6 +27,8 @@ export interface StatusCheckContext {
   expectedVersion: string | null;
   /** 5 — 이 차량·Feature에 마지막으로 발급한 명령(봉투) */
   lastCommand: { request: 'deactivate' | 'restore' | 'activate' | 'sync'; vehicleSeq: number; /** 차량이 이 명령을 받아들였다고 이미 보고했는가(수락된 보고의 vehicle_seq ≥ 발급) */ acknowledged?: boolean } | null;
+  /** 3 — 이 보고의 report_seq로 이미 받아들인 보고의 state_auth(없으면 null). 같으면 중계 재전송(중복, TL-M03) */
+  acceptedAuthAtSeq?: string | null;
 }
 
 export interface StatusCheckResult {
@@ -35,6 +37,8 @@ export interface StatusCheckResult {
   violation: { step: StatusCheckStep; code: string; message: string } | null;
   /** 받아들였지만 후속 조치가 필요한 경우(9.3 표) — 재발행·보안 이벤트 등 */
   action: ReasonAction;
+  /** 이미 받아들인 보고를 그대로 다시 받음(같은 report_seq·state_auth) — 기록·전이·위반 없이 앞 결과로 답한다 */
+  duplicate?: boolean;
 }
 
 const DEACT_STATES: GuardState[] = ['DEACT_PENDING_IDLE', 'DEACT_PENDING_CYCLE', 'DEACT_WARNING', 'DEACT_RAMP', 'DISABLED'];
@@ -53,6 +57,9 @@ export function checkStatusReport(report: unknown, ctx: StatusCheckContext): Sta
   if (errors.length) return fail('SCHEMA', 'SCHEMA', `상태 보고 v2 스키마 위반: ${errors.slice(0, 3).join('; ')}`);
   const r = report as StatusReportV2;
   if (!ctx.authOk) return fail('AUTH', 'AUTH_FAILED', 'state_auth가 차량 키로 검증되지 않습니다 — 위조·변조 보고');
+  // TL-M03 — 중계(최소 한 번 전달)는 같은 보고를 다시 보낼 수 있다. 증명까지 같은 보고는 정상 중복이고, 같은 번호의 다른 보고만 REPLAY다
+  if (r.report_seq <= ctx.lastReportSeq && ctx.acceptedAuthAtSeq && ctx.acceptedAuthAtSeq === r.state_auth)
+    return { accepted: true, duplicate: true, violation: null, action: reasonAction(r.request_result, r.reject_code ?? 'NONE') };
   if (r.report_seq <= ctx.lastReportSeq) return fail('SEQUENCE', 'REPLAY', `report_seq ${r.report_seq} ≤ 마지막 ${ctx.lastReportSeq} — 재전송`);
   if (ctx.expectedVersion === null) return fail('TARGET', 'UNKNOWN_FEATURE', `${r.feature.id}은(는) 이 차량에 전개되지 않았습니다`);
   if (r.feature.version !== ctx.expectedVersion) return fail('TARGET', 'VERSION_MISMATCH', `보고 Version ${r.feature.version} ≠ 전개 Version ${ctx.expectedVersion}`);

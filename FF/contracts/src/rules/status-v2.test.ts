@@ -16,6 +16,15 @@ describe('수신 검사 6단계 (13.3.1)', () => {
     expect(checkStatusReport(report(), { ...CTX, authOk: false }).violation).toMatchObject({ step: 'AUTH', code: 'AUTH_FAILED' });
     expect(checkStatusReport(report(), { ...CTX, lastReportSeq: 196650 }).violation).toMatchObject({ step: 'SEQUENCE', code: 'REPLAY' });
   });
+  it('TL-M03 같은 보고(같은 report_seq·state_auth) 재수신은 중복 — 위반 없이 받고, 같은 번호의 다른 보고는 REPLAY', () => {
+    const r = report();
+    const dup = checkStatusReport(r, { ...CTX, lastReportSeq: r.report_seq, acceptedAuthAtSeq: r.state_auth });
+    expect(dup).toMatchObject({ accepted: true, duplicate: true, violation: null });
+    expect(checkStatusReport(r, { ...CTX, lastReportSeq: r.report_seq, acceptedAuthAtSeq: 'other-tag' }).violation).toMatchObject({ step: 'SEQUENCE', code: 'REPLAY' });
+    expect(checkStatusReport(r, { ...CTX, lastReportSeq: r.report_seq, acceptedAuthAtSeq: null }).violation).toMatchObject({ step: 'SEQUENCE', code: 'REPLAY' });
+    // 증명이 틀리면 중복이 아니라 위조
+    expect(checkStatusReport(r, { ...CTX, authOk: false, lastReportSeq: r.report_seq, acceptedAuthAtSeq: r.state_auth }).violation).toMatchObject({ step: 'AUTH' });
+  });
   it('4 대상 — 전개되지 않은 Feature, 다른 Version', () => {
     expect(checkStatusReport(report(), { ...CTX, expectedVersion: null }).violation).toMatchObject({ step: 'TARGET', code: 'UNKNOWN_FEATURE' });
     expect(checkStatusReport(report(), { ...CTX, expectedVersion: '1.1.0' }).violation).toMatchObject({ step: 'TARGET', code: 'VERSION_MISMATCH' });

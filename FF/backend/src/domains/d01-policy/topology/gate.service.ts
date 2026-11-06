@@ -155,7 +155,8 @@ export class GateService {
     if (rh.length) {
       const msg = `재-HARA 요청 ${rh.map((x) => `${x.requestId}(${REHARA_LABEL[x.condition]})`).join(', ')}이(가) 열려 있습니다 — G2를 다시 판정한 뒤 ${body.gate}을(를) PASS로 판정할 수 있습니다.`;
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, msg, 'D01-02');
-      throw new DomainError('GUARD_FAILED', msg);
+      // ADS-BE06 — 출시 전이·서명과 같은 사유 코드
+      throw new DomainError('GUARD_FAILED', msg, { blockers: rh.map((x) => ({ code: 'REHARA_OPEN', message: msg, ref: x.requestId })) });
     }
     const cr = body.inputResult === 'PASS' && body.gate === 'G5' ? this.changeRecordBlocker(f) : null;
     if (cr) {

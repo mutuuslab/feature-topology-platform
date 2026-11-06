@@ -7,6 +7,7 @@ import { authBlock, jcs, statusAuthCanonical, type KillCommandV2 } from '@ff/con
 import { targetHashOf, vehiclePseudonym } from '../../src/kernel/crypto';
 import { Clock } from '../../src/kernel/clock';
 import { Scheduler } from '../../src/kernel/scheduler';
+import { DB, type Db } from '../../src/kernel/db';
 import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
 import { VehicleRuntimeService } from '../../src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service';
 import { actor, bootApp, killV2 } from '../helpers';
@@ -56,11 +57,49 @@ describe('수신 검사 (FFG-TEL-003 · TC-FF-24)', () => {
     expect(a.reasons).toContain('상태 보고 검사 위반: AUTH_FAILED');
   });
 
-  it('재전송(같은 report_seq)은 REPLAY, 다른 차량 VIN으로 보고하면 403', async () => {
-    const { http, advance } = await boot();
+  it('TL-M03 같은 보고(같은 report_seq·state_auth) 재수신은 중복 — 위반·보안 이벤트·이상 징후 0, 같은 번호의 다른 보고는 REPLAY, 다른 차량 VIN으로 보고하면 403', async () => {
+    const { http, advance, hsm, get } = await boot();
     const { last } = await killed(http, advance);
-    expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(last).expect(200)).body.violation).toMatchObject({ step: 'SEQUENCE', code: 'REPLAY' });
+    const db = get<Db>(DB);
+    const count = (sql: string) => db.get<{ n: number }>(sql)!.n;
+    const before = { sec: count('SELECT COUNT(*) AS n FROM security_event'), rows: count("SELECT COUNT(*) AS n FROM status_report WHERE vin = 'ego-01'"), anomalies: (await anomalies(http, 'SECURITY')).length };
+    // 중계(최소 한 번 전달) 재전송 — 같은 보고를 두 번
+    for (let i = 0; i < 2; i++) expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(last).expect(200)).body).toMatchObject({ accepted: true, duplicate: true, violation: null });
+    expect(count('SELECT COUNT(*) AS n FROM security_event')).toBe(before.sec);
+    expect(count("SELECT COUNT(*) AS n FROM status_report WHERE vin = 'ego-01'")).toBe(before.rows);
+    expect((await anomalies(http, 'SECURITY')).length).toBe(before.anomalies);
+    expect((await http().get('/api/vehicles/ego-01/status').expect(200)).body.features[0].state).toBe('DISABLED');
+    // 같은 번호의 다른 보고(정상 서명) — REPLAY
+    const { state_auth: _a, ...base } = last;
+    const other = { ...base, hmi: 'NONE' };
+    const signed = { ...other, state_auth: hsm.cmac('ego-01', other.key_epoch, Buffer.from(statusAuthCanonical(other))) };
+    expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(signed).expect(200)).body.violation).toMatchObject({ step: 'SEQUENCE', code: 'REPLAY' });
     await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('lead-01')).send(last).expect(403);
+  });
+
+  it('TL-M03 위반 보고(정상 서명)를 중계가 다시 보내도 한 번만 센다 — 같은 보고 재수신은 앞 판정과 같은 위반으로 답하고 기록·보안 이벤트·이상 징후를 늘리지 않는다', async () => {
+    const { http, advance, hsm, get } = await boot();
+    const { last } = await killed(http, advance);
+    const db = get<Db>(DB);
+    const count = (sql: string) => db.get<{ n: number }>(sql)!.n;
+    // 차단을 받아들인 뒤 해제 없이 ACTIVE — 정상 서명(차량 키)이지만 이력 위반(재부팅으로 Kill이 풀림)
+    const { state_auth: _a, ...base } = last;
+    const active = { ...base, state: 'ACTIVE', hmi: 'NONE', edr_aligned_state: 'AVAILABLE', feature_weight_permille: 1000, reason: { ...base.reason, source: 'STARTUP' }, report_seq: last.report_seq + 1 };
+    const signed = { ...active, state_auth: hsm.cmac('ego-01', active.key_epoch, Buffer.from(statusAuthCanonical(active))) };
+    const first = (await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(signed).expect(200)).body;
+    expect(first).toMatchObject({ accepted: false, violation: { step: 'HISTORY', code: 'ACTIVE_WITHOUT_RESTORE' } });
+    const after1 = { sec: count('SELECT COUNT(*) AS n FROM security_event'), rows: count("SELECT COUNT(*) AS n FROM status_report WHERE vin = 'ego-01'"), anomalies: (await anomalies(http, 'SECURITY')).length };
+    // 중계 재전송 두 번
+    for (let i = 0; i < 2; i++)
+      expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(signed).expect(200)).body).toMatchObject({ accepted: false, duplicate: true, violation: { step: 'HISTORY', code: 'ACTIVE_WITHOUT_RESTORE' } });
+    expect(count('SELECT COUNT(*) AS n FROM security_event')).toBe(after1.sec);
+    expect(count("SELECT COUNT(*) AS n FROM status_report WHERE vin = 'ego-01'")).toBe(after1.rows);
+    expect((await anomalies(http, 'SECURITY')).length).toBe(after1.anomalies);
+    // 위조(증명 불일치)는 중복으로 보지 않는다 — 같은 내용·같은 번호라도 매번 센다
+    const forged = { ...signed, state_auth: signed.state_auth.replace(/^./, (c: string) => (c === 'A' ? 'B' : 'A')) };
+    expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(forged).expect(200)).body).toMatchObject({ accepted: false, violation: { step: 'AUTH' } });
+    expect((await http().post('/vehicle/v1/ego-01/status').set(VEHICLE('ego-01')).send(forged).expect(200)).body.duplicate).toBeUndefined();
+    expect(count("SELECT COUNT(*) AS n FROM status_report WHERE vin = 'ego-01'")).toBe(after1.rows + 2);
   });
 
   it('TC-FF-58 재부팅 뒤 해제 명령 없이 ACTIVE를 보고하면(정상 서명이어도) Incident — 안전 Kill이 풀림', async () => {

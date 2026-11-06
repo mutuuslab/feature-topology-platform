@@ -7,6 +7,7 @@ import { Clock } from '../../src/kernel/clock';
 import { DB, type Db } from '../../src/kernel/db';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { FleetRepo } from '../../src/domains/d01-policy/policy-repos';
+import { SbomService } from '../../src/domains/d06-qsec/vuln-monitor/sbom.service';
 import { actor, bootApp } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
@@ -124,6 +125,18 @@ describe('정책 버전·배포 이력과 되돌리기 (RD-FN-02)', () => {
     expect(h.deployments[0]).toMatchObject({ publicationId: x.artifactId, policyId: policies.P1, current: true, status: 'CONFIRMED' });
     expect(h.executions[0]).toMatchObject({ executionId: x.executionId, status: 'COMPLETED', result: 'SUCCESS' });
     expect(h.versions.find((v: any) => v.policyId === policies.P2)).toMatchObject({ status: 'RETIRED', rollback: { eligible: true } }); // 다시 되돌릴 수도 있다
+  });
+
+  it('되돌리기 뒤 복원의 SBOM 참조(5년 재생 결정 ①)는 되돌린 배포 게시본의 SBOM — 되돌려진 배포(P2)의 SBOM이 아니다', async () => {
+    const h = await history();
+    const db = app.get<Db>(DB);
+    const link = (publicationId: string) => {
+      const r = db.get<{ serial: string; doc: string }>('SELECT serial, doc FROM sbom WHERE publication_id = ?', publicationId)!;
+      return `urn:cdx:${r.serial.replace(/^urn:uuid:/, '')}/${JSON.parse(r.doc).version}`;
+    };
+    expect(h.deploymentId).not.toBe(deployments.P2);
+    expect(app.get(SbomService).deployedRef('FEAT-00022', '1.0.0')).toBe(link(h.deploymentId));
+    expect(app.get(SbomService).deployedRef('FEAT-00022', '1.0.0')).not.toBe(link(deployments.P2));
   });
 
   it('이미 실행한 요청을 다시 실행하면 409 — 실행 기록을 알려 주고 두 번 되돌리지 않는다', async () => {

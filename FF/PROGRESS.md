@@ -195,7 +195,7 @@
 - dev: `npm run dev:backend:ops5y`(9101, 재생 DB 사본으로 — 재시작하면 재생 직후 상태). 화면: 지도 묶음(대표 대수)·화면 범위 요청, 체험 분석 26주/1년/5년, 홈 대상 차량, 만·억 표기.
 - **사용자 결정 대기**
   1. 오래된 배포 산출물 롤백: 서명 키가 이미 만료된 3년 전 산출물은 "서명을 확인할 수 없습니다"로 롤백 거부(현재 동작). 서명 당시 유효했으면 허용할지.
-  2. FEAT-00025·FEAT-00028 안전 프로파일에 sbomRef 없음 → 긴급 차단 뒤 복원이 게이트 FFG-PLT-010에서 막힘(EU·US 기능은 차단하면 복구 불가).
+  2. FEAT-00025·FEAT-00028 안전 프로파일에 sbomRef 없음 → 긴급 차단 뒤 복원이 게이트 FFG-PLT-010에서 막힘(EU·US 기능은 차단하면 복구 불가). → **해소(2026-11-06, 커밋 전, 규칙 결함)**: 복원·활성화 명령은 확정 프로파일 sbomRef가 없으면 그 Feature Version의 **마지막 정책 배포 게시본 SBOM**(D06-11)을 BOM-Link `urn:cdx:<serial>/<version>`로 참조(코디네이터 결정 — 차단·복원 게시본 SBOM은 쓰지 않음, 배포 게시본 SBOM이 없으면 FFG-PLT-010으로 복원 막음; kill.service·SbomService.deployedRef). 회귀 시험 ads/defects.spec '5년 재생 결정 ①'(3건)·ops5y/replay.spec(FEAT-00025 차단→복원).
   3. 가정값(탑재율·커넥티드율·시장 비중)을 실제 비율로 바꿀지 — `POPULATION_ASSUMPTIONS`만 바꾸고 재생.
 
 ## P10·P11 진행 (2026-10-13 시작 — worktree `../2026-06-04_Feature_Platform-p10`, 브랜치 `feat/p10`)

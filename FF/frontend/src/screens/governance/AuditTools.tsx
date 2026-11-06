@@ -1,6 +1,6 @@
 // 감사·이력 조회 보강(기능명세서 B4) — 기간 고르기, CSV·JSON 내보내기(서버가 행 체인 해시·파일 SHA-256·서명을 담는다),
 // 기록 한 건의 변경 전후 값(필드 단위, 민감 값은 가림), 정책 운영 현황(감사 집계). 감사 화면과 검증 이력 화면이 함께 쓴다.
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { AUDIT_EXPORT_ROLES, fieldChanges, isMasked, type PolicyActivityStat } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { pathOf, toApiError, type ApiError } from '../../api/client';
@@ -19,16 +19,20 @@ export interface Period {
   to: string;
 }
 
-/** 기간 — 날짜 두 칸(끝일은 그날 끝까지, 서버 periodBounds) */
+/** 기간 — 날짜 두 칸(한국 시간, 끝일은 그날 끝까지 — 서버 periodBounds가 화면 시각과 같은 기준으로 읽는다) */
 export function PeriodFilter({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
+  const hintId = useId();
   return (
     <fieldset className="ds-toolbar" aria-label={A.period} data-testid="period-filter">
       <Field label={A.from}>
-        <input className="ds-input ds-input--mono" type="date" value={value.from} max={value.to || undefined} onChange={(e) => onChange({ ...value, from: e.target.value })} />
+        <input className="ds-input ds-input--mono" type="date" value={value.from} max={value.to || undefined} aria-describedby={hintId} onChange={(e) => onChange({ ...value, from: e.target.value })} />
       </Field>
       <Field label={A.to}>
-        <input className="ds-input ds-input--mono" type="date" value={value.to} min={value.from || undefined} onChange={(e) => onChange({ ...value, to: e.target.value })} />
+        <input className="ds-input ds-input--mono" type="date" value={value.to} min={value.from || undefined} aria-describedby={hintId} onChange={(e) => onChange({ ...value, to: e.target.value })} />
       </Field>
+      <span className="ds-field__hint" id={hintId}>
+        {A.periodHint}
+      </span>
     </fieldset>
   );
 }

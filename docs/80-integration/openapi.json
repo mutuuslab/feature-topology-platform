@@ -641,9 +641,7 @@
                                 "COST_ESTIMATOR",
                                 "COST_APPROVER",
                                 "COST_VIEWER",
-                                "COST_BASIS_ADMIN",
-                                "SYSTEM",
-                                "VEHICLE"
+                                "COST_BASIS_ADMIN"
                               ]
                             }
                           },
@@ -752,7 +750,7 @@
                   "link": {
                     "type": "string",
                     "maxLength": 200,
-                    "pattern": "^\\/[^\\s]*$"
+                    "pattern": "^\\/(?![/\\\\])[^\\s\\\\\\u0000-\\u001f\\u007f]*$"
                   },
                   "recipients": {
                     "type": "array",
@@ -811,9 +809,7 @@
                                 "COST_ESTIMATOR",
                                 "COST_APPROVER",
                                 "COST_VIEWER",
-                                "COST_BASIS_ADMIN",
-                                "SYSTEM",
-                                "VEHICLE"
+                                "COST_BASIS_ADMIN"
                               ]
                             }
                           },

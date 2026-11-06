@@ -1,9 +1,9 @@
 // 감사·이력 조회 보강 (기능명세서 B4, D01-10·D04-04·D06-04) — 정책 조회 감사, 수정 항목·변경 전후 값, 정책 운영 현황,
 // 기간 조건(감사·이벤트), 감사·검증 이력 내보내기(CSV·JSON, 행 체인 해시·파일 SHA-256·서명, 민감 값 가림).
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
-import { createHash } from 'node:crypto';
+import { createHash, createPublicKey, verify } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { canonicalJson, exportSignedPayload, SENSITIVE_MASK } from '@ff/contracts';
+import { canonicalJson, exportSignedPayload, parseExportFile, SENSITIVE_MASK } from '@ff/contracts';
 import type { Actor } from '../../src/kernel/actor';
 import { AuditService } from '../../src/kernel/audit.service';
 import { DB, type Db } from '../../src/kernel/db';
@@ -99,13 +99,26 @@ describe('감사·이력 조회 보강 (B4)', () => {
     expect(rows).toBe(4); // 생성·조회 2·수정
     const [alg, keyId, signature] = String(r.headers['x-ff-export-signature']).split(':');
     expect(alg).toBe('Ed25519');
-    const period = { from: '2026-11-06T00:00:00.000Z', to: null };
+    // 기간 날짜는 한국 시간 — 11-06 0시(KST) = 11-05 15:00Z
+    const period = { from: '2026-11-05T15:00:00.000Z', to: null };
     const generatedAt = /generatedAt=(\S+)/.exec(head.join('\n'))![1];
     const pki = b.get(PkiService);
-    const payload = exportSignedPayload({ kind: 'audit', generatedAt, period, rows, sha256: sum });
+    const payload = exportSignedPayload({ kind: 'audit', generatedAt, generatedBy: 'usr-viewer', period, filters: { targetPrefix: pid }, rows, sha256: sum });
     const sig = pki.sign(payload, 'export');
     expect(sig.keyId).toBe(keyId);
     expect(pki.verify(payload, { ...sig, signature }, undefined, 'export').valid).toBe(true);
+    // 제3자 검증 — 서버 내부 없이 파일과 공개 키 목록(GET /api/pki/keys)만으로 해시·서명을 확인한다(하네스 리뷰)
+    const parsed = parseExportFile(r.body as string);
+    expect(parsed.mismatches).toEqual([]);
+    expect(parsed.payload).toEqual(payload);
+    expect(sha(parsed.data)).toBe(parsed.payload.sha256);
+    const key = (await http().get('/api/pki/keys').expect(200)).body.items.find((k: any) => k.keyId === parsed.signature.keyId);
+    expect(key.purpose).toBe('export');
+    const signedHash = 'sha256:' + sha(canonicalJson(parsed.payload));
+    expect(parsed.payloadHash).toBe(signedHash);
+    expect(verify(null, Buffer.from(signedHash), createPublicKey(key.publicKeyPem), Buffer.from(parsed.signature.signature, 'base64'))).toBe(true);
+    // 머리 줄의 내보낸 사람만 바꾼 파일은 어긋남으로 잡힌다
+    expect(parseExportFile((r.body as string).replace('generatedBy=usr-viewer', 'generatedBy=usr-opslead')).mismatches.length).toBe(1);
     // 행마다 체인 해시
     expect(data.split('\r\n')[1].split(',').at(-1)).toMatch(/^[0-9a-f]{64}$/);
     const ex = (await http().get('/api/audit?action=AUDIT_EXPORT').expect(200)).body.items[0];

@@ -2,7 +2,7 @@
 // 채널은 화면 알림만(사용자 결정 D-RD-7) — 끄는 설정이 없다. 받는 사람 판정·제외(요청자·직무 분리)는 서버와 같은 contracts 규칙(D04-04).
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { NOTIFICATION_CATEGORIES, NOTIFICATION_CATEGORY_LABEL, type NotificationCategory } from '@ff/contracts';
+import { isAppPath, NOTIFICATION_CATEGORIES, NOTIFICATION_CATEGORY_LABEL, type NotificationCategory } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
@@ -41,7 +41,8 @@ function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: bool
         </dl>
       )}
       <div className="ntf-row__actions">
-        <Link className="ds-btn" to={n.link} onClick={() => !n.readAt && onRead()}>
+        {/* 앱 밖 주소(//·/\)로 저장된 링크는 알림함으로 — 열린 리다이렉트 차단(하네스 리뷰) */}
+        <Link className="ds-btn" to={isAppPath(n.link) ? n.link : '/notifications'} onClick={() => !n.readAt && onRead()}>
           {N.open}
         </Link>
         {!n.readAt && (

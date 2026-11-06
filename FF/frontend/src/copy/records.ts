@@ -14,6 +14,7 @@ export const notifyRules = {
   excludes: (s: string) => `빠지는 사람: ${s}`,
   addedNone: '—',
   edit: '수신자 더하기',
+  fixed: '직접 보낸 알림은 보낸 사람이 고른 수신자만 받습니다 — 추가 수신자를 둘 수 없습니다.',
   editTitle: (name: string) => `${name} — 추가 수신자`,
   editLead: '기본 수신자는 그대로 두고 더할 사람·역할·팀을 고릅니다. 비우고 저장하면 기본 수신자만 받습니다.',
   reason: '바꾸는 이유',
@@ -45,6 +46,7 @@ export const notifyRules = {
 
 export const auditGaps = {
   period: '기간',
+  periodHint: '날짜는 한국 시간 기준(시작일 0시 ~ 끝일 24시)',
   from: '시작일',
   to: '끝일',
   exportCsv: 'CSV로 내보내기',
@@ -76,6 +78,8 @@ export const evaluations = {
   dayOptions: [7, 14, 30, 90] as const,
   dayLabel: (n: number) => `최근 ${n}일`,
   kpi: { total: '평가', on: '활성', off: '비활성', safe: 'Safe Default', errors: '오류(기본값)' },
+  /** 일별 막대의 나머지 칸 — 비활성 합계(kpi.off)와 다른 수다 */
+  rest: '그 밖(비활성·Safe Default·오류)',
   daily: '일별 평가',
   dailyCaption: (from: string, to: string) => `${from} ~ ${to} (UTC 기준 일)`,
   byVariant: '분기값별',

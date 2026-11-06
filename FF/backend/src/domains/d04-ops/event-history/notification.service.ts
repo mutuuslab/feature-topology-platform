@@ -9,6 +9,7 @@ import {
   NOTIFICATION_RULE_EDITORS,
   NOTIFICATION_RULE_SPECS,
   NOTIFICATION_RULES,
+  NOTIFICATION_SEND_LIMIT_PER_HOUR,
   NOTIFICATION_SENDERS,
   NOTIFICATION_SENT_EVENT,
   NotificationCategory,
@@ -48,6 +49,9 @@ export function recipientOfKey(k: string): Recipient | null {
   return r.success ? (r.data as Recipient) : null;
 }
 
+/** 추가 수신자를 둘 수 없는 규칙(직접 보낸 알림) */
+const FIXED_RULES = new Set(NOTIFICATION_RULE_SPECS.filter((s) => s.fixed).map((s) => s.event));
+
 @Injectable()
 @PlatformComponent('D04-04')
 export class NotificationService implements OnModuleInit {
@@ -71,8 +75,9 @@ export class NotificationService implements OnModuleInit {
     if (!rule) return null;
     const draft = rule.build(this.context(ev, rule.needs));
     if (!draft) return null;
-    // 수신자 규칙의 추가 수신자(운영자가 더한 개인·역할·팀) — 기본 수신자는 그대로, 더하기만 한다
-    const added = this.addedRecipients(ev.type);
+    // 수신자 규칙의 추가 수신자(운영자가 더한 개인·역할·팀) — 기본 수신자는 그대로, 더하기만 한다.
+    // 고정 규칙(직접 보낸 알림)에는 붙이지 않는다 — 예전에 저장된 행이 남아도 남의 직접 알림 사본이 가지 않게
+    const added = FIXED_RULES.has(ev.type) ? [] : this.addedRecipients(ev.type);
     const n: Notification = { ...draft, recipients: [...draft.recipients, ...added], notificationId: this.nextId(), eventSeq: ev.seq, eventType: ev.type, aggregate: ev.aggregate, createdAt: ev.at };
     this.touched();
     this.db.run('INSERT INTO notification (notification_id, event_seq, category, severity, created_at, doc) VALUES (?, ?, ?, ?, ?, ?)', n.notificationId, n.eventSeq, n.category, n.severity, n.createdAt, JSON.stringify(n));
@@ -261,6 +266,7 @@ export class NotificationService implements OnModuleInit {
   /** 추가 수신자 바꾸기 — 이벤트 하나의 목록을 통째로 바꾼다(빈 목록 = 추가 없음). 전후 목록·사유는 감사에 남는다 */
   setRule(actor: Actor, eventType: string, body: NotificationRuleBody): NotificationRuleView {
     if (!NOTIFICATION_RULES[eventType]) throw new DomainError('NOT_FOUND', `${eventType} 이벤트에는 알림 규칙이 없습니다.`);
+    if (FIXED_RULES.has(eventType)) throw new DomainError('VALIDATION', '직접 보낸 알림은 보낸 사람이 고른 수신자만 받습니다 — 추가 수신자를 둘 수 없습니다.', { field: 'eventType' });
     const teams = new Set(this.ownerTeams());
     const unknown = body.recipients.filter((r) => r.kind === 'team' && !teams.has(r.team)).map((r) => (r as { team: string }).team);
     if (unknown.length) throw new DomainError('VALIDATION', `등록된 Feature Owner 팀이 아닙니다: ${unknown.join(', ')}`, { field: 'recipients' });
@@ -276,12 +282,28 @@ export class NotificationService implements OnModuleInit {
     });
   }
 
+  /**
+   * 직접 보내기 한도 — 보낸 사람마다 최근 1시간 NOTIFICATION_SEND_LIMIT_PER_HOUR건(이벤트 이력으로 센다 — 여러 인스턴스·재시작에도 같다).
+   * 역할·팀 수신자는 여러 사람에게 퍼지므로 알림함을 덮는 대량 발송을 막는다(전역 IP 요청 제한과 별개)
+   */
+  private sendQuota(actor: Actor) {
+    const now = this.clock.now().getTime();
+    const since = new Date(now - 3_600_000).toISOString();
+    const rows = this.db.all<{ at: string }>('SELECT at FROM events WHERE type = ? AND aggregate = ? AND at >= ? ORDER BY at ASC LIMIT ?', NOTIFICATION_SENT_EVENT, `direct:${actor.id}`, since, NOTIFICATION_SEND_LIMIT_PER_HOUR);
+    if (rows.length < NOTIFICATION_SEND_LIMIT_PER_HOUR) return;
+    const retryAfterSec = Math.max(1, Math.ceil((Date.parse(rows[0].at) + 3_600_000 - now) / 1000));
+    throw new DomainError('RATE_LIMITED', `직접 보내기는 1시간에 ${NOTIFICATION_SEND_LIMIT_PER_HOUR}건까지입니다. ${Math.ceil(retryAfterSec / 60)}분 뒤에 다시 보내세요.`, { limit: NOTIFICATION_SEND_LIMIT_PER_HOUR, retryAfterSec });
+  }
+
   /** 직접 보내기 — 고른 사람·역할·팀에게 화면 알림 하나(보낸 사람은 받지 않는다). 이벤트·감사와 같은 트랜잭션 */
   send(actor: Actor, body: NotificationSendBody): { notificationId: string; recipients: Recipient[] } {
     const teams = new Set(this.ownerTeams());
     const unknown = body.recipients.filter((r) => r.kind === 'team' && !teams.has(r.team)).map((r) => (r as { team: string }).team);
     if (unknown.length) throw new DomainError('VALIDATION', `등록된 Feature Owner 팀이 아닙니다: ${unknown.join(', ')}`, { field: 'recipients' });
+    // 보낸 사람 본인만 고르면 아무도 받지 않는다(보낸 사람은 늘 빠진다)
+    if (body.recipients.every((r) => r.kind === 'user' && r.id === actor.id)) throw new DomainError('VALIDATION', '받는 사람이 보낸 사람 본인뿐입니다 — 다른 사람·역할·팀을 고르세요.', { field: 'recipients' });
     return this.db.tx(() => {
+      this.sendQuota(actor);
       const ev = this.events.publish(NOTIFICATION_SENT_EVENT, `direct:${actor.id}`, { ...body, sentBy: actor.id }, { componentId: 'D04-04', correlationId: actor.correlationId });
       const row = this.db.get<{ notification_id: string }>('SELECT notification_id FROM notification WHERE event_seq = ?', ev.seq);
       if (!row) throw new DomainError('VALIDATION', '받을 사람이 없습니다.');

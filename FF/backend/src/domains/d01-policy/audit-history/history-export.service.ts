@@ -67,7 +67,8 @@ export class HistoryExportService {
     if (p.error) throw new DomainError('VALIDATION', p.error, { field: 'from' });
     const f = ExportFormat.safeParse(q.format ?? 'csv');
     if (!f.success) throw new DomainError('VALIDATION', `내보내기 형식은 csv 또는 json입니다: ${q.format}`, { field: 'format' });
-    return { from: p.from, to: p.to, format: f.data };
+    // 파일 이름의 날짜는 고른 날짜 그대로(한국 시간 날짜) — 비교 경계(UTC)는 하루 앞당겨 보일 수 있다
+    return { from: p.from, to: p.to, format: f.data, label: { from: q.from?.slice(0, 10), to: q.to?.slice(0, 10) } };
   }
 
   private tooMany(n: number) {
@@ -75,15 +76,16 @@ export class HistoryExportService {
   }
 
   /** 파일 만들기 — 내용 SHA-256 → 서명 → CSV(# 머리 줄) 또는 JSON 봉투 */
-  private file<T extends Record<string, unknown>>(actor: Actor, kind: 'audit' | 'validations', format: 'csv' | 'json', period: { from: string | null; to: string | null }, filters: Record<string, string>, columns: string[], rows: T[], chain: { from: string | null; to: string | null }): ExportFile {
+  private file<T extends Record<string, unknown>>(actor: Actor, kind: 'audit' | 'validations', format: 'csv' | 'json', period: { from: string | null; to: string | null }, label: { from?: string; to?: string }, filters: Record<string, string>, columns: string[], rows: T[], chain: { from: string | null; to: string | null }): ExportFile {
     const generatedAt = this.clock.iso();
     const body = format === 'csv' ? csvBody(columns, rows) : canonicalJson(rows);
     const sha256 = sha256hex(body);
-    const signature = this.pki.sign(exportSignedPayload({ kind, generatedAt, period, rows: rows.length, sha256 }), 'export');
+    // 서명 대상에 내보낸 사람·조건까지 — 머리 줄만 바꿔 다른 사람·조건의 파일로 꾸미지 못하게(tools/verify-export.ts가 공개키로 확인)
+    const signature = this.pki.sign(exportSignedPayload({ kind, generatedAt, generatedBy: actor.id, period, filters, rows: rows.length, sha256 }), 'export');
     const integrity: ExportIntegrity = { rows: rows.length, sha256, chainFrom: chain.from, chainTo: chain.to, signature };
-    const meta = { kind, generatedAt, generatedBy: actor.id, period, integrity };
+    const meta = { kind, generatedAt, generatedBy: actor.id, period, filters, integrity };
     const stamp = generatedAt.slice(0, 19).replace(/[-:T]/g, '');
-    const name = `FF_${kind === 'audit' ? 'audit' : 'validations'}_${period.from?.slice(0, 10) ?? 'start'}_${period.to?.slice(0, 10) ?? 'now'}_${stamp}.${format}`;
+    const name = `FF_${kind === 'audit' ? 'audit' : 'validations'}_${label.from ?? 'start'}_${label.to ?? 'now'}_${stamp}.${format}`;
     if (format === 'csv') return { filename: name, contentType: 'text/csv; charset=utf-8', body: BOM + csvFile(meta, body), integrity };
     const envelope: ExportEnvelope<T> = { kind, generatedAt, generatedBy: actor.id, period, filters, integrity, rows };
     return { filename: name, contentType: 'application/json; charset=utf-8', body: JSON.stringify(envelope, null, 2), integrity };
@@ -99,7 +101,7 @@ export class HistoryExportService {
    * @req FR-AUD-002-003
    */
   exportAudit(actor: Actor, q: ExportQuery): ExportFile {
-    const { from, to, format } = this.period(q);
+    const { from, to, format, label } = this.period(q);
     const where: string[] = [];
     const params: string[] = [];
     if (from) (where.push('at >= ?'), params.push(from));
@@ -119,7 +121,7 @@ export class HistoryExportService {
     });
     const period = { from: from ?? null, to: to ?? null };
     const filters = Object.fromEntries(Object.entries({ action: q.action, actorId: q.actorId, targetPrefix: q.targetPrefix }).filter(([, v]) => !!v)) as Record<string, string>;
-    const f = this.file(actor, 'audit', format, period, filters, AUDIT_EXPORT_COLUMNS, rows, { from: rows[0]?.prevHash ?? null, to: rows.at(-1)?.hash ?? null });
+    const f = this.file(actor, 'audit', format, period, label, filters, AUDIT_EXPORT_COLUMNS, rows, { from: rows[0]?.prevHash ?? null, to: rows.at(-1)?.hash ?? null });
     this.noteExport(actor, 'AUDIT_EXPORT', f, period);
     return f;
   }
@@ -129,7 +131,7 @@ export class HistoryExportService {
    * @req FR-VHM-002-003
    */
   exportValidations(actor: Actor, q: ExportQuery): ExportFile {
-    const { from, to, format } = this.period(q);
+    const { from, to, format, label } = this.period(q);
     const where: string[] = [];
     const params: string[] = [];
     if (from) (where.push('at >= ?'), params.push(from));
@@ -142,7 +144,7 @@ export class HistoryExportService {
       return { runId: v.runId, at: v.at, by: v.by, policyId: v.policyId, policyRevision: v.policyRevision, contentHash: v.contentHash, decision: v.decision, reasons: v.reasons ?? [], results: (v.results ?? []).map((x) => ({ componentId: x.componentId, result: x.result, summary: x.summary ?? '' })) };
     });
     const period = { from: from ?? null, to: to ?? null };
-    const f = this.file(actor, 'validations', format, period, q.policyId ? { policyId: q.policyId } : {}, VALIDATION_EXPORT_COLUMNS, rows, { from: null, to: null });
+    const f = this.file(actor, 'validations', format, period, label, q.policyId ? { policyId: q.policyId } : {}, VALIDATION_EXPORT_COLUMNS, rows, { from: null, to: null });
     this.noteExport(actor, 'VALIDATION_EXPORT', f, period);
     return f;
   }

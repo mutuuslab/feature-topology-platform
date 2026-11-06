@@ -2,7 +2,7 @@
 // 받는 사람 판정은 서버(D04-04) — 이 계정(역할 전환기의 사람)이 개인·역할·Owner 팀으로 받는 알림만 온다.
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { NOTIFICATION_CATEGORY_LABEL, NOTIFICATION_EVENT_TYPES, type Notification } from '@ff/contracts';
+import { isAppPath, NOTIFICATION_CATEGORY_LABEL, NOTIFICATION_EVENT_TYPES, type Notification } from '@ff/contracts';
 import { STATIC_MODE } from '../api/client';
 import { useApi, useApiMutation } from '../api/hooks';
 import { usePlatformEvents } from '../api/stream';
@@ -63,7 +63,8 @@ export function NotificationBell() {
   const go = (n: InboxItem) => {
     if (!n.readAt) read.mutate({ params: { id: n.notificationId } });
     setOpen(false);
-    nav(n.link);
+    // 앱 밖 주소로 저장된 링크는 알림함으로(열린 리다이렉트 차단)
+    nav(isAppPath(n.link) ? n.link : '/notifications');
   };
 
   return (

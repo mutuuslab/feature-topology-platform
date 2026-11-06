@@ -87,6 +87,30 @@ describe('수신자 규칙 표', () => {
   });
 });
 
+describe('하네스 리뷰 — 직접 보내기·수신자 규칙 결함', () => {
+  const base = { title: '안내', message: '내용입니다', recipients: [{ kind: 'role', role: 'OPERATOR' }] };
+  it('링크 — 다른 사이트로 읽히는 주소(//·/\\·제어 글자)는 거부한다(열린 리다이렉트)', async () => {
+    const { isAppPath } = await import('./notification-keys');
+    for (const link of ['//evil.example/x', '/\\evil.example', '/\t/evil.example', '/\n/evil.example', '/a\\b'])
+      expect(NotificationSendBody.safeParse({ ...base, link }).success, JSON.stringify(link)).toBe(false);
+    expect(NotificationSendBody.safeParse({ ...base, link: '/ops/kill?tab=a#x' }).success).toBe(true);
+    expect(isAppPath('/policies/POL-1')).toBe(true);
+    expect(isAppPath('//evil.example')).toBe(false);
+  });
+  it('저장된 예전 알림의 링크도 앱 밖이면 알림함으로 바꾼다', () => {
+    for (const link of ['//evil.example', '/\\evil.example'])
+      expect(build(NOTIFICATION_SENT_EVENT, { payload: { title: '점검', message: 'x', sentBy: 'usr-opslead', recipients: [{ kind: 'role', role: 'OPERATOR' }], link } })!.link).toBe('/notifications');
+  });
+  it('수신자 역할은 사람 역할만(차량·시스템 역할은 아무도 받지 않는다)', () => {
+    expect(NotificationSendBody.safeParse({ ...base, recipients: [{ kind: 'role', role: 'VEHICLE' }] }).success).toBe(false);
+    expect(NotificationRuleBody.safeParse({ recipients: [{ kind: 'role', role: 'SYSTEM' }], reason: '시험' }).success).toBe(false);
+  });
+  it('직접 보낸 알림은 추가 수신자 규칙을 둘 수 없다(남의 직접 알림을 몰래 받아 보는 것 차단)', () => {
+    expect(NOTIFICATION_RULE_SPECS.find((s) => s.event === NOTIFICATION_SENT_EVENT)?.fixed).toBe(true);
+    expect(NOTIFICATION_RULE_SPECS.filter((s) => s.fixed).map((s) => s.event)).toEqual([NOTIFICATION_SENT_EVENT]);
+  });
+});
+
 describe('알림 이벤트 목록(상단바 종 구독)', () => {
   it('규칙표의 이벤트와 같다 — 규칙을 더하면 목록에도 더한다', async () => {
     const { NOTIFICATION_EVENT_TYPES } = await import('./notification-keys');

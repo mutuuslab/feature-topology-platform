@@ -1,5 +1,6 @@
-// Feature별 평가 운영 데이터(기능명세서 B5, D04-03) — 평가마다 남는 span(feature_flag.evaluation)을 일 단위로 센다.
-// 집계 키: 날짜(UTC) · flag · 평가 경로(앱 OFREP·차량 SDK·Unleash Edge·서버 판단) · 애플리케이션(appName) · 환경 · 결과 · 분기값.
+// Flag 평가 집계(기능명세서 B5, D04-03) — 평가마다 남는 span(feature_flag.evaluation)·Unleash Edge 평가·차량 보고를 한 저장소에 센다(통합 D-INT-2).
+// 저장 칸: 시(UTC) · flag · 평가 경로(앱 OFREP·차량 SDK·Unleash Edge·서버 판단) · 애플리케이션(appName) · 환경 · 결과 · 분기값 · 폴백 사유.
+// 읽는 화면 둘 — Feature 상세 '평가 운영'(일 단위로 묶음)·Flag 평가 모니터링(1h·24h·7d 창, 시 단위 시계열).
 // 원본 식별자(VIN·사용자)는 집계에 넣지 않는다(FFG-OFT-003/004 — span에도 가명 subject만).
 
 export const EVAL_SOURCES = ['OFREP', 'VEHICLE_SDK', 'UNLEASH_EDGE', 'PLATFORM'] as const;
@@ -15,7 +16,28 @@ export const EVAL_RESULTS = ['ON', 'OFF', 'SAFE_DEFAULT', 'ERROR'] as const;
 export type EvalResult = (typeof EVAL_RESULTS)[number];
 export const EVAL_RESULT_LABEL: Record<EvalResult, string> = { ON: '활성', OFF: '비활성', SAFE_DEFAULT: 'Safe Default', ERROR: '오류(기본값)' };
 
-/** 집계 주기 — 일(UTC). 화면 기본 창 */
+/**
+ * 폴백(Safe Default) 사유 — 차량 SDK 회신(IF-06) 사유. 모르는 사유는 기타(UNSPECIFIED)로 센다(횟수를 버리지 않는다).
+ * 차량 보고(IF-06 요약)는 경로가 아니라 전달 방식이다 — 차량 SDK 평가(VEHICLE_SDK)로 센다. 같은 평가를 span과 요약으로 두 번 보내지 않는다.
+ */
+export const EVAL_FALLBACK_REASONS = ['DEFAULT_NO_SNAPSHOT', 'TTL_EXPIRED', 'SIGNATURE_INVALID', 'LOCAL_GUARD_BLOCK', 'OTHER_VIN', 'PROVIDER_ERROR', 'UNSPECIFIED'] as const;
+export type EvalFallbackReason = (typeof EVAL_FALLBACK_REASONS)[number];
+/** OpenFeature 사유 → 폴백 사유(span에는 차량 사유 대신 OpenFeature 사유가 실린다) */
+const OPENFEATURE_FALLBACK: Record<string, EvalFallbackReason> = { STALE: 'TTL_EXPIRED', DISABLED: 'LOCAL_GUARD_BLOCK', ERROR: 'PROVIDER_ERROR', DEFAULT: 'DEFAULT_NO_SNAPSHOT' };
+
+/** 결과의 폴백 사유 — Safe Default만 사유를 갖는다(그 밖은 빈 값) */
+export function fallbackReasonOf(result: EvalResult, reason: string | null | undefined): EvalFallbackReason | '' {
+  if (result !== 'SAFE_DEFAULT') return '';
+  const r = String(reason ?? '').toUpperCase();
+  return (EVAL_FALLBACK_REASONS as readonly string[]).includes(r) ? (r as EvalFallbackReason) : OPENFEATURE_FALLBACK[r] ?? 'UNSPECIFIED';
+}
+
+/** 저장 칸 길이 — 1시간. Flag 평가 모니터링 1h 창이 한 칸 */
+export const EVAL_BUCKET_MS = 3_600_000;
+/** 시각 → 칸 시작(UTC 정시, ISO) */
+export const evalHourOf = (at: string): string => new Date(Math.floor(Date.parse(at) / EVAL_BUCKET_MS) * EVAL_BUCKET_MS).toISOString();
+
+/** Feature 평가 운영 응답 주기 — 일(UTC, 시 칸을 묶는다). 화면 기본 창 */
 export const EVAL_PERIOD = 'DAY' as const;
 export const EVAL_DEFAULT_DAYS = 14;
 export const EVAL_MAX_DAYS = 90;

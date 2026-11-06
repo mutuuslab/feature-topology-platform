@@ -1,6 +1,7 @@
 // Feature별 평가 운영 데이터(B5) — 결과 분류·경로·앱 식별·집계.
 import { describe, expect, it } from 'vitest';
-import { appIdentity, evalResultOf, evalSourceOf, summarizeEvaluations, type EvalCountRow } from './evaluation-stats';
+import { appIdentity, EVAL_FALLBACK_REASONS, EVAL_SOURCES, evalHourOf, evalResultOf, evalSourceOf, fallbackReasonOf, summarizeEvaluations, type EvalCountRow } from './evaluation-stats';
+import { FlagEvalSource, FlagFallbackReason } from '../schemas/flag-code';
 
 describe('평가 결과·경로 분류', () => {
   it('오류 → ERROR, safe_default → SAFE_DEFAULT, on/off는 분기값, 분기값이 없으면 값으로', () => {
@@ -20,6 +21,23 @@ describe('평가 결과·경로 분류', () => {
   it('앱 식별 — 보내지 않거나 형식이 틀리면 기본 이름', () => {
     expect(appIdentity({ appName: 'ivi-app', environment: 'production' }, { appName: 'x', environment: 'y' })).toEqual({ appName: 'ivi-app', environment: 'production' });
     expect(appIdentity({ appName: 'a b<script>', environment: 3 }, { appName: 'ofrep-client', environment: 'default' })).toEqual({ appName: 'ofrep-client', environment: 'default' });
+  });
+  it('저장 칸은 시(UTC) 단위 — 시각을 시 시작으로', () => {
+    expect(evalHourOf('2026-11-06T00:40:12.345Z')).toBe('2026-11-06T00:00:00.000Z');
+    expect(evalHourOf('2026-11-06T09:40:00+09:00')).toBe('2026-11-06T00:00:00.000Z');
+  });
+  it('폴백 사유 — Safe Default만 사유가 있다. 차량 사유는 그대로, OpenFeature 사유는 바꿔 읽고 모르면 기타', () => {
+    expect(fallbackReasonOf('ON', 'TARGETING_MATCH')).toBe('');
+    expect(fallbackReasonOf('ERROR', 'ERROR')).toBe('');
+    expect(fallbackReasonOf('SAFE_DEFAULT', 'signature_invalid')).toBe('SIGNATURE_INVALID');
+    expect(fallbackReasonOf('SAFE_DEFAULT', 'stale')).toBe('TTL_EXPIRED');
+    expect(fallbackReasonOf('SAFE_DEFAULT', 'DISABLED')).toBe('LOCAL_GUARD_BLOCK');
+    expect(fallbackReasonOf('SAFE_DEFAULT', 'weird')).toBe('UNSPECIFIED');
+    expect(fallbackReasonOf('SAFE_DEFAULT', null)).toBe('UNSPECIFIED');
+  });
+  it('평가 경로·폴백 사유는 두 화면(Feature 평가 운영·Flag 평가 모니터링)이 같은 값을 쓴다', () => {
+    expect(FlagEvalSource.options).toEqual([...EVAL_SOURCES]);
+    expect(FlagFallbackReason.options).toEqual([...EVAL_FALLBACK_REASONS]);
   });
 });
 

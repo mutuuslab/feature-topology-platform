@@ -128,7 +128,7 @@ test('저장소 — 같은 입력이면 같은 커밋 해시, 시험·타입 검
   }
 });
 
-test('평가 지표 — 계약 형식, 켜짐·꺼짐·오류 합 = 평가 수, 오래된 Flag는 구간 0, 서명 오류 급증은 하루', () => {
+test('평가 지표 — 계약 형식(경로는 평가 집계 한 저장소 값), 켜짐·꺼짐·오류 합 = 평가 수·폴백 ≤ 꺼짐, 오래된 Flag는 구간 0, 서명 오류 급증은 하루', () => {
   const fs = buildFeatures(fakeModel());
   const a = selectAnomalies(fs);
   const e = buildEvaluations(fs, a);
@@ -143,6 +143,7 @@ test('평가 지표 — 계약 형식, 켜짐·꺼짐·오류 합 = 평가 수, 
     for (const b of f.buckets) {
       C.FlagEvaluationBucket.parse({ bucketStart: b.bucketStart, source: b.source, evaluations: b.evaluations, enabled: b.enabled, fallbacks: b.fallbacks.reduce((s, x) => s + x.count, 0), errors: b.errors });
       assert.equal(b.enabled + b.disabled + b.errors, b.evaluations);
+      assert.ok(b.fallbacks.reduce((s, x) => s + x.count, 0) <= b.disabled, '폴백은 꺼짐의 일부');
       const sig = b.fallbacks.find((x) => x.reason === 'SIGNATURE_INVALID');
       if (sig) assert.ok(f.flagKey === a.signatureSpike && b.bucketStart.startsWith('2026-11-04'));
     }

@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { canonicalJson, FlagGateWaiver, FlagPullRequest, FlagRepository, FlagScanRun, FlagSourceManifestV2, type FlagPlanEntry, type FlagScanAttestation } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { DB, type Db } from '../../../kernel/db';
+import { lastEvaluatedAt } from '../../d04-ops/telemetry-ingest/evaluation-stats.service';
 
 export type ScanProvenance = 'FF_SCAN' | 'CI_ATTESTED' | 'DEMO';
 /** 브랜치 머리 스캔 실행 — 성공했고 PR 맥락(PR 머리·기준, PR 업로드)이 아니다. 대사 원천은 이 실행이 가리키는 결과뿐이다 */
@@ -22,18 +23,6 @@ export interface PlanRow extends FlagPlanEntry {
   plannedAt: string;
   /** 시연 픽스처가 정한 담당 저장소 — 자동 PR이 먼저 고른다 */
   repoId?: string;
-}
-export interface EvalBucketRow {
-  flag_key: string;
-  bucket_start: string;
-  source: string;
-  evaluations: number;
-  enabled: number;
-  disabled: number;
-  fallbacks: number;
-  errors: number;
-  vehicles: number;
-  doc: string;
 }
 export interface UnleashObservation {
   flagKey: string;
@@ -264,27 +253,9 @@ export class FlagCodeStore {
     this.db.run('UPDATE flag_gate_waiver SET state = ?, decided_by = ?, decided_at = ?, doc = ? WHERE waiver_id = ?', w.state, w.decidedBy, w.decidedAt, JSON.stringify(w), w.waiverId);
   }
 
-  // ── 평가 지표 ──
-  buckets(q: { from: string; to: string; flagKey?: string; source?: string }): EvalBucketRow[] {
-    const where = ['bucket_start >= ?', 'bucket_start < ?'];
-    const params: string[] = [q.from, q.to];
-    if (q.flagKey) (where.push('flag_key = ?'), params.push(q.flagKey));
-    if (q.source) (where.push('source = ?'), params.push(q.source));
-    return this.db.all<EvalBucketRow>(`SELECT * FROM flag_evaluation_bucket WHERE ${where.join(' AND ')} ORDER BY flag_key, bucket_start, source`, ...params);
-  }
-  insertBucket(b: Omit<EvalBucketRow, 'doc'> & { doc: unknown }) {
-    this.db.run('INSERT INTO flag_evaluation_bucket (flag_key, bucket_start, source, evaluations, enabled, disabled, fallbacks, errors, vehicles, doc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (flag_key, bucket_start, source) DO UPDATE SET evaluations = excluded.evaluations, enabled = excluded.enabled, disabled = excluded.disabled, fallbacks = excluded.fallbacks, errors = excluded.errors, vehicles = excluded.vehicles, doc = excluded.doc', b.flag_key, b.bucket_start, b.source, b.evaluations, b.enabled, b.disabled, b.fallbacks, b.errors, b.vehicles, JSON.stringify(b.doc));
-  }
+  // ── 평가 지표 — 저장·쓰기는 평가 집계 한 저장소(evaluation-stats, 통합 D-INT-2). 대사는 마지막 평가 시각만 읽는다 ──
   lastEvaluated(): Map<string, string> {
-    const out = new Map(this.db.all<{ flag_key: string; last_at: string }>('SELECT flag_key, last_evaluated_at AS last_at FROM flag_evaluation_last').map((r) => [r.flag_key, r.last_at]));
-    for (const r of this.db.all<{ flag_key: string; last_at: string }>('SELECT flag_key, max(bucket_start) AS last_at FROM flag_evaluation_bucket WHERE evaluations > 0 GROUP BY flag_key')) {
-      const prior = out.get(r.flag_key);
-      if (!prior || prior < r.last_at) out.set(r.flag_key, r.last_at);
-    }
-    return out;
-  }
-  setLastEvaluated(flagKey: string, at: string) {
-    this.db.run('INSERT INTO flag_evaluation_last (flag_key, last_evaluated_at) VALUES (?, ?) ON CONFLICT (flag_key) DO UPDATE SET last_evaluated_at = excluded.last_evaluated_at', flagKey, at);
+    return lastEvaluatedAt(this.db);
   }
 
   // ── Unleash 관측(시연 동기화 기록) ──

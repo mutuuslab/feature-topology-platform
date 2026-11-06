@@ -62,6 +62,22 @@ describe('Feature별 평가 운영 데이터 (D04-03)', () => {
     expect(s.byApp[0]).toMatchObject({ appName: 'vehicle-sdk', environment: 'fleet' });
   });
 
+  it('한 저장소·한 수집기 — 차량 SDK span이 Flag 평가 모니터링(1시간 창)에도 같은 수로, 폴백 사유·차량 수(묶음 안 가명 고유 수)까지', async () => {
+    const otel = b.get(OtelExporter);
+    const at = '2026-11-06T00:40:00.000Z';
+    const span = (subject: string, variant: string, reason: string) => evaluationSpan({ flagKey: 'ivi_00024_guide', provider: 'ffp-vehicle-bundle', subject, fClass: 'F1', variant, reason, errorType: null, snapshotVersion: null, at, traceSeed: `${subject}${variant}` });
+    otel.export([span('a000000000000001', 'on', 'TARGETING_MATCH'), span('a000000000000002', 'off', 'DEFAULT'), span('a000000000000003', 'safe_default', 'STALE'), span('a000000000000001', 'on', 'TARGETING_MATCH')]);
+    const e = (await http().get('/api/flag-code/evaluations?window=1h&flagKey=ivi_00024_guide').expect(200)).body;
+    const v = e.items.find((x: { source: string }) => x.source === 'VEHICLE_SDK');
+    expect(v).toMatchObject({ evaluations: 4, enabled: 2, disabled: 2, errors: 0, vehicles: 3, fallbacks: [{ reason: 'TTL_EXPIRED', count: 1 }], lastEvaluatedAt: '2026-11-06T00:00:00.000Z' });
+    const s = (await http().get('/api/flag-code/evaluations/ivi_00024_guide?window=24h').expect(200)).body;
+    expect(s.buckets).toEqual(expect.arrayContaining([{ bucketStart: '2026-11-06T00:00:00.000Z', source: 'VEHICLE_SDK', evaluations: 4, enabled: 2, fallbacks: 1, errors: 0 }]));
+    // Feature 상세 '평가 운영'도 같은 칸을 읽는다(앞 시험의 앱 평가 6회 + 4회)
+    const f = await stats('FEAT-00024');
+    expect(f.totals).toMatchObject({ evaluations: 10, safeDefault: 1 });
+    expect(f.bySource).toEqual(expect.arrayContaining([expect.objectContaining({ source: 'VEHICLE_SDK', count: 4, on: 2, off: 1, safeDefault: 1 })]));
+  });
+
   it('기간은 1~90일, 없는 Feature는 404', async () => {
     await http().get('/api/features/FEAT-00024/evaluations?days=0').expect(400);
     await http().get('/api/features/FEAT-00024/evaluations?days=91').expect(400);

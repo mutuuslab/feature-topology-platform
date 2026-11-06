@@ -4,6 +4,7 @@ import type { Response } from 'express';
 import { UnleashEdgeClient, type EdgeFeatures } from '../adapters/unleash/edge.client';
 import { CurrentActor, VehicleEndpoint, type Actor } from '../kernel/actor';
 import { Clock } from '../kernel/clock';
+import { vehiclePseudonym } from '../kernel/crypto';
 import { DomainError } from '../kernel/errors';
 import { ZodPipe } from '../kernel/zod.pipe';
 import { D01PolicyModule } from './d01-policy/d01-policy.module';
@@ -80,8 +81,9 @@ export class VehicleUnleashService {
     return this.db.tx(() => {
       const sequence = this.db.get<{ value: number }>('INSERT INTO vehicle_unleash_sequence (vin, value) VALUES (?, 1) ON CONFLICT(vin) DO UPDATE SET value = vehicle_unleash_sequence.value + 1 RETURNING value', vin)!.value;
       const now = this.clock.now().getTime();
-      // Feature별 평가 운영 데이터(D04-03) — Edge가 평가한 flag마다 1건(서명본과 같은 트랜잭션)
-      countEvaluations(this.db, flags.map((f) => ({ at: new Date(now).toISOString(), flagKey: f.flagKey, source: 'UNLEASH_EDGE' as const, appName: 'vehicle-unleash', environment: UNLEASH_ENVIRONMENT, result: f.value ? ('ON' as const) : ('OFF' as const), variant: f.value ? 'on' : 'off' })));
+      // 평가 집계 한 저장소(D04-03, 통합 D-INT-2) — Edge가 평가한 flag마다 1건(서명본과 같은 트랜잭션). 차량 가명은 고유 차량 수에만 쓴다
+      const subject = vehiclePseudonym(vin);
+      countEvaluations(this.db, flags.map((f) => ({ at: new Date(now).toISOString(), flagKey: f.flagKey, source: 'UNLEASH_EDGE' as const, appName: 'vehicle-unleash', environment: UNLEASH_ENVIRONMENT, result: f.value ? ('ON' as const) : ('OFF' as const), variant: f.value ? 'on' : 'off', subject })));
       const payload: SignedUnleashSnapshot['payload'] = { schema: 'FF-UNLEASH-SNAPSHOT/1', source: 'UNLEASH_EDGE', vin, sequence, issuedAt: new Date(now).toISOString(), expiresAt: new Date(now + UNLEASH_SNAPSHOT_TTL_MS).toISOString(), flags };
       let signature = this.hsm.signDetached('activate', canonicalJson(payload));
       const key = this.pki.publicKey(signature.kid)!;

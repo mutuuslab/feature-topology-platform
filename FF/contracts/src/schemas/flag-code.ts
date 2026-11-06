@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { ControlPointType, LIFECYCLE } from '../enums';
 import { PolicyStatus } from './policy';
 import { PublicationStatus } from './ops';
+import { EVAL_FALLBACK_REASONS, EVAL_SOURCES } from '../rules/evaluation-stats';
 import { FlagSourceLocation, FlagSourceMethod, FlagSourcePath, FlagSourceProvider, FlagSourceRepository, FlagSourceUsage } from './flag-source';
 
 const text = (min: number, max: number) => z.string().trim().min(min).max(max);
@@ -379,9 +380,10 @@ export type FlagScanDetail = z.infer<typeof FlagScanDetail>;
 
 // ── 평가 모니터링 ───────────────────────────────────────
 export const FlagEvalWindow = z.enum(['1h', '24h', '7d']);
-export const FlagEvalSource = z.enum(['UNLEASH_EDGE', 'FF_OFREP', 'VEHICLE_REPORT']);
-/** 차량이 기본값으로 돌아간 이유 — 차량 SDK 회신(IF-06) */
-export const FlagFallbackReason = z.enum(['DEFAULT_NO_SNAPSHOT', 'TTL_EXPIRED', 'SIGNATURE_INVALID', 'LOCAL_GUARD_BLOCK', 'OTHER_VIN', 'PROVIDER_ERROR']);
+/** 평가 경로 — Feature 평가 운영과 같은 값(rules/evaluation-stats, 한 저장소) */
+export const FlagEvalSource = z.enum(EVAL_SOURCES);
+/** 차량이 기본값으로 돌아간 이유 — 차량 SDK 회신(IF-06). 모르는 사유는 UNSPECIFIED */
+export const FlagFallbackReason = z.enum(EVAL_FALLBACK_REASONS);
 export const FlagEvaluationStat = z.object({
   flagKey: FlagKey,
   window: FlagEvalWindow,
@@ -392,6 +394,7 @@ export const FlagEvaluationStat = z.object({
   variants: z.array(z.object({ name: z.string(), count: z.number().int().min(0) }).strict()),
   fallbacks: z.array(z.object({ reason: FlagFallbackReason, count: z.number().int().min(0) }).strict()),
   errors: z.number().int().min(0),
+  /** 창 안 시 칸별 고유 차량 수의 최댓값 — 고유 수는 더할 수 없어 하한으로만 쓴다 */
   vehicles: z.number().int().min(0),
   lastEvaluatedAt: iso.nullable(),
 }).strict().refine((s) => s.enabled + s.disabled <= s.evaluations, '켜짐·꺼짐 합이 평가 수보다 큽니다.');

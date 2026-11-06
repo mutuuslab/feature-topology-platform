@@ -1,5 +1,5 @@
 // Flag 코드 연결·대사·통제 화면 문구(20-97 §7) — 상태 라벨은 계약의 FLAG_COVERAGE_LABEL을 쓰고, 나머지는 여기 둔다.
-import type { FlagCoverageSeverity, FlagLane, FlagLaneState, FlagRepoMode, FlagScanStatus } from '@ff/contracts';
+import { EVAL_SOURCE_LABEL, type FlagCoverageSeverity, type FlagLane, type FlagLaneState, type FlagRepoMode, type FlagScanStatus } from '@ff/contracts';
 
 const n = (x: number) => x.toLocaleString('ko-KR');
 
@@ -37,7 +37,8 @@ export const flagCode = {
   safe: { EXPLICIT_FALSE: '기본값 OFF 명시', SDK_DEFAULT: 'SDK 기본값', UNCONFIRMED: '기본값 확인 필요' } as Record<string, string>,
   via: { LITERAL: '문자열', CONST: '상수' } as Record<string, string>,
   pkg: { adas: 'ADAS', ivi: 'IVI', body: '바디', chassis: '섀시', powertrain: '파워트레인', safety: '안전', connectivity: '커넥티비티', platform: '플랫폼' } as Record<string, string>,
-  source: { UNLEASH_EDGE: 'Unleash·Edge', FF_OFREP: 'FF OFREP', VEHICLE_REPORT: '차량 회신' } as Record<string, string>,
+  // 평가 경로 — Feature 평가 운영과 같은 이름(평가 집계 한 저장소)
+  source: EVAL_SOURCE_LABEL as Record<string, string>,
   fallback: {
     DEFAULT_NO_SNAPSHOT: '스냅샷 없음',
     TTL_EXPIRED: '유효 기간 지남',
@@ -45,6 +46,7 @@ export const flagCode = {
     LOCAL_GUARD_BLOCK: '로컬 Guard 차단',
     OTHER_VIN: '다른 차량 게시본',
     PROVIDER_ERROR: '공급자 오류',
+    UNSPECIFIED: '기타 사유',
   } as Record<string, string>,
 
   col: {

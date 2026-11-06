@@ -7,6 +7,7 @@ import { rmSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { githubWebhookRequest, startMockGithub, type MockGithub } from '../../../tools/flag-code/mock-github';
 import { FlagCodeService } from '../../src/domains/d01-policy/flag-code/flag-code.service';
+import { countEvaluations, noteLastEvaluated, recordReach } from '../../src/domains/d04-ops/telemetry-ingest/evaluation-stats.service';
 import { GithubAdapter } from '../../src/domains/d01-policy/flag-code/github.adapter';
 import { flagCodeDemoEnabled } from '../../src/domains/d01-policy/flag-code/flag-code.seed';
 import { DB, type Db } from '../../src/kernel/db';
@@ -193,9 +194,9 @@ describe('Flag 코드 연결 — 시연 픽스처(DEMO_MIRROR)', () => {
   it('평가 모니터링 — 창별 집계·폴백 이유·시계열(시드 시각 기준으로 옮긴 구간)', async () => {
     const e = (await http().get('/api/flag-code/evaluations?window=24h&flagKey=care_00022_signal').expect(200)).body;
     const edge = e.items.find((x: { source: string }) => x.source === 'UNLEASH_EDGE');
-    expect(edge).toMatchObject({ evaluations: 1200, enabled: 1140, fallbacks: [{ reason: 'SIGNATURE_INVALID', count: 40 }, { reason: 'TTL_EXPIRED', count: 4 }], lastEvaluatedAt: '2026-11-06T00:00:00.000Z' });
+    expect(edge).toMatchObject({ evaluations: 1200, enabled: 1100, disabled: 97, errors: 3, vehicles: 100, fallbacks: [{ reason: 'SIGNATURE_INVALID', count: 40 }, { reason: 'TTL_EXPIRED', count: 4 }], lastEvaluatedAt: '2026-11-06T00:00:00.000Z' });
     const s = (await http().get('/api/flag-code/evaluations/care_00022_signal?window=1h').expect(200)).body;
-    expect(s).toMatchObject({ bucketMinutes: 60, buckets: [expect.objectContaining({ bucketStart: '2026-11-06T00:00:00.000Z' }), expect.objectContaining({ source: 'VEHICLE_REPORT' })] });
+    expect(s).toMatchObject({ bucketMinutes: 60, buckets: [expect.objectContaining({ bucketStart: '2026-11-06T00:00:00.000Z' }), expect.objectContaining({ source: 'VEHICLE_SDK' })] });
     await http().get('/api/flag-code/evaluations?window=2d').expect(400);
   });
 
@@ -212,13 +213,15 @@ describe('Flag 코드 연결 — 시연 픽스처(DEMO_MIRROR)', () => {
     expect(scan).toMatchObject({ trigger: 'MANUAL', status: 'SUCCEEDED' });
   });
 
-  it('PostgreSQL 호환 — 실행한 Flag 코드 SQL과 091~096 마이그레이션이 PG 방언으로 번역된다', () => {
+  it('PostgreSQL 호환 — 실행한 Flag 코드 SQL과 091~096·102 마이그레이션이 PG 방언으로 번역된다', () => {
     const ctx = dialectContextOf(MIGRATIONS);
     // 시드에서만 쓰는 쓰기 SQL도 한 번 실행해 모은다
     const store = svc['store'];
     db.tx(() => {
-      store.insertBucket({ flag_key: 'pg_00000_check', bucket_start: NOW, source: 'FF_OFREP', evaluations: 1, enabled: 1, disabled: 0, fallbacks: 0, errors: 0, vehicles: 1, doc: {} });
-      store.setLastEvaluated('pg_00000_check', NOW);
+      // 평가 집계 한 저장소(102)의 쓰기 — 칸 더하기·고유 차량 최댓값·마지막 평가 시각
+      countEvaluations(db, [{ at: NOW, flagKey: 'pg_00000_check', source: 'OFREP', appName: 'ofrep-client', environment: 'default', result: 'SAFE_DEFAULT', variant: 'safe_default', reason: 'TTL_EXPIRED', subject: 'abcdef0123456789' }]);
+      recordReach(db, [{ hour: NOW, flagKey: 'pg_00000_check', source: 'OFREP', vehicles: 2 }]);
+      noteLastEvaluated(db, 'pg_00000_check', NOW);
       store.insertUnleash({ flagKey: 'pg_00000_check', policyId: 'POL-99999', revision: 1, outcome: 'SYNCED', archived: false, at: NOW });
     });
     expect(issued.size).toBeGreaterThan(20);
@@ -227,10 +230,11 @@ describe('Flag 코드 연결 — 시연 픽스처(DEMO_MIRROR)', () => {
       expect(t.text, sql).not.toMatch(/\?|INSERT\s+OR\s+|RAISE\s*\(/i);
       if (/^\s*INSERT/i.test(sql)) expect(t.text, sql).toMatch(/RETURNING rowid$/);
     }
-    const upsert = [...issued].find((s) => s.startsWith('INSERT INTO flag_evaluation_bucket'))!;
-    expect(translate(upsert, ctx).text).toMatch(/ON CONFLICT \(flag_key, bucket_start, source\) DO UPDATE SET .* RETURNING rowid$/);
+    const upsert = [...issued].find((s) => s.startsWith('INSERT INTO flag_eval_hourly'))!;
+    expect(translate(upsert, ctx).text).toMatch(/ON CONFLICT \(hour, flag_key, source, app_name, environment, result, variant, reason\) DO UPDATE SET n = flag_eval_hourly\.n \+ excluded\.n RETURNING rowid$/);
+    expect(translate([...issued].find((s) => s.startsWith('INSERT INTO flag_eval_reach'))!, ctx).text).toMatch(/DO UPDATE SET vehicles = excluded\.vehicles WHERE excluded\.vehicles > flag_eval_reach\.vehicles RETURNING rowid$/);
     expect(translate([...issued].find((s) => s.startsWith('INSERT OR IGNORE INTO flag_plan'))!, ctx).text).toMatch(/ON CONFLICT DO NOTHING RETURNING rowid$/);
-    const ddl = MIGRATIONS.filter((m) => /^09[1-6]_/.test(m.name)).map((m) => translateMigration(m, ctx)).join('\n');
+    const ddl = MIGRATIONS.filter((m) => /^(09[1-6]|102)_/.test(m.name)).map((m) => translateMigration(m, ctx)).join('\n');
     expect(ddl).toMatch(/CREATE TRIGGER flag_scan_result_no_update BEFORE UPDATE ON flag_scan_result FOR EACH ROW EXECUTE FUNCTION/);
     expect(ddl).not.toMatch(/RAISE\s*\(\s*ABORT|AUTOINCREMENT/i);
   });

@@ -5,7 +5,7 @@ import { TrendChart } from '../biz/charts';
 import { when } from '../shared';
 
 const E = T.evaluations;
-const SOURCE_COLOR: Record<string, string> = { UNLEASH_EDGE: 'var(--viz-1)', VEHICLE_REPORT: 'var(--viz-3)', FF_OFREP: 'var(--viz-2)' };
+const SOURCE_COLOR: Record<string, string> = { UNLEASH_EDGE: 'var(--viz-1)', VEHICLE_SDK: 'var(--viz-3)', OFREP: 'var(--viz-2)', PLATFORM: 'var(--info)' };
 
 /** 구간 시작 시각 → 원천별 합 */
 export function seriesTable(s: FlagEvaluationSeries) {

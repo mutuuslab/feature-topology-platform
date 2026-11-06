@@ -411,7 +411,8 @@ export function evaluationTargets(features: FeatureP[], _a?: Anomalies): EvalTar
   }
   return out.sort((x, y) => x.flagKey.localeCompare(y.flagKey));
 }
-export interface EvalBucket { bucketStart: string; source: 'UNLEASH_EDGE' | 'VEHICLE_REPORT'; evaluations: number; enabled: number; disabled: number; errors: number; vehicles: number; fallbacks: { reason: string; count: number }[]; variants: { name: string; count: number }[] }
+/** 시 칸 — 경로는 평가 집계 한 저장소와 같은 값(차량 회신은 차량 SDK 평가). 꺼짐에 폴백이 들어 있다 */
+export interface EvalBucket { bucketStart: string; source: 'UNLEASH_EDGE' | 'VEHICLE_SDK'; evaluations: number; enabled: number; disabled: number; errors: number; vehicles: number; fallbacks: { reason: string; count: number }[] }
 export interface EvalFlag { flagKey: string; lastEvaluatedAt: string | null; buckets: EvalBucket[] }
 const n32 = (s: string) => parseInt(sha(s).slice(0, 8), 16);
 
@@ -437,9 +438,9 @@ export function buildEvaluations(features: FeatureP[], a: Anomalies): { windowEn
       const curve = (0.7 + 0.3 * Math.sin((2 * Math.PI * (h + phase)) / 24)) * weekly;
       const edge = Math.round(vehicles * 4 * curve);
       const spike = t.flagKey === a.signatureSpike && new Date(at).toISOString().startsWith('2026-11-04');
-      for (const source of ['UNLEASH_EDGE', 'VEHICLE_REPORT'] as const) {
+      for (const source of ['UNLEASH_EDGE', 'VEHICLE_SDK'] as const) {
         const evaluations = source === 'UNLEASH_EDGE' ? edge : Math.round(edge * 0.92);
-        const fallbacks = source === 'VEHICLE_REPORT'
+        const fallbacks = source === 'VEHICLE_SDK'
           ? [
             { reason: 'TTL_EXPIRED', count: Math.round(evaluations * 0.004) },
             { reason: 'DEFAULT_NO_SNAPSHOT', count: Math.round(evaluations * 0.002) },
@@ -449,7 +450,7 @@ export function buildEvaluations(features: FeatureP[], a: Anomalies): { windowEn
         const fb = fallbacks.reduce((s, x) => s + x.count, 0);
         const errors = Math.round(evaluations * 0.0005);
         const enabled = Math.round(Math.max(0, evaluations - fb - errors) * rate);
-        buckets.push({ bucketStart: new Date(at).toISOString(), source, evaluations, enabled, disabled: evaluations - enabled - errors, errors, vehicles: source === 'UNLEASH_EDGE' ? vehicles : Math.round(vehicles * 0.92), fallbacks, variants: [] });
+        buckets.push({ bucketStart: new Date(at).toISOString(), source, evaluations, enabled, disabled: evaluations - enabled - errors, errors, vehicles: source === 'UNLEASH_EDGE' ? vehicles : Math.round(vehicles * 0.92), fallbacks });
       }
     }
     flags.push({ flagKey: t.flagKey, lastEvaluatedAt: new Date(end - MIN).toISOString(), buckets });

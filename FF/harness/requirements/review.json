@@ -2256,27 +2256,27 @@
     },
     "FR-OPD-001-005": {
       "verdict": "구현",
-      "evidence": "Feature별 전체 평가 횟수 — 집계 주기 일(UTC), 기간 1~90일(기본 14) · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "evidence": "Feature별 전체 평가 횟수 — 집계 주기 일(UTC), 기간 1~90일(기본 14) · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
       "gap": ""
     },
     "FR-OPD-001-006": {
       "verdict": "구현",
-      "evidence": "Feature별 활성(ON) 평가 횟수 · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "evidence": "Feature별 활성(ON) 평가 횟수 · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
       "gap": ""
     },
     "FR-OPD-001-007": {
       "verdict": "구현",
-      "evidence": "Feature별 비활성(OFF)·Safe Default·오류 평가 횟수(따로) · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "evidence": "Feature별 비활성(OFF)·Safe Default·오류 평가 횟수(따로) · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
       "gap": ""
     },
     "FR-OPD-001-008": {
       "verdict": "구현",
-      "evidence": "분기값 단위 집계(byVariant — 차량 flag는 boolean이라 on/off/safe_default, 다값 Variant가 허용되면 그 값 그대로 센다 — D6) · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "evidence": "분기값 단위 집계(byVariant — 차량 flag는 boolean이라 on/off/safe_default, 다값 Variant가 허용되면 그 값 그대로 센다 — D6) · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
       "gap": ""
     },
     "FR-OPD-002-001": {
       "verdict": "구현",
-      "evidence": "평가를 보낸 애플리케이션 식별 appName·environment — OFREP context(appName·environment)를 span 속성(ffp.app.name·deployment.environment.name)으로, 보내지 않으면 경로별 기본 이름 · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "evidence": "평가를 보낸 애플리케이션 식별 appName·environment — OFREP context(appName·environment)를 span 속성(ffp.app.name·deployment.environment.name)으로, 보내지 않으면 경로별 기본 이름 · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
       "gap": ""
     },
     "FR-OPD-002-002": {
@@ -2286,7 +2286,7 @@
     },
     "FR-OPD-003-001": {
       "verdict": "구현",
-      "evidence": "Feature ID 기준 조회 `GET /api/features/:id/evaluations?days` — 평가·활성·비활성·분기값 횟수, 경로·앱·환경·flag·일별 · 집계 `flag_eval_daily`(migration 102) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 일(UTC)·flag·평가 경로·앱·환경·결과·분기값으로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
+      "evidence": "Feature ID 기준 조회 `GET /api/features/:id/evaluations?days` — 평가·활성·비활성·분기값 횟수, 경로·앱·환경·flag·일별 · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
       "gap": ""
     },
     "FR-QFL-001-001": {

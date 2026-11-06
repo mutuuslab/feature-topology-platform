@@ -82,7 +82,7 @@ import type { Response } from 'express';
 import { NotificationService } from '../domains/d04-ops/event-history/notification.service';
 import { IntegrationErrorService } from '../domains/d04-ops/event-history/integration-error.service';
 import { PipelineRunService } from '../domains/d04-ops/pipeline-link/pipeline-run.service';
-import { EvaluationStatsService, type EvaluationSample } from '../domains/d04-ops/telemetry-ingest/evaluation-stats.service';
+import { EvaluationStatsService, lastEvaluatedAt, type EvaluationSample } from '../domains/d04-ops/telemetry-ingest/evaluation-stats.service';
 import { PolicyRepo } from '../domains/d01-policy/policy-repos';
 
 export const DEMO_ACTIVITY_META = 'seed-activity';
@@ -637,9 +637,10 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
     const errors = this.svc(IntegrationErrorService);
     errors.record(who('operator', 'OPERATOR', 'legacy'), { system: 'LEGACY', errorType: 'REJECTED', target: 'IF-12 해외공장 HMGC', message: 'ERP 주문 조회 응답 시간 초과(30초) — 다음 주기에 다시 가져옵니다', at: day(2, 14) });
     errors.record(who('operator', 'OPERATOR', 'billing'), { system: 'BILLING', errorType: 'REJECTED', target: 'CAT-00019:구독', message: '과금 시스템이 결제 수단 확인을 거부했습니다(카드 승인 한도)', at: day(1, 16) });
-    // 평가 운영 데이터 — 배포 정책 flag마다 지난 14일
+    // 평가 운영 데이터 — 배포 정책 flag마다 지난 14일. Flag 코드 시연 픽스처가 이미 평가를 넣은 flag는 건너뛴다(한 저장소에 두 시연 원천을 섞지 않는다)
     const stats = this.svc(EvaluationStatsService);
-    const flags = this.svc(PolicyRepo).all().filter((p) => p.status === 'DEPLOYED');
+    const fixture = lastEvaluatedAt(this.db);
+    const flags = this.svc(PolicyRepo).all().filter((p) => p.status === 'DEPLOYED' && !fixture.has(p.flagKey));
     let n = 0;
     for (let d = 13; d >= 0; d--) {
       const at = day(d, 12);
@@ -657,7 +658,7 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
               ...(d % 5 === 0 ? [{ at, flagKey: p.flagKey, source: 'OFREP' as const, appName: 'ivi-nav', environment: 'production', result: 'ERROR' as const, variant: '', count: 2 }] : []),
             ]
           : [
-              { at, flagKey: p.flagKey, source: 'VEHICLE_SDK', appName: 'vehicle-sdk', environment: 'fleet', result: 'SAFE_DEFAULT', variant: 'safe_default', count: Math.round((420 + seed * 4) * wave) },
+              { at, flagKey: p.flagKey, source: 'VEHICLE_SDK', appName: 'vehicle-sdk', environment: 'fleet', result: 'SAFE_DEFAULT', variant: 'safe_default', reason: 'DISABLED', count: Math.round((420 + seed * 4) * wave) },
               { at, flagKey: p.flagKey, source: 'UNLEASH_EDGE', appName: 'vehicle-unleash', environment: 'development', result: 'ON', variant: 'on', count: Math.round((150 + seed * 2) * wave) },
               { at, flagKey: p.flagKey, source: 'UNLEASH_EDGE', appName: 'vehicle-unleash', environment: 'development', result: 'OFF', variant: 'off', count: Math.round((40 + seed) * wave) },
             ];

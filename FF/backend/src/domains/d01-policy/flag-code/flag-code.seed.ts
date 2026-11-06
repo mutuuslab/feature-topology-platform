@@ -2,7 +2,7 @@
 // 운영 모드·FF_SEED=none·FF_FLAG_CODE_DEMO=off에서는 넣지 않는다. 스캔 결과는 시연 공개키로 서명을 검증하고, 맞지 않으면 거부 기록만 남긴다.
 // 평가 지표·PR 열린 시각은 시드 시각 기준으로 옮긴다(고정 날짜가 지나도 시연 창에 값이 있게).
 import { Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { FlagPrCheckResult, FlagPullRequest, FlagRepository, FlagScanTrigger, FlagSourceManifestV2, flagScanSigningPayload, type FlagScanRun } from '@ff/contracts';
+import { EVAL_FALLBACK_REASONS, EVAL_SOURCES, evalHourOf, FlagPrCheckResult, FlagPullRequest, FlagRepository, FlagScanTrigger, FlagSourceManifestV2, flagScanSigningPayload, type FlagScanRun } from '@ff/contracts';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { Clock } from '../../../kernel/clock';
 import { DB, type Db } from '../../../kernel/db';
 import { isProduction, seedOf } from '../../../kernel/runtime-config';
 import { DEMO_FIXTURES } from '../../../kernel/seed';
+import { countEvaluations, DEFAULT_APP, noteLastEvaluated, recordReach, type EvaluationSample } from '../../d04-ops/telemetry-ingest/evaluation-stats.service';
 import { SafetyProfileService } from '../registry/safety-profile.service';
 import { FlagCodeStore } from './flag-code.store';
 import { FLAG_CODE_SYSTEM } from './flag-code.service';
@@ -37,7 +38,9 @@ const EvalFixture = z.object({
   flags: z.array(z.object({
     flagKey: z.string(),
     lastEvaluatedAt: iso.nullable().default(null),
-    buckets: z.array(z.object({ bucketStart: iso, source: z.enum(['UNLEASH_EDGE', 'FF_OFREP', 'VEHICLE_REPORT']), evaluations: z.number().int(), enabled: z.number().int(), disabled: z.number().int(), errors: z.number().int().default(0), vehicles: z.number().int().default(0), fallbacks: z.array(z.object({ reason: z.string(), count: z.number().int() })).default([]), variants: z.array(z.object({ name: z.string(), count: z.number().int() })).default([]) }).passthrough()).default([]),
+    // 시 칸 하나 — 평가 = 켜짐 + 꺼짐 + 오류, 폴백(Safe Default)은 꺼짐의 일부. 차량 수는 그 시간의 고유 차량 수(더하지 않는다)
+    buckets: z.array(z.object({ bucketStart: iso, source: z.enum(EVAL_SOURCES), evaluations: z.number().int().min(0), enabled: z.number().int().min(0), disabled: z.number().int().min(0), errors: z.number().int().min(0).default(0), vehicles: z.number().int().min(0).default(0), fallbacks: z.array(z.object({ reason: z.enum(EVAL_FALLBACK_REASONS), count: z.number().int().min(0) })).default([]) }).passthrough()
+      .refine((b) => b.enabled + b.disabled + b.errors === b.evaluations && b.fallbacks.reduce((n, f) => n + f.count, 0) <= b.disabled, '평가 수 = 켜짐 + 꺼짐 + 오류, 폴백 ≤ 꺼짐이어야 합니다.')).default([]),
   }).passthrough()),
 }).passthrough();
 const UnleashFixture = z.array(z.object({ flagKey: z.string(), policyId: z.string(), revision: z.number().int().nullable().default(null), outcome: z.enum(['SYNCED', 'FAILED']).default('SYNCED'), archived: z.boolean().default(false), at: iso }).passthrough());
@@ -154,12 +157,17 @@ export class FlagCodeSeeder implements OnApplicationBootstrap {
         const hour = 3_600_000;
         const shift = Math.floor((Date.parse(now) - Date.parse(evals.windowEnd)) / hour) * hour;
         const move = (t: string) => new Date(Date.parse(t) + shift).toISOString();
+        // 평가 집계 한 저장소에 같은 쓰기(countEvaluations)로 넣는다 — 수집기가 센 것과 같은 칸·같은 뜻
         for (const f of evals.flags) {
-          if (f.lastEvaluatedAt) this.store.setLastEvaluated(f.flagKey, move(f.lastEvaluatedAt));
           for (const b of f.buckets) {
-            const fallbacks = b.fallbacks.reduce((s, x) => s + x.count, 0);
-            this.store.insertBucket({ flag_key: f.flagKey, bucket_start: move(b.bucketStart), source: b.source, evaluations: b.evaluations, enabled: b.enabled, disabled: b.disabled, fallbacks, errors: b.errors, vehicles: b.vehicles, doc: { fallbacks: b.fallbacks, variants: b.variants } });
+            const at = move(b.bucketStart);
+            const app = DEFAULT_APP[b.source];
+            const fb = b.fallbacks.reduce((n, x) => n + x.count, 0);
+            const cell = (result: EvaluationSample['result'], count: number, reason: string | null = null): EvaluationSample => ({ at, flagKey: f.flagKey, source: b.source, ...app, result, variant: '', reason, count });
+            countEvaluations(this.db, [cell('ON', b.enabled), cell('OFF', b.disabled - fb), cell('ERROR', b.errors), ...b.fallbacks.map((x) => cell('SAFE_DEFAULT', x.count, x.reason))]);
+            recordReach(this.db, [{ hour: evalHourOf(at), flagKey: f.flagKey, source: b.source, vehicles: b.vehicles }]);
           }
+          if (f.lastEvaluatedAt) noteLastEvaluated(this.db, f.flagKey, move(f.lastEvaluatedAt));
         }
       }
       for (const u of unleash) this.store.insertUnleash(u);

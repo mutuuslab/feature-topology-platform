@@ -25,6 +25,7 @@ const FALLBACK_COLOR: Record<string, string> = {
   LOCAL_GUARD_BLOCK: 'var(--viz-3)',
   OTHER_VIN: 'var(--info)',
   PROVIDER_ERROR: 'var(--viz-2)',
+  UNSPECIFIED: 'var(--muted)',
 };
 const pct = (k: number, of: number) => (of > 0 ? k / of : 0);
 

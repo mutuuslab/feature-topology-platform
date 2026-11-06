@@ -56,17 +56,17 @@
     "089_flag_source_manifest": "dec1e2502b0230bdc5a2ead5dbafb434e65dbe341017ad2dd3598d7f8a0621e4",
     "088_vehicle_unleash_sequence": "4aaaf55fdc29bf95fca466cd1c1ed53c73d02d18254029fdad1c46001760ef33",
     "090_cost_actual": "aa6937139da7f1dab3a5dba445764411e0831b4e24b4cf2538ed3aa4b0eb54fa",
-    "097_vehicle_envelope_kill": "42bcd641fde1678d642156b08c152dbb19b539ee2025362457670ba5904d3683",
-    "101_notification_rule_recipient": "51fd46a9a362ddcb74e4978dc05659d5d1a0b41cd7c6d60c11a281b18481d435",
-    "102_flag_eval_daily": "7942ac8ad81aac7b6275cb018d2bc8299ca6d12b79433d9289383bf328100641",
-    "103_integration_error": "6a402b184efe5d85583a104a24058b1f93987932fed3af2201a13904f26adb0b",
-    "104_pipeline_run": "e0b3773b55d0839a2db20af5b3e5736ae279ddb3cdd55b3e3c9251fe0ac49e63",
     "091_flag_code_repository": "d0aa0da8adc49e416a46cf9793fce0884f7c5631a1e05f8883b90a160ddbee82",
     "092_flag_scan": "bc994a063c5bc256008b074683a34b596470f22765ce1bb7a9cd575e80b9a290",
     "093_flag_plan": "4e71c0e8df7666363b20da41cbd6ff15a025cccc9f40d5d085d0d4d3cf85dc92",
     "094_flag_pull_request": "48648fba5b0f8b07ecffe574555daf22184c99b482187588b19c3b363589906e",
     "095_flag_gate_waiver": "d8057389e34c6aadc6f0dc5f1c45309f8da4cac6a3b8943131b851ebff5f8e6e",
-    "096_flag_evaluation_bucket": "a1ef6b650640ab0f0f4d22fc625b163bdb2ef1297f356645006d25969b3b04ae",
+    "096_flag_unleash_observation": "5aea098563a818ff0947dff739cd521f3b544b2851687314cb108909b8e431a6",
+    "097_vehicle_envelope_kill": "42bcd641fde1678d642156b08c152dbb19b539ee2025362457670ba5904d3683",
+    "101_notification_rule_recipient": "51fd46a9a362ddcb74e4978dc05659d5d1a0b41cd7c6d60c11a281b18481d435",
+    "102_flag_eval_hourly": "c5e4fc40bb4a6caab83f27254701ba90c0123e6ddb3c6609202d1a8f97c09040",
+    "103_integration_error": "6a402b184efe5d85583a104a24058b1f93987932fed3af2201a13904f26adb0b",
+    "104_pipeline_run": "e0b3773b55d0839a2db20af5b3e5736ae279ddb3cdd55b3e3c9251fe0ac49e63",
     "111_lake_closed_loop": "938e825913102fb05ccc2cb9edba49d2f3586823d18b5fd79dfc1e59ec730571"
   }
 }

@@ -296,11 +296,14 @@ CREATE TABLE flag_gate_waiver (
   waiver_id TEXT PRIMARY KEY, flag_key TEXT NOT NULL, feature_id TEXT NOT NULL, version TEXT NOT NULL,
   state TEXT NOT NULL CHECK (state IN ('REQUESTED','APPROVED','REJECTED','EXPIRED')),
   requested_by TEXT NOT NULL, requested_at TEXT NOT NULL, decided_by TEXT, decided_at TEXT, expires_at TEXT NOT NULL, doc TEXT NOT NULL);
--- 096_flag_evaluation_bucket
-CREATE TABLE flag_evaluation_bucket (
-  flag_key TEXT NOT NULL, bucket_start TEXT NOT NULL, source TEXT NOT NULL CHECK (source IN ('UNLEASH_EDGE','FF_OFREP','VEHICLE_REPORT')),
-  evaluations INTEGER NOT NULL, enabled INTEGER NOT NULL, disabled INTEGER NOT NULL, fallbacks INTEGER NOT NULL,
-  errors INTEGER NOT NULL, vehicles INTEGER NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (flag_key, bucket_start, source));
+-- 096_flag_unleash_observation — Unleash 시연 동기화 기록만. 평가 지표는 102 한 저장소(통합 D-INT-2)
+-- 102_flag_eval_hourly — Feature 평가 운영과 같은 칸. 경로 OFREP·VEHICLE_SDK·UNLEASH_EDGE·PLATFORM
+CREATE TABLE flag_eval_hourly (
+  hour TEXT NOT NULL, flag_key TEXT NOT NULL, source TEXT NOT NULL, app_name TEXT NOT NULL, environment TEXT NOT NULL,
+  result TEXT NOT NULL CHECK (result IN ('ON','OFF','SAFE_DEFAULT','ERROR')), variant TEXT NOT NULL, reason TEXT NOT NULL, n INTEGER NOT NULL,
+  PRIMARY KEY (hour, flag_key, source, app_name, environment, result, variant, reason));
+CREATE TABLE flag_eval_reach (hour TEXT NOT NULL, flag_key TEXT NOT NULL, source TEXT NOT NULL, vehicles INTEGER NOT NULL, PRIMARY KEY (hour, flag_key, source));
+CREATE TABLE flag_eval_last (flag_key TEXT PRIMARY KEY, last_at TEXT NOT NULL);
 ```
 
 `flag_plan` 등록 때 기존 `flag_registry`에도 `INSERT OR IGNORE`(flag_key→feature_id)를 한다. 키 재사용 금지는 기존 규칙을 따른다.
@@ -389,14 +392,15 @@ F2 이상 ASIL Feature는 `runtime`의 로컬 Guard(`localGuard.allows(flagKey, 
 ### 5.6 평가 지표 픽스처
 
 - **대상**. 정책이 있거나 RELEASED·DEPRECATED Feature의 Flag다.
-- **구간**. 7일 × 1시간 구간이다. 원천은 UNLEASH_EDGE와 VEHICLE_REPORT다.
+- **구간**. 7일 × 1시간 구간이다. 경로는 UNLEASH_EDGE와 VEHICLE_SDK(차량 회신)다. 시드는 수집기와 같은 쓰기로 평가 집계 한 저장소(102)에 넣는다.
+- **차량 수**. 시간별 고유 차량 수다. 더할 수 없는 값이라 창 값은 시간별 최댓값(하한)이다.
 - **평가 수**. 대상 차량 수 × 시간당 4회 × 주간 곡선(결정적 사인 곡선)이다.
 - **켜짐 비율**. 정책 rollout 비율을 따르고, 정책이 없으면 0이다.
 - **폴백**. TTL_EXPIRED 0.4%, DEFAULT_NO_SNAPSHOT 0.2%다. Flag 하나는 2026-11-04 하루 SIGNATURE_INVALID가 튄다(평가 모니터링 이상 시연). 오류는 0.05%다.
 - **STALE 대상**. 7일 구간 값이 0이고 `lastEvaluatedAt`을 2026-07 이전으로 둔다.
 - **실제 모드**.
   - Unleash 8.3.1 Admin API의 Feature 사용 지표(Edge가 위로 전달한 client metrics)를 5분마다 읽는다. 정확한 경로는 v8.3.1 OpenAPI로 확인한다.
-  - 차량 SDK는 `VehicleFlagEvalSummary`를 IF-06 보고에 덧붙인다. 이것은 후속 계약 연결이다.
+  - 차량 SDK는 `VehicleFlagEvalSummary`를 IF-06 보고에 덧붙인다. 이것은 후속 계약 연결이다. 받으면 차량 SDK 경로로 센다. 같은 평가를 span과 요약으로 두 번 보내지 않는다.
 
 ## 6. 업무 절차 모델에 넣을 활동(docs/65-workflows)
 

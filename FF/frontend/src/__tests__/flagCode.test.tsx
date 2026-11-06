@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { FLAG_COVERAGE_LABEL, FlagCoverageDetail, FlagCoverageResponse, FlagScanDetail, FlagEvaluationSeries, FlagEvaluationStat, FlagGateWaiver, FlagPullRequest, FlagReleaseGate, FlagRepository, FlagScanRun, type FlagCoverageRow } from '@ff/contracts';
+import { EVAL_SOURCE_LABEL, FLAG_COVERAGE_LABEL, FlagCoverageDetail, FlagCoverageResponse, FlagScanDetail, FlagEvaluationSeries, FlagEvaluationStat, FlagGateWaiver, FlagPullRequest, FlagReleaseGate, FlagRepository, FlagScanRun, type FlagCoverageRow } from '@ff/contracts';
 import { AppProvider } from '../store';
 import { flagCode as T } from '../copy/flag-code';
 import { ko } from '../copy/ko';
@@ -167,11 +167,11 @@ const scans = [
 const prs = [FlagPullRequest.parse({ prId: 'FPR-000007', repoId: 'FREPO-001', kind: 'SCAFFOLD', featureId: 'FEAT-00040', version: '1.0.0', flagKeys: ['body_00040_param'], branch: 'ff/flags/feat-00040-1.0.0', number: 7, url: null, title: 'Flag 뼈대', state: 'OPEN', checkConclusion: 'SUCCESS', files: [], createdAt: NOW, createdBy: 'ff-bot', mergedAt: null, mergedBy: null, mergeCommit: null, retirementId: null, failure: null })];
 const waiver = FlagGateWaiver.parse({ waiverId: 'FWV-0001', flagKey: 'ivi_00031_enable', featureId: 'FEAT-00031', version: '1.1.0', reason: '차량 SW 다음 배포에 함께 넣습니다', expiresAt: '2026-11-20T00:00:00.000Z', state: 'REQUESTED', coverageStatus: 'NO_CODE', requestedBy: 'usr-integrator', requestedAt: NOW, decidedBy: null, decidedAt: null, comment: null });
 const gate = FlagReleaseGate.parse({ featureId: 'FEAT-00031', version: '1.1.0', pass: false, blockers: [{ flagKey: 'ivi_00031_enable', status: 'NO_CODE', message: '연결된 저장소의 최신 스캔에 이 Flag 호출이 없습니다.' }], waived: [], checkedAt: NOW });
-const stat = (flagKey: string, source: 'UNLEASH_EDGE' | 'VEHICLE_REPORT', fallbacks: { reason: string; count: number }[]) =>
+const stat = (flagKey: string, source: 'UNLEASH_EDGE' | 'VEHICLE_SDK', fallbacks: { reason: string; count: number }[]) =>
   FlagEvaluationStat.parse({ flagKey, window: '24h', source, evaluations: 10000, enabled: 6000, disabled: 4000, variants: [{ name: 'on', count: 6000 }, { name: 'off', count: 4000 }], fallbacks, errors: 3, vehicles: 120, lastEvaluatedAt: NOW });
-const evaluations = [stat('care_00022_signal', 'UNLEASH_EDGE', [{ reason: 'TTL_EXPIRED', count: 40 }]), stat('ivi_00024_guide', 'VEHICLE_REPORT', [{ reason: 'SIGNATURE_INVALID', count: 300 }])];
+const evaluations = [stat('care_00022_signal', 'UNLEASH_EDGE', [{ reason: 'TTL_EXPIRED', count: 40 }]), stat('ivi_00024_guide', 'VEHICLE_SDK', [{ reason: 'SIGNATURE_INVALID', count: 300 }])];
 const hours = Array.from({ length: 24 }, (_, i) => new Date(Date.parse(NOW) - (23 - i) * 3600_000).toISOString());
-const series = FlagEvaluationSeries.parse({ flagKey: 'ivi_00024_guide', window: '24h', bucketMinutes: 60, buckets: hours.map((h, i) => ({ bucketStart: h, source: 'VEHICLE_REPORT', evaluations: 400 + i, enabled: 200, fallbacks: i === 20 ? 250 : 2, errors: 0 })), stats: [] });
+const series = FlagEvaluationSeries.parse({ flagKey: 'ivi_00024_guide', window: '24h', bucketMinutes: 60, buckets: hours.map((h, i) => ({ bucketStart: h, source: 'VEHICLE_SDK', evaluations: 400 + i, enabled: 200, fallbacks: i === 20 ? 250 : 2, errors: 0 })), stats: [] });
 
 const scanDetail = FlagScanDetail.parse({
   scan: scans[0],
@@ -417,6 +417,8 @@ describe('수명 관리·평가·저장소·스캔', () => {
     expect(await screen.findByTestId('flag-eval-trend')).toBeVisible();
     expect(screen.getByRole('link', { name: T.evaluations.toMap })).toHaveAttribute('href', '/fleet/map?lens=activation&flagKey=ivi_00024_guide');
     expect(screen.getByRole('button', { name: T.evaluations.select('ivi_00024_guide') })).toHaveAttribute('aria-pressed', 'true');
+    // 경로 이름은 Feature 평가 운영과 같은 표(평가 집계 한 저장소)
+    expect(within(screen.getByTestId('flag-eval-trend')).getByText(`${T.evaluations.seriesEval} · ${EVAL_SOURCE_LABEL.VEHICLE_SDK}`)).toBeVisible();
   });
   it('저장소 설정은 출시 담당만 — 구현 담당에게는 직무 분리 이유', async () => {
     mount(<CodeRepositoriesScreen />, { role: 'integrator' });

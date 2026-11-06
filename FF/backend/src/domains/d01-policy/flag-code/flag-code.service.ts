@@ -21,7 +21,6 @@ import {
   type CreateFlagRepositoryBody,
   type FeatureVersionRow,
   type FlagEvaluationSeries,
-  type FlagEvaluationStat,
   type FlagEvaluationsResponse,
   type FlagGateWaiver,
   type FlagGateWaiverBody,
@@ -48,6 +47,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService, type PlatformEvent } from '../../../kernel/event.service';
 import { decodeCursor, encodeCursor } from '../../../kernel/paging';
 import { isProduction } from '../../../kernel/runtime-config';
+import { EvaluationStatsService } from '../../d04-ops/telemetry-ingest/evaluation-stats.service';
 import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 import { PolicyRepo } from '../policy-repos';
 import { RefdbRepository } from '../refdb/refdb.repository';
@@ -61,10 +61,6 @@ import { serverScanKey, signScanPayload, trustedScanKeys, verifyScanPayload } fr
 
 export const FLAG_CODE_SYSTEM = (correlationId: string): Actor => ({ id: 'system:flag-code', role: 'SYSTEM', correlationId });
 const DAY = 86_400_000;
-const WINDOW_MS = { '1h': 3_600_000, '24h': DAY, '7d': 7 * DAY } as const;
-/** 평가 구간 길이 — 창과 겹치는 구간(끝이 창 시작 뒤)을 모두 넣는다. 시작 시각만 보면 시드·집계가 시 단위로 정렬돼 1h 창이 비었다 */
-const BUCKET_MS = 3_600_000;
-const windowFrom = (now: number, window: keyof typeof WINDOW_MS) => new Date(now - WINDOW_MS[window] - BUCKET_MS + 1).toISOString();
 /** CI 업로드 scannedAt 시계 오차, 멈춘 배달·PLANNED PR을 다시 처리하기까지 */
 const UPLOAD_CLOCK_SKEW_MS = 5 * 60_000;
 const DELIVERY_STUCK_MS = 5 * 60_000;
@@ -97,6 +93,7 @@ export class FlagCodeService implements OnModuleInit {
     private readonly audit: AuditService,
     private readonly events: EventService,
     private readonly clock: Clock,
+    private readonly evals: EvaluationStatsService,
   ) {}
 
   /** Feature Version 승인(PROPOSED→APPROVED) — 같은 트랜잭션에서 Flag 계획을 등록하고, 커밋 뒤 Flag PR을 연다 */
@@ -706,52 +703,13 @@ export class FlagCodeService implements OnModuleInit {
     });
   }
 
-  // ── 평가 지표 ──────────────────────────────────────────
-  private stats(rows: ReturnType<FlagCodeStore['buckets']>, window: '1h' | '24h' | '7d', lastEval: Map<string, string>): FlagEvaluationStat[] {
-    const by = new Map<string, FlagEvaluationStat & { _fb: Map<string, number>; _var: Map<string, number> }>();
-    for (const b of rows) {
-      const k = `${b.flag_key}\u0000${b.source}`;
-      const doc = JSON.parse(b.doc) as { fallbacks?: { reason: string; count: number }[]; variants?: { name: string; count: number }[] };
-      let s = by.get(k);
-      if (!s) by.set(k, (s = { flagKey: b.flag_key, window, source: b.source as FlagEvaluationStat['source'], evaluations: 0, enabled: 0, disabled: 0, variants: [], fallbacks: [], errors: 0, vehicles: 0, lastEvaluatedAt: null, _fb: new Map(), _var: new Map() }));
-      s.evaluations += Number(b.evaluations);
-      s.enabled += Number(b.enabled);
-      s.disabled += Number(b.disabled);
-      s.errors += Number(b.errors);
-      s.vehicles = Math.max(s.vehicles, Number(b.vehicles));
-      if (Number(b.evaluations) > 0 && (!s.lastEvaluatedAt || b.bucket_start > s.lastEvaluatedAt)) s.lastEvaluatedAt = b.bucket_start;
-      for (const f of doc.fallbacks ?? []) s._fb.set(f.reason, (s._fb.get(f.reason) ?? 0) + f.count);
-      for (const v of doc.variants ?? []) s._var.set(v.name, (s._var.get(v.name) ?? 0) + v.count);
-    }
-    return [...by.values()].map(({ _fb, _var, ...s }) => ({
-      ...s,
-      lastEvaluatedAt: s.lastEvaluatedAt ? new Date(s.lastEvaluatedAt).toISOString() : lastEval.get(s.flagKey) ? new Date(lastEval.get(s.flagKey)!).toISOString() : null,
-      fallbacks: [..._fb].map(([reason, count]) => ({ reason: reason as FlagEvaluationStat['fallbacks'][number]['reason'], count })).sort((a, b) => b.count - a.count || a.reason.localeCompare(b.reason)),
-      variants: [..._var].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
-    }));
-  }
-
+  // ── 평가 지표 — 평가 집계 한 저장소(EvaluationStatsService)를 읽는다. Feature로 좁힐 때만 계획 Flag를 더한다 ──
   evaluations(q: { window?: string; featureId?: string; flagKey?: string; source?: string }): FlagEvaluationsResponse {
-    const window = (q.window ?? '24h') as '1h' | '24h' | '7d';
-    if (!(window in WINDOW_MS)) throw new DomainError('VALIDATION', 'window는 1h·24h·7d 중 하나입니다.');
-    const now = this.clock.now().getTime();
-    const keys = q.featureId ? new Set([...this.store.plans().filter((p) => p.featureId === q.featureId).map((p) => p.flagKey), ...this.policies.all().filter((p) => p.featureId === q.featureId).map((p) => p.flagKey)]) : null;
-    const rows = this.store.buckets({ from: windowFrom(now, window), to: new Date(now + 1).toISOString(), flagKey: q.flagKey, source: q.source }).filter((b) => !keys || keys.has(b.flag_key));
-    const items = this.stats(rows, window, this.store.lastEvaluated()).sort((a, b) => a.flagKey.localeCompare(b.flagKey) || a.source.localeCompare(b.source));
-    return { window, generatedAt: new Date(now).toISOString(), items };
+    const keys = q.featureId ? [...new Set([...this.store.plans().filter((p) => p.featureId === q.featureId).map((p) => p.flagKey), ...this.policies.all().filter((p) => p.featureId === q.featureId).map((p) => p.flagKey)])] : null;
+    return this.evals.flags({ window: q.window, flagKeys: keys, flagKey: q.flagKey, source: q.source });
   }
 
   evaluationSeries(flagKey: string, windowRaw?: string): FlagEvaluationSeries {
-    const window = (windowRaw ?? '24h') as '1h' | '24h' | '7d';
-    if (!(window in WINDOW_MS)) throw new DomainError('VALIDATION', 'window는 1h·24h·7d 중 하나입니다.');
-    const now = this.clock.now().getTime();
-    const rows = this.store.buckets({ from: windowFrom(now, window), to: new Date(now + 1).toISOString(), flagKey });
-    return {
-      flagKey,
-      window,
-      bucketMinutes: 60,
-      buckets: rows.map((b) => ({ bucketStart: new Date(b.bucket_start).toISOString(), source: b.source as FlagEvaluationStat['source'], evaluations: Number(b.evaluations), enabled: Number(b.enabled), fallbacks: Number(b.fallbacks), errors: Number(b.errors) })),
-      stats: this.stats(rows, window, this.store.lastEvaluated()),
-    };
+    return this.evals.series(flagKey, windowRaw);
   }
 }

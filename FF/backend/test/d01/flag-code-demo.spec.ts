@@ -80,4 +80,11 @@ describe('평가 모니터링 — 정시가 아닌 시각에 띄워도 1h·24h·
     const series = (await http().get(`/api/flag-code/evaluations/${live[0].flagKey}?window=${window}`).expect(200)).body;
     expect(series.buckets.length).toBeGreaterThan(0);
   });
+
+  // 평가 집계는 한 저장소 — 시연 활동(14일 평가)이 픽스처가 평가를 넣은 flag에 다른 시연 값을 더하면 폴백 급증 판정이 픽스처 의도와 달라진다
+  it('시연 활동은 픽스처가 평가를 넣은 flag에 평가를 더하지 않는다 — 경로는 픽스처의 Unleash Edge·차량 SDK뿐', async () => {
+    const items = (await http().get('/api/flag-code/evaluations?window=7d').expect(200)).body.items as { source: string; fallbacks: { reason: string }[] }[];
+    expect(new Set(items.map((s) => s.source))).toEqual(new Set(['UNLEASH_EDGE', 'VEHICLE_SDK']));
+    expect(items.flatMap((s) => s.fallbacks.map((f) => f.reason))).not.toContain('LOCAL_GUARD_BLOCK');
+  });
 });

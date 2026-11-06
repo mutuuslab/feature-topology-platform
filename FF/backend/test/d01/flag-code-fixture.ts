@@ -85,12 +85,13 @@ export function writeFlagCodeFixture(): string {
     files: scaffold('FEAT-00014', '1.0.0', PLANS.f14).map((f) => ({ path: f.path, change: 'ADD' })), createdAt: '2026-11-01T00:00:00.000Z', createdBy: 'system:flag-code',
     mergedAt: null, mergedBy: null, mergeCommit: null, retirementId: null, failure: null, openedAtOffsetHours: -48,
   }]);
-  const bucket = (h: number, extra: Record<string, unknown> = {}) => ({ bucketStart: new Date(Date.parse('2026-11-05T00:00:00.000Z') + h * 3_600_000).toISOString(), source: 'UNLEASH_EDGE', evaluations: 400, enabled: 380, disabled: 20, errors: 1, vehicles: 100, fallbacks: [{ reason: 'TTL_EXPIRED', count: 2 }], variants: [{ name: 'on', count: 380 }], ...extra });
+  // 시 칸 — 평가 = 켜짐 + 꺼짐 + 오류, 폴백은 꺼짐의 일부(시드가 검사한다)
+  const bucket = (h: number, extra: Record<string, unknown> = {}) => ({ bucketStart: new Date(Date.parse('2026-11-05T00:00:00.000Z') + h * 3_600_000).toISOString(), source: 'UNLEASH_EDGE', evaluations: 400, enabled: 380, disabled: 19, errors: 1, vehicles: 100, fallbacks: [{ reason: 'TTL_EXPIRED', count: 2 }], ...extra });
   w('evaluations.json', {
     windowEnd: '2026-11-06T00:00:00.000Z',
     flags: [
-      { flagKey: 'care_00022_signal', lastEvaluatedAt: '2026-11-05T23:00:00.000Z', buckets: [bucket(0), bucket(22), bucket(23, { fallbacks: [{ reason: 'SIGNATURE_INVALID', count: 40 }] }), bucket(23, { source: 'VEHICLE_REPORT', evaluations: 90, enabled: 85, disabled: 5, vehicles: 30 })] },
-      { flagKey: 'adas_00002_signal', lastEvaluatedAt: '2026-06-01T00:00:00.000Z', buckets: [bucket(23, { evaluations: 0, enabled: 0, disabled: 0, errors: 0, vehicles: 0, fallbacks: [], variants: [] })] },
+      { flagKey: 'care_00022_signal', lastEvaluatedAt: '2026-11-05T23:00:00.000Z', buckets: [bucket(0), bucket(22), bucket(23, { enabled: 340, disabled: 59, fallbacks: [{ reason: 'SIGNATURE_INVALID', count: 40 }] }), bucket(23, { source: 'VEHICLE_SDK', evaluations: 90, enabled: 85, disabled: 4, vehicles: 30 })] },
+      { flagKey: 'adas_00002_signal', lastEvaluatedAt: '2026-06-01T00:00:00.000Z', buckets: [bucket(23, { evaluations: 0, enabled: 0, disabled: 0, errors: 0, vehicles: 0, fallbacks: [] })] },
     ],
   });
   w('unleash-sync.json', [{ flagKey: 'care_00022_param', policyId: 'POL-00002', revision: 0, outcome: 'SYNCED', archived: false, at: '2026-10-30T00:00:00.000Z' }]);

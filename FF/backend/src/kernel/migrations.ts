@@ -1049,24 +1049,9 @@ CREATE INDEX flag_gate_waiver_flag ON flag_gate_waiver (flag_key, state);
 `,
   },
   {
-    // 평가 지표 — 원천별 시간 구간 집계와 Flag별 마지막 평가 시각. Unleash 관측(시연 동기화 기록)은 실제 동기화 기록이 있으면 쓰지 않는다.
-    name: '096_flag_evaluation_bucket',
+    // Unleash 관측(시연 동기화 기록) — 실제 동기화 기록이 있으면 쓰지 않는다. 평가 지표는 102 한 저장소(통합 D-INT-2)
+    name: '096_flag_unleash_observation',
     sql: `
-CREATE TABLE flag_evaluation_bucket (
-  flag_key TEXT NOT NULL,
-  bucket_start TEXT NOT NULL,
-  source TEXT NOT NULL CHECK (source IN ('UNLEASH_EDGE','FF_OFREP','VEHICLE_REPORT')),
-  evaluations INTEGER NOT NULL,
-  enabled INTEGER NOT NULL,
-  disabled INTEGER NOT NULL,
-  fallbacks INTEGER NOT NULL,
-  errors INTEGER NOT NULL,
-  vehicles INTEGER NOT NULL,
-  doc TEXT NOT NULL,
-  PRIMARY KEY (flag_key, bucket_start, source)
-);
-CREATE INDEX flag_evaluation_bucket_time ON flag_evaluation_bucket (bucket_start);
-CREATE TABLE flag_evaluation_last (flag_key TEXT PRIMARY KEY, last_evaluated_at TEXT NOT NULL);
 CREATE TABLE flag_unleash_observation (
   flag_key TEXT NOT NULL,
   policy_id TEXT NOT NULL,
@@ -1093,11 +1078,16 @@ CREATE TABLE notification_rule_recipient (event_type TEXT NOT NULL, rkey TEXT NO
 `,
   },
   {
-    // Feature별 평가 운영 데이터 — 평가 span을 일(UTC) · flag · 평가 경로 · 앱 · 환경 · 결과 · 분기값으로 센다(span은 보존 기간 뒤 지워져도 집계는 남는다)
-    name: '102_flag_eval_daily',
+    // Flag 평가 집계 한 저장소(통합 D-INT-2) — 평가 span·Unleash Edge 평가·차량 보고를 시(UTC) · flag · 평가 경로 · 앱 · 환경 · 결과 · 분기값 · 폴백 사유로 센다.
+    // 두 화면(Feature 평가 운영 = 일로 묶음, Flag 평가 모니터링 = 1h·24h·7d)이 같은 칸을 읽는다. span은 보존 기간 뒤 지워져도 집계는 남는다.
+    // flag_eval_reach: 시 칸별 고유 차량 수 — 더할 수 없는 값이라 칸마다 관측 최댓값만 둔다(창 값 = 칸 최댓값, 하한). flag_eval_last: flag별 마지막 평가 시각
+    name: '102_flag_eval_hourly',
     sql: `
-CREATE TABLE flag_eval_daily (day TEXT NOT NULL, flag_key TEXT NOT NULL, source TEXT NOT NULL, app_name TEXT NOT NULL, environment TEXT NOT NULL, result TEXT NOT NULL, variant TEXT NOT NULL, n INTEGER NOT NULL CHECK (n >= 0), PRIMARY KEY (day, flag_key, source, app_name, environment, result, variant));
-CREATE INDEX flag_eval_daily_flag ON flag_eval_daily (flag_key, day);
+CREATE TABLE flag_eval_hourly (hour TEXT NOT NULL, flag_key TEXT NOT NULL, source TEXT NOT NULL CHECK (source IN ('OFREP','VEHICLE_SDK','UNLEASH_EDGE','PLATFORM')), app_name TEXT NOT NULL, environment TEXT NOT NULL, result TEXT NOT NULL CHECK (result IN ('ON','OFF','SAFE_DEFAULT','ERROR')), variant TEXT NOT NULL, reason TEXT NOT NULL, n INTEGER NOT NULL CHECK (n >= 0), PRIMARY KEY (hour, flag_key, source, app_name, environment, result, variant, reason));
+CREATE INDEX flag_eval_hourly_flag ON flag_eval_hourly (flag_key, hour);
+CREATE INDEX flag_eval_hourly_hour ON flag_eval_hourly (hour);
+CREATE TABLE flag_eval_reach (hour TEXT NOT NULL, flag_key TEXT NOT NULL, source TEXT NOT NULL, vehicles INTEGER NOT NULL CHECK (vehicles >= 0), PRIMARY KEY (hour, flag_key, source));
+CREATE TABLE flag_eval_last (flag_key TEXT PRIMARY KEY, last_at TEXT NOT NULL);
 `,
   },
   {

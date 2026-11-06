@@ -10,6 +10,7 @@ import { HUMAN_ROLES } from './access';
 import { DEMO_PERSONAS } from './duty-separation';
 import {
   activitiesForScreen,
+  allActivities,
   departmentOfPersona,
   departmentsOf,
   myActivities,
@@ -149,6 +150,15 @@ describe('부서 (OEM 조직 가정안)', () => {
 describe('조회 도우미', () => {
   it('Feature 상세 화면을 쓰는 활동에 Release Sign-off가 있다', () => {
     expect(activitiesForScreen(WORKFLOWS, '/features/:id/:ver').map((x) => x.activity.id)).toContain('FPW.7-A12');
+  });
+
+  // 회귀(2026-11-06): 외부 연계 현황(JIRA·codeBeamer)의 '이 화면의 업무 절차'에 연계 일이 없었다 — 연계 동기화·충돌 해결, 정책 근거 CR 연결
+  it('외부 연계 현황 화면에 JIRA·codeBeamer 연계 활동이 있고, 정책 상세에 근거 CR 연결이 있다', () => {
+    const on = (screen: string) => activitiesForScreen(WORKFLOWS, screen).map((x) => x.activity.id);
+    expect(on('/integration/connectors')).toEqual(expect.arrayContaining(['FPW.3-A06', 'FPW.4-A06']));
+    expect(on('/policies/:id')).toContain('FPW.4-A06');
+    const sync = allActivities(WORKFLOWS).find((x) => x.activity.id === 'FPW.3-A06')!.activity;
+    expect(sync.platform.actions).toContain('resolveExtConflict');
   });
 
   it('Feature Owner(author)의 내 업무에 Release Sign-off가 R로 들어 있고, 순서는 생애주기 순서다', () => {

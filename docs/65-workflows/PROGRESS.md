@@ -10,6 +10,11 @@
 - **모델을 고친 뒤 순서:** `python -I scripts/check.py` → `cd ../../FF && npm run workflow:sync` → FF `npm run verify`(workflow:check·정합성 시험).
 - 커밋은 사용자 요청 시에만 한다.
 
+## 외부 연계 화면 업무 절차 (2026-11-06, worktree `-almfix` 브랜치 `fix/alm-defects-port`, 커밋 전)
+- 사용자 지적: 외부 연계 현황(JIRA·codeBeamer)의 '이 화면의 업무 절차'에 연계 일이 없었다 — 그 화면을 쓰는 활동은 구현 연결 입력(FPW.3-A05)·G6 서명 배포(FPW.6-A06)뿐이었다.
+- 추가: **FPW.3-A06 외부 연계 동기화·충돌 해결**(R-INT, `resolveExtConflict`, A05 → A06 → G3 A04, 산출물 WP-EXT-SYNC 보존), **FPW.4-A06 정책 근거 변경요청(CR) 연결**(R-FO, `linkPolicyChangeRequest`, 정책 작성·검증 A03 → A06 → 승인 A04, WP-POLICY-CR 보존). 활동 89 → 91.
+- 흐름도 교차 래칫 254 → 256(상한 257). 사건(trigger) 활동으로 두면 263~277이라 next 사슬로 넣었다. 회귀 시험 contracts `workflows.test.ts` '외부 연계 현황 화면에…'.
+
 ## 현재 상태 — 담당자 E2E 개선 웨이브 (2026-11-05, worktree `-dept` 브랜치 `feat/feature-db`, 커밋 전)
 - **데모 계정 12(겸직 0건):** 새 계정 `opslead`(R-OPS, DEP-OPS) · `safety2`(R-SM, DEP-FS) · `productowner`(R-PO, DEP-PDP)를 부서 personas 뒤에 붙였다(첫 번째 기본 계정은 그대로). `department_scope.demo_notes`를 고쳐 운영 리더 계정이 생겼고, 복원 2인 승인(SOD-09)·고객 출시 승인(SOD-04)을 데모에서 다른 사람이 할 수 있음을 적었다.
 - **IAM 스냅샷:** W6 포트 9153 백엔드에서 재추출(accounts=12). 다른 묶음이 경로를 더하면 마지막에 한 번 더 뽑는다.

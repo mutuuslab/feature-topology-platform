@@ -29,6 +29,9 @@ flowchart LR
     FPW_4_A01["A01 차량 내 감시·안전기제 설계"]
     FPW_4_A03["A03 Flag 정책 작성·검증"]
   end
+  subgraph R_FO["Feature Owner"]
+    FPW_4_A06["A06 정책 근거 변경요청(CR) 연결"]
+  end
   subgraph R_REQ["요구 Owner"]
     FPW_4_A04["A04 정책 승인"]
   end
@@ -39,7 +42,8 @@ flowchart LR
     FPW_4_A05{{"A05 G4 설계 독립 검토·판정"}}
   end
   FPW_4_A01 --> FPW_4_A03
-  FPW_4_A03 --> FPW_4_A04
+  FPW_4_A03 --> FPW_4_A06
+  FPW_4_A06 --> FPW_4_A04
   FPW_4_A04 --> FPW_4_A05
   T_FPW_4_A02(("설계 착수 또는 사용 플랫폼 컴포넌트 변경")) -.-> FPW_4_A02
   FPW_4_A02 --> FPW_4_A05
@@ -51,6 +55,7 @@ flowchart LR
 |---|---|---|---|---|---|---|
 | FPW.4-A01 | 차량 내 감시·안전기제 설계 | R 아키텍트 · A 아키텍트 · C Safety Manager, 통합 조직 · I 시험 조직, 요구 Owner | WP-G3-DECISION, WP-SAFETY-REQ | WP-SAFETY-DESIGN | `/master/control-points`, `/trace/design` | FFG-LCY-006, FFG-DEAC-001, FFG-TEL-007, FFG-CLS-002 |
 | FPW.4-A03 | Flag 정책 작성·검증 | R 아키텍트 · A 아키텍트 · C 기준정보 담당, Feature Owner · I 요구 Owner | WP-SAFETY-DESIGN, WP-FEAT-SCOPE | WP-POLICY | `createPolicy`, `updatePolicy`, `validatePolicy`, `/policies/new`, `/policies` | FFG-CLS-002 |
+| FPW.4-A06 | 정책 근거 변경요청(CR) 연결 | R Feature Owner · A Feature Owner · C 아키텍트 · I 요구 Owner, Release Manager |  | WP-POLICY-CR | `linkPolicyChangeRequest`, `/policies/:id`, `/integration/connectors` | – |
 | FPW.4-A04 | 정책 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager · I 아키텍트, Release Manager | WP-POLICY | WP-POLICY | `decidePolicy`, `/policies/:id` | – |
 | FPW.4-A02 | 플랫폼 도구 신뢰도 분류 | R Safety Manager · A Safety Manager · C 아키텍트, CSM · I 품질 조직 | WP-SAFETY-REQ | WP-TCL-RECORD | `/arch/components` | FFG-PLT-013 |
 | FPW.4-A05 | G4 설계 독립 검토·판정 | R 품질 조직 · A 아키텍트 · C Safety Manager, CSM · I 시험 조직, Feature Owner | WP-SAFETY-DESIGN, WP-TCL-RECORD, WP-POLICY | WP-G4-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
@@ -74,6 +79,15 @@ flowchart LR
 
 완료 기준:
 - [ ] 최신 개정본의 분야별 검증이 모두 통과했다
+
+#### FPW.4-A06 정책 근거 변경요청(CR) 연결
+1. 정책 상세의 변경요청 패널에서 근거 JIRA 변경요청(CR) 키를 골라 정책에 연결한다. 근거 CR이 없으면 JIRA에 만든 뒤 연결한다
+2. 외부 연계 현황에서 CR 상태와 연결된 정책·Feature Version을 확인한다
+3. 승인자에게 CR을 알린다. JIRA에서 CR을 승인·반려해도 검증 GO 정책이고 정책 승인 권한이 있는 매핑된 계정일 때만 정책 결정으로 반영된다
+4. 거부되어 CR 상태가 되돌아가면 받은 함의 사유를 CR 담당에게 알리고 플랫폼에서 승인하도록 안내한다
+
+완료 기준:
+- [ ] 승인 대상 정책에 근거 CR이 연결되어 있고 CR 상태가 정책 결정과 맞다
 
 #### FPW.4-A04 정책 승인
 1. 승인 대상 개정본의 해시와 배포 안전성 판정(GO)을 확인한다
@@ -109,6 +123,7 @@ flowchart LR
 | WP-TCL-RECORD | 플랫폼 도구 신뢰도(TCL) 기록 | 산출 | 컴포넌트별 오류 출력 유형과 TI·TD·TCL; TD1 주장 시 출력 유형별 검출 수단; TCL2 이상 컴포넌트의 신뢰도 확보 방법 |
 | WP-POLICY | Flag 정책(검증·승인본) | 산출 | 대상 규칙·Variant 조건·기본값과 개정 번호; 분야별 검증 8종 결과와 배포 안전성 판정; 승인자·정책 해시·승인 시각 |
 | WP-G4-DECISION | G4 Decision Record | 산출 | 설계 적합성 판정과 근거 Evidence ID; 독립 검토자 서명과 아키텍트 책임 확인 |
+| WP-POLICY-CR | 정책 근거 변경요청(CR) 연결 | 산출 | 정책 ID와 근거 JIRA 변경요청(CR) 키·상태; JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유 |
 
 ## 4. 진입·완료 기준
 

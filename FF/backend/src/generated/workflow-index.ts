@@ -771,7 +771,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.3-A04"
+    "FPW.3-A06"
    ],
    "screens": [
     "/features/:id/:ver",
@@ -780,6 +780,39 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "updateDraft"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.3-A06",
+   "processId": "FPW.3",
+   "processName": "안전요구 확정",
+   "name": "외부 연계 동기화·충돌 해결",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-REQ",
+     "R-FO"
+    ],
+    "I": [
+     "R-SM"
+    ]
+   },
+   "next": [
+    "FPW.3-A04"
+   ],
+   "screens": [
+    "/integration/connectors",
+    "/features/:id/:ver"
+   ],
+   "actions": [
+    "resolveExtConflict"
    ],
    "anchor": null,
    "slaHours": null
@@ -870,7 +903,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     ]
    },
    "next": [
-    "FPW.4-A04"
+    "FPW.4-A06"
    ],
    "screens": [
     "/policies/new",
@@ -880,6 +913,39 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "createPolicy",
     "updatePolicy",
     "validatePolicy"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.4-A06",
+   "processId": "FPW.4",
+   "processName": "안전 설계·정책 설계",
+   "name": "정책 근거 변경요청(CR) 연결",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-ARC"
+    ],
+    "I": [
+     "R-REQ",
+     "R-REL"
+    ]
+   },
+   "next": [
+    "FPW.4-A04"
+   ],
+   "screens": [
+    "/policies/:id",
+    "/integration/connectors"
+   ],
+   "actions": [
+    "linkPolicyChangeRequest"
    ],
    "anchor": null,
    "slaHours": null

@@ -477,6 +477,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.3-A04",
      "process": "FPW.3",
      "part": "C",
@@ -491,6 +500,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
      ],
      "firstScope": true
     },
@@ -875,6 +894,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/features/:id/:ver",
      "/master/artifacts",
      "/integration/connectors",
+     "/policies/:id",
      "/baselines",
      "/experiments",
      "/products/new",
@@ -920,7 +940,12 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "to": "FPW.3-A06",
+      "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
       "department": "DEP-SE"
      },
      {
@@ -968,6 +993,11 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "from": "FPW.3-A02",
       "to": "FPW.3-A05",
+      "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A06",
       "department": "DEP-SE"
      },
      {
@@ -1146,6 +1176,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.3-A04",
      "process": "FPW.3",
      "part": "R",
@@ -1174,6 +1213,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "parts": [
       "R",
       "A",
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "C",
+     "parts": [
+      "C",
       "I"
      ],
      "firstScope": true
@@ -1383,6 +1432,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-PDP"
      },
      {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A06",
+      "department": "DEP-PDP"
+     },
+     {
       "from": "FPW.4-A04",
       "to": "FPW.4-A05",
       "department": "DEP-QA"
@@ -1410,13 +1464,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-QA"
      },
      {
-      "from": "FPW.3-A05",
+      "from": "FPW.3-A06",
       "to": "FPW.3-A04",
       "department": "DEP-INT"
      },
      {
-      "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
       "department": "DEP-PDP"
      },
      {
@@ -1467,11 +1521,30 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.4-A01",
      "process": "FPW.4",
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.4-A06",
+     "process": "FPW.4",
+     "part": "I",
+     "parts": [
+      "I"
      ],
      "firstScope": true
     },
@@ -1820,7 +1893,7 @@ export const WORKFLOWS: WorkflowDoc = {
    "handoffs": {
     "out": [
      {
-      "from": "FPW.3-A05",
+      "from": "FPW.3-A06",
       "to": "FPW.3-A04",
       "department": "DEP-SE"
      },
@@ -1850,6 +1923,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.3-A02",
       "to": "FPW.3-A05",
       "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.3-A05",
+      "to": "FPW.3-A06",
+      "department": "DEP-PDP"
      },
      {
       "from": "FPW.5-A01",
@@ -2246,6 +2324,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "part": "C",
      "parts": [
       "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.3-A06",
+     "process": "FPW.3",
+     "part": "I",
+     "parts": [
+      "I"
      ],
      "firstScope": true
     },
@@ -2715,12 +2802,12 @@ export const WORKFLOWS: WorkflowDoc = {
      "/variant-conditions",
      "/trace/design",
      "/change/cr",
+     "/integration/connectors",
      "/master/control-points",
      "/policies/:id",
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
-     "/integration/connectors",
      "/experiments",
      "/ops/anomalies",
      "/ops/incidents",
@@ -7604,6 +7691,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값",
       "VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)"
      ]
+    },
+    {
+     "key": "WP-EXT-SYNC",
+     "name": "외부 연계 동기화·충돌 처리 기록",
+     "en": "ALM Sync & Conflict Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "codeBeamer 요구·JIRA Epic·GitLab MR과 Feature Version의 연결·상태 대조 결과",
+      "받은 함에서 거부된 외부 변경과 사유(권한·전이 규칙·계정 매핑)",
+      "충돌마다 고른 값(플랫폼 값·외부 값)과 처리자·사유"
+     ]
     }
    ],
    "activities": [
@@ -7846,6 +7945,67 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": [
+      "FPW.3-A06"
+     ]
+    },
+    {
+     "id": "FPW.3-A06",
+     "name": "외부 연계 동기화·충돌 해결",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-REQ",
+       "R-FO"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-IMPL-LINK"
+     ],
+     "outputs": [
+      "WP-EXT-SYNC"
+     ],
+     "steps": [
+      "외부 연계 현황의 연계 동기화 탭에서 이 Version의 codeBeamer 요구·JIRA Epic 연결과 받은 함·보낼 함·열린 충돌을 확인한다",
+      "codeBeamer 요구가 개정되어 G2 재검토 표시가 붙었으면 요구 담당과 안전 담당에게 재검토를 요청한다",
+      "JIRA에서 들어온 Epic·변경요청 상태 변경이 거부되었으면 받은 함의 사유(권한·전이 규칙·계정 매핑)를 외부 담당에게 알린다",
+      "실패한 보낼 함 작업은 연결 설정·워크플로 전이·권한 원인을 고치고 다음 재시도에서 보내졌는지 확인한다",
+      "충돌은 플랫폼 값 다시 보내기와 외부 값 다시 시도 중 하나를 사유와 함께 고른다. 외부 값은 플랫폼 가드를 다시 거친다",
+      "정의 승인 뒤에도 외부 요구 개정·상태 변경·충돌이 생기면 같은 확인을 다시 한다"
+     ],
+     "checks": [
+      "열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다",
+      "Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다"
+     ],
+     "platform": {
+      "actions": [
+       "resolveExtConflict"
+      ],
+      "screens": [
+       "/integration/connectors",
+       "/features/:id/:ver"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
       "FPW.3-A04"
      ]
     },
@@ -7918,7 +8078,7 @@ export const WORKFLOWS: WorkflowDoc = {
     }
    ],
    "layout": {
-    "width": 1366,
+    "width": 1646,
     "height": 294,
     "lanes": [
      {
@@ -7926,7 +8086,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "요구 Owner",
       "x": 0,
       "y": 0,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      },
      {
@@ -7934,7 +8094,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "품질 조직",
       "x": 0,
       "y": 98,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      },
      {
@@ -7942,7 +8102,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "통합 조직",
       "x": 0,
       "y": 196,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      }
     ],
@@ -7969,7 +8129,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.3-A04",
       "kind": "action",
       "label": "G3 판정·Feature 정의 승인",
-      "x": 1038,
+      "x": 1318,
       "y": 16,
       "w": 188,
       "h": 66
@@ -7993,6 +8153,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.3-A06",
+      "kind": "action",
+      "label": "외부 연계 동기화·충돌 해결",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.3-S1",
       "kind": "start",
       "label": "시작",
@@ -8005,7 +8174,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.3-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240,
+      "x": 1520,
       "y": 40,
       "w": 18,
       "h": 18
@@ -8098,22 +8267,22 @@ export const WORKFLOWS: WorkflowDoc = {
         147
        ],
        [
-        1026,
+        1306,
         147
        ],
        [
-        1026,
+        1306,
         49
        ],
        [
-        1038,
+        1318,
         49
        ]
       ]
      },
      {
       "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "to": "FPW.3-A06",
       "kind": "flow",
       "points": [
        [
@@ -8121,15 +8290,30 @@ export const WORKFLOWS: WorkflowDoc = {
         245
        ],
        [
-        1026,
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A06",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
         245
        ],
        [
-        1026,
+        1306,
+        245
+       ],
+       [
+        1306,
         49
        ],
        [
-        1038,
+        1318,
         49
        ]
       ]
@@ -8140,11 +8324,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "points": [
        [
-        1226,
+        1506,
         49
        ],
        [
-        1240,
+        1520,
         49
        ]
       ]
@@ -8152,13 +8336,13 @@ export const WORKFLOWS: WorkflowDoc = {
     ],
     "joins": [
      [
-      1026,
+      1306,
       147
      ]
     ]
    },
    "departmentLayout": {
-    "width": 1366,
+    "width": 1646,
     "height": 294,
     "lanes": [
      {
@@ -8166,7 +8350,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "시스템엔지니어링팀",
       "x": 0,
       "y": 0,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      },
      {
@@ -8174,7 +8358,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "품질팀",
       "x": 0,
       "y": 98,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      },
      {
@@ -8182,7 +8366,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "SW통합·릴리스팀",
       "x": 0,
       "y": 196,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      }
     ],
@@ -8209,7 +8393,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.3-A04",
       "kind": "action",
       "label": "G3 판정·Feature 정의 승인",
-      "x": 1038,
+      "x": 1318,
       "y": 16,
       "w": 188,
       "h": 66
@@ -8233,6 +8417,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.3-A06",
+      "kind": "action",
+      "label": "외부 연계 동기화·충돌 해결",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.3-S1",
       "kind": "start",
       "label": "시작",
@@ -8245,7 +8438,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.3-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240,
+      "x": 1520,
       "y": 40,
       "w": 18,
       "h": 18
@@ -8338,22 +8531,22 @@ export const WORKFLOWS: WorkflowDoc = {
         147
        ],
        [
-        1026,
+        1306,
         147
        ],
        [
-        1026,
+        1306,
         49
        ],
        [
-        1038,
+        1318,
         49
        ]
       ]
      },
      {
       "from": "FPW.3-A05",
-      "to": "FPW.3-A04",
+      "to": "FPW.3-A06",
       "kind": "flow",
       "points": [
        [
@@ -8361,15 +8554,30 @@ export const WORKFLOWS: WorkflowDoc = {
         245
        ],
        [
-        1026,
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.3-A06",
+      "to": "FPW.3-A04",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
         245
        ],
        [
-        1026,
+        1306,
+        245
+       ],
+       [
+        1306,
         49
        ],
        [
-        1038,
+        1318,
         49
        ]
       ]
@@ -8380,11 +8588,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "points": [
        [
-        1226,
+        1506,
         49
        ],
        [
-        1240,
+        1520,
         49
        ]
       ]
@@ -8392,7 +8600,7 @@ export const WORKFLOWS: WorkflowDoc = {
     ],
     "joins": [
      [
-      1026,
+      1306,
       147
      ]
     ]
@@ -8488,6 +8696,17 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "설계 적합성 판정과 근거 Evidence ID",
       "독립 검토자 서명과 아키텍트 책임 확인"
+     ]
+    },
+    {
+     "key": "WP-POLICY-CR",
+     "name": "정책 근거 변경요청(CR) 연결",
+     "en": "Policy Change Request Link",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "정책 ID와 근거 JIRA 변경요청(CR) 키·상태",
+      "JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유"
      ]
     }
    ],
@@ -8605,6 +8824,62 @@ export const WORKFLOWS: WorkflowDoc = {
       "screens": [
        "/policies/new",
        "/policies"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.4-A06"
+     ]
+    },
+    {
+     "id": "FPW.4-A06",
+     "name": "정책 근거 변경요청(CR) 연결",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-ARC"
+      ],
+      "I": [
+       "R-REQ",
+       "R-REL"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-POLICY-CR"
+     ],
+     "steps": [
+      "정책 상세의 변경요청 패널에서 근거 JIRA 변경요청(CR) 키를 골라 정책에 연결한다. 근거 CR이 없으면 JIRA에 만든 뒤 연결한다",
+      "외부 연계 현황에서 CR 상태와 연결된 정책·Feature Version을 확인한다",
+      "승인자에게 CR을 알린다. JIRA에서 CR을 승인·반려해도 검증 GO 정책이고 정책 승인 권한이 있는 매핑된 계정일 때만 정책 결정으로 반영된다",
+      "거부되어 CR 상태가 되돌아가면 받은 함의 사유를 CR 담당에게 알리고 플랫폼에서 승인하도록 안내한다"
+     ],
+     "checks": [
+      "승인 대상 정책에 근거 CR이 연결되어 있고 CR 상태가 정책 결정과 맞다"
+     ],
+     "platform": {
+      "actions": [
+       "linkPolicyChangeRequest"
+      ],
+      "screens": [
+       "/policies/:id",
+       "/integration/connectors"
       ],
       "gates": [],
       "anchor": null,
@@ -8799,39 +9074,328 @@ export const WORKFLOWS: WorkflowDoc = {
     }
    ],
    "layout": {
-    "width": 1366,
-    "height": 392,
+    "width": 1646,
+    "height": 490,
     "lanes": [
      {
       "role": "R-ARC",
       "label": "아키텍트",
       "x": 0,
       "y": 0,
-      "w": 1366,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 98,
+      "w": 1646,
       "h": 98
      },
      {
       "role": "R-REQ",
       "label": "요구 Owner",
       "x": 0,
-      "y": 98,
-      "w": 1366,
+      "y": 196,
+      "w": 1646,
       "h": 98
      },
      {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0,
-      "y": 196,
-      "w": 1366,
+      "y": 294,
+      "w": 1646,
       "h": 98
      },
      {
       "role": "R-QA",
       "label": "품질 조직",
       "x": 0,
+      "y": 392,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.4-A01",
+      "kind": "action",
+      "label": "차량 내 감시·안전기제 설계",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A03",
+      "kind": "action",
+      "label": "Flag 정책 작성·검증",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A06",
+      "kind": "action",
+      "label": "정책 근거 변경요청(CR) 연결",
+      "x": 758,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A04",
+      "kind": "action",
+      "label": "정책 승인",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A02",
+      "kind": "action",
+      "label": "플랫폼 도구 신뢰도 분류",
+      "x": 1038,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A05",
+      "kind": "action",
+      "label": "G4 설계 독립 검토·판정",
+      "x": 1318,
+      "y": 408,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.4-S2",
+      "kind": "start",
+      "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
+      "x": 986,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.4-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 432,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.4-S1",
+      "to": "FPW.4-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-S2",
+      "to": "FPW.4-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        1004,
+        343
+       ],
+       [
+        1038,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A01",
+      "to": "FPW.4-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A03",
+      "to": "FPW.4-A06",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        758,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        147
+       ],
+       [
+        1026,
+        147
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1306,
+        245
+       ],
+       [
+        1306,
+        441
+       ],
+       [
+        1318,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A02",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        343
+       ],
+       [
+        1306,
+        343
+       ],
+       [
+        1306,
+        441
+       ],
+       [
+        1318,
+        441
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A05",
+      "to": "FPW.4-E1",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        441
+       ],
+       [
+        1520,
+        441
+       ]
+      ]
+     }
+    ],
+    "joins": [
+     [
+      1306,
+      343
+     ]
+    ]
+   },
+   "departmentLayout": {
+    "width": 1646,
+    "height": 392,
+    "lanes": [
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 98,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-FS",
+      "label": "기능안전팀",
+      "x": 0,
+      "y": 196,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "department": "DEP-QA",
+      "label": "품질팀",
+      "x": 0,
       "y": 294,
-      "w": 1366,
+      "w": 1646,
       "h": 98
      }
     ],
@@ -8858,6 +9422,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.4-A04",
       "kind": "action",
       "label": "정책 승인",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.4-A06",
+      "kind": "action",
+      "label": "정책 근거 변경요청(CR) 연결",
       "x": 758,
       "y": 114,
       "w": 188,
@@ -8867,7 +9440,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.4-A02",
       "kind": "action",
       "label": "플랫폼 도구 신뢰도 분류",
-      "x": 758,
+      "x": 1038,
       "y": 212,
       "w": 188,
       "h": 66
@@ -8876,7 +9449,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.4-A05",
       "kind": "action",
       "label": "G4 설계 독립 검토·판정",
-      "x": 1038,
+      "x": 1318,
       "y": 310,
       "w": 188,
       "h": 66
@@ -8894,7 +9467,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.4-S2",
       "kind": "start",
       "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
-      "x": 706,
+      "x": 986,
       "y": 236,
       "w": 18,
       "h": 18
@@ -8903,7 +9476,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "id": "FPW.4-E1",
       "kind": "end",
       "label": "종료",
-      "x": 1240,
+      "x": 1520,
       "y": 334,
       "w": 18,
       "h": 18
@@ -8931,11 +9504,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "trigger",
       "points": [
        [
-        724,
+        1004,
         245
        ],
        [
-        758,
+        1038,
         245
        ]
       ]
@@ -8957,7 +9530,7 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      {
       "from": "FPW.4-A03",
-      "to": "FPW.4-A04",
+      "to": "FPW.4-A06",
       "kind": "flow",
       "points": [
        [
@@ -8979,8 +9552,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
-      "from": "FPW.4-A04",
-      "to": "FPW.4-A05",
+      "from": "FPW.4-A06",
+      "to": "FPW.4-A04",
       "kind": "flow",
       "points": [
        [
@@ -8993,10 +9566,33 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         1026,
-        343
+        49
        ],
        [
         1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.4-A04",
+      "to": "FPW.4-A05",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1306,
+        49
+       ],
+       [
+        1306,
+        343
+       ],
+       [
+        1318,
         343
        ]
       ]
@@ -9007,19 +9603,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "flow",
       "points": [
        [
-        946,
+        1226,
         245
        ],
        [
-        1026,
+        1306,
         245
        ],
        [
-        1026,
+        1306,
         343
        ],
        [
-        1038,
+        1318,
         343
        ]
       ]
@@ -9030,11 +9626,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "points": [
        [
-        1226,
+        1506,
         343
        ],
        [
-        1240,
+        1520,
         343
        ]
       ]
@@ -9042,241 +9638,8 @@ export const WORKFLOWS: WorkflowDoc = {
     ],
     "joins": [
      [
-      1026,
+      1306,
       245
-     ]
-    ]
-   },
-   "departmentLayout": {
-    "width": 1366,
-    "height": 294,
-    "lanes": [
-     {
-      "department": "DEP-SE",
-      "label": "시스템엔지니어링팀",
-      "x": 0,
-      "y": 0,
-      "w": 1366,
-      "h": 98
-     },
-     {
-      "department": "DEP-FS",
-      "label": "기능안전팀",
-      "x": 0,
-      "y": 98,
-      "w": 1366,
-      "h": 98
-     },
-     {
-      "department": "DEP-QA",
-      "label": "품질팀",
-      "x": 0,
-      "y": 196,
-      "w": 1366,
-      "h": 98
-     }
-    ],
-    "nodes": [
-     {
-      "id": "FPW.4-A01",
-      "kind": "action",
-      "label": "차량 내 감시·안전기제 설계",
-      "x": 198,
-      "y": 16,
-      "w": 188,
-      "h": 66
-     },
-     {
-      "id": "FPW.4-A03",
-      "kind": "action",
-      "label": "Flag 정책 작성·검증",
-      "x": 478,
-      "y": 16,
-      "w": 188,
-      "h": 66
-     },
-     {
-      "id": "FPW.4-A04",
-      "kind": "action",
-      "label": "정책 승인",
-      "x": 758,
-      "y": 16,
-      "w": 188,
-      "h": 66
-     },
-     {
-      "id": "FPW.4-A02",
-      "kind": "action",
-      "label": "플랫폼 도구 신뢰도 분류",
-      "x": 758,
-      "y": 114,
-      "w": 188,
-      "h": 66
-     },
-     {
-      "id": "FPW.4-A05",
-      "kind": "action",
-      "label": "G4 설계 독립 검토·판정",
-      "x": 1038,
-      "y": 212,
-      "w": 188,
-      "h": 66
-     },
-     {
-      "id": "FPW.4-S1",
-      "kind": "start",
-      "label": "시작",
-      "x": 146,
-      "y": 40,
-      "w": 18,
-      "h": 18
-     },
-     {
-      "id": "FPW.4-S2",
-      "kind": "start",
-      "label": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
-      "x": 706,
-      "y": 138,
-      "w": 18,
-      "h": 18
-     },
-     {
-      "id": "FPW.4-E1",
-      "kind": "end",
-      "label": "종료",
-      "x": 1240,
-      "y": 236,
-      "w": 18,
-      "h": 18
-     }
-    ],
-    "edges": [
-     {
-      "from": "FPW.4-S1",
-      "to": "FPW.4-A01",
-      "kind": "start",
-      "points": [
-       [
-        164,
-        49
-       ],
-       [
-        198,
-        49
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-S2",
-      "to": "FPW.4-A02",
-      "kind": "trigger",
-      "points": [
-       [
-        724,
-        147
-       ],
-       [
-        758,
-        147
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A01",
-      "to": "FPW.4-A03",
-      "kind": "flow",
-      "points": [
-       [
-        386,
-        49
-       ],
-       [
-        478,
-        49
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A03",
-      "to": "FPW.4-A04",
-      "kind": "flow",
-      "points": [
-       [
-        666,
-        49
-       ],
-       [
-        758,
-        49
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A04",
-      "to": "FPW.4-A05",
-      "kind": "flow",
-      "points": [
-       [
-        946,
-        49
-       ],
-       [
-        1026,
-        49
-       ],
-       [
-        1026,
-        245
-       ],
-       [
-        1038,
-        245
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A02",
-      "to": "FPW.4-A05",
-      "kind": "flow",
-      "points": [
-       [
-        946,
-        147
-       ],
-       [
-        1026,
-        147
-       ],
-       [
-        1026,
-        245
-       ],
-       [
-        1038,
-        245
-       ]
-      ]
-     },
-     {
-      "from": "FPW.4-A05",
-      "to": "FPW.4-E1",
-      "kind": "end",
-      "points": [
-       [
-        1226,
-        245
-       ],
-       [
-        1240,
-        245
-       ]
-      ]
-     }
-    ],
-    "joins": [
-     [
-      1026,
-      147
      ]
     ]
    }

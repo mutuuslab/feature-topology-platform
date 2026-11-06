@@ -3,8 +3,8 @@
 //   GitLab REST v4: MR GET /projects/:id/merge_requests/:iid, 댓글 /notes, commit status POST /projects/:id/statuses/:sha. 개정 = updated_at(ms)
 //   codeBeamer REST v3: GET /api/v3/items/:id, 댓글 POST /api/v3/items/:id/comments. 개정 = item.version
 // 인증·주소는 환경 변수(아래 cfg). 토큰은 로그·감사·Evidence에 남기지 않는다. 시간 제한 10초, 실패는 보낼 함이 재시도한다.
-import type { ExtKind, ExtSystem } from '@ff/contracts';
-import type { AdapterMode, ExtAdapter, RemoteItem, WritePatch, WriteResult } from './adapters';
+import { FEATURE_TRANSITIONS, JIRA_EPIC_STATUS, lifecycleOfEpicStatus, type ExtKind, type ExtSystem, type Lifecycle } from '@ff/contracts';
+import { ExtPartialWriteError, type AdapterMode, type ExtAdapter, type RemoteItem, type WritePatch, type WriteResult } from './adapters';
 
 interface Cfg {
   url: string;
@@ -14,6 +14,40 @@ interface Cfg {
 
 const env = (k: string) => (process.env[k] ?? '').trim();
 const basic = (user: string, token: string) => `Basic ${Buffer.from(`${user}:${token}`).toString('base64')}`;
+
+/**
+ * Epic 상태 경로 — JIRA Epic 워크플로는 FF 수명주기와 같은 전이만 갖는다(80-50 §4.3). Epic이 몇 단계 뒤에 있으면
+ * (예: 새 Epic은 Proposed, Feature는 DEVELOPING) FF 전이 순서대로 한 단계씩 간다. 둘 중 하나라도 Epic 상태가 아니면 null.
+ */
+export function epicStatusPath(from: string, to: string): string[] | null {
+  const a = lifecycleOfEpicStatus(from);
+  const b = lifecycleOfEpicStatus(to);
+  if (!a || !b) return null;
+  const prev = new Map<Lifecycle, Lifecycle | null>([[a, null]]);
+  const queue: Lifecycle[] = [a];
+  while (queue.length) {
+    const cur = queue.shift()!;
+    if (cur === b) break;
+    for (const t of FEATURE_TRANSITIONS) if (t.from === cur && !prev.has(t.to)) (prev.set(t.to, cur), queue.push(t.to));
+  }
+  if (!prev.has(b)) return null;
+  const path: Lifecycle[] = [];
+  for (let at: Lifecycle | null = b; at && at !== a; at = prev.get(at) ?? null) path.unshift(at);
+  return path.map((l) => JIRA_EPIC_STATUS[l]);
+}
+
+/**
+ * 외부 시스템에서 플랫폼 서비스 계정이 보이는 이름들 — 플랫폼이 쓴 변경이 webhook으로 되돌아오면(메아리) 이 이름으로 온다.
+ * 설정한 이름(JIRA_USER·JIRA_SERVICE_ACCOUNT·CODEBEAMER_USER·GITLAB_SERVICE_ACCOUNT) + 처음 호출 때 묻는 자기 계정
+ * (JIRA /myself의 accountId·name, GitLab /user의 username). JIRA Cloud webhook은 이메일이 아니라 accountId를 준다 —
+ * 이걸 몰라 플랫폼 자신의 전이를 '매핑 없는 계정'으로 거부하던 결함(2026-11-05 모의 JIRA 계약 시험).
+ */
+const learned: Record<ExtSystem, Set<string>> = { JIRA: new Set(), GITLAB: new Set(), CODEBEAMER: new Set() };
+export function isServiceAccount(system: ExtSystem, user: string): boolean {
+  if (!user) return false;
+  const configured = system === 'JIRA' ? [env('JIRA_USER'), env('JIRA_SERVICE_ACCOUNT')] : system === 'GITLAB' ? [env('GITLAB_SERVICE_ACCOUNT')] : [env('CODEBEAMER_USER')];
+  return learned[system].has(user) || configured.some((x) => x && x === user);
+}
 
 export function liveConfig(system: ExtSystem): Cfg | { missing: string[] } {
   const need = (keys: string[]) => keys.filter((k) => !env(k));
@@ -48,15 +82,37 @@ export class LiveAdapter implements ExtAdapter {
     if ('missing' in c) throw new Error(`${this.system} 실제 연결 설정이 없습니다 — ${c.missing.join('·')}를 설정하세요(모의로 돌리려면 IF_MODE를 mock으로).`);
     return c;
   }
-  private async req<T>(method: string, path: string, body?: unknown): Promise<{ status: number; data: T }> {
+  private whoAmI: Promise<void> | null = null;
+  /**
+   * 서비스 계정의 외부 이름을 한 번 묻는다 — isServiceAccount. 네트워크·5xx 실패만 다음 호출 때 다시 묻고,
+   * 4xx(권한 없음·없는 경로)는 다시 묻지 않는다(요청마다 실패 호출을 쌓지 않게 — 설정 이름 JIRA_SERVICE_ACCOUNT 등으로 알아본다)
+   */
+  private learn(): Promise<void> {
+    const me = this.system === 'JIRA' ? '/rest/api/2/myself' : this.system === 'GITLAB' ? '/api/v4/user' : null;
+    if (!me) return Promise.resolve();
+    this.whoAmI ??= this.req<Record<string, unknown>>('GET', me, undefined, false)
+      .then((r) => {
+        if (r.status !== 200 || !r.data) return;
+        for (const k of ['accountId', 'name', 'key', 'emailAddress', 'username']) if (typeof r.data[k] === 'string' && r.data[k]) learned[this.system].add(r.data[k] as string);
+      })
+      .catch((e: unknown) => {
+        const status = (e as { status?: number }).status ?? 0;
+        if (status < 400 || status >= 500) this.whoAmI = null;
+      });
+    return this.whoAmI;
+  }
+  private async req<T>(method: string, path: string, body?: unknown, learn = true): Promise<{ status: number; data: T }> {
     const c = this.cfg();
-    const headers: Record<string, string> = { accept: 'application/json', ...(body !== undefined ? { 'content-type': 'application/json' } : {}) };
+    if (learn) await this.learn();
+    // 본문: FormData면 multipart 그대로(codeBeamer 댓글), 아니면 JSON
+    const form = typeof FormData !== 'undefined' && body instanceof FormData;
+    const headers: Record<string, string> = { accept: 'application/json', ...(body !== undefined && !form ? { 'content-type': 'application/json' } : {}) };
     if (this.system === 'GITLAB') headers['private-token'] = c.auth;
     else headers.authorization = c.auth;
-    const res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(10_000) });
+    const res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
     const text = await res.text();
     const data = (text ? JSON.parse(text) : null) as T;
-    if (res.status >= 400 && res.status !== 404) throw new Error(`${this.system} ${method} ${path.split('?')[0]} → ${res.status}`);
+    if (res.status >= 400 && res.status !== 404) throw Object.assign(new Error(`${this.system} ${method} ${path.split('?')[0]} → ${res.status}`), { status: res.status });
     return { status: res.status, data };
   }
   private gl(path: string) {
@@ -109,15 +165,36 @@ export class LiveAdapter implements ExtAdapter {
     // 새 이슈는 워크플로 첫 상태로 생긴다 — 이미 그 상태면 전이하지 않는다(자기 자신으로 가는 전이는 보통 없다)
     const made = (await this.read(r.data.key))!;
     if (!f.status || made.status.toLowerCase() === f.status.toLowerCase()) return made;
-    await this.transition(r.data.key, f.status);
+    // 만든 뒤 전이가 실패해도 만든 이슈를 돌려준다 — 던지면 플랫폼이 연결하지 못해 다음 재시도에서 같은 Epic을 또 만든다.
+    // 상태 차이는 플랫폼이 연결한 뒤 거울 쓰기로 다시 맞춘다(2026-11-05 모의 서버 기동 점검에서 찾음)
+    // 경로 중간에서 막혔으면 앞 단계 전이로 개정이 바뀌었다 — 만든 직후가 아니라 지금 모습을 돌려준다(낡은 개정이면 거울 쓰기가 충돌을 연다)
+    try {
+      await this.transition(r.data.key, f.status);
+    } catch {
+      return (await this.read(r.data.key).catch(() => null)) ?? made;
+    }
     return (await this.read(r.data.key))!;
   }
 
-  private async transition(key: string, status: string) {
-    const t = await this.req<{ transitions: { id: string; to: { name: string } }[] }>('GET', `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`);
-    const hit = (t.data.transitions ?? []).find((x) => x.to?.name?.toLowerCase() === status.toLowerCase());
-    if (!hit) throw new Error(`JIRA ${key}: '${status}'(으)로 가는 워크플로 전이가 없습니다 — JIRA 워크플로와 상태 매핑(JIRA_EPIC_STATUS·JIRA_CR_STATUS)을 맞추세요.`);
-    await this.req('POST', `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`, { transition: { id: hit.id } });
+  /** progress.steps — 실제로 한 전이 수(실패해도 앞 단계는 반영돼 있다) */
+  private async transition(key: string, status: string, progress = { steps: 0 }) {
+    const base = `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`;
+    const step = async (to: string) => {
+      const t = await this.req<{ transitions: { id: string; to: { name: string } }[] }>('GET', base);
+      const hit = (t.data.transitions ?? []).find((x) => x.to?.name?.toLowerCase() === to.toLowerCase());
+      if (hit) {
+        await this.req('POST', base, { transition: { id: hit.id } });
+        progress.steps++;
+      }
+      return !!hit;
+    };
+    if (await step(status)) return;
+    // 바로 가는 전이가 없으면 Epic 수명주기 경로를 따라간다 — Epic만(CR은 'Approved'·'Closed' 이름이 겹쳐 엉뚱한 경로로 옮겨진다)
+    const now = await this.read(key);
+    const path = now?.kind === 'EPIC' ? epicStatusPath(now.status, status) : null;
+    const fail = (to: string) => new Error(`JIRA ${key}: '${to}'(으)로 가는 워크플로 전이가 없습니다 — JIRA 워크플로와 상태 매핑(JIRA_EPIC_STATUS·JIRA_CR_STATUS)을 맞추세요.`);
+    if (!path || path.length < 2) throw fail(status);
+    for (const to of path) if (!(await step(to))) throw fail(to);
   }
 
   // ── 쓰기(기대 개정이 다르면 충돌) ──
@@ -128,8 +205,16 @@ export class LiveAdapter implements ExtAdapter {
       if (now.revision !== expectedRevision) return { ok: false, conflict: now };
     }
     if (this.system === 'JIRA') {
-      if (patch.status) await this.transition(key, patch.status);
-      if (patch.comment) await this.req('POST', `/rest/api/2/issue/${encodeURIComponent(key)}/comment`, { body: patch.comment });
+      const progress = { steps: 0 };
+      try {
+        if (patch.status) await this.transition(key, patch.status, progress);
+        if (patch.comment) await this.req('POST', `/rest/api/2/issue/${encodeURIComponent(key)}/comment`, { body: patch.comment });
+      } catch (e) {
+        // 상태는 (일부) 바뀌었는데 뒤가 실패 — 지금 모습을 실어 보낸다. 보낼 함이 자기 전이를 외부 변경(충돌)으로 보지 않게
+        const now = progress.steps ? await this.read(key).catch(() => null) : null;
+        if (now) throw new ExtPartialWriteError(e instanceof Error ? e.message : String(e), now);
+        throw e;
+      }
     } else if (this.system === 'GITLAB') {
       const iid = key.split('!').pop();
       if (patch.append?.field === 'commitStatuses') {
@@ -141,7 +226,13 @@ export class LiveAdapter implements ExtAdapter {
     } else {
       const id = key.replace(/^CB-/, '');
       const text = patch.append?.field === 'verifications' ? verificationText(patch.append.value) : patch.comment;
-      if (text) await this.req('POST', `/api/v3/items/${id}/comments`, { comment: text, commentFormat: 'PlainText' });
+      // codeBeamer 댓글은 multipart/form-data만 받는다(80-51 §2 — JSON이면 415)
+      if (text) {
+        const form = new FormData();
+        form.set('comment', text);
+        form.set('commentFormat', 'PlainText');
+        await this.req('POST', `/api/v3/items/${id}/comments`, form);
+      }
     }
     return { ok: true, item: (await this.read(key))! };
   }

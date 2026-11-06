@@ -29,6 +29,19 @@ export interface WritePatch {
 
 export type WriteResult = { ok: true; item: RemoteItem } | { ok: false; conflict: RemoteItem };
 
+/**
+ * 쓰기 도중 실패 — 외부에 일부는 이미 반영됐다(예: Epic 전이 몇 단계, 전이 뒤 댓글 실패). item은 실패 직후 다시 읽은 모습.
+ * 보낼 함은 이 값을 마지막 관측으로 두고 재시도한다 — 안 그러면 자기 쓰기로 바뀐 개정을 '외부 변경'으로 보고 충돌을 연다.
+ */
+export class ExtPartialWriteError extends Error {
+  constructor(
+    message: string,
+    readonly item: RemoteItem,
+  ) {
+    super(message);
+  }
+}
+
 export interface ExtAdapter {
   readonly system: ExtSystem;
   mode(): AdapterMode;

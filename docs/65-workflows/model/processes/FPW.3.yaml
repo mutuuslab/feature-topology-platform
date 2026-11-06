@@ -55,6 +55,15 @@ process:
       content:
         - Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값
         - VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)
+    - key: WP-EXT-SYNC
+      name: 외부 연계 동기화·충돌 처리 기록
+      en: ALM Sync & Conflict Record
+      kind: output
+      retained: true
+      content:
+        - codeBeamer 요구·JIRA Epic·GitLab MR과 Feature Version의 연결·상태 대조 결과
+        - 받은 함에서 거부된 외부 변경과 사유(권한·전이 규칙·계정 매핑)
+        - 충돌마다 고른 값(플랫폼 값·외부 값)과 처리자·사유
   activities:
     - id: FPW.3-A01
       name: 안전요구 도출·명세
@@ -118,6 +127,25 @@ process:
       checks:
         - VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다
       platform: {actions: [updateDraft], screens: [/features/:id/:ver, /master/artifacts, /integration/connectors]}
+      next: [FPW.3-A06]
+    - id: FPW.3-A06
+      name: 외부 연계 동기화·충돌 해결
+      outcomes: [O2]
+      rules: []
+      raci: {R: [R-INT], A: R-INT, C: [R-REQ, R-FO], I: [R-SM]}
+      inputs: [WP-IMPL-LINK]
+      outputs: [WP-EXT-SYNC]
+      steps:
+        - 외부 연계 현황의 연계 동기화 탭에서 이 Version의 codeBeamer 요구·JIRA Epic 연결과 받은 함·보낼 함·열린 충돌을 확인한다
+        - codeBeamer 요구가 개정되어 G2 재검토 표시가 붙었으면 요구 담당과 안전 담당에게 재검토를 요청한다
+        - JIRA에서 들어온 Epic·변경요청 상태 변경이 거부되었으면 받은 함의 사유(권한·전이 규칙·계정 매핑)를 외부 담당에게 알린다
+        - 실패한 보낼 함 작업은 연결 설정·워크플로 전이·권한 원인을 고치고 다음 재시도에서 보내졌는지 확인한다
+        - 충돌은 플랫폼 값 다시 보내기와 외부 값 다시 시도 중 하나를 사유와 함께 고른다. 외부 값은 플랫폼 가드를 다시 거친다
+        - 정의 승인 뒤에도 외부 요구 개정·상태 변경·충돌이 생기면 같은 확인을 다시 한다
+      checks:
+        - 열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다
+        - Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다
+      platform: {actions: [resolveExtConflict], screens: [/integration/connectors, /features/:id/:ver]}
       next: [FPW.3-A04]
     - id: FPW.3-A04
       name: G3 판정·Feature 정의 승인

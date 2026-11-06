@@ -38,7 +38,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 17 · 책임 17 · 협의 34 · 통보 8 (활동 62개)
+수행 17 · 책임 17 · 협의 34 · 통보 9 (활동 63개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -56,6 +56,7 @@ last_updated: 2026-11-05
 | FPW.3-A01 안전요구 도출·명세 | FPW.3 안전요구 확정 | C (Safety Manager) | HARA·TARA 결과 `WP-HARA-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, G2 Decision Record `WP-G2-DECISION` → 안전요구·추적 연결 `WP-SAFETY-REQ` | `/trace/design`, `/change/cr` | 1차 |
 | FPW.3-A02 양방향 추적성 점검 | FPW.3 안전요구 확정 | I (Safety Manager) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 추적성 점검 결과 `WP-TRACE-REPORT` | `/trace/design` | 1차 |
 | FPW.3-A03 요구 검토 판정 등록 | FPW.3 안전요구 확정 | C (Safety Manager) | 안전요구·추적 연결 `WP-SAFETY-REQ`, 추적성 점검 결과 `WP-TRACE-REPORT` → 요구 검토 판정 기록 `WP-REQ-REVIEW` | `/features/:id/:ver` | 1차 |
+| FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3 안전요구 확정 | I (Safety Manager) | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → 외부 연계 동기화·충돌 처리 기록 `WP-EXT-SYNC` | `/integration/connectors`, `/features/:id/:ver` | 1차 |
 | FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | C (Safety Manager) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | C (Safety Manager) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | C (Safety Manager) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
@@ -147,7 +148,7 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/admin/approval`, `/analysis/impact`, `/arch/topology`, `/arch/components`, `/verify/evidence`, `/verify/compliance`, `/activation/decide`, `/ops/kill`, `/fleet/live`, `/deployments`, `/flag-retirements`, `/ops/safety-kpi`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/trace/design`, `/change/cr`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/integration/connectors`, `/experiments`, `/ops/anomalies`, `/ops/incidents`, `/audit/oversight`, `/audit`, `/quality/feedback`, `/supplier/portal`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/trace/design`, `/change/cr`, `/integration/connectors`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/experiments`, `/ops/anomalies`, `/ops/incidents`, `/audit/oversight`, `/audit`, `/quality/feedback`, `/supplier/portal`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 
 ## 4. 부서 겸직 직무 분리
 

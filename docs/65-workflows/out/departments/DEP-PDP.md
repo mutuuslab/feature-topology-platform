@@ -37,7 +37,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 12 · 책임 13 · 협의 17 · 통보 33 (활동 55개)
+수행 13 · 책임 14 · 협의 18 · 통보 33 (활동 57개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -55,8 +55,10 @@ last_updated: 2026-11-05
 | FPW.3-A01 안전요구 도출·명세 | FPW.3 안전요구 확정 | I (Feature Owner) | HARA·TARA 결과 `WP-HARA-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, G2 Decision Record `WP-G2-DECISION` → 안전요구·추적 연결 `WP-SAFETY-REQ` | `/trace/design`, `/change/cr` | 1차 |
 | FPW.3-A03 요구 검토 판정 등록 | FPW.3 안전요구 확정 | I (Feature Owner) | 안전요구·추적 연결 `WP-SAFETY-REQ`, 추적성 점검 결과 `WP-TRACE-REPORT` → 요구 검토 판정 기록 `WP-REQ-REVIEW` | `/features/:id/:ver` | 1차 |
 | FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | R (Feature Owner) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
+| FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3 안전요구 확정 | C (Feature Owner) | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → 외부 연계 동기화·충돌 처리 기록 `WP-EXT-SYNC` | `/integration/connectors`, `/features/:id/:ver` | 1차 |
 | FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | C (Feature Owner) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | C (Feature Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies` | 1차 |
+| FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4 안전 설계·정책 설계 | R·A (Feature Owner) | – → 정책 근거 변경요청(CR) 연결 `WP-POLICY-CR` | `/policies/:id`, `/integration/connectors` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | I (Feature Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.5-A01 독립성 수준·검증 계획 확정 | FPW.5 검증·V&V | I (Feature Owner) | G4 Decision Record `WP-G4-DECISION`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 검증 계획(독립성 수준) `WP-VV-PLAN` | 플랫폼 밖 | 1차 |
 | FPW.5-A04 비활성화·결함 주입 시험 수행 | FPW.5 검증·V&V | I (Feature Owner) | 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC`, 통합 검증 기록 `WP-INTEGRATION-REC`, Flag 정책(검증·승인본) `WP-POLICY` → 시험 결과 `WP-TEST-RESULT` | `/validations/virtual` | 1차 |
@@ -102,13 +104,15 @@ last_updated: 2026-11-05
 | 방향 | 보내는 활동 | 받는 활동 | 상대 부서 | 넘기는 산출물 | 범위 |
 |---|---|---|---|---|---|
 | 받음 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | 시스템엔지니어링팀 | – | 1차 |
+| 받음 | FPW.4-A03 Flag 정책 작성·검증 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | 시스템엔지니어링팀 | – | 1차 |
 | 받음 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7-A12 Release Sign-off(출시 책임 확인) | 기능안전팀 | G7 Decision Record `WP-G7-DECISION` | 1차 |
 | 받음 | FPW.7-A09 출시 전이 | FPW.7-A10 상품 고객 출시 승인 | SW통합·릴리스팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |
 | 받음 | FPW.9-A03 Flag Retirement 승인 | FPW.9-A04 코드·설정·시험 삭제 기록 | 시스템엔지니어링팀 | Retirement 승인 기록 `WP-RETIRE-APPROVAL` | 1차 |
 | 받음 | FPW.9-A03 Flag Retirement 승인 | FPW.9-A04 코드·설정·시험 삭제 기록 | 기능안전팀 | Retirement 승인 기록 `WP-RETIRE-APPROVAL` | 1차 |
 | 보냄 | FPW.1-A01 Feature 등록·초안 작성 | FPW.1-A02 대상 차량 사양·의존 등록 | PLM·기준정보팀 | Feature 등록 기록 `WP-FEAT-REG` | 1차 |
 | 보냄 | FPW.1-A01 Feature 등록·초안 작성 | FPW.1-A03 안전 분류(네 축) 확정 | 기능안전팀 | Feature 등록 기록 `WP-FEAT-REG` | 1차 |
-| 보냄 | FPW.3-A05 구현 연결 입력 | FPW.3-A04 G3 판정·Feature 정의 승인 | 시스템엔지니어링팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
+| 보냄 | FPW.3-A05 구현 연결 입력 | FPW.3-A06 외부 연계 동기화·충돌 해결 | SW통합·릴리스팀 | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | 1차 |
+| 보냄 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4-A04 정책 승인 | 시스템엔지니어링팀 | – | 1차 |
 | 보냄 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6-A02 출시 Baseline 확정 승인 | PLM·기준정보팀 | Baseline 확정 요청 `WP-BASELINE-REQ` | 1차 |
 | 보냄 | FPW.7-A02 효과 실험 계획 등록 | FPW.7-A08 G7 출시·활성화 판정 | 기능안전팀 | 실험 계획 `WP-EXPERIMENT-PLAN` | 1차 |
 | 보냄 | FPW.7-A06 상품 구성 승인 | FPW.7-A08 G7 출시·활성화 판정 | 기능안전팀 | 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL` | 1차 |
@@ -120,7 +124,7 @@ last_updated: 2026-11-05
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/flag-retirements`, `/master/feature-db/:refId`
+- 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/policies/:id`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/flag-retirements`, `/master/feature-db/:refId`
 - 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/validations/virtual`, `/verify/evidence`, `/deployments`, `/verify/compliance`, `/fleet/live`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/kill`, `/audit`, `/quality/feedback`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 
 ## 4. 부서 겸직 직무 분리

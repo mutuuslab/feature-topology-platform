@@ -41,6 +41,18 @@ test('줄이 밀리면 같은 해시의 가장 가까운 줄로 옮기고 잠금
   assert.equal(gone.texts['review.json'], '{"evidence":["a.ts:4","a.ts:4"]}');
 });
 
+test('잠금 키가 사슬로 밀려도(a→b, b→c) 앞 근거의 키를 지우지 않는다 — 잠금 순서와 상관없이', () => {
+  // 회귀(2026-11-06 통합): 잠금이 a.ts:3, a.ts:4 순서면 3→4로 넣은 키를 이어서 4→5가 지워 a.ts:4 잠금이 사라졌다
+  const h3 = lineHash('export function gate() {');
+  const h4 = lineHash('  if (!ok) throw new Error("막힘");');
+  const shifted = ['import x;', '// 새 주석', '', 'export function gate() {', '  if (!ok) throw new Error("막힘");', '}'].join('\n');
+  for (const anchors of [{ 'a.ts:3': h3, 'a.ts:4': h4 }, { 'a.ts:4': h4, 'a.ts:3': h3 }]) {
+    const r = remapByLock({ 'review.json': '{"evidence":["a.ts:3","a.ts:4"]}' }, { note: '', anchors }, fs({ 'a.ts': shifted }));
+    assert.deepEqual(r.lock.anchors, { 'a.ts:4': h3, 'a.ts:5': h4 });
+    assert.equal(r.texts['review.json'], '{"evidence":["a.ts:4","a.ts:5"]}');
+  }
+});
+
 test('evidence 배열의 "경로:줄"만 모은다(경로만 있는 근거·tests 경로는 빼고)', () => {
   const review = { requirements: { R1: { evidence: ['a.ts:3', 'b.ts'], tests: ['t.spec.ts:1'] } }, items: { x: { evidence: ['c.tsx:10', 'a.ts:3'] } } };
   assert.deepEqual(anchorsOf(review), ['a.ts:3', 'c.tsx:10']);

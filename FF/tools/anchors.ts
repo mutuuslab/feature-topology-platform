@@ -88,9 +88,10 @@ export function remapByLock(texts: Record<string, string>, lock: AnchorLock, rea
     const best = hits.sort((x, y) => Math.abs(x - p.line) - Math.abs(y - p.line))[0];
     const to = `${p.path}:${best}`;
     moved.push([a, to]);
-    delete anchors[a];
-    anchors[to] = h;
   }
+  // 키도 한 번에 옮긴다 — 옛 키를 모두 지운 뒤 새 키를 넣어야 a→b로 넣은 키를 b→c가 지우지 않는다
+  for (const [a] of moved) delete anchors[a];
+  for (const [a, to] of moved) anchors[to] = lock.anchors[a];
   const out: Record<string, string> = {};
   // 한 번에 바꾼다 — a→b, b→c가 함께 있어도 두 번 밀리지 않게
   const map = new Map(moved.map(([a, b]) => [`"${a}"`, `"${b}"`]));

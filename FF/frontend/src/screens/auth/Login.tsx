@@ -1,10 +1,11 @@
-// /login — 플랫폼 게이트. 실제 IAM이 아닌 데모 세션(auth.ts)이며, 정적 데모에서도 클라이언트에서 동작한다.
+// /login — 플랫폼 게이트. 데모 빌드는 데모 세션(auth-demo.ts, 정적 데모에서도 클라이언트에서 동작),
+// 운영 빌드(VITE_AUTH=oidc)는 회사 계정 SSO 버튼 하나(BFF /api/auth/login) — 데모 폼은 번들에서 빠진다.
 // 오른쪽은 업무 절차(Gate 흐름)를 모티프로 한 모션 그래픽 — CSS/SVG만 쓰고 prefers-reduced-motion에서 멈춘다.
-import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { login as authLogin } from '../../auth';
+import { useLocation } from 'react-router-dom';
+import { OIDC_AUTH } from '../../auth-mode';
 import { login as L } from '../../copy/login';
-import { Button } from '../../design';
+import { DemoLoginForm } from './DemoLoginForm';
+import { SsoLoginForm } from './SsoLoginForm';
 import './login.css';
 
 const PATH = 'M 74 566 C 156 520 142 444 236 408 S 366 344 350 250 S 452 132 548 84';
@@ -105,22 +106,8 @@ function MotionGraphic() {
 }
 
 export function LoginScreen() {
-  const nav = useNavigate();
   const loc = useLocation();
   const from = (loc.state as { from?: string } | null)?.from;
-  const [id, setId] = useState('');
-  const [pw, setPw] = useState('');
-  const [show, setShow] = useState(false);
-  const [err, setErr] = useState(false);
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authLogin(id, pw)) {
-      setErr(true);
-      return;
-    }
-    nav(from && from !== '/login' ? from : '/', { replace: true });
-  };
 
   return (
     <main id="main" className="lg" data-login>
@@ -143,49 +130,10 @@ export function LoginScreen() {
           <p className="lg__lead">{L.lead}</p>
         </div>
 
-        <form className="lg__card" onSubmit={submit} noValidate>
-          <h2>{L.formTitle}</h2>
-          <label className="lg__field">
-            <span>{L.id}</span>
-            <input
-              className="ds-input ds-input--mono"
-              name="username"
-              autoComplete="username"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              autoFocus
-              aria-invalid={err || undefined}
-            />
-          </label>
-          <label className="lg__field">
-            <span>{L.password}</span>
-            <span className="lg__pw">
-              <input
-                className="ds-input ds-input--mono"
-                name="password"
-                type={show ? 'text' : 'password'}
-                autoComplete="current-password"
-                value={pw}
-                onChange={(e) => setPw(e.target.value)}
-                aria-invalid={err || undefined}
-              />
-              <button type="button" className="lg__show" onClick={() => setShow(!show)} aria-label={show ? L.hide : L.show}>
-                {show ? L.hide : L.show}
-              </button>
-            </span>
-          </label>
-          {err && (
-            <p className="lg__error" role="alert">
-              {L.error}
-            </p>
-          )}
-          <Button type="submit" variant="primary" className="lg__submit">
-            {L.submit}
-          </Button>
-        </form>
+        {OIDC_AUTH ? <SsoLoginForm from={from} /> : <DemoLoginForm from={from} />}
 
         <footer className="lg__foot">
-          <span>{L.footer}</span>
+          <span>{OIDC_AUTH ? L.sso.footer : L.footer}</span>
           <span className="lg__contact">
             {L.contact.label} — {L.contact.name} · <a href={`mailto:${L.contact.email}`}>{L.contact.email}</a>
           </span>

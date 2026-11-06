@@ -56,7 +56,7 @@ export function SecurityEventsPanel() {
   const items = [...(q.data?.items ?? [])].reverse();
   return (
     <Panel title={P.events} codes="D06-12 · FFG-SEC-007" id="sec-events">
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()} rows={3}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <DataTable
             caption={P.defs}
@@ -103,7 +103,7 @@ export function SbomDrawer({ serial, onClose }: { serial: string | null; onClose
   const d = q.data;
   return (
     <Drawer open={!!serial} title={P.sbomOpen} onClose={onClose}>
-      <AsyncView state={asyncState(q)} error={q.error?.message} rows={4}>
+      <AsyncView state={asyncState(q)} error={q.error} rows={4}>
         {d && (
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }} data-testid="sbom-detail">
             <KeyValue

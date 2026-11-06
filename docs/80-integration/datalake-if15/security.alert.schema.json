@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/security.alert.schema.json",
+  "title": "security.alert v1 — 보안 이벤트 임계 도달(VSOC 경보)",
+  "description": "FF 원천: 이벤트 vsoc.alert(D06-12 SecurityEventsService, contracts rules/security-events.ts SecurityAlert). 관측 한 건 한 건의 포렌식 기록(security_event 표)은 보내지 않는다 — CSMS 증거로 FF에 3년 남고 보안 담당만 읽는다. 차량별 이벤트면 봉투 vehicle에 가명이 있고, Fleet 단위면 null.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["alert_id", "count", "threshold", "channel_limited"],
+  "properties": {
+    "alert_id": { "enum": ["AUTH_FAILURE", "REPLAY_SEQUENCE", "APPROVAL_VIOLATION", "UNTRUSTED_TIME_KILL", "E2E_REPEAT", "STATE_PROOF_FAILURE"] },
+    "count": { "type": "integer", "minimum": 1 },
+    "threshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "window_ms", "per_vehicle"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1 },
+        "window_ms": { "type": "integer", "minimum": 1 },
+        "per_vehicle": { "type": "boolean" },
+        "fleet_ratio": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "channel_limited": { "type": "boolean" }
+  }
+}

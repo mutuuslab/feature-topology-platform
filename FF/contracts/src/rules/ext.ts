@@ -120,7 +120,8 @@ export interface Incident {
   category: IncidentCategory;
   severity: z.infer<typeof IncidentSeverity>;
   summary: string;
-  occurredAt: string;
+  /** 발생 시각 — 신고에 없으면 null(미상). 수신 시각(receivedAt)으로 채우지 않는다(ORCA-HT06 시각 신뢰도) */
+  occurredAt: string | null;
   receivedAt: string;
   receivedBy: string;
   sotif: { trigger: boolean; reason: string };

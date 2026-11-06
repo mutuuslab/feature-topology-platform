@@ -6,14 +6,20 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
 import { procedures } from '../copy/procedures';
-import { profileOf, roleLabel, roles } from '../data/refdata';
+import { DEMO_EXTRAS, OIDC_AUTH } from '../auth-mode';
 import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
 import { useMotion } from '../state/motion';
 import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
 import { logout } from '../auth';
+import { DemoRoleSwitcher } from './DemoRoleSwitcher';
+import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
-import { GuideDock, RuleDrawer } from './GuideDock';
+import { GuideDockHost, RuleDrawerHost } from './docks';
+import { UnsavedPrompt } from '../design/unsaved';
+import { useSessionExpired } from '../api/session';
+// 세션 만료 안내 띠 — 401 뒤에만 그리므로 첫 화면 묶음에서 뺀다(RD-UX-01)
+const SessionBanner = lazy(() => import('./SessionBanner').then((m) => ({ default: m.SessionBanner })));
 import { ProcedureGuideHost } from './ProcedureGuideHost';
 import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
@@ -68,6 +74,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
 function ShellFrame({ children }: { children: ReactNode }) {
   const nav = useNavigate();
+  const sessionExpired = useSessionExpired();
   const page = usePageTitle();
   const loc = useLocation();
   const { role, theme, lang } = useAppShell();
@@ -83,7 +90,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const [q, setQ] = useState('');
   const [procOpen, setProcOpen] = useState(false);
   // 따라하기 진행 중이면 오른쪽에 가이드 패널 열(접으면 떠 있는 버튼만) · 표준 설명 모드는 html[data-explain]
-  const learning = useLearn();
+  // 운영 빌드는 따라하기가 없다(D-RD-8) — 브라우저에 남은 진행 상태가 있어도 패널 자리를 열지 않는다
+  const learnState = useLearn();
+  const learning = DEMO_EXTRAS ? learnState : null;
   const explain = useExplain();
   useEffect(() => {
     document.documentElement.setAttribute('data-explain', explain ? 'on' : 'off');
@@ -127,7 +136,6 @@ function ShellFrame({ children }: { children: ReactNode }) {
     return myRole ? g.items.filter((r) => { const rs = rolesOf(r); return rs === 'all' || rs.includes(role); }) : g.items;
   }, [group, myRole, role]);
   const trail = trailOf(loc.pathname);
-  const me = profileOf(role);
   // 업무 절차 메뉴 배지 — 내가 지금 할 수 있는 활동(할 일 + 검토). 서버가 정본이라 역할을 바꾸면 다시 읽는다.
   const proc = useProcedureSummary(role);
   const procCount = proc ? proc.todo + proc.review : 0;
@@ -138,10 +146,14 @@ function ShellFrame({ children }: { children: ReactNode }) {
     nav('/features?q=' + encodeURIComponent(v.toUpperCase().startsWith('FEAT-') ? v.toUpperCase() : v));
     setQ('');
   };
-  const changeRole = (r: string) => {
-    dispatch({ t: 'ROLE', role: r });
-    nav(roleHome[r] || '/');
-  };
+  // quiet — SSO 역할 선택기가 부여 범위 밖 역할을 바로잡을 때는 화면을 옮기지 않는다
+  const changeRole = useCallback(
+    (r: string, quiet?: boolean) => {
+      dispatch({ t: 'ROLE', role: r });
+      if (!quiet) nav(roleHome[r] || '/');
+    },
+    [dispatch, nav],
+  );
 
   return (
     <div className="sh" data-panel={panelOpen && !present ? 'open' : 'closed'} data-guide={learning && !learning.collapsed ? 'open' : undefined}>
@@ -165,14 +177,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </form>
 
         <div className="sh-tools">
-          <div className="sh-user" title={`${me.name} · ${me.empNo} · ${me.org}`}>
-            <span className="sh-user__avatar" aria-hidden>{me.name.slice(0, 1)}</span>
-            <select aria-label={ko.shell.role} value={role} onChange={(e) => changeRole(e.target.value)}>
-              {roles.map((r) => (
-                <option key={r} value={r}>{roleLabel(r)}</option>
-              ))}
-            </select>
-          </div>
+          {OIDC_AUTH ? <SsoRoleSwitcher role={role} onChange={changeRole} /> : <DemoRoleSwitcher role={role} onChange={changeRole} />}
           <Button variant="ghost" icon="layers" aria-label={procedures.panel.button} title={procedures.panel.button} onClick={() => setProcOpen(true)} />
           <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
@@ -188,8 +193,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
             aria-label={L.logout}
             title={L.logout}
             onClick={() => {
-              logout();
-              nav('/login');
+              void logout().then((end) => (end ? window.location.assign(end) : nav('/login')));
             }}
           />
           <NotificationBell />
@@ -268,6 +272,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
             {ko.page.readOnly}
           </div>
         )}
+        {sessionExpired && (
+          <Suspense fallback={null}>
+            <SessionBanner />
+          </Suspense>
+        )}
         {/* 위치는 한 번만(3초 테스트) — 현재 화면 이름은 H1이 말한다. 상위 화면이 있을 때만 그룹·상위까지 */}
         {trail.length > 2 && (
           <nav className="sh-trail" aria-label="breadcrumb">
@@ -280,9 +289,10 @@ function ShellFrame({ children }: { children: ReactNode }) {
         )}
         <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>{children}</Suspense>
       </main>
-      <GuideDock />
+      {DEMO_EXTRAS && <GuideDockHost />}
       <ProcedureGuideHost />
-      <RuleDrawer />
+      <RuleDrawerHost />
+      <UnsavedPrompt />
       {procOpen && (
         <Suspense fallback={null}>
           <ScreenProcedure onClose={() => setProcOpen(false)} />

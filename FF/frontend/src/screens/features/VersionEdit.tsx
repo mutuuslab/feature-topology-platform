@@ -67,8 +67,11 @@ export function FeatureVersionActions({ f, latest }: { f: FeatureLike; latest: b
   const create = useApiMutation<{ feature: { version: string }; rejudge: string[] }>('createVersion', ['featureDetail', 'listFeatures', 'audit']);
   const save = useApiMutation('updateDraft', ['featureDetail', 'listFeatures', 'audit', 'gates']);
   const [open, setOpen] = useState<null | 'version' | 'draft'>(null);
-  const [draft, setDraft] = useState({ name: f.name, description: f.description, ownerId: f.ownerId, asil: f.asil, tags: f.tags.join(', '), requirementIds: f.requirementIds.join(', ') });
+  const initial = { name: f.name, description: f.description, ownerId: f.ownerId, asil: f.asil, tags: f.tags.join(', '), requirementIds: f.requirementIds.join(', ') };
+  const [draft, setDraft] = useState(initial);
   const set = (k: keyof typeof draft) => (v: string) => setDraft((x) => ({ ...x, [k]: v }));
+  // 저장하지 않은 입력 — 닫기 전에 묻고(Drawer dirty), 버리면 처음 값으로(출시 준비 RD-UX-02)
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
   return (
     <>
       {f.lifecycle === 'PROPOSED' && (
@@ -91,7 +94,7 @@ export function FeatureVersionActions({ f, latest }: { f: FeatureLike; latest: b
           }
         />
       </Drawer>
-      <Drawer open={open === 'draft'} title={`${E.draft} · ${f.featureId} ${f.version}`} onClose={() => setOpen(null)}>
+      <Drawer open={open === 'draft'} title={`${E.draft} · ${f.featureId} ${f.version}`} dirty={dirty} onClose={() => (setOpen(null), setDraft(initial))}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <p className="ds-field__hint">{E.draftLead}</p>
           <TextField label={E.name} value={draft.name} onChange={set('name')} />
@@ -143,8 +146,10 @@ export function ProductVersionActions({ p, latest }: { p: ProductLike; latest: b
   const create = useApiMutation<{ product: { version: string } }>('createProductVersion', ['productDetail', 'listProducts', 'audit']);
   const save = useApiMutation<{ composition: any }>('updateProductDraft', ['productDetail', 'listProducts', 'audit']);
   const [open, setOpen] = useState<null | 'version' | 'draft'>(null);
-  const [draft, setDraft] = useState({ name: p.name, description: p.description, baselineIds: p.baselineIds.join(', '), validFrom: p.validFrom ?? '', validTo: p.validTo ?? '' });
+  const initial = { name: p.name, description: p.description, baselineIds: p.baselineIds.join(', '), validFrom: p.validFrom ?? '', validTo: p.validTo ?? '' };
+  const [draft, setDraft] = useState(initial);
   const set = (k: keyof typeof draft) => (v: string) => setDraft((x) => ({ ...x, [k]: v }));
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
   return (
     <>
       {p.lifecycle === 'PROPOSED' && (
@@ -167,7 +172,7 @@ export function ProductVersionActions({ p, latest }: { p: ProductLike; latest: b
           }
         />
       </Drawer>
-      <Drawer open={open === 'draft'} title={`${E.draft} · ${p.catalogId} ${p.version}`} onClose={() => setOpen(null)}>
+      <Drawer open={open === 'draft'} title={`${E.draft} · ${p.catalogId} ${p.version}`} dirty={dirty} onClose={() => (setOpen(null), setDraft(initial))}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <TextField label={E.name} value={draft.name} onChange={set('name')} />
           <TextField label={E.description} value={draft.description} onChange={set('description')} area />
@@ -211,7 +216,9 @@ export function PolicyEdit({ p }: { p: PolicyLike }) {
   const perm = usePermission(['FEATURE_AUTHOR', 'IMPLEMENTER']);
   const save = useApiMutation('updatePolicy', ['policyDetail', 'listPolicies', 'audit', 'policyRevisions', 'policyChanges']);
   const [open, setOpen] = useState(false);
-  const [f, setF] = useState({ description: p.description, enabled: p.enabled, safeDefault: p.safeDefault, mode: p.rollout.mode, basisPoints: String(p.rollout.basisPoints) });
+  const initial = { description: p.description, enabled: p.enabled, safeDefault: p.safeDefault, mode: p.rollout.mode, basisPoints: String(p.rollout.basisPoints) };
+  const [f, setF] = useState(initial);
+  const dirty = JSON.stringify(f) !== JSON.stringify(initial);
   if (!['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status)) return null;
   const bp = Number(f.basisPoints);
   return (
@@ -219,7 +226,7 @@ export function PolicyEdit({ p }: { p: PolicyLike }) {
       <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen(true)}>
         {E.policyEdit}
       </Button>
-      <Drawer open={open} title={`${E.policyEdit} · ${p.policyId}`} onClose={() => setOpen(false)}>
+      <Drawer open={open} title={`${E.policyEdit} · ${p.policyId}`} dirty={dirty} onClose={() => (setOpen(false), setF(initial))}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
           <p className="ds-field__hint">{E.policyEditLead}</p>
           <TextField label={E.description} value={f.description} onChange={(v) => setF((x) => ({ ...x, description: v }))} area />

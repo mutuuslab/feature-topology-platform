@@ -1,5 +1,6 @@
 // Registry 필수 안전 속성(보고서 v1.1 5.7) — Feature Version마다 하나. 시간 단위는 ms, 0은 "해당 없음".
 import { z } from 'zod';
+import { patchOf } from './patch';
 import { DeactClass, FClass, FlagType, RegClass } from './safety';
 
 export const SafetyProfile = z
@@ -46,7 +47,7 @@ export const SafetyProfile = z
 export type SafetyProfile = z.infer<typeof SafetyProfile>;
 
 /** 초안 수정 본문 — 식별자·상태·출처·확정 정보는 서버가 정한다 */
-export const SafetyProfilePatch = SafetyProfile.omit({ featureId: true, version: true, status: true, source: true, confirmedBy: true, confirmedAt: true, confirmSig: true }).partial().strict();
+export const SafetyProfilePatch = patchOf(SafetyProfile.omit({ featureId: true, version: true, status: true, source: true, confirmedBy: true, confirmedAt: true, confirmSig: true })).strict();
 export type SafetyProfilePatch = z.infer<typeof SafetyProfilePatch>;
 
 export const SafetyConfirmBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();

@@ -54,7 +54,7 @@ export default function FeatureDetail() {
       {notFound ? (
         <NotFound />
       ) : (
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <>
             <PageHeader
@@ -174,7 +174,7 @@ function Gates({ id, ver }: { id: string; ver: string }) {
   const g = q.data?.gates.find((x) => x.gate === selected);
   const statuses = Object.fromEntries((q.data?.gates ?? []).map((x) => [x.gate, x.status === '미판정' ? null : x.status]));
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
         {!!q.data?.rehara?.length && (
           <section aria-label={T.rehara} data-testid="rehara">
@@ -387,7 +387,7 @@ export function Checklist({ items }: { items: ChecklistItem[] }) {
 function AuditTab({ target }: { target: string }) {
   const q = useApi<{ items: AuditEntry[] }>('audit', { query: { target, limit: 100 } });
   return (
-    <AsyncView state={asyncState(q, (q.data?.items.length ?? 0) === 0)} error={q.error?.message}>
+    <AsyncView state={asyncState(q, (q.data?.items.length ?? 0) === 0)} error={q.error}>
       <AuditLog rows={q.data?.items ?? []} />
     </AsyncView>
   );

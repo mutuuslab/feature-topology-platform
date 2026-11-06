@@ -52,9 +52,22 @@ export interface BaselineRecord {
   snapshot: BomItemRow;
 }
 
+/** 캐시한 행을 호출자가 고치지 못하게(고치면 엄격 모드에서 TypeError) — 캐시 오염 대신 바로 드러난다 */
+function deepFreeze<T>(x: T): T {
+  if (x && typeof x === 'object' && !Object.isFrozen(x)) {
+    Object.freeze(x);
+    for (const v of Object.values(x as Record<string, unknown>)) deepFreeze(v);
+  }
+  return x;
+}
+
 @Injectable()
 export class FeatureRepo {
   constructor(@Inject(DB) private readonly db: Db) {}
+  /** all() 캐시 — 이 저장소의 쓰기(insert·update)가 rev를 올려 무효화한다. 트랜잭션 안에서는 만들지 않는다(롤백될 내용이 캐시에 남지 않게).
+   *  Feature 목록·대시보드가 요청마다 2천여 버전 문서를 다시 파싱·정렬하던 것(출시 준비 RD-P2-01). 한 설치 = 한 프로세스(SQLite 단일 쓰기) 전제 */
+  private rev = 0;
+  private cache: { rev: number; rows: readonly FeatureVersionRow[] } | null = null;
 
   get(featureId: string, version: string): FeatureVersionRow | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM feature_version WHERE feature_id = ? AND version = ?', featureId, version);
@@ -72,11 +85,18 @@ export class FeatureRepo {
     return parse<FeatureVersionRow>(this.db.all('SELECT doc FROM feature_version WHERE feature_id = ?', featureId)).sort(byVersion);
   }
   all(): FeatureVersionRow[] {
-    return parse<FeatureVersionRow>(this.db.all('SELECT doc FROM feature_version ORDER BY feature_id')).sort(
-      (a, b) => a.featureId.localeCompare(b.featureId) || byVersion(a, b),
+    if (this.cache?.rev === this.rev) return this.cache.rows.slice();
+    // Feature ID는 'FEAT-' + 숫자(ASCII) — 코드 단위 비교가 localeCompare와 같은 순서이고 훨씬 빠르다
+    const rows = parse<FeatureVersionRow>(this.db.all('SELECT doc FROM feature_version ORDER BY feature_id')).sort(
+      (a, b) => (a.featureId < b.featureId ? -1 : a.featureId > b.featureId ? 1 : 0) || byVersion(a, b),
     );
+    if (this.db.inTransaction) return rows;
+    this.cache = { rev: this.rev, rows: deepFreeze(rows) };
+    return rows.slice();
   }
   insert(f: FeatureVersionRow, meta: FeatureMeta) {
+    this.rev++;
+    this.cache = null;
     this.db.run(
       'INSERT INTO feature_version (feature_id, version, lifecycle, baseline_id, doc, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
       f.featureId,
@@ -89,6 +109,8 @@ export class FeatureRepo {
     );
   }
   update(f: FeatureVersionRow) {
+    this.rev++;
+    this.cache = null;
     this.db.run(
       'UPDATE feature_version SET lifecycle = ?, baseline_id = ?, doc = ? WHERE feature_id = ? AND version = ?',
       f.lifecycle,
@@ -118,6 +140,8 @@ export class FeatureRepo {
 @Injectable()
 export class GateRepo {
   constructor(@Inject(DB) private readonly db: Db) {}
+  private rev = 0;
+  private statusCache: { rev: number; map: Map<string, Record<string, string>> } | null = null;
 
   history(featureId: string, version: string): GateRecordRow[] {
     return parse<GateRecordRow>(
@@ -130,7 +154,37 @@ export class GateRepo {
     for (const g of this.history(featureId, version)) out[g.gate] = g;
     return out;
   }
+  /** Feature 버전별 Gate별 최신 상태 — latest()와 같은 순서(gate, judged_at, gate_record_id)로 마지막 것. 본문(doc)은 읽지 않는다.
+   *  keys가 null이면 전체, 아니면 그 버전들만(목록 한 페이지) — 키는 'FEAT-xxxxx@버전' */
+  latestStatuses(keys: { featureId: string; version: string }[] | null): Map<string, Record<string, string>> {
+    const out = new Map<string, Record<string, string>>();
+    const put = (r: { feature_id: string; feature_version: string; gate: string; status: string }) => {
+      const k = `${r.feature_id}@${r.feature_version}`;
+      const m = out.get(k) ?? {};
+      m[r.gate] = r.status;
+      out.set(k, m);
+    };
+    type R = { feature_id: string; feature_version: string; gate: string; status: string };
+    if (keys === null) {
+      // 전체 표는 캐시한다(Gate 기록 쓰기는 insert뿐 — rev로 무효화, 트랜잭션 안에서는 만들지 않는다)
+      if (this.statusCache?.rev === this.rev) return this.statusCache.map;
+      for (const r of this.db.all<R>('SELECT feature_id, feature_version, gate, status FROM gate_record ORDER BY gate, judged_at, gate_record_id')) put(r);
+      for (const v of out.values()) Object.freeze(v);
+      if (!this.db.inTransaction) this.statusCache = { rev: this.rev, map: out };
+      return out;
+    }
+    const want = new Set(keys.map((k) => `${k.featureId}@${k.version}`));
+    const ids = [...new Set(keys.map((k) => k.featureId))];
+    for (let i = 0; i < ids.length; i += 500) {
+      const chunk = ids.slice(i, i + 500);
+      const rows = this.db.all<R>(`SELECT feature_id, feature_version, gate, status FROM gate_record WHERE feature_id IN (${chunk.map(() => '?').join(',')}) ORDER BY gate, judged_at, gate_record_id`, ...chunk);
+      for (const r of rows) if (want.has(`${r.feature_id}@${r.feature_version}`)) put(r);
+    }
+    return out;
+  }
   insert(g: GateRecordRow) {
+    this.rev++;
+    this.statusCache = null;
     this.db.run(
       'INSERT INTO gate_record (gate_record_id, feature_id, feature_version, gate, status, judged_at, doc) VALUES (?, ?, ?, ?, ?, ?, ?)',
       g.gateRecordId,

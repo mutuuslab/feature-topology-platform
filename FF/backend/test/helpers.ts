@@ -15,7 +15,8 @@ export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?:
     controllers: opts.controllers ?? [],
     providers: opts.providers ?? [],
   }).compile();
-  const app: INestApplication = mod.createNestApplication(new ExpressAdapter(), { logger: false });
+  // rawBody — main.ts(createApp)와 같이 원문 본문을 보관한다(webhook HMAC·차량 요청 CMAC가 원문 바이트로 확인)
+  const app: INestApplication = mod.createNestApplication(new ExpressAdapter(), { logger: false, rawBody: true });
   await app.init();
   delete process.env.FF_CLOCK_AT;
   const http = () => request(app.getHttpServer());

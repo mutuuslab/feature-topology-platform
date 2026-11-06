@@ -65,7 +65,7 @@ export function ExperimentsScreen() {
         <CreateForm onDone={() => setCreating(false)} />
       </Drawer>
       {/* 실험이 하나도 없으면 핵심 메시지가 '진행 중인 실험이 없습니다'라고 말한다 — 빈 상자로 되풀이하지 않는다(3초 ⑩) */}
-      <AsyncView state={asyncState(list, rows.length === 0)} emptyHidden empty={{ title: X.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
+      <AsyncView state={asyncState(list, rows.length === 0)} emptyHidden empty={{ title: X.empty }} error={list.error} onRetry={() => list.refetch()}>
         <DataTable
           caption={X.title}
           rows={rows}

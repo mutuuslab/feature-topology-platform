@@ -2,6 +2,7 @@
 // 색만으로 구분하지 않는다: 등급은 모양 글리프 + 텍스트, 판정은 StatusGlyph. 빨강은 위반(FAIL)에만 쓰고 막힘·대기는 warn.
 import type { CSSProperties, ReactNode } from 'react';
 import { reasonAction, reportRule, ROLE_LABEL, ROLES, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
+import { useReportCatalog } from './rule-catalog';
 import { ko } from '../copy/ko';
 import { Icon, StatusGlyph } from './icons';
 
@@ -175,6 +176,7 @@ const RULE_GLYPH = {
 
 /** FFG 규칙 판정 목록 — 게이트 미리보기·컴플라이언스·승인 Drawer 공용. live면 판정이 바뀔 때 읽어 준다 */
 export function RuleChecklist({ items, caption = S.ruleList, live, onRule }: { items: RuleItem[]; caption?: ReactNode; live?: boolean; onRule?: (id: string) => void }) {
+  useReportCatalog();
   const fail = items.filter((i) => i.status === 'fail').length;
   const pending = items.filter((i) => i.status === 'pending').length;
   return (
@@ -464,6 +466,7 @@ export const openRule = (id: string) => window.dispatchEvent(new CustomEvent(RUL
 
 /** 화면 요소 옆의 근거 규칙 칩 — 표준 설명 모드(html[data-explain='on'])에서만 보인다. 꺼져 있으면 접근성 트리에서도 빠진다 */
 export function Explain({ rules }: { rules: readonly string[] }) {
+  useReportCatalog();
   return (
     <span className="ds-explain" data-explain-rules={rules.join(' ')}>
       {rules.map((id) => (

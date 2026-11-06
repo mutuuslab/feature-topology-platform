@@ -18,23 +18,6 @@
 .pr-body h3 { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--ink-2); }
 .pr-steps { margin: 0; padding-left: var(--sp-5); display: grid; gap: var(--sp-1); }
 .pr-screens { display: inline-flex; flex-wrap: wrap; gap: var(--sp-2); }
-.pr-flow__scroll { overflow-x: auto; }
-.pr-flow { display: block; font-family: var(--font-sans); }
-.pr-lane--0 { fill: var(--surface); }
-.pr-lane--1 { fill: var(--surface-2); }
-.pr-lane__label { fill: var(--ink-2); font-size: 12px; font-weight: 600; }
-.pr-edge { fill: none; stroke: var(--muted); stroke-width: 1.4; }
-.pr-edge--trigger { stroke-dasharray: 4 3; }
-.pr-arrow { fill: var(--muted); }
-.pr-join { fill: var(--muted); }
-.pr-start { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.5; }
-.pr-end { fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 2; }
-.pr-node { cursor: pointer; outline: none; }
-.pr-node rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
-.pr-node[data-mine] rect { fill: var(--accent-soft); stroke: var(--accent); }
-.pr-node[data-selected] rect, .pr-node:focus-visible rect { stroke: var(--focus); stroke-width: 2.5; }
-.pr-node__id { fill: var(--muted); font-size: 10px; }
-.pr-node__name { fill: var(--ink); font-size: 12px; font-weight: 600; }
 .pr-matrix { margin: var(--sp-3) 0; }
 .pr-matrix summary { cursor: pointer; color: var(--accent); }
 .pr-matrix__scroll { overflow-x: auto; }
@@ -73,3 +56,5 @@
 .pr-inbox li { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: baseline; padding: var(--sp-2) 0; border-bottom: 1px solid var(--line); }
 .pr-inbox li[data-overdue] { color: var(--danger); }
 .pr-inbox__go { margin-left: auto; }
+
+.pr-activity__anchor { block-size: 1px; scroll-margin-block-end: calc(var(--sp-10) * 3); }

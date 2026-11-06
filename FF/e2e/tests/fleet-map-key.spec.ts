@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 
 test('지도 준비 중에는 aria-busy — 하네스 대기 조건을 지나면 "불러오는 중" 안내가 없고 차량이 그려져 있다', async ({ page }) => {
   // 타일 서버 응답이 늦은 환경(첫 방문·느린 망) — 스타일 요청을 늦게 실패시켜 준비 시간을 늘린다
-  await page.route(/openfreemap\.org/, async (r) => {
+  await page.route((url) => url.hostname === 'tiles.openfreemap.org', async (r) => {
     await new Promise((ok) => setTimeout(ok, 2500));
     await r.abort();
   });
@@ -31,7 +31,7 @@ test('지도 준비 중에는 aria-busy — 하네스 대기 조건을 지나면
 });
 
 test('핵심 메시지 행동 — 긴급 차단·미확인 차량을 고르고 지도를 그 차량으로 옮긴다', async ({ page }) => {
-  await page.route(/openfreemap\.org/, (r) => r.abort());
+  await page.route((url) => url.hostname === 'tiles.openfreemap.org', (r) => r.abort());
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/fleet/map');
   const key = page.locator('#main [data-key-message]');
@@ -56,7 +56,7 @@ test('핵심 메시지 행동 — 긴급 차단·미확인 차량을 고르고 �
 });
 
 test('국가별 현황은 접어 둔다 — 처음에는 표가 보이지 않고 펼치면 보인다', async ({ page }) => {
-  await page.route(/openfreemap\.org/, (r) => r.abort());
+  await page.route((url) => url.hostname === 'tiles.openfreemap.org', (r) => r.abort());
   await page.goto('/fleet/map');
   const fold = page.getByTestId('fleet-map-summary');
   await expect(fold.locator('summary')).toHaveText(/국가별 현황 · \d+개국/);

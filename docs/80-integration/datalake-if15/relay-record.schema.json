@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/relay-record.schema.json",
+  "title": "중계 기록 v1 — Lake가 FF에 넘기는 차량 서명 메시지 한 건",
+  "description": "FF가 GET /v1/relay/{stream}으로 당겨 간다. message는 차량이 보낸 그대로(vehicle-message) — Lake는 바꾸지 않고 덧붙이기만 한다. relay_seq는 흐름(stream)마다 Lake가 매기는 단조 번호이고, 같은 차량의 메시지는 Lake가 받은 순서대로 나간다. received_at은 Lake 시계라 FF는 판단에 쓰지 않는다(지연 감시 참고값).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["relay_seq", "stream", "received_at", "message"],
+  "properties": {
+    "relay_seq": { "type": "integer", "minimum": 1 },
+    "stream": { "description": "SAFETY = STATUS_REPORT·INBOX_ACK(차단·복원·배포 확인), NORMAL = VEHICLE_REPORT", "enum": ["SAFETY", "NORMAL"] },
+    "received_at": { "type": "string", "format": "date-time" },
+    "message": { "$ref": "vehicle-message.schema.json" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "stream": { "const": "SAFETY" } } },
+      "then": { "properties": { "message": { "properties": { "kind": { "enum": ["STATUS_REPORT", "INBOX_ACK"] } } } } },
+      "else": { "properties": { "message": { "properties": { "kind": { "const": "VEHICLE_REPORT" } } } } }
+    }
+  ]
+}

@@ -28,7 +28,7 @@ import {
   type FleetMapPosition,
   type FleetMapVehicle,
   type LocationPrecision,
-  type VehicleProfile,
+  type VehicleProfile, asSourceFilter, sourceMatches, type SourceFilter
 } from '@ff/contracts';
 import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -42,8 +42,12 @@ import { ProductRepo } from '../../d01-policy/repos';
 import { VehicleRuntimeService } from '../vehicle-runtime/vehicle-runtime.service';
 
 type RuntimeRow = Awaited<ReturnType<VehicleRuntimeService['fleetStatus']>>['items'][number];
-export type MapSource = 'DEMO' | 'SYNTHETIC' | 'ALL';
-const asMapSource = (s?: string): MapSource => (s === 'SYNTHETIC' || s === 'ALL' ? s : 'DEMO');
+/** 지도 출처 — FLEET(등록 차량: 운영·시연, 기본)·SYNTHETIC(합성·표본)·ALL. PRODUCTION·DEMO는 등록 차량 중 그 구분만(RD-OPS-03) */
+export type MapSource = SourceFilter;
+const asMapSource = (s?: string): MapSource => asSourceFilter(s);
+/** 이 출처가 등록 차량(운영·시연)을 그리는가, 합성·표본을 그리는가 */
+const showsRegistered = (s: MapSource) => s !== 'SYNTHETIC';
+const showsSynthetic = (s: MapSource) => s === 'SYNTHETIC' || s === 'ALL';
 
 export const MAP_PROVIDER = '데모 모의 위치 공급자 (국가·지역 도시 주변, VIN 결정적 — 실차 위치 아님)';
 
@@ -84,7 +88,7 @@ export class FleetMapService {
     return {
       vin: r.vin,
       label: r.label,
-      source: 'DEMO',
+      source: v.fleet === 'PRODUCTION' ? 'PRODUCTION' : 'DEMO',
       country: v.country,
       region,
       vehicleModel: v.vehicleModel,
@@ -143,13 +147,16 @@ export class FleetMapService {
     const items: FleetMapVehicle[] = [];
     const synthetic: FleetMapVehicle[] = [];
     let flagKeys: string[] = [];
-    if (source !== 'SYNTHETIC') {
-      const rt = await this.runtime.fleetStatus('DEMO');
+    if (showsRegistered(source)) {
+      const rt = await this.runtime.fleetStatus('FLEET');
       flagKeys = [...new Set(rt.items.flatMap((r) => r.flags.map((f) => f.flagKey)))].sort();
-      for (const r of rt.items) items.push(this.demoVehicle(r, profiles, today, { catalogId, flagKey }, false));
+      for (const r of rt.items) {
+        const v = this.demoVehicle(r, profiles, today, { catalogId, flagKey }, false);
+        if (sourceMatches(source, v.source)) items.push(v);
+      }
     }
     const syn = this.fleet.syntheticGrants();
-    if (source !== 'DEMO') {
+    if (showsSynthetic(source)) {
       const key = `${this.fleet.revision}|${today}|${catalogId ?? ''}`;
       if (this.synCache?.key !== key) {
         const vehicles: FleetMapVehicle[] = [];
@@ -161,7 +168,7 @@ export class FleetMapService {
     const all = [...items, ...synthetic];
     const inView = synthetic.filter((v) => v.position && inBbox(v.position, bbox));
     const points = inView.length <= MAP_POINT_LIMIT ? inView : [];
-    const used = new Set([...(source !== 'SYNTHETIC' ? this.fleet.grants(undefined, 'DEMO') : []), ...(source !== 'DEMO' ? syn.grants : [])].map((g) => g.catalogId));
+    const used = new Set([...(showsRegistered(source) ? this.fleet.grants(undefined, 'FLEET') : []), ...(showsSynthetic(source) ? syn.grants : [])].map((g) => g.catalogId));
     const catalogs = this.products
       .all()
       .filter((p) => used.has(p.catalogId))

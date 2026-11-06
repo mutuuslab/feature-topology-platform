@@ -59,7 +59,7 @@ export class OfrepService {
   private vin(body: OfrepBody, key?: string): string {
     const tk = body.context?.targetingKey;
     if (!tk) throw this.fail(key, null, 'TARGETING_KEY_MISSING', 'context.targetingKey(차량 가명 또는 VIN)가 필요합니다.', 400);
-    const vin = this.fleet.vehicle(tk) ? tk : this.fleet.vehicles().find((v) => vehiclePseudonym(v.vin) === tk)?.vin;
+    const vin = this.fleet.vehicle(tk) ? tk : this.fleet.vinByPseudonym(tk);
     if (!vin) throw this.fail(key, null, 'INVALID_CONTEXT', '등록되지 않은 차량입니다.', 400);
     const bad = contextViolations(body.context as Record<string, unknown> | undefined);
     if (bad.length) throw this.fail(key, vin, 'INVALID_CONTEXT', `금지 문맥 속성 — ${bad.map((b) => `${b.key}(${b.kind})`).join(', ')} (FFG-OFT-003)`, 400);

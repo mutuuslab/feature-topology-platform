@@ -1,6 +1,7 @@
 // 보고서 v1.1 규칙·시험 카탈로그와 근거 표준 조항 — 따라하기 가이드 패널과 표준 설명 모드가 "왜"를 보여 줄 때 쓴다.
 // 규칙 원문은 생성 모듈(generated/report-catalog.ts, tools/guide-sync.ts)에서 오고, 조항은 각 규칙의 '근거' 필드를 그대로 쓴다(원문에 없는 조항 요약을 지어내지 않는다).
-import { REPORT_RULES, REPORT_TESTS } from '../generated/report-catalog';
+// 카탈로그(원문)는 이 파일이 직접 가져오지 않는다 — contracts 입구(index.ts)는 report-catalog-installed.ts로 바로 설치하고,
+// 화면(web.ts 입구)은 design/rule-catalog.ts가 처음 필요할 때 따로 읽어 설치한다(첫 화면 묶음 밖, harness/budgets.json).
 
 export interface ReportRule {
   id: string;
@@ -21,13 +22,22 @@ export interface ReportTest {
   impl: string;
 }
 
-export { REPORT_RULES, REPORT_TESTS };
+let SOURCE: { rules: readonly ReportRule[]; tests: readonly ReportTest[] } = { rules: [], tests: [] };
 
-const RULES = new Map(REPORT_RULES.map((r) => [r.id, r]));
-const TESTS = new Map(REPORT_TESTS.map((t) => [t.id, t]));
+/** 카탈로그 설치 — 색인을 다시 만든다. 설치 전 조회는 undefined(화면은 설치를 기다렸다 다시 그린다) */
+export function installReportCatalog(rules: readonly ReportRule[], tests: readonly ReportTest[]): void {
+  SOURCE = { rules, tests };
+  RULES = undefined;
+  TESTS = undefined;
+}
+export const reportCatalogInstalled = (): boolean => SOURCE.rules.length > 0;
 
-export const reportRule = (id: string): ReportRule | undefined => RULES.get(id);
-export const reportTest = (id: string): ReportTest | undefined => TESTS.get(id);
+// 색인은 처음 조회할 때 만든다
+let RULES: Map<string, ReportRule> | undefined;
+let TESTS: Map<string, ReportTest> | undefined;
+
+export const reportRule = (id: string): ReportRule | undefined => (RULES ??= new Map(SOURCE.rules.map((r) => [r.id, r]))).get(id);
+export const reportTest = (id: string): ReportTest | undefined => (TESTS ??= new Map(SOURCE.tests.map((t) => [t.id, t]))).get(id);
 
 /** 표준·법규 계열 — 조항 문자열의 앞부분으로 고른다. 이름은 표준 제목의 우리말 표기 */
 export const STANDARD_FAMILIES: { prefix: RegExp; name: string }[] = [
@@ -62,6 +72,6 @@ export function clausesOf(rule: Pick<ReportRule, 'basis'>): string[] {
 /** 여러 규칙의 근거 조항을 중복 없이 — 단계가 어떤 표준을 충족시키는지 한 줄로 */
 export function clausesOfRules(ids: readonly string[]): string[] {
   const out: string[] = [];
-  for (const id of ids) for (const c of clausesOf(RULES.get(id) ?? { basis: '' })) if (!out.includes(c)) out.push(c);
+  for (const id of ids) for (const c of clausesOf(reportRule(id) ?? { basis: '' })) if (!out.includes(c)) out.push(c);
   return out;
 }

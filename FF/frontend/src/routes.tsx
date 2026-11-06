@@ -2,6 +2,7 @@
 // 규칙(__tests__/ia.test.ts가 강제): 모든 라우트는 메뉴 항목이거나 부모(parent)를 가진다 · 경로 중복 없음 ·
 // 메뉴 링크는 실제 라우트로 열린다 · 그룹은 8개. UI01~UI30(MENU 1.3) 코드는 추적 메타로 자동 연결된다.
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import { DEMO_EXTRAS } from './auth-mode';
 import { legacyTo } from './screens/legacyRedirect';
 import { SPEC_MENU_ITEM } from './data/specMenu';
 import { screenOfRoute } from './data/uiLinks';
@@ -87,9 +88,15 @@ export const ROUTES: AppRoute[] = [
   // 1 홈
   { path: '/', element: named(homeScreens, 'HomeScreen'), title: '내 대시보드', group: 'home', menu: '/', v2: true },
   { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
-  { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true },
-  { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true },
+  // 표준 따라하기 — 데모·개발 빌드만(결정 D-RD-8). 운영 빌드는 라우트·묶음이 없어 직접 주소도 '찾는 항목이 없습니다'
+  ...(DEMO_EXTRAS
+    ? [
+        { path: '/learn', element: named(learnScreens, 'LearnHub'), title: '표준 따라하기', group: 'home', menu: '/learn', v2: true } as AppRoute,
+        { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true } as AppRoute,
+      ]
+    : []),
   { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '업무 절차', group: 'home', menu: '/procedures', v2: true },
+  { path: '/procedures/roles', element: named(procedureScreens, 'ProcedureRolesScreen'), title: '담당자별 업무 흐름', group: 'home', menu: '/procedures/roles', v2: true },
   { path: '/procedures/:id', element: named(procedureScreens, 'ProcessDetail'), title: '업무 절차 상세', group: 'home', parent: '/procedures', v2: true },
   { path: '/arch/components', element: named(() => import('./screens/home/Architecture'), 'ArchitectureScreen'), title: '42 컴포넌트 아키텍처', group: 'home', menu: '/arch/components', v2: true },
   { path: '/notifications', element: named(() => import('./screens/home/Notifications'), 'NotificationsScreen'), title: '알림', group: 'home', menu: '/notifications', components: ['D04-04'], v2: true },
@@ -138,6 +145,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/master/structure', element: named(masterScreens, 'StructureScreen'), title: 'SW 구조', group: 'master', menu: '/master/structure', components: ['D01-02'], v2: true },
   { path: '/change/eo', element: named(opsScreens, 'EoScreen'), title: 'SW EO', group: 'master', menu: '/change/eo', v2: true },
   { path: '/master/control-points', element: named(masterScreens, 'ControlPointsScreen'), title: '제어점', group: 'master', menu: '/master/control-points', components: ['D01-02'], v2: true },
+  { path: '/master/reference-values', element: named(() => import('./screens/master/ReferenceValues'), 'ReferenceValuesScreen'), title: '차종·판매국 기준 값', group: 'master', menu: '/master/reference-values', components: ['D02-01'], v2: true },
 
   { path: '/precheck', element: def(() => import('./screens/governance/Precheck')), title: '데이터 사전점검', group: 'master', menu: '/precheck', components: ['D01-02'], v2: true },
 
@@ -169,7 +177,7 @@ export const ROUTES: AppRoute[] = [
   { path: '/activation', element: legacyTo('/activation/decide'), title: '차종별 활성화 (이전 주소)', group: 'release', parent: '/activation/decide' },
   { path: '/policies', element: named(policyScreens, 'PolicyList'), title: '정책·검증·승인', group: 'release', menu: '/policies', components: ['D01-06', 'D01-08'], v2: true },
   { path: '/policies/new', element: named(policyScreens, 'PolicyCreate'), title: '새 정책', group: 'release', parent: '/policies', components: ['D01-06'], v2: true },
-  { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08'], v2: true },
+  { path: '/policies/:id', element: named(policyScreens, 'PolicyDetail'), title: '정책 상세', group: 'release', parent: '/policies', components: ['D01-06', 'D06-04', 'D03-02', 'D01-08', 'D03-04'], v2: true },
   { path: '/ops/policy', element: legacyTo('/policies'), title: '정책 단계 보드 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/ops/runtime', element: legacyTo('/policies'), title: '정책 평가 시뮬레이터 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/flag-retirements', element: named(() => import('./screens/policy/Retirements'), 'RetirementsScreen'), title: 'Flag Retirement', group: 'release', menu: '/flag-retirements', components: ['D01-01'], v2: true },
@@ -185,7 +193,9 @@ export const ROUTES: AppRoute[] = [
   { path: '/twin/live', element: named(fleetScreens, 'LegacyLiveRedirect'), title: 'Fleet 실시간 적용 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/fleet', element: legacyTo('/fleet/live'), title: '차량 운영 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet (BDC 데모)', group: 'ops', parent: '/fleet/live' },
-  { path: '/fleet/vehicles/:vin', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', menu: '/fleet/vehicles/ego-01', components: ['D02-03'], v2: true },
+  // 메뉴는 차량을 고르지 않은 주소 — 예시 차량(ego-01)이 있으면 그 차량, 없으면 첫 차량, 차량이 없으면 빈 상태(출시 준비 RD-OPS-02)
+  { path: '/fleet/vehicles', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', menu: '/fleet/vehicles', components: ['D02-03'], v2: true },
+  { path: '/fleet/vehicles/:vin', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량 적용 상세', group: 'ops', parent: '/fleet/vehicles', components: ['D02-03'], v2: true },
   { path: '/twin/applied/:vin', element: legacyTo('/fleet/vehicles/:vin'), title: '차량 적용 상태 (이전 주소)', group: 'ops', parent: '/fleet/vehicles/:vin' },
   { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 상세 (BDC 데모)', group: 'ops', parent: '/fleet/vehicles/:vin' },
   { path: '/ops/kill', element: named(killScreens, 'KillConsole'), title: '긴급 차단·복구', group: 'ops', menu: '/ops/kill', components: ['D03-03', 'D03-04'], v2: true },
@@ -227,7 +237,8 @@ export const ROUTES: AppRoute[] = [
   { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'admin', parent: '/biz/trials' },
   { path: '/admin/settings', element: named(opsScreens, 'SettingsScreen'), title: '설정', group: 'admin', menu: '/admin/settings', v2: true },
-  { path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true },
+  // 디자인 시스템 갤러리 — 데모·개발 빌드만(결정 D-RD-8, 견본 ID를 보인다). 갤러리 자체는 그대로 둔다(시각 회귀·키트 규칙)
+  ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true } as AppRoute] : []),
 ];
 
 // ── 파생 정보 ─────────────────────────────────────────────────────────

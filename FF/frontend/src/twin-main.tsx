@@ -9,6 +9,7 @@
  * 라우터는 두지 않는다. 이 화면은 라우팅이 아니라 **뷰 스위처**로 동작하며,
  * 화면 이동은 플랫폼 URL 대신 내부 상태(view)로만 이루어진다.
  */
+import './zod-config'; // 맨 먼저 — CSP 아래 zod eval 떠보기 끔
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { AppProvider } from './store';

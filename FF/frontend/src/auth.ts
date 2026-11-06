@@ -1,61 +1,30 @@
-// 데모 로그인 — 정적 데모(Cloudflare)에서도 동작하도록 브라우저에만 세션을 둔다.
-// 실제 IAM·SSO가 아니라 화면 게이트다: ID/PW는 번들에 있고 서버 인증이 아니다(운영 배치에서는 SSO/OIDC로 교체).
-// 세션은 localStorage(ff.auth) — e2e의 storageState와 단위 시험이 같은 키로 미리 로그인 상태를 만든다.
-// 상태를 모듈에 캐시하지 않고 매번 저장소를 읽는다: 하네스가 모듈 로드 뒤에 키를 심어도 즉시 반영된다.
-import { useSyncExternalStore } from 'react';
+// 로그인 상태 창구 — 빌드 상수 OIDC_AUTH(auth-mode.ts)로 데모(auth-demo.ts)·SSO(auth-oidc.ts) 중 하나만 쓴다.
+// 갈래가 상수라 운영 빌드에서는 데모 모듈이 번들에서 빠진다(tools/prod-bundle.test.ts).
+import * as demo from './auth-demo';
+import { OIDC_AUTH } from './auth-mode';
+import * as sso from './auth-oidc';
+import { clearSessionExpired } from './api/session';
 
-export const DEMO_ID = 'FF';
-export const DEMO_PW = 'platform';
-const KEY = 'ff.auth';
+export type AuthStatus = 'loading' | 'authed' | 'anon';
 
-let version = 0;
-const listeners = new Set<() => void>();
-const emit = () => {
-  version += 1;
-  for (const l of listeners) l();
-};
-
-const read = (): boolean => {
-  try {
-    return localStorage.getItem(KEY) === '1';
-  } catch {
-    return false;
-  }
-};
-
-/** ID는 앞뒤 공백을 지우고 비교한다(비밀번호는 그대로). */
-export function login(id: string, password: string): boolean {
-  if (id.trim() !== DEMO_ID || password !== DEMO_PW) return false;
-  try {
-    localStorage.setItem(KEY, '1');
-  } catch {
-    /* 저장할 수 없는 브라우저에서도 이 탭에서는 로그인 상태를 유지한다 */
-  }
-  emit();
-  return true;
+/** 화면 게이트 — 로그인 확인 중이면 loading(SSO는 서버에 묻는 동안) */
+export function useAuthStatus(): AuthStatus {
+  if (OIDC_AUTH) return sso.useSso().status;
+  return demo.useDemoAuth() ? 'authed' : 'anon';
 }
 
-export function logout(): void {
-  try {
-    localStorage.removeItem(KEY);
-  } catch {
-    /* noop */
-  }
-  emit();
+export const useAuth = (): boolean => useAuthStatus() === 'authed';
+
+/** 로그아웃 — SSO면 IdP 로그아웃 주소(있으면)를 돌려준다 */
+export async function logout(): Promise<string | null> {
+  if (OIDC_AUTH) return sso.ssoLogout();
+  demo.logout();
+  return null;
 }
 
-export const isAuthed = (): boolean => read();
-
-export function useAuth(): boolean {
-  useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => {
-        listeners.delete(l);
-      };
-    },
-    () => version,
-    () => version,
-  );
-  return read();
+/** 다시 로그인(세션 만료 401 뒤, RD-UX-01) — SSO는 지금 화면으로 돌아오는 IdP 로그인, 데모는 로그인 화면으로 */
+export function relogin(): void {
+  clearSessionExpired();
+  if (OIDC_AUTH) sso.startSsoLogin();
+  else demo.logout();
 }

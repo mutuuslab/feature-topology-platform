@@ -1,0 +1,117 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   판 토큰 — 대시보드(Jira·Atlassian식 가젯 판)와 상태 배지(Lozenge)만 쓰는 색.
+   tokens.css와 같은 규칙(색은 토큰 파일에서만, lint:tokens). 첫 화면 묶음 예산 때문에 tokens.css에 넣지 않고
+   대시보드·디자인 갤러리가 lozenge.css를 통해 함께 읽는다.
+   · 차가운 중립 바탕 위 흰 카드, 얇은 테두리 — 본문 테마(밝음·어두움)를 따른다
+   · Lozenge 6종 — 글자/바탕 대비 ≥ 4.5:1(밝음·어두움)
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Atlassian 화면 글꼴 — 시스템 글꼴(숫자 0이 O처럼 보이지 않게), 한글은 맑은 고딕·애플 SD 고딕 */
+  --jd-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', Roboto, 'Helvetica Neue', sans-serif;
+  --jd-canvas: #f4f5f7;
+  --jd-card: #ffffff;
+  --jd-line: #dcdfe4;
+  --jd-line-strong: #b3b9c4;
+  --jd-head: #f7f8f9;
+  --jd-hover: #f1f2f4;
+  --jd-pressed: #dcdfe4;
+  --jd-ink: #172b4d;
+  --jd-subtle: #44546f;
+  --jd-subtlest: #626f86;
+  --jd-link: #0c66e4;
+  --jd-link-hover: #0055cc;
+  --jd-selected: #e9f2ff;
+  --jd-selected-ink: #0c66e4;
+  --jd-brand: #0c66e4;
+  --jd-brand-hover: #0055cc;
+  --jd-brand-ink: #ffffff;
+  --jd-danger: #c9372c;
+  --jd-danger-hover: #ae2e24;
+  --jd-danger-ink: #ffffff;
+  --jd-star: #b38600;
+  --jd-neutral-btn: #091e420f;
+  --jd-neutral-btn-hover: #091e4224;
+  --jd-drop: #e9f2ff;
+  --jd-drop-line: #388bff;
+  --jd-shadow: 0 1px 1px #091e4240, 0 0 1px #091e424f;
+  --jd-overlay: 0 4px 8px -2px #091e4240, 0 0 1px #091e424f;
+
+  --loz-default-bg: #e7e9ec;
+  --loz-default-ink: #44546f;
+  --loz-inprogress-bg: #e9f2ff;
+  --loz-inprogress-ink: #0055cc;
+  --loz-success-bg: #dcfff1;
+  --loz-success-ink: #216e4e;
+  --loz-removed-bg: #ffeceb;
+  --loz-removed-ink: #ae2e24;
+  --loz-moved-bg: #fff7d6;
+  --loz-moved-ink: #7f5f01;
+  --loz-new-bg: #f3f0ff;
+  --loz-new-ink: #5e4db2;
+
+  /* 차트 범주 8색 — 범례에 건수·비율을 글자로 함께 적는다(색만으로 읽지 않는다) */
+  --jd-c1: #388bff;
+  --jd-c2: #8270db;
+  --jd-c3: #22a06b;
+  --jd-c4: #e56910;
+  --jd-c5: #c9372c;
+  --jd-c6: #1d9aaa;
+  --jd-c7: #b38600;
+  --jd-c8: #8590a2;
+  --jd-created: #e2483d;
+  --jd-resolved: #22a06b;
+}
+
+[data-theme='dark'] {
+  --jd-canvas: #161a1d;
+  --jd-card: #22272b;
+  --jd-line: #38414a;
+  --jd-line-strong: #596773;
+  --jd-head: #282e33;
+  --jd-hover: #2c333a;
+  --jd-pressed: #38414a;
+  --jd-ink: #dee4ea;
+  --jd-subtle: #9fadbc;
+  --jd-subtlest: #8c9bab;
+  --jd-link: #579dff;
+  --jd-link-hover: #85b8ff;
+  --jd-selected: #1c2b41;
+  --jd-selected-ink: #579dff;
+  --jd-brand: #579dff;
+  --jd-brand-hover: #85b8ff;
+  --jd-brand-ink: #1d2125;
+  --jd-danger: #f87168;
+  --jd-danger-hover: #fd9891;
+  --jd-danger-ink: #1d2125;
+  --jd-star: #f5cd47;
+  --jd-neutral-btn: #a1bdd914;
+  --jd-neutral-btn-hover: #a6c5e229;
+  --jd-drop: #1c2b41;
+  --jd-drop-line: #579dff;
+  --jd-shadow: 0 0 0 1px #bcd6f00a, 0 1px 1px #03040442, 0 0 1px #03040480;
+  --jd-overlay: 0 0 0 1px #bcd6f01f, 0 8px 12px #0304045c, 0 0 1px #03040480;
+
+  --loz-default-bg: #454f59;
+  --loz-default-ink: #dee4ea;
+  --loz-inprogress-bg: #09326c;
+  --loz-inprogress-ink: #85b8ff;
+  --loz-success-bg: #164b35;
+  --loz-success-ink: #7ee2b8;
+  --loz-removed-bg: #5d1f1a;
+  --loz-removed-ink: #fd9891;
+  --loz-moved-bg: #533f04;
+  --loz-moved-ink: #f5cd47;
+  --loz-new-bg: #352c63;
+  --loz-new-ink: #b8acf6;
+
+  --jd-c1: #579dff;
+  --jd-c2: #9f8fef;
+  --jd-c3: #2abb7f;
+  --jd-c4: #fea362;
+  --jd-c5: #f87168;
+  --jd-c6: #37b4c3;
+  --jd-c7: #e2b203;
+  --jd-c8: #8c9bab;
+  --jd-created: #f87168;
+  --jd-resolved: #2abb7f;
+}

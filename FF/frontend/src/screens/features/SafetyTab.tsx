@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { ASIL_EXCEPTION_LABEL, checkProfile, DEACT_CLASSES, deactStages, F_CLASSES, FLAG_TYPES, proposeClass, REG_CLASSES, type AsilInheritance, type ClassFinding, type ClassifyAnswers, type SafetyProfile } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { whyDisabled, AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge } from '../../design';
+import { whyDisabled, AsyncView, Button, ClassBadges, Drawer, ErrorNote, Explain, Field, Icon, KeyValue, Panel, RuleChecklist, Select, StageStrip, StatusGlyph, WindowGauge, useUnsavedGuard } from '../../design';
 import { usePermission, when } from '../shared';
 
 const S = ko.safetyTab;
@@ -117,7 +117,7 @@ function GatePanel({ id, ver }: { id: string; ver: string }) {
       id="safety-gate"
       tour="safety-gate"
     >
-      <AsyncView state={asyncState(g)} error={g.error?.message} onRetry={() => g.refetch()}>
+      <AsyncView state={asyncState(g)} error={g.error} onRetry={() => g.refetch()}>
         {s && (
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
             <p className="ds-field__hint" style={{ margin: 0 }}>
@@ -162,13 +162,15 @@ export function SafetyTab({ id, ver }: { id: string; ver: string }) {
   const stageParams = merged ? { takeover_ms: merged.takeoverMs, ramp_ms: merged.rampMs, max_pending_ms: merged.maxPendingMs, max_cycle_wait_ms: merged.maxCycleWaitMs } : {};
   const blockers = findings.filter((f) => f.severity === 'block');
   const dirty = !!p && !!draft && EDITABLE.some((k) => JSON.stringify(p[k]) !== JSON.stringify(draft[k]));
+  // 저장하지 않은 안전 Profile 편집 — 다른 화면으로 가거나 창을 닫기 전에 묻는다(출시 준비 RD-UX-02)
+  useUnsavedGuard(dirty);
   const locked = p?.status === 'CONFIRMED';
   const ro = locked || !edit.ok;
   const set = <K extends keyof Editable>(k: K, v: Editable[K]) => setDraft((d) => (d ? { ...d, [k]: v } : d));
   const patch = () => (p && draft ? Object.fromEntries(EDITABLE.filter((k) => JSON.stringify(p[k]) !== JSON.stringify(draft[k])).map((k) => [k, draft[k]])) : {});
 
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {p && draft && merged && (
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
           <div className="ds-split">

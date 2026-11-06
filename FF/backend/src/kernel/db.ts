@@ -1,4 +1,4 @@
-// 영속 계층 — node:sqlite(동기 API)를 얇은 Db 인터페이스 뒤에 둔다. Postgres로 바꿀 때 이 파일만 교체.
+// 영속 계층 — node:sqlite(동기 API)를 얇은 Db 인터페이스 뒤에 둔다. PostgreSQL은 pg-sync-db.ts(1단계 동기 다리)·async-db.ts(2단계), 고르는 곳은 db-open.ts.
 // 규칙: 상태 전이 + 감사 + 이벤트(outbox)는 반드시 같은 tx() 안에서 쓴다(상세설계서: 전이와 Audit 한 트랜잭션).
 import type { DatabaseSync as DatabaseSyncT } from 'node:sqlite';
 
@@ -21,16 +21,25 @@ export interface Db {
   afterCommit(fn: () => void): void;
   readonly inTransaction: boolean;
   close(): void;
+  /** 방언이 다른 어댑터(PG)만 — 마이그레이션 한 건을 그 방언으로 실행 */
+  execMigration?(m: { sql: string; pg?: string }): void;
+  /** 어댑터 종류 — 상태 점검·연결 표시용 */
+  readonly dialect?: 'sqlite' | 'postgres';
 }
 
 export class SqliteDb implements Db {
+  readonly dialect = 'sqlite' as const;
   private readonly db: DatabaseSyncT;
   private depth = 0;
   private pending: (() => void)[] = [];
 
   constructor(path = ':memory:') {
     this.db = new DatabaseSync(path);
-    this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
+    // secure_delete — 지운·덮어쓴 내용을 0으로 채운다(봉인 전 평문 비밀이 빈 페이지에 남지 않게, RD-SEC-06)
+    this.db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA secure_delete = ON;');
+    // 읽기 캐시 — 기본 2 MiB 페이지 캐시는 감사 100만·이벤트 50만 행 DB에서 흩어진 행 읽기(대상별 이벤트·감사)가 매번 디스크로 갔다.
+    // 64 MiB 캐시 + 256 MiB 메모리 매핑(읽기만, 쓰기·내구성 설정은 그대로). 출시 준비 RD-P2-01 부하 시험
+    this.db.exec('PRAGMA cache_size = -65536; PRAGMA mmap_size = 268435456;');
   }
 
   get inTransaction() {
@@ -87,14 +96,16 @@ export class SqliteDb implements Db {
 }
 
 /** 마이그레이션을 이름 순으로 한 번씩 적용한다 (SQL은 migrations.ts에 문자열로 둔다 — 빌드 산출물에 자동 포함). */
-export function migrate(db: Db, migrations: { name: string; sql: string }[]): string[] {
+export function migrate(db: Db, migrations: { name: string; sql: string; pg?: string }[]): string[] {
   db.exec('CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL)');
   const done = new Set(db.all<{ name: string }>('SELECT name FROM schema_migrations').map((r) => r.name));
   const applied: string[] = [];
   for (const m of [...migrations].sort((a, b) => a.name.localeCompare(b.name))) {
     if (done.has(m.name)) continue;
     db.tx(() => {
-      db.exec(m.sql);
+      // PG 어댑터는 방언 번역(또는 마이그레이션의 pg 덮어쓰기)으로 실행한다 — 20-92 §4.3
+      if (db.execMigration) db.execMigration(m);
+      else db.exec(m.sql);
       db.run('INSERT INTO schema_migrations (name, applied_at) VALUES (?, ?)', m.name, new Date().toISOString());
     });
     applied.push(m.name);

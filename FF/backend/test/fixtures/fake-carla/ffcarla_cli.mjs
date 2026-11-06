@@ -24,6 +24,7 @@ if (process.argv.includes('--probe')) {
 const out = process.argv[process.argv.indexOf('--out') + 1];
 const pkg = JSON.parse(readFileSync(0, 'utf8'));
 if (!pkg.fleet.some((v) => v.vin === pkg.vehicle)) emit({ tool: TOOL, error: `vehicle ${pkg.vehicle} is not in fleet[]` }, 2);
+// hygiene-ok: 느린 시뮬레이터 흉내(FAKE_SIM_DELAY_MS를 준 시험만) — 서버가 기다리는 동안 다른 요청에 응답하는지 본다
 if (process.env.FAKE_SIM_DELAY_MS) await new Promise((r) => setTimeout(r, Number(process.env.FAKE_SIM_DELAY_MS)));
 
 const S = { deactClass: 'DC2', takeoverMs: 4000, rampMs: 3000, faultRampMs: 1500, faultTolerantTimeMs: 5000, ...(pkg.safety ?? {}) };

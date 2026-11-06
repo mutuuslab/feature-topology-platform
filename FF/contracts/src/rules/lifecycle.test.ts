@@ -25,7 +25,8 @@ describe('Lifecycle 전이 표', () => {
   it.each([
     ['PROPOSED', 'APPROVED', ['G1', 'G2', 'G3']],
     ['DEVELOPING', 'VERIFIED', ['G4', 'G5', 'G6', 'G7']],
-    ['VERIFIED', 'RELEASED', ['G8', 'G9']],
+    // 출시는 표 10의 G8·G9에 더해 9 Gate 전부를 다시 본다(FR-REG-002-008/009, requirements-defects.test.ts)
+    ['VERIFIED', 'RELEASED', [...GATES]],
   ] as const)('%s → %s 는 %j PASS가 필요하다', (from, to, gates) => {
     const actorRole = to === 'APPROVED' ? 'FEATURE_APPROVER' : to === 'RELEASED' ? 'RELEASE_MANAGER' : 'SYSTEM';
     const ok = evaluateTransition(at(from), to, ctx({ latestGates: pass(...gates), actor: { id: 'a', role: actorRole }, reason: '근거 확인', releaseSignoff: SIGNED }));
@@ -39,7 +40,7 @@ describe('Lifecycle 전이 표', () => {
   });
 
   it('출시(VERIFIED→RELEASED)는 Feature Owner의 Release Sign-off가 있어야 한다 — 보고서 6.1 G7 승인자(사용자 결정 2026-10-18)', () => {
-    const base = { latestGates: pass('G8', 'G9'), actor: { id: 'han.release', role: 'RELEASE_MANAGER' as const }, reason: '출시' };
+    const base = { latestGates: pass(...GATES), actor: { id: 'han.release', role: 'RELEASE_MANAGER' as const }, reason: '출시' };
     const none = evaluateTransition(at('VERIFIED'), 'RELEASED', ctx(base));
     expect(none.blockers).toEqual([expect.objectContaining({ code: 'RELEASE_SIGNOFF_MISSING' })]);
     expect(codes(evaluateTransition(at('VERIFIED'), 'RELEASED', ctx({ ...base, releaseSignoff: null })))).toEqual(['RELEASE_SIGNOFF_MISSING']);

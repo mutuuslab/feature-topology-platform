@@ -34,6 +34,11 @@ describe('요청 URL·정적 스냅샷 파일 이름 (프론트·snapshot:api �
     expect(routeUrl('listFeatures', {}, { q: undefined, lifecycle: 'RELEASED', country: '', latestOnly: true })).toBe('/api/features?lifecycle=RELEASED&latestOnly=true');
     expect(() => routeUrl('featureDetail', { id: 'FEAT-00022' })).toThrow(/ver/);
   });
+  it('필수 질의(requiredQuery)가 비면 URL을 만들지 않는다 — flagKey 없는 활성화 판단 요청(정적 데모 스냅샷 누락) 방지', () => {
+    expect(routeUrl('activationDecide', {}, { vin: 'ego-01', flagKey: 'care_00022_param' })).toBe('/api/activation/decide?vin=ego-01&flagKey=care_00022_param');
+    expect(() => routeUrl('activationDecide', {}, { vin: 'ego-01', flagKey: '' })).toThrow(/flagKey/);
+    expect(() => routeUrl('activationDecide', {}, { flagKey: 'x' })).toThrow(/vin/);
+  });
   it('파일 이름은 정적 호스팅에 안전한 문자만 쓴다 (%·@·공백·? 제거)', () => {
     const f = snapshotFile(routeUrl('audit', {}, { target: 'FEAT-00022@1.0.0', limit: 100 }));
     expect(f).toBe('api-snapshot/audit_target_FEAT-00022_401.0.0_limit_100.json');

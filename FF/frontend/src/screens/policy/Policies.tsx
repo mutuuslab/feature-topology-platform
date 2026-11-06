@@ -12,6 +12,7 @@ import { PolicyCrPanel } from './PolicyCr';
 import { VirtualPanel } from './Virtual';
 import { UnleashPanel } from './Unleash';
 import { PolicyVersions } from './PolicyVersions';
+import { PolicyHistory } from './PolicyHistory';
 
 const T = ko.policy;
 const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort'];
@@ -79,7 +80,7 @@ export function PolicyList() {
         }
       />
       <SummaryLine items={[{ k: T.key.deployWait, v: rows.filter((r) => r.status === 'APPROVED').length }, { k: T.key.deployed, v: rows.filter((r) => r.status === 'DEPLOYED').length }]} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={T.title}
           rows={rows}
@@ -149,7 +150,7 @@ export function PolicyDetail() {
   );
   return (
     <div className="ds-screen">
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && p && (
           <>
             <PageHeader
@@ -247,6 +248,7 @@ export function PolicyDetail() {
               </Panel>
             </div>
             <PolicyVersions key={p.policyId} policyId={p.policyId} />
+            <PolicyHistory key={`h-${p.policyId}`} policyId={p.policyId} />
             <PolicyActionDrawer kind={drawer} policy={p} approval={d.approval} onClose={() => setDrawer(null)} />
           </>
         )}
@@ -408,7 +410,7 @@ export function ValidationHistory() {
           return !q.data ? { tone: 'neutral', value: '—', text: ko.validations.key.held } : rows.length === 0 ? { tone: 'neutral', value: 0, text: ko.validations.key.none } : held ? { tone: 'warn', value: held, text: ko.validations.key.held } : { tone: 'ok', text: ko.validations.key.clean };
         })()}
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={ko.validations.title}
           rows={rows}

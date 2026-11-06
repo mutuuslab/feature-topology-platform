@@ -576,10 +576,12 @@ export default function VehicleTwinScene({
   const paused = clock.rate === 0;
   // 정지 상태(rate 0 또는 사용자가 모션 정지)에서는 GPU 렌더 루프도 멈춘다 — 화면은 마지막 프레임으로 남는다.
   const motion = useMotion();
-  // 화면 밖(1366에서 씬은 탭 아래)에서는 렌더 루프를 멈춘다 — 그림자·dpr 2 씬이 계속 돌면 본문 스레드가 수 초씩 막혔다
-  // (GPU 없는 CI에서 차량 상세 시험이 60초 시간 초과, 2026-10-23).
+  // 화면 밖(1366에서 씬은 탭 아래)에서는 그리지 않는다 — 그림자·dpr 2 씬이 계속 돌면 본문 스레드가 수 초씩 막혔다
+  // (GPU 없는 CI에서 차량 상세 시험이 60초 시간 초과, 2026-10-23). 'demand'로는 모자랐다: 시뮬 시계가 바뀔 때마다 씬 속성이 바뀌어
+  // 다시 그려 화면 밖에서도 소프트웨어 렌더가 이어졌다(CI 2026-10-25 page.evaluate 60초 초과) → 화면 밖은 'never'.
+  // 처음에는 보이지 않는 것으로 시작한다(관찰자가 첫 판정을 곧 준다) — 접힌 아래 씬이 첫 판정 전에 무거운 루프를 돌지 않게
   const rootRef = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(true);
+  const [inView, setInView] = useState(() => typeof IntersectionObserver === 'undefined');
   useEffect(() => {
     const el = rootRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
@@ -587,7 +589,7 @@ export default function VehicleTwinScene({
     io.observe(el);
     return () => io.disconnect();
   }, [webgl]);
-  const sceneLoop = paused || !motion.running || !inView ? 'demand' : 'always';
+  const sceneLoop = !inView ? 'never' : paused || !motion.running ? 'demand' : 'always';
 
   if (!webgl) {
     return (
@@ -598,7 +600,7 @@ export default function VehicleTwinScene({
   }
 
   return (
-    <div ref={rootRef} className={`veh-root${paused ? ' veh-paused' : ''}`} data-paused={paused ? 'true' : 'false'} data-in-view={inView ? 'true' : 'false'} data-testid="veh-scene-root">
+    <div ref={rootRef} className={`veh-root${paused ? ' veh-paused' : ''}`} data-paused={paused ? 'true' : 'false'} data-in-view={inView ? 'true' : 'false'} data-frameloop={sceneLoop} data-testid="veh-scene-root">
       <div className="veh-canvas-wrap" style={{ height }}>
         {paused && (
           <span className="veh-paused-banner" data-testid="veh-paused-banner">

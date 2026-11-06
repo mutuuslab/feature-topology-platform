@@ -5,12 +5,15 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 /** 준비된 시나리오를 앞에 — 지금 따라 할 수 있는 것이 먼저 보이게 */
 const readyFirst = (a: Tutorial, b: Tutorial) => Number(b.status === 'ready') - Number(a.status === 'ready');
 import { clausesOfRules, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
+import { useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
-import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, SummaryLine, type KeyMessageSpec } from '../../design';
+import { Button, Explain, ExplainCodes, KeyValue, PageHeader, Panel, RuleText, Segmented, SummaryLine, type KeyMessageSpec, useReportCatalog } from '../../design';
 import { learnStore, useLearn } from '../../shell/learn';
 
 const L = ko.learn;
+/** 운영 빌드 검사 표식(tools/prod-bundle.test.ts) — 운영 설치는 이 화면을 싣지 않는다(결정 D-RD-8) */
+const LEARN_MARKER = 'ff-learn-v1';
 const PATHS = ['ALL', 'BASIS', 'DESIGN', 'BUILD', 'VERIFY_OPERATE'] as const;
 
 /** 제목 끝의 케이스 번호 '(CS-05)'는 본문에서 뺀다 — 번호는 트랙 표시의 툴팁·설명 모드에 있다(UX3-01) */
@@ -92,9 +95,17 @@ export function LearnHub() {
   const running = st ? tutorialById(st.scenarioId) : undefined;
   const ready = TUTORIALS.filter((t) => t.status === 'ready');
   const counts = useMemo(() => Object.fromEntries(PATHS.map((p) => [p, TUTORIALS.filter((t) => p === 'ALL' || t.readingPath === p).length])), []);
+  // 예시 데이터가 없는 설치(고객 운영 — 시드 없음)면 시나리오 ID가 이 설치에 없다고 먼저 알린다(출시 준비 RD-OPS-02)
+  const health = useApi<{ seed: string | null }>('health');
+  const noSample = !!health.data && !health.data.seed;
   return (
-    <div className="ds-screen">
+    <div className="ds-screen" data-learn={LEARN_MARKER}>
       <PageHeader codes="FFP-FS-STR-001 v1.1 · 18장" title={L.title} lead={L.lead} message={hubMessage(running, ready)} />
+      {noSample && (
+        <div className="ds-stale" role="note" data-learn-sample-notice="">
+          {L.sampleNotice}
+        </div>
+      )}
       <Segmented
         label={L.pathLabel}
         value={path}
@@ -115,6 +126,7 @@ export function LearnHub() {
 }
 
 export function LearnRun() {
+  useReportCatalog();
   const { id = '' } = useParams();
   const nav = useNavigate();
   const t = tutorialById(id);
@@ -129,7 +141,7 @@ export function LearnRun() {
     if (t.steps[0] && t.steps[0].route !== `/learn/${t.id}`) nav(t.steps[0].route);
   };
   return (
-    <div className="ds-screen">
+    <div className="ds-screen" data-learn={LEARN_MARKER}>
       <PageHeader
         codes={`${t.cs ?? t.id} · ${L.track[t.track]} · ${L.path[t.readingPath as ReadingPath]}`}
         title={titleOf(t)}

@@ -53,7 +53,8 @@ export class IncidentService {
       category: body.category,
       severity: body.severity,
       summary: body.summary,
-      occurredAt: body.occurredAt ?? this.clock.iso(),
+      // ORCA-HT06 — 발생 시각 미상은 미상으로 둔다(수신 시각으로 대체하면 시간선이 거짓 정밀도를 갖는다)
+      occurredAt: body.occurredAt ?? null,
       receivedAt: this.clock.iso(),
       receivedBy: actor.id,
       sotif,

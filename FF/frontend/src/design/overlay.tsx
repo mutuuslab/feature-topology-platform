@@ -1,7 +1,9 @@
 // 드로어·파괴적 액션 확인 — Esc로 닫고, 열릴 때 첫 입력으로 초점을 옮기고, 닫히면 원래 자리로 돌려준다.
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ko } from '../copy/ko';
+import { unsaved as U } from '../copy/unsaved';
+import { useUnsavedGuard } from './unsaved';
 import { Button } from './primitives';
 
 function useOverlay(open: boolean, onClose: () => void) {
@@ -33,18 +35,42 @@ function useOverlay(open: boolean, onClose: () => void) {
   return box;
 }
 
-export function Drawer({ open, title, onClose, children }: { open: boolean; title: ReactNode; onClose: () => void; children: ReactNode }) {
-  const box = useOverlay(open, onClose);
+/**
+ * dirty — 저장하지 않은 입력이 있으면 닫기(×·Esc·바깥)를 바로 하지 않고 창 안에서 묻는다(출시 준비 RD-UX-02).
+ * 저장·실행 뒤 화면이 직접 닫는 경우(open=false)는 묻지 않는다.
+ */
+export function Drawer({ open, title, onClose, children, dirty = false }: { open: boolean; title: ReactNode; onClose: () => void; children: ReactNode; dirty?: boolean }) {
+  const [asking, setAsking] = useState(false);
+  const close = useCallback(() => (dirty ? setAsking(true) : onClose()), [dirty, onClose]);
+  const box = useOverlay(open, close);
   const id = useId();
+  useUnsavedGuard(open && dirty);
+  useEffect(() => {
+    if (!open || !dirty) setAsking(false);
+  }, [open, dirty]);
   if (!open) return null;
   return createPortal(
     <>
-      <div className="ds-scrim" onClick={onClose} />
+      <div className="ds-scrim" onClick={close} />
       <div className="ds-drawer" role="dialog" aria-modal="true" aria-labelledby={id} ref={box}>
         <header className="ds-drawer__head">
           <h2 id={id}>{title}</h2>
-          <Button variant="ghost" icon="close" aria-label={ko.action.close} onClick={onClose} />
+          <Button variant="ghost" icon="close" aria-label={ko.action.close} onClick={close} />
         </header>
+        {asking && (
+          <div className="ds-drawer__ask" role="alert" data-unsaved-drawer>
+            <strong>{U.drawerTitle}</strong>
+            <p>{U.drawerBody}</p>
+            <div className="ds-drawer__ask-actions">
+              <Button variant="primary" onClick={() => setAsking(false)} autoFocus>
+                {U.drawerStay}
+              </Button>
+              <Button variant="danger" onClick={() => (setAsking(false), onClose())}>
+                {U.drawerLeave}
+              </Button>
+            </div>
+          </div>
+        )}
         <div className="ds-drawer__body">{children}</div>
       </div>
     </>,

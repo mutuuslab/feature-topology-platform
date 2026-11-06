@@ -23,6 +23,13 @@ export class TargetingService {
   vehicles() {
     return this.fleet.vehicles();
   }
+  vehiclePage(limit: number, after?: string) {
+    return this.fleet.vehiclePage(limit, after);
+  }
+  /** 전체 차량 수와 그중 5년 재생 표본(fleet=SAMPLE) 수 — 목록을 읽지 않고 센다 */
+  vehicleCounts(): { total: number; sample: number } {
+    return this.fleet.vehicleCounts();
+  }
 
   /** flagKey 배포 정책의 실효 코호트에 Fleet 차량이 들어가는지 (FP-COHORT-1) */
   async cohort(flagKey: string, basisPoints?: number) {

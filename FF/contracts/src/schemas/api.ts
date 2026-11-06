@@ -1,5 +1,6 @@
 // API 요청 본문 스키마 — 백엔드 ZodPipe와 프론트 폼 검증이 공유한다.
 import { z } from 'zod';
+import { patchOf } from './patch';
 import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
@@ -21,8 +22,7 @@ export const CreateFeatureBody = z.object({
 export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
 
 /** PROPOSED 초안 수정 — 국가·차종·트림은 바꿀 수 없다(새 Feature ID). */
-export const UpdateDraftBody = CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true })
-  .partial()
+export const UpdateDraftBody = patchOf(CreateFeatureBody.omit({ country: true, vehicleModel: true, trim: true }))
   .extend({
     functions: z.array(z.object({ functionId: z.string().regex(/^FUNC-\d{6}$/), label: z.string() })).optional(),
     swIds: z.array(z.string()).optional(),
@@ -102,7 +102,7 @@ export const CreateProductBody = z
   .strict();
 export type CreateProductBody = z.infer<typeof CreateProductBody>;
 
-export const UpdateProductDraftBody = CreateProductBody.omit({ country: true, vehicleModel: true, trim: true }).partial().strict();
+export const UpdateProductDraftBody = patchOf(CreateProductBody.omit({ country: true, vehicleModel: true, trim: true })).strict();
 export type UpdateProductDraftBody = z.infer<typeof UpdateProductDraftBody>;
 
 /** 구성·기간 변경 = 새 Catalog Version (PROPOSED부터) */

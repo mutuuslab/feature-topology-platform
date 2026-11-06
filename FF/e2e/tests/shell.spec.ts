@@ -59,7 +59,8 @@ test('셸 상단 바에 회사 로고가 보이고, 다크 테마에서도 읽�
   await page.goto('/features');
   const logo = page.locator('.sh-top .sh-brand__logo');
   await expect(logo).toBeVisible();
-  expect(await logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), '로고 파일을 실제로 읽었다').toBe(true);
+  // 보이는 것(자리 크기)과 다 읽은 것은 다르다 — 부하가 크면 그 사이에 한 번만 재면 흔들렸다(2026-10-25). 읽을 때까지 기다린다
+  await expect.poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), { message: '로고 파일을 실제로 읽었다' }).toBe(true);
   expect((await logo.boundingBox())!.height).toBeGreaterThanOrEqual(14);
   expect(await logo.evaluate((e) => getComputedStyle(e).filter)).toBe('none');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/brand/mutuus-symbol.svg');

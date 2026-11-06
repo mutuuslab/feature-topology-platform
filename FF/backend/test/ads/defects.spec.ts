@@ -1,6 +1,5 @@
-// ADS 요구사항(harness/ads/catalog.json) 결함 기록 — 코드 검토에서 찾은 요구 미충족을 재현한다.
-// it.fails: 결함이 그대로면 통과한다. 고치면 이 시험이 실패한다 → it(으로 바꾸고, 판정을 갱신한다.
-// 각 시험은 "요구되는 올바른 동작"을 단언한다 — 지금은 그 단언이 실패한다(설정 오류가 아니라 결함 단언에서).
+// ADS 요구사항(harness/ads/catalog.json) 결함 기록 → 회귀 시험. readiness: RD-FN-01 — 기록한 결함(F036·F019·F059·F007·ORCA-HT06)은 모두 고쳤다.
+// 각 시험은 "요구되는 올바른 동작"을 단언한다. 새 결함은 it.fails로 기록하고 harness/ads/review.json에 defect를 단다.
 // 시험마다 앱을 새로 띄운다 — 한 결함의 재현 단계(차단·복원·재-HARA 요청)가 다른 결함 기록에 새지 않게.
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal', CARLA_RUNNER: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-ads-')) });
 import { readFileSync } from 'node:fs';
@@ -12,10 +11,14 @@ import { DB, type Db } from '../../src/kernel/db';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { VehicleRuntimeService } from '../../src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service';
 import { AuditService } from '../../src/kernel/audit.service';
+import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
 import { actor, bootApp, confirmSafety, killV2, restoreV2 } from '../helpers';
+import { registerTestApprovers, signApprovals } from '../approver-keys';
 
 const OPS = actor('usr-ops', 'OPERATOR');
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
+const POLICY_AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
+const POLICY_APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
 const JUDGE = actor('choi.judge', 'GATE_JUDGE');
 const RELEASE = actor('usr-coordinator', 'RELEASE_MANAGER');
 const AT = '2026-10-12T01:00:00.000Z';
@@ -40,7 +43,7 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
     for (const k of ['FF_SCHEDULER', 'GLEO_MODE', 'CARLA_RUNNER', 'FF_EVIDENCE_DIR']) delete process.env[k];
   });
 
-  it.fails('FFP-F036 해제와 활성화 분리 — 승인된 복원 뒤 다음 시동에서도 차량은 저절로 ACTIVE가 되지 않는다', async () => {
+  it('FFP-F036 해제와 활성화 분리 — 승인된 복원 뒤 다음 시동에서도 차량은 저절로 ACTIVE가 되지 않는다', async () => {
     const { app, http, advance } = await boot();
     try {
       const k = await killV2(http, KILL);
@@ -58,7 +61,7 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
     }
   });
 
-  it.fails('FFP-F019 명령 멱등성 — 같은 command_id 봉투를 그대로 다시 보내면 앞 결과를 돌려주고 보안 이벤트·전이는 없다', async () => {
+  it('FFP-F019 명령 멱등성 — 같은 command_id 봉투를 그대로 다시 보내면 앞 결과를 돌려주고 보안 이벤트·전이는 없다', async () => {
     const { app, http, advance, db } = await boot();
     try {
       const k = await killV2(http, KILL);
@@ -77,21 +80,30 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
     }
   });
 
-  it.fails('FFP-F059 일괄 명령 미리보기 — 대상 집합에 묶이지 않은 승인 서명(길이만 64자 이상)의 차단 명령은 게이트가 거부한다', async () => {
-    const { app, http } = await boot('2026-10-13T00:30:00Z'); // 예시 명령 유효기간 안
+  it('FFP-F059 일괄 명령 미리보기 — 등록된 승인자 키로 검증되지 않거나 대상 집합에 묶이지 않은 승인 서명의 차단 명령은 게이트가 거부한다', async () => {
+    const { app, http, get } = await boot('2026-10-13T00:30:00Z'); // 예시 명령 유효기간 안
     try {
-      const ok: KillCommandV2 = JSON.parse(readFileSync(join(EX, 'kill_safety_dc2_eu.ok.json'), 'utf8'));
+      const example: KillCommandV2 = JSON.parse(readFileSync(join(EX, 'kill_safety_dc2_eu.ok.json'), 'utf8'));
+      // D-RD-5 기준선 변경 — 보고서 예시의 자리표시 서명은 이제 FAIL(승인자 키 미등록). PASS 기준선은 등록된 시험 승인자 키로 서명한 명령
+      const placeholder = (await http().post('/api/gate/preview').set(OPS).send(example).expect(201)).body;
+      expect(placeholder.result).toBe('FAIL');
+      expect(placeholder.findings.filter((f: { ok: boolean }) => !f.ok).map((f: { rule: string }) => f.rule)).toEqual(['FFG-PLT-005']);
+      registerTestApprovers(get(HsmService), example.approvals.map((a) => a.approver_id));
+      const ok = signApprovals(example);
       expect((await http().post('/api/gate/preview').set(OPS).send(ok).expect(201)).body.result).toBe('PASS'); // 기준선
       // 대상 집합과 무관한 임의 문자열 — 어떤 차량에 대해서도 서명이 아니다
       const forged = { ...ok, approvals: ok.approvals.map((a) => ({ ...a, approval_sig: 'x'.repeat(86) })) };
       const v = (await http().post('/api/gate/preview').set(OPS).send(forged).expect(201)).body;
       expect(v.result).toBe('FAIL');
+      // 서명 뒤 대상 차량을 늘린 명령 — 서명은 진짜여도 대상 집합이 다르다
+      const widened = { ...ok, scope: { ...ok.scope, vehicle_ids: [...ok.scope.vehicle_ids, 'VHC-000125'], max_vehicles: 3 } };
+      expect((await http().post('/api/gate/preview').set(OPS).send(widened).expect(201)).body.result).toBe('FAIL');
     } finally {
       await app.close();
     }
   });
 
-  it.fails('FFP-F007 승인 영향 판정 — G8·G9 PASS·Release Sign-off 뒤 열린 재-HARA 요청이 있으면 출시 전이는 거부된다', async () => {
+  it('FFP-F007 승인 영향 판정 — G8·G9 PASS·Release Sign-off 뒤 열린 재-HARA 요청이 있으면 출시 전이는 거부된다', async () => {
     const { app, http } = await boot('2026-10-18T01:00:00.000Z');
     try {
       const base = '/api/features/FEAT-00001/versions/2.1.0';
@@ -112,21 +124,56 @@ describe('ADS 요구사항 결함 기록 — 종료·해제·명령 전달·승�
     }
   });
 
-  it.fails('FFP-F060 감사 무결성 — 트리거를 우회해 마지막 감사 행을 지워도 체인 검증이 잡는다', async () => {
-    const { app, http, db } = await boot();
+  it('FFP-F007 승인 영향 판정 — 열린 재-HARA 요청이 있으면 Release Sign-off(서명 단계)도 거부된다', async () => {
+    const { app, http } = await boot('2026-10-18T01:00:00.000Z');
     try {
-      for (let i = 0; i < 3; i++) await http().post('/api/pki/rotate').set(actor('u-safety', 'SAFETY_OFFICER')).send({ reason: `교체 ${i}` }).expect(201);
-      const last = db.get<{ id: number }>('SELECT id FROM audit ORDER BY id DESC LIMIT 1')!.id;
-      db.run('DROP TRIGGER audit_no_delete'); // 공격자가 DB 권한으로 트리거를 지웠다고 가정
-      db.run('DELETE FROM audit WHERE id = ?', last);
-      // 요구: 끝 행 삭제도 탐지한다 — 체인 끝(head)이 DB 밖에 고정돼 있어야 한다
-      expect(app.get(AuditService).verifyChain().ok).toBe(false);
+      const base = '/api/features/FEAT-00001/versions/2.1.0';
+      await confirmSafety(http, 'FEAT-00001', '2.1.0');
+      for (const gate of ['G8', 'G9']) await http().post(`${base}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
+      const src = (await http().post('/api/features/FEAT-00024/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '연동 추가', changes: { description: 'FEAT-00001 연동' } }).expect(201)).body.feature.version;
+      await http().post('/api/dependencies').set(AUTHOR).send({ type: 'REQUIRES', sourceFeatureId: 'FEAT-00024', sourceVersion: src, targetFeatureId: 'FEAT-00001', targetVersion: '2.1.0' }).expect(201);
+      const r = await http().post(`${base}/release-signoff`).set(AUTHOR).send({ reason: '출시 책임 확인' });
+      expect(r.status).toBe(422);
+      expect(r.body.error.message).toMatch(/재-HARA/);
     } finally {
       await app.close();
     }
   });
 
-  it.fails('ORCA-HT06 시각 신뢰도 — 발생 시각 없이 접수한 사건은 발생 시각을 비워 두고 수신 시각으로 채우지 않는다', async () => {
+  // D-RD-6(20-90) — 열린 재-HARA는 정책 배포를 막지 않는다(완화·ODD 축소 정책이 재-HARA 중에도 차량에 나가야 한다).
+  // 출시 전이·Release Sign-off만 막는다(위 두 시험). 같은 Feature Version에서 둘을 함께 확인한다.
+  it('D-RD-6 열린 재-HARA 요청이 있어도 정책 배포는 된다 — 같은 Version의 출시 전이는 거부된다', async () => {
+    const { app, http, advance } = await boot('2026-10-18T01:00:00.000Z');
+    try {
+      const base = '/api/features/FEAT-00001/versions/2.1.0';
+      await confirmSafety(http, 'FEAT-00001', '2.1.0');
+      for (const gate of ['G8', 'G9']) await http().post(`${base}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
+      await http().post(`${base}/release-signoff`).set(AUTHOR).send({ reason: '출시 책임 확인' }).expect(201);
+      const src = (await http().post('/api/features/FEAT-00024/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: '연동 추가', changes: { description: 'FEAT-00001 연동' } }).expect(201)).body.feature.version;
+      await http().post('/api/dependencies').set(AUTHOR).send({ type: 'REQUIRES', sourceFeatureId: 'FEAT-00024', sourceVersion: src, targetFeatureId: 'FEAT-00001', targetVersion: '2.1.0' }).expect(201);
+      const open = (await http().get('/api/rehara-requests?featureId=FEAT-00001&featureVersion=2.1.0&status=OPEN').expect(200)).body.items;
+      expect(open).toEqual([expect.objectContaining({ condition: 'TOPOLOGY', status: 'OPEN' })]);
+      // 정책 배포 — 재-HARA가 열려 있어도 승인된 정책은 배포된다(완화 정책이 막히지 않게)
+      const c = await http().post('/api/policies').set(POLICY_AUTHOR).send({ featureId: 'FEAT-00001', featureVersion: '2.1.0', controlPoint: 'Flag', flagKey: 'f00001_flag_rehara', description: '재-HARA 중 완화 정책', safeDefault: false, entitlementCatalogId: 'CAT-00001' }).expect(201);
+      const pid = c.body.policyId;
+      expect((await http().post(`/api/policies/${pid}/validate`).set(POLICY_AUTHOR).send({}).expect(200)).body.run.decision).toBe('GO');
+      await http().post(`/api/policies/${pid}/decision`).set(POLICY_APPROVER).send({ decision: 'APPROVE', reason: 'GO 확인' }).expect(200);
+      const d = await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '재-HARA 중 완화 배포' });
+      expect(d.status).toBe(200);
+      expect(d.body.publicationId).toBeTruthy();
+      advance(12_000);
+      // 같은 Version의 출시 전이는 재-HARA 때문에 거부된다
+      const r = await http().post(`${base}/transitions`).set(RELEASE).send({ to: 'RELEASED', reason: '출시' });
+      expect(r.status).toBe(422);
+      expect(JSON.stringify(r.body)).toMatch(/재-HARA/);
+    } finally {
+      await app.close();
+    }
+  });
+
+  // FFP-F060(감사 체인 끝 삭제 미탐지)은 고쳤다 — 회귀 시험은 test/kernel/audit-chain.spec.ts(출시 준비 RD-SEC-13)
+
+  it('ORCA-HT06 시각 신뢰도 — 발생 시각 없이 접수한 사건은 발생 시각을 비워 두고 수신 시각으로 채우지 않는다', async () => {
     const { app, http } = await boot();
     try {
       const r = (await http().post('/api/incidents').set(OPS).send({ source: 'FIELD', vin: 'ego-01', category: 'OTHER', severity: 'WARNING', summary: '발생 시각 미상 사건' }).expect(201)).body;

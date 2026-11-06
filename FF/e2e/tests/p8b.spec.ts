@@ -1,6 +1,7 @@
 // P8b 끝단 흐름 — 실제 백엔드(전용 9111): 차량 고장 보고(차량 발신 API) → 이상 건 → 조치 → 품질 피드백, Unleash 동기화·차량별 대조.
 // 차량은 다른 시험이 쓰지 않는 KMH-NX4-0001·0004만 쓰고, FEAT-00022 긴급 차단은 하지 않는다(ops.spec과 병렬 충돌 방지).
 import { expect, test, type Page } from '@playwright/test';
+import { vehiclePost } from './vehicle';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 
@@ -20,7 +21,8 @@ test('이상 징후: 고장 보고 2대(ASIL B) → 긴급 차단 권고 → 확
   const at = new Date().toISOString();
   for (const vin of ['KMH-NX4-0001', 'KMH-NX4-0004']) {
     const boot = `BOOT-${vin}-e2e`;
-    const send = (sequence: number, body: Record<string, unknown>) => request.post(`${API}/vehicle/v1/${vin}/reports`, { headers: { 'X-Vehicle-Id': vin }, data: { bootId: boot, sequence, observedAt: at, ...body } });
+    // 차량 서명 요청(RD-SEC-08) — 공장 주입 차량 키로 CMAC
+    const send = (sequence: number, body: Record<string, unknown>) => vehiclePost(request, vin, `/vehicle/v1/${vin}/reports`, { bootId: boot, sequence, observedAt: at, ...body });
     expect((await send(1, { type: 'HELLO', highest: {} })).status()).toBe(200);
     const r = await send(2, { type: 'FAULT', featureId: 'FEAT-00022', code: 'GAP_EST_DRIFT', severity: 'WARNING', detail: 'e2e' });
     expect(r.status(), await r.text()).toBe(200);

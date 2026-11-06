@@ -2,7 +2,7 @@
 // 이미 적재된 DB(meta.seed 존재)는 건드리지 않는다 — 운영 중 변경을 덮어쓰지 않기 위해.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { addDays, DATASET_FILES, EntitlementSchema, syntheticTrials, VehicleSchema, type Dataset, type Entitlement, type VehicleProfile } from '@ff/contracts';
+import { addDays, DATASET_FILES, DEMO_REFERENCE_SEED, EntitlementSchema, syntheticTrials, VehicleSchema, type Dataset, type Entitlement, type VehicleProfile } from '@ff/contracts';
 import { z } from 'zod';
 import type { Db } from './db';
 
@@ -133,4 +133,29 @@ export function seedDemo(db: Db, dir = process.env.FF_DEMO_FIXTURES ?? DEMO_FIXT
     db.run("INSERT INTO meta (key, value) VALUES ('seed-demo', ?)", `v2 ${anchor} synthetic=${syn.grants.length}`);
   });
   return true;
+}
+
+/**
+ * 데모 기준 값(판매국·지역·차종·트림) — 데모 시드가 있을 때만, 한 번(출시 준비 RD-OPS-03). 고객 설치(FF_SEED=none)는 빈 목록에서 시작한다.
+ * 데모 데이터셋 목록에 시드된 차량(데모·표본)이 실제로 쓰는 값을 더한다 — 데모 화면의 선택지가 차량과 어긋나지 않게.
+ */
+export function seedReferenceValues(db: Db, at = new Date().toISOString()): number {
+  if (db.get("SELECT value FROM meta WHERE key = 'seed-reference'")) return 0;
+  const rows = new Map<string, { kind: string; code: string; label: string; parent: string }>();
+  const add = (kind: string, code: string, label: string, parent: string | null) => {
+    if (code) rows.set(`${kind}|${parent ?? ''}|${code}`, { kind, code, label, parent: parent ?? '' });
+  };
+  for (const v of DEMO_REFERENCE_SEED) add(v.kind, v.code, v.label, v.parent);
+  for (const { doc } of db.all<{ doc: string }>('SELECT doc FROM vehicle')) {
+    const v = JSON.parse(doc) as { country?: string; vehicleModel?: string; trim?: string };
+    if (v.country) add('COUNTRY', v.country, v.country, null);
+    if (v.vehicleModel) add('VEHICLE_MODEL', v.vehicleModel, v.vehicleModel, null);
+    if (v.vehicleModel && v.trim) add('TRIM', v.trim, v.trim, v.vehicleModel);
+  }
+  db.tx(() => {
+    for (const r of rows.values())
+      db.run("INSERT OR IGNORE INTO reference_value (kind, code, parent, label, origin, status, created_at, created_by) VALUES (?, ?, ?, ?, 'SEED', 'ACTIVE', ?, 'seed')", r.kind, r.code, r.parent, r.label, at);
+    db.run("INSERT INTO meta (key, value) VALUES ('seed-reference', ?)", `demo ${rows.size}`);
+  });
+  return rows.size;
 }

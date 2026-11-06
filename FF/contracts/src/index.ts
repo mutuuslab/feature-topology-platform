@@ -11,3 +11,7 @@ export * from './rules/ads-config';
 export * from './rules/ads-evidence';
 export * from './rules/ads-state';
 export * from './rules/ads-change';
+// Feature 관계 유형·추적 연결(P3) — 화면은 파일에서 직접 읽는다
+export * from './rules/relation-types';
+export * from './schemas/trace-link';
+export * from './rules/trace-link';

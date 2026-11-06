@@ -99,9 +99,17 @@ export class TopologyService {
     }
   }
 
-  /** 관계 그래프 (Cytoscape용) — featureId가 있으면 그 Feature 주변 depth 단계까지 */
-  graph(featureId?: string, depth = 2) {
-    const deps = this.topology.all();
+  /** 관계 그래프 (Cytoscape용) — featureId가 있으면 그 Feature 주변 depth 단계까지. types·lifecycle이 있으면 그 관계 유형·양 끝 Lifecycle만(FR-DEP-004-002) */
+  graph(featureId?: string, depth = 2, filter: { types?: string[]; lifecycle?: string[] } = {}) {
+    const lifeOk = (id: string, ver: string | null) => {
+      if (!filter.lifecycle?.length) return true;
+      const f = ver ? this.features.get(id, ver) : this.features.versions(id).at(-1);
+      return !!f && filter.lifecycle.includes(f.lifecycle);
+    };
+    const deps = this.topology
+      .all()
+      .filter((d) => !filter.types?.length || filter.types.includes(d.type))
+      .filter((d) => lifeOk(d.sourceFeatureId, d.sourceVersion) && lifeOk(d.targetFeatureId, d.targetVersion));
     let keep: Set<string> | null = null;
     if (featureId) {
       keep = new Set([featureId]);
@@ -110,7 +118,7 @@ export class TopologyService {
     }
     const edges = deps.filter((d) => !keep || (keep.has(d.sourceFeatureId) && keep.has(d.targetFeatureId)));
     const ids = new Set(edges.flatMap((d) => [`${d.sourceFeatureId}@${d.sourceVersion}`, d.targetVersion ? `${d.targetFeatureId}@${d.targetVersion}` : d.targetFeatureId]));
-    if (featureId) for (const v of this.features.versions(featureId)) ids.add(`${v.featureId}@${v.version}`);
+    if (featureId) for (const v of this.features.versions(featureId)) if (!filter.lifecycle?.length || filter.lifecycle.includes(v.lifecycle)) ids.add(`${v.featureId}@${v.version}`);
     const nodes = [...ids].sort().map((id) => {
       const [fid, ver] = id.split('@');
       const f = ver ? this.features.get(fid, ver) : this.features.versions(fid).at(-1);

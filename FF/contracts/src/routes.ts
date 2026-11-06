@@ -61,6 +61,8 @@ import { AbortCriteriaBody, FindingTransitionBody, LakeModelDecisionBody } from 
 import { AdsDeterminationBody, AdsReviewFindingBody } from './schemas/ads-evidence';
 import { CloseImpactPathBody, PATH_CLOSER_ROLES } from './schemas/ads-change';
 import { ApproveOddProfileBody, CreateConfigSetBody } from './schemas/ads-config';
+import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
+import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -193,7 +195,7 @@ export const ROUTES: RouteDef[] = [
   // Feature Topology (D01-02) — 의존관계·그래프·사전점검·영향
   { name: 'dependencies', method: 'GET', path: '/api/dependencies', summary: '의존관계 검증 이력', component: 'D01-02', query: ['featureId', 'type', 'verdict'] },
   { name: 'createDependency', method: 'POST', path: '/api/dependencies', summary: '의존관계 등록·판정', component: 'D01-02', roles: ['FEATURE_AUTHOR', 'VARIANT_OWNER'], body: CreateDependencyBody },
-  { name: 'topologyGraph', method: 'GET', path: '/api/topology/graph', summary: '관계 그래프', component: 'D01-02', query: ['featureId', 'depth'] },
+  { name: 'topologyGraph', method: 'GET', path: '/api/topology/graph', summary: '관계 그래프 — 관계 유형(쉼표)·Lifecycle로 표시 범위를 좁힌다', component: 'D01-02', query: ['featureId', 'depth', 'types', 'lifecycle'] },
   { name: 'precheck', method: 'GET', path: '/api/precheck', summary: 'DATA-PRECHECK 16 규칙 + 데이터 품질', component: 'D01-02' },
   { name: 'impact', method: 'GET', path: '/api/impact/:id/:ver', summary: '변경 영향 (Feature→Baseline→Catalog)', component: 'D01-02', query: ['changed'] },
 
@@ -554,6 +556,16 @@ export const ROUTES: RouteDef[] = [
   { name: 'policyCanary', method: 'GET', path: '/api/policies/:id/canary', summary: '정책 Canary 관측', component: 'D01-08' },
   { name: 'registerAbortCriteria', method: 'PUT', path: '/api/policies/:id/abort-criteria', summary: '중단 기준 사전 등록', component: 'D01-08', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: AbortCriteriaBody },
   { name: 'collectionPolicies', method: 'GET', path: '/api/collection-policies', summary: '수집 정책', component: 'D04-03' },
+  // Feature 관계·추적 연결(D01-02, FR-DEP-001~009) — 관계 유형 10종·excludes 동시 활성화 검사, 요구·아키텍처·인터페이스·Test Case·OTA 연결과 Test Evidence·커버리지
+  { name: 'relationTypes', method: 'GET', path: '/api/relation-types', summary: 'Feature 관계 유형 값 목록(10종) — 대칭·반대 짝·순환 묶음·선행 단계', component: 'D01-02' },
+  { name: 'exclusionCheck', method: 'GET', path: '/api/dependencies/:id/exclusion-check', summary: 'excludes 관계 동시 활성화 검사 — 두 Feature의 켜진 배포 정책·함께 켜지는 차량', component: 'D01-02' },
+  { name: 'traceLinks', method: 'GET', path: '/api/trace-links', summary: 'Feature 추적 연결 목록 — 종류·요소 유형·출처·상태(해제 이력 포함)', component: 'D01-02', query: ['featureId', 'kind', 'elementType', 'sourceSystem', 'status'] },
+  { name: 'createTraceLink', method: 'POST', path: '/api/trace-links', summary: '추적 연결 등록 — 요구·설계 요소(HW·SW)·인터페이스(API·Signal·DTC·Event)·Test Case(필수 여부)·OTA 패키지, 출처 존재 확인', component: 'D01-02', roles: TRACE_LINK_ROLES, body: CreateTraceLinkBody },
+  { name: 'unlinkTraceLink', method: 'POST', path: '/api/trace-links/:id/unlink', summary: '추적 연결 해제 — 사유, 연결은 해제 이력으로 남는다', component: 'D01-02', roles: TRACE_LINK_ROLES, body: UnlinkTraceLinkBody },
+  { name: 'createTestEvidence', method: 'POST', path: '/api/trace-links/:id/evidence', summary: 'Test Evidence 등록 — 연결된 Test Case에 Evidence 식별자·실행 일시·결과·실행 환경(추가만)', component: 'D01-02', roles: TEST_EVIDENCE_ROLES, body: CreateTestEvidenceBody },
+  { name: 'traceSourceLookup', method: 'GET', path: '/api/trace-sources/lookup', summary: '출처 식별자 확인 — 등록 전 이름·버전·유형', component: 'D01-02', query: ['kind', 'elementId', 'elementVersion'], requiredQuery: ['kind', 'elementId'], sample: { kind: 'TEST_CASE', elementId: 'TC-00022-01' } },
+  { name: 'featureTrace', method: 'GET', path: '/api/features/:id/trace-links', summary: 'Feature 추적 연결 요약 — 종류별 목록·유형·출처 묶음, Test Case별 Evidence 여부·최종 결과, 요구·Test 커버리지', component: 'D01-02' },
+  { name: 'traceCoverage', method: 'GET', path: '/api/trace-coverage', summary: 'Feature별 요구·Test 커버리지 — 요구 미연결·필수 Test Evidence 미등록 Feature 식별', component: 'D01-02', query: ['filter'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

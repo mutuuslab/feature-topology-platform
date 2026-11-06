@@ -37,10 +37,15 @@ import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/
 import { FlagSourceController, FlagSourceService } from './policy-store/flag-source.service';
 import { FlagCodeStore } from './flag-code/flag-code.store';
 import { FlagCoverageService } from './flag-code/flag-coverage.service';
+import { TraceLinkController } from './registry/trace-link.controller';
+import { TraceLinkRepo } from './registry/trace-link.repo';
+import { TraceLinkService } from './registry/trace-link.service';
+import { RelationGuardService } from './topology/relation-guard.service';
+import { TraceSources } from '../../adapters/if-mocks/trace-sources';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, TraceLinkController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -66,7 +71,9 @@ import { FlagCoverageService } from './flag-code/flag-coverage.service';
     // Flag 코드 연결 대사(20-97) — Lifecycle 출시 관문·정책 게시 관문·Feature Flag 탭이 함께 쓴다
     FlagCodeStore,
     FlagCoverageService,
+    // Feature 추적 연결·관계 경고(P3) — 요구·설계 요소·인터페이스·Test Case·OTA 연결, excludes 동시 활성화, 변경 영향의 차량·정책·OTA
+    TraceLinkRepo, TraceSources, TraceLinkService, RelationGuardService,
   ],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService],
+  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService, TraceLinkRepo, TraceLinkService],
 })
 export class D01PolicyModule {}

@@ -1,10 +1,13 @@
 // 따라하기 가이드 패널 — 실제 화면 위에 붙어 "지금 할 일 · 어디서 · 누가 · 왜(규칙·근거 조항) · 확인"을 보여 준다.
 // 대상 요소(data-tour)를 스포트라이트로 강조하고, 단계 역할이 지금 역할과 다르면 화면 이동 없이 전환한다.
 // 단계에 완료 판정(check)이 있으면 그 화면의 상태(요소·글자)로 판정한다 — 직접 하기 모드는 판정을 통과해야 다음 단계로 간다.
-// 판정은 화면만 보므로 실서버·정적 데모(브라우저 시뮬레이터)에서 같게 동작한다.
+// 판정은 화면만 보므로 실서버·정적 데모(브라우저 시뮬레이터)에서 같게 동작한다. 판정에 쓰기(check.write)가 있으면 그 쓰기가 이 단계에서
+// 성공해야 완료 — 다른 시나리오·이전 실행이 남긴 상태로 미리 통과하지 않는다(api/writes).
 import { useEffect, useId, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { clausesOf, onCheckPath, reportRule, reportTest, standardFamily, stepCheckMet, stepPath, tutorialById, type TutorialStep } from '@ff/contracts';
+import { STATIC_MODE } from '../api/client';
+import { onWrite } from '../api/writes';
 import { ko } from '../copy/ko';
 import { roleLabel } from '../data/refdata';
 import { Button, ClauseChip, Drawer, Icon, KeyValue, RULE_EVENT, RuleText, StatusGlyph, openRule, useReportCatalog } from '../design';
@@ -94,7 +97,20 @@ export function GuideDock() {
   const here = !!step && pathname === stepPath(step) && (!step.route.includes('?') || search.includes(step.route.split('?')[1]));
   const rect = useSpotlight(step && here && !st?.collapsed ? step.anchor : null, stepDescId);
   const checking = !!step && onCheckPath(step, pathname);
-  const met = useStepCheck(step, checking);
+  const i0 = t && st ? Math.min(st.step, t.steps.length - 1) : 0;
+  // 이 단계에서 성공한 쓰기를 남긴다(단계 번호와 함께 — 단계를 옮기면 새로 센다). 화면을 옮기거나 새로고침해도 남는다
+  const need = step?.check?.write;
+  useEffect(() => {
+    if (!need?.length) return;
+    return onWrite((name) => {
+      const cur = learnStore.get();
+      if (!cur || !need.includes(name)) return;
+      const names = cur.wrote?.step === i0 ? cur.wrote.names : [];
+      if (!names.includes(name)) learnStore.patch({ wrote: { step: i0, names: [...names, name] } });
+    });
+  }, [need, i0]);
+  const wrote = !need?.length || (st?.wrote?.step === i0 && need.some((w) => st.wrote!.names.includes(w)));
+  const met = useStepCheck(step, checking) && wrote;
   // 판정을 통과하면 기록한다 — 다른 화면으로 옮겨도 완료가 남는다
   useEffect(() => {
     if (met && step && st && !st.done?.includes(step.id)) learnStore.patch({ done: [...(st.done ?? []), step.id] });
@@ -107,8 +123,9 @@ export function GuideDock() {
   const n = t.steps.length;
   const i = Math.min(st.step, n - 1);
   const done = met || !!st.done?.includes(step.id);
-  // 직접 하기 — 판정이 있는 단계는 통과해야 다음으로
-  const blocked = st.mode === 'self' && !!step.check && !done;
+  // 직접 하기 — 판정이 있는 단계는 통과해야 다음으로. 정적 데모는 쓰기를 받지 않으므로 직접 하기를 열지 않고(Learn.tsx), 남은 진행 상태도 막지 않는다
+  const self = st.mode === 'self' && !STATIC_MODE;
+  const blocked = self && !!step.check && !done;
   const go = (to: number) => {
     const s = t.steps[to];
     learnStore.patch({ step: to });
@@ -145,7 +162,7 @@ export function GuideDock() {
           <div>
             <div className="ds-eyebrow">
               {t.id} · {D.progress(i + 1, n)} · {L.kind[step.kind]}
-              {st.mode === 'self' ? ` · ${L.mode.self}` : ''}
+              {self ? ` · ${L.mode.self}` : ''}
             </div>
             <h2 ref={headRef} tabIndex={-1} id={stepDescId}>
               {step.title}

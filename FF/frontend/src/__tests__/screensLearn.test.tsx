@@ -14,6 +14,7 @@ import { Explain } from '../design';
 import { LearnHub, LearnRun } from '../screens/learn/Learn';
 import { GuideDock, RuleDrawer } from '../shell/GuideDock';
 import { learnStore } from '../shell/learn';
+import { notifyWrite } from '../api/writes';
 
 beforeEach(() => {
   localStorage.clear();
@@ -64,6 +65,16 @@ function Target() {
       <button type="button" onClick={() => setFail(true)}>
         make-result
       </button>
+      {/* 앞서 남은 실행 기록 — 다른 시나리오·이전 실행이 만든 것(쓰기 요구 판정 시험) */}
+      <div data-tour="virtual-runs">
+        <table>
+          <tbody>
+            <tr>
+              <td>SCN-FEAT00022-FAULT-ONBOARD</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       {fail && (
         <ul>
           <li className="ds-rules__item" data-rule="FFG-CLS-009" data-status="fail">
@@ -241,6 +252,37 @@ describe('직접 하기 — 화면 결과로 단계 완료 판정', () => {
     const dock = await screen.findByRole('complementary', { name: '따라하기 가이드' });
     expect((within(dock).getByRole('button', { name: '다음' }) as HTMLButtonElement).disabled).toBe(false);
     expect(dock.querySelector('[data-check="wait"]')).toBeTruthy();
+  });
+});
+
+describe('직접 하기 — 이 단계의 쓰기를 요구하는 판정', () => {
+  // CS-08 재검증 — 화면 판정(실행 이력에 차량 내 감지 실행)은 앞서 남은 기록으로 이미 맞다. 이 단계에서 [가상검증 실행]이 성공해야 완료
+  const steps = tutorialById('CS-08')!.steps;
+  const at = steps.findIndex((s) => s.id === 'revalidate');
+  const seed = (wrote?: { step: number; names: string[] }) => {
+    localStorage.setItem('ff.learn.v1', JSON.stringify({ scenarioId: 'CS-08', step: at, mode: 'self', startedAt: '2026-11-06T00:00:00Z', ...(wrote ? { wrote } : {}) }));
+    learnStore.reload();
+  };
+
+  it('판정은 실행 쓰기를 요구한다', () => {
+    expect(steps[at].check!.write).toEqual(['runVirtual']);
+  });
+
+  it('남은 실행 기록만으로는 다음이 막히고, 다른 쓰기·다른 단계의 쓰기는 세지 않으며, 이 단계의 실행이 성공하면 열린다', async () => {
+    seed({ step: at - 1, names: ['runVirtual'] });
+    mount(steps[at].route);
+    const dock = await screen.findByRole('complementary', { name: '따라하기 가이드' });
+    // 마지막 단계라 다음 대신 끝내기
+    const next = () => within(dock).getByRole('button', { name: '끝내기' }) as HTMLButtonElement;
+    expect(document.querySelector('[data-tour="virtual-runs"] table')!.textContent).toContain('SCN-FEAT00022-FAULT-ONBOARD');
+    expect(next().disabled).toBe(true);
+    expect(dock.querySelector('[data-check="wait"]')).toBeTruthy();
+    notifyWrite('recordVex');
+    expect(next().disabled).toBe(true);
+    notifyWrite('runVirtual');
+    await waitFor(() => expect(next().disabled).toBe(false));
+    expect(learnStore.get()!.done).toContain('revalidate');
+    expect(learnStore.get()!.wrote).toEqual({ step: at, names: ['runVirtual'] });
   });
 });
 

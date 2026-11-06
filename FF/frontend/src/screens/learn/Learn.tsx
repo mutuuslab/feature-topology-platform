@@ -2,6 +2,7 @@
 import { useMemo } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { clausesOfRules, tutorialById, TUTORIALS, type ReadingPath, type Tutorial } from '@ff/contracts';
+import { STATIC_MODE } from '../../api/client';
 import { useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { roleLabel } from '../../data/refdata';
@@ -155,7 +156,8 @@ export function LearnRun() {
         <div style={{ display: 'grid', gap: 'var(--sp-4)', alignContent: 'start' }}>
           <Panel title={L.modes} id="learn-modes">
             <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-              {(['view', 'self'] as const).map((m) => (
+              {/* 직접 하기는 쓰기(요청·승인·저장)를 해야 판정이 열린다 — 쓰기를 받지 않는 정적 데모에서는 보기만 연다(단계에서 막히지 않게) */}
+              {(STATIC_MODE ? (['view'] as const) : (['view', 'self'] as const)).map((m) => (
                 <div key={m} style={{ display: 'grid', gap: 4 }}>
                   <Button variant={m === 'view' && !running ? 'primary' : 'default'} icon={m === 'view' ? 'play' : 'pen'} onClick={() => start(m)} data-tour={m === 'view' ? 'learn-start' : undefined} data-mode={m}>
                     {running && st!.mode === m ? L.resumeRun(st!.step + 1, t.steps.length) : L.mode[m]}

@@ -1,7 +1,7 @@
 // 표준 따라하기 — 허브 → CS-01 보기 모드(가이드 패널이 화면을 옮겨 다니며 대상을 강조하고 역할을 전환), 12개 시나리오 단계 대상, 직접 하기 대표 시나리오 2개.
 // 레이아웃: 1366(떠 있는 패널)·1920(오른쪽 열)·시연 모드(아래 자막 띠)에서 가로 넘침이 없어야 한다.
 import { expect, test, type Page } from '@playwright/test';
-import { TUTORIALS } from '../../contracts/src/rules/tutorial';
+import { TUTORIALS, tutorialById as byId, type StepCheck, type TutorialStep } from '../../contracts/src/rules/tutorial';
 import { lockKill, releaseKillLocks } from './kill-lock';
 
 async function asRole(page: Page, role: string) {
@@ -239,6 +239,14 @@ test('KILL-DC2 직접 하기: 요청 → 요청자 승인 거부 → 2인 승인
 
 test('CS-07 직접 하기: 의무 기능·DC2 위반 → DC4·R2 저장 → 원격 차단 요청 거부 → 미확인 시장 활성화 차단 → 중국 조건', async ({ page }) => {
   test.setTimeout(180_000);
+  // 시작 조건 — FEAT-00015 1.2.0 분류를 시드 값(DC2·R1·의무 기능 아님)으로 되돌린다. 같은 서버에서 다시 돌면(로컬 서버 재사용·CI 재시도)
+  // 앞 실행이 저장한 DC4·R2가 남아, DC4·R2로 고친 초안이 저장값과 같아져 [초안 저장]이 막힌다
+  const api = `http://localhost:${process.env.E2E_API_PORT ?? '9111'}`;
+  const reset = await page.request.put(`${api}/api/features/FEAT-00015/versions/1.2.0/safety`, {
+    headers: { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR', 'Idempotency-Key': `learn-cs07-${Date.now()}` },
+    data: { deactClass: 'DC2', regClass: 'R1', gsrMandatory: false },
+  });
+  expect(reset.ok(), await reset.text()).toBe(true);
   await page.setViewportSize({ width: 1920, height: 1080 });
   await asRole(page, 'author');
   await page.goto('/learn/CS-07');
@@ -252,6 +260,7 @@ test('CS-07 직접 하기: 의무 기능·DC2 위반 → DC4·R2 저장 → 원�
   await expect(dock.getByRole('button', { name: '다음' })).toBeDisabled();
   await page.getByText('추가 속성', { exact: true }).click();
   await page.getByLabel('법규 의무 기능(GSR)').check();
+  await page.getByRole('combobox', { name: '비활성화 등급 DC', exact: true }).selectOption('DC2'); // 안내대로 DC2 — 이미 DC2면 그대로
   await expect(page.locator('[data-rule="FFG-CLS-005"][data-status="fail"]')).toBeVisible();
   await passAndNext(page);
 
@@ -288,4 +297,112 @@ test('CS-07 직접 하기: 의무 기능·DC2 위반 → DC4·R2 저장 → 원�
   await expect(page.locator('[data-tour="cp-profiles"]').getByRole('row', { name: /^CN/ })).toContainText('신고·허가 ID 필수');
   await dockOf(page).getByRole('button', { name: '끝내기', exact: true }).click();
   await expect(page).toHaveURL(/\/learn\/CS-07$/);
+});
+
+const tutorialById = (id: string) => byId(id)!;
+
+// ── 판정의 세기 — 조작 단계는 시드에 남은 상태·엉뚱한 기록만으로 통과하지 않는다(하네스 리뷰) ──
+/** 화면이 다 읽혔고(불러오는 중 표시 없음) 판정이 한 번 돌았다 — 고정 시간 대기 대신 상태로 기다린다 */
+const inflight = new WeakMap<Page, Set<unknown>>();
+/** 화면의 API 조회(실시간 수신 /events 제외)를 센다 — 이어지는 조회(상세 → 봉투·후보)까지 끝났는지 본다 */
+function trackApi(page: Page) {
+  if (inflight.has(page)) return;
+  const set = new Set<unknown>();
+  inflight.set(page, set);
+  page.on('request', (r) => {
+    if (r.url().includes('/api/') && !r.url().includes('/events')) set.add(r);
+  });
+  for (const ev of ['requestfinished', 'requestfailed'] as const) page.on(ev, (r) => set.delete(r));
+  // 화면을 옮기면 앞 문서의 조회는 끝 알림 없이 버려진다 — 새 문서부터 센다
+  page.on('framenavigated', (f) => {
+    if (f === page.mainFrame()) set.clear();
+  });
+}
+const frames = (page: Page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+async function settled(page: Page) {
+  trackApi(page);
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
+  // 조회가 끝나고 그린 뒤 새 조회가 시작되지 않을 때까지(두 번 연속 0)
+  for (let quiet = 0; quiet < 2; ) {
+    await expect.poll(() => inflight.get(page)!.size, { timeout: 15_000, message: [...inflight.get(page)!].map((r) => (r as { url(): string }).url()).join(' ') }).toBe(0);
+    await frames(page);
+    quiet = inflight.get(page)!.size === 0 ? quiet + 1 : 0;
+  }
+}
+/** 단계 판정(contracts stepCheckMet과 같은 규칙)을 지금 화면에 바로 적용 — 가이드의 다음 그리기를 기다리지 않는 결정적 판정 */
+const domMet = (page: Page, c: StepCheck) =>
+  page.evaluate(({ selector, text }) => [...document.querySelectorAll(selector)].some((e) => !text || new RegExp(text).test(e.textContent ?? '')), { selector: c.selector, text: c.text ?? '' });
+/** 조작 없이 판정이 통과하면 안 된다 — 화면 판정이 이미 맞으면, 이 단계에서 성공한 쓰기(write)를 요구해야 하고 가이드는 기다림이어야 한다 */
+async function expectNotPassed(page: Page, s: TutorialStep, label: string) {
+  // 저장된 분류 초안(data-saved)을 보는 단계는 같은 값을 다시 저장할 수 없어 쓰기를 요구하지 않는다 — 같은 실행의 다른 시험(CS-07 직접 하기)이 먼저 저장하면 맞을 수 있다
+  if (s.check!.selector.includes('data-saved') && !s.check!.write) return;
+  if (await domMet(page, s.check!)) {
+    expect(s.check!.write?.length, `${label} — 화면 판정이 시드·남은 상태로 이미 맞다(쓰기 요구 없음)`).toBeTruthy();
+    await expect(dockOf(page).locator('[data-check]'), label).toHaveAttribute('data-check', 'wait');
+  }
+}
+async function enterStep(page: Page, scenarioId: string, step: number, role: string, route: string) {
+  trackApi(page);
+  await page.evaluate(
+    ([id, s, r]) => {
+      localStorage.setItem('fp.state.v2', JSON.stringify({ role: r }));
+      localStorage.setItem('ff.learn.v1', JSON.stringify({ scenarioId: id, step: Number(s), mode: 'self', startedAt: '2026-11-06T00:00:00Z' }));
+    },
+    [scenarioId, String(step), role],
+  );
+  await page.goto(route);
+}
+
+test('직접 하기: 조작·실패 단계는 화면만 열어서는 판정이 통과하지 않는다(시드 상태)', async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/_design');
+  for (const t of TUTORIALS) {
+    const made = new Set(t.steps.flatMap((s) => s.creates ?? []).map((c) => c.replace('@', '/')));
+    for (const [i, s] of t.steps.entries()) {
+      if (s.kind === 'observe' || !s.check || STATEFUL.includes(s.anchor) || [...made].some((m) => s.route.includes(m))) continue;
+      await enterStep(page, t.id, i, s.role, s.route);
+      const dock = dockOf(page);
+      await expect(dock.getByRole('heading', { level: 2 })).toHaveText(s.title);
+      await expect(dock.getByText(/대상 강조 중/), `${t.id}/${s.id}`).toBeVisible({ timeout: 15_000 });
+      await settled(page);
+      await expectNotPassed(page, s, `${t.id}/${s.id}`);
+    }
+  }
+});
+
+test('직접 하기: 엉뚱한 차단 기록(시드 KILL-00001)을 열어도 차단·복원 단계 판정은 통과하지 않는다', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/_design');
+  const cases = [...tutorialById('KILL-DC2').steps.entries()].filter(([, s]) => s.route === '/ops/kill' && s.id !== 'stages').map(([i, s]) => ['KILL-DC2', i, s] as const);
+  const cs06 = tutorialById('CS-06').steps;
+  cases.push(['CS-06', cs06.findIndex((s) => s.id === 'recall'), cs06.find((s) => s.id === 'recall')!]);
+  for (const [id, i, s] of cases) {
+    await enterStep(page, id, i, s.role, '/ops/kill?id=KILL-00001');
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toContainText('FEAT-00029');
+    await settled(page);
+    await expectNotPassed(page, s, `${id}/${s.id}`);
+  }
+});
+
+test('직접 하기: 앞서 남은 실행 기록으로 재검증 단계가 미리 통과하지 않고, 이 단계에서 실행하면 통과한다', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/_design');
+  // 다른 시나리오(CS-01)나 이전 실행이 남긴 차량 내 감지 실행 기록
+  const api = `http://localhost:${process.env.E2E_API_PORT ?? '9111'}`;
+  const r = await page.request.post(`${api}/api/virtual-validations`, { headers: { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR', 'Idempotency-Key': `learn-${Date.now()}` }, data: { policyId: 'POL-00002' } });
+  expect(r.ok(), await r.text()).toBe(true);
+  const steps = tutorialById('CS-08').steps;
+  const i = steps.findIndex((s) => s.id === 'revalidate');
+  await enterStep(page, 'CS-08', i, steps[i].role, steps[i].route);
+  await expect(page.locator('[data-tour="virtual-runs"] table')).toContainText('SCN-FEAT00022-FAULT-ONBOARD');
+  await settled(page);
+  const dock = dockOf(page);
+  await expectNotPassed(page, steps[i], 'CS-08/revalidate');
+  await page.locator('[data-tour="virtual-runs"]').getByRole('combobox').first().selectOption('POL-00002');
+  await page.locator('[data-tour="virtual-run"]').click();
+  await expect(dock.locator('[data-check="done"]')).toBeVisible({ timeout: 60_000 });
 });

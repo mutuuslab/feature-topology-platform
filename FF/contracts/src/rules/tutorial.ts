@@ -1,6 +1,7 @@
 // "표준 따라하기" 시나리오 표 — 보고서 v1.1 18장 케이스 시나리오를 실제 화면에서 따라 하며 규칙·근거 조항이 어디서 어떻게 동작하는지 본다.
 // 화면(가이드 패널·스포트라이트)이 이 표를 쓴다. 단계는 실제 라우트와 화면의 data-tour 앵커를 가리킨다(시험이 존재를 검사한다).
 // 조작 단계의 완료 판정(check)은 화면 상태(요소·글자)로 한다 — 실서버와 정적 데모(브라우저 시뮬레이터)에서 같은 판정이 돈다.
+// 판정은 이 시나리오가 다루는 대상에 묶는다(예: 차단 서랍의 Feature·차량·상태 속성) — 시드의 다른 기록을 열어 통과하지 않게. 남은 상태로 미리 맞을 수 있는 단계는 write로 이 단계의 쓰기를 요구한다.
 // 단계가 가리키는 예시 데이터 ID(refs, 경로·문구 속 ID)는 시드에 있어야 한다(backend/test/ext/tutorial-refs.spec.ts). 앞 단계가 만드는 ID는 creates에 적는다.
 export type TutorialTrack = 'VIRTUAL' | 'DESIGN' | 'KILL' | 'MARKET' | 'SECURITY' | 'OPERATE';
 /** 보고서 1.7 읽기 경로 */
@@ -18,6 +19,13 @@ export interface StepCheck {
   path?: string;
   /** 완료 때 보이는 한 줄 */
   doneKo: string;
+  /**
+   * 이 단계에서 성공해야 하는 쓰기(API 이름, contracts ROUTES) — 하나라도 성공해야 완료.
+   * 다른 시나리오·이전 실행이 남긴 상태(실행 기록·차단 기록)로 화면 판정이 미리 맞아도 통과하지 않게 한다.
+   * 시드 Version의 분류 초안 저장처럼 다시 할 때 같은 값을 다시 저장할 수 없는 단계에는 쓰지 않는다 — 막히지 않게.
+   * 이 시나리오가 새로 만든 Version의 저장(CLASSIFY-GATE 램프 4000)은 처음 저장이라 쓴다
+   */
+  write?: string[];
 }
 
 export interface TutorialStep {
@@ -70,6 +78,8 @@ export interface Tutorial {
 const FEAT = '/features/FEAT-00022/1.0.0';
 const NEXT = '/features/FEAT-00022/1.1.0';
 const KILL_STAGES = 'ol[aria-label="차량에서 일어나는 순서"]';
+/** KILL-DC2가 만든 차단 기록의 서랍 — FEAT-00022를 KMH-NX4-0004 한 대에 건 것만(시드 KILL-00001 등 다른 기록은 아니다) */
+const MY_KILL = '[data-testid="kill-drawer"][data-feature="FEAT-00022"][data-vins="KMH-NX4-0004"]';
 
 /** 시나리오 첫 단계 — 적용 전·후 표를 읽는다 */
 const intro = (id: string, question: string, whyKo: string, rules: string[], role = 'author'): TutorialStep => ({
@@ -153,7 +163,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         rules: ['FFG-TST-009'],
         tests: ['TC-FF-21'],
         expectKo: '실행 이력에 시나리오별 행이 생기고 판정이 나온다',
-        check: { selector: '[data-tour="virtual-runs"] table', text: 'SCN-FEAT00022-FAULT-ONBOARD', doneKo: '실행 이력에 차량 내 감지 실행이 생김' },
+        check: { selector: '[data-tour="virtual-runs"] table', text: 'SCN-FEAT00022-FAULT-ONBOARD', doneKo: '실행 이력에 차량 내 감지 실행이 생김', write: ['runVirtual'] },
         refs: ['POL-00002', 'SCN-FEAT00022-FAULT-ONBOARD'],
       },
       {
@@ -237,7 +247,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '머리 › [새 Version]',
         rules: ['FFG-CLS-004', 'FFG-LCY-012'],
         expectKo: 'FEAT-00022 1.1.0 상세로 옮겨 가고, 단계는 제안(PROPOSED)이다',
-        check: { path: '^/features/FEAT-00022/1\\.1\\.0$', selector: '[data-tour="feature-header"]', doneKo: 'FEAT-00022 1.1.0 생성' },
+        check: { path: '^/features/FEAT-00022/1\\.1\\.0$', selector: '[data-tour="feature-header"]', doneKo: 'FEAT-00022 1.1.0 생성', write: ['createVersion'] },
         refs: ['FEAT-00022@1.0.0'],
         creates: ['FEAT-00022@1.1.0'],
       },
@@ -267,7 +277,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '안전 분류 탭 › [초안 저장]',
         rules: ['FFG-CLS-009', 'FFG-CLS-004'],
         expectKo: '조합 위반 없음, 저장한 램프 값이 4000',
-        check: { selector: '[data-saved~="rampMs=4000"]', doneKo: '램프 4000 ms 저장' },
+        check: { selector: '[data-saved~="rampMs=4000"]', doneKo: '램프 4000 ms 저장', write: ['updateSafetyProfile'] },
       },
       {
         id: 'confirm',
@@ -281,7 +291,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '[확정 — 개인 서명]',
         rules: ['FFG-CLS-001', 'FFG-LCY-001'],
         expectKo: '1.1.0의 분류 상태가 확정이 되고 잠금 안내가 나온다',
-        check: { selector: '[data-profile-status="CONFIRMED"]', path: '^/features/FEAT-00022/1\\.1\\.0$', doneKo: '1.1.0 분류 확정' },
+        check: { selector: '[data-profile-status="CONFIRMED"]', path: '^/features/FEAT-00022/1\\.1\\.0$', doneKo: '1.1.0 분류 확정', write: ['confirmSafetyProfile'] },
       },
       {
         id: 'combo-plan',
@@ -321,7 +331,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '분석 근거 › 형식승인 영향 판단',
         rules: ['FFG-GEN-006'],
         expectKo: '형식승인 영향 판단 행에 서명자·시각이 남는다',
-        check: { selector: '[data-tour="analysis-homologation"][data-state="PASS"]', doneKo: '형식승인 영향 판단 서명' },
+        check: { selector: '[data-tour="analysis-homologation"][data-state="PASS"]', doneKo: '형식승인 영향 판단 서명', write: ['recordHomologation'] },
       },
       {
         id: 'canary',
@@ -335,7 +345,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '정책 상세 › [단계 조정]',
         rules: ['FFG-LCY-009', 'FFG-PLT-008'],
         expectKo: '배포 범위가 "5% / 100%"로 바뀐다',
-        check: { selector: '[data-stage-bp="500"]', doneKo: '배포 범위 5% (승인 범위 100%)' },
+        check: { selector: '[data-stage-bp="500"]', doneKo: '배포 범위 5% (승인 범위 100%)', write: ['stageRollout'] },
         refs: ['POL-00002'],
       },
     ],
@@ -379,7 +389,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '긴급 차단 요청 서랍',
         rules: ['FFG-PLT-002', 'FFG-PLT-009', 'FFG-SEC-003'],
         expectKo: '새 차단 기록이 열리고 상태가 "승인 대기"다',
-        check: { selector: '[data-testid="kill-drawer"]', text: '승인 대기', doneKo: '차단 요청 등록 — 승인 대기' },
+        check: { selector: `${MY_KILL}[data-kill-status="REQUESTED"]`, doneKo: '차단 요청 등록 — 승인 대기', write: ['issueKill'] },
         refs: ['KMH-NX4-0004'],
       },
       {
@@ -394,7 +404,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단 기록 › 승인',
         rules: ['FFG-PLT-016', 'FFG-PLT-005'],
         expectKo: '[승인 — 개인 서명]이 막혀 있고 "요청자는 같은 명령을 승인할 수 없습니다(직무 분리)"가 보인다',
-        check: { selector: '[data-testid="kill-drawer"]', text: '요청자는 같은 명령을 승인할 수 없습니다', doneKo: '요청자 승인 거부 확인' },
+        check: { selector: `${MY_KILL}[data-kill-status="REQUESTED"]`, text: '요청자는 같은 명령을 승인할 수 없습니다', doneKo: '요청자 승인 거부 확인' },
       },
       {
         id: 'approve-fsm',
@@ -408,7 +418,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단·복구 이력 › 요청 행',
         rules: ['FFG-PLT-005'],
         expectKo: '승인 칸 하나에 개인 서명 완료가 표시된다',
-        check: { selector: '[data-testid="kill-drawer"] .ds-approvals__slot[data-done]', doneKo: '첫 승인 서명' },
+        check: { selector: `${MY_KILL}[data-kill-status="REQUESTED"] .ds-approvals__slot[data-done]`, doneKo: '첫 승인 서명', write: ['approveKill'] },
       },
       {
         id: 'approve-csm',
@@ -422,7 +432,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단·복구 이력 › 요청 행',
         rules: ['FFG-PLT-005', 'FFG-PLT-017', 'FFG-SEC-004'],
         expectKo: '상태가 "차단 중"이 되고 서명된 명령·차량별 봉투·차단 전달이 보인다',
-        check: { selector: '[data-testid="kill-drawer"]', text: '차단 중', doneKo: '차단 명령 발행' },
+        check: { selector: `${MY_KILL}[data-kill-status="ACTIVE"]`, doneKo: '차단 명령 발행', write: ['approveKill'] },
       },
       {
         id: 'vehicle',
@@ -451,7 +461,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단 기록 › 복원',
         rules: ['FFG-DEAC-007', 'FFG-DEAC-008'],
         expectKo: '복원 칸에 재검증 근거와 승인 칸 두 개(승인 대기)가 생긴다',
-        check: { selector: '[data-tour="kill-restore"] ol.ds-approvals__slots', doneKo: '복원 요청 등록 — 승인 대기' },
+        check: { selector: `${MY_KILL}[data-kill-status="ACTIVE"] [data-tour="kill-restore"] ol.ds-approvals__slots`, doneKo: '복원 요청 등록 — 승인 대기', write: ['requestRestore'] },
       },
       {
         id: 'restore-blocked',
@@ -465,7 +475,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단 기록 › 복원',
         rules: ['FFG-DEAC-008', 'FFG-PLT-016'],
         expectKo: '"직전 차단 승인자는 복원을 승인할 수 없습니다"가 보인다',
-        check: { selector: '[data-testid="kill-drawer"]', text: '직전 차단 승인자는 복원을 승인할 수 없습니다', doneKo: '차단 승인자의 복원 승인 거부 확인' },
+        check: { selector: `${MY_KILL}[data-kill-status="ACTIVE"]`, text: '직전 차단 승인자는 복원을 승인할 수 없습니다', doneKo: '차단 승인자의 복원 승인 거부 확인' },
       },
       {
         id: 'restore-fsm',
@@ -479,7 +489,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단 기록 › 복원 › [승인 — 개인 서명]',
         rules: ['FFG-DEAC-008'],
         expectKo: '복원 승인 칸 하나에 서명 완료',
-        check: { selector: '[data-tour="kill-restore"] .ds-approvals__slot[data-done]', doneKo: '복원 첫 승인' },
+        check: { selector: `${MY_KILL} [data-tour="kill-restore"] .ds-approvals__slot[data-done]`, doneKo: '복원 첫 승인', write: ['approveRestore'] },
       },
       {
         id: 'restore-ops',
@@ -493,7 +503,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '차단 기록 › 복원 › [승인 — 개인 서명]',
         rules: ['FFG-DEAC-008', 'FFG-PLT-005'],
         expectKo: '상태가 "해제됨"이 되고 복구 전달이 보인다',
-        check: { selector: '[data-testid="kill-drawer"]', text: '해제됨', doneKo: '복원 완료 — 해제됨' },
+        check: { selector: `${MY_KILL}[data-kill-status="RELEASED"]`, doneKo: '복원 완료 — 해제됨', write: ['approveRestore'] },
       },
     ],
   },
@@ -651,7 +661,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '감사 기록 › 해시 체인 검증',
         rules: ['FFG-PLT-015', 'FFG-SEC-005'],
         expectKo: '"정상 — 위변조 없음"과 검증한 기록 수가 보인다',
-        check: { selector: '[data-chain-ok="true"]', doneKo: '해시 체인 정상' },
+        check: { selector: '[data-chain-ok="true"][data-rechecked="true"]', doneKo: '해시 체인 정상' },
       },
     ],
   },
@@ -672,7 +682,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         id: 'gsr',
         kind: 'fail',
         title: '법규 의무 기능인데 DC2라면',
-        doKo: 'FEAT-00015 1.2.0 안전 분류 탭의 [추가 속성]을 펼쳐 "법규 의무 기능(GSR)"을 체크하세요. 비활성화 등급은 DC2 그대로 둡니다.',
+        doKo: 'FEAT-00015 1.2.0 안전 분류 탭의 [추가 속성]을 펼쳐 "법규 의무 기능(GSR)"을 체크하고, 비활성화 등급은 DC2로 두세요(다른 등급이 저장돼 있으면 DC2로 바꿉니다).',
         whyKo: '법규 의무 기능(R2·GSR)은 DC4여야 합니다. 등급과 성격이 맞지 않으면 조합 검사가 확정을 막습니다.',
         role: 'author',
         route: '/features/FEAT-00015/1.2.0?tab=safety',
@@ -867,7 +877,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '긴급 차단 요청 › 리콜 캠페인 ID',
         rules: ['FFG-DEAC-010', 'FFG-PLT-009'],
         expectKo: '새 차단 기록에 리콜 캠페인 ID와 "결함 보고 기한 · US" 날짜가 보인다',
-        check: { selector: '[data-tour="kill-recall"] [data-due]', doneKo: '미국 결함 보고 기한 계산' },
+        check: { selector: '[data-testid="kill-drawer"][data-feature="FEAT-00028"] [data-tour="kill-recall"] [data-due]', doneKo: '미국 결함 보고 기한 계산', write: ['issueKill'] },
       },
       {
         id: 'us-profile',
@@ -965,7 +975,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: '[가상검증 실행]',
         rules: ['FFG-TST-009', 'FFG-SOT-004'],
         expectKo: '실행 이력에 차량 내 감지 실행이 새로 생긴다',
-        check: { selector: '[data-tour="virtual-runs"] table', text: 'SCN-FEAT00022-FAULT-ONBOARD', doneKo: '재검증 실행 기록' },
+        check: { selector: '[data-tour="virtual-runs"] table', text: 'SCN-FEAT00022-FAULT-ONBOARD', doneKo: '재검증 실행 기록', write: ['runVirtual'] },
         refs: ['POL-00002', 'SCN-FEAT00022-FAULT-ONBOARD'],
       },
     ],
@@ -1023,7 +1033,7 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         targetKo: 'VEX 판정 › [VEX 기록]',
         rules: ['FFG-SBOM-005', 'FFG-SUP-010'],
         expectKo: 'VEX 표에 새 판정과 조치 "보안 차단 또는 업데이트 결정"이 보인다',
-        check: { selector: '[data-tour="sec-vex"]', text: '보안 차단 또는 업데이트 결정', doneKo: '영향 판정과 조치 기록' },
+        check: { selector: '[data-tour="sec-vex"]', text: '보안 차단 또는 업데이트 결정', doneKo: '영향 판정과 조치 기록', write: ['recordVex'] },
         refs: ['CVE-2026-28104'],
       },
       {

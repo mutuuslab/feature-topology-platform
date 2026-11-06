@@ -4,6 +4,7 @@ import { REPORT_RULES } from './report-catalog-installed';
 import { clausesOf, clausesOfRules, reportRule, reportTest, standardFamily } from './standards';
 import { onCheckPath, stepCheckMet, stepPath, TUTORIALS } from './tutorial';
 import { DEMO_PERSONAS } from './duty-separation';
+import { ROUTES } from '../routes';
 
 /** 문구 속 예시 데이터 ID — 경로의 /features/FEAT-00022/1.0.0은 FEAT-00022@1.0.0 */
 const ID = /FEAT-\d{5}(?:\/\d+\.\d+\.\d+)?|\b(?:POL|KILL|ANM|RH|ENT|PUB|RET|CAT|INC)-\d{5}\b|CVE-\d{4}-\d{4,}|\b(?:KMH|HMA|TMA)-[A-Z0-9]+-\d{4}\b|\b(?:ego|lead)-\d{2}\b|\b(?:care|ivi)_\d{5}_[a-z]+\b/g;
@@ -78,6 +79,15 @@ describe('따라하기 시나리오 표', () => {
       for (const id of idsIn(t.summaryKo)) if (!has(new Set(t.steps.flatMap((s) => [...(s.refs ?? []), ...(s.creates ?? [])])), id)) bad.push(`${t.id} 요약: ${id}`);
     }
     expect(bad).toEqual([]);
+  });
+  it('판정의 쓰기 요구(write)는 계약 경로표의 쓰기 API다', () => {
+    const writes = new Set(ROUTES.filter((r) => r.method !== 'GET').map((r) => r.name));
+    const bad = TUTORIALS.flatMap((t) => t.steps.flatMap((s) => (s.check?.write ?? []).filter((w) => !writes.has(w)).map((w) => `${t.id}/${s.id}: ${w}`)));
+    expect(bad).toEqual([]);
+  });
+  it('차단 기록 서랍을 보는 판정은 시나리오의 대상(Feature)에 묶인다 — 시드의 다른 차단 기록(KILL-00001)을 열어 통과하지 않게', () => {
+    const loose = TUTORIALS.flatMap((t) => t.steps.filter((s) => /kill-drawer|kill-restore|kill-recall/.test(s.check?.selector ?? '') && !/\[data-feature="FEAT-\d{5}"\]/.test(s.check!.selector)).map((s) => `${t.id}/${s.id}`));
+    expect(loose).toEqual([]);
   });
   it('판정 함수 — 선택자·문구로 판정, 잘못된 선택자는 미완료', () => {
     const root = (texts: string[]) => ({

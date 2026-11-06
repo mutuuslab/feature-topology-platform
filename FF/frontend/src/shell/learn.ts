@@ -11,6 +11,8 @@ export interface LearnState {
   collapsed?: boolean;
   /** 완료 판정을 통과한 단계 ID — 이전·다음으로 오가도 판정이 남는다 */
   done?: string[];
+  /** 지금 단계(step)에서 성공한 쓰기(API 이름) — 판정의 write를 맞춘다. 다른 단계 번호면 비어 있는 것으로 본다 */
+  wrote?: { step: number; names: string[] };
 }
 
 const KEY = 'ff.learn.v1';

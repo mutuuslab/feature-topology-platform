@@ -698,7 +698,14 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
     <Drawer open={!!id} title={id ?? ''} onClose={onClose}>
       {k && (
         // 좁은 서랍(1366 폭) — 긴 ID·이름은 줄을 바꾸고, 표는 제 칸 안에서 가로로 넘긴다(P4-10)
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', minWidth: 0, overflowWrap: 'anywhere' }} data-testid="kill-drawer">
+        // 대상·상태 속성 — 따라하기 판정이 이 기록(Feature·차량·상태)에 묶인다(시드의 다른 차단 기록을 열어 통과하지 않게)
+        <div
+          style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-3)', minWidth: 0, overflowWrap: 'anywhere' }}
+          data-testid="kill-drawer"
+          data-feature={k.featureId}
+          data-vins={k.vins.join(' ')}
+          data-kill-status={k.status}
+        >
           <KeyValue
             rows={[
               { k: K.col.feature, v: <span className="ds-mono">{k.featureIds.join(', ')}</span> },

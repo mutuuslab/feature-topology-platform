@@ -56,6 +56,9 @@ import { AnswerConsultationBody, CreateConsultationBody } from './schemas/consul
 import { G7SignoffBody, HaraBody, HomologationBody, SotifBody, TaraBody } from './rules/gate-evidence';
 
 const EmptyBody = z.object({}).strict();
+/** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
+export const DemoLoginBody = z.object({ id: z.string().max(128), password: z.string().max(256) }).strict();
+export type DemoLoginBody = z.infer<typeof DemoLoginBody>;
 /** Feature DB 변경 요청 작성 — 사람 역할(HUMAN_ROLES) 모두에서 감사 조회자만 뺀다(30-95 §8.1). 백엔드 컨트롤러 @Roles도 이것을 쓴다.
  *  HUMAN_ROLES와 같은 식을 enums에서 바로 쓴다 — rules/access.ts가 이 파일을 먼저 읽는 순환에서 HUMAN_ROLES가 아직 없을 수 있다(access-refdb.test가 같음을 본다) */
 export const REFDB_CHANGE_REQUESTERS: Role[] = ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM' && r !== 'AUDITOR');
@@ -102,6 +105,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'authCallback', method: 'GET', path: '/api/auth/callback', summary: 'IdP 콜백 — 코드 교환·id_token 검증·역할 매핑 후 세션 쿠키, 안전한 returnTo로 302', component: 'KERNEL', query: ['code', 'state', 'error'], public: true },
   { name: 'authLogout', method: 'POST', path: '/api/auth/logout', summary: '로그아웃 — 세션 삭제·쿠키 제거, IdP 로그아웃 주소', component: 'KERNEL', body: EmptyBody, public: true },
   { name: 'authMe', method: 'GET', path: '/api/auth/me', summary: '로그인한 사용자 — 이름·이메일·부여 역할(IdP 그룹에서)', component: 'KERNEL', public: true },
+  { name: 'authDemoLogin', method: 'POST', path: '/api/auth/demo-login', summary: '공개 데모 게이트 로그인 — 데모 ID·비밀번호로 서버 세션 쿠키(FF_DEMO_GATE=on, 20-99). 출처 확인·실패 제한', component: 'KERNEL', body: DemoLoginBody, public: true },
   { name: 'systemConnections', method: 'GET', path: '/api/system/connections', summary: '외부 연결 상태(과금·OTA·Data Lake) — 모의·연결 안 됨을 화면에 표시하는 근거', component: 'KERNEL' },
   { name: 'components', method: 'GET', path: '/api/components', summary: '42 컴포넌트 현황', component: 'KERNEL' },
   { name: 'events', method: 'GET', path: '/api/events', summary: '이벤트 이력 — after(순번) 커서 페이지 나눔·nextCursor, recent=1 최근 창(순번 오름차순)', component: 'D04-04', query: ['after', 'type', 'aggregate', 'limit', 'recent'] },

@@ -5,6 +5,7 @@
 // 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고 쓰기는 막는다.
 import { ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
 import { OIDC_AUTH } from '../auth-mode';
+import { gateSessionEnded } from '../auth-demo';
 import { ssoLoggedOut, startSsoLogin } from '../auth-oidc';
 import { errors as E } from '../copy/errors';
 import { hasUnsaved } from '../design/unsaved';
@@ -93,6 +94,8 @@ export const networkError = () => new ApiError(0, 'NETWORK', userMessage('networ
 function onUnauthenticated() {
   // 로그아웃한 뒤 늦게 끝난 요청의 401 — 세션 만료가 아니다. 로그인 화면에 머문다
   if (OIDC_AUTH && ssoLoggedOut()) return;
+  // 공개 데모 게이트 — 서버 세션이 끝났고 입력이 없으면 로그인 화면으로(게이트 없는 데모는 그대로)
+  if (!OIDC_AUTH && !hasUnsaved() && gateSessionEnded()) return;
   markSessionExpired();
   if (OIDC_AUTH && !hasUnsaved()) startSsoLogin();
 }

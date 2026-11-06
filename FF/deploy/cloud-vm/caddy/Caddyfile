@@ -1,0 +1,42 @@
+# 앞단 TLS 리버스 프록시 — 클라우드 VM 공개 시연(20-99 §구성). 인증서는 Caddy가 자동으로 받는다(Let's Encrypt, 실패하면 ZeroSSL).
+# FF_DOMAIN: 도메인 또는 <공인IP>.sslip.io. localhost면 내부 CA 인증서(로컬 시험).
+{
+	email {$ACME_EMAIL}
+	# 관리 API를 끈다 — 설정 바꾸기는 컨테이너 재시작
+	admin off
+}
+
+(ff_proxy) {
+	encode zstd gzip
+	# HTTPS만 쓰게 — 앱 보안 머리글(CSP·X-Frame-Options 등)은 앱이 붙이고 여기서 덮어쓰지 않는다
+	# 앱이 이미 붙였으면(공개 데모 게이트·운영 모드) 그대로, 없을 때만(회사 계정 OIDC 시연) 붙인다 — 머리글이 겹치지 않게 응답 뒤에 본다
+	header {
+		?Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+		defer
+	}
+	request_body {
+		max_size 2MB
+	}
+	# 바깥에서 온 신뢰 머리글은 지운다 — 차량 mTLS 주체는 8443 사이트(compose.vehicle-mtls.yml)만 넣는다
+	request_header -X-Client-Cert-Subject
+	reverse_proxy app:9101 {
+		# 실시간 이벤트(SSE)를 버퍼링하지 않는다
+		flush_interval -1
+	}
+}
+
+{$FF_DOMAIN} {
+	# 공개 시연은 바깥 webhook(ALM·OTA 서버)을 받지 않는다(내부 모의 연계). 지표는 내부에서만.
+	# path는 정확 일치라 끝 빗금(/api/health/metrics/)을 따로 적는다 — 앱 라우터는 끝 빗금을 같은 경로로 본다(앱도 게이트에서 지표를 닫는다)
+	@closed path /api/webhooks /api/webhooks/* /api/ota/v1/events /api/ota/v1/events/* /api/health/metrics /api/health/metrics/*
+	respond @closed 404
+	import ff_proxy
+	log {
+		output stdout
+		format json
+	}
+}
+
+# 선택 사이트(차량 mTLS 등) — compose 덧붙임 파일이 이 폴더에 넣는다
+import /etc/caddy/sites/*.caddy

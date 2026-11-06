@@ -3,6 +3,7 @@
 // 운영 모드가 아니면(기본 개발·데모·시험) 지금까지의 기본값을 그대로 쓴다. 값(비밀)은 메시지에 넣지 않는다.
 // 인증(FF_AUTH·OIDC_*·FF_SESSION_*)은 auth/auth-config.ts — FF_AUTH=oidc면 운영 모드가 아니어도 검사한다(RD-SEC-01).
 import { authConfigProblems } from './auth/auth-config';
+import { demoGateOn, demoGateProblems } from './auth/demo-gate';
 import { kekConfigProblems } from './kms/key-protection';
 import { lakeErasureConfigProblems } from './lake-erasure';
 import { otaConfigProblems } from './ota-config';
@@ -22,9 +23,9 @@ const WEBHOOK_ENV = ['GITLAB_WEBHOOK_TOKEN', 'JIRA_WEBHOOK_SECRET', 'CODEBEAMER_
 /** 시드 기본값 — 운영 모드는 빈 DB(none), 그 밖에는 데모 데이터(v0.81) */
 export const seedOf = (env: Env = process.env) => env.FF_SEED ?? (isProduction(env) ? 'none' : 'v0.81');
 
-/** CORS 허용 출처 — 운영 모드는 FF_CORS_ORIGINS(쉼표)만, 비었으면 다른 출처를 허용하지 않는다(같은 출처 배치). 그 밖에는 모두 허용 */
+/** CORS 허용 출처 — 운영 모드·공개 데모 게이트는 FF_CORS_ORIGINS(쉼표)만, 비었으면 다른 출처를 허용하지 않는다(같은 출처 배치). 그 밖에는 모두 허용 */
 export function corsOrigins(env: Env = process.env): true | string[] {
-  if (!isProduction(env)) return true;
+  if (!isProduction(env) && !demoGateOn(env)) return true;
   return (env.FF_CORS_ORIGINS ?? '')
     .split(',')
     .map((s) => s.trim())
@@ -34,7 +35,7 @@ export function corsOrigins(env: Env = process.env): true | string[] {
 /** 문제 목록(비었으면 시작해도 됨) — 시험과 시작 검사가 같은 함수를 쓴다 */
 export function runtimeConfigProblems(env: Env = process.env): string[] {
   // 키 암호화 키(RD-SEC-06) — 운영 모드는 필수, 그 밖에는 주었을 때만 형식을 본다
-  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...otaConfigProblems(env), ...authConfigProblems(env), ...lakeErasureConfigProblems(env, false)];
+  if (!isProduction(env)) return [...kekConfigProblems(env, false), ...vehicleChannelConfigProblems(env), ...otaConfigProblems(env), ...authConfigProblems(env), ...lakeErasureConfigProblems(env, false), ...demoGateProblems(env)];
   const out: string[] = [];
   const db = (env.FF_DB ?? '').trim();
   // PostgreSQL(FF_DB_URL=postgres://…)은 미리보기(D-RD-3, 20-92) — 주면 FF_DB 파일 대신 쓴다
@@ -65,6 +66,7 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
   // OTA 서버 연동(IF-05) — ota 채널을 고르면 주소·OAuth2 클라이언트·webhook 비밀이 필수(80-45)
   out.push(...otaConfigProblems(env));
   out.push(...authConfigProblems(env));
+  out.push(...demoGateProblems(env));
   // Data Lake 가명 단위 삭제(RD-P2-05, 80-75 §7) — 주었을 때만, 운영은 https
   out.push(...lakeErasureConfigProblems(env, true));
   return out;
@@ -73,5 +75,5 @@ export function runtimeConfigProblems(env: Env = process.env): string[] {
 /** 시작 때 한 번 — 운영 모드에서 문제가 있으면 멈춘다 */
 export function assertRuntimeConfig(env: Env = process.env): void {
   const problems = runtimeConfigProblems(env);
-  if (problems.length) throw new Error(`${isProduction(env) ? '운영 모드(FF_ENV=production)' : (env.FF_AUTH === 'oidc' ? '인증(FF_AUTH=oidc)' : '실행')} 설정 오류 — 백엔드를 시작하지 않습니다:\n  - ${problems.join('\n  - ')}`);
+  if (problems.length) throw new Error(`${isProduction(env) ? '운영 모드(FF_ENV=production)' : env.FF_AUTH === 'oidc' ? '인증(FF_AUTH=oidc)' : demoGateOn(env) ? '공개 데모 게이트(FF_DEMO_GATE=on)' : '실행'} 설정 오류 — 백엔드를 시작하지 않습니다:\n  - ${problems.join('\n  - ')}`);
 }

@@ -1,0 +1,147 @@
+# 클라우드 VM 한 대 공개 시연 — docs/20-architecture/20-99-cloud-vm-deploy.md
+# 기존 고객 설치 구성(docker/unleash/docker-compose.yml: PostgreSQL 하나에 FF·Unleash DB 둘 · 공식 Unleash 8.3.1 · OSS Edge · FF platform)을
+# extends로 그대로 가져오고, 공개에 필요한 것만 바꾼다:
+#   · 바깥에 여는 포트는 Caddy의 80·443뿐(차량 mTLS를 켜면 8443 — compose.vehicle-mtls.yml). DB·Unleash·Edge·FF는 호스트 포트가 없다
+#   · DB·Unleash·Edge는 internal 네트워크에만 — 인터넷으로 나가지도 들어오지도 않는다. FF만 두 네트워크에 걸친다
+#   · FF는 시연 데이터(FF_SEED v0.81 + FF_SHOWCASE)와 공개 데모 게이트(FF_DEMO_GATE=on: 서버 세션 + 데모 계정 표)로 시작한다
+# 명령은 scripts/*.sh가 감싼다(같은 폴더의 .env를 쓴다). 직접 부를 때:
+#   docker compose --env-file .env up -d
+name: ${FF_COMPOSE_PROJECT:-ff-cloud}
+
+x-base: &base ../../docker/unleash/docker-compose.yml
+
+services:
+  db:
+    extends: { file: *base, service: db }
+    ports: !reset []
+    networks: [backend]
+    shm_size: 256mb
+    logging: &logging
+      driver: json-file
+      options: { max-size: '20m', max-file: '5' }
+
+  web:
+    extends: { file: *base, service: web }
+    ports: !reset []
+    networks: [backend]
+    logging: *logging
+
+  edge:
+    extends: { file: *base, service: edge }
+    ports: !reset []
+    networks: [backend]
+    logging: *logging
+
+  app:
+    extends: { file: *base, service: platform }
+    profiles: !reset []
+    env_file: !reset []
+    ports: !reset []
+    # 게시 이미지(태그 고정, scripts/update.sh). VM에서 직접 빌드할 때만 build가 쓰인다(전체 저장소 필요)
+    image: '${FF_IMAGE:?FF_IMAGE — 예: ghcr.io/mutuuslab/feature-platform:v0.1.0-demo}'
+    build:
+      args:
+        FF_WEB_AUTH: demo
+        FF_BUILD_SHA: ${FF_BUILD_SHA:-unknown}
+    init: true
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ['no-new-privileges:true']
+    cap_drop: [ALL]
+    networks: [front, backend]
+    environment:
+      # 시연 모드 — 운영 모드(production)는 시연 데이터를 넣지 않고 OIDC만 받는다(20-90). 공개는 데모 게이트가 막는다
+      FF_ENV: demo
+      FF_INSTANCE_ID: ${FF_INSTANCE_ID:-ff-cloud-demo}
+      FF_SEED: v0.81
+      FF_SHOWCASE: ${FF_SHOWCASE:-1}
+      FF_SHOWCASE_VEHICLES: ${FF_SHOWCASE_VEHICLES:-480}
+      FF_SYNTHETIC: ${FF_SYNTHETIC:-1200}
+      # 로그인 — 데모 ID·비밀번호(기본 ff/ff, 화면에는 안내 없음) + 서버 세션 게이트. 머리글은 데모 계정 표 안에서만(backend kernel/auth/demo-gate.ts)
+      FF_AUTH: ${FF_AUTH:-demo}
+      FF_DEMO_GATE: ${FF_DEMO_GATE:-on}
+      FF_DEMO_LOGIN_ID: ${FF_DEMO_LOGIN_ID:-}
+      FF_DEMO_PASSWORD: ${FF_DEMO_PASSWORD:-}
+      FF_PUBLIC_URL: '${FF_PUBLIC_URL:?FF_PUBLIC_URL — https://<도메인>}'
+      FF_SESSION_SECRET: '${FF_SESSION_SECRET:?scripts/gen-secrets.sh}'
+      FF_SESSION_TTL_MIN: ${FF_SESSION_TTL_MIN:-480}
+      FF_SESSION_IDLE_MIN: ${FF_SESSION_IDLE_MIN:-120}
+      # 앞단 Caddy(사설 docker 주소)만 믿는다 — 출처 IP별 요청 제한·감사
+      FF_TRUST_PROXY: uniquelocal
+      FF_RATE_LIMIT: ${FF_RATE_LIMIT:-1200}
+      FF_LOG_FORMAT: json
+      FF_REQUEST_LOG: '1'
+      # 키 — 설치마다 새 값(봉인 키·감사 고정점 서명·시연 차량 루트)
+      FF_KEK: '${FF_KEK:?scripts/gen-secrets.sh}'
+      FF_AUDIT_KEY: '${FF_AUDIT_KEY:?scripts/gen-secrets.sh}'
+      FF_AUDIT_ANCHOR_FILE: /var/lib/ff-anchor/audit-anchor.jsonl
+      FF_HSM_VEHICLE_ROOT: '${FF_HSM_VEHICLE_ROOT:?scripts/gen-secrets.sh}'
+      FF_EVIDENCE_DIR: /var/lib/ff/evidence
+      FF_BACKUP_DIR: /var/backups/ff
+      # 차량 — 서명(CMAC) 또는 mTLS 필수. 시연 차량은 내부 시뮬레이터(sim)가 같은 서명으로 회신한다
+      FF_VEHICLE_AUTH: required
+      FF_VEHICLE_CHANNEL: sim
+      # 외부 연계는 내부 모의(시연). webhook 비밀은 공개 저장소의 모의 값이 아닌 새 값
+      GITLAB_WEBHOOK_TOKEN: '${GITLAB_WEBHOOK_TOKEN:?scripts/gen-secrets.sh}'
+      JIRA_WEBHOOK_SECRET: '${JIRA_WEBHOOK_SECRET:?scripts/gen-secrets.sh}'
+      CODEBEAMER_WEBHOOK_SECRET: '${CODEBEAMER_WEBHOOK_SECRET:?scripts/gen-secrets.sh}'
+      GLEO_MODE: 'off'
+      IF_MODE_01: mock
+      IF_MODE_13: mock
+      IF_MODE_14: mock
+      # 선택 — 회사 계정(OIDC)으로 바꿀 때(20-99 §인증). 비우면 쓰지 않는다
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_ROLE_MAP: ${OIDC_ROLE_MAP:-}
+      OIDC_ROLE_CLAIM: ${OIDC_ROLE_CLAIM:-}
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:9101/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      # 첫 기동은 시연 데이터 생성으로 길다(2 vCPU에서 수 분)
+      start_period: 600s
+      retries: 5
+    logging:
+      driver: json-file
+      options: { max-size: '50m', max-file: '5' }
+
+  caddy:
+    # 앞단 TLS — 도메인(또는 <IP>.sslip.io)에 Let's Encrypt/ZeroSSL 인증서를 자동으로 받는다
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    restart: unless-stopped
+    depends_on:
+      app: { condition: service_started }
+    ports:
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
+      - '${HTTPS_PORT:-443}:443/udp'
+    environment:
+      FF_DOMAIN: '${FF_DOMAIN:?FF_DOMAIN — 예: ff.example.com 또는 203-0-113-10.sslip.io}'
+      ACME_EMAIL: '${ACME_EMAIL:?ACME_EMAIL — 인증서 만료 알림을 받을 메일}'
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [front]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ['no-new-privileges:true']
+    logging:
+      driver: json-file
+      options: { max-size: '20m', max-file: '5' }
+
+networks:
+  front: {}
+  # 인터넷과 끊긴 내부망 — DB·Unleash·Edge
+  backend:
+    internal: true
+
+volumes:
+  db-data:
+  ff-data:
+  ff-anchor:
+  ff-backups:
+  caddy-data:
+  caddy-config:

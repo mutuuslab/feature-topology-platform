@@ -39,6 +39,7 @@
 | 고객 웹 서버 | 이 문서의 `docker/app` 이미지, 고객 TLS 주소 | OIDC 로그인, 고객별 저장 볼륨, `FF_SEED=none` |
 | 공식 Unleash 포함 웹 서버 | `docker/unleash/docker-compose.yml`의 `platform` 프로필, 로컬 진입 `http://127.0.0.1:9171/` | PostgreSQL의 독립 FF/Unleash DB, 고객 OIDC·차량 키·감사 설정 |
 | Windows 설치형 앱 | Tauri·NSIS 설치본 | 앱 소유 로컬 런타임과 사용자 데이터, 웹 서버와 별도 수명주기 |
+| 클라우드 VM 공개 시연 | `deploy/cloud-vm`(Caddy TLS + 위 `platform` 구성), 공개 https 주소 — [20-99](20-99-cloud-vm-deploy.md) | 시연 데이터, 데모 로그인 + 서버 세션 게이트, VM 안 PostgreSQL·Unleash·Edge |
 
 공식 Unleash를 포함한 서버 설치는 [80-98 연계 실행 안내](../80-integration/80-98-unleash-vehicle-live.md)의 비밀 생성 및 고객 환경 설정을 먼저 완료한 후 실행한다. 저장소 `FF` 폴더에서:
 

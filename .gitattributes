@@ -2,3 +2,6 @@
 FF/data/fixtures/** text eol=lf
 FF/data/source/*.xlsx binary
 docs/80-integration/openapi.json text eol=lf
+# 클라우드 VM 배포 키트·컨테이너에 넣는 셸 스크립트 — 리눅스에서 그대로 실행(줄끝 LF 고정, 20-99)
+FF/deploy/** text eol=lf
+FF/docker/**/*.sh text eol=lf

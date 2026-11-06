@@ -2,6 +2,8 @@
 //  · demo(운영 모드가 아닐 때 기본): 요청 헤더 X-Actor-Id / X-Actor-Role. 읽기(GET)는 헤더가 없으면 감사 조회자(AUDITOR). 쓰기는 헤더 필수.
 //  · oidc(운영 모드): 신원은 세션 쿠키(BFF) 또는 Bearer 접근 토큰에서만. X-Actor-Id는 무시하고, X-Actor-Role은 부여된 역할 중
 //    하나를 고르는 데만 쓴다(부여되지 않은 역할 → 403·DENIED). 신원 없으면 401 — 익명 AUDITOR는 데모에만 있다(출시 준비 RD-SEC-01·04).
+//  · demo + 공개 데모 게이트(FF_DEMO_GATE=on, auth/demo-gate.ts): 서버 세션(데모 ID·비밀번호 로그인)이 있어야 하고, 머리글은
+//    데모 계정 표(DEMO_PERSONAS) 안의 ID·역할 조합만 받는다(표 밖 → 403·DENIED). 쿠키 변경 요청은 출처(Origin) 확인.
 // @Roles로 허용 역할을 선언하고, 거부는 감사 이력에 DENIED로 남긴다(상세설계서: 실패한 승인도 기록).
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, createParamDecorator } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -11,6 +13,7 @@ import { randomUUID } from 'node:crypto';
 import { AuditService } from './audit.service';
 import { authModeOf } from './auth/auth-config';
 import { AuthService } from './auth/auth.service';
+import { demoGateOn, gateActorOf, gateRejected } from './auth/demo-gate';
 import { DomainError } from './errors';
 import { VehicleAuthService } from './vehicle-auth';
 
@@ -58,6 +61,8 @@ export function actorOf(req: Request): Actor {
   if (r.actor) return r.actor;
   // oidc — 신원은 가드(RolesGuard)가 세션·토큰에서 정한다. 여기까지 왔으면 신원이 없는 것이다(헤더로 대신하지 않는다)
   if (authModeOf() === 'oidc') throw new DomainError('UNAUTHENTICATED', '로그인이 필요합니다. 회사 계정(SSO)으로 로그인하세요.');
+  // 데모 게이트 — 신원은 가드가 세션·데모 계정 표로 정한다. 가드를 거치지 않은 머리글은 믿지 않는다
+  if (demoGateOn()) throw new DomainError('UNAUTHENTICATED', '로그인이 필요합니다. 데모 계정으로 로그인하세요.');
   const id = (req.header('x-actor-id') ?? '').trim();
   const roleRaw = (req.header('x-actor-role') ?? '').trim();
   const correlationId = (req.header('x-correlation-id') ?? '').trim() || randomUUID();
@@ -99,16 +104,41 @@ export class RolesGuard implements CanActivate {
       (req as Request & { actor?: Actor }).actor = { id: `vehicle:${who.vin}`, role: 'VEHICLE', correlationId };
       return true;
     }
+    // 신원 없이 여는 창구(상태 점검·/api/auth/*) — 모든 인증 방식에서 행위자 머리글을 요구하지 않는다.
+    // 게이트를 끈 데모에서도 POST /api/auth/demo-login이 머리글 401이 아니라 창구의 404를 돌려줘야 화면이 브라우저 판정으로 넘어간다
+    if (this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [ctx.getHandler(), ctx.getClass()])) return true;
     const roles = this.reflector.getAllAndOverride<RoleT[] | undefined>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
-    if (this.auth.mode === 'oidc') {
-      if (this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [ctx.getHandler(), ctx.getClass()])) return true;
-      await this.oidcActor(req, roles, ctx);
-    }
+    if (this.auth.mode === 'oidc') await this.oidcActor(req, roles, ctx);
+    else if (this.auth.gate) this.gateActor(req, ctx);
     const actor = actorOf(req);
     if (!roles || roles.includes(actor.role)) return true;
     const action = this.reflector.get<string | undefined>(ACTION_KEY, ctx.getHandler()) ?? `${req.method} ${req.route?.path ?? req.path}`;
     this.audit.denied(actor, action, req.path, `역할 ${ROLE_LABEL[actor.role]}은(는) 허용되지 않음 (허용: ${roles.map((x) => ROLE_LABEL[x]).join(', ')})`);
     throw new DomainError('FORBIDDEN', `${ROLE_LABEL[actor.role]} 역할로는 이 작업을 할 수 없습니다.`, { allowed: roles });
+  }
+
+  /**
+   * 공개 데모 게이트 — 세션이 있어야 하고(없으면 401), 머리글은 데모 계정 표 안의 조합만(아니면 403·DENIED).
+   * 머리글로 SYSTEM·VEHICLE·표 밖 ID를 주장하거나, 계정이 맡지 않은 역할을 고를 수 없다.
+   */
+  private gateActor(req: Request, ctx: ExecutionContext) {
+    const correlationId = (req.header('x-correlation-id') ?? '').trim() || randomUUID();
+    const session = this.auth.sessionUser(req);
+    if (!session) throw new DomainError('UNAUTHENTICATED', '로그인이 필요합니다. 데모 계정으로 로그인하세요.');
+    const action = this.reflector.get<string | undefined>(ACTION_KEY, ctx.getHandler()) ?? `${req.method} ${req.route?.path ?? req.path}`;
+    const probe: Actor = { id: session.id, role: 'AUDITOR', roles: [], correlationId };
+    const write = !SAFE_METHODS.includes(req.method);
+    if (write && !this.auth.originAllowed(req)) {
+      this.audit.denied(probe, action, req.path, '출처(Origin) 확인 실패 — 다른 사이트에서 보낸 변경 요청(CSRF)');
+      throw new DomainError('FORBIDDEN', '요청 출처를 확인할 수 없습니다. 플랫폼 화면에서 다시 시도하세요.');
+    }
+    const got = gateActorOf(req.header('x-actor-id') ?? '', req.header('x-actor-role') ?? '', write);
+    if (gateRejected(got)) {
+      if (got.status === 401) throw new DomainError('UNAUTHENTICATED', `${got.reason}.`);
+      this.audit.denied(probe, action, req.path, got.reason);
+      throw new DomainError('FORBIDDEN', '데모 계정이 맡지 않은 신원·역할로는 요청할 수 없습니다.');
+    }
+    (req as Request & { actor?: Actor }).actor = { id: got.id, role: got.role, roles: got.roles, correlationId };
   }
 
   /**

@@ -1,0 +1,18 @@
+# 선택 — 차량 창구 mTLS(포트 8443). compose.vehicle-mtls.yml이 /etc/caddy/sites/에 넣고, 차량 CA를 /etc/caddy/vehicle-ca.pem에 둔다.
+# Caddy가 클라이언트 인증서를 검증하고 주체를 X-Client-Cert-Subject로 넘긴다. 백엔드는 신뢰 프록시(Caddy)에서 온 이 머리글만 믿는다(80-40 §2.5).
+{$FF_DOMAIN}:8443 {
+	tls {
+		client_auth {
+			mode require_and_verify
+			trust_pool file /etc/caddy/vehicle-ca.pem
+		}
+	}
+	request_header -X-Client-Cert-Subject
+	@vehicle path /vehicle/*
+	handle @vehicle {
+		reverse_proxy app:9101 {
+			header_up X-Client-Cert-Subject {http.request.tls.client.subject}
+		}
+	}
+	respond 404
+}

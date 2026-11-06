@@ -3,12 +3,14 @@
 //   · 요청 제한: 출처(IP)별 1분 창. 운영 모드 기본 1200/분, 그 밖에는 FF_RATE_LIMIT를 줄 때만. 상태 점검은 세지 않는다
 //   · 본문 크기: FF_BODY_LIMIT(기본 100kb — express 기본값과 같다) — 넘으면 413(errors.ts가 봉투로 바꾼다)
 import type { NextFunction, Request, Response } from 'express';
+import { demoGateOn } from './auth/demo-gate';
 import { isProduction } from './runtime-config';
 
 type Env = Record<string, string | undefined>;
 
 export function securityHeaders(env: Env = process.env) {
-  const hsts = isProduction(env);
+  // 공개 데모 게이트도 https 공개 주소면 HSTS(클라우드 VM, 20-99)
+  const hsts = isProduction(env) || (demoGateOn(env) && (env.FF_PUBLIC_URL ?? '').trim().startsWith('https://'));
   return (_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');

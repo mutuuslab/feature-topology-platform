@@ -3,7 +3,7 @@ import type { AutofillHistoryRow, FeatureVariability } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { autofill as A, profile as PR } from '../../copy/ple';
 import { AsyncView, DataTable, KeyValue, Panel } from '../../design';
-import { personLabel } from '../../data/people';
+import { localTime, personLabel } from '../../data/people';
 import './ple.css';
 
 interface VariabilityView {
@@ -12,6 +12,10 @@ interface VariabilityView {
   updatedBy: string | null;
   history: AutofillHistoryRow[];
 }
+
+/** 옛 기록의 내부 규칙 이름(예: 'CONTROL_POINT_PLAN · …')은 떼고 근거만 */
+const sourceText = (s: string | null) => (s ? s.replace(/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+ · /, '') : '—');
+const DECISION = { ACCEPTED: { mark: 'base', text: A.state.base }, EDITED: { mark: 'edited', text: A.state.edited }, ADDED: { mark: 'added', text: A.state.added } } as const;
 
 const show = (v: unknown): string => (v === null || v === undefined ? '—' : Array.isArray(v) ? v.map(show).join(' · ') : typeof v === 'object' ? (('catalogueRole' in (v as object)) ? `${PR.roleOpt[(v as FeatureVariability).catalogueRole]} · ${PR.variabilityOpt[(v as FeatureVariability).variability]}` : JSON.stringify(v)) : String(v));
 
@@ -42,9 +46,10 @@ export function FeatureProfilePanel({ featureId, version }: { featureId: string;
                 columns={[
                   { key: 'f', header: A.col.field, cell: (r) => A.field[r.field] ?? r.field },
                   { key: 'v', header: A.col.value, cell: (r) => show(r.final) },
-                  { key: 's', header: A.col.source, cell: (r) => <span className="af__src">{r.sourceRef ?? '—'}</span> },
-                  { key: 'd', header: A.col.state, cell: (r) => <span className="ds-tag ds-ref-mark" data-ref-mark={r.decision === 'ACCEPTED' ? 'base' : 'edited'}>{r.decision === 'ACCEPTED' ? A.state.base : A.state.edited}</span> },
+                  { key: 's', header: A.col.source, cell: (r) => <span className="af__src">{sourceText(r.sourceRef)}</span> },
+                  { key: 'd', header: A.col.state, cell: (r) => <span className="ds-tag ds-ref-mark" data-ref-mark={DECISION[r.decision].mark}>{DECISION[r.decision].text}</span> },
                   { key: 'a', header: A.col.actor, cell: (r) => <span className="ds-nowrap">{personLabel(r.actorId)}</span> },
+                  { key: 't', header: A.col.at, cell: (r) => <span className="ds-nowrap ds-date">{localTime(r.at)}</span> },
                 ]}
               />
             )}

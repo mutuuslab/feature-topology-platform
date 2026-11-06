@@ -146,8 +146,9 @@ interface Portfolio {
 
 const productKey = (p: { catalogId: string; version: string }) => `${p.catalogId}@${p.version}`;
 
-export function IssueList({ issues }: { issues: readonly BofIssue[] }) {
-  if (!issues.length) return <p className="ds-field__hint">{B.issuesNone}</p>;
+/** 위반·경고 목록 — 없으면 지킨 제약(고른 feature 수)을 말한다 */
+export function IssueList({ issues, checked }: { issues: readonly BofIssue[]; checked: number }) {
+  if (!issues.length) return <p className="ds-field__hint" data-testid="bof-issues-pass">{B.issuesNone(checked)}</p>;
   return (
     <ul className="bof-issues" data-testid="bof-issues">
       {issues.map((i, k) => (
@@ -181,7 +182,7 @@ function BillDetail({ id, version }: { id: string; version: string }) {
               ]}
             />
             <h3 style={{ margin: 0 }}>{B.issues}</h3>
-            <IssueList issues={b.issues} />
+            <IssueList issues={b.issues} checked={b.selections.length} />
           </div>
         )}
       </AsyncView>
@@ -228,7 +229,7 @@ function CheckForm() {
       {run.data && (
         <div data-testid="bof-check-result" data-result={run.data.result} style={{ marginTop: 'var(--sp-3)', display: 'grid', gap: 'var(--sp-2)' }}>
           <VerdictBadge value={run.data.result} label={run.data.result === 'PASS' ? B.pass : B.fail} />
-          <IssueList issues={run.data.issues} />
+          <IssueList issues={run.data.issues} checked={run.data.selections.length} />
         </div>
       )}
     </Panel>
@@ -336,7 +337,7 @@ export function ConfiguratorScreen() {
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }} data-testid="configurator">
             <Panel title={B.issues} id="cfg-issues">
               <VerdictBadge value={c.bill.result} label={c.bill.result === 'PASS' ? B.pass : B.fail} />
-              <IssueList issues={c.bill.issues} />
+              <IssueList issues={c.bill.issues} checked={c.bill.selections.length} />
             </Panel>
             <Panel title={CF.flags} id="cfg-flags">
               <DataTable

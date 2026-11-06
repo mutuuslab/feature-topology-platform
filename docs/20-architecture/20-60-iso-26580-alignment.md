@@ -113,7 +113,7 @@ variation point는 모든 자산에서 **같은 feature 언어**로 일관되게
 | G9 | PLE factory configurator(3.12)·product asset instance(3.14) | 활성화 판단·Variant 조건(차량 단위 판정) | 제품을 고르면 **필요한 feature·자산·Flag 값**을 한 번에 보는 미리 보기가 없다 | 화면 **제품 구성기**: 상품 선택 → bill-of-features·위반·자산 인스턴스(SW@버전·ECU·Flag 켬/끔·정책). API `GET /api/ple/configure/:catalogId/:ver`(저장 없음) | 구현(미리 보기) |
 | G10 | 공유 자산을 형상 관리, 제품은 재생성(4.1) | BOM 기준선(Baseline 해시)·상품 Version | FF는 제품(상품) Version도 관리한다 — 규제(형식승인·출시 서명)상 제품 단위 기록이 필요 | 바꾸지 않음. 차이는 문서에만(규제 우선) | 보류(의도) |
 | G11 | feature catalogue engineering(8.3) — 카탈로그 변경 관리 | Feature DB 변경 요청·도메인 검토·승인·발행(R-RDA·R-DRV, SOD-13~15) | 맞다 | 유지 | — |
-| G12 | bill-of-features portfolio engineering(8.4) | 상품 작성·구성 승인·고객 출시 승인(SOD-04) | 구성 검증에 카탈로그 제약이 빠짐(G3) | 상품 구성 화면·승인에 bill-of-features 위반 표시 | 구현(구성기·BoF 화면, 상품 승인 판정은 바꾸지 않음 §9) |
+| G12 | bill-of-features portfolio engineering(8.4) | 상품 작성·구성 승인·고객 출시 승인(SOD-04) | 구성 검증에 카탈로그 제약이 빠짐(G3) | 상품 구성 화면·승인에 bill-of-features 위반 표시 | 구현(구성기·BoF 화면 + **구성 승인 막힘** — 카탈로그 제약 FAIL이 있으면 PROPOSED→APPROVED 거부, D-26580-2 확정 2026-11-06) |
 | G13 | 등록 — 사람이 고르는 칸 | 2단계 등록(30-95 §6): 대표 행으로 이름·설명·ASIL·태그·규제 미리 채움, '기준값/수정됨' | 도메인·컴포넌트·SW 계층·T-shirt·**제어점**·**적용 지역/차종**·**관련 Feature**·**변이 프로필**은 사람이 고르거나 빠져 있다. 이름·설명으로 기준 행을 **추천**하지 않는다. 자동 채움의 **출처·변경 이력**이 Feature에 남지 않는다 | 규칙 `autofillFromRef`·`suggestRefsFromText`, API `GET /api/ple/autofill/:refId`·`/ref-suggestions`, 표 `feature_autofill`(마이그레이션 132: 칸·제안 값·출처·최종 값·채택/수정·누가·언제) | 구현 |
 | G14 | 중복·유사 feature | 같은 범위 같은 대표 행 409 + 이름 유사 거부 | 다른 범위의 같은 대표 행, 비슷한 이름은 **등록 전에** 안 보인다 | 자동 채움 응답의 `duplicates`(같은 대표 행 다른 범위 = 새 범위 확인, 이름 유사) — 등록 화면 경고 | 구현 |
 | G15 | 변경 관리(6.7.4·8.10) | 감사 로그(FEATURE_CREATE/UPDATE before·after), 새 Version | 칸 단위 "자동 → 사람 수정" 이력이 없다 | `feature_autofill`에 등록·초안 수정마다 칸 이력 추가, 상세 '자동 채움 이력' | 구현 |
@@ -205,7 +205,7 @@ Feature 문서(`feature_version.doc`)·`FeatureVersionRow` 스키마는 바꾸�
 
 ## 9. 하지 않는 것·보류
 
-- 상품 승인(`productTransition`) 판정에 카탈로그 제약을 **막힘**으로 넣지 않는다 — 기준 행 제약은 아직 엑셀에서 검토 중(30-95 §5.4 "지금 엑셀 값은 비어 있다"를 넘어 98행이 채워졌지만 확정 절차 없음). 화면 경고·검증 API로만 낸다(결정 필요 D-26580-2).
+- ~~상품 승인 판정에 카탈로그 제약을 막힘으로 넣지 않는다~~ → **사용자 결정(2026-11-06) D-26580-2: 막는다.** 구성 승인(PROPOSED→APPROVED, 가드 `CATALOGUE_PASS`)은 카탈로그 제약 위반(FAIL: 선행 누락·배타 충돌·대안 둘 이상)이 있으면 거부한다. 화면 단추는 막히고 사유 문장(`catalogueBlocker`)을, 서버는 같은 문장으로 `GUARD_FAILED`(details.code `CATALOGUE_CONSTRAINT`)를 낸다. 경고(상위 없는 하위·기준 행 미연결)는 막지 않는다. 검증·출시 승인 등 다른 전이는 보지 않는다(구성 승인에서 이미 막음).
 - 관련 Feature 후보로 `dependency`를 자동 생성하지 않는다(30-95 §5.4 — 대상 Feature 버전이 정해져야 함). 후보만 보여 주고 Topology에서 사람이 등록.
 - UVL 내보내기(G18), 제품 재생성 관점의 형상 관리(G10)는 후속.
 
@@ -214,9 +214,9 @@ Feature 문서(`feature_version.doc`)·`FeatureVersionRow` 스키마는 바꾸�
 | ID | 질문 | 이번 가정 |
 |---|---|---|
 | D-26580-1 | "feature profile"을 Feature 변이 프로필(한 Feature의 유형·변이점)로 쓸지, Gears 뜻(제품별 선택)으로만 쓸지 | 둘을 나눔 — 변이 프로필 + bill-of-features |
-| D-26580-2 | bill-of-features 위반(카탈로그 제약)을 상품 구성 승인의 **막힘**으로 할지 | 경고만 |
-| D-26580-3 | member product = Catalog 상품(CAT)인지, 차량 사양(국가·차종·트림)인지 | 사용자 지시대로 Catalog. 차량 사양별 BoF는 포트폴리오 표의 묶음 기준으로만 |
-| D-26580-4 | 메뉴 이름 'Feature 제안' → 'Feature 등록', 기존 'Feature 등록'(/master/define) → 'Feature 등록 현황' | 바꿈 |
+| D-26580-2 | bill-of-features 위반(카탈로그 제약)을 상품 구성 승인의 **막힘**으로 할지 | **확정(2026-11-06): 막는다** — §9 |
+| D-26580-3 | member product = Catalog 상품(CAT)인지, 차량 사양(국가·차종·트림)인지 | **확정(2026-11-06): 판매 상품(Catalog) 유지.** 차량 사양별 BoF는 포트폴리오 표의 묶음 기준으로만 |
+| D-26580-4 | 메뉴 이름 'Feature 제안' → 'Feature 등록', 기존 'Feature 등록'(/master/define) → 'Feature 등록 현황' | **확정(2026-11-06)** |
 | D-26580-5 | 26580 8절 활동의 FF 역할 대응(§6.5) | 가정안 |
 
 ## 11. 구현 기록 (2026-11-06, `feat/feature-26580`, 커밋 전)
@@ -231,7 +231,7 @@ Feature 문서(`feature_version.doc`)·`FeatureVersionRow` 스키마는 바꾸�
 | 등록 기록 | 등록 트랜잭션 안에서 서버가 대표 행으로 자동 채움을 다시 계산해 칸별 ACCEPTED·EDITED·ADDED와 변이 프로필(AUTO·EDITED)을 남긴다. 초안 수정은 바꾼 칸만 EDITED 줄을 더하고, 새 Version은 프로필을 잇는다. Feature 문서(기준선 해시 입력)는 바꾸지 않는다 | `registry.service.ts` → `PleService.recordCreate/recordUpdate/recordVersion` |
 | 데모 시드 | 기준 행에 연결된 데모 Feature마다 프로필 SEED 한 번(meta `seed-ple`, `FF_SEED=none`이면 없음). v0.81 시드에서 카탈로그 = 도메인 6 · 주요 feature 17 · 하위 feature 10 · 실현 88 · 변이점 196, 상품 18개 모두 bill-of-features가 찬다 | `ple/ple-seed.ts` |
 | 화면 | 등록 마법사(5단계 띠·이름·설명 추천·자동 채움 표·범위 칩·관련/중복·Feature 프로필), 등록 현황(진행 중인 등록 표), 기획 스튜디오 '등록 진행 중', 홈·Registry 머리 '새 Feature 등록', Feature 상세 '기준 행' 탭 아래 프로필·자동 채움 이력, 26580 하위 메뉴와 화면 4개 | `frontend/src/screens/home/propose/*`, `screens/ple/*`, `copy/ple.ts`, `routes.tsx` |
-| 메뉴 이름 | 'Feature 제안' → **Feature 등록**, 'Feature 등록'(/master/define) → **Feature 등록 현황** (D-26580-4 가정) | `routes.tsx`, `copy/propose.ts`·`master.ts` |
+| 메뉴 이름 | 'Feature 제안' → **Feature 등록**, 'Feature 등록'(/master/define) → **Feature 등록 현황** (D-26580-4 확정) | `routes.tsx`, `copy/propose.ts`·`master.ts` |
 | 업무 절차 | FPW.1-A01 단계·점검·산출물(WP-REF-LINK에 출처·프로필), FPW.1-A02에 카탈로그 위치·제약 확인, FPW.7-A05 Bill-of-Features 점검·구성기 화면, A06 위반 확인 단계 | `docs/65-workflows/model/processes/FPW.1.yaml`·`FPW.7.yaml` |
 | 정적 공개 사이트 | 카탈로그·포트폴리오·상품별 BoF·구성기·공유 자산·등록 현황·Feature별 프로필 스냅샷(파일 끝 블록). 공개 데모의 추천·자동 채움은 받아 둔 목록으로 같은 규칙을 화면에서 돌린다 | `tools/snapshot-api.ts` |
 
@@ -241,3 +241,17 @@ Feature 문서(`feature_version.doc`)·`FeatureVersionRow` 스키마는 바꾸�
 - backend `test/d01/ple-26580.spec.ts` — 추천(금액 열 없음)·자동 채움·그대로 등록 → 이력 ACCEPTED·프로필 AUTO·등록 현황 SUBMITTED·초안 수정 EDITED·문서 오염 없음·잘못된 상위 400·새 Version 잇기·시드 1회·카탈로그/포트폴리오/점검(REQUIRES_MISSING·역할 403)/구성기/공유 자산.
 - frontend `__tests__/screensPle.test.tsx` — 단계 띠·추천 → 자동 채움 → 제어점·범위·프로필이 본문에, 제어점 빼면 변이점도 빠짐, 하위 feature 상위 없으면 막힘, 카탈로그 검색, BoF 위반·점검 권한.
 - e2e `tests/ple-26580.spec.ts` — (a) 홈 '새 Feature 등록' → 추천으로 기준 행 선택만 → 고치지 않고 제출 → 기준값 이력 → 등록 현황 '제출' → 검토(요구 ID·구현·안전 분류·G1~G3) → '정의 승인' 단계 → 다른 사람이 정의 승인(DEVELOPING), (b) BoF 점검 위반 감지·보완 시 해소, (c) 카탈로그·BoF·구성기·공유 자산·등록 현황 axe WCAG 2.2 AA serious/critical 0.
+
+### 11.3 하네스 리뷰(2026-11-06) — 결함 수정·게이트
+
+| 발견 | 고침 | 회귀 시험 |
+|---|---|---|
+| 제어점을 줄여 등록하면 프로필 칸을 안 고쳐도 이력이 '고침'(변이점까지 비교), 프로필 없이 등록하면 등록하지 않은 제어점의 변이점이 저장됨 | 프로필 칸 비교에서 변이점을 뺀다(`sameProfile`, 화면 '기준값/수정됨'과 같은 규칙). 저장 변이점은 서버가 최종 제어점·SW로 다시 만든다 | contracts `autofill.test.ts`, backend `ple-26580-hardening.spec.ts` |
+| 초안·새 Version에서 제어점·대표 행을 바꿔도 변이점이 그대로(낡은 변이점) | 자동(AUTO·SEED) 프로필은 다시 제안, 사람이 고친(EDITED) 칸은 그대로 두고 변이점만 제어점을 따른다 | backend 같은 파일 |
+| 자동 채움 이력의 출처에 내부 규칙 이름(`CONTROL_POINT_PLAN`·`VARIABILITY_PROPOSAL`·`OWNERS`·`SCOPES`)이 저장·표시, '직접 입력'(ADDED)이 '수정됨'으로, '언제'가 없음 | 출처는 사람이 읽는 근거만 저장, 화면은 옛 기록의 규칙 이름도 뗀다. 상태 3가지·언제 열 | contracts·frontend `screensPleHardening.test.tsx` |
+| 한/영을 붙여 쓴 글("Seat메모리")은 단어가 안 나뉘어 추천이 안 됨 | 이름 단어를 글자 종류 경계에서 나눈다 | contracts |
+| 같은 Feature를 두 Version 고르면 대안 둘로 세어 `ALTERNATIVE_MULTI`·선행 누락 문장이 겹침 | 카탈로그 제약은 Feature마다 한 번(중복은 구성 규칙 `DUPLICATE_FEATURE`) | contracts `bill-of-features.test.ts` |
+| 등록 현황 시드 13건의 자동 채움 칸이 모두 '없음', 위반·중복 상자가 '없습니다' 한 줄 | 시드 등록에도 자동 채움 이력(시드 계정, meta `seed-ple-autofill`), 빈 칸은 무엇인지 말하는 문장, 통과 상자는 지킨 제약 수 | backend·frontend |
+| 첫 화면 예산 여유 8 B | 배포 빌드의 경로 표에서 브라우저가 읽지 않는 API 요약문(summary)을 뺀다(`tools/browser-routes.ts` build 옵션, 개발·시험은 그대로) — 첫 화면 302,072 → 292,724 B, 여유 9,356 B(예산 295 KiB 그대로) | `tools/browser-routes.test.ts` |
+
+추가 게이트: 구성 점검·구성기·자동 채움·추천·카탈로그 조회 뒤 모든 표의 행 수가 그대로인지(저장 없음), 추천 입력 경계(빈 값·특수문자·이모지·아주 긴 입력).

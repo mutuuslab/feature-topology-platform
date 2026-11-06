@@ -1,6 +1,6 @@
 // 26580 bill-of-features·카탈로그 트리·제품 구성기·공유 자산(20-60 §4 G1·G3~G9) — 기존 구성 규칙(validateComposition)을 함께 돌린다.
 import { describe, expect, it } from 'vitest';
-import type { BaselineRef } from '../catalog';
+import { catalogueBlocker, evaluateProductGuards, productRuleFor, type BaselineRef } from '../catalog';
 import { billOfFeatures, catalogueTree, configureProduct, sharedAssets, type BofInput } from './bill-of-features';
 import type { PleFeature, PleRef } from './autofill';
 
@@ -89,5 +89,41 @@ describe('제품 구성기 · 공유 자산', () => {
     expect(ecu.features).toHaveLength(7);
     expect(ecu.products).toEqual(['CAT-00001']);
     expect(a.map((x) => x.kind)).toEqual(expect.arrayContaining(['SW_COMPONENT', 'ECU', 'FLAG', 'POLICY']));
+  });
+});
+
+describe('하네스 리뷰(2026-11-06) — 경계값·구성 승인 막힘(D-26580-2)', () => {
+  it('대안(배타) feature는 1개면 통과, 같은 Feature를 두 Version 골라도 대안 둘로 세지 않는다', () => {
+    const alt: PleFeature = F(4, 'BC-SEAT-004');
+    const alt2: PleFeature = { ...alt, version: '1.1.0' };
+    const fm = new Map([...featureMap, [`${alt2.featureId}@${alt2.version}`, alt2]]);
+    const bl = new Map([...baselines, ['BL-00099', { ...B(4), baselineId: 'BL-00099', version: '1.1.0' }]]);
+    const one = billOfFeatures(input([4, 2]));
+    expect(one.issues.map((i) => i.code)).not.toContain('ALTERNATIVE_MULTI');
+    const twice = billOfFeatures({ ...input([4, 2]), product: { ...input([4, 2]).product, baselineIds: ['BL-00004', 'BL-00099', 'BL-00002'] }, features: fm, baselines: bl });
+    const codes = twice.issues.map((i) => i.code);
+    expect(codes).toContain('DUPLICATE_FEATURE'); // 기존 구성 규칙이 잡는다
+    expect(codes).not.toContain('ALTERNATIVE_MULTI');
+    // 같은 Feature 두 번 → 카탈로그 제약 문장도 한 번만(선행 누락)
+    const f1b: PleFeature = { ...feats[0], version: '1.1.0' };
+    const dup = billOfFeatures({ ...input([1]), product: { ...input([1]).product, baselineIds: ['BL-00001', 'BL-00098'] }, features: new Map([...featureMap, [`${f1b.featureId}@1.1.0`, f1b]]), baselines: new Map([...baselines, ['BL-00098', { ...B(1), baselineId: 'BL-00098', version: '1.1.0' }]]) });
+    expect(dup.issues.filter((i) => i.code === 'REF_REQUIRES_MISSING')).toHaveLength(1);
+  });
+
+  it('구성 승인(PROPOSED→APPROVED)은 카탈로그 제약 위반(FAIL)이 있으면 막힌다 — 경고만이면 통과, 다른 전이는 그대로', () => {
+    const bad = billOfFeatures(input([1, 6]));
+    const ok = billOfFeatures(input([1, 2]));
+    const warnOnly = billOfFeatures(input([2, 7]));
+    const ctx = (b: typeof bad) => ({ composition: b.composition, catalogue: b.issues, today: '2026-11-06', validFrom: '2026-10-01', validTo: '2026-12-31' });
+    const cfg = productRuleFor('PROPOSED', 'APPROVED')!;
+    const blocked = evaluateProductGuards(cfg, ctx(bad));
+    expect(blocked).toHaveLength(1);
+    expect(blocked[0]).toBe(catalogueBlocker(bad.issues));
+    expect(blocked[0]).toContain('카탈로그 제약 위반');
+    expect(blocked[0]).toContain('BC-SEAT-009');
+    expect(evaluateProductGuards(cfg, ctx(ok))).toEqual([]);
+    expect(evaluateProductGuards(cfg, ctx(warnOnly))).toEqual([]);
+    // 출시 승인 등 다른 전이는 카탈로그 제약을 보지 않는다(구성 승인에서 이미 막는다)
+    expect(evaluateProductGuards(productRuleFor('APPROVED', 'VERIFIED')!, ctx(bad))).toEqual([]);
   });
 });

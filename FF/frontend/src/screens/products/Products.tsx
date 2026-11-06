@@ -273,7 +273,8 @@ export function ProductDetail() {
               <LifecycleStepper current={p.lifecycle} labels={W.product.lifecycle} transitions={d.transitions.map((t) => ({ to: t.to, blockers: t.blockers.map((m) => ({ message: m })) }))} />
               <div className="catalog-lifecycle-actions">
                 {d.transitions.map((t) => {
-                  const sod = perm.ok ? productSodReason(t.approval, d.meta, me) : undefined;
+                  // 막힌 전이(구성 검증·카탈로그 제약 위반 D-26580-2 등)는 단추에서 막고 첫 사유 문장 — 서버 거부와 같은 문장
+                  const sod = perm.ok ? productSodReason(t.approval, d.meta, me) ?? t.blockers[0] : undefined;
                   return (
                     <Button key={t.to} variant="primary" disabled={!!sod} reason={sod} onClick={() => setTo(t.to)}>
                       {t.ko} → {t.to}

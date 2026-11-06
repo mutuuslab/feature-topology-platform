@@ -131,3 +131,33 @@ describe('이름·설명 → 기준 행 추천', () => {
     expect(s[0].reasons.join(' ')).toContain("사내 용어 'SCC'");
   });
 });
+
+describe('하네스 리뷰(2026-11-06) — 칸별 결정·추천 입력 경계', () => {
+  const r = autofillFromRef(SEAT, { features, refsById: refs });
+  const base = { name: '전동 시트 전후·높이·틸트', description: '시트 위치를 모터로 조정한다', asil: 'QM', tags: ['Body & Comfort', 'Seat', 'Application', 'Commodity', '공통', '글로벌'], refRegulations: ['FMVSS 207', 'UN R17'], controlPoints: ['Flag'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium' };
+  it('제어점만 줄여 변이점이 빠진 프로필은 프로필 칸 ACCEPTED(사람이 고친 것은 제어점), 프로필 칸을 바꾸면 EDITED', () => {
+    const vps = r.variability.variationPoints.filter((v) => v.assetKind === 'FLAG' || v.assetKind === 'SW_COMPONENT');
+    const d = Object.fromEntries(autofillDecisions(r, { ...base, variability: { ...r.variability, variationPoints: vps } }).map((x) => [x.field, x.decision]));
+    expect(d).toMatchObject({ controlPoints: 'EDITED', variability: 'ACCEPTED' });
+    expect(autofillDecisions(r, { ...base, variability: { ...r.variability, variationPoints: vps, bindingTime: 'OTA' } }).find((x) => x.field === 'variability')?.decision).toBe('EDITED');
+  });
+  it('한/영을 붙여 써도 단어로 나눠 찾는다("Seat메모리" → 시트 메모리 행의 영문 단어)', () => {
+    const s = suggestRefsFromText('Seat메모리', [MEM, SCC]);
+    expect(s.map((x) => x.refId)).toEqual(['BC-SEAT-009']);
+    expect(s[0].reasons.join(' ')).toContain("'seat'");
+  });
+  it('특수문자·이모지만 있는 글, 아주 긴 글도 안전하다', () => {
+    for (const q of ['%%', '()[]{}*+?.\\', '😀😀', "'; --"]) expect(suggestRefsFromText(q, [SEAT, MEM, SCC])).toEqual([]);
+    expect(suggestRefsFromText('시트 메모리 '.repeat(2000), [SEAT, MEM, SCC])[0].refId).toBe('BC-SEAT-009');
+  });
+});
+
+describe('하네스 리뷰(2026-11-06) — 이력 출처에 내부 규칙 이름을 싣지 않는다', () => {
+  it('규칙·카탈로그 칸의 출처는 사람이 읽는 근거, 기준 행 칸은 행 ID · 열', () => {
+    const r = autofillFromRef(SEAT, { features, refsById: refs });
+    const rows = autofillDecisions(r, { name: 'x', description: 'y', asil: 'QM', tags: [], controlPoints: ['Flag'], ownerId: 'o', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium' });
+    for (const x of rows) expect(x.sourceRef ?? '').not.toMatch(/[A-Z]{3,}_[A-Z_]+/);
+    expect(rows.find((x) => x.field === 'asil')?.sourceRef).toBe('BC-SEAT-001 · 대표 ASIL(L)');
+    expect(rows.find((x) => x.field === 'variability')?.sourceRef).toBe('26580 변이 프로필 제안');
+  });
+});

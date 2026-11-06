@@ -57,7 +57,7 @@ export function RegistrationsTable({ rows }: { rows: RegistrationRow[] }) {
           sort: (r) => r.featureId,
         },
         { key: 's', header: R.col.stage, cell: (r) => <RegistrationMini current={stageOf(r)} />, sort: (r) => stageOf(r) },
-        { key: 'r', header: R.col.ref, cell: (r) => (r.primaryRef ? <span><Link to={`/master/feature-db/${r.primaryRef.refId}`} className="ds-mono">{r.primaryRef.refId}</Link> {r.primaryRef.nameKo}</span> : R.none) },
+        { key: 'r', header: R.col.ref, cell: (r) => (r.primaryRef ? <span><Link to={`/master/feature-db/${r.primaryRef.refId}`} className="ds-mono">{r.primaryRef.refId}</Link> {r.primaryRef.nameKo}</span> : R.noRef) },
         {
           key: 'g',
           header: R.col.gates,
@@ -69,8 +69,8 @@ export function RegistrationsTable({ rows }: { rows: RegistrationRow[] }) {
             </span>
           ),
         },
-        { key: 'm', header: R.col.missing, cell: (r) => (r.missing?.length ? r.missing.map(missingLabel).join(' · ') : R.none) },
-        { key: 'a', header: R.col.autofill, cell: (r) => (r.autofill ? R.autofillCount(r.autofill.ACCEPTED, r.autofill.EDITED) : R.none) },
+        { key: 'm', header: R.col.missing, cell: (r) => (r.missing?.length ? r.missing.map(missingLabel).join(' · ') : R.allFilled) },
+        { key: 'a', header: R.col.autofill, cell: (r) => (r.autofill ? R.autofillCount(r.autofill.ACCEPTED, r.autofill.EDITED + r.autofill.ADDED) : r.version !== '0.1.0' ? R.inherited : R.beforeAutofill) },
       ]}
     />
   );

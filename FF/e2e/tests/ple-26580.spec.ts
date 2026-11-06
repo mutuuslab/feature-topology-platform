@@ -117,7 +117,7 @@ test('(b) Bill-of-Features — 필요한 Feature가 빠진 구성 점검은 위�
   await asRole(page, 'commerce');
   await page.goto('/products/bill-of-features');
   await expect(page.getByTestId('bof-grid')).toBeVisible();
-  await expect(page.getByTestId('bof-issues').or(page.getByText(B.issuesNone))).toBeVisible();
+  await expect(page.getByTestId('bof-issues').or(page.getByTestId('bof-issues-pass'))).toBeVisible();
   // FEAT-00022(BL-00028)는 FEAT-00145가 필요하다 — 단독 구성은 REQUIRES_MISSING
   await page.locator('input[name="bofBaselines"]').fill('BL-00028');
   await page.locator('select[name="bofType"]').selectOption('SINGLE');
@@ -151,3 +151,40 @@ test('(c) 카탈로그·Bill-of-Features·제품 구성기·공유 자산·등�
   await expect(page.locator('[data-ui="registerFeature"]')).toBeVisible();
   await axeClean(page, '등록 현황');
 });
+
+// 하네스 리뷰(2026-11-06) — 새 화면 5개를 좁은 폭(390)·노트북 폭(1366)에서: 가로 넘침 없음, '없음/없습니다'만 남은 칸·빈 상자 없음, 내부 코드(결정·절차·규칙 이름) 안 보임
+const SCREENS: [string, string][] = [
+  ['/features/catalogue', '[data-catalogue-ref]'],
+  ['/products/bill-of-features', '[data-testid="bof-grid"] td[data-on="true"]'],
+  ['/products/configurator', '[data-flag-value="ON"]'],
+  ['/features/shared-assets', 'table tbody tr'],
+  ['/master/define', 'table:has(caption:text-is("진행 중인 등록")) tbody tr'],
+];
+for (const width of [390, 1366]) {
+  test(`(d) 새 화면 5개 — ${width}폭에서 빈 상자·빈 문구·내부 코드 없음`, async ({ page }) => {
+    test.slow();
+    await page.setViewportSize({ width, height: 900 });
+    for (const [path, filled] of SCREENS) {
+      await page.goto(path);
+      await expect(page.locator(filled).first()).toBeAttached();
+      await settle(page, { scope: 'body', errors: '#main' });
+      const r = await page.evaluate(() => {
+        const main = document.querySelector('#main') ?? document.body;
+        const text = (main as HTMLElement).innerText;
+        // 패널마다 제목을 뺀 내용이 비었는지
+        const empty = [...main.querySelectorAll('section.ds-panel, .ds-panel')].filter((el) => {
+          const h = el.querySelector('h2, h3, legend');
+          const t = (el as HTMLElement).innerText.replace(h ? (h as HTMLElement).innerText : '', '').trim();
+          return t.length < 2;
+        }).map((el) => el.id || el.className);
+        const cells = [...main.querySelectorAll('td')].filter((td) => /^(없음|없습니다)$/.test((td as HTMLElement).innerText.trim())).length;
+        return { overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth, text, empty, cells };
+      });
+      expect(r.overflow, `${path} 가로 넘침`).toBeLessThanOrEqual(1);
+      expect(r.empty, `${path} 빈 상자`).toEqual([]);
+      expect(r.cells, `${path} '없음'만 있는 칸`).toBe(0);
+      expect(r.text, path).not.toMatch(/연결하면|데모에서는|위반·경고가 없습니다/);
+      expect(r.text.match(/\bD-\d{2,}(?:-\d+)?\b|\bFPW\.\d+|\bARC-[A-Z]+|\bSOD-\d+|\bREFDB_[A-Z_]+|\busr-[a-z]+|\b[A-Z]{3,}_[A-Z_]{3,}\b/g) ?? [], `${path} 내부 코드`).toEqual([]);
+    }
+  });
+}

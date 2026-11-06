@@ -266,9 +266,9 @@ export function latestByFeature<T extends { featureId: string; version: string }
   return [...m.values()];
 }
 
-/** 이름 단어 — 한글·영문·숫자 덩어리(두 글자 이상) */
+/** 이름 단어 — 영문·숫자 덩어리와 한글 덩어리(두 글자 이상). 한/영을 붙여 쓴 글("Seat메모리")도 글자 종류가 바뀌는 곳에서 나눈다 */
 export function nameTokens(s: string): string[] {
-  return uniq((s.toLowerCase().match(/[0-9a-z가-힣]+/g) ?? []).filter((t) => t.length >= 2));
+  return uniq((s.toLowerCase().match(/[0-9a-z]+|[가-힣]+/g) ?? []).filter((t) => t.length >= 2));
 }
 
 /** 이름 유사도 — 공백·대소문자 무시 포함 관계면 1, 아니면 단어 Jaccard */
@@ -422,13 +422,17 @@ export interface AutofillDecisionRow {
 }
 
 const sameSet = (a: readonly string[], b: readonly string[]) => uniq(a).sort().join('\u0000') === uniq(b).sort().join('\u0000');
+/** 프로필 칸 비교 — 변이점은 제어점에서 만드는 값이라 빼고 본다(제어점을 고친 것은 controlPoints 칸이 EDITED). 화면 '기준값/수정됨'과 같은 규칙 */
+export const sameProfile = (a: FeatureVariability, b: FeatureVariability) => jcs({ ...a, variationPoints: [] }) === jcs({ ...b, variationPoints: [] });
+/** 이력 출처 문장 — 기준 행은 'ID · 열', 규칙·카탈로그는 사람이 읽는 근거만(내부 규칙 이름은 싣지 않는다) */
+const sourceText = (s: AutofillSource) => (s.kind === 'REF' ? `${s.ref} · ${s.column}` : s.column).slice(0, 300);
 
 /** 제안과 최종 값 비교 → 칸별 ACCEPTED·EDITED·ADDED. 범위는 후보 중 하나면 ACCEPTED */
 export function autofillDecisions(result: AutofillResult, v: RegisteredValues): AutofillDecisionRow[] {
   const f = (k: AutofillKey) => result.fields.find((x) => x.key === k);
   const rows: AutofillDecisionRow[] = [];
   const row = (field: string, fld: AutofillField | undefined, final: unknown, same: boolean) =>
-    rows.push({ field, sourceKind: fld?.source.kind ?? null, sourceRef: fld ? (fld.source.kind === 'REF' ? `${fld.source.ref} · ${fld.source.column}` : `${fld.source.ref} · ${fld.source.column}`).slice(0, 300) : null, suggested: fld?.value ?? null, final, decision: !fld ? 'ADDED' : same ? 'ACCEPTED' : 'EDITED' });
+    rows.push({ field, sourceKind: fld?.source.kind ?? null, sourceRef: fld ? sourceText(fld.source) : null, suggested: fld?.value ?? null, final, decision: !fld ? 'ADDED' : same ? 'ACCEPTED' : 'EDITED' });
   const str = (k: AutofillKey) => String(f(k)?.value ?? '');
   row('name', f('name'), v.name, v.name.trim() === str('name').trim());
   row('description', f('description'), v.description, v.description.trim() === str('description').trim());
@@ -439,8 +443,8 @@ export function autofillDecisions(result: AutofillResult, v: RegisteredValues): 
   if (v.ownerId !== undefined) row('owner', f('owner'), v.ownerId, v.ownerId.trim() === str('owner').trim());
   const scope = { country: v.country, vehicleModel: v.vehicleModel, trim: v.trim };
   const sf = f('scope');
-  rows.push({ field: 'scope', sourceKind: sf ? 'CATALOGUE' : null, sourceRef: sf ? `${sf.source.ref} · ${sf.source.column}` : null, suggested: result.scopeCandidates.map((s) => [s.country, s.vehicleModel, s.trim]), final: [scope.country, scope.vehicleModel, scope.trim], decision: !result.scopeCandidates.length ? 'ADDED' : result.scopeCandidates.some((s) => scopeKey(s) === scopeKey(scope)) ? 'ACCEPTED' : 'EDITED' });
+  rows.push({ field: 'scope', sourceKind: sf ? 'CATALOGUE' : null, sourceRef: sf ? sourceText(sf.source) : null, suggested: result.scopeCandidates.map((s) => [s.country, s.vehicleModel, s.trim]), final: [scope.country, scope.vehicleModel, scope.trim], decision: !result.scopeCandidates.length ? 'ADDED' : result.scopeCandidates.some((s) => scopeKey(s) === scopeKey(scope)) ? 'ACCEPTED' : 'EDITED' });
   const fv = v.variability ?? null;
-  rows.push({ field: 'variability', sourceKind: 'RULE', sourceRef: 'VARIABILITY_PROPOSAL · 26580 변이 프로필 제안', suggested: result.variability, final: fv ?? result.variability, decision: !fv || jcs(fv) === jcs(result.variability) ? 'ACCEPTED' : 'EDITED' });
+  rows.push({ field: 'variability', sourceKind: 'RULE', sourceRef: '26580 변이 프로필 제안', suggested: result.variability, final: fv ?? result.variability, decision: !fv || sameProfile(fv, result.variability) ? 'ACCEPTED' : 'EDITED' });
   return rows;
 }

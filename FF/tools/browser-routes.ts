@@ -2,7 +2,9 @@
 // 원천 표를 AST로 바꾸므로 별도 경로 표나 생성 파일을 동기화할 필요가 없다.
 import ts from 'typescript';
 
-export function browserRouteSource(source: string): string {
+// 배포 빌드(build)는 API 요약문(summary)도 뺀다 — 화면은 읽지 않고(권한 화면은 서버 응답), 첫 화면 예산만 쓴다. 개발·시험은 남긴다.
+export function browserRouteSource(source: string, opts: { build?: boolean } = {}): string {
+  const drop = new Set(opts.build ? ['body', 'summary'] : ['body']);
   const file = ts.createSourceFile('routes.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let found = false;
   const transformed = ts.transform(file, [(context) => (root) => {
@@ -13,7 +15,7 @@ export function browserRouteSource(source: string): string {
         const elements = node.initializer.elements.map((entry) => {
           if (!ts.isObjectLiteralExpression(entry)) throw new Error('브라우저 경로 표: 경로 항목은 객체여야 합니다.');
           return ts.factory.updateObjectLiteralExpression(entry, entry.properties.filter((p) =>
-            !(ts.isPropertyAssignment(p) && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) && p.name.text === 'body'),
+            !(ts.isPropertyAssignment(p) && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) && drop.has(p.name.text)),
           ));
         });
         return ts.factory.updateVariableDeclaration(node, node.name, node.exclamationToken, node.type, ts.factory.updateArrayLiteralExpression(node.initializer, elements));

@@ -25,7 +25,7 @@ export const autofill = {
   // ② 자동 채움 확인
   title: '자동으로 채운 항목',
   lead: (refId: string) => `대표 기준 행 ${refId}에서 채웠습니다. 출처를 보고 필요한 칸만 고치세요 — 고친 칸은 등록 이력에 남습니다.`,
-  col: { field: '항목', value: '값', source: '출처', state: '상태', actor: '누가' },
+  col: { field: '항목', value: '값', source: '출처', state: '상태', actor: '누가', at: '언제' },
   field: {
     name: '이름',
     description: '설명',
@@ -42,7 +42,7 @@ export const autofill = {
     variability: 'Feature 프로필',
   } as Record<string, string>,
   sourceKind: { REF: '기준 행', GLOSSARY: '사내 용어', CATALOGUE: '카탈로그', RULE: '규칙' } as Record<string, string>,
-  state: { base: '기준값', edited: '수정됨', info: '참고', applied: '적용됨', candidate: '후보' },
+  state: { base: '기준값', edited: '수정됨', added: '직접 입력', info: '참고', applied: '적용됨', candidate: '후보' },
   loading: '자동 채움을 계산하는 중',
   staticNote: '공개 데모는 받아 둔 목록으로 계산합니다',
   // 범위
@@ -58,7 +58,7 @@ export const autofill = {
   // 중복
   dupTitle: '중복·유사 확인',
   dupKind: { SAME_SCOPE: '같은 범위 같은 기능', OTHER_SCOPE: '다른 범위 같은 기능', SIMILAR_NAME: '비슷한 이름' } as Record<string, string>,
-  dupNone: '같은 범위에 같은 기능·비슷한 이름이 없습니다',
+  dupNone: '확인함 — 같은 범위에서 같은 기준 행·비슷한 이름을 쓴 Feature 0건',
 };
 
 /** 26580 Feature 프로필(변이 프로필) */
@@ -92,7 +92,11 @@ export const registrations = {
   mine: '내 등록',
   col: { feature: 'Feature', ref: '대표 기준 행', stage: '단계', gates: 'G1·G2·G3', missing: '승인 전 채울 칸', autofill: '자동 채움' },
   autofillCount: (a: number, e: number) => `그대로 ${a} · 고침 ${e}`,
-  none: '없음',
+  /** 빈 칸 대신 무엇인지 — 대표 행 미연결·승인 전 칸 다 채움·자동 채움 기록 전 */
+  noRef: '기준 행 연결 전',
+  allFilled: '모두 채움',
+  inherited: '앞 Version 값 이음',
+  beforeAutofill: '자동 채움 도입 전 등록',
   more: (n: number) => `외 ${n}건`,
   open: '모두 보기',
 };
@@ -123,7 +127,7 @@ export const catalogue = {
 
 export const bof = {
   title: 'Bill-of-Features',
-  lead: '상품마다 고른 feature와 제약 판정 — 상품 승인은 기존 구성 규칙으로 합니다.',
+  lead: '상품마다 고른 feature와 제약 판정 — 카탈로그 제약을 어기면 구성 승인이 막힙니다.',
   key: (fail: number) => (fail ? `카탈로그·구성 위반이 있는 상품 ${fail}개` : '모든 상품이 제약을 지킵니다'),
   portfolio: '상품 × 주요 feature',
   portfolioHint: '칸 = 상품이 그 feature를 고름',
@@ -131,7 +135,7 @@ export const bof = {
   detail: (id: string) => `${id} 선택 feature`,
   selCol: { feature: 'Feature', ref: '카탈로그 feature', role: '위치', variability: '변이성', lifecycle: 'Lifecycle' },
   issues: '위반·경고',
-  issuesNone: '위반·경고가 없습니다',
+  issuesNone: (n: number) => `고른 feature ${n}개 — 선행·배타·상위·대안 제약을 모두 지킴`,
   origin: { CATALOGUE: '카탈로그 제약', COMPOSITION: '구성 규칙' } as Record<string, string>,
   pick: '상품 고르기',
   check: '구성 점검',

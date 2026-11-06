@@ -26,14 +26,21 @@ function deployHeaders(): Record<string, string> {
 }
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
-  plugins: [{
-    name: 'browser-route-metadata',
-    enforce: 'pre',
-    transform(code, id) {
-      if (!id.replace(/\\/g, '/').endsWith('/contracts/src/routes.ts')) return;
-      return { code: browserRouteSource(code), map: null };
-    },
-  }, react()],
+  plugins: [(() => {
+    // 배포 빌드는 API 요약문도 뺀다(첫 화면 예산, tools/browser-routes.ts) — 개발 서버·vitest는 남긴다
+    let build = false;
+    return {
+      name: 'browser-route-metadata',
+      enforce: 'pre' as const,
+      configResolved(c: { command: string }) {
+        build = c.command === 'build';
+      },
+      transform(code: string, id: string) {
+        if (!id.replace(/\\/g, '/').endsWith('/contracts/src/routes.ts')) return;
+        return { code: browserRouteSource(code, { build }), map: null };
+      },
+    };
+  })(), react()],
   resolve: {
     // 공용 계약은 소스(TS)를 직접 번들한다 — CJS dist를 거치지 않아 dev·test·build가 같은 코드를 본다.
     alias: { '@ff/contracts': fileURLToPath(new URL('../contracts/src/web.ts', import.meta.url)) },

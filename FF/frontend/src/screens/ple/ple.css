@@ -86,3 +86,5 @@
 .bof-issues li[data-severity='FAIL'] { border-inline-start-color: var(--danger); background: var(--danger-soft); }
 .flag-on { color: var(--ok); font-weight: 600; }
 .flag-off { color: var(--muted); }
+/* 자동 채움 이력 '직접 입력'(제안 없던 칸을 사람이 채움) — 고침과 구별 */
+.ds-ref-mark[data-ref-mark='added'] { border-style: dashed; color: var(--ink); font-weight: 600; }

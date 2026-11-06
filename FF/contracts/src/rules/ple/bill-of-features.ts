@@ -1,6 +1,6 @@
 // 26580 feature catalogue 트리·bill-of-features·제품 구성기·공유 자산 추적(docs/20-architecture/20-60 §4 G1·G3~G9).
 // member product = Catalog 상품(CAT, D-26580-3). bill-of-features = 상품이 고른 확정 Baseline의 Feature → 대표 기준 행(카탈로그 feature).
-// 카탈로그 제약 위반은 이 판정의 FAIL이지만 상품 승인(productTransition)을 막지 않는다(D-26580-2) — 상품 승인은 validateComposition 그대로.
+// 카탈로그 제약 위반(FAIL)은 상품 구성 승인(PROPOSED→APPROVED)을 막는다(D-26580-2, 사용자 결정 2026-11-06) — 판정 문장은 catalog.ts catalogueBlocker 하나.
 import type { FeatureVariability } from '../../schemas/ple';
 import { validateComposition, type BaselineRef, type CompositionInput, type CompositionIssue, type CompositionResult } from '../catalog';
 import { catalogueParentOf, latestByFeature, proposeVariability, type PleFeature, type PleRef } from './autofill';
@@ -113,7 +113,10 @@ export function billOfFeatures(input: BofInput): BillOfFeatures {
 export function checkCatalogueConstraints(selections: readonly BofSelection[], refsById: ReadonlyMap<string, PleRef>): BofIssue[] {
   const out: BofIssue[] = [];
   const chosen = new Set(selections.flatMap((s) => [s.primaryRefId, ...s.includedRefIds].filter((x): x is string => !!x)));
-  for (const s of selections) {
+  // 같은 Feature를 두 Version 고른 것은 구성 규칙(DUPLICATE_FEATURE)이 잡는다 — 카탈로그 제약은 Feature마다 한 번(대안 둘로 세지 않는다)
+  const seen = new Set<string>();
+  const unique = selections.filter((s) => !seen.has(s.featureId) && !!seen.add(s.featureId));
+  for (const s of unique) {
     if (!s.primaryRefId) {
       out.push({ code: 'NO_CATALOGUE_LINK', severity: 'WARN', origin: 'CATALOGUE', message: `${s.featureId}는 기준 행(카탈로그 feature)에 연결되지 않아 카탈로그 제약을 볼 수 없습니다.`, refs: [s.baselineId] });
       continue;
@@ -127,7 +130,7 @@ export function checkCatalogueConstraints(selections: readonly BofSelection[], r
       out.push({ code: 'SUB_WITHOUT_PRIMARY', severity: 'WARN', origin: 'CATALOGUE', message: `하위 feature ${s.featureId}의 상위 feature(${s.parentRefId}${refsById.get(s.parentRefId) ? ` ${refsById.get(s.parentRefId)!.nameKo}` : ''})가 상품에 없습니다.`, refs: [s.baselineId, s.parentRefId] });
   }
   const alt = new Map<string, BofSelection[]>();
-  for (const s of selections) if (s.variability === 'ALTERNATIVE' && s.parentRefId) alt.set(s.parentRefId, [...(alt.get(s.parentRefId) ?? []), s]);
+  for (const s of unique) if (s.variability === 'ALTERNATIVE' && s.parentRefId) alt.set(s.parentRefId, [...(alt.get(s.parentRefId) ?? []), s]);
   for (const [parent, xs] of alt)
     if (xs.length > 1) out.push({ code: 'ALTERNATIVE_MULTI', severity: 'FAIL', origin: 'CATALOGUE', message: `${parent} 아래 대안(배타) feature를 둘 이상 골랐습니다: ${xs.map((x) => x.featureId).join(', ')}.`, refs: xs.map((x) => x.baselineId) });
   return out;

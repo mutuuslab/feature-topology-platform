@@ -5,10 +5,12 @@ import {
   autofillDecisions,
   autofillFromRef,
   billOfFeatures,
+  bundleRepFinder,
   catalogueTree,
   configureProduct,
   FeatureVariability,
   latestByFeature,
+  proposeVariability,
   ruleFor,
   sharedAssets,
   suggestRefsFromText,
@@ -33,7 +35,7 @@ import { CatalogService } from '../catalog/catalog.service';
 import { PolicyRepo } from '../policy-repos';
 import { RefdbRepository } from '../refdb/refdb.repository';
 import { FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from '../repos';
-import { PleRepo } from './ple.repo';
+import { PleRepo, type VariabilitySource } from './ple.repo';
 
 const key = (id: string, ver: string) => `${id}@${ver}`;
 /** 정의 승인(PROPOSED → APPROVED) 필수 칸 — contracts 수명주기 규칙 그대로 */
@@ -91,8 +93,30 @@ export class PleService {
     const at = this.clock.iso();
     this.repo.addDecisions(f.featureId, f.version, rows, actor.id, at);
     const vrow = rows.find((x) => x.field === 'variability')!;
-    this.repo.putVariability(f.featureId, f.version, variability ?? result.variability, vrow.decision === 'EDITED' ? 'EDITED' : 'AUTO', actor.id, at);
+    // 변이점은 등록한 제어점·SW에서 다시 만든다 — 빠진 제어점의 변이점이 남지 않는다(프로필 칸만 사람 값)
+    const derived = this.derive(f, refs);
+    const stored = { ...(variability ?? derived ?? result.variability), variationPoints: (derived ?? result.variability).variationPoints };
+    this.repo.putVariability(f.featureId, f.version, stored, vrow.decision === 'EDITED' ? 'EDITED' : 'AUTO', actor.id, at);
     return { decisions: rows };
+  }
+
+  /** 대표 행 제안 프로필 — 지금 제어점·SW로(없으면 null) */
+  private derive(f: Pick<FeatureVersionRow, 'featureRefs' | 'controlPoints' | 'swIds'>, refs = this.refsById()): FeatureVariability | null {
+    const ref = refs.get(primaryOf(f) ?? '');
+    return ref ? proposeVariability(ref, { controlPoints: f.controlPoints, swIds: f.swIds, bundleRepOf: bundleRepFinder(refs) }) : null;
+  }
+
+  /**
+   * 제어점·SW·대표 행이 바뀐 Version의 프로필 — 자동(AUTO·SEED)이면 다시 제안, 사람이 고친(EDITED) 칸은 그대로 두고 변이점만 제어점을 따른다.
+   * 바뀐 것이 없으면 prev 그대로(null = 쓰지 않음).
+   */
+  private follow(prev: { variability: FeatureVariability; source: VariabilitySource } | undefined, before: FeatureVersionRow, next: FeatureVersionRow) {
+    const same = (k: 'controlPoints' | 'swIds') => JSON.stringify(before[k] ?? []) === JSON.stringify(next[k] ?? []);
+    if (same('controlPoints') && same('swIds') && primaryOf(before) === primaryOf(next)) return null;
+    const derived = this.derive(next);
+    if (!derived) return null;
+    if (prev?.source === 'EDITED') return { variability: { ...prev.variability, variationPoints: derived.variationPoints }, source: 'EDITED' as const };
+    return { variability: derived, source: 'AUTO' as const };
   }
 
   /** 초안 수정 — 바꾼 칸(이름·설명·ASIL·태그·제어점·변이 프로필·대표 행)만 이력에 더한다 */
@@ -101,22 +125,35 @@ export class PleService {
     const at = this.clock.iso();
     const rows = touched.map((field) => ({ field, sourceKind: null, sourceRef: null, suggested: before[field], final: next[field], decision: 'EDITED' as const }));
     if (body.featureRefs !== undefined && primaryOf(before) !== primaryOf(next)) rows.push({ field: 'primaryRef', sourceKind: null, sourceRef: null, suggested: primaryOf(before) ?? null, final: primaryOf(next) ?? null, decision: 'EDITED' as const } as never);
+    const stored = this.repo.variability(next.featureId, next.version);
     if (body.variability) {
-      const v = this.checkVariability(body.variability, this.refsById(), primaryOf(next) ?? '');
-      const prev = this.repo.variability(next.featureId, next.version)?.variability ?? null;
-      if (JSON.stringify(prev) !== JSON.stringify(v)) {
-        rows.push({ field: 'variability', sourceKind: null, sourceRef: null, suggested: prev, final: v, decision: 'EDITED' } as never);
-        this.repo.putVariability(next.featureId, next.version, v!, 'EDITED', actor.id, at);
+      const v = this.checkVariability(body.variability, this.refsById(), primaryOf(next) ?? '')!;
+      // 변이점은 제어점에서 — 화면이 보낸 변이점 대신 지금 제어점으로 만든 것
+      const withVps = { ...v, variationPoints: this.derive(next)?.variationPoints ?? v.variationPoints };
+      const prev = stored?.variability ?? null;
+      if (JSON.stringify(prev) !== JSON.stringify(withVps)) {
+        rows.push({ field: 'variability', sourceKind: null, sourceRef: null, suggested: prev, final: withVps, decision: 'EDITED' } as never);
+        this.repo.putVariability(next.featureId, next.version, withVps, 'EDITED', actor.id, at);
       }
+    } else {
+      const f = this.follow(stored, before, next);
+      if (f) this.repo.putVariability(next.featureId, next.version, f.variability, f.source, actor.id, at);
     }
     if (rows.length) this.repo.addDecisions(next.featureId, next.version, rows, actor.id, at);
   }
 
-  /** 새 Version은 기준 Version의 변이 프로필을 잇는다(바꾸면 EDITED) */
+  /** 새 Version은 기준 Version의 변이 프로필을 잇는다(바꾸면 EDITED, 제어점이 바뀌면 recordUpdate와 같은 규칙) */
   recordVersion(actor: Actor, base: FeatureVersionRow, next: FeatureVersionRow, variability?: FeatureVariability) {
     const prev = this.repo.variability(base.featureId, base.version);
-    const v = variability ? this.checkVariability(variability, this.refsById(), primaryOf(next) ?? '') : prev?.variability;
-    if (v) this.repo.putVariability(next.featureId, next.version, v, variability ? 'EDITED' : prev?.source ?? 'AUTO', actor.id, this.clock.iso());
+    const at = this.clock.iso();
+    if (variability) {
+      const v = this.checkVariability(variability, this.refsById(), primaryOf(next) ?? '')!;
+      this.repo.putVariability(next.featureId, next.version, { ...v, variationPoints: this.derive(next)?.variationPoints ?? v.variationPoints }, 'EDITED', actor.id, at);
+      return;
+    }
+    const f = this.follow(prev, base, next);
+    if (f) this.repo.putVariability(next.featureId, next.version, f.variability, f.source, actor.id, at);
+    else if (prev) this.repo.putVariability(next.featureId, next.version, prev.variability, prev.source, actor.id, at);
   }
 
   /** 상위 feature는 Feature DB에 있는 다른 행이어야 한다 */

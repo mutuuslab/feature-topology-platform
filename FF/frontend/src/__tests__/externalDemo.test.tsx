@@ -92,13 +92,15 @@ function mount(node: React.ReactNode, platform = false) {
 }
 
 describe('외부 도구 창 연결', () => {
-  it('예약된 데모 호스트만 독립 창으로 바꾸고 고객 URL·GitLab·운영 빌드는 유지한다', () => {
+  it('예약된 데모 호스트만 독립 창으로 바꾸고 고객 URL·운영 빌드는 유지한다', () => {
     const demo = { system: 'JIRA', key: 'FFE-3', url: 'https://jira.ff.example/browse/FFE-3' };
     expect(externalReferenceUrl(demo, true)).toBe('/external.html?system=jira&key=FFE-3');
     expect(externalReferenceUrl(demo, false)).toBe(demo.url);
     for (const url of ['https://jira.customer.example/browse/FFE-3', 'https://jira.ff.example.evil.test/browse/FFE-3', 'https://jira.ff.example@customer.test/browse/FFE-3']) expect(externalReferenceUrl({ ...demo, url }, true)).toBe(url);
-    const gitlab = { ...demo, system: 'GITLAB', url: 'https://gitlab.ff.example/project/-/merge_requests/8' };
-    expect(externalReferenceUrl(gitlab, true)).toBe(gitlab.url);
+    // GitLab 예약 호스트도 독립 시연 창(MR 열람)으로 — 고객 GitLab 주소는 그대로
+    const gitlab = { ...demo, system: 'GITLAB', key: 'vehicle/feature-sw!8', url: 'https://gitlab.ff.example/project/-/merge_requests/8' };
+    expect(externalReferenceUrl(gitlab, true)).toBe('/external.html?system=gitlab&key=vehicle%2Ffeature-sw%218');
+    expect(externalReferenceUrl({ ...gitlab, url: 'https://gitlab.customer.example/project/-/merge_requests/8' }, true)).toBe('https://gitlab.customer.example/project/-/merge_requests/8');
   });
 
   it('세 도구를 강조하고 현재 역할을 별도 팝업에 전달하며 실제 PR·소스·커밋을 연결한다', async () => {

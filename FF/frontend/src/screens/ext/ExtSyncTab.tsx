@@ -8,6 +8,7 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, ExplainCodes, Field, Panel, Select, whyDisabled } from '../../design';
 import { usePermission, when } from '../shared';
 import { ExternalToolLaunchers } from '../../external/launchers';
+import { brandSystem, ExtBrandLogo } from '../../external/brand';
 import { useExternalChanges } from '../../external/useExternalChanges';
 
 const X = extSync.sync;
@@ -57,8 +58,8 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
             rows={s.data?.items ?? []}
             rowKey={(r) => r.system}
             columns={[
-              // IF 번호는 툴팁·설명 모드로(UX3-01)
-              { key: 's', header: X.col.system, cell: (r) => <strong title={r.ifId}>{extSync.system[r.system]}<ExplainCodes codes={[r.ifId]} /></strong> },
+              // IF 번호는 툴팁·설명 모드로(UX3-01). 로고가 이름을 보이고, 이름 글자는 화면 읽기용으로만 둔다.
+              { key: 's', header: X.col.system, cell: (r) => { const brand = brandSystem(r.system); return <strong title={r.ifId}>{brand && <ExtBrandLogo system={brand} height={18} decorative className="ext-brand-logo--inline" />}<span className={brand ? 'ds-sr' : undefined}>{extSync.system[r.system]}</span><ExplainCodes codes={[r.ifId]} /></strong>; } },
               { key: 'm', header: X.col.mode, cell: (r) => extSync.mode[r.mode] ?? r.mode },
               { key: 'l', header: X.col.links, cell: (r) => r.links.toLocaleString('ko-KR'), align: 'right' },
               { key: 'p', header: X.col.pending, cell: (r) => r.pending, align: 'right' },
@@ -207,19 +208,22 @@ function SimulateForm() {
   const [user, setUser] = useState('park.release');
   const items = useApi<{ items: { key: string; kind: string; title: string; status: string }[] }>('mockExtItems', { params: { system: system.toLowerCase() } });
   const act = useApiMutation<{ result: { outcome: string; summary: string } | null }>('mockExtAct', INVALIDATE);
-  const list = (items.data?.items ?? []).filter((x) => x.kind !== 'PIPELINE').slice(-200);
+  // GitLab은 MR만 — 고른 MR의 파이프라인 결과를 보낸다
+  const gitlab = system === 'GITLAB';
+  const list = (items.data?.items ?? []).filter((x) => (gitlab ? x.kind === 'MERGE_REQUEST' : x.kind !== 'PIPELINE')).slice(-200);
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
       <p className="ds-field__hint">{X.simulateHint}</p>
+      {gitlab && <p className="ds-field__hint">{X.simPipelineHint}</p>}
       <form
         style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}
         onSubmit={(e) => {
           e.preventDefault();
-          act.mutate({ params: { system: system.toLowerCase() }, body: { key, action: system === 'CODEBEAMER' && !status ? 'EDIT' : 'TRANSITION', ...(status ? { status } : { title: X.revised(list.find((x) => x.key === key)?.title ?? key) }), externalUser: user } });
+          act.mutate({ params: { system: system.toLowerCase() }, body: gitlab ? { key, action: 'PIPELINE', status: status || 'success', externalUser: user } : { key, action: system === 'CODEBEAMER' && !status ? 'EDIT' : 'TRANSITION', ...(status ? { status } : { title: X.revised(list.find((x) => x.key === key)?.title ?? key) }), externalUser: user } });
         }}
       >
         <Select label={X.simSystem} value={system} onChange={(e) => (setSystem(e.target.value as ExtSystem), setKey(''))}>
-          {EXT_SYSTEMS.filter((s) => s !== 'GITLAB').map((s) => (
+          {EXT_SYSTEMS.map((s) => (
             <option key={s} value={s}>
               {extSync.system[s]}
             </option>

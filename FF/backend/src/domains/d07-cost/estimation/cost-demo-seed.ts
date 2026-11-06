@@ -30,6 +30,25 @@ export interface CostDemo {
   lines: Record<string, CostLineInputs>;
 }
 
+/**
+ * 데모 Feature의 적용 시장(국가·차종) — 모두 KR·NX4 PE이면 산정 목록의 국가·차종 필터가 값 하나뿐이었다(2026-11-06).
+ * 조합은 기존 Feature 데이터(data/fixtures/v0.81/features.json)에 있는 국가·차종만 쓰고, 시연 과제 이름의 차종(MX5 출입·CE1 와이퍼·SU2i 미러 등)에 맞춘다.
+ * 개발비 계산은 기준 행·줄 입력만 보므로 합계(엑셀 예시 EST-0001)는 그대로다
+ */
+export const COST_DEMO_MARKET: Record<string, { country: string; vehicleModel: string }> = {
+  'Body controller': { country: 'KR', vehicleModel: 'NX4 PE' },
+  // 조명 제어는 KR·NX4 PE 그대로 — 전시 채우기가 같은 적용 범위의 시연 Feature(FEAT-00022)와 의존관계를 만든다
+  'Lighting control': { country: 'KR', vehicleModel: 'NX4 PE' },
+  'Access and locking': { country: 'EU', vehicleModel: 'MX5' },
+  'Wiper and washer': { country: 'KR', vehicleModel: 'CE1' },
+  'Windows and roof': { country: 'KR', vehicleModel: 'GN7' },
+  'Mirrors': { country: 'ME', vehicleModel: 'SU2i' },
+  'Low-voltage power management': { country: 'US', vehicleModel: 'CT2' },
+  'Diagnostic services (UDS)': { country: 'EU', vehicleModel: 'NX4 PE' },
+  'Bootloader and software update': { country: 'KR', vehicleModel: 'NE PE' },
+  'Cybersecurity controls': { country: 'US', vehicleModel: 'LX2' },
+};
+
 export const costDemoEnabled = (env: NodeJS.ProcessEnv = process.env) => seedOf(env) !== 'none' && !env.FF_FIXTURES && env.FF_COST_DEMO !== 'off';
 
 @Injectable()
@@ -58,8 +77,7 @@ export class CostDemoSeed implements OnModuleInit {
         name: f.name,
         description: f.description,
         requirementIds: ['REQ-BCM-COST-01'],
-        country: 'KR',
-        vehicleModel: 'NX4 PE',
+        ...(COST_DEMO_MARKET[f.key] ?? { country: 'KR', vehicleModel: 'NX4 PE' }),
         trim: 'Premium',
         ownerId: '바디제어기획팀',
         asil: f.asil,

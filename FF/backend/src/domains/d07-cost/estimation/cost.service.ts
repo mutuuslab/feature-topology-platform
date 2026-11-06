@@ -272,6 +272,7 @@ export class CostService implements OnModuleInit {
 
   list(actor: Actor) {
     const money = canSeeCost(actor.role);
+    const refs = new Map(this.refs.listRefs({}).map((r) => [r.refId, r]));
     const items = this.db.all<ProjectRow>('SELECT * FROM cost_project ORDER BY created_at DESC, est_id DESC').map((row) => {
       const doc = JSON.parse(row.doc) as CostProjectDoc;
       const featureCount = this.db.get<{ n: number }>('SELECT count(DISTINCT feature_id || \'@\' || version) AS n FROM cost_line WHERE est_id = ?', row.est_id)?.n ?? 0;
@@ -293,12 +294,33 @@ export class CostService implements OnModuleInit {
         basisStale: doc.basisVersion !== this.latestBasisVersion(),
         featureCount,
         totals,
+        scope: this.scopeOf(row.est_id, refs),
         createdBy: row.created_by,
         updatedAt: row.updated_at,
       };
     });
     if (money && items.length) this.db.tx(() => this.audit.record(actor, 'COST_VIEW', 'projects', { after: { count: items.length }, componentId: 'D07-01' }));
     return { items, view: money ? ('FULL' as const) : ('MM_ONLY' as const) };
+  }
+
+  /**
+   * 목록 탐색용 적용 범위 — 산정 줄의 Feature(국가·차종·ASIL)와 Feature DB 기준 행(분류·T-shirt)에서 모은 값(중복 없이, 정렬).
+   * 목록 화면의 분류 트리·다중 선택 필터가 쓴다. 금액 없음
+   */
+  private scopeOf(estId: string, refs: ReadonlyMap<string, { domain: string; component: string; tshirt: string }>) {
+    const sets = { countries: new Set<string>(), vehicleModels: new Set<string>(), asils: new Set<string>(), tshirts: new Set<string>(), domains: new Set<string>(), components: new Set<string>() };
+    for (const l of this.lines(estId)) {
+      const f = this.features.get(l.featureId, l.version);
+      const r = refs.get(l.refId);
+      if (f?.country) sets.countries.add(f.country);
+      if (f?.vehicleModel) sets.vehicleModels.add(f.vehicleModel);
+      const asil = l.inputs.asil ?? l.featureAsil;
+      if (asil) sets.asils.add(asil);
+      if (r?.tshirt) sets.tshirts.add(r.tshirt);
+      if (r?.domain) sets.domains.add(r.domain);
+      if (r?.domain && r.component) sets.components.add(`${r.domain}	${r.component}`);
+    }
+    return Object.fromEntries(Object.entries(sets).map(([k, v]) => [k, [...v].sort()])) as Record<keyof typeof sets, string[]>;
   }
 
   /** 시드 중에는 계산·열람 감사 없이 — 같은 트랜잭션의 쓰기만 */

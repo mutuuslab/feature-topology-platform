@@ -8,7 +8,7 @@ import { CostBasis, CostSettingsInput, costEngineSettings, estimate, type CostRe
 import { DB, type Db } from '../../src/kernel/db';
 import { entryData, readCell, readZip, sharedStrings, sheetPaths } from '../../src/kernel/xlsx-patch';
 import { actor, bootApp, withRef } from '../helpers';
-import { CostDemoSeed } from '../../src/domains/d07-cost/estimation/cost-demo-seed';
+import { COST_DEMO_MARKET, CostDemoSeed } from '../../src/domains/d07-cost/estimation/cost-demo-seed';
 
 const EST = actor('kim.cost', 'COST_ESTIMATOR');
 const APPROVER = actor('lee.approver', 'COST_APPROVER');
@@ -285,6 +285,33 @@ describe('SW 개발비 산정 데모 시드 — 엑셀 예시 과제(BCM)', () =
     const one = (await http().get(`/api/features/${list[0].featureId}/versions/${list[0].version}`).expect(200)).body.feature;
     expect(one.featureRefs[0].role).toBe('PRIMARY');
     expect(DEMO.features.reduce((n: number, f: any) => n + f.refs.length, 0)).toBe(46);
+  });
+
+  it('목록의 적용 범위 — 산정 줄의 Feature(국가·차종·ASIL)와 기준 행(분류·T-shirt)에서 모은 값', async () => {
+    const list = (await http().get('/api/cost/projects').set(VIEWER).expect(200)).body;
+    const p1 = list.items.find((p: any) => p.estId === 'EST-0001');
+    const d1 = (await http().get('/api/cost/projects/EST-0001').set(VIEWER).expect(200)).body;
+    const uniq = (xs: string[]) => [...new Set(xs.filter(Boolean))].sort();
+    expect(p1.scope.asils).toEqual(uniq(d1.lines.map((l: any) => l.inputs.asil ?? l.featureAsil)));
+    expect(p1.scope.tshirts).toEqual(uniq(d1.lines.map((l: any) => l.ref?.tshirt)));
+    expect(p1.scope.countries.length).toBeGreaterThan(0);
+    expect(p1.scope.vehicleModels.length).toBeGreaterThan(0);
+    expect(p1.scope.components.every((c: string) => p1.scope.domains.includes(c.split('	')[0]))).toBe(true);
+  });
+
+  it('데모 Feature는 기존 Feature 데이터에 있는 국가·차종에 나뉘어 — 목록 필터(국가·차종)에 값이 3개 이상(2026-11-06, 모두 KR·NX4 PE였다)', async () => {
+    // 지어낸 시장이 아니다 — v0.81 Feature 픽스처에 있는 국가·차종 조합만
+    const known = new Set((JSON.parse(readFileSync(join(FF, 'data', 'fixtures', 'v0.81', 'features.json'), 'utf8')) as { country: string; vehicleModel: string }[]).map((f) => `${f.country}|${f.vehicleModel}`));
+    expect(DEMO.features.every((f: any) => COST_DEMO_MARKET[f.key])).toBe(true);
+    for (const m of Object.values(COST_DEMO_MARKET)) expect(known.has(`${m.country}|${m.vehicleModel}`), `${m.country} ${m.vehicleModel}`).toBe(true);
+    const items = (await http().get('/api/cost/projects').set(VIEWER).expect(200)).body.items;
+    const axis = (k: 'countries' | 'vehicleModels') => new Set(items.flatMap((p: any) => p.scope[k]));
+    expect([...axis('countries')].sort()).toEqual(['EU', 'KR', 'ME', 'US']);
+    expect(axis('vehicleModels').size).toBe(8);
+    // 승인 과제(조명·와이퍼·미러 파생)도 한 시장이 아니다
+    const p2 = items.find((p: any) => p.estId === 'EST-0002');
+    expect(p2.scope.countries).toEqual(['KR', 'ME']);
+    expect(p2.scope.vehicleModels).toEqual(['CE1', 'NX4 PE', 'SU2i']);
   });
 
   it('EST-0001(DRAFT)은 엑셀 v1.3 예시와 같은 총개발비(1원 안), EST-0002는 제출·승인되어 고정', async () => {

@@ -4,10 +4,11 @@
 // 색은 CSS 토큰에서 읽는다(밝은/어두운 테마를 따라간다). 모든 값은 백엔드 /api/fleet/map 응답 그대로다.
 import { useEffect, useRef, useState } from 'react';
 import type { ActivationState, FleetMapCluster, FleetMapVehicle, MapLens, SubscriptionState } from '@ff/contracts';
-import { ACTIVATION_LABEL, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL } from '@ff/contracts';
+import { ACTIVATION_LABEL, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL, layoutMapVehicles, type MapVehicleGroup } from '@ff/contracts';
 import { ko } from '../../copy/ko';
 import { CAR_PIXEL_RATIO, carIconName, carImage } from './carIcon';
 import { formatCount } from '../../design/format';
+import './fleet-map-groups.css';
 // maplibre-gl 6은 작업자(worker)를 자기 묶음 옆의 maplibre-gl-worker.mjs에서 찾는다 — 번들러가 옮기지 않으므로 파일로 내보내 주소를 알려 준다
 import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 
@@ -40,6 +41,15 @@ export const SELECT_ZOOM = 11;
 export const HOLLOW_VAR = SUBSCRIPTION_VAR.NONE;
 
 export const stateVar = (v: FleetMapVehicle, lens: MapLens) => (lens === 'subscription' ? SUBSCRIPTION_VAR[v.subscription] : v.activation ? ACTIVATION_VAR[v.activation] : NO_RUNTIME_VAR);
+/** 상태 색 토큰 → 지금 보기의 상태 이름(군집 설명) */
+export function varLabel(name: string, lens: MapLens): string {
+  if (lens === 'subscription') {
+    const k = (Object.keys(SUBSCRIPTION_VAR) as SubscriptionState[]).find((x) => SUBSCRIPTION_VAR[x] === name);
+    return k ? SUBSCRIPTION_LABEL[k] : name;
+  }
+  const k = (Object.keys(ACTIVATION_VAR) as ActivationState[]).find((x) => ACTIVATION_VAR[x] === name);
+  return k ? ACTIVATION_LABEL[k] : '런타임 없음(합성)';
+}
 export const stateLabel = (v: FleetMapVehicle, lens: MapLens) => (lens === 'subscription' ? SUBSCRIPTION_LABEL[v.subscription] : v.activation ? ACTIVATION_LABEL[v.activation] : '런타임 없음(합성)');
 
 export const VIEWS = {
@@ -77,16 +87,26 @@ function isDark(el: Element) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.4;
 }
 
-function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens) {
-  return {
+/** 군집·펼치기를 거는 차량 — 등록(데모) 차량 중 지역 대표점이 아닌 것. 합성 모집단은 점 크기가 작아 그대로 둔다 */
+const placeable = (v: FleetMapVehicle) => v.source !== 'SYNTHETIC' && !!v.position && v.position.precision !== 'REGION';
+
+/** 지도에 넣을 차량 점과 등록 차량 군집 — 확대 단계에 따라 넓게 볼 때는 군집, 가까이 볼 때는 같은 좌표를 펼친다 */
+export function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens, zoom = 0, selected: string | null = null) {
+  // 색은 상태 토큰마다 한 번만 읽는다(차량마다 getComputedStyle을 부르지 않게 — 확대할 때마다 다시 그린다)
+  const colors = new Map<string, string>();
+  const color = (name: string) => colors.get(name) ?? (colors.set(name, cssVar(el, name)), colors.get(name)!);
+  const { groups, placed } = layoutMapVehicles(items.filter(placeable), zoom, (v) => stateVar(v, lens), new Set(selected ? [selected] : []));
+  const at = new Map(placed.map((x) => [x.vin, x]));
+  const grouped = new Set(groups.flatMap((g) => g.vins));
+  const data = {
     type: 'FeatureCollection' as const,
     features: items
-      .filter((v) => v.position)
+      .filter((v) => v.position && !grouped.has(v.vin))
       .map((v) => ({
         type: 'Feature' as const,
         geometry: {
           type: 'Point' as const,
-          coordinates: [v.position!.lng, v.position!.lat],
+          coordinates: [at.get(v.vin)?.lng ?? v.position!.lng, at.get(v.vin)?.lat ?? v.position!.lat],
         },
         properties: {
           vin: v.vin,
@@ -94,13 +114,79 @@ function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens) {
           demo: v.source !== 'SYNTHETIC',
           region: v.position!.precision === 'REGION',
           stale: v.stale,
-          color: cssVar(el, stateVar(v, lens)),
+          color: color(stateVar(v, lens)),
           icon: carIconName(stateVar(v, lens)),
           // 정지 차량은 방향이 없다 — 북쪽으로 둔다
           heading: v.position!.heading ?? 0,
         },
       })),
   };
+  return { data, groups };
+}
+
+/** 군집 표시 — 상태 색 고리(대수 비례) 가운데 대수. 누르면 그 자리로 확대해 한 대씩 보인다 */
+/** 군집 단추 지름(px) — 대수가 많을수록 조금 크게 */
+export const groupSize = (count: number) => Math.round(30 + Math.min(18, Math.sqrt(count) * 2.5));
+
+/**
+ * 화면에서 겹치는 군집을 하나로 합친다 — 이웃 격자의 군집 단추가 겹쳐 서로 가리고 누르기 어려웠다(대상 크기 2.5.8).
+ * project: 경위도 → 화면 px. 합친 중심은 대수 가중 평균, 상태·차량은 더한다. 겹침이 없어질 때까지(최대 4번) 되풀이
+ */
+export function mergeOverlapping(groups: MapVehicleGroup[], project: (lng: number, lat: number) => { x: number; y: number }, gap = 4): MapVehicleGroup[] {
+  let cur = groups.slice();
+  for (let pass = 0; pass < 4; pass++) {
+    const out: MapVehicleGroup[] = [];
+    let merged = false;
+    for (const g of [...cur].sort((a, b) => b.count - a.count || a.id.localeCompare(b.id))) {
+      const p = project(g.lng, g.lat);
+      const hit = out.find((o) => {
+        const q = project(o.lng, o.lat);
+        return Math.hypot(p.x - q.x, p.y - q.y) < (groupSize(g.count) + groupSize(o.count)) / 2 + gap;
+      });
+      if (!hit) {
+        out.push({ ...g, states: { ...g.states }, vins: [...g.vins] });
+        continue;
+      }
+      merged = true;
+      const n = hit.count + g.count;
+      hit.lat = (hit.lat * hit.count + g.lat * g.count) / n;
+      hit.lng = (hit.lng * hit.count + g.lng * g.count) / n;
+      hit.count = n;
+      for (const [k, v] of Object.entries(g.states)) hit.states[k] = (hit.states[k] ?? 0) + v;
+      hit.vins.push(...g.vins);
+    }
+    cur = out;
+    if (!merged) break;
+  }
+  return cur;
+}
+
+export function groupElement(g: MapVehicleGroup, label: (state: string) => string, onOpen: () => void) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'fm-group';
+  const parts = Object.entries(g.states).sort((a, c) => c[1] - a[1]);
+  let from = 0;
+  const stops = parts.map(([name, n]) => {
+    const to = from + (n / g.count) * 360;
+    const stop = `var(${name}) ${from.toFixed(1)}deg ${to.toFixed(1)}deg`;
+    from = to;
+    return stop;
+  });
+  b.style.setProperty('--fm-group-ring', `conic-gradient(${stops.join(', ')})`);
+  b.style.setProperty('--fm-group-size', `${groupSize(g.count)}px`);
+  const text = F.group(g.count, parts.map(([name, n]) => `${label(name)} ${n}`).join(', '));
+  b.setAttribute('aria-label', text);
+  b.title = text;
+  b.dataset.count = String(g.count);
+  const n = document.createElement('span');
+  n.textContent = formatCount(g.count);
+  b.append(n);
+  b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onOpen();
+  });
+  return b;
 }
 
 function fallbackStyle(el: Element) {
@@ -184,8 +270,11 @@ interface Props {
 export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, view, clusters = [], onViewChange }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
-  const latest = useRef({ items, lens, onSelect, clusters, onViewChange });
-  latest.current = { items, lens, onSelect, clusters, onViewChange };
+  const latest = useRef({ items, lens, onSelect, clusters, onViewChange, selected });
+  latest.current = { items, lens, onSelect, clusters, onViewChange, selected };
+  // 등록 차량 군집 표시(HTML 표지) — 다시 그릴 때마다 지우고 새로 단다
+  const markers = useRef<{ remove: () => void }[]>([]);
+  const draw = useRef<() => void>(() => {});
   const [phase, setPhase] = useState<'loading' | 'ready' | 'nogl'>(hasWebGL() ? 'loading' : 'nogl');
   const [fallback, setFallback] = useState(false);
 
@@ -221,7 +310,24 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
       m.on('load', () => {
         if (dead) return;
         const { items: xs, lens: l } = latest.current;
-        m.addSource('veh', { type: 'geojson', data: toGeoJSON(el, xs, l) });
+        const first = toGeoJSON(el, xs, l, m.getZoom(), latest.current.selected);
+        m.addSource('veh', { type: 'geojson', data: first.data });
+        // 차량 점·군집을 지금 확대 단계로 다시 놓는다 — 자료가 바뀌거나 확대가 끝날 때
+        draw.current = () => {
+          const cur = latest.current;
+          const { data, groups: cells } = toGeoJSON(el, cur.items, cur.lens, m.getZoom(), cur.selected);
+          const groups = mergeOverlapping(cells, (lng, lat) => m.project([lng, lat]));
+          m.getSource('veh')?.setData(data);
+          for (const x of markers.current) x.remove();
+          markers.current = groups.map((g) =>
+            new ml.Marker({ element: groupElement(g, (name) => varLabel(name, cur.lens), () => m.easeTo({ center: [g.lng, g.lat], zoom: Math.min(Math.max(m.getZoom() + 2, 5), 14), duration: reducedMotion() ? 0 : 500 })) })
+              .setLngLat([g.lng, g.lat])
+              .addTo(m),
+          );
+          if (host.current) host.current.dataset.grouped = String(groups.reduce((n, g) => n + g.count, 0));
+        };
+        draw.current();
+        m.on('zoomend', () => draw.current());
         // 표본 격자 — 원 넓이가 대표 대수에 비례(로그 아님: 수도권과 지방의 차이를 그대로), 숫자는 만·억
         m.addSource('cl', { type: 'geojson', data: toClusterGeoJSON(latest.current.clusters) });
         m.addLayer({
@@ -403,7 +509,7 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
           const p = document.createElement('div');
           p.textContent = `${v.position.city} · ${LOCATION_PRECISION_LABEL[v.position.precision]}${v.stale ? ` · ${F.stale}` : ''}`;
           el.append(b, s, p);
-          popup.setLngLat([v.position.lng, v.position.lat]).setDOMContent(el).addTo(m);
+          popup.setLngLat(e.features?.[0]?.geometry?.coordinates ?? [v.position.lng, v.position.lat]).setDOMContent(el).addTo(m);
         });
         m.on('mouseleave', 'veh-hit', () => {
           m.getCanvas().style.cursor = '';
@@ -438,6 +544,8 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
     })().catch(() => !dead && setPhase('nogl'));
     return () => {
       dead = true;
+      for (const x of markers.current) x.remove();
+      markers.current = [];
       m?.remove();
       map.current = null;
     };
@@ -446,8 +554,8 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
   useEffect(() => {
     const m = map.current;
     if (phase !== 'ready' || !m?.getSource('veh')) return;
-    m.getSource('veh').setData(toGeoJSON(host.current!, items, lens));
-  }, [items, lens, phase]);
+    draw.current();
+  }, [items, lens, selected, phase]);
 
   useEffect(() => {
     const m = map.current;

@@ -21,7 +21,8 @@ async function mapReady(page: Page) {
   await expect(canvas).toBeVisible();
   await expect(page.locator('.fm-map')).toHaveAttribute('data-phase', 'ready');
   await expect(canvas.locator('canvas.maplibregl-canvas')).toBeVisible();
-  await expect.poll(async () => Number(await canvas.getAttribute('data-cars'))).toBeGreaterThan(0);
+  // 세계 축척에서는 가까운 차량이 군집(data-grouped)으로 그려진다
+  await expect.poll(async () => Number(await canvas.getAttribute('data-cars')) + Number((await canvas.getAttribute('data-grouped')) ?? 0)).toBeGreaterThan(0);
   return canvas;
 }
 
@@ -101,9 +102,10 @@ test('등록 차량·여러 국가·실제 수신 상태가 WebGL 자동차 색�
   expect(new Set(data.items.map((v: Vehicle) => v.country)).size).toBeGreaterThanOrEqual(3);
   const canvas = await mapReady(page);
   const expectedCars = data.items.filter((v: Vehicle) => v.position && v.position.precision !== 'REGION').length;
-  await expect.poll(async () => Number(await canvas.getAttribute('data-cars'))).toBe(expectedCars);
+  await expect.poll(async () => Number(await canvas.getAttribute('data-cars')) + Number((await canvas.getAttribute('data-grouped')) ?? 0)).toBe(expectedCars);
   const points = JSON.parse((await canvas.getAttribute('data-points')) ?? '[]') as { vin: string; icon: string }[];
-  expect(points.length).toBeGreaterThan(0);
+  // 군집 안 차량은 고리 색(상태별 대수)으로 — 자동차로 그린 차량만 아이콘 색을 본다
+  expect(points.length + Number((await canvas.getAttribute('data-grouped')) ?? 0)).toBeGreaterThan(0);
   for (const point of points) {
     const item = data.items.find((v: Vehicle) => v.vin === point.vin);
     expect(point.icon, point.vin).toBe(`car${ACT[item.activation]}`);

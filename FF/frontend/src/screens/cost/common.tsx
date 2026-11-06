@@ -25,6 +25,8 @@ export interface CostListItem {
   basisStale: boolean;
   featureCount: number;
   totals: { totalMm: number; totalCost?: number } | null;
+  /** 담은 Feature(국가·차종·ASIL)와 Feature DB 기준 행(분류·T-shirt)에서 모은 값 — 목록 탐색판. components는 '도메인	컴포넌트' */
+  scope?: { countries: string[]; vehicleModels: string[]; asils: string[]; tshirts: string[]; domains: string[]; components: string[] };
   createdBy: string;
   updatedAt: string;
 }

@@ -116,14 +116,17 @@ h3 {
   color: var(--muted);
   pointer-events: none;
 }
-/* Lifecycle 작업은 입력칸과 끝을 맞추는 폼이 아니다. 이유 높이도 패널에 포함해 다음 카드와 겹치지 않게 한다. */
-.feature-lifecycle-actions .ds-btn-why {
+/* Lifecycle 작업은 입력칸과 끝을 맞추는 폼이 아니다. 이유 높이도 패널에 포함해 다음 카드와 겹치지 않게 한다.
+   ds-why-inline — 서랍 안 폼처럼 버튼 아래에 다른 구획이 이어지면 긴 이유(두 줄)가 다음 제목을 덮었다(차단 서랍의 사후 검토 → 복원) */
+.feature-lifecycle-actions .ds-btn-why,
+.ds-why-inline .ds-btn-why {
   display: inline-grid;
   justify-items: start;
   gap: 2px;
   max-width: 32ch;
 }
-.feature-lifecycle-actions .ds-btn-why__text {
+.feature-lifecycle-actions .ds-btn-why__text,
+.ds-why-inline .ds-btn-why__text {
   position: static;
   width: auto;
 }
@@ -903,11 +906,13 @@ details.ds-panel[open] {
   display: flex;
   gap: var(--sp-2);
   flex-wrap: wrap;
+  /* 좁은 폭 — 고르기 상자 묶음이 제 내용 폭으로 본문 밖에 나가지 않고 줄바꿈한다(390 전 화면 하네스, 2026-11-06) */
+  max-width: 100%;
+  min-width: 0;
 }
-/* 머리 행동은 오른쪽 끝에 붙는다 — 비활성 이유를 버튼 오른쪽 끝에 맞춰 화면 밖으로 넘치지 않게(layout-quality, 2026-11-05) */
-.ds-page__actions .ds-btn-why__text {
-  left: auto;
-  right: 0;
+.ds-page__actions > * {
+  max-width: 100%;
+  min-width: 0;
 }
 /* 머리 행동은 오른쪽 끝에 붙는다 — 비활성 이유를 버튼 오른쪽 끝에 맞춰 화면 밖으로 넘치지 않게(layout-quality, 2026-11-05) */
 .ds-page__actions .ds-btn-why__text {
@@ -975,6 +980,14 @@ details.ds-panel[open] {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
+  /* 좁은 폭 — 긴 선택지(select 고유 폭)가 본문 밖으로 나가지 않게: 칸은 부모 폭까지, 고르기 상자가 줄어든다(390 전 화면 하네스, 2026-11-06) */
+  max-width: 100%;
+  min-width: 0;
+}
+.ds-field--inline > .ds-select {
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
 }
 .ds-field--inline .ds-field__label {
   white-space: nowrap;
@@ -1045,7 +1058,8 @@ textarea.ds-input {
 }
 .ds-kv {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* 칸 최소 320px — 본문이 그보다 좁으면(390 폭 휴대폰: 본문 약 270px) 한 칸이 본문 폭을 넘어 '위치 원천' 줄이 본문 밖으로 나갔다(2026-11-06) */
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: 0 var(--sp-6);
   margin: 0;
 }
@@ -1187,6 +1201,13 @@ textarea.ds-input {
 .ds-stack {
   display: grid;
   gap: 6px;
+}
+/* 좁은 폭 — 격자의 암묵 열(auto)이 넓은 자식(표·버튼 줄)만큼 늘어나 본문 밖으로 나가지 않게 자식이 줄어들 수 있게 한다.
+   화면이 style로 쓰는 단일 열 격자(display: grid; gap)도 같다(390 전 화면 하네스, 2026-11-06) */
+.ds-stack > *,
+.ds-split > *,
+.ds-screen [style*='display: grid'] > * {
+  min-width: 0;
 }
 .ds-tag {
   display: inline-block;
@@ -1383,6 +1404,28 @@ textarea.ds-input {
   color: var(--warn);
   border-color: var(--warn);
   background: var(--warn-soft);
+}
+/* 차단 상세 서랍 맨 위 회신 요약 — 반영·미수신·재전송 한 줄 */
+.ds-kill-reply {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  align-items: baseline;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.ds-kill-reply [data-warn] {
+  color: var(--warn);
+  font-weight: 600;
+}
+.ds-fcell[data-v='na'] {
+  /* 배포 대상이 아닌 flag — 미수신과 구분되게 테두리 없이 흐리게 */
+  border-color: transparent;
+  color: var(--faint);
 }
 .ds-fcell[data-drift='true'] {
   border-color: var(--danger);
@@ -1932,7 +1975,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 [data-tour-active='true'] { scroll-margin: 96px; }
 
 /* ── 표준 따라하기 허브·시나리오 (screens/learn) ── */
-.ds-learn-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--sp-3); }
+.ds-learn-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: var(--sp-3); }
 .ds-learn-card { display: grid; gap: var(--sp-2); align-content: start; padding: var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
 /* 준비 중 묶음(UX3-07) — 카드 대신 접힌 목록 한 줄씩 */
 .ds-learn-planned > summary { cursor: pointer; font-size: var(--fs-sm); color: var(--ink-2); }
@@ -2270,14 +2313,59 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 .ds-key__action .fm-linkbtn {
   font-size: inherit;
 }
-/* 국가별 현황 접기(UX3-05) — 보조 정보라 제목은 작고 회색 */
-.fm-fold > summary {
-  cursor: pointer;
-  font-size: var(--fs-sm);
-  color: var(--ink-2);
+/* 고르기 전 오른쪽 칸 — 국가별 현황 표 + 주의 차량 상위 목록(빈 상세 칸 대신, 2026-11-06) */
+.fm-overview {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
 }
-.fm-fold[open] > summary {
-  margin-bottom: var(--sp-2);
+.fm-overview .ds-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.fm-attn {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.fm-attn__title {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--ink);
+}
+.fm-attn__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+.fm-attn__item {
+  inline-size: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.fm-attn__item:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.fm-attn__item .fm-sub {
+  grid-column: 1;
+}
+.fm-attn__item .fm-chip {
+  grid-column: 2;
+  grid-row: 1 / span 2;
 }
 .fm-detail {
   display: grid;
@@ -2410,6 +2498,10 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
+  min-height: 24px;
+}
+/* 로그인 비밀번호 보기 단추 — 작은 글자(--fs-xs)+위아래 4px라 23px였다. 누를 곳 24px 이상(WCAG 2.5.8, 디자인 검토 2026-11-05) */
+.lg__show {
   min-height: 24px;
 }
 /* ID 칩 링크 — 칩 모양은 그대로 두고 누르는 영역만 위아래 4px 넓힌다(16.6px → 24.6px, WCAG 2.5.8) */

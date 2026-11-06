@@ -30,12 +30,14 @@ async function settled(canvas: Locator) {
   let same = 0;
   for (let i = 0; i < 60 && same < 3; i++) {
     await canvas.page().waitForTimeout(500);
-    const now = `${await canvas.getAttribute('data-cars')}|${await canvas.getAttribute('data-rendered')}`;
+    const now = `${await canvas.getAttribute('data-cars')}|${await canvas.getAttribute('data-rendered')}|${await canvas.getAttribute('data-grouped')}`;
     same = now === last && !now.startsWith('null') ? same + 1 : 0;
     last = now;
   }
   return {
     cars: Number(await canvas.getAttribute('data-cars')),
+    // 세계·대륙 축척에서 군집으로 묶인 등록 차량 수(디자인 검토 2026-11-05 — 겹친 자동차 대신 상태별 대수 원)
+    grouped: Number((await canvas.getAttribute('data-grouped')) ?? 0),
     rendered: Number(await canvas.getAttribute('data-rendered')),
     style: await canvas.getAttribute('data-style'),
     points: JSON.parse((await canvas.getAttribute('data-points')) ?? '[]') as Point[],
@@ -87,9 +89,10 @@ test('데모 차량 전부가 자동차 아이콘 — 상태 색, 기능 활성 
   expect(s.style).toBe('fallback');
   await expect(page.getByText(/기본 윤곽 지도/)).toBeVisible();
   const items = demo()[demo().length - 1];
-  // 전세계 보기 — 위치가 있는 데모 차량은 모두 화면 안 자동차다
-  expect(s.points.map((p) => p.vin).sort()).toEqual(located(items).map((v) => v.vin).sort());
-  expect(s.cars).toBe(located(items).length);
+  // 전세계 보기 — 위치가 있는 데모 차량은 모두 자동차이거나 군집 안에 있다(빠지거나 두 번 세지 않는다)
+  const vins = new Set(located(items).map((v) => v.vin));
+  expect(s.points.every((p) => vins.has(p.vin))).toBe(true);
+  expect(s.cars + s.grouped).toBe(located(items).length);
   expectIcons(s.points, demo(), (v) => SUB[v.subscription]);
   // 범례 수 = 표 수
   const legend = page.getByRole('list', { name: '범례' });

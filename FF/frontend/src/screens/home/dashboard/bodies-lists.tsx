@@ -113,7 +113,8 @@ function dayLabel(iso: string, now = new Date()) {
 }
 
 function Activity({ gadget }: GadgetBodyProps) {
-  const q = useApi<{ items?: AuditItem[] }>('audit', { query: { limit: 500 } });
+  // 보이는 줄 수 상한(구성 줄 수 5·10·20)만큼만 — 예전에는 감사 화면처럼 500건(압축 전 약 280 KB)을 받아 앞 10건만 그렸다
+  const q = useApi<{ items?: AuditItem[] }>('audit', { query: { limit: 20 } });
   const items = (Array.isArray(q.data?.items) ? q.data!.items! : []).slice(0, num(gadget.config.rows, 10));
   const groups: { day: string; items: AuditItem[] }[] = [];
   for (const it of items) {

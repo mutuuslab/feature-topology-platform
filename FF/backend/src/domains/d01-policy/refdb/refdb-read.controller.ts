@@ -2,15 +2,18 @@
 // 읽기는 모든 역할(헤더 없으면 감사 조회자). 역할은 응답 범위만 정한다 — 벤치마크 필드는 산정 역할만(read-view.ts).
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CurrentActor, type Actor } from '../../../kernel/actor';
-import { RefdbReadService } from './refdb-read.service';
+import { REF_MULTI_QUERY, RefdbReadService } from './refdb-read.service';
 
 @Controller('api/refdb')
 export class RefdbReadController {
   constructor(private readonly read: RefdbReadService) {}
 
   @Get('refs')
-  list(@CurrentActor() actor: Actor, @Query('q') q?: unknown, @Query('domain') domain?: unknown, @Query('component') component?: unknown, @Query('status') status?: unknown, @Query('offset') offset?: unknown, @Query('limit') limit?: unknown, @Query('source') source?: unknown) {
-    return this.read.list({ q, domain, component, status, offset, limit, source }, actor.role);
+  list(@CurrentActor() actor: Actor, @Query() all: Record<string, unknown>) {
+    const { q, domain, component, status, offset, limit, source } = all;
+    // 다중 선택(쉼표 목록)은 정해진 이름만 넘긴다
+    const multi = Object.fromEntries(REF_MULTI_QUERY.map((k) => [k, all[k]]));
+    return this.read.list({ q, domain, component, status, offset, limit, source, multi }, actor.role);
   }
 
   @Get('refs/:refId')

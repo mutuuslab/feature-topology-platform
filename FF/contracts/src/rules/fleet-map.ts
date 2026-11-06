@@ -4,16 +4,11 @@
 //   - 지도 전체는 약 1 km 정밀도(0.01°)로 낮춰 보낸다. 한 대 상세만 정밀(0.0001°)이며 열람마다 감사한다.
 //   - 위치 공유에 동의하지 않은 차량은 지역 대표점만 보인다.
 //   - 열람은 사람 역할 전부(LOCATION_VIEW_ROLES, 사용자 결정 2026-10-17). 차량 신원은 열람하지 않는다.
-import { ROLES, type Role } from '../enums';
 import { grantState } from './trial';
 import type { Entitlement } from '../schemas/policy';
 
-/**
- * 위치 열람 역할 — 사람 역할 전부(사용자 결정 2026-10-17 "누구나 다 볼 수 있도록"). 차량(VEHICLE)은 열람하지 않는다.
- * 열람은 계속 감사하고(지도는 계정당 10분에 한 번, 상세는 매번), 지도 목록의 정밀도(약 1 km)도 그대로다.
- */
-// access.ts의 HUMAN_ROLES를 쓰지 않는다 — access → routes → fleet-map 순환 import에서 아직 초기화 전이다. 같은 정의를 enums에서 직접 계산한다.
-export const LOCATION_VIEW_ROLES: Role[] = [...ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM'), 'SYSTEM'];
+// 위치 열람 역할은 location-view.ts — API 경로 표(첫 화면)가 지도 규칙·도시 표 없이 쓰게(첫 화면 예산, 2026-11-06)
+export { LOCATION_VIEW_ROLES } from './location-view';
 /** 지도 목록 정밀도 — 0.01° ≈ 1.1 km */
 export const MAP_PRECISION_DEG = 0.01;
 /** 한 대 상세 정밀도 — 0.0001° ≈ 11 m */
@@ -274,12 +269,15 @@ export interface FleetMapCluster {
   subscription: Record<SubscriptionState, number>;
 }
 
+/** 격자 칸 이름 — 표본 격자(clusterize)와 지도 차량 군집(layoutMapVehicles)이 같은 칸을 쓴다 */
+export const gridKey = (p: { lat: number; lng: number }, cellDeg: number) => `${Math.floor(p.lat / cellDeg)}:${Math.floor(p.lng / cellDeg)}`;
+
 /** 위치가 있는 차량을 격자로 모은다 — 중심은 가중 평균, 대수는 가중 합계 */
 export function clusterize(vs: FleetMapVehicle[], cellDeg: number): FleetMapCluster[] {
   const m = new Map<string, { lat: number; lng: number; w: number; n: number; sub: Record<SubscriptionState, number> }>();
   for (const v of vs) {
     if (!v.position) continue;
-    const key = `${Math.floor(v.position.lat / cellDeg)}:${Math.floor(v.position.lng / cellDeg)}`;
+    const key = gridKey(v.position, cellDeg);
     const w = v.weight && v.weight > 0 ? v.weight : 1;
     let c = m.get(key);
     if (!c) m.set(key, (c = { lat: 0, lng: 0, w: 0, n: 0, sub: { PAID: 0, TRIAL: 0, OFFERED: 0, ENDED: 0, NONE: 0 } }));
@@ -306,6 +304,100 @@ export function clusterizeWithin(vs: FleetMapVehicle[], bbox: MapBbox, zoom: num
     if (clusters.length <= MAP_CLUSTER_LIMIT || cellDeg >= 180) return { clusters, cellDeg };
     cellDeg *= 2;
   }
+}
+
+/** 이 확대 단계 미만(세계·대륙 축척)에서는 같은 격자의 등록 차량 2대 이상을 군집 하나로 그린다 — 한국·유럽의 자동차 기호가 겹쳐 상태를 읽을 수 없었다(디자인 검토 2026-11-05) */
+export const MAP_GROUP_ZOOM = 5;
+/** 같은 좌표 차량을 펼치는 반지름(화면 px) — 받침 원(반지름 9~19px)이 서로 반쯤만 겹치게 */
+export const MAP_SPREAD_PX = 14;
+
+/** 지도 차량 군집 — 상태(색 토큰 등 호출자가 정한 키)별 대수와 들어 있는 차량 */
+export interface MapVehicleGroup {
+  id: string;
+  lat: number;
+  lng: number;
+  count: number;
+  states: Record<string, number>;
+  vins: string[];
+}
+/** 한 대씩 그릴 차량의 그림 위치 — 같은 좌표 차량은 원·나선으로 조금씩 옮긴다(offset). 실제 위치는 차량 정보 그대로 */
+export interface MapPlacedVehicle {
+  vin: string;
+  lat: number;
+  lng: number;
+  offset: boolean;
+}
+
+/** 확대 단계 z에서 화면 1px의 경도 폭(도) — 타일 512px */
+const degPerPx = (zoom: number) => 360 / (512 * 2 ** zoom);
+
+/** i번째(0부터) 차량의 펼친 자리(px) — 8대까지는 한 원, 그보다 많으면 해바라기 나선(겹치지 않고 바깥으로) */
+export function spreadOffsetPx(i: number, n: number, radius = MAP_SPREAD_PX): [number, number] {
+  if (n <= 1) return [0, 0];
+  if (n <= 8) {
+    const a = -Math.PI / 2 + (2 * Math.PI * i) / n;
+    return [Math.cos(a) * radius, Math.sin(a) * radius];
+  }
+  const a = i * 2.399963; // 황금각
+  const r = radius * 0.75 * Math.sqrt(i + 1);
+  return [Math.cos(a) * r, Math.sin(a) * r];
+}
+
+/**
+ * 등록 차량을 지도에 그릴 모양 — 확대 MAP_GROUP_ZOOM 미만이면 표본 격자와 같은 칸(clusterCellDeg)의 2대 이상을 군집으로,
+ * 그 이상이면 한 대씩 그리되 같은 좌표(지도 정밀도로 낮춘 좌표)의 차량은 화면에서 떨어뜨린다. keep의 차량(고른 차량)은 군집에 넣지 않는다.
+ */
+export function layoutMapVehicles<T extends { vin: string; position: { lat: number; lng: number } | null }>(
+  vs: readonly T[],
+  zoom: number,
+  stateOf: (v: T) => string,
+  keep: ReadonlySet<string> = new Set(),
+): { groups: MapVehicleGroup[]; placed: MapPlacedVehicle[] } {
+  const located = vs.filter((v): v is T & { position: { lat: number; lng: number } } => !!v.position);
+  const groups: MapVehicleGroup[] = [];
+  let singles = located;
+  if (zoom < MAP_GROUP_ZOOM) {
+    const cellDeg = clusterCellDeg(zoom);
+    const cells = new Map<string, typeof located>();
+    for (const v of located) {
+      if (keep.has(v.vin)) continue;
+      const k = gridKey(v.position, cellDeg);
+      const xs = cells.get(k);
+      if (xs) xs.push(v);
+      else cells.set(k, [v]);
+    }
+    const grouped = new Set<string>();
+    for (const [id, xs] of cells) {
+      if (xs.length < 2) continue;
+      const states: Record<string, number> = {};
+      for (const v of xs) states[stateOf(v)] = (states[stateOf(v)] ?? 0) + 1;
+      const lat = xs.reduce((n, v) => n + v.position.lat, 0) / xs.length;
+      const lng = xs.reduce((n, v) => n + v.position.lng, 0) / xs.length;
+      groups.push({ id, lat: Math.round(lat * 1e4) / 1e4, lng: Math.round(lng * 1e4) / 1e4, count: xs.length, states, vins: xs.map((v) => v.vin).sort() });
+      for (const v of xs) grouped.add(v.vin);
+    }
+    groups.sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
+    singles = located.filter((v) => !grouped.has(v.vin));
+  }
+  // 같은 좌표끼리 — 정밀도로 낮춘 좌표라 수도권·도심에 같은 칸 차량이 여러 대 있다
+  const same = new Map<string, typeof located>();
+  for (const v of singles) {
+    const k = `${v.position.lat.toFixed(4)}:${v.position.lng.toFixed(4)}`;
+    const xs = same.get(k);
+    if (xs) xs.push(v);
+    else same.set(k, [v]);
+  }
+  const step = degPerPx(zoom);
+  const placed: MapPlacedVehicle[] = [];
+  for (const xs of same.values()) {
+    xs.sort((a, b) => a.vin.localeCompare(b.vin));
+    xs.forEach((v, i) => {
+      const [dx, dy] = spreadOffsetPx(i, xs.length);
+      const cos = Math.max(0.2, Math.cos((v.position.lat * Math.PI) / 180));
+      placed.push({ vin: v.vin, lat: v.position.lat - dy * step * cos, lng: v.position.lng + (dx * step), offset: xs.length > 1 });
+    });
+  }
+  return { groups, placed };
 }
 
 export const MAP_PRIVACY_NOTE =

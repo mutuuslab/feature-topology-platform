@@ -2,7 +2,7 @@
 //   ① 지도를 그리는 동안 aria-busy — 3초 하네스·캡처의 대기 조건([aria-busy="true"] 없음)이 그린 지도를 기다린다.
 //      예전에는 준비 상태가 기계로 읽히지 않아 캡처 3장이 모두 "지도를 불러오는 중…"에서 찍혔다(지도 자체는 1~4초 안에 준비됨).
 //   ② 핵심 메시지 "N 긴급 차단·미확인 차량"의 행동이 그 차량을 고르고 지도를 그 차량으로 옮긴다(상세가 열린다)
-//   ③ 국가별 현황은 접힌 보조 정보 — 처음에는 표가 보이지 않고 펼치면 보인다
+//   ③ 차량을 고르기 전 오른쪽 칸은 빈 상세가 아니라 국가별 현황 표와 주의 차량 상위 목록(2026-11-06, 디자인 검토 2026-11-05 — 빈 칸이 지도 폭만 줄였다)
 import { expect, test } from '@playwright/test';
 
 test.use({ viewport: { width: 1366, height: 768 }, launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } });
@@ -55,13 +55,16 @@ test('핵심 메시지 행동 — 긴급 차단·미확인 차량을 고르고 �
   }
 });
 
-test('국가별 현황은 접어 둔다 — 처음에는 표가 보이지 않고 펼치면 보인다', async ({ page }) => {
+test('고르기 전 오른쪽 칸 — 국가별 현황 표와 주의 차량 상위 목록, 누르면 그 차량 상세', async ({ page }) => {
   await page.route((url) => url.hostname === 'tiles.openfreemap.org', (r) => r.abort());
   await page.goto('/fleet/map');
-  const fold = page.getByTestId('fleet-map-summary');
-  await expect(fold.locator('summary')).toHaveText(/국가별 현황 · \d+개국/);
-  const table = page.getByRole('table', { name: '국가별 현황' });
-  await expect(table).toBeHidden();
-  await fold.locator('summary').click();
-  await expect(table).toBeVisible();
+  const side = page.getByTestId('fleet-map-summary');
+  await expect(side.getByRole('table', { name: '국가별 현황' })).toBeVisible();
+  const attn = side.getByTestId('fleet-map-attention');
+  await expect(attn.getByRole('heading', { name: /주의 차량 .*대 중 상위 \d+대/ })).toBeVisible();
+  const first = attn.getByRole('button').first();
+  const vin = (await first.locator('.ds-mono').textContent())!;
+  await first.click();
+  await expect(page).toHaveURL(new RegExp(`vin=${vin}`));
+  await expect(page.getByTestId('fleet-map-detail')).toBeVisible();
 });

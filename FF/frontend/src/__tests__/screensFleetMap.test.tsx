@@ -6,6 +6,10 @@ import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-rou
 import { summarize, type FleetMapVehicle } from '@ff/contracts';
 import { AppProvider } from '../store';
 import { FleetMapScreen } from '../screens/ops/FleetMap';
+import { mapScope as MS } from '../copy/map-scope';
+import { ko } from '../copy/ko';
+
+const F = ko.fleetMap;
 
 let calls: { url: string; headers: Record<string, string> }[];
 let status = 200;
@@ -152,6 +156,17 @@ describe('전세계 차량 지도 화면', () => {
     expect(map.headers['X-Actor-Id']).toBe('usr-operator');
   });
 
+  it('홈 수신 현황 고리에서 온 국가 조건(?country=)이면 그 국가 차량만 그리고 그 지역 보기로 열며, 조건을 지울 수 있다', async () => {
+    mount('operator', '/fleet/map?lens=activation&country=EU');
+    const table = await screen.findByRole('table', { name: '차량 목록' });
+    expect(await within(table).findByText('TMA-NX4-0001')).toBeTruthy();
+    expect(within(table).queryByText('KMH-NX4-0001')).toBeNull();
+    expect(screen.getByRole('radio', { name: F.regions.eu }).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: MS.clear }));
+    expect(await within(table).findByText('KMH-NX4-0001')).toBeTruthy();
+    expect(screen.getByTestId('map-address').textContent).toBe('?lens=activation');
+  });
+
   it('기능 활성 보기로 바꾸면 범례가 활성 상태로 바뀌고 플래그를 고를 수 있다', async () => {
     mount('operator');
     await screen.findByRole('table', { name: '차량 목록' });
@@ -170,7 +185,8 @@ describe('전세계 차량 지도 화면', () => {
     expect(within(detail).getByText('37.5712, 126.9803')).toBeTruthy();
     expect(within(detail).getByText('정밀 위치 열람은 매번 감사에 남습니다.')).toBeTruthy();
     expect(within(detail).getByText('ENT-00001')).toBeTruthy();
-    expect(within(detail).getByText('KILL_SWITCH')).toBeTruthy();
+    // 사유는 업무 말, 코드는 툴팁(2026-11-06)
+    expect(within(detail).getByTitle('KILL_SWITCH').textContent).toBe('긴급 차단');
     expect(calls.find((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0001')!.headers['X-Actor-Role']).toBe('AUDITOR');
   });
 
@@ -203,14 +219,22 @@ describe('전세계 차량 지도 화면', () => {
     await waitFor(() => expect(calls.some((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0003')).toBe(true));
   });
 
-  it('국가별 현황은 접힌 보조 정보 — 국가 수만 보이고 펼치면 같은 표(UX3-05)', async () => {
+  it('고르기 전 오른쪽 칸은 빈 상세가 아니라 국가별 현황 표와 주의 차량 상위 목록 — 누르면 그 차량 상세(디자인 검토 2026-11-05)', async () => {
     mount('operator');
     await screen.findByRole('table', { name: '차량 목록' });
-    const fold = screen.getByTestId('fleet-map-summary') as HTMLDetailsElement;
-    expect(fold.tagName).toBe('DETAILS');
-    expect(fold.open).toBe(false);
-    expect(await within(fold).findByText('국가별 현황 · 2개국')).toBeTruthy();
-    expect(within(fold).getByRole('table', { name: '국가별 현황' })).toBeTruthy();
+    const side = screen.getByTestId('fleet-map-summary');
+    // 접지 않고 바로 보인다 — 빈 칸이 지도 폭만 줄이던 결함
+    expect(side.tagName).not.toBe('DETAILS');
+    expect(within(side).getByRole('table', { name: '국가별 현황' })).toBeTruthy();
+    expect(screen.queryByText('차량 상세')).toBeNull();
+    const attn = await within(side).findByTestId('fleet-map-attention');
+    expect(within(attn).getByRole('heading', { name: '주의 차량 2대 중 상위 2대' })).toBeTruthy();
+    // 긴급 차단 먼저 — 핵심 메시지 행동과 같은 순서
+    const rows = within(attn).getAllByRole('button');
+    expect(rows.map((b) => b.querySelector('.ds-mono')?.textContent)).toEqual(['KMH-NX4-0001', 'KMH-NX4-0003']);
+    fireEvent.click(rows[1]);
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/fleet/map/vehicles/KMH-NX4-0003')).toBe(true));
+    expect(await screen.findByTestId('fleet-map-detail')).toBeTruthy();
   });
 
   it('위치 열람이 거부되면(차량 신원 등) 지도·표 대신 안내만 보인다', async () => {

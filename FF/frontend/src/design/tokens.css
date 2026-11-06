@@ -27,6 +27,28 @@
   --ext-cb-header: #454545;
   --ext-cb-selected: #f4ffff;
   --ext-jira-brand: #1868db;
+  /* GitLab MR 창 — 공식 tanuki 주황(장식·선), 링크 파랑·병합 보라는 흰 바탕 AA 대비 */
+  --ext-gl-brand: #fc6d26;
+  --ext-gl-link: #1f75cb;
+  --ext-gl-merged: #694cc0;
+  /* codeBeamer Trackers 화면(참고 캡처) — 상단 바·탭 밑줄·트리·그룹 띠. 글자는 --ink로 두어 AA 대비를 지킨다. */
+  --ext-cb-topbar-end: #f5f5f5;
+  --ext-cb-tab-line: #e2c29f;
+  --ext-cb-tree: #e4f7ea;
+  --ext-cb-tree-selected: #a9e6c3;
+  --ext-cb-tree-edge: #3d3d3d;
+  --ext-cb-band-1: #f8d3dd;
+  --ext-cb-band-2: #d3f2dd;
+  --ext-cb-band-3: #d5e3f6;
+  --ext-cb-band-4: #ead8f4;
+  --ext-cb-band-5: #f7ebc4;
+  --ext-cb-edge-1: #b23a5d;
+  --ext-cb-edge-2: #23744a;
+  --ext-cb-edge-3: #3a6db3;
+  --ext-cb-edge-4: #8a4fae;
+  --ext-cb-edge-5: #7d5e0c;
+  /* 로고 받침 — 어두운 테마에서도 공식 로고 색을 그대로 보이게 한다 */
+  --ext-logo-plate: #ffffff;
   /* 글꼴 */
   --font-sans: 'SUIT Variable', 'SUIT', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', 'D2Coding', ui-monospace, Consolas, monospace;
@@ -64,6 +86,18 @@
   --viz-1: #2a78d6;
   --viz-2: #eb6834;
   --viz-3: #1baf7a;
+  /* 범주 4~6 — 대시보드 디자인 언어(docs/70-design-system/70-50) §4.3. 인접 쌍 검증(CVD ΔE 9.1·정상 19.6), 3:1 미만(청록·노랑·자홍)은 직접 라벨·표 보기 동반 */
+  --viz-4: #eda100;
+  --viz-5: #e87ba4;
+  --viz-6: #6250d6;
+  /* 데이터 표식(점·막대·선) — 글자는 --ok·--warn·--danger·--info. 모든 쌍 색각 검증(밝음 worst ΔE 8.6), 모양(● ○ ■ ◆ ·) 병기 */
+  --mark-ok: #16784a;
+  --mark-warn: #d69a00;
+  --mark-danger: #c42d1c;
+  --mark-info: #3b6fd0;
+  --mark-neutral: #b3ae9f;
+  /* 대시보드 열 간격 — compact에서 줄인다 */
+  --dash-gap: var(--sp-4);
 
   /* 신호 */
   --ok: #1a7045;
@@ -189,6 +223,9 @@
   --fs-lg: calc(var(--fs-base) * 1.286);
   --fs-xl: calc(var(--fs-base) * 1.571);
   --fs-2xl: calc(var(--fs-base) * 2);
+  /* 대시보드 숫자 — 히어로 하나(36px @14·33px @13), 보조 KPI */
+  --fs-kpi-hero: calc(var(--fs-base) * 2.571);
+  --fs-kpi: calc(var(--fs-base) * 1.571);
   /* ── 레거시 화면 별칭 (styles.css 하위 호환 — 재디자인 화면은 위 이름을 쓴다) ── */
   --brand: var(--accent);
   --pass: var(--ok);
@@ -218,6 +255,7 @@
     --fs-base: 13px;
     --row-h: 32px;
     --panel-w: 212px;
+    --dash-gap: var(--sp-3);
   }
 }
 
@@ -251,6 +289,15 @@
   --viz-1: #3987e5;
   --viz-2: #d95926;
   --viz-3: #199e70;
+  --viz-4: #c98500;
+  --viz-5: #d55181;
+  --viz-6: #9085e9;
+  /* 다크 면(#15181d)에서 고른 단계 — 빨강·초록 CVD ΔE 6.5라 모양 병기 필수 */
+  --mark-ok: #2fa66c;
+  --mark-warn: #c99a2b;
+  --mark-danger: #e0453a;
+  --mark-info: #4f8fe0;
+  --mark-neutral: #5b616c;
   --ok: #43c486;
   --ok-soft: #12291d;
   --warn: #f0aa3c;
@@ -371,6 +418,8 @@
   --fs-lg: calc(var(--fs-base) * 1.286);
   --fs-xl: calc(var(--fs-base) * 1.571);
   --fs-2xl: calc(var(--fs-base) * 2);
+  --fs-kpi-hero: calc(var(--fs-base) * 2.571);
+  --fs-kpi: calc(var(--fs-base) * 1.571);
   font-size: var(--fs-base);
 }
 /* 시연 모드가 이긴다 — 위 포털 본문 글자(15px)와 부서별 행 높이가 [data-present='on']의 큰 글자·넓은 행을 덮지 않게 같은 값을 다시 선언한다 */

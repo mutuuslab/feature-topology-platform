@@ -1,0 +1,41 @@
+/* 전세계 지도 — 등록 차량 군집(세계·대륙 축척). 상태 색 고리(대수 비례) + 가운데 대수. 지도 묶음과 함께 읽는다(첫 화면 묶음에 넣지 않는다) */
+.fm-group {
+  --fm-group-size: 32px;
+  display: grid;
+  place-items: center;
+  inline-size: var(--fm-group-size);
+  block-size: var(--fm-group-size);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--fm-group-ring, var(--accent));
+  cursor: pointer;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.fm-group > span {
+  display: grid;
+  place-items: center;
+  inline-size: calc(100% - 10px);
+  block-size: calc(100% - 10px);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.fm-group:hover > span { background: var(--surface-2); }
+.fm-group:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* 범례 — 같은 모양을 작게(누르는 단추가 아니다) */
+.fm-group--chip {
+  --fm-group-size: 22px;
+  --fm-group-ring: conic-gradient(var(--ok) 0deg 200deg, var(--faint) 200deg 300deg, var(--warn) 300deg 360deg);
+  cursor: default;
+  box-shadow: none;
+}
+.fm-group--chip > span { inline-size: calc(100% - 6px); block-size: calc(100% - 6px); }
+/* 좁은 화면(390px) — 긴 범례 설명(숫자 원)이 본문 밖으로 나가지 않게 줄을 바꾼다 */
+.fm-legend li { min-width: 0; max-width: 100%; }
+.fm-legend .fm-chip { white-space: normal; }
+.fm-legend .fm-group--chip { flex: none; }

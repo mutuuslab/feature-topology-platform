@@ -65,9 +65,28 @@ function visibility() {
   }
 }
 
+// 정적 공개 사이트 — 서버 대신 이 브라우저의 시연 데이터(api/sim)가 같은 버스로 이벤트를 흘린다(SSE처럼 화면이 새로 읽는다)
+const local = new Set<Subscriber>();
+export function publishLocalEvents(events: PlatformEvent[]) {
+  for (const e of events) for (const subscriber of [...local, ...subscribers]) subscriber.event(e);
+}
+/** 시연 데이터를 처음 상태로 되돌린 뒤 — 구독 화면이 다시 읽게 */
+export function refreshLocalSubscribers() {
+  for (const subscriber of [...local, ...subscribers]) subscriber.refresh();
+  localChanged?.();
+}
+/** 시연 데이터가 바뀌었을 때(쓰기·차량 회신) — 앱이 조회 캐시를 무효화한다(main.tsx) */
+let localChanged: (() => void) | null = null;
+export const onLocalDataChange = (fn: () => void) => void (localChanged = fn);
+export const localDataChanged = () => localChanged?.();
+
 /** One EventSource per document; subscriber cleanup never closes another screen's connection. */
 export function subscribePlatformStream(subscriber: Subscriber): () => void {
-  if (STATIC_MODE || typeof EventSource === 'undefined') { subscriber.state('static'); return () => {}; }
+  if (STATIC_MODE || typeof EventSource === 'undefined') {
+    local.add(subscriber);
+    subscriber.state('static');
+    return () => void local.delete(subscriber);
+  }
   subscribers.add(subscriber);
   subscriber.state(platformStreamState());
   if (subscribers.size === 1) document.addEventListener('visibilitychange', visibility);

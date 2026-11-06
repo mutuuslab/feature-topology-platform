@@ -2,8 +2,9 @@
 // 쓰기 요청은 행위자 헤더와 Idempotency-Key를 자동으로 붙이고, 오류 봉투 {error:{code,message}}를 ApiError로 바꾼다.
 // 오류는 종류(kind)로 나눠 사용자 말로 안내한다(출시 준비 RD-UX-01) — 401 다시 로그인·409/412 다시 불러오기·400/422 입력 칸 오류·
 // 429 잠시 뒤·5xx 문의 번호(X-Correlation-Id)·연결 끊김. 문구는 copy/errors.ts.
-// 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고 쓰기는 막는다.
-import { ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
+// 정적 데모(VITE_DATA_MODE=static, Cloudflare)에서는 GET을 미리 떠 둔 스냅샷에서 읽고, 쓰기는 이 브라우저 안의 시연 데이터(api/sim)가
+// 서버와 같은 규칙으로 처리한다 — 첫 쓰기 때 불러오고, 바뀐 것이 있으면(SIM_FLAG) 읽기도 그 위에 덮는다(20-60).
+import { DATA_CATEGORY_ACCESS, ROUTES, routeUrl, snapshotFile, type Role, type RouteDef } from '@ff/contracts';
 import { OIDC_AUTH } from '../auth-mode';
 import { ssoLoggedOut, startSsoLogin } from '../auth-oidc';
 import { errors as E } from '../copy/errors';
@@ -65,6 +66,8 @@ export const VIEW_ROLES: Partial<Record<string, readonly Role[]>> = {
   listRefChanges: ['REFDB_ADMIN'],
   refChangeDetail: ['REFDB_ADMIN'],
   exportRefdb: ['REFDB_ADMIN'],
+  // 홈 수신 현황 요약 — 회신(운영 데이터 범주)을 읽는 역할로 물어야 회신 건수가 들어간다
+  operationSummary: DATA_CATEGORY_ACCESS.SAFETY_OPERATION,
 };
 
 /** 응답 본문 — JSON이 아니면(앞단 프록시의 HTML 오류 쪽 등) null. 깨진 JSON으로 화면이 멈추지 않게 */
@@ -97,6 +100,54 @@ function onUnauthenticated() {
   if (OIDC_AUTH && !hasUnsaved()) startSsoLogin();
 }
 
+/** 이 브라우저에 바뀐 시연 데이터가 있다는 표시(값 = 스냅샷 판) — api/sim/store가 쓰고 지운다 */
+export const SIM_FLAG = 'ff.sim';
+const simActive = () => {
+  try {
+    return localStorage.getItem(SIM_FLAG) !== null;
+  } catch {
+    return false;
+  }
+};
+let sim: Promise<typeof import('./sim')> | null = null;
+/** 시연 엔진 — 정적 모드의 첫 쓰기(또는 스냅샷에 없는 읽기) 때 불러온다 */
+export const loadSim = () => (sim ??= import('./sim'));
+
+/** 공개 사이트 접속 게이트 응답 표식 — functions/_middleware.ts GATE_MARK와 같다(시험 staticGate가 맞춰 본다) */
+export const GATE_MARK = 'ff-gate-v1';
+let gateLeaving = false;
+/**
+ * 정적 사이트 — 게이트 쿠키가 끝나 스냅샷 요청이 401(게이트 표식)이면 화면 로그인 표식(ff.auth)을 지우고
+ * 지금 주소로 돌아오는 로그인으로 옮긴다(SPA 안에 '스냅샷에 없음' 오류만 남지 않게). 게이트 401이 아니면 null
+ */
+export async function gateDenied(res: Response): Promise<ApiError | null> {
+  if (res.status !== 401) return null;
+  const data = parseBody(await res.clone().text());
+  if (data?.gate !== GATE_MARK) return null;
+  if (!gateLeaving) {
+    gateLeaving = true;
+    try {
+      localStorage.removeItem('ff.auth');
+    } catch {
+      /* 저장소 막힘 — 이동만 */
+    }
+    const here = window.location.pathname + window.location.search + window.location.hash;
+    window.location.assign(`${import.meta.env.BASE_URL}login?next=${encodeURIComponent(here)}`);
+  }
+  return toApiError(res, data);
+}
+/** 시험용 */
+export const __resetGateForTest = () => void (gateLeaving = false);
+
+/** 정적 데모 — ROUTES 밖 스냅샷 파일(OFREP 평가 등)을 읽는다. 없으면(SPA 대체 응답) call과 같은 '스냅샷에 없음' 404 */
+export async function readSnapshotFile<T = any>(file: string, signal?: AbortSignal): Promise<T> {
+  const res = await fetch(import.meta.env.BASE_URL + file, { signal });
+  const gate = await gateDenied(res);
+  if (gate) throw gate;
+  if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new ApiError(404, 'NOT_FOUND', E.notInSnapshot);
+  return res.json();
+}
+
 export async function call<T = any>(name: RouteName | string, opts: CallOptions = {}): Promise<T> {
   const route = BY_NAME.get(name);
   if (!route) throw new Error(E.unknownApi(name));
@@ -104,10 +155,15 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
   const write = route.method !== 'GET';
 
   if (STATIC_MODE) {
-    if (write) throw new ApiError(403, 'READ_ONLY_DEMO', E.readOnlyDemo);
+    // 쓰기·바뀐 시연 데이터가 있는 읽기는 시연 엔진으로(첫 화면 묶음에 넣지 않는다)
+    if (write || simActive()) return (await loadSim()).simCall<T>(route, url, opts);
     const res = await fetch(import.meta.env.BASE_URL + snapshotFile(url), { signal: opts.signal });
+    // 접속 게이트 쿠키 만료 — 시연 엔진으로 넘기지 않는다(넘기면 '스냅샷에 없음' 404로 보인다)
+    const gate = await gateDenied(res);
+    if (gate) throw gate;
     // 정적 호스팅은 없는 파일에 SPA 대체 응답(index.html, 200)을 준다 — JSON이 아니면 '스냅샷에 없음'으로 본다(파싱 오류로 화면이 깨지지 않게)
-    if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new ApiError(404, 'NOT_FOUND', E.notInSnapshot);
+    // 스냅샷에 없는 질의(입력에 따라 바뀌는 미리보기 등)는 시연 엔진이 같은 규칙으로 계산할 수 있으면 계산한다. 못 하면 같은 404
+    if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) return (await loadSim()).simCall<T>(route, url, opts);
     return res.json();
   }
 

@@ -61,3 +61,9 @@ export interface SimStatus {
   /** 지금 돌고 있는 실행 수·대기 수 — 서버 하나를 같이 쓰므로 한 번에 하나 */
   queue: { running: number; waiting: number };
 }
+
+/** 공개 정적 데모용 상태 — 운영자용 연결 정보(호스트·포트·실행기·Python 경로·탐침 사유)를 뺀다. 화면은 실행 기록으로 이름·버전·마지막 실행을 보인다 */
+export type PublicSimStatus = Omit<SimStatus, 'host' | 'port' | 'runner' | 'python'>;
+export function publicSimStatus(s: SimStatus): PublicSimStatus {
+  return { available: s.available, mode: s.mode, simulator: s.simulator, server: s.server, reason: null, queue: { running: 0, waiting: 0 } };
+}

@@ -48,6 +48,29 @@ docker compose -f docker/unleash/docker-compose.yml --env-file docker/unleash/.e
 
 이 구성은 웹용 운영 빌드와 API를 같은 출처로 제공한다. 데모 역할 선택기는 운영 빌드에 포함되지 않는다. 외부 공개 시 고객 DNS·TLS 프록시·OIDC 리디렉트 주소를 함께 설정한다. `localhost`는 접속하는 사람 자신의 PC를 뜻하므로 다른 참석자에게 공유할 주소로 사용하지 않는다. 플랫폼 정적 화면 파일만 배포하면 정책 쓰기·차량 수신·Unleash 연계는 동작하지 않으므로, 실제 동작 시연은 API와 서버 런타임까지 실행한다.
 
+### 2.2 공개 데모 사이트(Cloudflare Pages) 접속 게이트
+
+공개 데모 사이트(`https://feature-topology.pages.dev`, `.github/workflows/cloudflare.yml`)는 **모든 주소를 서버에서 막는다**(2026-11-06, 사용자 요청 "전부 패스워드 걸어놔, 링크로 바로 못 들어오게"). 전에는 로그인이 브라우저 표식(`localStorage` `ff.auth`)뿐이라 `external.html`·`/api-snapshot/*.json`·직접 주소가 로그인 없이 열렸다.
+
+- 구현: Pages Functions 미들웨어 `FF/functions/_middleware.ts`가 모든 요청을 가로챈다. 서명 쿠키가 없으면 화면 주소는 `302 /login?next=<원래 경로>`, 스냅샷·JSON·쓰기 요청은 `401` JSON.
+- 로그인 없이 열리는 것: `/login`(SPA 로그인 화면)과 그 화면이 쓰는 자산(`/assets/*`, `/brand/*`, `boot-check.js`, `recovery.html`·`recovery.js`, `robots.txt`)뿐.
+- 로그인: 화면이 `POST /__auth/login`(JSON `{id,password,next}`, 같은 출처만)을 보내면 서버가 ID·비밀번호 FF(대소문자 무관, `auth-demo.ts`와 같은 규칙)를 확인하고 **HMAC-SHA256 서명 쿠키** `__Host-ff_gate`(HttpOnly·Secure·SameSite=Lax·7일)를 준다. 화면(`frontend/src/auth-gate.ts`, 로그인 버튼을 누를 때 지연 로드 — 첫 화면 묶음 밖)은 성공하면 기존 표식 `ff.auth`도 세우고 `next`의 주소를 문서로 다시 연다(별도 페이지 `external.html`은 Pages가 `/external`로 바꾼다). `next`는 같은 사이트 경로만 받는다(열린 리다이렉트 금지, `//`·`\`·외부 주소·`/login`·`/__auth/*`는 `/`). 로그아웃은 `/__auth/logout`(화면의 로그아웃이 함께 부른다).
+- 로그인한 사람에게 가는 응답의 `Cache-Control: public`은 `private`로 바뀐다(공유 캐시에 남지 않게).
+- 서명 키: Pages 환경 비밀 **`FF_GATE_SECRET`(32자 이상)**. 없거나 짧으면 모든 요청이 `503`(조용히 열리지 않는다). 배포 작업은 GitHub 저장소 비밀 `FF_GATE_SECRET`이 없으면 빌드 전에 실패하고, 있으면 배포마다 Pages 비밀로 넣은 뒤 올린다. 배포 뒤 `external.html`이 302·스냅샷이 401인지 확인하고 아니면 실패한다.
+
+  ```sh
+  # 한 번만 — 키 만들기와 GitHub 저장소 비밀 등록(배포 작업이 Pages로 옮긴다)
+  openssl rand -base64 48 | tr -d '\n' | gh secret set FF_GATE_SECRET --repo <소유자>/<저장소>
+  # (선택) 배포 작업 없이 Pages에 바로 넣기 — FF 폴더에서
+  npx wrangler@4.152.0 pages secret put FF_GATE_SECRET --project-name=feature-topology
+  ```
+
+  키를 바꾸면 이미 받은 쿠키는 모두 무효가 되어 다시 로그인한다.
+- 배포 위치: `wrangler pages deploy`는 **실행 위치의 `./functions`** 를 함께 올린다. 그래서 배포 단계는 `FF/`에서 `pages deploy frontend/dist`로 돌린다(저장소 루트에서 `FF/frontend/dist`를 올리면 미들웨어가 빠진다).
+- 로컬 확인: `FF/`에서 `npx wrangler@4.152.0 pages dev frontend/dist --port 9173 --compatibility-date 2026-10-01 --binding FF_GATE_SECRET=<32자 이상>`(정적 빌드 `VITE_DATA_MODE=static` 뒤, 상태 폴더 `FF/.wrangler`는 끝나면 지운다). 로컬 `vite preview`·정적 e2e(`e2e:static`)·데스크톱에는 함수가 없어 기존 브라우저 로그인 그대로다 — 화면은 게이트 응답(`gate: ff-gate-v1`)이 없으면 기존 방식으로 로그인한다.
+- 시험: `tools/pages-gate.test.ts`(verify `pages:gate` — 쿠키 없음 302·401, 틀린 비밀번호 거부, 쿠키 속성, 위조·비정규 서명·다른 키·만료, next 검증, 자산 예외의 경로 우회, 키 없음 503), 화면 쪽 `frontend/src/__tests__/loginGate.test.tsx`.
+- 한계: 공개 데모 ID·비밀번호(FF/FF)는 로그인 화면에 적혀 있다 — 이 게이트는 **링크만으로 들어오는 것**을 막는 것이지 계정 보안이 아니다. 화면 코드 묶음(`/assets/*`)은 로그인 화면에 필요해 열려 있다(데이터는 스냅샷이라 막힌다). 이미 열려 있던 화면에서 쿠키가 만료되면 스냅샷이 401이 되어 '스냅샷에 없음'으로 보인다 — 새로 고치면 로그인으로 간다.
+
 ## 3. 사전 준비
 
 | 항목 | 내용 |

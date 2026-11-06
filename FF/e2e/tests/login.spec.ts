@@ -8,6 +8,11 @@ test('로그인 — 틀린 비밀번호는 막고, FF/FF는 대소문자 구분 
   await page.setViewportSize({ width: 1366, height: 900 });
   await page.goto('/login');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('차를 판매한 뒤에도');
+  // 자격 증명은 화면에 안내하지 않는다(사용자 지시 2026-11-06) — 문구·placeholder·기본값 모두
+  await expect(page.locator('body')).not.toContainText(/데모 계정|ID FF|Password FF|대소문자/i);
+  await expect(page.getByLabel('ID')).toHaveValue('');
+  await expect(page.getByLabel('Password')).toHaveValue('');
+  expect(await page.locator('input[placeholder]').count()).toBe(0);
   await page.getByLabel('ID').fill('FF');
   await page.getByLabel('Password').fill('nope');
   await page.getByRole('button', { name: '플랫폼 들어가기' }).click();

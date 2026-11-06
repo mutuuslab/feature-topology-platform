@@ -26,9 +26,8 @@ const read = (): boolean => {
   }
 };
 
-/** 공개 데모 ID·비밀번호는 대소문자를 구분하지 않는다. ID의 앞뒤 공백만 지운다. */
-export function login(id: string, password: string): boolean {
-  if (id.trim().toUpperCase() !== DEMO_ID || password.toUpperCase() !== DEMO_PW) return false;
+/** 화면 로그인 표식(ff.auth)을 세운다 — 서버 게이트가 승인했을 때(auth-gate.ts)도 쓴다 */
+export function markAuthed(): true {
   try {
     localStorage.setItem(KEY, '1');
   } catch {
@@ -38,12 +37,24 @@ export function login(id: string, password: string): boolean {
   return true;
 }
 
+/** 공개 데모 ID·비밀번호는 대소문자를 구분하지 않는다. ID의 앞뒤 공백만 지운다. */
+export function login(id: string, password: string): boolean {
+  if (id.trim().toUpperCase() !== DEMO_ID || password.toUpperCase() !== DEMO_PW) return false;
+  return markAuthed();
+}
+
+// 공개 사이트 접속 게이트(Cloudflare Pages, FF/functions/_middleware.ts) — 정적 빌드의 로그인은 auth-gate.ts(로그인 누를 때 지연 로드)가 맡는다.
+// 빌드 상수지만 호출할 때 읽는다(시험이 vi.stubEnv로 바꾼다).
+export const staticSite = (): boolean => import.meta.env.VITE_DATA_MODE === 'static';
+
 export function logout(): void {
   try {
     localStorage.removeItem(KEY);
   } catch {
     /* noop */
   }
+  // 정적 사이트는 서버 쿠키도 지운다(게이트가 없으면 404 — 무시)
+  if (staticSite()) void fetch(`${import.meta.env.BASE_URL}__auth/logout`, { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(() => undefined);
   emit();
 }
 

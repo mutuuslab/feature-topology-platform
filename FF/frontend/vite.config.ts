@@ -24,14 +24,19 @@ function deployHeaders(): Record<string, string> {
   }
   return out;
 }
+// 배포 빌드에서만 경로 표의 summary를 뺀다(화면은 API 응답의 요약을 쓴다) — 개발 서버·vitest는 원문
+let building = false;
 export default defineConfig({
   base: pages ? '/feature-topology-platform/' : '/',
   plugins: [{
     name: 'browser-route-metadata',
     enforce: 'pre',
+    configResolved(c) {
+      building = c.command === 'build';
+    },
     transform(code, id) {
       if (!id.replace(/\\/g, '/').endsWith('/contracts/src/routes.ts')) return;
-      return { code: browserRouteSource(code), map: null };
+      return { code: browserRouteSource(code, { dropSummary: building }), map: null };
     },
   }, react()],
   resolve: {

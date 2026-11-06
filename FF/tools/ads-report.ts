@@ -22,6 +22,8 @@ interface Item {
   layer: string;
   title: string;
   defect?: boolean;
+  /** 진행 상태 — 없으면 대기. "완료"·"부분 — 남은 것"처럼 쓴다(BACKLOG 상태 열) */
+  status?: string;
   req: string[];
   ui: string[];
   fe: string[];
@@ -427,7 +429,7 @@ export function renderBacklog(c: AdsCatalog, r: AdsReview, d: Design, team: Team
   const uxSpec = (id: string) => team?.ux?.items[id]?.findings.filter((f) => f.status === 'accepted').length ?? 0;
   const fitGap = (id: string) => (team?.fit ? [...Object.values(team.fit.ads), ...Object.values(team.fit.orca)].filter((x) => x.covers !== 'yes' && id in x.shas).length : 0);
   const before = (id: string) => [uxSpec(id) ? `UX 사양 ${uxSpec(id)}` : '', fitGap(id) ? `적합성 빈칸 ${fitGap(id)}` : ''].filter(Boolean).join(' · ') || '—';
-  const row = (i: Item) => `| ${i.id} | 대기 | ${i.priority} | ${i.layer} | ${i.defect ? '**[결함]** ' : ''}${i.title.replace(/^\[결함\]\s*/, '')} | ${i.req.map((q) => q.replace('FFP-', '')).join('·') || '—'} | ${i.deps.join('·') || '—'} | ${before(i.id)} |`;
+  const row = (i: Item) => `| ${i.id} | ${i.status ?? '대기'} | ${i.priority} | ${i.layer} | ${i.defect ? '**[결함]** ' : ''}${i.title.replace(/^\[결함\]\s*/, '')} | ${i.req.map((q) => q.replace('FFP-', '')).join('·') || '—'} | ${i.deps.join('·') || '—'} | ${before(i.id)} |`;
   const v = Object.values(r.requirements);
   const n = (x: string) => v.filter((y) => y.verdict === x).length;
   return [

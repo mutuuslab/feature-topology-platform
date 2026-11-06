@@ -54,6 +54,9 @@ import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, Dashb
 import { CreateRefChangeBody, DecideRefChangeBody, PublishRefReleaseBody, RecordSourceReviewBody, RequestRefAddBody, ReviewRefChangeBody } from './schemas/refdb';
 import { AnswerConsultationBody, CreateConsultationBody } from './schemas/consult';
 import { G7SignoffBody, HaraBody, HomologationBody, SotifBody, TaraBody } from './rules/gate-evidence';
+import { AdsDeterminationBody, AdsReviewFindingBody } from './schemas/ads-evidence';
+import { CloseImpactPathBody, PATH_CLOSER_ROLES } from './schemas/ads-change';
+import { ApproveOddProfileBody, CreateConfigSetBody } from './schemas/ads-config';
 
 const EmptyBody = z.object({}).strict();
 /** Feature DB 변경 요청 작성 — 사람 역할(HUMAN_ROLES) 모두에서 감사 조회자만 뺀다(30-95 §8.1). 백엔드 컨트롤러 @Roles도 이것을 쓴다.
@@ -372,6 +375,40 @@ export const ROUTES: RouteDef[] = [
   { name: 'createExperiment', method: 'POST', path: '/api/experiments', summary: '실험 등록 — F2 이상은 Shadow만 (FFG-CLS-006)', component: 'D01-07', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: CreateExperimentBody },
   { name: 'startExperiment', method: 'POST', path: '/api/experiments/:id/start', summary: '실험 시작', component: 'D01-07', roles: ['RELEASE_MANAGER'], body: EmptyBody },
   { name: 'concludeExperiment', method: 'POST', path: '/api/experiments/:id/conclude', summary: '실험 종료·결정 (채택·기각·연장)', component: 'D01-07', roles: ['RELEASE_MANAGER'], body: ConcludeExperimentBody },
+  // ADS 구성(ODD 프로파일·호환 형상·VIN 지원 판정) — ads-config
+  { name: 'oddProfiles', method: 'GET', path: '/api/odd-profiles', summary: 'ODD 프로파일 목록', component: 'D02-01' },
+  { name: 'oddProfile', method: 'GET', path: '/api/odd-profiles/:id', summary: 'ODD 프로파일 상세', component: 'D02-01' },
+  { name: 'approveOddProfile', method: 'POST', path: '/api/odd-profiles/:id/approve', summary: 'ODD 프로파일 승인', component: 'D02-01', roles: ['SAFETY_OFFICER'], body: ApproveOddProfileBody },
+  { name: 'configSets', method: 'GET', path: '/api/config-sets', summary: '승인 구성 조합', component: 'D02-01' },
+  { name: 'createConfigSet', method: 'POST', path: '/api/config-sets', summary: '승인 구성 조합 등록', component: 'D02-01', roles: ['VARIANT_OWNER'], body: CreateConfigSetBody },
+  { name: 'configSetVehicles', method: 'GET', path: '/api/config-sets/:id/vehicles', summary: '차량 형상 대조', component: 'D02-01' },
+  { name: 'vehicleEligibility', method: 'GET', path: '/api/vehicles/:vin/eligibility', summary: 'VIN 지원 판정', component: 'D02-02', query: ['catalogId'], requiredQuery: ['catalogId'], sample: { vin: 'KMH-NX4-0004', catalogId: 'CAT-00019' } },
+  // ADS 증거(ADS 사건 보고·Safety Case·요구 추적) — ads-evidence
+  { name: 'adsIncidentReports', method: 'GET', path: '/api/incident-reports', summary: 'ADS 사건 보고', component: 'D04-05' },
+  { name: 'adsIncidentReport', method: 'GET', path: '/api/incident-reports/:id', summary: 'ADS 사건 상세', component: 'D04-05' },
+  { name: 'adsIncidentDetermination', method: 'POST', path: '/api/incident-reports/:id/determination', summary: '보고 대상 확정', component: 'D04-05', roles: ['REGULATORY_OWNER', 'SAFETY_OFFICER'], body: AdsDeterminationBody },
+  { name: 'adsPeriodicReport', method: 'GET', path: '/api/periodic-reports/:year', summary: 'ADS 정기 보고', component: 'D04-05' },
+  { name: 'adsSafetyCase', method: 'GET', path: '/api/safety-case/:featureId', summary: 'Safety Case', component: 'D06-07' },
+  { name: 'adsEvidenceManifest', method: 'GET', path: '/api/evidence-manifests/:id', summary: 'Evidence manifest', component: 'D06-07' },
+  { name: 'adsReviewFindingCreate', method: 'POST', path: '/api/review-findings', summary: '독립 검토 발견사항 등록', component: 'D06-07', roles: ['SAFETY_OFFICER'], body: AdsReviewFindingBody },
+  { name: 'adsTrace', method: 'GET', path: '/api/ads/trace', summary: 'ADS·UNECE 요구 추적', component: 'D06-07' },
+  // ADS 상태(6축·수렴·행위별 판정·고객 상태·주문 추적) — ads-state
+  { name: 'adsVehicleFeatureState', method: 'GET', path: '/api/vehicles/:vin/feature-state', summary: '차량 6축 상태', component: 'D02-03' },
+  { name: 'adsVehicleVerdicts', method: 'GET', path: '/api/vehicles/:vin/verdicts', summary: '차량 행위별 판정', component: 'D02-03' },
+  { name: 'adsCustomerState', method: 'GET', path: '/api/vehicles/:vin/customer-state', summary: '고객에게 보이는 상태', component: 'D05-05' },
+  { name: 'adsConvergence', method: 'GET', path: '/api/publications/:id/convergence', summary: '게시본 수렴', component: 'D04-03' },
+  { name: 'adsAxisDistribution', method: 'GET', path: '/api/fleet/axis-distribution', summary: 'Fleet 6축 분포', component: 'D02-03', query: ['featureId'] },
+  { name: 'adsOrders', method: 'GET', path: '/api/orders', summary: '주문 추적', component: 'D05-04', query: ['status'] },
+  { name: 'adsOrderTimeline', method: 'GET', path: '/api/orders/:id/timeline', summary: '주문 단계 기록', component: 'D05-04' },
+  // ADS 변경(변경 종류·승인 영향·릴리스 비교·분류) — ads-change
+  { name: 'adsChangeImpacts', method: 'GET', path: '/api/change-impacts', summary: '변경 영향', component: 'D06-05', query: ['featureId', 'status'] },
+  { name: 'adsCloseImpactPath', method: 'POST', path: '/api/change-impacts/:id/paths/:path/close', summary: '승인 경로 종결', component: 'D06-05', roles: PATH_CLOSER_ROLES, body: CloseImpactPathBody },
+  { name: 'adsReleases', method: 'GET', path: '/api/releases', summary: '릴리스 목록', component: 'D06-05' },
+  { name: 'adsReleaseDiff', method: 'GET', path: '/api/releases/:id/diff', summary: '릴리스 전후 비교', component: 'D06-05', query: ['base'] },
+  { name: 'adsClassification', method: 'GET', path: '/api/features/:id/versions/:ver/classification', summary: 'Feature ADS 분류', component: 'D01-01' },
+  { name: 'adsUnclassified', method: 'GET', path: '/api/classification/unclassified', summary: '미분류 Feature', component: 'D01-01' },
+  { name: 'adsMarketBaselines', method: 'GET', path: '/api/market-baselines', summary: '시장 기준선', component: 'D01-01', query: ['featureId', 'version'] },
+  { name: 'adsPolicyExpansion', method: 'GET', path: '/api/policies/:id/expansion', summary: '확대 판정', component: 'D01-08' },
   // 장애·VOC(D04-05)
   { name: 'incidents', method: 'GET', path: '/api/incidents', summary: '현장 장애·VOC 이력', component: 'D04-05', query: ['status', 'featureId', 'source'] },
   { name: 'createIncident', method: 'POST', path: '/api/incidents', summary: '장애·VOC 접수 — SOTIF 트리거면 이상 징후로 (FFG-SOT-003)', component: 'D04-05', roles: ['OPERATOR', 'SYSTEM'], body: CreateIncidentBody },

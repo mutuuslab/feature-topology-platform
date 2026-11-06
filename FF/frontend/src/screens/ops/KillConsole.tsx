@@ -57,6 +57,8 @@ import {
 } from '../../design';
 import { usePermission, when } from '../shared';
 import { nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, type Delivery } from './shared';
+import { KillBulkPreview } from '../ads/BulkPreviews';
+import { adsChange } from '../../copy/ads-change';
 
 const K = ko.kill;
 const KILL_ROLES = ['OPERATOR', 'SAFETY_OFFICER'] as const;
@@ -152,6 +154,11 @@ interface Preview {
   registry: { f_class: FClass; deact_class: DeactClass; gsr_mandatory: boolean; profile?: Record<string, number> } | null;
   window: { hours: number; deactivate: number; cap: number };
   checks: GateFinding[];
+  /** 형상·연결을 확인하지 못한 고른 차량 — '대상 판단 불가'(ADS-UI03) */
+  unknownVins?: string[];
+  /** 서명 대상 digest — 서버 대상 검증(ADS-BE05) 뒤 채워지는 선택 필드(contracts BulkTargetDigestFields) */
+  targetDigest?: string | null;
+  serverDigest?: string | null;
 }
 
 /** 게이트 판정 + 승인 칸(대기)을 한 목록으로 — 승인 칸은 실시간 판정에서 '대기' */
@@ -219,6 +226,8 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const [containment, setContainment] = useState('');
   const [reason, setReason] = useState('');
   const [confirm, setConfirm] = useState(false);
+  // 대상 판단 불가 차량 — 포함·제외 어느 쪽에도 넣지 않고 '제외하고 진행'을 직접 고른다(ADS-UI03)
+  const [excludeUnknown, setExcludeUnknown] = useState(false);
   const valid = /^FEAT-\d{5}$/.test(featureId) && /^\d+\.\d+\.\d+$/.test(featureVersion);
   const pv = useApi<Preview>(
     'killPreview',
@@ -252,6 +261,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
     needContainment && K.containment,
     reason.trim().length < 2 && ko.page.reason,
     p?.checks.some((c) => !c.ok) && K.precheckFail, // 최종 게이트에서 막힐 요청은 받지 않는다(UX3-03)
+    !!p?.unknownVins?.length && !excludeUnknown && adsChange.bulk.needExclude,
   ].filter(Boolean) as string[];
   const ready = !!p && !missing.length;
   return (
@@ -342,6 +352,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
           <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
         </Field>
         {p && reg && <RuleChecklist live caption={K.checks} items={gateItems(p.checks, plan)} />}
+        {p && <KillBulkPreview p={p} vins={vins} canSign={perm.ok} onExcludeUnknown={setExcludeUnknown} />}
         <ErrorNote error={issue.error} />
         <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
           <Button variant="danger" icon="alert" disabled={!ready || issue.isPending} title={perm.hint} reason={p && missing.length ? K.needs(missing) : undefined} onClick={() => setConfirm(true)}>

@@ -272,7 +272,8 @@
       "deps": [
         "ADS-BE01"
       ],
-      "coord": "3초 테스트: 배포·Fleet 화면 핵심 메시지 갱신 · Orca R3 6축(f-tech) · HT01"
+      "coord": "3초 테스트: 배포·Fleet 화면 핵심 메시지 갱신 · Orca R3 6축(f-tech) · HT01",
+      "status": "완료 — 차량 6축 탭·배포 상세 7구간·Fleet 축 분포(보고 이력 버튼 남음)"
     },
     {
       "id": "ADS-UI02",
@@ -351,7 +352,8 @@
       "deps": [
         "ADS-BE05"
       ],
-      "coord": ""
+      "coord": "",
+      "status": "부분 — 화면(일괄 명령 미리보기)만, 서버 대상 검증·digest는 ADS-BE05"
     },
     {
       "id": "ADS-UI04",
@@ -391,7 +393,8 @@
       "deps": [
         "ADS-BE09"
       ],
-      "coord": "RACI: ODD 프로파일 승인 활동 신설"
+      "coord": "RACI: ODD 프로파일 승인 활동 신설",
+      "status": "완료 — /config/odd"
     },
     {
       "id": "ADS-UI05",
@@ -428,7 +431,8 @@
       "deps": [
         "ADS-BE10"
       ],
-      "coord": ""
+      "coord": "",
+      "status": "완료 — /config/compat"
     },
     {
       "id": "ADS-UI06",
@@ -468,7 +472,8 @@
       "deps": [
         "ADS-BE01"
       ],
-      "coord": ""
+      "coord": "",
+      "status": "완료 — 차량 판정 탭·Fleet 사유 분포"
     },
     {
       "id": "ADS-UI07",
@@ -506,7 +511,8 @@
       "deps": [
         "ADS-BE13"
       ],
-      "coord": "RACI FPW.8·FPW.13: 사건 보고 활동 · 텔레메트리 IF-15(노출량)"
+      "coord": "RACI FPW.8·FPW.13: 사건 보고 활동 · 텔레메트리 IF-15(노출량)",
+      "status": "완료 — /ops/incident-reports(단기 보고 초안 API 남음)"
     },
     {
       "id": "ADS-UI08",
@@ -546,7 +552,8 @@
       "deps": [
         "ADS-BE14"
       ],
-      "coord": "RACI: 독립 검토 활동 · codeBeamer 검증 결과 쓰기 경로 재사용"
+      "coord": "RACI: 독립 검토 활동 · codeBeamer 검증 결과 쓰기 경로 재사용",
+      "status": "완료 — /verify/safety-case(승격 게이트 연결 남음)"
     },
     {
       "id": "ADS-UI09",
@@ -588,7 +595,8 @@
         "ADS-BE08",
         "ADS-BE09"
       ],
-      "coord": "JIRA CR 필드 매핑(IF-14)"
+      "coord": "JIRA CR 필드 매핑(IF-14)",
+      "status": "완료 — /analysis/impact 승인 경로·릴리스 비교(서버 서명 거부는 ADS-BE06)"
     },
     {
       "id": "ADS-UI10",
@@ -619,7 +627,8 @@
         "결함 probe가 열린 요구(예: FFP-F007) 행에 probe ID·실패 수가 보이고 it 전환 후 사라짐, 실행 결과가 없는 요구는 '결과 없음'(통과 아님)으로 보임 단언."
       ],
       "deps": [],
-      "coord": ""
+      "coord": "",
+      "status": "완료 — /trace/ads(시나리오 실행 결과 수는 원천 없음)"
     },
     {
       "id": "ADS-UI11",
@@ -653,7 +662,8 @@
       "deps": [
         "ADS-BE12"
       ],
-      "coord": "TL-UI02와 같은 패널"
+      "coord": "TL-UI02와 같은 패널",
+      "status": "부분 — 정책 상세 확대 판정 패널(읽기), 동결 명령 남음"
     },
     {
       "id": "ADS-UI12",
@@ -686,7 +696,8 @@
       "deps": [
         "ADS-BE16"
       ],
-      "coord": ""
+      "coord": "",
+      "status": "완료 — 안전 분류 탭·미분류 목록(거부 규칙 꺼 둠)"
     },
     {
       "id": "ADS-UI13",
@@ -712,7 +723,8 @@
       "deps": [
         "ORC-BE03"
       ],
-      "coord": "3초 테스트 세션 copy 소유 존중"
+      "coord": "3초 테스트 세션 copy 소유 존중",
+      "status": "부분 — 용어집(copy/ads.ts)·ADS 화면 문구 lint, 기존 화면 전체 정리 남음"
     },
     {
       "id": "ADS-BE01",
@@ -767,7 +779,8 @@
       "coord": "FF_IMP gleo/ 와이어 정본 — ADS-SIM04, D-ADS-1",
       "later": [
         "ADS-BE14"
-      ]
+      ],
+      "status": "부분 — 읽기 모델·시드(6축·수렴·판정), 차량 2.1 보고 수신 남음"
     },
     {
       "id": "ADS-BE02",
@@ -980,7 +993,8 @@
       "coord": "JIRA CR 필드(IF-14)",
       "later": [
         "ADS-BE14"
-      ]
+      ],
+      "status": "완료 — 변경 종류 분류·유형별 영향 경로·종결"
     },
     {
       "id": "ADS-BE09",
@@ -1015,7 +1029,8 @@
         "HT02: 승인 영향 미결 site를 정책에 추가 → 노출·활성 승격 보류, 사유 코드 기록, 허용 범위 불변"
       ],
       "deps": [],
-      "coord": "기존 odd-restriction.ts(SOT-002)와 통합"
+      "coord": "기존 odd-restriction.ts(SOT-002)와 통합",
+      "status": "부분 — 엔티티·의미 검증·승인, 정책 컴파일 연결 남음"
     },
     {
       "id": "ADS-BE10",
@@ -1054,7 +1069,8 @@
         "manifest는 ECU A·B 설치, 차량 attestation은 A만 → RECOVERY_PARTIAL·활성 후보 아님(manifest 단독으로 완료 처리 0건)"
       ],
       "deps": [],
-      "coord": "attestation.ts 확장"
+      "coord": "attestation.ts 확장",
+      "status": "부분 — 승인 조합·차량 대조·등록, 발행·차량 증명 강제 남음"
     },
     {
       "id": "ADS-BE11",
@@ -1124,7 +1140,8 @@
       "coord": "TL-B01·B02·IF-15",
       "cases": [
         "R01"
-      ]
+      ],
+      "status": "부분 — 확대 판정 규칙·시드 지표 읽기, 텔레메트리 엔진 통합 남음"
     },
     {
       "id": "ADS-BE13",
@@ -1166,7 +1183,8 @@
       "deps": [
         "ORC-BE03"
       ],
-      "coord": "IF-15 노출량 · 시장별 기한 소유(D-ADS-3)"
+      "coord": "IF-15 노출량 · 시장별 기한 소유(D-ADS-3)",
+      "status": "부분 — 사건 보고·기한·정기 집계·대상 확정, 단기 보고 초안 남음"
     },
     {
       "id": "ADS-BE14",
@@ -1212,7 +1230,8 @@
         "필수 TC 하나가 manifest에 없으면 EVIDENCE_MISSING, 다른 TC·다른 형상 결과로 그 슬롯을 채우면 거부."
       ],
       "deps": [],
-      "coord": "codeBeamer 검증 결과 쓰기(IF-01)"
+      "coord": "codeBeamer 검증 결과 쓰기(IF-01)",
+      "status": "부분 — 주장·논거·Evidence·독립 검토 발견, 승격 게이트·종결 남음"
     },
     {
       "id": "ADS-BE15",
@@ -1270,7 +1289,8 @@
         "INFERRED 초안을 Safety Manager가 확정한 프로파일은 출시·발행 허용, ddt_impact만 빈 Feature는 CLS_UNREGISTERED 거부, 확정 뒤 ddt_impact 변경 시 재확정 전 거부(@ffp FFP-F001)."
       ],
       "deps": [],
-      "coord": ""
+      "coord": "",
+      "status": "부분 — 분류·시장 기준선 읽기, 입력·확정 API 남음"
     },
     {
       "id": "ADS-BE17",
@@ -1320,7 +1340,8 @@
         "입력 노후(TC06)·부분 복구(TC17) 시나리오가 각 요구에 연결됐는지 래칫."
       ],
       "deps": [],
-      "coord": "requirements.ts·standards.ts 패턴"
+      "coord": "requirements.ts·standards.ts 패턴",
+      "status": "부분 — 요구 추적 생성기(ads-trace), 표식·래칫 남음"
     },
     {
       "id": "ADS-BE19",
@@ -1707,7 +1728,8 @@
       "coord": "과금 모의(if_call BILLING, billing.controller) · D-ORC-3",
       "later": [
         "ORC-UI10"
-      ]
+      ],
+      "status": "완료 — /entitlements 주문 추적 탭"
     },
     {
       "id": "ORC-UI02",
@@ -1748,7 +1770,8 @@
       "deps": [
         "ORC-BE02"
       ],
-      "coord": ""
+      "coord": "",
+      "status": "완료 — /activation/decide 지원 판정 탭"
     },
     {
       "id": "ORC-UI03",
@@ -1812,7 +1835,8 @@
         "ADS-OTA01",
         "ORC-UI04",
         "ORC-BE04"
-      ]
+      ],
+      "status": "부분 — 차량 화면 탭, 현장 지원(/field) 접힘 남음"
     },
     {
       "id": "ORC-UI04",
@@ -2225,7 +2249,8 @@
       "coord": "D-ORC-3",
       "later": [
         "ADS-BE10"
-      ]
+      ],
+      "status": "부분 — 주문 연결 읽기·시드·사용 준비 판정, 과금 모의 직접 주문 경로 남음"
     },
     {
       "id": "ORC-BE02",
@@ -2275,7 +2300,8 @@
         "ORC-UI08",
         "ADS-OTA01",
         "ADS-BE10"
-      ]
+      ],
+      "status": "부분 — 지원 판정 API, 판정 기록 저장·재판정 요청·구매 게이트 남음"
     },
     {
       "id": "ORC-BE03",
@@ -2332,7 +2358,8 @@
         "가정값 표기 없는 수치 화면 1건을 넣으면 lint가 실패하는 시험"
       ],
       "deps": [],
-      "coord": "3초 테스트 세션의 copy 소유 존중"
+      "coord": "3초 테스트 세션의 copy 소유 존중",
+      "status": "부분 — ADS 화면 문구 lint(모름 두 낱말·단독 차단·보류), 사례별 전체 목록 남음"
     },
     {
       "id": "ORC-BE04",

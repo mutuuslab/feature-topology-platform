@@ -1,0 +1,332 @@
+/* ADS·UNECE·Orca 공용 부품(design/ads.tsx) — 색·간격은 tokens.css 토큰만 */
+
+/* ── 모름 두 낱말 ─────────────────────────────── */
+.ads-unknown {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1h);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.ads-unknown__mark {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  /* 미확인은 색이 아닌 빗금 패턴 */
+  background: repeating-linear-gradient(135deg, var(--faint) 0 1px, transparent 1px 4px);
+}
+.ads-unknown[data-unknown='UNDECIDABLE'] .ads-unknown__mark {
+  background: repeating-linear-gradient(90deg, var(--faint) 0 1px, transparent 1px 3px);
+}
+.ads-unknown__word {
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.ads-unknown__reason {
+  color: var(--muted);
+}
+
+/* ── 관측 신선도 ─────────────────────────────── */
+.ads-fresh {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.ads-fresh__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.ads-fresh[data-freshness='FRESH'] .ads-fresh__state {
+  color: var(--ok);
+}
+.ads-fresh[data-freshness='DELAYED'] .ads-fresh__state {
+  color: var(--warn);
+}
+.ads-fresh[data-freshness='OFFLINE'] .ads-fresh__state {
+  color: var(--danger);
+}
+.ads-fresh__at,
+.ads-fresh__note {
+  color: var(--muted);
+}
+
+/* ── 배타 구간 ─────────────────────────────── */
+.ads-stages {
+  margin: 0;
+  display: grid;
+  gap: var(--sp-2);
+}
+.ads-stages__bar {
+  display: flex;
+  height: 12px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--track-bg);
+  gap: 2px;
+}
+.ads-stages__seg,
+.ads-stages__swatch {
+  background: var(--chart-line);
+}
+.ads-stages__seg {
+  flex-basis: 0;
+  min-width: 2px;
+}
+[data-tone='ok'].ads-stages__seg,
+[data-tone='ok'].ads-stages__swatch {
+  background: var(--ok);
+}
+[data-tone='warn'].ads-stages__seg,
+[data-tone='warn'].ads-stages__swatch {
+  background: var(--warn);
+}
+[data-tone='danger'].ads-stages__seg,
+[data-tone='danger'].ads-stages__swatch {
+  background: var(--danger);
+}
+[data-tone='unknown'].ads-stages__seg,
+[data-tone='unknown'].ads-stages__swatch {
+  background: repeating-linear-gradient(135deg, var(--faint) 0 2px, var(--track-bg) 2px 5px);
+}
+.ads-stages__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  font-size: var(--fs-sm);
+}
+.ads-stages__list li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1h);
+}
+.ads-stages__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1h);
+  padding: var(--sp-0h) var(--sp-1h);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.ads-stages__btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.ads-stages__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--r-sm);
+}
+.ads-stages__count {
+  font-variant-numeric: tabular-nums;
+}
+.ads-stages__pct,
+.ads-stages__note,
+.ads-stages__foot {
+  color: var(--muted);
+}
+.ads-stages__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  font-size: var(--fs-xs);
+}
+.ads-stages__mismatch {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ── 판정·사유 ─────────────────────────────── */
+.ads-verdict {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+}
+.ads-verdict__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.ads-verdict[data-tone='ok'] .ads-verdict__label {
+  color: var(--ok);
+}
+.ads-verdict[data-tone='warn'] .ads-verdict__label {
+  color: var(--warn);
+}
+.ads-verdict[data-tone='danger'] .ads-verdict__label {
+  color: var(--danger);
+}
+.ads-verdict__reason {
+  color: var(--ink-2);
+}
+.ads-verdict__code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  background: var(--chip-code-bg);
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-sm);
+}
+
+/* ── 막힌 행동 ─────────────────────────────── */
+.ads-blocked {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+}
+.ads-blocked .ds-btn[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ads-blocked__reason {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+.ads-blocked__k {
+  font-weight: 700;
+  color: var(--warn);
+}
+
+/* ── 6축 표·타임라인 ─────────────────────────────── */
+.ads-axes,
+.ads-timeline {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.ads-axes__caption {
+  text-align: left;
+  padding-bottom: var(--sp-2);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.ads-axes th,
+.ads-axes td,
+.ads-timeline th,
+.ads-timeline td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.ads-axes thead th,
+.ads-timeline thead th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+}
+.ads-axes tbody th,
+.ads-timeline tbody th {
+  font-weight: 600;
+}
+.ads-axes__value {
+  font-weight: 700;
+}
+.ads-axes__tag {
+  margin-left: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 0 var(--sp-1);
+}
+.ads-axes__past {
+  display: block;
+  color: var(--faint);
+  font-size: var(--fs-xs);
+}
+.ads-timeline tr[data-warn] th,
+.ads-timeline tr[data-warn] td {
+  background: var(--warn-soft);
+}
+.ads-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 변경 종류·가상 데이터 ─────────────────────────────── */
+.ads-kind,
+.ads-sim {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-1h);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--ink-2);
+  background: var(--surface-2);
+}
+.ads-kind[data-change-kind='ODD'],
+.ads-kind[data-change-kind='MODEL'],
+.ads-kind[data-change-kind='SW'] {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+.ads-sim {
+  color: var(--muted);
+}
+
+/* ── 일괄 명령 미리보기 ─────────────────────────────── */
+.ads-bulk {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-2);
+}
+.ads-bulk__kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--sp-1) var(--sp-4);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+.ads-bulk__kv dt {
+  color: var(--muted);
+}
+.ads-bulk__kv dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+}
+.ads-bulk__unknown {
+  display: grid;
+  gap: var(--sp-1);
+}
+.ads-bulk__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1h);
+  font-size: var(--fs-sm);
+}
+.ads-bulk__diff {
+  border-left: 3px solid var(--danger);
+  padding-left: var(--sp-2);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+}
+.ads-bulk__note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}

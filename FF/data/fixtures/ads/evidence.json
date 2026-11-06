@@ -1,0 +1,1164 @@
+{
+  "marketDeadlines": [
+    {
+      "market": "KR",
+      "label": "대한민국",
+      "shortTermDays": 30,
+      "periodicMonths": 12,
+      "status": "APPROVED",
+      "approvedBy": "usr-steward",
+      "approvedMinAgo": 129600,
+      "basis": "법규 담당 승인 기한 표 — 단기 보고 인지 후 30일, 정기 보고 연 1회"
+    },
+    {
+      "market": "EU",
+      "label": "유럽연합",
+      "shortTermDays": 30,
+      "periodicMonths": 12,
+      "status": "APPROVED",
+      "approvedBy": "usr-steward",
+      "approvedMinAgo": 108000,
+      "basis": "법규 담당 승인 기한 표 — 단기 보고 인지 후 30일, 정기 보고 연 1회"
+    },
+    {
+      "market": "US",
+      "label": "미국",
+      "shortTermDays": 30,
+      "periodicMonths": 12,
+      "status": "DRAFT",
+      "approvedBy": null,
+      "approvedMinAgo": null,
+      "basis": "기한 표 초안 — 법규 담당 승인 전"
+    }
+  ],
+  "incidents": [
+    {
+      "reportId": "ADSI-2026-0001",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "vin": "KMH-GN7-0001",
+      "market": "KR",
+      "summary": "고속도로 합류 구간 차로 변경 중 인접 차량 근접 — 운전자 개입",
+      "occurredMinAgo": 36040,
+      "awareMinAgo": 36000,
+      "firstNoticeMinAgo": 35880,
+      "activeWindow": {
+        "value": "IN_WINDOW",
+        "basis": "차량 보고 — 사건 4초 전까지 Active"
+      },
+      "configSet": "CFG-FEAT-00004-01",
+      "oddProfileRef": "ODD-FEAT-00004-v1",
+      "dssadCorrelationId": "DSSAD-GN7-0001-0187",
+      "shortTermSubmittedMinAgo": null,
+      "events": [
+        {
+          "kind": "POLICY",
+          "label": "정책 게시본 적용 회신",
+          "vehicleMinAgo": 40360,
+          "vehicleSeq": 1,
+          "serverMinAgo": 40358,
+          "ingestSeq": 1,
+          "owner": "플랫폼",
+          "ref": null
+        },
+        {
+          "kind": "CONFIG",
+          "label": "승인 조합 확인",
+          "vehicleMinAgo": 40359,
+          "vehicleSeq": 2,
+          "serverMinAgo": 40357,
+          "ingestSeq": 2,
+          "owner": "플랫폼",
+          "ref": "CFG-FEAT-00004-01"
+        },
+        {
+          "kind": "ODD",
+          "label": "ODD 판정 — 고속도로 본선 IN",
+          "vehicleMinAgo": 36046,
+          "vehicleSeq": 3,
+          "serverMinAgo": 36045,
+          "ingestSeq": 3,
+          "owner": "차량",
+          "ref": "ODD-FEAT-00004-v1"
+        },
+        {
+          "kind": "VERDICT",
+          "label": "활성화 판정 허용",
+          "vehicleMinAgo": 36045,
+          "vehicleSeq": 4,
+          "serverMinAgo": 36044,
+          "ingestSeq": 4,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "TRANSITION",
+          "label": "Active → 운전자 인계 요청",
+          "vehicleMinAgo": 36041,
+          "vehicleSeq": 5,
+          "serverMinAgo": 36040,
+          "ingestSeq": 5,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "INCIDENT",
+          "label": "ADS 사건 기록",
+          "vehicleMinAgo": 36040,
+          "vehicleSeq": 6,
+          "serverMinAgo": 36039,
+          "ingestSeq": 6,
+          "owner": "운전자",
+          "ref": null
+        }
+      ]
+    },
+    {
+      "reportId": "ADSI-2026-0002",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "vin": "KMH-GN7-0001",
+      "market": "KR",
+      "summary": "터널 출구 역광 구간에서 차선 인식 저하 — MRC 감속",
+      "occurredMinAgo": 38895,
+      "awareMinAgo": 38880,
+      "firstNoticeMinAgo": 38700,
+      "activeWindow": {
+        "value": "IN_WINDOW",
+        "basis": "차량 보고 — 사건 시각에 Active"
+      },
+      "configSet": "CFG-FEAT-00004-01",
+      "oddProfileRef": "ODD-FEAT-00004-v1",
+      "dssadCorrelationId": "DSSAD-GN7-0001-0179",
+      "shortTermSubmittedMinAgo": null,
+      "events": [
+        {
+          "kind": "POLICY",
+          "label": "정책 게시본 적용 회신",
+          "vehicleMinAgo": 43215,
+          "vehicleSeq": 1,
+          "serverMinAgo": 43213,
+          "ingestSeq": 1,
+          "owner": "플랫폼",
+          "ref": null
+        },
+        {
+          "kind": "CONFIG",
+          "label": "승인 조합 확인",
+          "vehicleMinAgo": 43214,
+          "vehicleSeq": 2,
+          "serverMinAgo": 43212,
+          "ingestSeq": 2,
+          "owner": "플랫폼",
+          "ref": "CFG-FEAT-00004-01"
+        },
+        {
+          "kind": "ODD",
+          "label": "ODD 판정 — 고속도로 본선 IN",
+          "vehicleMinAgo": 38901,
+          "vehicleSeq": 3,
+          "serverMinAgo": 38900,
+          "ingestSeq": 3,
+          "owner": "차량",
+          "ref": "ODD-FEAT-00004-v1"
+        },
+        {
+          "kind": "VERDICT",
+          "label": "활성화 판정 허용",
+          "vehicleMinAgo": 38900,
+          "vehicleSeq": 4,
+          "serverMinAgo": 38892,
+          "ingestSeq": 6,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "TRANSITION",
+          "label": "Active → MRC 감속",
+          "vehicleMinAgo": 38896,
+          "vehicleSeq": 5,
+          "serverMinAgo": 38895,
+          "ingestSeq": 4,
+          "owner": "차량",
+          "ref": null,
+          "gap": true
+        },
+        {
+          "kind": "INCIDENT",
+          "label": "ADS 사건 기록",
+          "vehicleMinAgo": 38895,
+          "vehicleSeq": 6,
+          "serverMinAgo": 38894,
+          "ingestSeq": 5,
+          "owner": "운전자",
+          "ref": null
+        }
+      ]
+    },
+    {
+      "reportId": "ADSI-2026-0003",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "vin": "TMA-NX4-0001",
+      "market": "EU",
+      "summary": "공사 구간 임시 차선에서 ODD 이탈 경고 직후 급제동",
+      "occurredMinAgo": 420,
+      "awareMinAgo": 360,
+      "firstNoticeMinAgo": null,
+      "activeWindow": {
+        "value": "IN_WINDOW",
+        "basis": "차량 보고 — 사건 12초 전까지 Active"
+      },
+      "configSet": "CFG-FEAT-00004-01",
+      "oddProfileRef": "ODD-FEAT-00004-v1",
+      "dssadCorrelationId": "DSSAD-TMA-0001-0042",
+      "shortTermSubmittedMinAgo": null,
+      "events": [
+        {
+          "kind": "POLICY",
+          "label": "정책 게시본 적용 회신",
+          "vehicleMinAgo": 4740,
+          "vehicleSeq": 1,
+          "serverMinAgo": 4738,
+          "ingestSeq": 1,
+          "owner": "플랫폼",
+          "ref": null
+        },
+        {
+          "kind": "CONFIG",
+          "label": "승인 조합 확인",
+          "vehicleMinAgo": 4739,
+          "vehicleSeq": 2,
+          "serverMinAgo": 4737,
+          "ingestSeq": 2,
+          "owner": "플랫폼",
+          "ref": "CFG-FEAT-00004-01"
+        },
+        {
+          "kind": "ODD",
+          "label": "ODD 판정 — 고속도로 본선 IN",
+          "vehicleMinAgo": 426,
+          "vehicleSeq": 3,
+          "serverMinAgo": 425,
+          "ingestSeq": 3,
+          "owner": "차량",
+          "ref": "ODD-FEAT-00004-v1"
+        },
+        {
+          "kind": "VERDICT",
+          "label": "활성화 판정 허용",
+          "vehicleMinAgo": 425,
+          "vehicleSeq": 4,
+          "serverMinAgo": 424,
+          "ingestSeq": 4,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "TRANSITION",
+          "label": "Active → 운전자 인계 요청",
+          "vehicleMinAgo": 421,
+          "vehicleSeq": 5,
+          "serverMinAgo": 420,
+          "ingestSeq": 5,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "INCIDENT",
+          "label": "ADS 사건 기록",
+          "vehicleMinAgo": 420,
+          "vehicleSeq": 6,
+          "serverMinAgo": 419,
+          "ingestSeq": 6,
+          "owner": "운전자",
+          "ref": null
+        }
+      ]
+    },
+    {
+      "reportId": "ADSI-2026-0004",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "vin": "KMH-GN7-0001",
+      "market": "KR",
+      "summary": "휴게소 진입로 저속 주행 중 경계석 접촉 — 사건 전 ADS 비활성",
+      "occurredMinAgo": 14430,
+      "awareMinAgo": 14400,
+      "firstNoticeMinAgo": 14340,
+      "activeWindow": {
+        "value": "OUT_OF_WINDOW",
+        "basis": "차량 보고 — 사건 5분 전 비활성(Inactive), 보고 범위가 직전 30초를 덮음"
+      },
+      "configSet": "CFG-FEAT-00004-01",
+      "oddProfileRef": "ODD-FEAT-00004-v1",
+      "dssadCorrelationId": "DSSAD-GN7-0001-0201",
+      "shortTermSubmittedMinAgo": null,
+      "events": [
+        {
+          "kind": "POLICY",
+          "label": "정책 게시본 적용 회신",
+          "vehicleMinAgo": 18750,
+          "vehicleSeq": 1,
+          "serverMinAgo": 18748,
+          "ingestSeq": 1,
+          "owner": "플랫폼",
+          "ref": null
+        },
+        {
+          "kind": "CONFIG",
+          "label": "승인 조합 확인",
+          "vehicleMinAgo": 18749,
+          "vehicleSeq": 2,
+          "serverMinAgo": 18747,
+          "ingestSeq": 2,
+          "owner": "플랫폼",
+          "ref": "CFG-FEAT-00004-01"
+        },
+        {
+          "kind": "ODD",
+          "label": "ODD 판정 — 고속도로 본선 IN",
+          "vehicleMinAgo": 14436,
+          "vehicleSeq": 3,
+          "serverMinAgo": 14435,
+          "ingestSeq": 3,
+          "owner": "차량",
+          "ref": "ODD-FEAT-00004-v1"
+        },
+        {
+          "kind": "VERDICT",
+          "label": "활성화 판정 허용",
+          "vehicleMinAgo": 14435,
+          "vehicleSeq": 4,
+          "serverMinAgo": 14434,
+          "ingestSeq": 4,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "TRANSITION",
+          "label": "Active → Inactive(운전자 해제)",
+          "vehicleMinAgo": 14431,
+          "vehicleSeq": 5,
+          "serverMinAgo": 14430,
+          "ingestSeq": 5,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "INCIDENT",
+          "label": "ADS 사건 기록",
+          "vehicleMinAgo": 14430,
+          "vehicleSeq": 6,
+          "serverMinAgo": 14429,
+          "ingestSeq": 6,
+          "owner": "운전자",
+          "ref": null
+        }
+      ]
+    },
+    {
+      "reportId": "ADSI-2026-0005",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "vin": "HMA-NX4-0001",
+      "market": "US",
+      "summary": "고속도로 갓길 정차 차량 회피 — 차량 보고 누락 구간",
+      "occurredMinAgo": 2930,
+      "awareMinAgo": 2880,
+      "firstNoticeMinAgo": 2640,
+      "activeWindow": {
+        "value": "UNDECIDABLE",
+        "basis": "근거 부족 — 차량 보고가 사건 직전 30초를 덮지 않음"
+      },
+      "configSet": "CFG-FEAT-00004-01",
+      "oddProfileRef": "ODD-FEAT-00004-v1",
+      "dssadCorrelationId": null,
+      "shortTermSubmittedMinAgo": null,
+      "events": [
+        {
+          "kind": "POLICY",
+          "label": "정책 게시본 적용 회신",
+          "vehicleMinAgo": 7250,
+          "vehicleSeq": 1,
+          "serverMinAgo": 7248,
+          "ingestSeq": 1,
+          "owner": "플랫폼",
+          "ref": null
+        },
+        {
+          "kind": "CONFIG",
+          "label": "승인 조합 확인",
+          "vehicleMinAgo": 7249,
+          "vehicleSeq": 2,
+          "serverMinAgo": 7247,
+          "ingestSeq": 2,
+          "owner": "플랫폼",
+          "ref": "CFG-FEAT-00004-01"
+        },
+        {
+          "kind": "ODD",
+          "label": "ODD 판정 — 고속도로 본선 IN",
+          "vehicleMinAgo": 2936,
+          "vehicleSeq": 3,
+          "serverMinAgo": 2935,
+          "ingestSeq": 3,
+          "owner": "차량",
+          "ref": "ODD-FEAT-00004-v1"
+        },
+        {
+          "kind": "VERDICT",
+          "label": "활성화 판정 허용",
+          "vehicleMinAgo": 2935,
+          "vehicleSeq": 4,
+          "serverMinAgo": 2934,
+          "ingestSeq": 4,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "TRANSITION",
+          "label": "상태 보고 누락 구간",
+          "vehicleMinAgo": 2931,
+          "vehicleSeq": 5,
+          "serverMinAgo": 2930,
+          "ingestSeq": 5,
+          "owner": "차량",
+          "ref": null,
+          "gap": true
+        },
+        {
+          "kind": "INCIDENT",
+          "label": "ADS 사건 기록",
+          "vehicleMinAgo": 2930,
+          "vehicleSeq": 6,
+          "serverMinAgo": 2929,
+          "ingestSeq": 6,
+          "owner": "운전자",
+          "ref": null
+        }
+      ]
+    },
+    {
+      "reportId": "ADSI-2026-0006",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "vin": "KMH-GN7-0001",
+      "market": "KR",
+      "summary": "야간 우천 시 앞차 급감속 — 운전자 인계 후 정차",
+      "occurredMinAgo": 57620,
+      "awareMinAgo": 57600,
+      "firstNoticeMinAgo": 57480,
+      "activeWindow": {
+        "value": "IN_WINDOW",
+        "basis": "차량 보고 — 사건 시각에 Active"
+      },
+      "configSet": "CFG-FEAT-00004-01",
+      "oddProfileRef": "ODD-FEAT-00004-v1",
+      "dssadCorrelationId": "DSSAD-GN7-0001-0152",
+      "shortTermSubmittedMinAgo": 28800,
+      "events": [
+        {
+          "kind": "POLICY",
+          "label": "정책 게시본 적용 회신",
+          "vehicleMinAgo": 61940,
+          "vehicleSeq": 1,
+          "serverMinAgo": 61938,
+          "ingestSeq": 1,
+          "owner": "플랫폼",
+          "ref": null
+        },
+        {
+          "kind": "CONFIG",
+          "label": "승인 조합 확인",
+          "vehicleMinAgo": 61939,
+          "vehicleSeq": 2,
+          "serverMinAgo": 61937,
+          "ingestSeq": 2,
+          "owner": "플랫폼",
+          "ref": "CFG-FEAT-00004-01"
+        },
+        {
+          "kind": "ODD",
+          "label": "ODD 판정 — 고속도로 본선 IN",
+          "vehicleMinAgo": 57626,
+          "vehicleSeq": 3,
+          "serverMinAgo": 57625,
+          "ingestSeq": 3,
+          "owner": "차량",
+          "ref": "ODD-FEAT-00004-v1"
+        },
+        {
+          "kind": "VERDICT",
+          "label": "활성화 판정 허용",
+          "vehicleMinAgo": 57625,
+          "vehicleSeq": 4,
+          "serverMinAgo": 57624,
+          "ingestSeq": 4,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "TRANSITION",
+          "label": "Active → 운전자 인계 요청",
+          "vehicleMinAgo": 57621,
+          "vehicleSeq": 5,
+          "serverMinAgo": 57620,
+          "ingestSeq": 5,
+          "owner": "차량",
+          "ref": null
+        },
+        {
+          "kind": "INCIDENT",
+          "label": "ADS 사건 기록",
+          "vehicleMinAgo": 57620,
+          "vehicleSeq": 6,
+          "serverMinAgo": 57619,
+          "ingestSeq": 6,
+          "owner": "운전자",
+          "ref": null
+        }
+      ]
+    }
+  ],
+  "determinations": [
+    {
+      "reportId": "ADSI-2026-0001",
+      "decision": "REPORTABLE",
+      "reason": "사건 직전 30초 안 ADS 활성(차량 보고) — 단기 보고 대상으로 확정",
+      "decidedBy": "usr-steward",
+      "decidedRole": "REGULATORY_OWNER",
+      "decidedMinAgo": 34560
+    },
+    {
+      "reportId": "ADSI-2026-0002",
+      "decision": "REPORTABLE",
+      "reason": "MRC 감속까지 ADS 활성 — 단기 보고 대상으로 확정",
+      "decidedBy": "usr-quality",
+      "decidedRole": "SAFETY_OFFICER",
+      "decidedMinAgo": 37440
+    },
+    {
+      "reportId": "ADSI-2026-0006",
+      "decision": "REPORTABLE",
+      "reason": "사건 시각 ADS 활성 — 단기 보고 대상으로 확정",
+      "decidedBy": "usr-steward",
+      "decidedRole": "REGULATORY_OWNER",
+      "decidedMinAgo": 56160
+    }
+  ],
+  "exposure": {
+    "featureId": "FEAT-00004",
+    "featureVersion": "4.1.0",
+    "basis": "텔레메트리 노출량 집계(IF-15) — 월별 ADS 운행 시간·거리",
+    "months": [
+      {
+        "monthsAgo": 0,
+        "hours": 1800,
+        "km": 92000
+      },
+      {
+        "monthsAgo": 1,
+        "hours": 1937,
+        "km": 97113
+      },
+      {
+        "monthsAgo": 2,
+        "hours": 2074,
+        "km": 102226
+      },
+      {
+        "monthsAgo": 3,
+        "hours": 2211,
+        "km": 107339
+      },
+      {
+        "monthsAgo": 4,
+        "hours": 2348,
+        "km": 112452
+      },
+      {
+        "monthsAgo": 5,
+        "hours": 2485,
+        "km": 117565
+      },
+      {
+        "monthsAgo": 6,
+        "hours": 1922,
+        "km": 122678
+      },
+      {
+        "monthsAgo": 7,
+        "hours": 2059,
+        "km": 127791
+      },
+      {
+        "monthsAgo": 8,
+        "hours": 2196,
+        "km": 96904
+      },
+      {
+        "monthsAgo": 9,
+        "hours": 2333,
+        "km": 102017
+      },
+      {
+        "monthsAgo": 10,
+        "hours": 2470,
+        "km": 107130
+      },
+      {
+        "monthsAgo": 11,
+        "hours": 1907,
+        "km": 112243
+      },
+      {
+        "monthsAgo": 12,
+        "hours": 2044,
+        "km": 117356
+      },
+      {
+        "monthsAgo": 13,
+        "hours": 2181,
+        "km": 122469
+      },
+      {
+        "monthsAgo": 14,
+        "hours": 2318,
+        "km": 127582
+      }
+    ]
+  },
+  "safetyCases": [
+    {
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "target": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "nodes": [
+        {
+          "nodeId": "C01",
+          "kind": "CLAIM",
+          "parentId": null,
+          "text": "승인 범위 안의 구성만 허용",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C01-A1",
+          "kind": "ARGUMENT",
+          "parentId": "C01",
+          "text": "카탈로그·형상 검증으로 승인 조합만 배포한다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C01-A1-E1",
+          "kind": "EVIDENCE",
+          "parentId": "C01-A1",
+          "text": "승인 조합 검증 시험",
+          "manifestId": "EVM-0001"
+        },
+        {
+          "nodeId": "C01-A2",
+          "kind": "ARGUMENT",
+          "parentId": "C01",
+          "text": "ODD 범위 밖 배포 설정을 거부한다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C01-A2-E1",
+          "kind": "EVIDENCE",
+          "parentId": "C01-A2",
+          "text": "ODD 범위 검증 시험(이전 Version 결과 재사용)",
+          "manifestId": "EVM-0002"
+        },
+        {
+          "nodeId": "C02",
+          "kind": "CLAIM",
+          "parentId": null,
+          "text": "정당한 정책만 정확한 대상에 적용",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C02-A1",
+          "kind": "ARGUMENT",
+          "parentId": "C02",
+          "text": "서명·epoch·차량 회신으로 대상과 순서를 검증한다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C02-A1-E1",
+          "kind": "EVIDENCE",
+          "parentId": "C02-A1",
+          "text": "정책 서명·대상 검증 시험",
+          "manifestId": "EVM-0003"
+        },
+        {
+          "nodeId": "C03",
+          "kind": "CLAIM",
+          "parentId": null,
+          "text": "차량 현재 상태에 맞게 행위를 허용",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C03-A1",
+          "kind": "ARGUMENT",
+          "parentId": "C03",
+          "text": "차량 로컬 ODD·건전성 판정이 활성화를 결정한다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C03-A1-E1",
+          "kind": "EVIDENCE",
+          "parentId": "C03-A1",
+          "text": "야간 폭우 ODD 이탈 시나리오",
+          "manifestId": "EVM-0004"
+        },
+        {
+          "nodeId": "C03-A1-E2",
+          "kind": "EVIDENCE",
+          "parentId": "C03-A1",
+          "text": "센서 고장 시 활성화 거부 시험",
+          "manifestId": "EVM-0005"
+        },
+        {
+          "nodeId": "C04",
+          "kind": "CLAIM",
+          "parentId": null,
+          "text": "종료·복구 중 제어 공백과 재활성화 오류 방지",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C04-A1",
+          "kind": "ARGUMENT",
+          "parentId": "C04",
+          "text": "종료 차단을 영속하고 복구는 호환 형상으로만 한다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C04-A1-E1",
+          "kind": "EVIDENCE",
+          "parentId": "C04-A1",
+          "text": "종료 차단·MRC 전환 시험",
+          "manifestId": "EVM-0006"
+        },
+        {
+          "nodeId": "C05",
+          "kind": "CLAIM",
+          "parentId": null,
+          "text": "의도와 실제 운행 결과를 관측",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C05-A1",
+          "kind": "ARGUMENT",
+          "parentId": "C05",
+          "text": "사건 타임라인과 노출량 집계로 실제 결과를 본다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C06",
+          "kind": "CLAIM",
+          "parentId": null,
+          "text": "변경을 재현 가능한 Evidence로 승인",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C06-A1",
+          "kind": "ARGUMENT",
+          "parentId": "C06",
+          "text": "시험 manifest와 독립 검토로 승격한다",
+          "manifestId": null
+        },
+        {
+          "nodeId": "C06-A1-E1",
+          "kind": "EVIDENCE",
+          "parentId": "C06-A1",
+          "text": "변경 영향 재시험(시간 예산 가정값)",
+          "manifestId": "EVM-0007"
+        }
+      ]
+    }
+  ],
+  "manifests": [
+    {
+      "manifestId": "EVM-0001",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F001",
+        "FFP-F003"
+      ],
+      "hazardIds": [
+        "H01"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "IN_RANGE",
+      "scenario": {
+        "id": "TC01",
+        "title": "승인되지 않은 국가·차종 배포 거부"
+      },
+      "expectedTransition": "승인 범위 밖 배포 거부",
+      "actualTransition": "승인 범위 밖 배포 거부",
+      "timing": {
+        "measuredMs": 420,
+        "budgetMs": 800,
+        "budgetStatus": "APPROVED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:6b4146e5b834f0e8c3b1e6aab58353eb12ddf10666f1c71af338c546457f0284",
+      "origin": "NEW",
+      "evidenceRef": "SAMPLE-EV-000062-VARIANT-CHECK",
+      "gateRecordId": "SIM-G3-000062",
+      "author": "usr-integrator",
+      "authoredMinAgo": 57600,
+      "review": {
+        "status": "APPROVED",
+        "by": "usr-safety2",
+        "atMinAgo": 56160
+      }
+    },
+    {
+      "manifestId": "EVM-0002",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F041"
+      ],
+      "hazardIds": [
+        "H01"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.0.1",
+        "model": "HDP-PERC-2026.03",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "IN_RANGE",
+      "scenario": {
+        "id": "TC03",
+        "title": "ODD 상한 초과 배포 설정 거부"
+      },
+      "expectedTransition": "상한 초과 설정 거부",
+      "actualTransition": "상한 초과 설정 거부",
+      "timing": {
+        "measuredMs": 420,
+        "budgetMs": 800,
+        "budgetStatus": "APPROVED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:811fcbdf2b61f5c57585fe492051ef3f88a80be8cd3f5667526f7ffd60afbc50",
+      "origin": "REUSED",
+      "evidenceRef": "SAMPLE-EV-000055-TEST-RESULT",
+      "gateRecordId": "SIM-G5-000055",
+      "author": "usr-integrator",
+      "authoredMinAgo": 172800,
+      "review": {
+        "status": "APPROVED",
+        "by": "usr-safety2",
+        "atMinAgo": 171360
+      }
+    },
+    {
+      "manifestId": "EVM-0003",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F015",
+        "FFP-F019"
+      ],
+      "hazardIds": [
+        "H02"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "IN_RANGE",
+      "scenario": {
+        "id": "TC08",
+        "title": "서명·epoch가 다른 정책 수락 거부"
+      },
+      "expectedTransition": "서명 불일치 정책 거부",
+      "actualTransition": "서명 불일치 정책 거부",
+      "timing": {
+        "measuredMs": 420,
+        "budgetMs": 800,
+        "budgetStatus": "APPROVED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:e51241070b715ec55714c7b8ab533ff5511ec9fe6d07d212428ed49427654ecd",
+      "origin": "NEW",
+      "evidenceRef": "SAMPLE-EV-000067-OTA-READINESS",
+      "gateRecordId": "SIM-G8-000067",
+      "author": "usr-integrator",
+      "authoredMinAgo": 43200,
+      "review": {
+        "status": "APPROVED",
+        "by": "usr-quality",
+        "atMinAgo": 41760
+      }
+    },
+    {
+      "manifestId": "EVM-0004",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F027"
+      ],
+      "hazardIds": [
+        "H03"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "OUT_OF_RANGE",
+      "scenario": {
+        "id": "S01",
+        "title": "야간 폭우 ODD 이탈"
+      },
+      "expectedTransition": "ODD OUT → 신규 활성화 거부",
+      "actualTransition": "ODD OUT → 신규 활성화 거부",
+      "timing": {
+        "measuredMs": 420,
+        "budgetMs": 800,
+        "budgetStatus": "APPROVED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:c62a4a18a0faf46cdd816ae8db99da52638f71dedaf1633904c72bd80deb6f77",
+      "origin": "NEW",
+      "evidenceRef": "SAMPLE-EV-000064-TEST-RESULT",
+      "gateRecordId": "SIM-G5-000064",
+      "author": "usr-quality",
+      "authoredMinAgo": 28800,
+      "review": {
+        "status": "APPROVED",
+        "by": "usr-safety2",
+        "atMinAgo": 27360
+      }
+    },
+    {
+      "manifestId": "EVM-0005",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F028"
+      ],
+      "hazardIds": [
+        "H03"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "IN_RANGE",
+      "scenario": {
+        "id": "TC12",
+        "title": "센서 고장 시 활성화 거부"
+      },
+      "expectedTransition": "건전성 실패 → 활성화 거부",
+      "actualTransition": "건전성 실패 → 활성화 거부",
+      "timing": {
+        "measuredMs": 420,
+        "budgetMs": 800,
+        "budgetStatus": "APPROVED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:6e05af9312f5100d7ebc482e3a64d7ef61fdfdf5e9f48a26222d2819a1ceee5d",
+      "origin": "NEW",
+      "evidenceRef": "SAMPLE-EV-000064-TEST-RESULT",
+      "gateRecordId": "SIM-G5-000064",
+      "author": "usr-quality",
+      "authoredMinAgo": 7200,
+      "review": {
+        "status": "PENDING",
+        "by": null,
+        "atMinAgo": null
+      }
+    },
+    {
+      "manifestId": "EVM-0006",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F033",
+        "FFP-F036"
+      ],
+      "hazardIds": [
+        "H05"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "IN_RANGE",
+      "scenario": {
+        "id": "TC16",
+        "title": "종료 차단 중 재시동 — MRC 전환"
+      },
+      "expectedTransition": "종료 요청 → 인계 → MRC",
+      "actualTransition": "종료 요청 → 인계 → MRC",
+      "timing": {
+        "measuredMs": 3900,
+        "budgetMs": 4000,
+        "budgetStatus": "APPROVED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:7becf6cd723b5d47312f15d2140ef80d8d56b691226764bd6794ae4e972f3b77",
+      "origin": "NEW",
+      "evidenceRef": "SAMPLE-EV-000066-SAFETY-SECURITY",
+      "gateRecordId": "SIM-G7-000066",
+      "author": "usr-quality",
+      "authoredMinAgo": 21600,
+      "review": {
+        "status": "APPROVED",
+        "by": "usr-safety2",
+        "atMinAgo": 20160
+      }
+    },
+    {
+      "manifestId": "EVM-0007",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "requirementIds": [
+        "FFP-F053",
+        "FFP-F055"
+      ],
+      "hazardIds": [
+        "H07"
+      ],
+      "config": {
+        "policy": "PB-FEAT-00004-4.1.0-r3",
+        "configSet": "CFG-FEAT-00004-01",
+        "odd": "ODD-FEAT-00004-v1",
+        "hw": "GN7-ADCU-HW03",
+        "sw": "4.1.0",
+        "model": "HDP-PERC-2026.09",
+        "calibration": "GN7-CAL-17"
+      },
+      "tool": {
+        "name": "CARLA 가상검증",
+        "version": "0.9.15",
+        "validRange": "고속도로 본선·주간·건조 노면(실차 상관 결과 COR-2026-03)"
+      },
+      "toolValidity": "IN_RANGE",
+      "scenario": {
+        "id": "TC21",
+        "title": "변경 영향 재시험"
+      },
+      "expectedTransition": "종료 요청 → Inactive",
+      "actualTransition": "종료 요청 → Inactive",
+      "timing": {
+        "measuredMs": 610,
+        "budgetMs": 1000,
+        "budgetStatus": "ASSUMED"
+      },
+      "result": "PASS",
+      "resultDigest": "sha256:d2b95405d9f977715eff196424c066b5e248c4cf1ee2d216aeaf22232e04588f",
+      "origin": "NEW",
+      "evidenceRef": "SAMPLE-EV-000068-OPS-READINESS",
+      "gateRecordId": "SIM-G9-000068",
+      "author": "usr-integrator",
+      "authoredMinAgo": 11520,
+      "review": {
+        "status": "APPROVED",
+        "by": "usr-safety2",
+        "atMinAgo": 10080
+      }
+    }
+  ],
+  "findings": [
+    {
+      "findingId": "RF-0001",
+      "featureId": "FEAT-00004",
+      "manifestId": "EVM-0006",
+      "severity": "MAJOR",
+      "summary": "MRC 도달 시간을 서버 수신 시각으로 쟀다 — 차량 시각 기준으로 다시 측정해야 한다",
+      "status": "OPEN",
+      "reviewer": "usr-safety2",
+      "openedMinAgo": 8640,
+      "closedMinAgo": null,
+      "closeReason": null
+    },
+    {
+      "findingId": "RF-0002",
+      "featureId": "FEAT-00004",
+      "manifestId": "EVM-0001",
+      "severity": "MINOR",
+      "summary": "거부 사유 코드가 시험 보고서에 빠짐",
+      "status": "CLOSED",
+      "reviewer": "usr-safety2",
+      "openedMinAgo": 50400,
+      "closedMinAgo": 47520,
+      "closeReason": "시험 보고서에 사유 코드 추가 확인"
+    }
+  ]
+}

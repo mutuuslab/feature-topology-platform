@@ -45,6 +45,8 @@ import type { AuditEntry, ChecklistItem, FeatureDetail as Detail } from '../type
 import { ExternalToolLaunchers } from '../../external/launchers';
 import { useFeatureTrace } from './ExtLinksTab';
 import { useExternalChanges } from '../../external/useExternalChanges';
+import { ChangeKindChip } from '../ads/ChangeImpact';
+import { AdsClassificationPanel } from '../ads/AdsClassification';
 
 const T = ko.detail;
 // Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
@@ -95,6 +97,8 @@ export default function FeatureDetail() {
                   <span className="ds-tag">{scopeOf(d.feature)}</span>
                   <SafetyBadges id={id} ver={ver} />
                   <EpicChip id={id} ver={ver} />
+                  {/* 변경 종류 배지 + 승인 경로 탭 링크만(ADS-UI09) — 비교·경로 표는 /analysis/impact */}
+                  <ChangeKindChip featureId={id} version={ver} />
                 </>
               }
               actions={
@@ -167,7 +171,11 @@ export default function FeatureDetail() {
                 ) : tab === 'refs' ? (
                   <FeatureRefsTab links={d.feature.featureRefs ?? []} lifecycle={d.feature.lifecycle} feature={d.feature} />
                 ) : tab === 'safety' ? (
-                  <SafetyTab id={id} ver={ver} />
+                  // 안전 분류 탭 — 보고서 v1.1 안전 속성 + ADS 분류·Lifecycle 단계별 책임자·시장 기준선(ADS-UI12)
+                  <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+                    <SafetyTab id={id} ver={ver} />
+                    <AdsClassificationPanel id={id} ver={ver} lifecycle={d.feature.lifecycle} />
+                  </div>
                 ) : tab === 'gates' ? (
                   <GatesTab id={id} ver={ver} />
                 ) : tab === 'deps' ? (

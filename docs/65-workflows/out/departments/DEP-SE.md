@@ -56,7 +56,7 @@ last_updated: 2026-11-05
 | FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | C (아키텍트) · I (요구 Owner) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
 | FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | R·A (요구 Owner) · I (아키텍트) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | R·A (아키텍트) · I (요구 Owner) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
-| FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | R·A (아키텍트) · I (요구 Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies` | 1차 |
+| FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | R·A (아키텍트) · I (요구 Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies`, `/config/odd` | 1차 |
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | R·A (요구 Owner) · I (아키텍트) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4 안전 설계·정책 설계 | C (아키텍트) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | `/arch/components` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
@@ -94,7 +94,7 @@ last_updated: 2026-11-05
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/policies/:id`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
+- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/config/odd`, `/policies/:id`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
 - 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/openfeature`, `/master/feature-db/:refId`
 
 ## 4. 부서 겸직 직무 분리

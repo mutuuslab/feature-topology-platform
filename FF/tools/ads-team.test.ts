@@ -12,6 +12,11 @@ test('설계 항목 해시 — 키 순서와 무관, 내용이 바뀌면 달라�
   assert.notEqual(itemSha(a), itemSha({ ...a, be: ['새 줄'] }));
 });
 
+test('설계 항목 해시 — 진행 상태(status)는 해시에 들지 않는다(구현 표시로 검토가 낡지 않게)', () => {
+  const a = item('X');
+  assert.equal(itemSha({ ...a, status: '완료' } as DItem), itemSha(a));
+});
+
 test('화면 문구 — 코드·단정 표현·금지 용어를 잡는다', () => {
   assert.deepEqual(copyProblems('k', '종료 확인 80 · 미확인 12'), []);
   assert.match(copyProblems('k', 'FFG-PLT-005 위반').join(), /코드/);

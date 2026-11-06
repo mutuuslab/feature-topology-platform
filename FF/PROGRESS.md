@@ -3,6 +3,13 @@
 > 세션 간 상태의 단일 소스. 새 세션은 **"다음 세션 시작점"**부터 읽는다.
 > 단계 완료 기준: `cd FF && npm run verify` 통과 + 커밋. 브랜치 `feat/v081-integration`.
 
+## ADS·UNECE·Orca 화면 (2026-11-06, 브랜치 `feat/ads-screens`, worktree `-ads`, 커밋 전)
+- **범위** BACKLOG 'ADS·UNECE 보고서 v3.0 반영' 절의 화면 항목과 화면에 필요한 비결함 BE. 상태는 `harness/ads/design.json`의 `status`(해시에서 뺌) → `npm run ads:report`가 BACKLOG 상태 열을 쓴다. 결함 6건(ADS-BE03·04·05·06·19, TL-M03)은 `fix/ads-defects`가 고친다 — 이 브랜치는 손대지 않음.
+- **새 화면** `/config/odd`·`/config/compat`(Variant·지원 조건 아래) · `/ops/incident-reports`(+`/:id`, 장애·VOC 아래) · `/verify/safety-case`(Evidence 아래) · `/trace/ads`(요구·안전 추적 아래). 메뉴 30개는 그대로(하위 화면), 업무 절차 FPW.4·5·6·7·8·13 활동에 연결(부서 기능안전·법규·검증 작업공간).
+- **바뀐 화면** 차량 `/fleet/vehicles/:vin` 탭(상태(6축)·판정·고객에게 보이는 상태·정책 게시본·수신 기록·차량 발신 요청) · 배포 상세 7구간 · Fleet 축 분포('정책 값 대조' 탭) · `/entitlements` 주문 추적 탭 · `/activation/decide` VIN 지원 판정('정책 평가' 탭) · `/analysis/impact` 승인 경로·릴리스 비교 탭 · Feature 상세 ADS 분류 · `/master/define` 미분류 · 긴급 차단·롤백·정책 배포 Drawer 일괄 명령 미리보기 · 정책 상세 확대 판정 패널.
+- **구조** 공용 부품 `frontend/src/design/ads.tsx`(barrel 밖), 용어 `copy/ads.ts`(ADS 화면 문구 lint `tools/ads-copy-terms.ts`), 규칙 `contracts/src/rules/ads-{config,evidence,state,change}.ts`(index.ts만 — 화면은 파일 직접 import, 첫 화면 묶음 밖), 본문 zod `schemas/ads-*.ts`, 시드 `data/fixtures/ads/*.json`(시드 시각 기준 상대 시각, 운영 모드·FF_SEED=none 제외), 마이그레이션 121~124, 요구 추적 생성기 `tools/ads-trace.ts`(verify ads 단계). 배포 빌드의 브라우저 경로 표는 summary도 뺀다(`tools/browser-routes.ts` dropSummary — 화면은 API 응답 요약을 씀, 개발·vitest는 원문) → 첫 화면 287/295 KiB.
+- **남은 것** ADS-UI02(BE02·BE03 의존)·ADS-BE20·ORC-UI04~11·ORC-BE04~08, 항목별 '부분' 사유는 BACKLOG 상태 열. `fix/ads-defects` 병합 뒤 `node tools/ads-trace.ts`(it.fails 수)·BulkPreview digest(ADS-BE05 targetDigest)·배포 서명 거부(ADS-BE06) 연결 확인, `delivery_ack` 표 이름 충돌 확인.
+
 ## 담당자 E2E 개선 웨이브 (2026-11-05 사용자 결정 "16주제 전부 이번에·데모 계정 3개 추가", 브랜치 `feat/feature-db`, worktree `-dept`, 커밋 전)
 - **근거:** 담당자 5명 E2E 점검 결과(P1~P5, 59건)와 화면 측정(겹침 L1~L7·빈 화면 E1~E7). 여섯 묶음(W1~W6)이 나눠 구현, 마이그레이션 번호 W1=083 … W6=088(W6은 DDL이 필요 없어 쓰지 않음).
 - **W6 데모 계정·데이터·배치·문서**
@@ -468,37 +475,37 @@
 
 ## 준수 현황 (자동 생성 — `npm run progress`)
 <!-- AUTO:conformance -->
-**컴포넌트 42/42** — D01 10/10 · D02 3/3 · D03 4/4 · D04 6/6 · D05 7/7 · D06 12/12
+**컴포넌트 43/43** — D01 10/10 · D02 3/3 · D03 4/4 · D04 6/6 · D05 7/7 · D06 12/12 · D07 1/1
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
-| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /baselines /change/cr /master/taxonomy | 8 |
-| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck /master/upg /master/artifacts /master/structure /master/control-points /trace/design /change/eo | 9 |
+| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /master/define /baselines /change/cr /master/taxonomy /flag-retirements /master/feature-db /master/feature-db/:refId /master/feature-db/changes /master/feature-db/changes/:id | 33 |
+| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck /master/upg /master/artifacts /master/structure /master/control-points /trace/design /change/eo | 15 |
 | D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
 | D01-04 | 적용 대상 선정 규칙 | A | ✅ | /activation/decide | 5 |
 | D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 6 |
-| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 7 |
+| D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 15 |
 | D01-07 | 실험·효과 검증 관리 | B | ✅ | /experiments | 4 |
 | D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
 | D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
-| D01-10 | 감사 이력 관리 | A | ✅ | /audit | 2 |
-| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions /master/reference-values | 5 |
-| D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin | 3 |
-| D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin /fleet/map | 12 |
+| D01-10 | 감사 이력 관리 | A | ✅ | /audit | 3 |
+| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions /master/reference-values /config/odd /config/compat | 8 |
+| D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin /activation/decide | 4 |
+| D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin /fleet/map /deployments/:id | 16 |
 | D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
 | D03-03 | 긴급 기능 차단 | A | ✅ | /ops/kill | 4 |
 | D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill /ops/rollback /policies/:id | 9 |
 | D04-01 | 배포 파이프라인 연계 | A | ✅ | /deployments /deployments/:id | 3 |
 | D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations /validations/virtual /verify/evidence | 7 |
-| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id /ops/telemetry /ops/safety-kpi | 4 |
-| D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 2 |
-| D04-05 | 장애·VOC 이력 연계 | C | ✅ | /ops/incidents | 4 |
+| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id /ops/telemetry /ops/safety-kpi | 7 |
+| D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 3 |
+| D04-05 | 장애·VOC 이력 연계 | C | ✅ | /ops/incidents /ops/incident-reports /ops/incident-reports/:id | 7 |
 | D04-06 | 품질 피드백 반영 | A | ✅ | /quality/feedback | 4 |
-| D05-01 | API Gateway | C | ✅ | /activation/decide /integration/openfeature /integration/connectors /supplier/portal | 10 |
-| D05-02 | 데이터 동기화 | C | ✅ | /integration/sync | 4 |
+| D05-01 | API Gateway | C | ✅ | /activation/decide /integration/openfeature /integration/connectors /supplier/portal | 12 |
+| D05-02 | 데이터 동기화 | C | ✅ | /integration/sync /data/workbench | 6 |
 | D05-03 | Legacy 시스템 연계 | C | ✅ | /integration/legacy | 4 |
-| D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements | 3 |
+| D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements | 4 |
 | D05-05 | 현장 지원 포털 | C | ✅ | /field | 3 |
 | D05-06 | 사업 지표 모니터링 | C | ✅ | /biz/trials | 4 |
 | D05-07 | Legacy-SDV Interface | C | ✅ | /integration/legacy | 4 |
@@ -506,14 +513,15 @@
 | D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D06-03 | 차량 시나리오 검증 | B | ✅ | /policies/:id /validations /validations/virtual | 7 |
 | D06-04 | 검증 이력 관리 | A | ✅ | /policies/:id /validations | 4 |
-| D06-05 | 변경 영향 검증 | A | ✅ | /policies/:id /validations | 4 |
+| D06-05 | 변경 영향 검증 | A | ✅ | /policies/:id /validations /analysis/impact | 7 |
 | D06-06 | 안전 동작 검증 | B | ✅ | /policies/:id /validations | 4 |
-| D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations | 4 |
+| D06-07 | 안전 요구사항 추적 | B | ✅ | /policies/:id /validations /trace/ads /verify/safety-case | 7 |
 | D06-08 | 보안 배포 관리 | A | ✅ | /deployments /deployments/:id /fleet/live | 3 |
 | D06-09 | 플랫폼 인증·권한 관리(IAM) | A | ✅ | /admin/iam | 3 |
 | D06-10 | 인증서·키 관리(PKI/KMS) | A | ✅ | /deployments /admin/security | 3 |
 | D06-11 | 보안 취약점 모니터링 | C | ✅ | /admin/security | 3 |
 | D06-12 | 이상 징후 대응 | B | ✅ | /ops/anomalies | 4 |
+| D07-01 | SW 개발비 산정 | A | ✅ | /procurement/sw-cost /procurement/sw-cost/:estId /procurement/sw-cost/basis | 8 |
 
 **래칫 기준** (`harness/baselines.json`)
 
@@ -544,4 +552,10 @@
 | testHygiene.deadline-wait | 0 | ↓ 줄이기 | 시험 결정성 — 짧은 실시간 기한 — 가짜 시계·FF_SCHEDULER=manual·기한을 시험이 직접 닫는다 (예외는 hygiene-ok: 이유) |
 | testHygiene.date-now | 3 | ↓ 줄이기 | 시험 결정성 — Date.now() 비교·경과 시간 단언 — 가짜 시계나 결과 상태로 단언한다 (예외는 hygiene-ok: 이유) |
 | testHygiene.wait-for-timeout | 3 | ↓ 줄이기 | 시험 결정성 — page.waitForTimeout — 화면 상태를 기다리는 단언(toBeVisible·toHaveURL·expect.poll)으로 (예외는 hygiene-ok: 이유) |
+| testHygiene.swallowed-wait | 0 | ↓ 줄이기 | 시험 결정성 — 대기·단언의 .catch(() => undefined) — 시간 초과를 삼키지 말고 기다린 뒤 로딩·오류가 없음을 단언한다(e2e/tests/settle.ts) (예외는 hygiene-ok: 이유) |
+| testSkips.backend | 6 | ↓ 줄이기 | 건너뛰는 시험 선언 수(backend) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에) |
+| testSkips.contracts | 2 | ↓ 줄이기 | 건너뛰는 시험 선언 수(contracts) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에) |
+| testSkips.frontend | 0 | ↓ 줄이기 | 건너뛰는 시험 선언 수(frontend) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에) |
+| testSkips.e2e | 7 | ↓ 줄이기 | 건너뛰는 시험 선언 수(e2e) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에) |
+| testSkips.tools | 0 | ↓ 줄이기 | 건너뛰는 시험 선언 수(tools) — it.skip·skipIf·runIf·test.fixme·todo가 늘지 않게(실연동·환경 조건은 이유를 시험 이름에) |
 <!-- /AUTO:conformance -->

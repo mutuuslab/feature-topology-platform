@@ -891,10 +891,13 @@ export const WORKFLOWS: WorkflowDoc = {
      "/change/cr",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/validations/virtual",
      "/verify/evidence",
+     "/config/compat",
      "/deployments",
      "/verify/compliance",
+     "/verify/safety-case",
      "/fleet/live",
      "/ops/anomalies",
      "/ops/safety-kpi",
@@ -902,6 +905,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/kill",
      "/audit",
      "/quality/feedback",
+     "/trace/ads",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes"
     ]
@@ -1337,6 +1341,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/control-points",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/policies/:id",
      "/flag-retirements",
      "/master/feature-db/changes/:id",
@@ -1806,8 +1811,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/validations",
      "/validations/virtual",
      "/verify/evidence",
+     "/verify/safety-case",
      "/admin/approval",
      "/baselines",
+     "/config/compat",
      "/activation/decide",
      "/experiments",
      "/fleet/live",
@@ -2049,6 +2056,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/variant-conditions",
      "/arch/topology",
      "/baselines",
+     "/config/compat",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
      "/master/feature-db"
@@ -2063,6 +2071,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/integration/connectors",
      "/policies/new",
      "/policies",
+     "/config/odd",
      "/master/feature-db/:refId"
     ]
    },
@@ -2700,12 +2709,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "/arch/components",
      "/verify/evidence",
      "/verify/compliance",
+     "/verify/safety-case",
      "/activation/decide",
      "/ops/kill",
      "/fleet/live",
      "/deployments",
      "/flag-retirements",
-     "/ops/safety-kpi"
+     "/ops/safety-kpi",
+     "/trace/ads"
     ],
     "reference": [
      "/master/define",
@@ -2724,6 +2735,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/experiments",
      "/ops/anomalies",
      "/ops/incidents",
+     "/ops/incident-reports",
      "/audit/oversight",
      "/audit",
      "/quality/feedback",
@@ -3167,7 +3179,8 @@ export const WORKFLOWS: WorkflowDoc = {
     "primary": [
      "/ops/kill",
      "/admin/security",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ],
     "reference": [
      "/features/:id/:ver",
@@ -3512,13 +3525,16 @@ export const WORKFLOWS: WorkflowDoc = {
    ],
    "screens": {
     "primary": [
+     "/ops/incident-reports",
      "/admin/data",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ],
     "reference": [
      "/features/:id/:ver",
      "/admin/approval",
      "/baselines",
+     "/config/compat",
      "/activation/decide",
      "/ops/kill",
      "/audit/oversight",
@@ -3825,6 +3841,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/validations",
      "/validations/virtual",
      "/verify/evidence",
+     "/verify/safety-case",
      "/admin/approval",
      "/supplier/portal"
     ],
@@ -4246,6 +4263,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/arch/components",
      "/master/artifacts",
      "/validations/virtual",
+     "/verify/safety-case",
      "/deployments",
      "/integration/connectors",
      "/verify/compliance",
@@ -4255,7 +4273,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/safety-kpi",
      "/ops/incidents",
      "/audit",
-     "/admin/data"
+     "/admin/data",
+     "/trace/ads"
     ]
    },
    "handoffs": {
@@ -4714,12 +4733,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "/experiments",
      "/admin/approval",
      "/products/:id/:ver",
+     "/ops/incident-reports",
      "/audit/oversight",
      "/quality/feedback",
      "/flag-retirements",
      "/admin/security",
      "/admin/data",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ]
    },
    "handoffs": {
@@ -5088,9 +5109,11 @@ export const WORKFLOWS: WorkflowDoc = {
    "screens": {
     "primary": [],
     "reference": [
+     "/ops/incident-reports",
      "/admin/data",
      "/integration/openfeature",
-     "/verify/compliance"
+     "/verify/compliance",
+     "/trace/ads"
     ]
    },
    "handoffs": {
@@ -8604,7 +8627,8 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "screens": [
        "/policies/new",
-       "/policies"
+       "/policies",
+       "/config/odd"
       ],
       "gates": [],
       "anchor": null,
@@ -9698,7 +9722,8 @@ export const WORKFLOWS: WorkflowDoc = {
        "submitTms"
       ],
       "screens": [
-       "/verify/evidence"
+       "/verify/evidence",
+       "/verify/safety-case"
       ],
       "gates": [],
       "anchor": null,
@@ -10533,7 +10558,8 @@ export const WORKFLOWS: WorkflowDoc = {
        "decideBaseline"
       ],
       "screens": [
-       "/baselines"
+       "/baselines",
+       "/config/compat"
       ],
       "gates": [],
       "anchor": "baseline-approve",
@@ -11730,7 +11756,8 @@ export const WORKFLOWS: WorkflowDoc = {
       "actions": [],
       "screens": [
        "/verify/evidence",
-       "/verify/compliance"
+       "/verify/compliance",
+       "/verify/safety-case"
       ],
       "gates": [],
       "anchor": null,
@@ -13848,7 +13875,9 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "platform": {
       "actions": [],
-      "screens": [],
+      "screens": [
+       "/ops/incident-reports"
+      ],
       "gates": [],
       "anchor": null,
       "ui": {
@@ -19736,7 +19765,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [],
       "screens": [
-       "/verify/compliance"
+       "/verify/compliance",
+       "/trace/ads"
       ],
       "gates": [],
       "anchor": null,

@@ -76,7 +76,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 앞 활동 완료
 - 입력: WP-KILL-PLAN → 출력: WP-RECALL-BASIS
-- 플랫폼: 플랫폼 밖
+- 플랫폼: `/ops/incident-reports`
 1. 결함을 완화하는 F2 이상 안전 차단이면 시장별 리콜 번호나 봉쇄 결정 근거를 확보한다
 2. 시장별 보고 기한을 정하고 보고 책임자를 지정한다
 3. 근거 ID를 운영 조직에 넘겨 차단 요청에 붙이게 한다
@@ -126,7 +126,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.13 규정·Compliance Profile 관리
 - 시작: 분기 정기 점검
 - 입력: WP-REG-SOURCES, WP-COMPLIANCE-PROFILE → 출력: WP-COMPLIANCE-PROFILE
-- 플랫폼: `/verify/compliance`
+- 플랫폼: `/verify/compliance`, `/trace/ads`
 1. 법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다
 2. 개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다
 3. 검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다

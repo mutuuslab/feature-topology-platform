@@ -33,6 +33,7 @@ import { ko } from '../../copy/ko';
 import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, Select, VerdictBadge } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
+import { RollbackBulkPreview } from '../ads/BulkPreviews';
 
 const R = ko.rollback;
 const F = R.form;
@@ -85,6 +86,9 @@ interface Preview {
   impact: { features: { featureId: string; version: string | null; name: string; role: 'TARGET' | 'DEPENDENT' }[] };
   vehicleGroups: VehicleGroup[];
   vins: string[];
+  /** 서명 대상 digest — 서버 대상 검증(ADS-BE05) 뒤 채워지는 선택 필드(contracts BulkTargetDigestFields) */
+  targetDigest?: string | null;
+  serverDigest?: string | null;
 }
 
 const list = (s: string) =>
@@ -217,6 +221,8 @@ function RollbackForm({ d, me }: { d: DeploymentDetail; me: string }) {
           <p role="status" className={p.applicable ? 'ds-ok' : 'ds-stale'}>
             <strong>{p.applicable ? F.applicable : F.blocked}</strong>
           </p>
+          {/* 일괄 명령 미리보기(ADS-UI03) — 대상·범위 밖 제외·해제 범위·서명 대상 digest */}
+          <RollbackBulkPreview p={p} requested={list(vins)} recovery={versionText(eligible.find((c) => c.policyId === recovery) ?? eligible[0])} canSign={perm.ok} />
           {p.blockers.length > 0 && (
             <ul>
               {p.blockers.map((b) => (

@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9012/admin/iam",
+  "iam_url": "http://localhost:9210/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-05T01:24:45.108Z",
+  "fetched_at": "2026-11-06T02:41:43.679Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-dept\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-05T01:20:07.748Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-ads\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-06T02:22:52.821Z",
   "ff_git": {
-   "head": "624960e9b919c98ccf127f00f9c320b9383dd171",
-   "dirty_files": 32
+   "head": "08cd4cc3e15dbe005836c41fbe42bbc78f0df998",
+   "dirty_files": 37
   },
-  "iam_sha256": "02350b64db82312d83ad98cc1413aed79add3500e00e0ab652bc283b33346b45"
+  "iam_sha256": "f576fc6bb6ccc30991b1623453c02ec5a120689e32f29055d7956c50c02a1120"
  },
  "roles": [
   {
@@ -1379,6 +1379,58 @@
    ]
   },
   {
+   "name": "approveOddProfile",
+   "method": "POST",
+   "path": "/api/odd-profiles/:id/approve",
+   "summary": "ODD 프로파일 승인 — 기능안전 담당, 의미 검증 오류가 있으면 막힘 사유와 함께 거부, 승인 뒤 불변",
+   "component": "D02-01",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "createConfigSet",
+   "method": "POST",
+   "path": "/api/config-sets",
+   "summary": "승인 조합 등록 — 차량 사양·Variant 담당, ECU SW가 보안 최소 버전보다 낮으면 거부",
+   "component": "D02-01",
+   "roles": [
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "adsIncidentDetermination",
+   "method": "POST",
+   "path": "/api/incident-reports/:id/determination",
+   "summary": "보고 대상 확정(대상·비대상) — 안전·법규 담당의 기록, 사유 필수·추가만",
+   "component": "D04-05",
+   "roles": [
+    "REGULATORY_OWNER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "adsReviewFindingCreate",
+   "method": "POST",
+   "path": "/api/review-findings",
+   "summary": "독립 검토 발견사항 등록 — Safety Manager 중 그 Evidence 작성자가 아닌 사람만",
+   "component": "D06-07",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "adsCloseImpactPath",
+   "method": "POST",
+   "path": "/api/change-impacts/:id/paths/:path/close",
+   "summary": "승인 경로 종결 — 재-HARA·Safety Case는 기능안전 담당자, R156 영향·SUMS는 사이버보안 담당자",
+   "component": "D06-05",
+   "roles": [
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
    "name": "createIncident",
    "method": "POST",
    "path": "/api/incidents",
@@ -2200,6 +2252,16 @@
    "group": "config"
   },
   {
+   "path": "/config/odd",
+   "title": "ODD 프로파일",
+   "group": "config"
+  },
+  {
+   "path": "/config/compat",
+   "title": "승인 구성 조합",
+   "group": "config"
+  },
+  {
    "path": "/master/upg",
    "title": "UPG·UPG-VC",
    "group": "master"
@@ -2260,6 +2322,11 @@
    "group": "verify"
   },
   {
+   "path": "/verify/safety-case",
+   "title": "Safety Case·Evidence manifest",
+   "group": "verify"
+  },
+  {
    "path": "/validations",
    "title": "분야별 검증 이력",
    "group": "verify"
@@ -2287,6 +2354,11 @@
   {
    "path": "/trace/design",
    "title": "요구·안전 추적",
+   "group": "verify"
+  },
+  {
+   "path": "/trace/ads",
+   "title": "ADS·UNECE 요구 추적",
    "group": "verify"
   },
   {
@@ -2402,6 +2474,16 @@
   {
    "path": "/ops/incidents",
    "title": "장애·VOC",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/incident-reports",
+   "title": "ADS 사건 보고",
+   "group": "ops"
+  },
+  {
+   "path": "/ops/incident-reports/:id",
+   "title": "ADS 사건 상세",
    "group": "ops"
   },
   {

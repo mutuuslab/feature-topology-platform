@@ -42,7 +42,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
 - 입력: WP-BASELINE-REQ → 출력: WP-RELEASE-BASELINE
-- 플랫폼: `decideBaseline`, `/baselines`
+- 플랫폼: `decideBaseline`, `/baselines`, `/config/compat`
 1. 요청된 구성이 PLM 기준정보(차종·Variant·SW)와 일치하는지 대조한다
 2. 일치하면 확정 승인하고, 다르면 사유를 남겨 반려한다
 3. 확정된 Baseline 해시를 Release Manager에게 알린다

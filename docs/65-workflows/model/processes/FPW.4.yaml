@@ -83,7 +83,7 @@ process:
         - 수정하면 새 개정본이 되므로 다시 검증한다
       checks:
         - 최신 개정본의 분야별 검증이 모두 통과했다
-      platform: {actions: [createPolicy, updatePolicy, validatePolicy], screens: [/policies/new, /policies]}
+      platform: {actions: [createPolicy, updatePolicy, validatePolicy], screens: [/policies/new, /policies, /config/odd]}
       next: [FPW.4-A04]
     - id: FPW.4-A04
       name: 정책 승인

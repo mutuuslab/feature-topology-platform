@@ -42,7 +42,7 @@ test('차량 발신 요청: 조회 → 품질 저하 보고(재평가 HOLD) → 
 
   await page.goto('/_design');
   await asRole(page, 'operator');
-  await page.goto(`/fleet/vehicles/${VIN}`);
+  await page.goto(`/fleet/vehicles/${VIN}?tab=requests`); // 차량 발신 요청 탭(ADS-UI01 차량 화면 탭 분할)
   const table = page.getByRole('table', { name: '차량 발신 요청' });
   await expect(table.getByRole('row', { name: /Flag 직접 변경 금지/ })).toBeVisible();
   await expect(table.getByRole('row', { name: /신뢰 원천 속성 변경 금지/ })).toBeVisible();

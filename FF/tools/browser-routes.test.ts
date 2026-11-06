@@ -25,6 +25,14 @@ test('본문 검증기 import만 제거하고, 표 밖의 값과 부수효과 im
   assert.match(output, /requiredQuery: \[['"]q['"]\]/);
 });
 
+test('배포 빌드는 사람이 읽는 요약(summary)도 뺀다 — 화면은 API 응답의 요약을 쓴다(첫 화면 묶음 예산), 개발·시험은 그대로', () => {
+  const src = `export const ROUTES = [{ name: 'r', method: 'GET', path: '/x', summary: '긴 설명', component: 'D01-01' }];`;
+  assert.match(browserRouteSource(src), /summary: ['"]긴 설명['"]/);
+  const built = browserRouteSource(src, { dropSummary: true });
+  assert.doesNotMatch(built, /summary/);
+  assert.match(built, /component: ['"]D01-01['"]/);
+});
+
 test('지원하지 않는 표 모양을 조용히 건너뛰지 않는다', () => {
   assert.throws(() => browserRouteSource('export const ROUTES = makeRoutes();'), /배열/);
   assert.throws(() => browserRouteSource('export const ROUTES = [...OTHER];'), /객체/);

@@ -249,7 +249,7 @@ describe('배포 회신 대기(P4-4)·차량 판단 불가(P4-3)', () => {
           : url.startsWith('/api/publications')
             ? { body: { items: [] } }
             : { body: { features: [], recent: [], items: [] } };
-    mount('/fleet/vehicles/KMH-NX4-0001', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />);
+    mount('/fleet/vehicles/KMH-NX4-0001?tab=records', '/fleet/vehicles/:vin', <VehicleRuntimeScreen />); // '정책 게시본·수신 기록' 탭이 이 핵심 메시지를 고른다
     await waitFor(() => expect(document.querySelector('[data-key-message]')?.textContent).toContain('판단 불가 — KMH-NX4-0001'));
     expect(document.querySelector('[data-key-message]')?.textContent).not.toContain('같습니다');
   });

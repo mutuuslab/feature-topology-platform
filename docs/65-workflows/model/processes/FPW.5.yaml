@@ -149,7 +149,7 @@ process:
         - 'TMS 연계(IF-09)로 플랫폼 검증 이력에 제출하고 연결되지 않은 시험이 없는지 확인한다'
       checks:
         - 제출한 모든 시험이 Feature Version에 연결되고 재현 정보가 비어 있지 않다
-      platform: {actions: [submitTms], screens: [/verify/evidence]}
+      platform: {actions: [submitTms], screens: [/verify/evidence, /verify/safety-case]}
       next: [FPW.5-A06]
     - id: FPW.5-A06
       name: G5 V&V 판정

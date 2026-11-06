@@ -8,6 +8,7 @@ import { PLATFORM_ROLES } from '../../api/actor';
 import { useDefaultFeature } from '../../data/first-run';
 import { roleLabel } from '../../data/refdata';
 import { ko } from '../../copy/ko';
+import { configLinks } from '../../copy/ads-config';
 import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, RuleText, SummaryLine, VerdictBadge } from '../../design';
 import { CodeFreeText, ComponentName, when } from '../shared';
 
@@ -164,6 +165,14 @@ export function VariantScreen() {
               ? { tone: 'warn', value: d.summary.notSupported, text: VC.key.notSupported(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
               : { tone: 'ok', text: VC.key.ok(`${d.feature.featureId} ${d.feature.version} ${d.feature.name}`) }
             : { tone: 'neutral', value: '—', text: VC.key.notSupported(`${featureId} ${version}`) }
+        }
+        // ADS 구성 하위 화면(ODD 프로파일·승인 구성 조합) — 핵심 메시지와 다투지 않게 meta 링크로
+        meta={
+          <span>
+            <Link to="/config/odd">{configLinks.odd}</Link>
+            {' · '}
+            <Link to="/config/compat">{configLinks.compat}</Link>
+          </span>
         }
       />
       <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>

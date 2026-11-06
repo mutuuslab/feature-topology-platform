@@ -150,6 +150,7 @@ process:
         - 근거 ID를 운영 조직에 넘겨 차단 요청에 붙이게 한다
       checks:
         - 안전 차단 요청에 붙일 리콜·봉쇄 근거 ID가 있다(근거가 없으면 게이트가 차단한다)
+      platform: {screens: [/ops/incident-reports]}
       next: [FPW.8-A04]
     - id: FPW.8-A04
       name: 긴급 차단 요청

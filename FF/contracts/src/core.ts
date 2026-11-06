@@ -90,3 +90,7 @@ export * from './rules/cost/engine';
 export * from './schemas/cost';
 export * from './schemas/flag-source';
 export * from './rules/unleash-snapshot';
+export * from './schemas/ads-config';
+export * from './schemas/ads-evidence';
+export * from './schemas/ads-state';
+export * from './schemas/ads-change';

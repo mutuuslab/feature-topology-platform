@@ -377,6 +377,39 @@ async function main() {
   await save('securityEvents');
   // P11 — Flag Retirement·감독 기록·데이터·규제 기록
   for (const m of ['flagRetirements', 'iamSodAudit', 'killPostReviews', 'changeRecords', 'reharaRequests', 'sumsRecords', 'dataAccessRequests', 'retention']) await save(m);
+  // ADS·UNECE·Orca 화면 — 새 화면·탭이 읽는 응답(질의 키 순서는 화면과 같게, e2e:static이 모든 탭을 연다)
+  // 구성: ODD 프로파일·승인 구성 조합·VIN 지원 판정(차량 × 상품)
+  const odd = await save('oddProfiles');
+  for (const p of odd.items as { profileId: string }[]) await save('oddProfile', { id: p.profileId });
+  const sets = await save('configSets');
+  for (const c of sets.items as { setId: string }[]) await save('configSetVehicles', { id: c.setId });
+  const catalogIds = [...new Set((products.items as { catalogId: string }[]).map((c) => c.catalogId))];
+  for (const v of vehicles.items as { vin: string }[]) for (const catalogId of catalogIds) await save('vehicleEligibility', { vin: v.vin }, { catalogId });
+  // 증거: ADS 사건 보고·정기 보고·Safety Case·Evidence manifest·요구 추적
+  const reports = await save('adsIncidentReports');
+  for (const r of reports.items as { reportId: string }[]) await save('adsIncidentReport', { id: r.reportId });
+  const periodic = await save('adsPeriodicReport', { year: String(new Date(Date.now() + 9 * 3600_000).getUTCFullYear()) });
+  for (const y of periodic.years as number[]) if (String(y) !== String(periodic.year)) await save('adsPeriodicReport', { year: String(y) });
+  const sc = await save('adsSafetyCase', { featureId: 'FEAT-00004' });
+  for (const x of sc.features as { featureId: string }[]) if (x.featureId !== 'FEAT-00004') await save('adsSafetyCase', { featureId: x.featureId });
+  for (const id of new Set(JSON.stringify(sc).match(/EVM-d{4}/g) ?? [])) await save('adsEvidenceManifest', { id });
+  await save('adsTrace');
+  // 상태: 차량별 6축·판정·고객에게 보이는 상태, 게시본 수렴, Fleet 축 분포, 주문 추적
+  for (const v of vehicles.items as { vin: string }[]) for (const m of ['adsVehicleFeatureState', 'adsVehicleVerdicts', 'adsCustomerState']) await save(m, { vin: v.vin });
+  for (const p of pubs.items as { publicationId: string }[]) await save('adsConvergence', { id: p.publicationId });
+  const axis = await save('adsAxisDistribution');
+  for (const x of axis.features as { featureId: string }[]) await save('adsAxisDistribution', {}, { featureId: x.featureId });
+  const orders = await save('adsOrders');
+  for (const o of orders.items as { orderId: string }[]) await save('adsOrderTimeline', { id: o.orderId });
+  // 변경: 변경 영향·릴리스 비교·ADS 분류·확대 판정
+  await save('adsChangeImpacts');
+  for (const featureId of new Set((all.items as { featureId: string }[]).map((x) => x.featureId))) await save('adsChangeImpacts', {}, { featureId });
+  const releases = await save('adsReleases');
+  for (const r of releases.items as { releaseId: string }[]) await save('adsReleaseDiff', { id: r.releaseId });
+  await save('adsUnclassified');
+  for (const x of all.items as { featureId: string; version: string }[]) await save('adsClassification', { id: x.featureId, ver: x.version });
+  // 확대 판정 — 판정 입력이 있는 배포 정책만(없으면 404, 화면은 패널을 그리지 않는다)
+  for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('adsPolicyExpansion', { id: p.policyId }).catch(() => undefined);
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

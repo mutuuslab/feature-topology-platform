@@ -59,7 +59,7 @@ last_updated: 2026-11-05
 | FPW.11-A05 CSMS Evidence·R155 보고 | FPW.11 보안·키·취약점 관리 | R·A (CSM) | HARA·TARA 결과 `WP-HARA-TARA`, VEX 판정·대응 결정 `WP-VEX-DECISION`, 키 사고 대응 기록 `WP-KEY-INCIDENT` → CSMS Evidence·R155 보고 `WP-CSMS-EVIDENCE` | 플랫폼 밖 | 2차 초안 |
 | FPW.13-A01 표준 판 고정 | FPW.13 규정·Compliance Profile 관리 | C (CSM) | 법규·표준 원문 `WP-REG-SOURCES` → 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS` | 플랫폼 밖 | 2차 초안 |
 | FPW.13-A02 Compliance Profile 정의 | FPW.13 규정·Compliance Profile 관리 | C (CSM) | 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS`, 법규·표준 원문 `WP-REG-SOURCES` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
-| FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | R (CSM) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
+| FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | R (CSM) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance`, `/trace/ads` | 2차 초안 |
 | FPW.13-A04 원격 종료 시스템 설명 작성 | FPW.13 규정·Compliance Profile 관리 | C (CSM) | 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE`, 드릴 결과·G8 판정 `WP-DRILL-REPORT` → 원격 종료 시스템 설명 `WP-SYSTEM-DESCRIPTION` | 플랫폼 밖 | 2차 초안 |
 
 ## 2. 부서 간 인계
@@ -75,5 +75,5 @@ last_updated: 2026-11-05
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/ops/kill`, `/admin/security`, `/verify/compliance`
+- 주 업무 화면: `/ops/kill`, `/admin/security`, `/verify/compliance`, `/trace/ads`
 - 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/arch/components`, `/deployments`, `/master/artifacts`, `/audit/oversight`, `/fleet/live`

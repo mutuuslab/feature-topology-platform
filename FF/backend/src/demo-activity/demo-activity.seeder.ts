@@ -75,6 +75,7 @@ import { KillService } from '../domains/d03-safety/kill-switch/kill.service';
 import { RestoreService } from '../domains/d03-safety/restore/restore.service';
 import { GateRepo } from '../domains/d01-policy/repos';
 import { VehicleRequestService } from '../domains/d02-runtime/vehicle-requests/vehicle-request.service';
+import { AdsStateService } from '../domains/d02-runtime/vehicle-runtime/ads-state.service';
 import type { Response } from 'express';
 
 export const DEMO_ACTIVITY_META = 'seed-activity';
@@ -177,6 +178,8 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
       ['refdb', () => this.refdbReviews()],
       ['kill', () => this.safetyCase()],
       ['vehicleQueries', () => this.vehicleQueries()],
+      // ADS 수렴 7구간 — 실제 게시본(정책·긴급 차단)에 전달 단계 회신(가상 데이터)을 붙인다. 결과 회신이 있는 차량은 건너뛴다(ads-state.service.ts)
+      ['adsDelivery', () => this.svc(AdsStateService).seedDeliveryAcks()],
     ];
     for (const [name, fn] of steps) {
       try {

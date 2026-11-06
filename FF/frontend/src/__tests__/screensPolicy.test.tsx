@@ -204,8 +204,11 @@ describe('활성화 판단', () => {
       if (url.startsWith('/ofrep/')) return { body: { key: 'care_00022_param', value: true, reason: 'TARGETING_MATCH' } };
       return { status: 404, body: {} };
     };
-    mount('/activation/decide?vin=ego-01&flagKey=care_00022_param', '/activation/decide', <ActivationScreen />);
-    expect(await screen.findByText('ON')).toBeTruthy();
+    mount('/activation/decide?tab=policy&vin=ego-01&flagKey=care_00022_param', '/activation/decide', <ActivationScreen />);
+    // ORC-UI02: 정책 값은 의도 — 'ON' 대신 문장, 판정 코드는 보조 글자
+    expect(await screen.findByText('정책 ON(의도) — 차량 실행은 차량이 판단')).toBeTruthy();
+    expect(screen.queryByText('ON')).toBeNull();
+    expect(document.querySelector('[data-policy-code]')?.textContent).toContain('ALLOW · POLICY_MATCH');
     const steps = document.querySelectorAll('.ds-trace li');
     expect([...steps].map((s) => s.getAttribute('data-step'))).toEqual(['DEPLOYED', 'KILL', 'APPLICABILITY', 'ENTITLEMENT', 'TARGETING', 'COHORT', 'DECIDE']);
     // Fleet 전체 — 문맥이 지연된 차량은 HOLD(Safe Default)
@@ -236,7 +239,7 @@ describe('활성화 판단', () => {
       return new Response(JSON.stringify(r.body), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }));
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    mount('/activation/decide', '/activation/decide', <ActivationScreen />, 'author', qc);
+    mount('/activation/decide?tab=policy', '/activation/decide', <ActivationScreen />, 'author', qc);
     // 차량 목록이 그려질 때까지(정책은 아직) — 그린 뒤의 효과까지 흘려 Fleet 판단 질의가 시작될 기회를 준다
     expect(await screen.findByRole('option', { name: /KMH-NX4-0003/ })).toBeTruthy();
     await act(async () => {});

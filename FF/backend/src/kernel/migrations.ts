@@ -919,4 +919,73 @@ CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manif
 CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
 `,
   },
+  {
+    // ADS 구성(ADS-BE09·BE10·ORC-BE02) — ODD 프로파일(승인 뒤 불변, 지우지 않음)·배포 설정 값·승인 조합(추가만)·차량 보고 형상·내부 상품 승인(상품 × 시장)
+    name: '121_ads_config',
+    sql: `
+CREATE TABLE ads_odd_profile (profile_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, version INTEGER NOT NULL, status TEXT NOT NULL CHECK (status IN ('DRAFT','APPROVED')), doc TEXT NOT NULL, UNIQUE (feature_id, feature_version, version));
+CREATE TRIGGER ads_odd_profile_approved_no_update BEFORE UPDATE ON ads_odd_profile WHEN OLD.status = 'APPROVED' BEGIN SELECT RAISE(ABORT, '승인된 ODD 프로파일은 바꿀 수 없음(새 버전으로)'); END;
+CREATE TRIGGER ads_odd_profile_no_delete BEFORE DELETE ON ads_odd_profile BEGIN SELECT RAISE(ABORT, 'ads_odd_profile은 지울 수 없음'); END;
+CREATE TABLE ads_deploy_setting (setting_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ads_deploy_setting_feature ON ads_deploy_setting (feature_id, feature_version);
+CREATE TABLE ads_config_set (set_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER ads_config_set_no_update BEFORE UPDATE ON ads_config_set BEGIN SELECT RAISE(ABORT, 'ads_config_set은 추가만 가능'); END;
+CREATE TRIGGER ads_config_set_no_delete BEFORE DELETE ON ads_config_set BEGIN SELECT RAISE(ABORT, 'ads_config_set은 추가만 가능'); END;
+CREATE TABLE ads_vehicle_config (vin TEXT PRIMARY KEY, reported_at TEXT, doc TEXT NOT NULL);
+CREATE TABLE ads_product_market_approval (catalog_id TEXT NOT NULL, market TEXT NOT NULL, approved_by TEXT NOT NULL, approved_at TEXT NOT NULL, rationale TEXT NOT NULL, PRIMARY KEY (catalog_id, market));
+`,
+  },
+  {
+    // ADS 증거(ADS-BE13·BE14) — ADS 사건 보고·시장 기한 표·노출량, Safety Case 노드·Evidence manifest·독립 검토 발견. 확정·발견은 추가만
+    name: '122_ads_evidence',
+    sql: `
+CREATE TABLE ads_market_deadline (market TEXT PRIMARY KEY, status TEXT NOT NULL CHECK (status IN ('APPROVED','DRAFT')), doc TEXT NOT NULL);
+CREATE TABLE ads_incident_report (report_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, market TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE ads_incident_determination (id INTEGER PRIMARY KEY AUTOINCREMENT, report_id TEXT NOT NULL, version INTEGER NOT NULL, doc TEXT NOT NULL, UNIQUE (report_id, version));
+CREATE TRIGGER ads_incident_determination_no_update BEFORE UPDATE ON ads_incident_determination BEGIN SELECT RAISE(ABORT, 'ads_incident_determination은 추가만 가능'); END;
+CREATE TRIGGER ads_incident_determination_no_delete BEFORE DELETE ON ads_incident_determination BEGIN SELECT RAISE(ABORT, 'ads_incident_determination은 추가만 가능'); END;
+CREATE TABLE ads_exposure (feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, month TEXT NOT NULL, hours REAL NOT NULL, km REAL NOT NULL, PRIMARY KEY (feature_id, feature_version, month));
+CREATE TABLE ads_safety_case (feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, feature_version));
+CREATE TABLE ads_case_node (feature_id TEXT NOT NULL, node_id TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, node_id));
+CREATE TABLE ads_evidence_manifest (manifest_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE ads_review_finding (id INTEGER PRIMARY KEY AUTOINCREMENT, finding_id TEXT NOT NULL UNIQUE, feature_id TEXT NOT NULL, manifest_id TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER ads_review_finding_no_update BEFORE UPDATE ON ads_review_finding BEGIN SELECT RAISE(ABORT, 'ads_review_finding은 추가만 가능'); END;
+CREATE TRIGGER ads_review_finding_no_delete BEFORE DELETE ON ads_review_finding BEGIN SELECT RAISE(ABORT, 'ads_review_finding은 추가만 가능'); END;
+`,
+  },
+  {
+    // ADS 상태(ADS-BE01 읽기 모델·ORC-BE01) — 기준 시간 표, 차량 상태 보고(2.1 축약)·전달 단계 회신·행위별 판정은 추가만, 주문 ↔ 권리 연결(주문 키당 권리 1건)
+    name: '123_ads_state',
+    sql: `
+CREATE TABLE feature_report_basis (feature_id TEXT PRIMARY KEY, version TEXT NOT NULL, feature_class TEXT NOT NULL CHECK (feature_class IN ('ADS','ADAS','QM')), interval_ms INTEGER, status TEXT NOT NULL CHECK (status IN ('ASSUMED','APPROVED')), doc TEXT NOT NULL);
+CREATE TABLE vehicle_feature_report (id INTEGER PRIMARY KEY AUTOINCREMENT, vin TEXT NOT NULL, feature_id TEXT NOT NULL, observed_at TEXT NOT NULL, received_at TEXT NOT NULL, runtime_state TEXT, ddt_owner TEXT, ota_stage TEXT, offline_since TEXT, source TEXT NOT NULL CHECK (source IN ('VEHICLE','SIMULATED')), doc TEXT NOT NULL);
+CREATE INDEX vehicle_feature_report_vf ON vehicle_feature_report (vin, feature_id, id);
+CREATE TRIGGER vehicle_feature_report_no_update BEFORE UPDATE ON vehicle_feature_report BEGIN SELECT RAISE(ABORT, 'vehicle_feature_report는 추가만 가능'); END;
+CREATE TRIGGER vehicle_feature_report_no_delete BEFORE DELETE ON vehicle_feature_report BEGIN SELECT RAISE(ABORT, 'vehicle_feature_report는 추가만 가능'); END;
+CREATE TABLE delivery_ack (id INTEGER PRIMARY KEY AUTOINCREMENT, subject_kind TEXT NOT NULL CHECK (subject_kind IN ('POLICY','KILL','RESTORE','RESCIND')), subject_id TEXT NOT NULL, vin TEXT NOT NULL, stage TEXT NOT NULL CHECK (stage IN ('RECEIVED','ACCEPTED','DEFERRED','APPLIED','REJECTED')), reason_code TEXT, observed_at TEXT NOT NULL, received_at TEXT NOT NULL, source TEXT NOT NULL CHECK (source IN ('VEHICLE','SIMULATED')));
+CREATE INDEX delivery_ack_subject ON delivery_ack (subject_id, vin, id);
+CREATE TRIGGER delivery_ack_no_update BEFORE UPDATE ON delivery_ack BEGIN SELECT RAISE(ABORT, 'delivery_ack는 추가만 가능'); END;
+CREATE TRIGGER delivery_ack_no_delete BEFORE DELETE ON delivery_ack BEGIN SELECT RAISE(ABORT, 'delivery_ack는 추가만 가능'); END;
+CREATE TABLE safety_verdict (id INTEGER PRIMARY KEY AUTOINCREMENT, vin TEXT NOT NULL, feature_id TEXT NOT NULL, action TEXT NOT NULL, verdict TEXT NOT NULL CHECK (verdict IN ('ALLOW','DENY','UNKNOWN')), reason_codes TEXT NOT NULL, session_id TEXT, sample_ref TEXT, config_ref TEXT, policy_ref TEXT, odd_ref TEXT, input_quality TEXT, observed_at TEXT NOT NULL, received_at TEXT NOT NULL, source TEXT NOT NULL CHECK (source IN ('VEHICLE','SIMULATED')));
+CREATE INDEX safety_verdict_vin ON safety_verdict (vin, feature_id, action, id);
+CREATE TRIGGER safety_verdict_no_update BEFORE UPDATE ON safety_verdict BEGIN SELECT RAISE(ABORT, 'safety_verdict는 추가만 가능'); END;
+CREATE TRIGGER safety_verdict_no_delete BEFORE DELETE ON safety_verdict BEGIN SELECT RAISE(ABORT, 'safety_verdict는 추가만 가능'); END;
+CREATE TABLE order_link (order_id TEXT PRIMARY KEY, idempotency_key TEXT NOT NULL UNIQUE, vin TEXT NOT NULL, catalog_id TEXT NOT NULL, entitlement_id TEXT UNIQUE, publication_id TEXT, activation_state TEXT NOT NULL, deadline_at TEXT NOT NULL, refund_state TEXT, doc TEXT NOT NULL);
+`,
+  },
+  {
+    // ADS 변경(ADS-BE08·BE16·BE12) — 변경 영향(종류·승인 경로)·경로 종결 원장(추가만)·릴리스 스냅샷(운행 조건·종료 동작)·Feature 분류·시장 기준선·확대 판정 입력
+    name: '124_ads_change',
+    sql: `
+CREATE TABLE ads_change_impact (impact_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ads_change_impact_feature ON ads_change_impact (feature_id, version);
+CREATE TABLE ads_impact_path_close (id INTEGER PRIMARY KEY AUTOINCREMENT, impact_id TEXT NOT NULL, path TEXT NOT NULL, closed_by TEXT NOT NULL, closed_at TEXT NOT NULL, doc TEXT NOT NULL, UNIQUE (impact_id, path));
+CREATE TRIGGER ads_impact_path_close_no_update BEFORE UPDATE ON ads_impact_path_close BEGIN SELECT RAISE(ABORT, 'ads_impact_path_close는 추가만 가능'); END;
+CREATE TRIGGER ads_impact_path_close_no_delete BEFORE DELETE ON ads_impact_path_close BEGIN SELECT RAISE(ABORT, 'ads_impact_path_close는 추가만 가능'); END;
+CREATE TABLE ads_release_snapshot (feature_id TEXT NOT NULL, version TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+CREATE TABLE ads_classification (feature_id TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('CONFIRMED','DRAFT')), doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+CREATE TABLE ads_market_baseline (feature_id TEXT NOT NULL, version TEXT NOT NULL, market TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version, market));
+CREATE TABLE ads_expansion_input (feature_id TEXT NOT NULL, version TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+`,
+  },
 ];

@@ -5,7 +5,8 @@
 // 사람 이름·한국 시각으로 보인다. 대기열 조건은 contracts(rules/work-queue), 부서·순서는 ./queues.
 import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type Role, type WorkQueues } from '@ff/contracts';
+import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type Role, type UnclassifiedView, type WorkQueues } from '@ff/contracts';
+import { adsChange } from '../../copy/ads-change';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
@@ -283,20 +284,41 @@ export function ProposeScreen() {
   );
 }
 
+// ADS 분류(ADS-UI12) — 'ADS 분류' 열·축별 빈칸은 ADS 화면 묶음에서 필요할 때 읽는다(홈 묶음을 키우지 않게)
+const AdsClassCellLazy = lazy(() => import('../ads/AdsClassification').then((m) => ({ default: m.AdsClassCell })));
+const AdsGapSummaryLazy = lazy(() => import('../ads/AdsClassification').then((m) => ({ default: m.GapSummary })));
+
 export function DefineScreen() {
   const D = ko.master.define;
   const q = useApi<{ items: { featureId: string; version: string; name: string; lifecycle: string; ownerId: string; gates?: Record<string, string> }[] }>('listFeatures', { query: { latestOnly: true } });
   const rows = (q.data?.items ?? []).filter((f) => f.lifecycle !== 'RELEASED' && f.lifecycle !== 'RETIRED' && f.lifecycle !== 'DEPRECATED');
+  // 미분류 Feature — 출시 전이 거부 규칙을 켜기 전 점검(규칙은 켜지 않는다)
+  const u = useApi<UnclassifiedView>('adsUnclassified');
+  const unclassified = Array.isArray(u.data?.items) ? u.data!.items : null;
+  const byKey = new Map((unclassified ?? []).map((x) => [`${x.featureId}@${x.version}`, x]));
   const C = D.col;
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D01-01 · Registry"
         title={D.title}
-        lead={D.lead}
-        message={q.data ? (rows.length ? { tone: 'neutral', value: rows.length, text: D.key.open } : { tone: 'neutral', text: D.key.none }) : { tone: 'neutral', value: '—', text: D.key.open }}
+        lead={unclassified?.length ? adsChange.define.lead : D.lead}
+        message={
+          unclassified?.length
+            ? { tone: 'warn', value: `${unclassified.length}건`, text: adsChange.define.key }
+            : q.data
+            ? rows.length
+              ? { tone: 'neutral', value: rows.length, text: D.key.open }
+              : { tone: 'neutral', text: D.key.none }
+            : { tone: 'neutral', value: '—', text: D.key.open }
+        }
         actions={<Link to="/feature/propose">{D.newProposal}</Link>}
       />
+      {unclassified?.length ? (
+        <Suspense fallback={null}>
+          <AdsGapSummaryLazy v={u.data!} />
+        </Suspense>
+      ) : null}
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={D.title}
@@ -309,6 +331,17 @@ export function DefineScreen() {
             { key: 'o', header: C.owner, cell: (r) => <span className="ds-nowrap">{r.ownerId}</span> },
             { key: 'g', header: C.gates, cell: (r) => <span className="ds-mono">{D.gatePass(Object.values(r.gates ?? {}).filter((v) => v === 'PASS').length)}</span>, sort: (r) => Object.values(r.gates ?? {}).filter((v) => v === 'PASS').length },
             { key: 'n', header: C.next, cell: (r) => D.next[r.lifecycle] ?? '—' },
+            {
+              key: 'ads',
+              header: adsChange.define.col,
+              cell: (r) =>
+                unclassified ? (
+                  <Suspense fallback={null}>
+                    <AdsClassCellLazy row={byKey.get(`${r.featureId}@${r.version}`)} />
+                  </Suspense>
+                ) : null,
+              sort: (r) => (byKey.has(`${r.featureId}@${r.version}`) ? 0 : 1),
+            },
           ]}
         />
       </AsyncView>

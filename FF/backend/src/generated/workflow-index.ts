@@ -874,7 +874,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/policies/new",
-    "/policies"
+    "/policies",
+    "/config/odd"
    ],
    "actions": [
     "createPolicy",
@@ -1129,7 +1130,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.5-A06"
    ],
    "screens": [
-    "/verify/evidence"
+    "/verify/evidence",
+    "/verify/safety-case"
    ],
    "actions": [
     "submitTms"
@@ -1226,7 +1228,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.6-A04"
    ],
    "screens": [
-    "/baselines"
+    "/baselines",
+    "/config/compat"
    ],
    "actions": [
     "decideBaseline"
@@ -1448,7 +1451,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/verify/evidence",
-    "/verify/compliance"
+    "/verify/compliance",
+    "/verify/safety-case"
    ],
    "actions": [],
    "anchor": null,
@@ -1828,7 +1832,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "next": [
     "FPW.8-A04"
    ],
-   "screens": [],
+   "screens": [
+    "/ops/incident-reports"
+   ],
    "actions": [],
    "anchor": null,
    "slaHours": null
@@ -2859,7 +2865,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    },
    "next": [],
    "screens": [
-    "/verify/compliance"
+    "/verify/compliance",
+    "/trace/ads"
    ],
    "actions": [],
    "anchor": null,

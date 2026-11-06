@@ -1,0 +1,41 @@
+/* ADS 증거 화면(Safety Case 근거 지도 트리) — 색·간격은 tokens.css 토큰만 */
+.ads-ev-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-1);
+}
+.ads-ev-tree [role='group'] {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--sp-5);
+  display: grid;
+  gap: var(--sp-1);
+}
+.ads-ev-node {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.ads-ev-tree [role='treeitem']:focus-visible > .ads-ev-node,
+.ads-ev-node:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+.ads-ev-tree [role='treeitem'] {
+  outline: none;
+}
+.ads-ev-node__toggle {
+  color: var(--muted);
+  min-width: var(--sp-3);
+}
+.ads-ev-node__count {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}

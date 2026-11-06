@@ -1,6 +1,9 @@
 // /entitlements — 사용 권한·체험권 (D01-05 · 구매 전환 D05-04). 체험권은 차량마다 따로: 제안(14일) → 수락(30일 ON) → 만료·거절·구매 전환.
 // 체험권 차량 목록은 상태·성향 필터와 쪽 나눔, 합성 모집단(통계용 가상 데이터)은 표시해서 구분한다.
-import { useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useState, type CSSProperties } from 'react';
+import type { OrdersView } from '@ff/contracts';
+import { orders as OR } from '../../copy/ads-state';
+import { ordersMessage } from '../ads/state-messages';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, referenceCodes, TRIAL_PAGE_SIZE, TRIAL_STATES, trialListQuery, type ReferenceValue, type SegmentDimension, type TrialSource } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
@@ -14,6 +17,8 @@ import { usePermission } from '../shared';
 
 const E = ko.entitlement;
 const T = ko.trial;
+// 주문 추적(ORC-UI01) — 탭을 열 때만 부품을 읽는다(화면 묶음 예산)
+const OrdersPanel = lazy(() => import('../ads/StatePanels').then((m) => ({ default: m.OrdersPanel })));
 
 interface Profile {
   country: string;
@@ -126,13 +131,17 @@ export function EntitlementsScreen() {
   const selection = products.isPending || products.isError || !latest.length || requested ? products : registered;
   const all = useApi<TrialPage>('trials', { query: trialListQuery({ catalogId, source: 'ALL', state: '', segment: {}, q: '', page: 1 }) }, { enabled: !!catalogId });
   const active = all.isSuccess ? all.data.byState.ACTIVE ?? 0 : undefined;
+  // 활성 탭이 핵심 메시지를 고른다(P-10) — '주문 추적'이면 기한 넘긴 사용 준비 미확인 주문
+  const onOrders = sp.get('tab') === 'orders';
+  const orders = useApi<OrdersView>('adsOrders', {}, { enabled: onOrders });
+  const operator = usePermission(['OPERATOR', 'OPS_LEAD']);
   return (
     <div className="ds-screen">
       <PageHeader
         codes="D01-05 · ENTITLEMENT · D05-04 BILLING"
         title={E.title}
-        lead={E.lead}
-        message={{ tone: 'neutral', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
+        lead={onOrders ? OR.lead : E.lead}
+        message={onOrders ? ordersMessage(orders.data) : { tone: 'neutral', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <Select label={W.trial.product} value={catalogId} disabled={products.isPending || !choices.length} onChange={(e) => setSp((x) => (x.set('catalog', e.target.value), x), { replace: true })}>
@@ -147,7 +156,7 @@ export function EntitlementsScreen() {
           </div>
         }
       />
-      <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }]}>{(tab) => (tab === 'grants' ? <GrantsTable /> : <AsyncView state={asyncState(selection, !catalogId)} empty={{ title: W.trial.chooseProduct }} error={selection.error} onRetry={() => selection.refetch()}>{catalogId && <TrialVehicles key={catalogId} catalogId={catalogId} product={product} />}</AsyncView>)}</Tabs>
+      <Tabs tabs={[{ key: 'trials', label: E.tabs.trials }, { key: 'grants', label: E.tabs.grants }, { key: 'orders', label: OR.tab }]}>{(tab) => (tab === 'orders' ? <AsyncView state={asyncState(orders, !orders.data?.items?.length)} error={orders.isError ? OR.error : null} onRetry={() => orders.refetch()} empty={OR.empty}>{orders.data?.items ? <Suspense fallback={null}><OrdersPanel view={orders.data} canAct={operator.ok} /></Suspense> : null}</AsyncView> : tab === 'grants' ? <GrantsTable /> : <AsyncView state={asyncState(selection, !catalogId)} empty={{ title: W.trial.chooseProduct }} error={selection.error} onRetry={() => selection.refetch()}>{catalogId && <TrialVehicles key={catalogId} catalogId={catalogId} product={product} />}</AsyncView>)}</Tabs>
     </div>
   );
 }

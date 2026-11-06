@@ -104,7 +104,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.13 규정·Compliance Profile 관리
 - 시작: 분기 정기 점검
 - 입력: WP-REG-SOURCES, WP-COMPLIANCE-PROFILE → 출력: WP-COMPLIANCE-PROFILE
-- 플랫폼: `/verify/compliance`
+- 플랫폼: `/verify/compliance`, `/trace/ads`
 1. 법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다
 2. 개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다
 3. 검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다

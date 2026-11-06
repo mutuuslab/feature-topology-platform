@@ -1,0 +1,271 @@
+{
+  "oddProfiles": [
+    {
+      "profileId": "ODD-FEAT-00004-v1",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "version": 1,
+      "status": "APPROVED",
+      "basedOn": null,
+      "conditions": [
+        { "key": "roadSection", "axis": "EXCLUSION", "label": "배제 구간", "op": "IN", "value": ["톨게이트", "공사 구간", "합류 차로"], "unit": null },
+        { "key": "region", "axis": "GEOGRAPHY", "label": "운행 국가", "op": "IN", "value": ["KR"], "unit": null },
+        { "key": "roadType", "axis": "ROAD", "label": "도로 종류", "op": "IN", "value": ["고속도로"], "unit": null },
+        { "key": "laneCountMin", "axis": "ROAD", "label": "편도 차로 수", "op": "GE", "value": 2, "unit": "lanes" },
+        { "key": "rainRateMax", "axis": "ENVIRONMENT", "label": "강우량", "op": "LE", "value": 5, "unit": "mm/h" },
+        { "key": "lighting", "axis": "ENVIRONMENT", "label": "조명", "op": "IN", "value": ["주간", "야간(도로 조명)"], "unit": null },
+        { "key": "speedMax", "axis": "DYNAMIC", "label": "최고 속도", "op": "LE", "value": 80, "unit": "km/h" },
+        { "key": "headwayMin", "axis": "DYNAMIC", "label": "최소 차간 시간", "op": "GE", "value": 1.2, "unit": "s" }
+      ],
+      "envelope": [
+        { "key": "region", "axis": "GEOGRAPHY", "label": "운행 국가", "op": "IN", "value": ["KR"], "unit": null },
+        { "key": "roadType", "axis": "ROAD", "label": "도로 종류", "op": "IN", "value": ["고속도로", "자동차 전용도로"], "unit": null },
+        { "key": "laneCountMin", "axis": "ROAD", "label": "편도 차로 수", "op": "GE", "value": 2, "unit": "lanes" },
+        { "key": "rainRateMax", "axis": "ENVIRONMENT", "label": "강우량", "op": "LE", "value": 10, "unit": "mm/h" },
+        { "key": "speedMax", "axis": "DYNAMIC", "label": "최고 속도", "op": "LE", "value": 130, "unit": "km/h" }
+      ],
+      "mapVersions": ["2.1", "2.2"],
+      "infraVersions": ["IF-1.4", "IF-1.5"],
+      "sites": [
+        { "siteId": "SITE-0001", "name": "경부고속도로 서울–천안 구간", "kind": "ROAD_SECTION", "mapVersion": "2.2", "infraVersion": "IF-1.5", "impactConfirmed": true },
+        { "siteId": "SITE-0002", "name": "서해안고속도로 서평택–당진 구간", "kind": "ROAD_SECTION", "mapVersion": "2.2", "infraVersion": "IF-1.5", "impactConfirmed": false },
+        { "siteId": "SITE-0003", "name": "수도권 제1순환 판교–일산 구간", "kind": "ROAD_SECTION", "mapVersion": "2.3", "infraVersion": "IF-1.5", "impactConfirmed": true },
+        { "siteId": "SITE-0004", "name": "기흥 휴게소 진출입 구역", "kind": "ZONE", "mapVersion": "2.1", "infraVersion": "IF-1.4", "impactConfirmed": true }
+      ],
+      "createdBy": "usr-author",
+      "createdAgo": { "days": 40 },
+      "approvedBy": "usr-safety",
+      "approvedAgo": { "days": 30 },
+      "approvalReason": "HARA·ODD 시험 결과 검토 — 고속도로 80 km/h 이하로 승인"
+    },
+    {
+      "profileId": "ODD-FEAT-00004-v2",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "version": 2,
+      "status": "DRAFT",
+      "basedOn": "ODD-FEAT-00004-v1",
+      "conditions": [
+        { "key": "roadSection", "axis": "EXCLUSION", "label": "배제 구간", "op": "IN", "value": ["톨게이트", "공사 구간"], "unit": null },
+        { "key": "region", "axis": "GEOGRAPHY", "label": "운행 국가", "op": "IN", "value": ["KR"], "unit": null },
+        { "key": "roadType", "axis": "ROAD", "label": "도로 종류", "op": "IN", "value": ["고속도로", "자동차 전용도로"], "unit": null },
+        { "key": "laneCountMin", "axis": "ROAD", "label": "편도 차로 수", "op": "GE", "value": 2, "unit": "lanes" },
+        { "key": "rainRateMax", "axis": "ENVIRONMENT", "label": "강우량", "op": "LE", "value": 8, "unit": "mm/h" },
+        { "key": "lighting", "axis": "ENVIRONMENT", "label": "조명", "op": "IN", "value": ["주간", "야간(도로 조명)"], "unit": null },
+        { "key": "speedMax", "axis": "DYNAMIC", "label": "최고 속도", "op": "LE", "value": 40, "unit": "m/s" },
+        { "key": "headwayMin", "axis": "DYNAMIC", "label": "최소 차간 시간", "op": "GE", "value": 1.2, "unit": "s" }
+      ],
+      "envelope": [
+        { "key": "region", "axis": "GEOGRAPHY", "label": "운행 국가", "op": "IN", "value": ["KR"], "unit": null },
+        { "key": "roadType", "axis": "ROAD", "label": "도로 종류", "op": "IN", "value": ["고속도로", "자동차 전용도로"], "unit": null },
+        { "key": "laneCountMin", "axis": "ROAD", "label": "편도 차로 수", "op": "GE", "value": 2, "unit": "lanes" },
+        { "key": "rainRateMax", "axis": "ENVIRONMENT", "label": "강우량", "op": "LE", "value": 10, "unit": "mm/h" },
+        { "key": "speedMax", "axis": "DYNAMIC", "label": "최고 속도", "op": "LE", "value": 130, "unit": "km/h" }
+      ],
+      "mapVersions": ["2.1", "2.2"],
+      "infraVersions": ["IF-1.4", "IF-1.5"],
+      "sites": [
+        { "siteId": "SITE-0001", "name": "경부고속도로 서울–천안 구간", "kind": "ROAD_SECTION", "mapVersion": "2.2", "infraVersion": "IF-1.5", "impactConfirmed": true },
+        { "siteId": "SITE-0002", "name": "서해안고속도로 서평택–당진 구간", "kind": "ROAD_SECTION", "mapVersion": "2.2", "infraVersion": "IF-1.5", "impactConfirmed": false },
+        { "siteId": "SITE-0003", "name": "수도권 제1순환 판교–일산 구간", "kind": "ROAD_SECTION", "mapVersion": "2.3", "infraVersion": "IF-1.5", "impactConfirmed": true },
+        { "siteId": "SITE-0005", "name": "인천대교 전 구간", "kind": "ROAD_SECTION", "mapVersion": "2.2", "infraVersion": "IF-1.6", "impactConfirmed": false }
+      ],
+      "createdBy": "usr-author",
+      "createdAgo": { "days": 2 },
+      "approvedBy": null,
+      "approvedAgo": null,
+      "approvalReason": null
+    },
+    {
+      "profileId": "ODD-FEAT-00022-v1",
+      "featureId": "FEAT-00022",
+      "featureVersion": "1.0.0",
+      "version": 1,
+      "status": "APPROVED",
+      "basedOn": null,
+      "conditions": [
+        { "key": "roadSection", "axis": "EXCLUSION", "label": "배제 구간", "op": "IN", "value": ["어린이 보호구역"], "unit": null },
+        { "key": "region", "axis": "GEOGRAPHY", "label": "운행 국가", "op": "IN", "value": ["KR"], "unit": null },
+        { "key": "roadType", "axis": "ROAD", "label": "도로 종류", "op": "IN", "value": ["고속도로", "일반도로"], "unit": null },
+        { "key": "visibilityMin", "axis": "ENVIRONMENT", "label": "가시거리", "op": "GE", "value": 100, "unit": "m" },
+        { "key": "speedMin", "axis": "DYNAMIC", "label": "최저 속도", "op": "GE", "value": 30, "unit": "km/h" },
+        { "key": "speedMax", "axis": "DYNAMIC", "label": "최고 속도", "op": "LE", "value": 110, "unit": "km/h" }
+      ],
+      "envelope": [
+        { "key": "region", "axis": "GEOGRAPHY", "label": "운행 국가", "op": "IN", "value": ["KR"], "unit": null },
+        { "key": "roadType", "axis": "ROAD", "label": "도로 종류", "op": "IN", "value": ["고속도로", "자동차 전용도로", "일반도로"], "unit": null },
+        { "key": "speedMin", "axis": "DYNAMIC", "label": "최저 속도", "op": "GE", "value": 10, "unit": "km/h" },
+        { "key": "speedMax", "axis": "DYNAMIC", "label": "최고 속도", "op": "LE", "value": 120, "unit": "km/h" }
+      ],
+      "mapVersions": ["2.2"],
+      "infraVersions": ["IF-1.5"],
+      "sites": [
+        { "siteId": "SITE-0101", "name": "세종 시범 운행 구역", "kind": "ZONE", "mapVersion": "2.2", "infraVersion": "IF-1.5", "impactConfirmed": true },
+        { "siteId": "SITE-0102", "name": "판교 테크노밸리 공영 주차장", "kind": "PARKING", "mapVersion": "2.2", "infraVersion": "IF-1.5", "impactConfirmed": true }
+      ],
+      "createdBy": "usr-author",
+      "createdAgo": { "days": 60 },
+      "approvedBy": "usr-safety",
+      "approvedAgo": { "days": 55 },
+      "approvalReason": "전방 안전거리 3단계 ODD — 시험 결과 검토 후 승인"
+    }
+  ],
+  "deploySettings": [
+    { "settingId": "DS-0001", "featureId": "FEAT-00004", "featureVersion": "4.1.0", "flagKey": "hda2_00004_speed", "key": "speedMax", "label": "작동 최고 속도", "op": "LE", "value": 140, "unit": "km/h" },
+    { "settingId": "DS-0002", "featureId": "FEAT-00004", "featureVersion": "4.1.0", "flagKey": "hda2_00004_speed", "key": "speedMax", "label": "작동 최고 속도(차량 보정값)", "op": "LE", "value": 40, "unit": "m/s" },
+    { "settingId": "DS-0003", "featureId": "FEAT-00004", "featureVersion": "4.1.0", "flagKey": "hda2_00004_road", "key": "roadType", "label": "허용 도로 종류", "op": "IN", "value": ["고속도로", "국도"], "unit": null },
+    { "settingId": "DS-0004", "featureId": "FEAT-00004", "featureVersion": "4.1.0", "flagKey": "hda2_00004_weather", "key": "rainRateMax", "label": "작동 강우 한계", "op": "LE", "value": 0.4, "unit": "in/h" },
+    { "settingId": "DS-0005", "featureId": "FEAT-00004", "featureVersion": "4.1.0", "flagKey": "hda2_00004_road", "key": "laneCountMin", "label": "최소 차로 수", "op": "GE", "value": 2, "unit": "lanes" },
+    { "settingId": "DS-0006", "featureId": "FEAT-00004", "featureVersion": "4.1.0", "flagKey": "hda2_00004_speed", "key": "speedMax", "label": "체험 상품 최고 속도", "op": "LE", "value": 100, "unit": "km/h" },
+    { "settingId": "DS-0101", "featureId": "FEAT-00022", "featureVersion": "1.0.0", "flagKey": "care_00022_param", "key": "speedMax", "label": "안내 최고 속도", "op": "LE", "value": 110, "unit": "km/h" },
+    { "settingId": "DS-0102", "featureId": "FEAT-00022", "featureVersion": "1.0.0", "flagKey": "care_00022_param", "key": "speedMin", "label": "안내 최저 속도", "op": "GE", "value": 30, "unit": "km/h" }
+  ],
+  "configSets": [
+    {
+      "setId": "CFG-FEAT-00004-01",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "hw": [{ "ecuPno": "99211-GN700", "hwRevision": "Rev.B" }],
+      "ecuSw": [
+        { "ecuPno": "99211-GN700", "swId": "SW-HDA2-APP", "version": "4.1.0" },
+        { "ecuPno": "99211-GN700", "swId": "SW-ADAS-FW", "version": "11.0.0" },
+        { "ecuPno": "99211-GN700", "swId": "SW-RADAR-SVC", "version": "4.2.0" }
+      ],
+      "model": { "id": "MDL-HDA2-PERCEPTION", "version": "3.2.0" },
+      "calibration": { "id": "CAL-GN7-HDA2", "version": "2026.09" },
+      "oddProfileId": "ODD-FEAT-00004-v1",
+      "flagKey": "hda2_00004_speed",
+      "securityMin": [
+        { "swId": "SW-HDA2-APP", "version": "4.0.5" },
+        { "swId": "SW-ADAS-FW", "version": "11.0.0" }
+      ],
+      "approvedBy": "usr-variant",
+      "approvedAgo": { "days": 28 }
+    },
+    {
+      "setId": "CFG-FEAT-00022-01",
+      "featureId": "FEAT-00022",
+      "featureVersion": "1.0.0",
+      "hw": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B" },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }
+      ],
+      "ecuSw": [
+        { "ecuPno": "99211-NX400", "swId": "SW-CARE-SDIST-APP", "version": "1.2.1" },
+        { "ecuPno": "99211-NX400", "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" },
+        { "ecuPno": "95790-NX300", "swId": "SW-CAMERA-FW", "version": "8.1.0" }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.4.0" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "oddProfileId": "ODD-FEAT-00022-v1",
+      "flagKey": "care_00022_param",
+      "securityMin": [
+        { "swId": "SW-CARE-SDIST-APP", "version": "1.2.0" },
+        { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" },
+        { "swId": "SW-CAMERA-FW", "version": "8.0.0" }
+      ],
+      "approvedBy": "usr-variant",
+      "approvedAgo": { "days": 50 }
+    }
+  ],
+  "vehicleConfigs": [
+    {
+      "vin": "ego-01",
+      "reportedAgo": { "minutes": 40 },
+      "ecus": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-CARE-SDIST-APP", "version": "1.2.1" }, { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" }] },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.1.0" }] }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.4.0" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "recovery": null,
+      "recoveryCandidate": null
+    },
+    {
+      "vin": "lead-01",
+      "reportedAgo": { "hours": 2 },
+      "ecus": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-CARE-SDIST-APP", "version": "1.2.1" }, { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" }] },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.1.0" }] }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.4.0" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "recovery": null,
+      "recoveryCandidate": null
+    },
+    {
+      "vin": "KMH-NX4-0001",
+      "reportedAgo": { "minutes": 25 },
+      "ecus": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-CARE-SDIST-APP", "version": "1.2.1" }, { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" }] },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.2.0" }] }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.4.0" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "recovery": { "targets": ["99211-NX400", "95790-NX300"], "recovered": ["99211-NX400"] },
+      "recoveryCandidate": { "swId": "SW-CAMERA-FW", "version": "8.1.0" }
+    },
+    {
+      "vin": "KMH-NX4-0002",
+      "reportedAgo": { "hours": 3 },
+      "ecus": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-CARE-SDIST-APP", "version": "1.2.0" }, { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" }] },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.1.0" }] }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.3.2" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "recovery": null,
+      "recoveryCandidate": { "swId": "SW-CARE-SDIST-APP", "version": "1.1.9" }
+    },
+    {
+      "vin": "KMH-NX4-0003",
+      "reportedAgo": { "days": 3 },
+      "ecus": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-CARE-SDIST-APP", "version": "1.2.1" }, { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" }] },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.1.0" }] }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.4.0" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "recovery": null,
+      "recoveryCandidate": null
+    },
+    {
+      "vin": "KMH-NX4-0004",
+      "reportedAgo": { "hours": 1 },
+      "ecus": [
+        { "ecuPno": "99211-NX400", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-CARE-SDIST-APP", "version": "1.1.9" }, { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" }] },
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.1.0" }] }
+      ],
+      "model": { "id": "MDL-GAP-ESTIMATOR", "version": "1.4.0" },
+      "calibration": { "id": "CAL-NX4-SDIST", "version": "2026.10" },
+      "recovery": null,
+      "recoveryCandidate": { "swId": "SW-CARE-SDIST-APP", "version": "1.2.1" }
+    },
+    {
+      "vin": "KMH-NX4-0101",
+      "reportedAgo": { "hours": 5 },
+      "ecus": [
+        { "ecuPno": "95790-NX300", "hwRevision": "Rev.C", "sw": [{ "swId": "SW-CAMERA-FW", "version": "8.1.0" }] }
+      ],
+      "model": null,
+      "calibration": null,
+      "recovery": null,
+      "recoveryCandidate": null
+    },
+    {
+      "vin": "KMH-GN7-0001",
+      "reportedAgo": { "minutes": 50 },
+      "ecus": [
+        { "ecuPno": "99211-GN700", "hwRevision": "Rev.B", "sw": [{ "swId": "SW-HDA2-APP", "version": "4.1.0" }, { "swId": "SW-ADAS-FW", "version": "11.0.0" }, { "swId": "SW-RADAR-SVC", "version": "4.2.0" }] }
+      ],
+      "model": { "id": "MDL-HDA2-PERCEPTION", "version": "3.2.0" },
+      "calibration": { "id": "CAL-GN7-HDA2", "version": "2026.09" },
+      "recovery": null,
+      "recoveryCandidate": { "swId": "SW-HDA2-APP", "version": "4.0.5" }
+    }
+  ],
+  "productMarketApprovals": [
+    { "catalogId": "CAT-00002", "market": "KR", "approvedBy": "usr-product-approver", "approvedAgo": { "days": 20 }, "rationale": "Highway Driving Package KR 출시 승인(시드)" },
+    { "catalogId": "CAT-00019", "market": "KR", "approvedBy": "usr-product-approver", "approvedAgo": { "days": 35 }, "rationale": "Beginner Care Pass 1회 체험 KR 출시 승인(시드)" }
+  ]
+}

@@ -59,6 +59,7 @@ const twin = () => import('./pages/twin');
 const twinOps = () => import('./pages/twinOps');
 
 const def = (m: () => Promise<{ default: ComponentType<any> }>) => lazy(m);
+const adsIncidentScreens = () => import('./screens/ads/IncidentReports');
 
 // v2 화면 (screens/)
 const products = () => import('./screens/products/Products');
@@ -151,6 +152,8 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/variant-conditions', element: named(accessScreens, 'VariantScreen'), title: 'Variant·지원 조건', group: 'config', menu: '/variant-conditions', components: ['D02-01', 'D02-02'], v2: true },
   { path: '/master/product-spec', element: legacyTo('/variant-conditions'), title: 'Variant·적용 조건 (이전 주소)', group: 'config', parent: '/variant-conditions' },
   { path: '/variants/:id', element: legacyTo('/variant-conditions'), title: 'Variant 매트릭스 (이전 주소)', group: 'config', parent: '/variant-conditions' },
+  { path: '/config/odd', element: def(() => import('./screens/ads/OddProfiles')), title: 'ODD 프로파일', group: 'config', parent: '/variant-conditions', components: ['D02-01'], v2: true },
+  { path: '/config/compat', element: def(() => import('./screens/ads/CompatSets')), title: '승인 구성 조합', group: 'config', parent: '/variant-conditions', components: ['D02-01'], v2: true },
 
   // 4 기준정보
   { path: '/master/upg', element: named(masterScreens, 'UpgScreen'), title: 'UPG·UPG-VC', group: 'master', menu: '/master/upg', components: ['D01-02'], v2: true },
@@ -171,6 +174,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/verify/evidence/:id', element: legacyTo('/verify/evidence'), title: 'Evidence 상세 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/decisions/verification', element: legacyTo('/verify/evidence'), title: '검증 범위 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
   { path: '/readiness/:id', element: legacyTo('/features'), title: 'Gate·출시 준비 (이전 주소)', group: 'verify', parent: '/verify/evidence' },
+  { path: '/verify/safety-case', element: def(() => import('./screens/ads/SafetyCase')), title: 'Safety Case·Evidence manifest', group: 'verify', parent: '/verify/evidence', components: ['D06-07'], v2: true },
   { path: '/validations', element: named(policyScreens, 'ValidationHistory'), title: '분야별 검증 이력', group: 'verify', menu: '/validations', components: ['D06-04', 'D03-02'], v2: true },
   { path: '/policy/conflict', element: legacyTo('/validations'), title: '정책 충돌 검토 (이전 주소)', group: 'verify', parent: '/validations' },
   { path: '/policy/exception', element: legacyTo('/validations'), title: '정책 예외 (이전 주소)', group: 'verify', parent: '/validations' },
@@ -182,6 +186,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: '실험·효과', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },
   { path: '/verify/experiment', element: legacyTo('/experiments'), title: '실험·효과 (이전 주소)', group: 'verify', parent: '/experiments' },
   { path: '/trace/design', element: named(traceScreens, 'DesignTraceScreen'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07', 'D01-02'], v2: true },
+  { path: '/trace/ads', element: def(() => import('./screens/ads/TraceAds')), title: 'ADS·UNECE 요구 추적', group: 'verify', parent: '/trace/design', components: ['D06-07'], v2: true },
 
   // 6 상품·출시
   { path: '/products', element: named(products, 'ProductList'), title: 'Feature Catalog 상품', group: 'release', menu: '/products', components: ['D01-03'], v2: true },
@@ -227,6 +232,8 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/ops/incidents', element: named(incidentScreens, 'IncidentsScreen'), title: '장애·VOC', group: 'ops', menu: '/ops/incidents', components: ['D04-05'], v2: true },
   { path: '/ops/incident', element: legacyTo('/ops/incidents'), title: '장애·VOC (이전 주소)', group: 'ops', parent: '/ops/incidents' },
   { path: '/ops/incident/:id', element: legacyTo('/ops/incidents'), title: '장애 상세 (이전 주소)', group: 'ops', parent: '/ops/incidents' },
+  { path: '/ops/incident-reports', element: named(adsIncidentScreens, 'IncidentReportsScreen'), title: 'ADS 사건 보고', group: 'ops', parent: '/ops/incidents', components: ['D04-05'], v2: true },
+  { path: '/ops/incident-reports/:id', element: named(adsIncidentScreens, 'IncidentReportDetail'), title: 'ADS 사건 상세', group: 'ops', parent: '/ops/incident-reports', components: ['D04-05'], v2: true },
   { path: '/ops/telemetry', element: named(opsScreens, 'TelemetryScreen'), title: '운영 데이터·이벤트', group: 'ops', menu: '/ops/telemetry', components: ['D04-03', 'D04-04', 'D04-06'], v2: true },
 
   { path: '/events', element: named(auditEvents, 'EventsScreen'), title: 'Platform 이벤트', group: 'ops', menu: '/events', components: ['D04-04'], v2: true },

@@ -150,7 +150,7 @@ process:
         - 정리한 Safety Case를 독립 검토에 넘긴다
       checks:
         - 모든 주장에 논거와 증거가 하나 이상 있다
-      platform: {screens: [/verify/evidence, /verify/compliance]}
+      platform: {screens: [/verify/evidence, /verify/compliance, /verify/safety-case]}
       next: [FPW.7-A04]
     - id: FPW.7-A04
       name: Safety Case 독립 검토

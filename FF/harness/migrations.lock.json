@@ -55,6 +55,10 @@
     "087_consultation": "0fb39f5bfb9cd3c9ca0d4d6e67b7c170f5799ea00b96c7ad503fbea0a2e520fc",
     "089_flag_source_manifest": "dec1e2502b0230bdc5a2ead5dbafb434e65dbe341017ad2dd3598d7f8a0621e4",
     "088_vehicle_unleash_sequence": "4aaaf55fdc29bf95fca466cd1c1ed53c73d02d18254029fdad1c46001760ef33",
-    "090_cost_actual": "aa6937139da7f1dab3a5dba445764411e0831b4e24b4cf2538ed3aa4b0eb54fa"
+    "090_cost_actual": "aa6937139da7f1dab3a5dba445764411e0831b4e24b4cf2538ed3aa4b0eb54fa",
+    "121_ads_config": "99feef30b5d262c55b742097627e451dff086016df8cccd78bafebec476b1cc6",
+    "122_ads_evidence": "e52f612d347841d1a8c2366c6bfabc89ca6d56cd785e1d6d1e43eed088b3b31d",
+    "123_ads_state": "790c747f10608b6a3ebfb911a74a5261321800053c33e0e2e505e390dc8ae60f",
+    "124_ads_change": "3938f007501cafb5aaa4dbdb5f41a4c1e05f050cdb72bc92080b6af9c4748f72"
   }
 }

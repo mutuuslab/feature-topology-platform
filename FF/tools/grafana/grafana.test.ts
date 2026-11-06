@@ -303,6 +303,13 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
     if ((mm = url.match(/^\/api\/dashboards\/uid\/([\w-]+)\/public-dashboards\/([\w-]+)$/)) && m === 'PATCH') return { json: { ...state.publics.get(mm[1]), ...json, patched: true } };
     if ((mm = url.match(/^\/api\/v1\/provisioning\/folder\/([\w-]+)\/rule-groups\/([\w-]+)$/))) {
       assert.equal(req.headers['x-disable-provenance'], 'true');
+      // 실제 Grafana 13 검증 — __dashboardUid__와 __panelId__는 함께여야 하고(아니면 400), 패널 id는 숫자 문자열
+      for (const r of json.rules) {
+        const a = r.annotations ?? {};
+        if (('__dashboardUid__' in a) !== ('__panelId__' in a)) return { status: 400, json: { message: 'invalid alert rule: both annotations __dashboardUid__ and __panelId__ must be specified' } };
+        if ('__panelId__' in a && !/^\d+$/.test(a.__panelId__)) return { status: 400, json: { message: 'invalid __panelId__' } };
+        if (r.orgID !== 1 || !r.title || !r.condition || !r.ruleGroup || r.folderUID !== mm[1]) return { status: 400, json: { message: 'invalid alert rule' } };
+      }
       return (state.groups.set(mm[2], json), { json });
     }
     if (url === '/api/v1/provisioning/contact-points' && m === 'GET') return { json: [...state.contacts.values()] };
@@ -347,6 +354,13 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
   assert.ok(state.calls.filter((c) => c.startsWith('PATCH')).length === 7, '두 번째 실행은 공개 대시보드를 갱신');
   assert.deepEqual([...state.groups.keys()].sort(), ['ff-feature-improvement', 'ff-flag', 'ff-kill', 'ff-platform', 'ff-vehicle']);
   for (const g of state.groups.values()) for (const r of g.rules) assert.equal(r.data[0].datasourceUid, 'prom1');
+  assert.equal([...state.groups.values()].reduce((n, g) => n + g.rules.length, 0), 15);
+  // 경보 패널 링크 — 실제로 그 대시보드에 있는 패널(행 아님)
+  for (const g of state.groups.values())
+    for (const r of g.rules) {
+      const d = state.dashboards.get(r.annotations.__dashboardUid__).dashboard;
+      assert.ok(d.panels.some((p: any) => String(p.id) === r.annotations.__panelId__ && p.type !== 'row'), `${r.uid} 패널 ${r.annotations.__panelId__}`);
+    }
   const hook = state.contacts.get('ff-webhook');
   assert.equal(hook.settings.hmacConfig.header, 'X-Grafana-Alerting-Signature');
   assert.ok(state.contacts.has('ff-email'));

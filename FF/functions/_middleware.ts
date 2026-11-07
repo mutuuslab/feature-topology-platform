@@ -118,12 +118,22 @@ function redirect(location: string, status = 302, extra: Record<string, string> 
 
 const setCookie = (value: string, maxAge: number) => `${COOKIE}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; Secure; SameSite=Lax`;
 
-/** 로그인한 사람에게만 가는 응답 — 공유 캐시(프록시)가 담아 두지 않게 public을 private로 바꾼다 */
+/** 로그인한 사람의 응답 — 원본 캐시 지시 유무와 무관하게 공유 캐시는 닫고, 브라우저의 기존 자산 TTL은 보존한다. */
 function privatize(res: Response): Response {
   const cc = res.headers.get('Cache-Control');
-  if (!cc || !/\bpublic\b/i.test(cc)) return res;
   const out = new Response(res.body, res);
-  out.headers.set('Cache-Control', cc.replace(/\bpublic\b/i, 'private'));
+  const policy = cc?.replace(/(^|,)(\s*)public(?=\s*(?:,|$))/gi, '$1$2private').trim();
+  // private="Set-Cookie" 같은 필드 한정 지시는 본문을 보호하지 않는다 — 한정 없는 private가 필요하다.
+  out.headers.set('Cache-Control', policy
+    ? /(?:^|,)\s*private\s*(?:,|$)/i.test(policy) ? policy : `private, ${policy}`
+    : 'private, no-store');
+  // CDN 전용 헤더는 Cache-Control보다 우선한다. 원본의 공유 TTL이 게이트를 우회하지 못하게 덮는다.
+  out.headers.set('CDN-Cache-Control', 'no-store');
+  out.headers.set('Cloudflare-CDN-Cache-Control', 'no-store');
+  const vary = (out.headers.get('Vary') ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+  if (!vary.some((value) => value === '*' || value.toLowerCase() === 'cookie')) {
+    out.headers.set('Vary', [...vary, 'Cookie'].join(', '));
+  }
   return out;
 }
 

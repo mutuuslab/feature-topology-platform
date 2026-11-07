@@ -134,6 +134,46 @@ test('FF/FF(대소문자 무관)면 서명 쿠키(HttpOnly·Secure·SameSite=Lax
   }
 });
 
+test('보호 응답은 원본 캐시 지시가 없어도, public이 없어도 공유 캐시에 남지 않는다', async () => {
+  const cookie = await cookieFor();
+  for (const headers of [
+    {},
+    { 'Cache-Control': 'max-age=300' },
+    { 'Cache-Control': 's-maxage=600, max-age=300' },
+    { 'Cache-Control': 'private="Set-Cookie", max-age=300' },
+    { 'Cache-Control': 'no-store' },
+  ]) {
+    const a = asset('protected snapshot', headers);
+    const res = await handle(req('/api-snapshot/features.json', { cookie }), ENV, a.next, T0);
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('Cache-Control') ?? '', /(?:^|,)\s*private\s*(?:,|$)/i);
+    assert.equal(await res.text(), 'protected snapshot');
+    assert.equal(a.calls(), 1);
+  }
+});
+
+test('보호 응답은 CDN 전용 캐시 지시도 닫고 기존 Vary를 보존하며 Cookie를 구분한다', async () => {
+  const cookie = await cookieFor();
+  for (const vary of [undefined, 'Accept-Encoding', 'Accept-Encoding, cookie', '*']) {
+    const a = asset('protected', {
+      'Cache-Control': 'public, max-age=300',
+      'CDN-Cache-Control': 'public, s-maxage=3600',
+      'Cloudflare-CDN-Cache-Control': 'public, s-maxage=3600',
+      ...(vary ? { Vary: vary } : {}),
+    });
+    const res = await handle(req('/external.html', { cookie }), ENV, a.next, T0);
+    assert.equal(res.headers.get('CDN-Cache-Control'), 'no-store');
+    assert.equal(res.headers.get('Cloudflare-CDN-Cache-Control'), 'no-store');
+    const resultVary = res.headers.get('Vary') ?? '';
+    if (vary === '*') assert.equal(resultVary, '*');
+    else {
+      const names = resultVary.split(',').map((x) => x.trim().toLowerCase());
+      assert.equal(names.filter((x) => x === 'cookie').length, 1);
+      if (vary) assert.ok(names.includes('accept-encoding'));
+    }
+  }
+});
+
 test('로그인 요청 형식 — POST·JSON·같은 출처만', async () => {
   assert.equal((await handle(req('/__auth/login'), ENV, asset().next, T0)).status, 405);
   const form = req('/__auth/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'id=FF&password=FF' });

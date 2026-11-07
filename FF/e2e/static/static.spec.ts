@@ -124,11 +124,12 @@ async function visitTabs(page: Page, scope: string, depth: number, trail: string
       const tab = page.locator(`[data-static-tl="${depth}-${k}"] [role="tab"]`).nth(i);
       if (!(await tab.isVisible())) continue;
       const label = `${trail} › ${((await tab.textContent()) ?? '').trim().slice(0, 30)}`;
+      // 패널 ID는 누르기 전에 — 탭을 누르면 화면이 탭 묶음을 새로 그려 표시(data-static-tl)가 사라질 수 있다(활성화 판단, 통합 12단계)
+      const panel = await tab.getAttribute('aria-controls');
       await tab.click();
       await page.waitForLoadState('networkidle');
       await noErrorBox(page, `${page.url()} 탭 ${label}`);
       await collectEmpty(page, '#main', label, empties);
-      const panel = await tab.getAttribute('aria-controls');
       if (panel && (await page.locator(`[id="${panel}"]`).count())) await visitTabs(page, `[id="${panel}"]`, depth + 1, label, empties);
     }
   }
@@ -371,7 +372,7 @@ test('정적 데모: 운영 지표 탭 — 스냅샷의 처리 지표 표', asyn
 
 test('정적 데모: 활성화 판단 — OFREP 응답과 OpenFeature 값(차량·Flag 바꾸기)', async ({ page }) => {
   const { missing, errors } = watch(page);
-  await page.goto('/activation/decide');
+  await page.goto('/activation/decide?tab=policy'); // OFREP·OpenFeature는 '정책 평가' 탭(ADS-UI, 통합 12단계)
   const ofrep = page.getByTestId('ofrep-response');
   await expect(ofrep).toContainText('"key"');
   await expect(page.getByTestId('of-value')).toHaveText(/^(ON|OFF)$/);

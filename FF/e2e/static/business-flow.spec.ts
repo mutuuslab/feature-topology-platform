@@ -88,7 +88,7 @@ test('정적 시연: 개발비 과제 만들기 → Feature 담기 → 승인 �
   await create.getByLabel('과제 이름').fill('BCM 파생 2차 견적');
   await create.getByLabel('대상 제어기·차종').fill('BCM / 파생 1종');
   await create.getByRole('button', { name: '만들기' }).click();
-  await expect(page).toHaveURL(/\/procurement\/sw-cost\/EST-\d{4}$/);
+  await expect(page).toHaveURL(/\/procurement\/sw-cost\/EST-\d{4}$/, { timeout: 20_000 }); // 만들기는 산정 기준·Feature DB 발행본을 지연 로드해 계산한다(병렬 실행 부하에서 5초를 넘었다, 통합 12단계)
   const estId = page.url().split('/').pop()!;
 
   await page.getByRole('tab', { name: /기능 목록/ }).click();

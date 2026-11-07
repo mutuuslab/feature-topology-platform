@@ -366,7 +366,7 @@ export function DefineScreen() {
           columns={[
             { key: 'f', header: C.feature, cell: (r) => <span className="ds-nowrap"><Link to={`/features/${r.featureId}/${r.version}`} className="ds-mono">{`${r.featureId} ${r.version}`}</Link> {r.name}</span>, sort: (r) => r.featureId },
             { key: 'l', header: C.lifecycle, cell: (r) => <LifecycleBadge value={r.lifecycle} />, sort: (r) => r.lifecycle },
-            { key: 'o', header: C.owner, cell: (r) => <span className="ds-nowrap">{r.ownerId}</span> },
+            { key: 'o', header: C.owner, cell: (r) => <span className="ds-nowrap" title={r.ownerId}>{personName(r.ownerId)}</span> }, // 계정 ID(usr-*)는 사람 이름으로(통합 12단계 — 시연 시드의 정의 대기 행)
             { key: 'g', header: C.gates, cell: (r) => <span className="ds-mono">{D.gatePass(Object.values(r.gates ?? {}).filter((v) => v === 'PASS').length)}</span>, sort: (r) => Object.values(r.gates ?? {}).filter((v) => v === 'PASS').length },
             { key: 'n', header: C.next, cell: (r) => D.next[r.lifecycle] ?? '—' },
             {

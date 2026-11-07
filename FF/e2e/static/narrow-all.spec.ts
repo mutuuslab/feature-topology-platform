@@ -16,6 +16,7 @@ const KNOWN: Record<string, string> = {
   '/fleet/live': '차량 격자 표(table.ds-fleet)가 가로 스크롤 상자 없이 본문에 놓였다 — FleetLive.tsx',
   '/biz/trials': '추이 그림(svg width 320)이 본문(약 270px)보다 넓다 — TrialAnalytics.tsx·.ds-viz svg',
   '/flag-code/flags/care_00022_signal': '평가 추이 그림(biz/charts TrendChart — /biz/trials와 같은 그림)의 오른쪽 값 글자가 본문 밖 — flag-code/trend.tsx(통합 12단계)',
+  '/ops/flag-evaluations': '평가 추이 그림(biz/charts TrendChart — 서명 오류 급증 Flag 시계열)의 오른쪽 값 글자가 본문 밖 — flag-code/trend.tsx(통합 12단계)',
   '/_design': '디자인 갤러리 머리 — 개발용 화면',
   '/twin/impact': 'BDC 데모 화면 — twinViews.css 격자(minmax 320px)',
   '/twin/simulation': 'BDC 데모 화면 — 판정 사유 줄(twin-reason) nowrap',

@@ -234,7 +234,7 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   // 반려 — 지정 승인대상자(운영 리더), 의견 필수
   await item(no.requestId).getByLabel('승인 의견').fill('현장 확인 완료 — 되돌릴 필요 없음');
   await item(no.requestId).getByRole('button', { name: '반려', exact: true }).click();
-  await expect(item(no.requestId)).toContainText('반려 · usr-opslead');
+  await expect(item(no.requestId)).toContainText('반려 · usr-opslead', { timeout: 20_000 }); // 결정 쓰기는 받아 둔 요청·계획 목록을 다시 읽어 계산 — 병렬 실행 부하에서 5초를 넘었다(통합 12단계)
   await expect(item(no.requestId).getByRole('button')).toHaveCount(0);
   await shot(page, 'same-value-rejected');
 
@@ -242,7 +242,7 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   await page.goto(`/ops/rollback?request=${yes.requestId}`);
   await item(yes.requestId).getByLabel('승인 의견').fill('문구 정리 판 현장 확인 전 — 앞 판으로 되돌림 승인');
   await item(yes.requestId).getByRole('button', { name: '승인', exact: true }).click();
-  await expect(item(yes.requestId)).toContainText('승인됨 — 실행 대기');
+  await expect(item(yes.requestId)).toContainText('승인됨 — 실행 대기', { timeout: 20_000 }); // 결정 쓰기는 받아 둔 요청·계획 목록을 다시 읽어 계산 — 병렬 실행 부하에서 5초를 넘었다(통합 12단계)
   await as(page, 'coordinator', `/ops/rollback?request=${yes.requestId}`);
   await item(yes.requestId).getByRole('button', { name: '실행', exact: true }).click();
   await expect(item(yes.requestId)).toContainText('실행됨');

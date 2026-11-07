@@ -131,6 +131,7 @@ describe('VIN 지원 판정 (ORC-BE02)', () => {
     expect(d.reasons.map((r: { axis: string; result: string }) => `${r.axis}:${r.result}`)).toEqual(['MARKET:MET', 'SW:UNCONFIRMED', 'HW:MET', 'RIGHTS:MET']);
     expect(d.reasons[0].basis).toContain('시장 Profile(승인 시장) 기준');
     expect(d.otaLinked).toBe(false);
+    expect(d).toMatchObject({ judged: true, freshness: { met: true } });
   });
 
   it('바로 구매 가능 · 부품 미장착 · 판단 불가(출고 구성 기록 없음) · 미확인(형상 보고 3일 전) · 내부 상품 승인 없음', async () => {
@@ -138,7 +139,10 @@ describe('VIN 지원 판정 (ORC-BE02)', () => {
     expect((await elig('KMH-GN7-0001', 'CAT-00002')).state).toBe('ELIGIBLE');
     expect((await elig('KMH-NX4-0101', 'CAT-00019')).state).toBe('HW_MISSING');
     expect((await elig('KMH-NE-0001', 'CAT-00019')).headline).toBe('차량 확인 필요 — 판단 불가(출고 구성 기록 없음)');
-    expect((await elig('KMH-NX4-0003', 'CAT-00019')).headline).toBe('차량 확인 필요 — 미확인(형상 보고 3일 전)');
+    // FR-SUP-004-003 — 형상 보고가 최신성 기준(24시간)을 넘기면 판단하지 않고 최신성 미충족을 알린다(차량 확인 필요로 센다)
+    const stale = await elig('KMH-NX4-0003', 'CAT-00019');
+    expect(stale).toMatchObject({ state: 'VEHICLE_CHECK', judged: false, reasons: [], freshness: { met: false } });
+    expect(stale.headline).toBe('최신성 미충족 — 차량 속성 보고가 72시간 전입니다(기준 24시간). 판단하지 않았습니다.');
     const noApproval = await elig('KMH-GN7-0001', 'CAT-00018');
     expect(noApproval.state).toBe('VEHICLE_CHECK');
     expect(noApproval.reasons[0].code).toBe('PRODUCT_APPROVAL_MISSING');

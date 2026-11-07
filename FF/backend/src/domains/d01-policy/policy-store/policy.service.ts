@@ -20,6 +20,7 @@ import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.
 import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
 import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 import { AdsPublishGate } from '../../d02-runtime/variant-conditions/ads-publish-gate';
+import { ExceptionPolicyService } from '../../d03-safety/exception-policy/exception-policy.service';
 
 /** 같은 사람이 같은 정책을 다시 조회해도 이 시간 안이면 조회 감사를 한 번만 남긴다(화면 재조회·새로고침 잡음) */
 const VIEW_AUDIT_WINDOW_MS = 10 * 60_000;
@@ -44,6 +45,7 @@ export class PolicyService implements OnModuleInit {
     private readonly errors: IntegrationErrorService,
     private readonly flagCode: FlagCoverageService,
     private readonly adsGate: AdsPublishGate,
+    private readonly exceptions: ExceptionPolicyService,
   ) {}
 
   /**
@@ -287,6 +289,8 @@ export class PolicyService implements OnModuleInit {
     }
     if (p.contentHash !== policyHash(p)) throw new DomainError('GUARD_FAILED', '승인 이후 정책 내용이 바뀌었습니다 (해시 불일치).');
     this.assertDeployableLifecycle(actor, p, 'POLICY_DEPLOY');
+    // GX 예외 층 — 출시 전(G8·G9 미통과) Version은 Shadow만(PENDING Gate 예외면 제한 범위만), 아래 검사는 적용 중 임시 우회만 연다. 판정은 바꾸지 않는다
+    const gx = this.exceptions.forDeploy(actor, p);
     const odd = this.oddFindings(p);
     if (odd.length) {
       this.audit.failed(actor, 'POLICY_DEPLOY', id, odd.map((x) => x.message).join(' · '), 'D01-06');
@@ -294,21 +298,22 @@ export class PolicyService implements OnModuleInit {
     }
     // 배포 시점 컴플라이언스 룰 재판정(D03-01, FR-CRC-002-003) — 만료 룰은 빼고, 승인 뒤 새로 적용되는 룰도 본다
     const compliance = this.safety.complianceAtDeploy(actor, p);
-    if (compliance) throw compliance;
+    if (compliance && !gx.waive('COMPLIANCE_RULE', compliance)) throw compliance;
     // 20-97 §3.4 — 같은 Flag의 코드 연결이 출시를 막으면 게시하지 않는다(승인된 해제는 통과, 연결 저장소가 없으면 보지 않는다)
     const flagCode = this.flagCode.deployBlockers(p);
-    if (flagCode.length) {
+    if (flagCode.length && !gx.waive('FLAG_CODE')) {
       const msg = flagCode.map((b) => `Flag ${b.flagKey}: ${b.message}`).join(' · ');
       this.audit.failed(actor, 'POLICY_DEPLOY', id, msg, 'D01-06');
       throw new DomainError('GUARD_FAILED', `정책을 게시할 수 없습니다: ${msg}`, { blockers: flagCode.map((b) => ({ code: 'FLAG_CODE_MISSING', message: `Flag ${b.flagKey}: ${b.message}`, ref: b.flagKey, status: b.status })) });
     }
     // ADS-BE09·BE10·BE16 — 승인 상한(ODD) 밖 배포 설정은 빌드하지 않고, ADS Feature는 분류 미등록·승인 조합 없음이면 발행하지 않는다
     const ads = this.adsGate.deployBlockers(p, this.secureDeploy.targetsFor(p.featureId, p.featureVersion));
-    if (ads.length) {
+    if (ads.length && !gx.waive('ADS_PUBLISH')) {
       const msg = ads.map((b) => b.message).join(' · ');
       this.audit.failed(actor, 'POLICY_DEPLOY', id, msg, 'D01-06');
       throw new DomainError('GUARD_FAILED', `정책을 게시할 수 없습니다: ${msg}`, { blockers: ads });
     }
+    gx.assertRelease();
     try {
       return this.db.tx(() => {
         const prev = this.policies.deployed(p.flagKey);
@@ -318,14 +323,18 @@ export class PolicyService implements OnModuleInit {
         }
         // F2 이상은 Canary에서 시작한다(FFG-LCY-009) — 단계 값은 해시 밖이라 승인 내용은 그대로
         const fClass = this.flags.list(p.featureId).find((x) => x.version === p.featureVersion)?.fClass ?? null;
-        const canary = deployStartBasisPoints(fClass, effectiveBasisPoints({ ...p, stageBasisPoints: null }));
+        const approvedBp = effectiveBasisPoints({ ...p, stageBasisPoints: null });
+        const cap = gx.cap();
+        const start = deployStartBasisPoints(fClass, approvedBp);
+        const canary = cap == null ? start : Math.min(start ?? approvedBp, cap);
         const now = this.clock.iso();
         const next: Policy = { ...p, status: 'DEPLOYED', deployedBy: actor.id, deployedAt: now, ...(canary != null ? { stageBasisPoints: canary, stagedAt: now } : { stageBasisPoints: null, stagedAt: null }) };
         this.policies.update(next);
-        this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash, stage: next.stageBasisPoints, fClass }, reason, componentId: 'D01-06' });
-        const pub = this.secureDeploy.publishPolicy(next, actor);
+        const scoped = gx.applied(actor, next, prev);
+        this.audit.record(actor, 'POLICY_DEPLOY', id, { before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash, stage: next.stageBasisPoints, fClass, ...(gx.used().length ? { exceptions: gx.used() } : {}) }, reason, componentId: 'D01-06' });
+        const pub = this.secureDeploy.publishPolicy(scoped, actor);
         this.events.publish('policy.deployed', id, { policyId: id, flagKey: p.flagKey, contentHash: p.contentHash, replaced: prev?.policyId ?? null, publicationId: pub.publicationId, stage: next.stageBasisPoints, reason }, { componentId: 'D01-06', correlationId: actor.correlationId });
-        return { ...next, publicationId: pub.publicationId };
+        return { ...scoped, publicationId: pub.publicationId };
       });
     } catch (err) {
       // 서명 실패 — 배포 트랜잭션은 롤백됐다(정책은 배포되지 않음). 실패 사유·일시를 감사와 오류 이력에 남기고 보안 담당에게 알린다

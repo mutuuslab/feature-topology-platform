@@ -126,3 +126,15 @@ export function nextRefId(asil = 'QM'): string {
 }
 /** Feature 등록 본문에 대표 기준 행을 붙인다 — 본문 ASIL과 같은 대표 ASIL 행이라 ASIL 사유가 필요 없다 */
 export const withRef = <T extends { asil?: string }>(body: T, refId = nextRefId(body.asil ?? 'QM')) => ({ ...body, featureRefs: [{ refId, role: 'PRIMARY' as const }] });
+
+/**
+ * 출시 — G8·G9 PASS → Feature Owner Release Sign-off → RELEASED. 출시 전 Version은 Shadow만이라(FR-RDD-001-006, 결정 B8 (c))
+ * 차량에서 실제로 켜는 배포 시험은 출시한 Version으로 한다
+ */
+export async function releaseVersion(http: () => request.Agent | ReturnType<typeof request>, featureId: string, version: string, who = { judge: actor('choi.judge', 'GATE_JUDGE'), owner: actor('kim.author', 'FEATURE_AUTHOR'), release: actor('han.release', 'RELEASE_MANAGER') }) {
+  const base = `/api/features/${featureId}/versions/${version}`;
+  const h = http as () => ReturnType<typeof request>;
+  for (const gate of ['G8', 'G9']) await h().post(`${base}/gates`).set(who.judge).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
+  await h().post(`${base}/release-signoff`).set(who.owner).send({ reason: '출시 책임 확인' }).expect(201);
+  await h().post(`${base}/transitions`).set(who.release).send({ to: 'RELEASED', reason: '출시' }).expect(200);
+}

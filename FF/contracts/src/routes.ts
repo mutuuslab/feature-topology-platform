@@ -68,6 +68,7 @@ import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
+import { CreateExceptionBody, EXCEPTION_APPROVER_ROLES, EXCEPTION_REQUEST_ROLES, ExceptionDecisionBody, ExceptionRevokeBody } from './rules/exception-policy';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -637,6 +638,13 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // 예외 정책·임시 우회·Gate PENDING 예외(GX, FR-EXC-001·002·FR-REG-005-010) — 2인 승인·만료 필수·만료 원복, 출시 전 Shadow만(FR-RDD-001-006)
+  { name: 'exceptionPolicies', method: 'GET', path: '/api/exceptions', summary: '예외 정책 목록 — active=true면 적용 중인 예외만(없으면 빈 목록)', component: 'D03-02', query: ['status', 'featureId', 'featureVersion', 'policyId', 'active'] },
+  { name: 'exceptionPolicy', method: 'GET', path: '/api/exceptions/:id', summary: '예외 정책 상세 — 승인·만료·적용·원복과 상태 전이 기록', component: 'D03-02' },
+  { name: 'createExceptionPolicy', method: 'POST', path: '/api/exceptions', summary: '예외 승인 요청 — 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(우회 불가 4가지 제외)', component: 'D03-02', roles: [...EXCEPTION_REQUEST_ROLES], body: CreateExceptionBody },
+  { name: 'decideExceptionPolicy', method: 'POST', path: '/api/exceptions/:id/decision', summary: '예외 승인·반려 — 요청자 제외 서로 다른 두 사람, 승인자 지정 만료 일시', component: 'D03-02', roles: [...EXCEPTION_APPROVER_ROLES], body: ExceptionDecisionBody },
+  { name: 'revokeExceptionPolicy', method: 'POST', path: '/api/exceptions/:id/revoke', summary: '예외 회수 — 이전 정책 상태로 원복', component: 'D03-02', roles: [...EXCEPTION_REQUEST_ROLES, ...EXCEPTION_APPROVER_ROLES], body: ExceptionRevokeBody },
+  { name: 'policyReleaseGate', method: 'GET', path: '/api/policies/:id/release-gate', summary: '출시 전 배포 판정 — 출시 전 Version은 Shadow만, Gate 예외 제한 범위', component: 'D03-02' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

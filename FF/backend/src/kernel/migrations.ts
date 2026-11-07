@@ -1324,4 +1324,17 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // 예외 정책·임시 우회·Gate PENDING 예외(GX, FR-EXC-001·002·FR-REG-005-010) — 요청·2인 승인·만료·원복. 상태 전이 기록은 추가만
+    name: '321_exception_policy',
+    sql: `
+CREATE TABLE exception_policy (exception_id TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK (kind IN ('BYPASS','GATE_PENDING')), feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, policy_id TEXT, status TEXT NOT NULL CHECK (status IN ('REQUESTED','APPROVING','ACTIVE','REJECTED','EXPIRED','REVOKED','COMPLETED')), expires_at TEXT, doc TEXT NOT NULL);
+CREATE INDEX exception_policy_feature ON exception_policy (feature_id, feature_version, status);
+CREATE INDEX exception_policy_status ON exception_policy (status, expires_at);
+CREATE TABLE exception_policy_event (id INTEGER PRIMARY KEY AUTOINCREMENT, exception_id TEXT NOT NULL, at TEXT NOT NULL, kind TEXT NOT NULL, actor_id TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX exception_policy_event_exception ON exception_policy_event (exception_id, id);
+CREATE TRIGGER exception_policy_event_no_update BEFORE UPDATE ON exception_policy_event BEGIN SELECT RAISE(ABORT, 'exception_policy_event는 추가만 가능'); END;
+CREATE TRIGGER exception_policy_event_no_delete BEFORE DELETE ON exception_policy_event BEGIN SELECT RAISE(ABORT, 'exception_policy_event는 추가만 가능'); END;
+`,
+  },
 ];

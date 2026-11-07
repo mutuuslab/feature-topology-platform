@@ -2,7 +2,7 @@
 // 보고서 v1.1 FFG-LCY-009: 효력을 넓히는 사람 ≠ 배포한 사람, F2 이상은 Canary(≤ 5%)에서 시작해 관측 기간(24 h)·중단 기준(열린 기능·보안
 // 이상 징후, 진행 중 차단)을 판정한 뒤 넓힌다(contracts judgeStageChange). 판정은 감사·이벤트에 남는다.
 import { Inject, Injectable } from '@nestjs/common';
-import { cohortBucket, effectiveBasisPoints, evaluateFlag, judgeStageChange, type Entitlement, type FlagResult, type Policy, type RolloutStageBody } from '@ff/contracts';
+import { cohortBucket, effectiveBasisPoints, evaluateFlag, judgeStageChange, stopCriteriaCheck, type Entitlement, type FlagResult, type Policy, type RolloutStageBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -37,6 +37,12 @@ export class StagedRolloutService {
       this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, `승인 범위 ${ceiling / 100}% 초과 요청 ${body.basisPoints / 100}%`, 'D01-08');
       throw new DomainError('GUARD_FAILED', `승인된 배포 범위(${ceiling / 100}%)를 넘을 수 없습니다 — 정책을 새로 승인받으세요.`);
     }
+    // GX — 예외(Gate PENDING·임시 우회)로 연 배포는 그 제한 범위(제한 배포·Pilot)를 넘겨 넓히지 않는다. 줄이기·멈추기는 그대로
+    if (p.exceptionScope && body.basisPoints > p.exceptionScope.capBasisPoints) {
+      const msg = `예외 ${p.exceptionScope.exceptionIds.join(', ')}의 제한 범위(${p.exceptionScope.capBasisPoints / 100}%)를 넘을 수 없습니다 — Gate를 통과하거나 예외가 끝난 뒤 넓히세요.`;
+      this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, msg, 'D01-08');
+      throw new DomainError('GUARD_FAILED', msg, { exceptionScope: p.exceptionScope });
+    }
     const current = effectiveBasisPoints(p);
     // 단계 기준 사실(안전 분류·관측 시작·열린 이상 징후·진행 중 차단)과 확대 판정 근거(Canary 신선도·사전 등록 중단 기준, 축별 근거) — 정책 상세 패널과 같은 사실·
     // 같은 규칙(judgeExpansion, 통합 D-INT-4). 근거는 넓힐 때만 읽는다. 모델 점수는 넣지 않는다(INV-17)
@@ -53,12 +59,14 @@ export class StagedRolloutService {
         this.db.tx(() => this.events.publish('rollout.halt-required', policyId, { policyId, flagKey: p.flagKey, featureId: p.featureId, current, to: body.basisPoints, reasons: stop.map((b) => b.message), openAnomalies, activeKills, requestedBy: actor.id }, { componentId: 'D01-08', correlationId: actor.correlationId }));
       throw new DomainError(j.blockers.some((b) => b.code === 'SAME_AS_DEPLOYER') ? 'SEPARATION_OF_DUTY' : 'GUARD_FAILED', `단계를 넓힐 수 없습니다: ${msg}`, { judgement: j });
     }
+    // 배포 중단(멈추기 0%) — 중단 기준 충족 여부를 확인해 기록·표시만 한다. 중단은 언제나 허용하고, 미충족 중단은 사유(필수 칸)를 남긴다
+    const stop = body.basisPoints === 0 && current > 0 ? stopCriteriaCheck({ openAnomalies, activeKills, abort: (this.expansion.sources(p).canary?.breached ?? []).map((m) => `사전 등록 중단 기준 초과 ${m}`) }) : null;
     return this.db.tx(() => {
       const next: Policy = { ...p, stageBasisPoints: body.basisPoints, stagedAt: this.clock.iso() };
       this.policies.update(next);
-      this.audit.record(actor, 'ROLLOUT_STAGE', policyId, { before: { stage: p.stageBasisPoints }, after: { stage: body.basisPoints, kind: j.kind, fClass, criteria: j.criteria }, reason: body.reason, componentId: 'D01-08' });
+      this.audit.record(actor, 'ROLLOUT_STAGE', policyId, { before: { stage: p.stageBasisPoints }, after: { stage: body.basisPoints, kind: j.kind, fClass, criteria: j.criteria, ...(stop ? { stopCriteria: { met: stop.met, reasons: stop.reasons } } : {}) }, reason: body.reason, componentId: 'D01-08' });
       this.events.publish('rollout.staged', policyId, { flagKey: p.flagKey, from: p.stageBasisPoints, to: body.basisPoints, kind: j.kind, criteria: j.criteria }, { componentId: 'D01-08', correlationId: actor.correlationId });
-      return next;
+      return stop ? { ...next, stopCriteria: stop } : next;
     });
   }
 }

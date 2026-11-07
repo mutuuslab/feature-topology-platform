@@ -119,3 +119,4 @@ export * from './rules/api-gateway';
 export * from './rules/legacy-link';
 export * from './rules/settlement';
 export * from './schemas/ads-p5';
+export * from './rules/exception-policy';

@@ -2,7 +2,10 @@
 // 가명 → VIN(등록 차량만), epoch → K_r, CMAC(상수 시간), 나이(미래 5분 거부·72시간 넘으면 STALE, 결정 U-15), nonce 창 72시간
 // (같은 본문 = DUPLICATE 정상, 다른 본문 = REQUEST_REPLAY 보안 이벤트). 위조·변조·다른 종류 서명·FFV1-REQ 서명 재사용은 떨어진다.
 import { VEHICLE_MESSAGE_MAX_AGE_MS, vehicleRequestCanonical, type VehicleMessage } from '@ff/contracts';
+import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { join } from 'node:path';
+import { createInterface } from 'node:readline';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { FleetRepo } from '../../src/domains/d01-policy/policy-repos';
 import { Clock } from '../../src/kernel/clock';
@@ -131,5 +134,28 @@ describe('FFV1-MSG 검증기(TL-M02)', () => {
     const v = { ...fleet.vehicle(VIN)!, vin: 'KMH-COLLIDE-0001' };
     expect(() => fleet.insertVehicle(v, () => vehiclePseudonym(VIN))).toThrow(/가명/);
     expect(fleet.vehicle('KMH-COLLIDE-0001')).toBeUndefined();
+  });
+  it('참조 Lake(tools/lake-reference)를 지난 메시지도 그대로 검증된다 — Lake는 덧붙이기만 하고 바꾸지 않는다(TL-M07)', async () => {
+    // 참조 Lake를 별도 프로세스로 — 진짜 Lake처럼 HTTP로만 이어진다
+    const proc = spawn(process.execPath, [join(__dirname, '..', '..', '..', 'tools', 'lake-reference', 'server.ts'), '--port', '0'], { stdio: ['ignore', 'pipe', 'inherit'], env: { ...process.env, LAKE_REF_RELAY_TOKEN: 't' } });
+    const url = await new Promise<string>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error('참조 Lake가 시작하지 않았습니다')), 15_000);
+      createInterface({ input: proc.stdout! }).on('line', (l) => {
+        if (l.startsWith('{') && JSON.parse(l).event === 'listening') (clearTimeout(t), resolve(JSON.parse(l).url));
+      });
+    });
+    const lake = { url };
+    try {
+      const m = msg({ nonce: 'nonce-via-lake-00001', now: Date.now() });
+      b.get(Clock).set(new Date(Date.now() + 1_000).toISOString());
+      const put = await fetch(`${lake.url}/v1/vehicle/messages`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-client-cert-subject': `CN=${m.pseudonym}` }, body: JSON.stringify({ messages: [m] }) });
+      expect(put.status).toBe(202);
+      const page = (await (await fetch(`${lake.url}/v1/relay/safety?after=0&wait=0`, { headers: { authorization: 'Bearer t' } })).json()) as { items: { message: unknown }[] };
+      expect(page.items).toHaveLength(1);
+      expect(auth.verifyMessage(page.items[0].message)).toMatchObject({ outcome: 'ACCEPTED', vin: VIN });
+    } finally {
+      b.get(Clock).set(AT);
+      proc.kill();
+    }
   });
 });

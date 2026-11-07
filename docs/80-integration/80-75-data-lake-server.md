@@ -352,5 +352,6 @@ s3://ff-lake-<install_id>/
 | `FF/contracts/src/schemas/datalake-if15.test.ts` | 예제·부록 D 상태 보고가 통과, 원문 해시 일치, enum이 FF zod와 같음, 원천 이벤트가 백엔드에 있음 |
 | [`datalake-if15/ffv1-msg.vectors.json`](datalake-if15/ffv1-msg.vectors.json) | FFV1-MSG 시험 벡터(차량 키·요청 키·가명·정규 문자열·태그, 종류 3개) — 차량·Lake·FF가 같은 값을 내야 한다(TL-M01) |
 | `FF/contracts/src/schemas/vehicle-message.ts` · `vehicle-message.test.ts` | `VehicleMessage`·`RelayRecord`·`RelayVerdict` zod, 정규 문자열, 나이·nonce 창 상수 — JSON Schema와 같은 것을 받고 같은 것을 떨어뜨리는지 대조(TL-M01) |
+| `FF/tools/lake-reference/{server,conformance}.ts` | 참조 Lake 중계 서버(차량 입구·safety/normal 중계·긴 대기·상태, 메모리) + 적합성 검사 L01~L17 — `npm run lake:reference`·`lake:conformance`, verify `lake:conformance`(TL-M07, 80-45 ota-reference와 같은 방식) |
 
 [80-45]: 80-45-ota-server-if05.md

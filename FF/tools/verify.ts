@@ -46,6 +46,7 @@ export const STEPS: Step[] = [
   { id: 'pages:gate', title: '공개 사이트 접속 게이트 (Pages Functions 미들웨어 — 쿠키 없음 302·401·서명 쿠키·위조·만료·next·자산 예외·비밀 키 없으면 닫힘)', cmd: `node --test tools/pages-gate.test.ts` },
   { id: 'export:verify', title: '감사·검증 이력 내보내기 독립 검증 도구 (공개 키만으로 데이터 SHA-256·머리 줄·Ed25519 서명 확인 · 바꾼 파일·다른 키는 실패, contracts 빌드 뒤)', cmd: `node --test tools/verify-export.test.ts` },
   { id: 'ota:conformance', title: 'OTA 서버 연동 규격 IF-05 (시험 OTA 서버가 적합성 검사 통과 · 규격 위반을 검사가 잡는다 · OpenAPI 정합, 80-45)', cmd: `node --test tools/ota-reference/conformance.test.ts` },
+  { id: 'lake:conformance', title: 'Data Lake 중계 계약 IF-15 (참조 Lake 서버가 적합성 검사 통과 · 계약 위반을 검사가 잡는다 · OpenAPI·스키마 정합, 80-75 TL-M07)', cmd: `node --test tools/lake-reference/conformance.test.ts` },
   { id: 'test:contracts', title: 'contracts 테스트', cmd: `${npm} test -w @ff/contracts` },
   { id: 'test:backend', title: '백엔드 테스트', cmd: `${npm} test -w feature-topology-backend` },
   { id: 'test:frontend', title: '프론트 테스트', cmd: `${npm} test -w feature-topology-frontend` },

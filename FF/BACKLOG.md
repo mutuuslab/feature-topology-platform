@@ -105,7 +105,7 @@
 | TL-M04 | 대기 | Lake 중계 소비자(D04-03): `GET /v1/relay/safety` 긴 대기 상시·normal 5초, 커서 FF DB(처리 뒤 이동), 종류별로 기존 처리기(`StatusIngestService.ingest`·전달 확인·`VehicleRequestService`)에 `via=LAKE`, 결과를 `relay.verdict`로 내보냄 | 시험(참조 Lake 대역): 재시작 뒤 이어 받기, 중복·순서 뒤집힘 안전, 처리 실패 시 커서 안 옮김 | TL-M02·M03·C01 |
 | TL-M05 | 대기 | 설정 `FF_VEHICLE_UPLINK`(direct·lake·both), `lake`면 `/vehicle/v1/*` 오르는 창구 403 `UPLINK_VIA_LAKE`, 운영 필수 `FF_LAKE_URL`·토큰 파일(runtime-config·`.env.example`·production-mode 시험) | 시험: 설정 조합·운영 거부 | TL-M04 |
 | TL-M06 | 대기 | 확인 지연 표시: 중계 상태(정상·지연·끊김), 차단·배포 확인에 "확인 불가 — 차량 보고 전달 지연(Data Lake)", 자동 완료 없음, `kill.overdue` 이상 징후에 `RELAY_LAG` 힌트, `ConnectionBadge`에 중계 지연 | 시험: Lake 정지 중 CONFIRMED 안 됨·기한 감시 그대로·복구 뒤 채워짐, 화면 시험(문구는 copy 파일) | TL-M04 |
-| TL-M07 | 대기 | 참조 Lake 중계 서버 + 적합성 검사(`tools/lake-reference`, 80-45 ota-reference와 같은 방식) | 적합성 시험이 계약(OpenAPI·스키마)과 맞음 | TL-M01 |
+| TL-M07 | 완료(gap/p9) | 참조 Lake 중계 서버 + 적합성 검사(`tools/lake-reference`, 80-45 ota-reference와 같은 방식) | 적합성 시험이 계약(OpenAPI·스키마)과 맞음 | TL-M01 |
 | TL-M08 | 대기 | 80-45 OTA webhook 범위 맞춤: 차량 결과는 Lake 경유, webhook은 OTA 서버 사실만(결정 U-17). 전환 기간 둘 다면 (vin, publicationId, sequence)로 합침 | 시험: 같은 결과 두 길 → 회신 한 번 | TL-M04, OTA IF-05 |
 | TL-M09 | 대기 | 차량(vECU): FFV1-MSG 서명·Lake 입구 전송·store-and-forward(안전 메시지 72시간·1000건, 한 번에 하나, 오래된 순) | vECU 저장소 변경은 별도 승인 | TL-M01 |
 | TL-M10 | 대기 | 병행(`both`)·전환(`lake`): 지연 SLO·누락 0·차단 확인 결과 동일 대사, 비상 직접 경로 결정(U-19) 반영 | 대사 보고서 | TL-M05~M09·L09 |

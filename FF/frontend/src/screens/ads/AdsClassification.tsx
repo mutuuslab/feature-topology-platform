@@ -77,7 +77,7 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
               {!done && PRE_RELEASE.has(lifecycle) ? (
                 <>
                   <BlockedAction label={L.releaseAction} reason={L.releaseBlocked} />
-                  {v.ruleEnabled ? null : <p className="adc-note">{L.ruleOff}</p>}
+                  <p className="adc-note">{v.ruleEnabled ? L.ruleOn : L.ruleOff}</p>
                 </>
               ) : null}
               <p className="adc-note">{L.countRule}</p>

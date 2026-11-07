@@ -111,6 +111,7 @@ export const adsChange = {
     releaseAction: 'RELEASED로 전이',
     releaseBlocked: 'ADS 여부·DDT 영향 분류가 없어 출시 단계로 전이할 수 없습니다 — Feature 작성자가 분류를 입력하세요.',
     ruleOff: '출시 전이 거부 규칙은 아직 켜지 않았습니다 — 기존 Feature를 한꺼번에 막지 않도록 빈칸부터 채웁니다.',
+    ruleOn: '출시 전이 거부 규칙이 모든 Version에 켜져 있습니다 — 분류를 입력하고 기능안전 담당자가 확정해야 출시할 수 있습니다.',
     noPermission: '분류 입력은 Feature 작성자, 확정은 기능안전 담당자(FSM) 역할이 할 수 있습니다.',
     error: 'Feature 분류를 불러오지 못했습니다 — 다시 시도',
     countRule: '판정은 확정 여부만 봅니다 — 추정값은 미분류로 셉니다.',

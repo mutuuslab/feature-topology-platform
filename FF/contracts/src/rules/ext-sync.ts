@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { Asil, LIFECYCLE, type Lifecycle } from '../enums';
 import { RefId } from '../schemas/refdb';
+import { EPIC_FIELDS, parseJiraFields } from './alm/epic';
 
 export const EXT_SYSTEMS = ['CODEBEAMER', 'JIRA', 'GITLAB'] as const;
 export type ExtSystem = (typeof EXT_SYSTEMS)[number];
@@ -206,6 +207,9 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'JIRA_FIELD_ASIL', what: 'Epic 사용자 정의 필드 ID — ASIL', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_OWNER', what: 'Epic 사용자 정의 필드 ID — 담당 조직', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_FEATURE_DB', what: 'Epic 사용자 정의 필드 ID — Feature DB 기준 ID(대표 먼저, JIRA 안의 FF 앱이 기록)', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELDS', what: 'Epic 사용자 필드 ID 표(JSON, 키 → customfield_xxxxx — 80-50 §4.2). 있는 키는 위 JIRA_FIELD_* 대신 쓴다', required: false },
+    { key: 'JIRA_API', what: "REST 판 — 비우면 3(Cloud), Data Center는 '2'", required: false },
+    { key: 'FF_PUBLIC_URL', what: 'Epic의 FF 링크 칸에 쓸 플랫폼 주소(https://…, 비우면 링크 칸을 쓰지 않음)', required: false },
     { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
     { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
   ],
@@ -227,7 +231,10 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
 /** live에서 빠진 필수 환경 변수 */
 export function missingLiveEnv(system: ExtSystem, get: (key: string) => string | undefined): string[] {
   const autocreate = (get('FF_EPIC_AUTOCREATE') ?? '').trim() !== 'off';
-  return EXT_LIVE_ENV[system].filter((e) => (e.required === true || (e.required === 'epic-autocreate' && autocreate)) && !(get(e.key) ?? '').trim()).map((e) => e.key);
+  // Epic 필드 ID는 JIRA_FIELDS 표에 있으면 옛 변수(JIRA_FIELD_*)가 없어도 된다
+  const table = system === 'JIRA' ? parseJiraFields(get, true) : null;
+  const inTable = (key: string) => !!table && 'ids' in table && EPIC_FIELDS.some((f) => f.legacyEnv === key && table.ids[f.key]);
+  return EXT_LIVE_ENV[system].filter((e) => (e.required === true || (e.required === 'epic-autocreate' && autocreate)) && !(get(e.key) ?? '').trim() && !inTable(e.key)).map((e) => e.key);
 }
 
 /** 외부 계정 → 플랫폼 행위자 (매핑이 없으면 외부 요청을 거부한다 — 직무 분리를 외부로 우회하지 못하게) */

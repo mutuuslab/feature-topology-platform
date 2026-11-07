@@ -66,6 +66,18 @@ describe('JIRA 모의', () => {
     assert.deepEqual(payload.changelog.items, [{ field: 'status', fromString: 'Proposed', toString: 'Approved' }]);
   });
 
+  it('Epic = Feature — 새 Version이면 Proposed로 돌아가는 전이, 변경 이력은 v3 /changelog·v2 expand=changelog', async () => {
+    const tr = await call('GET', '/rest/api/3/issue/FFX-1/transitions');
+    assert.deepEqual(tr.body.transitions.map((x: { name: string }) => x.name).sort(), ['In Progress', 'Proposed']);
+    const log = await call('GET', '/rest/api/3/issue/FFX-1/changelog');
+    assert.equal(log.body.total, 1);
+    assert.equal(log.body.values[0].author.accountId, 'ff-sync@example.com');
+    assert.deepEqual(log.body.values[0].items.map((x: { field: string; fromString: string; toString: string }) => [x.field, x.fromString, x.toString]), [['status', 'Proposed', 'Approved']]);
+    const v2 = await call('GET', '/rest/api/2/issue/FFX-1?expand=changelog');
+    assert.equal(v2.body.changelog.histories[0].id, log.body.values[0].id);
+    assert.equal((await call('GET', '/rest/api/2/issue/FFX-1')).body.changelog, undefined);
+  });
+
   it('검색 — v3 search/jql(nextPageToken)·v2 search(startAt), 사용자 필드 이름 절', async () => {
     for (let n = 0; n < 3; n++) await call('POST', '/rest/api/3/issue', { fields: { project: { key: 'FFX' }, issuetype: { name: 'Story' }, summary: `S${n}`, parent: { key: 'FFX-1' } } });
     const p1 = await call('POST', '/rest/api/3/search/jql', { jql: 'project = FFX AND parent = FFX-1 ORDER BY created ASC', maxResults: 2, fields: ['summary'] });

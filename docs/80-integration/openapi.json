@@ -16195,12 +16195,12 @@
     },
     "/api/integrations/sync/conflicts/{id}/resolve": {
       "post": {
-        "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)",
+        "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용). Epic ASIL 충돌의 외부 값은 기능안전 담당만",
         "tags": [
           "D05-01"
         ],
         "operationId": "resolveExtConflict",
-        "description": "허용 역할: 구현 담당자, Feature 출시 담당자, Feature 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 구현 담당자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -16352,6 +16352,88 @@
               "schema": {
                 "type": "object",
                 "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/reconcile-runs": {
+      "get": {
+        "summary": "주기 대사 실행 기록 — 증분·전체, 훑은 수·반영·충돌·오류",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extReconcileRuns",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/reconcile": {
+      "post": {
+        "summary": "대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "runExtReconcile",
+        "description": "허용 역할: 시스템, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "system": {
+                    "type": "string",
+                    "enum": [
+                      "JIRA",
+                      "CODEBEAMER"
+                    ],
+                    "default": "JIRA"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "INCREMENTAL",
+                      "FULL"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
                 "additionalProperties": false
               }
             }

@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type Role, type WorkQueues } from '@ff/contracts';
 import { actorFor, PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi } from '../../api/hooks';
+import { alm } from '../../copy/alm';
 import { ko } from '../../copy/ko';
 import { inbox as IX, QUEUE_LABEL, QUEUE_ROLE, SLOT_LABEL } from '../../copy/inbox';
 import { KIND_LABEL } from '../../copy/refdb';
@@ -145,7 +146,7 @@ export function useInbox() {
         const block = postReviewBlocker(r, me.id);
         return base({ key: `post:${r.killId}`, queue: 'postReview', item: r.killId, detail: `${r.featureId} · ${IX.postReview(personName(r.requestedBy))}`, who: r.requestedBy, due: r.due, mine: POST_REVIEW_ROLES.some(has) && !block, why: block, to: '/audit/oversight#post-reviews-h', featureId: r.featureId });
       }),
-    ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${c.field}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER'), to: '/integration/connectors?tab=sync' })),
+    ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${alm.conflictField(c.field)}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER') || (c.field === 'asil' && has('SAFETY_OFFICER')), to: '/integration/connectors?tab=sync' })),
   ]);
   const failed = queries.find((q) => q.isError && !optional(q));
   // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다

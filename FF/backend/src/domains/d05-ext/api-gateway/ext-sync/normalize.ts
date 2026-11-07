@@ -7,6 +7,7 @@ import { parseRefs, type ExtChange, type ExtSystem } from '@ff/contracts';
 import { DomainError } from '../../../../kernel/errors';
 import { modeOf } from './adapters';
 import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, JIRA_REF_FIELD, WEBHOOK_SECRET } from './mock-ext.store';
+import { adfText, decodeEpicFields } from './epic-fields';
 
 export const hmac = (system: ExtSystem, raw: string) => `sha256=${createHmac('sha256', WEBHOOK_SECRET[system]()).update(raw).digest('hex')}`;
 
@@ -47,7 +48,8 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
     const kind = type === 'Epic' ? 'EPIC' : type === 'Change Request' ? 'CHANGE_REQUEST' : type === 'Bug' ? 'DEFECT' : null;
     if (!kind || !issue.key) return null;
     const statusChange = (obj(b.changelog).items ?? []).find((x: any) => x?.field === 'status');
-    const text = `${str(f.summary)}\n${str(f.description)}`;
+    const description = adfText(f.description);
+    const text = `${str(f.summary)}\n${description}`;
     const policy = /\b(POL-\d{5})\b/.exec(text)?.[1];
     return {
       system,
@@ -61,7 +63,7 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
       revision: rev(f.updated),
       externalUser: str(obj(b.user).accountId),
       refs: { ...parseRefs(text, JIRA_PROJECTS.CHANGE_REQUEST()), ...(policy ? { policyId: policy } : {}), ...(obj(f.parent).key ? { epicKey: str(obj(f.parent).key) } : {}) },
-      extra: { created: b.webhookEvent === 'jira:issue_created', description: str(f.description).slice(0, 2000), ...(kind === 'EPIC' ? { scope: epicScope(f) } : {}) },
+      extra: { created: b.webhookEvent === 'jira:issue_created', description: description.slice(0, 2000), ...(kind === 'EPIC' ? { scope: epicScope(f), epicFields: decodeEpicFields(f) } : {}) },
     };
   }
   if (system === 'GITLAB') {

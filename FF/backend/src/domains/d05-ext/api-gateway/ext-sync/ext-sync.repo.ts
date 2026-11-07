@@ -12,7 +12,9 @@ export type OutboxOp =
   | { op: 'CREATE_DEFECT'; featureId: string; version: string; killId: string; title: string; body: string }
   | { op: 'VERIFICATION'; key: string; featureId: string; version: string; gate: string; status: string; evidenceRef: string | null }
   | { op: 'COMMIT_STATUS'; key: string; name: string; state: 'success' | 'failed' | 'pending'; description: string }
-  | { op: 'REQ_LINK'; featureId: string; version: string };
+  | { op: 'REQ_LINK'; featureId: string; version: string }
+  /** 옛 버전별 Epic을 Feature Epic(keep)으로 합침 — 라벨·중복 링크·안내 댓글(80-50 §4.1) */
+  | { op: 'LEGACY_EPIC'; key: string; keep: string };
 
 export interface OutboxJob {
   jobId: number;

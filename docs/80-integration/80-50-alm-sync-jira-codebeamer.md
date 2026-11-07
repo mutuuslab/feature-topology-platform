@@ -3,13 +3,13 @@ id: INT-ALM-SYNC
 type: integration
 title: "JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적 / ALM Sync"
 status: approved
-version: 0.2.0
+version: 0.3.0
 owner: feature-architect
 cycle: 0
 traces:
   depends_on: [ARC-FEATURE-REFDB, INT-CODEBEAMER-EVIDENCE]
   related: [INT-CODEBEAMER, ARC-COST-ESTIMATION]
-last_updated: 2026-11-05
+last_updated: 2026-11-07
 ---
 
 # 80-50 JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적
@@ -48,7 +48,8 @@ FF는 **추적 완결성과 승인 상태를 점검해 게이트에 연결**하�
 | D-ALM-15 | 트래커: **산출물별 트래커, FF가 표준 구조 정의**, 이름·필드는 실서버(hub.slexn.com 프로젝트 52 "901.Agile-Waterfall Hybrid")의 ASPICE 트래커 명명을 따름 |
 | D-ALM-16 | 모의 서버: **독립 모의 서버 새로 작성**, 위치 **`FF/tools/ext-mocks`** |
 | D-ALM-17 | (2026-11-05) **실서버는 연결하지 않는다.** 데모 설치는 **모의 연계를 실제 연결처럼 표시**(seamless) — 외부 도구 창의 시연 배지·안내 줄·시연 계정 문구, FF의 '모의(연결 전)'·'모의' 방식 표시·경고색·어댑터 이름·외부 변경 흉내 패널, 모의 항목 본문의 시연 출처 문구를 그리지 않는다. 운영 설치는 그대로 '연결 안 됨'(RD-UX-04). `FF_DEMO_LABELS=on`이면 데모도 표시한다(e2e 기본). 판정은 서버 `GET /api/system/connections`의 `presentation` |
-| D-ALM-18 | (2026-11-05) §11 A-1·A-3·A-4는 기본값 그대로, A-2는 **새 Feature만 `FEAT-BC-0001` 형식**(기존 `FEAT-00001` 유지, 두 형식 허용). A-5·A-6은 실서버를 쓰지 않으므로 해당 없음(모의 서버 설정이 기준) |
+| D-ALM-18 | (2026-11-05) §11 A-1·A-3·A-4는 기본값 그대로, A-2는 ~~새 Feature만 `FEAT-BC-0001` 형식~~ → **2026-11-07 다시 결정(D9 (b)): Feature ID는 그대로(`FEAT-` + 숫자 5자리), 도메인 약어는 화면 표시용 별칭** — 차량 와이어·서명·Unleash 키가 그 형식을 고정한다. 별칭 표시는 다른 묶음(P14)이 맡고, 이 연계는 Epic·codeBeamer `FF Feature ID` 칸에 Feature ID를 그대로 쓴다. A-5·A-6은 실서버를 쓰지 않으므로 해당 없음(모의 서버 설정이 기준) |
+| D-ALM-19 | (2026-11-07 D10) A-1 Epic 상태 = 작업 중 버전 상태(출시 버전은 필드)·A-4 사이버보안 필수 = TARA 대상(차량 외부 통신·원격 제어·OTA) — 기본값 확정 |
 
 같은 날 Feature DB 쪽 결정(30-95·20-94 반영 대상): 런타임 xlsx는 **SheetJS를 백엔드 의존성으로**(같은 날 구현 뒤 다시 결정: 새 의존성 없는 최소 쓰기 유지 — 30-95 D-REF-14), 산정 결과 내보내기는 **엑셀 도구 전체 양식**, Feature ID는 **도메인 포함 형식으로 변경**(형식은 §11 확인), R1+R2 구현 승인.
 
@@ -106,14 +107,16 @@ JIRA 프로젝트 (JIRA_EPIC_PROJECT)
 | 수명주기 | 작업 중 버전 상태 | Status(워크플로) | **양쪽**(판정은 FF 게이트) | 전이 요청 → 게이트·역할 통과 시 반영, 아니면 되돌림 + 사유(현행) |
 | 읽기 전용 | 작업 중 버전 · 출시 버전 · 게이트 G1~G9 · 산출물 작성률 · FF 링크 | 사용자 필드(읽기 전용 화면) + 앱 패널 | FF | 되돌림 |
 
-- 필드 대응은 데이터 표 `contracts/src/rules/alm/jira-fields.ts`(필드 키·주인·변환·불변 여부) — 엔진·화면·모의 서버가 같은 표를 읽는다. 실서버 사용자 필드 ID는 환경 변수 `JIRA_FIELDS`(JSON, 키 → `customfield_xxxxx`)로 모은다(A2 목표).
-- **지금 구현**은 필드마다 환경 변수 하나다: `JIRA_FIELD_COUNTRY/VEHICLE_MODEL/TRIM/ASIL/OWNER`와 Feature DB 필드 **`JIRA_FIELD_FEATURE_DB`**(기본값 모의 `ffFeatureDb`). A2에서 `JIRA_FIELDS`로 흡수하되 옛 변수도 읽어 하위 호환.
+- 필드 대응은 데이터 표 `contracts/src/rules/alm/epic.ts` `EPIC_FIELDS`(필드 키·JIRA 이름·주인 규칙 immutable/request/review/readonly·모양) — 엔진·화면·모의 서버가 같은 표를 읽는다. 실서버 사용자 필드 ID는 환경 변수 `JIRA_FIELDS`(JSON, 키 → `customfield_xxxxx`)로 모은다(**A2 구현**).
+- 옛 필드별 변수 `JIRA_FIELD_COUNTRY/VEHICLE_MODEL/TRIM/ASIL/OWNER/FEATURE_DB`도 그대로 읽는다(`JIRA_FIELDS`에 없는 키만). live에서 읽기 전용 칸 ID가 없으면 그 칸은 쓰지 않는다. FF 링크 칸은 `FF_PUBLIC_URL`.
+- 바뀐 값 판단: webhook·대사로 받은 Epic 필드가 **마지막 관측 값과 다르고 FF 기대값과도 다를 때만** 사람의 변경으로 본다(빈 칸은 거울 쓰기가 채운다). ASIL은 검토함 '외부 연계 충돌'에서 기능안전 담당(SAFETY_OFFICER)만 외부 값을 고를 수 있다(작업 중 버전이 PROPOSED일 때 초안 반영). 설명(Description)은 FF가 처음 만들 때만 쓰고 그 뒤는 JIRA 자유 메모 영역(FF 블록 보호는 하지 않음). `ff:` 라벨 규칙은 쓰지 않는다.
 - **`JIRA_FIELD_FEATURE_DB`(FF 앱이 기록, 첫 값이 대표)가 live의 유일한 원천**이다. 실제 연결(`IF_MODE_14=live`)에서 필드가 비면 거부(REJECTED)하고 댓글로 안내한다 — 라벨은 인정하지 않는다. 라벨 `ref-primary:`·`ref:` 폴백은 모의·데모(live가 아님)에서만 읽는다(FF 앱이 아직 없는 시험용, 2026-11-04 사용자 결정).
 - 같은 범위·같은 대표 기준 행 중복은 JIRA에서 사유를 받을 수 없어 거부한다 — 앱이나 플랫폼 화면에서 사유를 넣으면 허용(30-95 §6.2).
 
 ### 4.3 상태 1:1 (D-ALM-5)
 
 현행 `JIRA_EPIC_STATUS`를 그대로 쓰고 JIRA 워크플로를 FF `FEATURE_TRANSITIONS`와 같은 전이만 갖도록 정의한다(모의 서버가 강제, 실서버는 관리자가 설정).
+Epic이 Feature 하나라서 새 Version을 만들면 Epic이 작업 중 버전(Proposed)으로 돌아간다 — 워크플로에 **모든 상태 → Proposed** 전이를 하나 더 둔다(FF 서비스 계정만 쓴다. 사람이 쓰면 FF가 "새 Version은 플랫폼에서 만듭니다"로 되돌림, 2026-11-07 A2 구현).
 
 | FF | JIRA Epic 상태(기본 이름, `JIRA_EPIC_STATUS`로 바꿈) | JIRA 전이 화면 |
 |---|---|---|
@@ -144,6 +147,8 @@ JIRA에서 전이 → 웹훅 → 매핑된 계정의 FF 전이 요청 → 게이
 | 속도 제한 | 429 `Retry-After` 준수, 대사는 한 번에 100건씩 |
 
 대사 실행 기록 표 `sync_reconcile_run(system, kind, started_at, finished_at, scanned, applied, conflicts, errors)` — `/integration/connectors?tab=sync`에 최근 실행과 차이 건수를 보인다.
+
+**A2 구현(2026-11-07)** `backend/…/ext-sync/alm-reconcile.service.ts`: 증분은 JQL 상대 시각(`-20m`, 서버 시간대 무관)으로 찾은 이슈의 변경 이력(v3 `/changelog`, v2 `expand=changelog`)에서 **마지막 관측 뒤 사람의 마지막 변경**을 그 사람의 요청으로 만들어 webhook과 같은 `ExtSyncService.receive`(중복 버림 `reconcile:{키}:{개정}`·메아리·주인 규칙)로 태운다. 전체는 Feature마다 Epic이 없으면 만들고(live 첫 연결 일괄), 옛 버전별 Epic을 합치고(`supersededBy` + 라벨 `ff-legacy-epic` + Duplicate 링크 + 댓글), FF 주인 필드가 다르면 다시 쓰며, 놓친 상태 차이는 충돌(사람이 고름)로 둔다. 기동 5초 뒤 전체 대사가 한 번도 없으면 한 번, 그 뒤 `FF_ALM_RECONCILE_MS`(15분)·`FF_ALM_FULL_RECONCILE_MS`(하루), `off`로 끈다. API `GET /api/integrations/sync/reconcile-runs`, `POST /api/integrations/sync/reconcile`.
 
 ### 4.6 REST v3 전환
 
@@ -271,9 +276,9 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 
 ## 7. 데이터 모델 변경
 
-| 마이그레이션(080번대 예약 안, 구현 시작 때 재확인) | 내용 |
+| 마이그레이션(번호는 2026-11-07 작업 계획의 ALM 예약 141~149로 바꿈) | 내용 |
 |---|---|
-| 084_alm_jira | `EXT_KINDS`에 JIRA STORY·TASK, `ext_link`에 `role`(FEATURE_EPIC·FUNC_STORY·WP_TASK…), Epic 단위 이전 기록, `sync_reconcile_run` |
+| **141_alm_reconcile**(A2 구현) | `sync_reconcile_run`. `ext_link.role`은 두지 않았다 — 연결 종류(EPIC·STORY·TASK)와 `extra`(기능 ID·산출물 종류)로 가른다. Epic 단위 이전 기록은 `ext_item.extra.supersededBy` |
 | 085_alm_codebeamer | `alm_item`(system·key·tracker_key·status·revision·fields JSON·observed_at), `alm_relation`(from·to·kind·suspect), `alm_wp_result`(feature_id·version·결과 JSON·해시·computed_at) |
 | 086_alm_gate_evidence | 게이트 판정 증거에 완결성 해시·항목 목록, 재판정 요청 표 |
 
@@ -298,7 +303,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | 단계 | 내용 | 완료 기준 |
 |---|---|---|
 | A1 | 모의 서버 2개 + 충실도 기록 + `ext:contract` 뼈대 | 모의 서버 단독 시험, FF live 기동 점검 통과 |
-| A2 | JIRA: Epic = Feature 전환·필드 주인 표·v3 어댑터·FF → Epic 필드 쓰기·증분/전체 대사 | 계약 시험(생성 양방향·충돌·유실 대사) |
+| A2 | JIRA: Epic = Feature 전환·필드 주인 표·v3 어댑터·FF → Epic 필드 쓰기·증분/전체 대사 | 계약 시험(생성 양방향·충돌·유실 대사) — **완료(2026-11-07)** |
 | A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 |
 | A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 |
 | A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e |
@@ -312,7 +317,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | # | 질문 | 제 기본값 |
 |---|---|---|
 | A-1 | 한 Feature에 버전이 여럿일 때 Epic 상태 | **결정(D-ALM-18): 기본값** — 작업 중 버전 상태, 출시 버전은 필드 |
-| A-2 | Feature ID 도메인 포함 형식과 기존 ID | **결정: 새 Feature만** `FEAT-BC-0001`(Feature DB 도메인 약어 2글자 + 도메인별 4자리), 기존 `FEAT-00001`은 유지·두 형식 허용 |
+| A-2 | Feature ID 도메인 포함 형식과 기존 ID | ~~새 Feature만 `FEAT-BC-0001`~~ → **다시 결정(2026-11-07 D9 (b)): ID는 그대로, 도메인 약어는 표시용 별칭**(D-ALM-18) |
 | A-3 | 실제 JIRA 환경(Cloud·Data Center)과 앱 형태 | **결정: 기본값** — 모의는 Cloud v3, 앱은 모의 패널까지 |
 | A-4 | 사이버보안 요구가 필수인 Feature의 기준 | **결정: 기본값** — 안전 프로파일의 TARA 대상(차량 외부 통신·원격 제어·OTA 관련) |
 | A-5 | codeBeamer 실서버 버전, 사내 Java 리스너 플러그인 유무 | **역공학으로 확인(80-51)**: 바깥 webhook 없음·관계별 suspect REST 없음 → 주기 대사 + FF 계산이 기본. 실서버 판 번호와 플러그인 유무만 남음 |

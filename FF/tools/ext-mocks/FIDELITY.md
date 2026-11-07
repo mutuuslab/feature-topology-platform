@@ -32,13 +32,14 @@ FF를 모의 서버에 붙이기: `IF_MODE_14=live JIRA_URL=http://127.0.0.1:913
 | 검색 | v3 `search/jql`(GET·POST, `nextPageToken`·`isLast`), v2 `search`(`startAt`·`total`) | 같음 |
 | JQL | AND 절만: `project`·`issuetype`·`key`·`parent`·`status`·`labels`·`updated`/`created`(상대 `-20m`, 절대 `yyyy-MM-dd HH:mm`)·사용자 필드 이름·`cf[n]`, `= != > >= < <= in, not in`, `ORDER BY`. OR·함수(`currentUser()`)·`~`는 400 | 단순화 |
 | 사용자 필드 | `customfield_10010`~`10021`(FF Country·Vehicle Model·Trim·ASIL·Owner Team·Feature DB·Feature ID·Working/Release Version·Gates·Work Products·Link) | 가정 — 실서버는 관리자가 만들고 FF는 `JIRA_FIELDS`·`JIRA_FIELD_*`로 대응 |
-| 워크플로 | Epic = FF 수명주기 전이만(`FEATURE_TRANSITIONS`, 상태 이름 `JIRA_EPIC_STATUS`로 바꿈). Story·Task·Bug = To Do → In Progress → Done. Change Request = FF CR 상태 사이 자유 전이 | Epic·Story는 가정(80-50 §4.3), CR은 단순화 |
+| 워크플로 | Epic = FF 수명주기 전이만(`FEATURE_TRANSITIONS`, 상태 이름 `JIRA_EPIC_STATUS`로 바꿈) + 모든 상태 → Proposed(새 Version — Epic이 작업 중 버전을 따른다, 80-50 §4.1. FF 서비스 계정만 쓰고 사람이 쓰면 FF가 되돌림). Story·Task·Bug = To Do → In Progress → Done. Change Request = FF CR 상태 사이 자유 전이 | Epic·Story는 가정(80-50 §4.3), CR은 단순화. 실서버 관리자가 'Proposed로' 전이를 하나 더 만들어야 한다 |
+| 변경 이력 | v3 `GET issue/{key}/changelog`(startAt·maxResults·total·isLast, 오래된 것부터), v2 `GET issue/{key}?expand=changelog`(`changelog.histories`). 항목마다 `author.accountId`·`created`·`items[field,fromString,toString]`. webhook의 `changelog.id`와 같은 id | 같음(필드 일부만). FF 증분 대사가 누가 바꿨는지를 여기서 읽는다(80-50 §4.5) |
 | 전이 ID | 대상 상태 순번 + 11 | 가정 — 실서버 ID는 워크플로마다 다르다(FF는 이름으로 찾는다) |
 | webhook | 생성·수정·전이·삭제·댓글마다 FF로 POST, `X-Hub-Signature: sha256=HMAC(본문)`, `X-Atlassian-Webhook-Identifier` | 같음(Cloud는 서명 webhook이 앱·관리자 설정에 따라 다르다 — 80-50 §4.4) |
 | webhook 본문 | `{timestamp, webhookEvent, issue_event_type_name, user, issue(v2 모양), changelog?, comment?}` | 같음(필드 일부만) |
 | 재전송 | 없음 — 유실은 `/_mock/drop-next-webhook`으로 만들고 FF 대사가 메꾼다 | 같음(실서버도 재전송 보장 없음) |
 | 원격 링크 | `GET issue/{key}/remotelink`는 빈 목록 | 단순화 |
-| Epic 앱 패널 | `/_mock/app/epic-form` | 아직 없음(A2) |
+| Epic 앱 패널 | `/_mock/app/epic-form` | 아직 없음(A6) |
 
 ## codeBeamer
 
@@ -67,6 +68,7 @@ FF를 모의 서버에 붙이기: `IF_MODE_14=live JIRA_URL=http://127.0.0.1:913
 ## 실서버 확인 뒤 고칠 곳
 
 - JIRA 사용자 필드 ID·워크플로 전이 ID — 실서버에서 읽어 `JIRA_FIELDS`·상태 대응으로(80-50 §11 A-5).
+- JIRA 라벨에는 빈칸을 쓸 수 없다 — 합친 옛 Epic 라벨은 `ff-legacy-epic`. 'Duplicate' 링크 유형 이름이 실서버와 같은지.
 - codeBeamer 트래커·필드 ID — `CODEBEAMER_TRACKERS`(A-6). `customField[n]` 번호 규칙.
 - codeBeamer 연관 유형 이름 4~8 — 실서버 유형 목록(`GET associations/types`)으로 `CODEBEAMER_RELATIONS` 대응.
 - `hasSuspectedLink`가 위·아래 어느 항목에 걸리는지.

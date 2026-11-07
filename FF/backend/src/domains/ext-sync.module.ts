@@ -8,11 +8,14 @@ import { ExtSyncController } from './d05-ext/api-gateway/ext-sync/ext-sync.contr
 import { ExtSyncRepo } from './d05-ext/api-gateway/ext-sync/ext-sync.repo';
 import { ExtSyncService } from './d05-ext/api-gateway/ext-sync/ext-sync.service';
 import { MockExtStore } from './d05-ext/api-gateway/ext-sync/mock-ext.store';
+import { FeatureEpics } from './d05-ext/api-gateway/ext-sync/feature-epic';
+import { AlmReconcileService } from './d05-ext/api-gateway/ext-sync/alm-reconcile.service';
+import { AlmController } from './d05-ext/api-gateway/ext-sync/alm.controller';
 
 @Module({
   imports: [D01PolicyModule, PolicyModule],
-  controllers: [ExtSyncController],
-  providers: [ExtSyncRepo, MockExtStore, ExtAdapters, ExtSyncService, ChangeRecordService],
+  controllers: [ExtSyncController, AlmController],
+  providers: [ExtSyncRepo, MockExtStore, ExtAdapters, ExtSyncService, ChangeRecordService, FeatureEpics, AlmReconcileService],
   exports: [ExtSyncService],
 })
 export class ExtSyncModule {}

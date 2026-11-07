@@ -18,6 +18,7 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { RestorePolicyRevisionBody } from './rules/policy-version';
+import { RunReconcileBody } from './rules/alm/api';
 import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { FlagSourceManifest } from './schemas/flag-source';
@@ -401,10 +402,13 @@ export const ROUTES: RouteDef[] = [
   { name: 'extFeatureEpics', method: 'GET', path: '/api/integrations/sync/epics', summary: 'Feature 버전별 JIRA Epic — 키·상태·동기 상태·플랫폼 Lifecycle 기준 상태(목록 화면용 한 번 조회)', component: 'D05-01' },
   { name: 'extChangeRequests', method: 'GET', path: '/api/integrations/sync/change-requests', summary: 'JIRA 변경요청(CR)과 연결된 정책 상태', component: 'D05-01' },
   { name: 'extConflicts', method: 'GET', path: '/api/integrations/sync/conflicts', summary: '동기화 충돌 — 양쪽 값, 처리 결과', component: 'D05-01', query: ['status'] },
-  { name: 'resolveExtConflict', method: 'POST', path: '/api/integrations/sync/conflicts/:id/resolve', summary: '충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)', component: 'D05-01', roles: ['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER'], body: ResolveConflictBody },
+  { name: 'resolveExtConflict', method: 'POST', path: '/api/integrations/sync/conflicts/:id/resolve', summary: '충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용). Epic ASIL 충돌의 외부 값은 기능안전 담당만', component: 'D05-01', roles: ['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER'], body: ResolveConflictBody },
   { name: 'extOutbox', method: 'GET', path: '/api/integrations/sync/outbox', summary: '보낼 함 — 외부 쓰기 작업(대기·완료·실패·충돌)', component: 'D05-01', query: ['system', 'status'] },
   { name: 'extInbox', method: 'GET', path: '/api/integrations/sync/inbox', summary: '받은 함 — 외부 변경과 처리 결과(반영·거부·매핑 없음)', component: 'D05-01', query: ['system', 'outcome'] },
   { name: 'drainExtSync', method: 'POST', path: '/api/integrations/sync/drain', summary: '보낼 함 지금 보내기', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: EmptyBody },
+  // 80-50 JIRA·codeBeamer 연계 — 대사(§4.5)
+  { name: 'extReconcileRuns', method: 'GET', path: '/api/integrations/sync/reconcile-runs', summary: '주기 대사 실행 기록 — 증분·전체, 훑은 수·반영·충돌·오류', component: 'D05-01' },
+  { name: 'runExtReconcile', method: 'POST', path: '/api/integrations/sync/reconcile', summary: '대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: RunReconcileBody },
   { name: 'policyExtLinks', method: 'GET', path: '/api/policies/:id/ext-links', summary: '정책에 연결된 외부 항목(JIRA CR)', component: 'D05-01', sample: { id: 'POL-00001' } },
   { name: 'linkPolicyChangeRequest', method: 'POST', path: '/api/policies/:id/change-request', summary: '정책 ↔ 근거 JIRA CR 연결', component: 'D05-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: LinkChangeRequestBody },
   { name: 'extWebhook', method: 'POST', path: '/api/webhooks/:system', summary: '외부 webhook 수신(gitlab·jira·codebeamer) — 서명 확인 후 주인 규칙으로 처리', component: 'D05-01', body: z.record(z.string(), z.unknown()), public: true },

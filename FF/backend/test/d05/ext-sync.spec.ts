@@ -3,8 +3,11 @@
 //   받기: JIRA Epic·CR 변경 → 가드를 탄 요청(반영/거부·되돌림), codeBeamer 요구 개정 → G2 재검토, GitLab MR 병합·파이프라인 → 변경 기록
 //   안전장치: 서명 위조 401, 같은 webhook 두 번 → 한 번만, 매핑 없는 외부 계정 거부, 바깥이 몰래 바뀌면 충돌 → 사람이 고름
 import { INestApplication } from '@nestjs/common';
+import { createHmac } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ExtAdapters } from '../../src/domains/d05-ext/api-gateway/ext-sync/adapters';
+import { ExtSyncRepo } from '../../src/domains/d05-ext/api-gateway/ext-sync/ext-sync.repo';
+import { DB } from '../../src/kernel/db';
 import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
 import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
 
@@ -47,12 +50,15 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     expect(crs[0].policies[0]).toMatchObject({ policyId: expect.stringMatching(/^POL-/) });
   });
 
-  it('JIRA → 플랫폼: 출시 담당이 Epic을 Deprecated로 바꾸면 Lifecycle 전이 요청으로 반영된다', async () => {
+  // Epic = Feature(80-50 §4.1) — 작업 중 버전이 없으면 가장 높은 출시 버전(1.6.0)의 상태를 따른다
+  it('JIRA → 플랫폼: 출시 담당이 Epic을 Deprecated로 바꾸면 Epic이 따르는 버전의 Lifecycle 전이 요청으로 반영된다', async () => {
     const epic = await epicOf('FEAT-00002', '1.5.0');
+    expect((await trace('FEAT-00002', '1.5.0')).epicVersion).toBe('1.6.0');
     const r = (await act('jira', { key: epic.key, action: 'TRANSITION', status: 'Deprecated', externalUser: 'park.release' })).body;
     expect(r.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringContaining('RELEASED → DEPRECATED') });
-    expect(await lifecycleOf('FEAT-00002', '1.5.0')).toBe('DEPRECATED');
-    const audit = (await http().get('/api/audit?target=FEAT-00002@1.5.0').expect(200)).body.items;
+    expect(await lifecycleOf('FEAT-00002', '1.6.0')).toBe('DEPRECATED');
+    expect(await lifecycleOf('FEAT-00002', '1.5.0')).toBe('RELEASED');
+    const audit = (await http().get('/api/audit?target=FEAT-00002@1.6.0').expect(200)).body.items;
     expect(audit.some((a: any) => a.action === 'FEATURE_TRANSITION RELEASED→DEPRECATED' && a.actorId === 'usr-coordinator')).toBe(true);
     // 메아리: 플랫폼 거울 쓰기는 상태가 같아 댓글만
     expect((await mockItem('jira', epic.key)).status).toBe('Deprecated');
@@ -105,10 +111,10 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
   });
 
   it('매핑 없는 외부 계정은 받지 않는다(직무 분리를 외부로 우회하지 못함)', async () => {
-    const epic = await epicOf('FEAT-00002', '1.6.0');
+    const epic = await epicOf('FEAT-00004', '4.1.0');
     const r = (await act('jira', { key: epic.key, action: 'TRANSITION', status: 'Deprecated', externalUser: 'stranger' })).body;
     expect(r.result.outcome).toBe('UNMAPPED');
-    expect(await lifecycleOf('FEAT-00002', '1.6.0')).toBe('RELEASED');
+    expect(await lifecycleOf('FEAT-00004', '4.1.0')).toBe('RELEASED');
     expect((await mockItem('jira', epic.key)).status).toBe('Released');
   });
 
@@ -125,13 +131,15 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     expect(ok2.body.duplicate).toBe(true);
   });
 
-  it('플랫폼 → JIRA: 플랫폼에서 전이하면 Epic 상태와 댓글이 따라간다', async () => {
+  it('플랫폼 → JIRA: 플랫폼에서 전이하면 댓글이 따라가고, Epic 상태는 Epic이 따르는 버전 상태', async () => {
+    // 옛 버전 4.0.1을 내려도 Epic은 4.1.0(가장 높은 출시 버전) 상태 그대로 — 버전은 댓글로 남는다
     await http().post('/api/features/FEAT-00004/versions/4.0.1/transitions').set(RELEASE).send({ to: 'DEPRECATED', reason: '후속 버전으로 대체' }).expect(200);
     await drain();
     const epic = await epicOf('FEAT-00004', '4.0.1');
+    expect(epic.key).toBe((await epicOf('FEAT-00004', '4.1.0')).key);
     const it = await mockItem('jira', epic.key);
-    expect(it.status).toBe('Deprecated');
-    expect(it.comments.at(-1).text).toContain('RELEASED → DEPRECATED');
+    expect(it.status).toBe('Released');
+    expect(it.comments.at(-1).text).toContain('4.0.1 RELEASED → DEPRECATED');
     expect(epic.syncState).toBe('SYNCED');
   });
 
@@ -171,6 +179,126 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+
+  describe('Epic = Feature (80-50 A2) — 필드 주인·새 Version·대사', () => {
+    const signed = (body: unknown) => {
+      const raw = JSON.stringify(body);
+      return http().post('/api/webhooks/jira').set({ 'content-type': 'application/json', 'x-hub-signature': `sha256=${createHmac('sha256', 'ff-mock-jira-secret').update(raw).digest('hex')}`, 'x-atlassian-webhook-identifier': `t-${Math.random()}` }).send(raw);
+    };
+    const reconcile = (kind: 'INCREMENTAL' | 'FULL') => http().post('/api/integrations/sync/reconcile').set(INTEGRATOR).send({ system: 'JIRA', kind }).expect(200);
+
+    it('초기 상태: Feature마다 Epic 하나가 모든 버전에 연결되고 제목·범위·버전·게이트 칸을 FF가 쓴다', async () => {
+      const a = await epicOf('FEAT-00001', '2.1.0');
+      const b = await epicOf('FEAT-00001', '2.2.0');
+      expect(a.key).toBe(b.key);
+      const it = await mockItem('jira', a.key);
+      expect(it.title).toMatch(/^\[FF\] .+ — .+\/.+\/.+$/);
+      expect(it.fields.epic).toMatchObject({ featureId: 'FEAT-00001', workingVersion: '2.2.0', country: expect.any(String) });
+      expect(it.fields.epic.gates).toMatch(/^G1 /);
+      const epics = (await http().get('/api/integrations/sync/epics').expect(200)).body.items;
+      expect(new Set(epics.filter((e: any) => e.feature.startsWith('FEAT-00001@')).map((e: any) => e.key)).size).toBe(1);
+    });
+
+    it('새 Version을 만들면 같은 Epic에 연결되고 Epic이 그 버전(Proposed)을 따른다 — 사람이 Proposed로 옮기면 되돌림', async () => {
+      const before = await epicOf('FEAT-00022', '1.0.0');
+      const v = (await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', bump: 'minor', reason: '개선', changes: {} }).expect(201)).body.feature.version;
+      await drain();
+      const after = await epicOf('FEAT-00022', v);
+      expect(after.key).toBe(before.key);
+      const it = await mockItem('jira', after.key);
+      expect(it.status).toBe('Proposed');
+      expect(it.fields.epic).toMatchObject({ workingVersion: v, releaseVersion: '1.0.0' });
+      // 출시만 있는 Feature에서 사람이 Epic을 Proposed로 — FF 전이가 아니므로 거부(새 Version은 플랫폼에서)
+      const rel = await epicOf('FEAT-00004', '4.1.0');
+      const r = (await act('jira', { key: rel.key, action: 'TRANSITION', status: 'Proposed', externalUser: 'park.release' })).body;
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('새 Version은 플랫폼에서') });
+      expect((await mockItem('jira', rel.key)).status).not.toBe('Proposed');
+    });
+
+    it('범위(국가)·읽기 전용 칸을 JIRA에서 바꾸면 되돌리고 사유 댓글', async () => {
+      const epic = await epicOf('FEAT-00022', '1.0.0');
+      const r = (await act('jira', { key: epic.key, action: 'EDIT', scope: { country: 'US' }, externalUser: 'kim.author' })).body;
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('국가') });
+      let it = await mockItem('jira', epic.key);
+      expect(it.fields.epic.country).toBe('KR');
+      expect(it.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringContaining('새 Feature로 등록') });
+      // 읽기 전용 칸 — 실제 JIRA webhook 모양(사용자 필드 ID)
+      const cur = await mockItem('jira', epic.key);
+      const res = await signed({ webhookEvent: 'jira:issue_updated', user: { accountId: 'kim.author' }, issue: { key: epic.key, fields: { summary: cur.title, issuetype: { name: 'Epic' }, status: { name: cur.status }, updated: new Date(Date.parse(cur.updatedAt) + 1000).toISOString(), ffReleaseVersion: '9.9.9' } } }).expect(202);
+      expect(res.body).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('출시 버전') });
+      await drain();
+      it = await mockItem('jira', epic.key);
+      expect(it.fields.epic.releaseVersion).toBe('1.0.0');
+    });
+
+    it('이름·담당 — 작업 중 버전이 PROPOSED면 초안 수정 요청(작성 권한), 아니면 되돌림 · ASIL은 기능안전 담당이 고른다', async () => {
+      const epic = await epicOf('FEAT-00013', '0.3.0');
+      const it = await mockItem('jira', epic.key);
+      const renamed = it.title.replace(/^\[FF\] (.+?) — /, '[FF] $1 개정 — ');
+      const r = (await act('jira', { key: epic.key, action: 'EDIT', title: renamed, scope: { ownerId: '샤시상품기획팀' }, externalUser: 'kim.author' })).body;
+      expect(r.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringContaining('초안 0.3.0 수정') });
+      const f = (await http().get('/api/features/FEAT-00013/versions/0.3.0').expect(200)).body.feature;
+      expect(f.name).toMatch(/ 개정$/);
+      expect(f.ownerId).toBe('샤시상품기획팀');
+      // 출시된 Feature의 이름은 바꿀 수 없다(새 Version)
+      const rel = await epicOf('FEAT-00004', '4.1.0');
+      const relItem = await mockItem('jira', rel.key);
+      const r2 = (await act('jira', { key: rel.key, action: 'EDIT', title: relItem.title.replace(' — ', ' 2 — '), externalUser: 'kim.author' })).body;
+      expect(r2.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('새 Version') });
+      await drain();
+      expect((await mockItem('jira', rel.key)).title).toBe(relItem.title);
+      // ASIL — 충돌(사람이 고름), 외부 값은 기능안전 담당만
+      const r3 = (await act('jira', { key: epic.key, action: 'EDIT', scope: { asil: 'D' }, externalUser: 'kim.author' })).body;
+      expect(r3.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringContaining('기능안전 담당 확인 대기') });
+      const c = (await http().get('/api/integrations/sync/conflicts?status=OPEN').expect(200)).body.items.find((x: any) => x.key === epic.key && x.field === 'asil');
+      expect(c).toMatchObject({ externalValue: 'D' });
+      await http().post(`/api/integrations/sync/conflicts/${c.conflictId}/resolve`).set(INTEGRATOR).send({ choose: 'EXTERNAL', reason: '변경 요청' }).expect(403);
+      await http().post(`/api/integrations/sync/conflicts/${c.conflictId}/resolve`).set(actor('seo.safety', 'SAFETY_OFFICER')).send({ choose: 'PLATFORM', reason: 'HARA 결과 유지' }).expect(200);
+      await drain();
+      expect((await mockItem('jira', epic.key)).fields.epic.asil).toBe(f.asil);
+    });
+
+    it('웹훅을 놓친 변경은 증분 대사가 같은 가드로 받는다 — 실행 기록이 남는다', async () => {
+      const epic = await epicOf('FEAT-00002', '1.6.0');
+      // 1.6.0은 앞 시험에서 DEPRECATED — 출시 담당이 JIRA에서 Closed로(웹훅 유실)
+      await act('jira', { key: epic.key, action: 'TRANSITION', status: 'Closed', externalUser: 'park.release', deliver: false });
+      expect(await lifecycleOf('FEAT-00002', '1.6.0')).toBe('DEPRECATED');
+      const run = (await reconcile('INCREMENTAL')).body;
+      expect(run).toMatchObject({ kind: 'INCREMENTAL', system: 'JIRA', errors: 0 });
+      expect(run.applied).toBeGreaterThanOrEqual(1);
+      expect(await lifecycleOf('FEAT-00002', '1.6.0')).toBe('RETIRED');
+      const inbox = (await http().get('/api/integrations/sync/inbox?system=jira').expect(200)).body.items;
+      expect(inbox.find((x: any) => x.key === epic.key && x.deliveryId.startsWith('reconcile:'))).toMatchObject({ outcome: 'APPLIED', externalUser: 'park.release' });
+      // 한 번 더 — 바뀐 것 없음
+      expect((await reconcile('INCREMENTAL')).body.applied).toBe(0);
+      const runs = (await http().get('/api/integrations/sync/reconcile-runs').expect(200)).body.items;
+      expect(runs[0]).toMatchObject({ kind: 'INCREMENTAL', finishedAt: expect.any(String) });
+    });
+
+    it('전체 대사 — Epic이 없는 Feature는 만들고, 옛 버전별 Epic은 Feature Epic 하나로 합친다', async () => {
+      const store = app.get(ExtAdapters).store;
+      // 옛 방식: FEAT-00001 2.1.0에만 따로 연결된 Epic(버전마다 Epic이던 때)
+      const legacy = store.create('JIRA', 'EPIC', { title: 'FEAT-00001@2.1.0 옛 Epic', status: 'In Verification', by: 'kim.author' });
+      const db = app.get(ExtSyncRepo);
+      db.putItem({ system: 'JIRA', kind: 'EPIC', key: legacy.key, url: `https://jira.ff.example/browse/${legacy.key}`, title: legacy.title, status: legacy.status, revision: Date.parse(legacy.updatedAt), syncState: 'SYNCED', syncedAt: null, stale: false, extra: {} });
+      db.link('JIRA', legacy.key, 'FEATURE', 'FEAT-00001@2.1.0', 'seed');
+      const keep = (await epicOf('FEAT-00001', '2.2.0')).key;
+      // Epic 없는 Feature — 연결을 끊어 흉내(live로 처음 붙일 때)
+      const lonely = (await epicOf('FEAT-00013', '0.3.0')).key;
+      get<any>(DB).run("DELETE FROM ext_link WHERE system = 'JIRA' AND ext_key = ?", lonely);
+      const run = (await reconcile('FULL')).body;
+      expect(run).toMatchObject({ kind: 'FULL', errors: 0 });
+      expect(run.notes.join('\n')).toContain(`이전 Epic ${legacy.key} → ${keep}`);
+      expect(run.notes.join('\n')).toContain('FEAT-00013 Epic 만들기');
+      expect((await epicOf('FEAT-00001', '2.1.0')).key).toBe(keep);
+      const old = await mockItem('jira', legacy.key);
+      expect(old.fields).toMatchObject({ labels: ['ff-legacy-epic'], duplicateOf: keep });
+      expect(old.comments.at(-1).text).toContain(`${keep}(으)로 합쳤습니다`);
+      const made = await epicOf('FEAT-00013', '0.3.0');
+      expect(made.key).not.toBe(lonely);
+      expect((await mockItem('jira', made.key)).fields.epic.featureId).toBe('FEAT-00013');
+    });
   });
 
   describe('새 Feature 한 건으로 — 요구 연결·CR ↔ 정책 승인·요구 개정·MR 병합', () => {

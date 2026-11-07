@@ -919,4 +919,12 @@ CREATE TRIGGER flag_source_manifest_no_delete BEFORE DELETE ON flag_source_manif
 CREATE TABLE cost_actual (est_id TEXT NOT NULL, ref_id TEXT NOT NULL, actual REAL NOT NULL CHECK (actual > 0), updated_by TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (est_id, ref_id));
 `,
   },
+  {
+    // 80-50 A2 JIRA·codeBeamer 주기 대사(§4.5) — 증분·전체 실행 기록. 번호 141~149는 ALM 묶음 예약
+    name: '141_alm_reconcile',
+    sql: `
+CREATE TABLE sync_reconcile_run (run_id INTEGER PRIMARY KEY AUTOINCREMENT, system TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('INCREMENTAL','FULL')), started_at TEXT NOT NULL, finished_at TEXT, doc TEXT NOT NULL);
+CREATE INDEX sync_reconcile_run_system ON sync_reconcile_run (system, started_at);
+`,
+  },
 ];

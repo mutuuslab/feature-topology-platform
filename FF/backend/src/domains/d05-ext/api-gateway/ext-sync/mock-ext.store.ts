@@ -7,6 +7,7 @@ import type { EpicScopeField, ExtKind, ExtSystem } from '@ff/contracts';
 import { Clock } from '../../../../kernel/clock';
 import { DB, type Db } from '../../../../kernel/db';
 import { isProduction } from '../../../../kernel/runtime-config';
+import { encodeEpicFields, epicFieldIds } from './epic-fields';
 
 export interface MockComment {
   at: string;
@@ -37,16 +38,16 @@ export const EXT_BASE_URL: Record<ExtSystem, () => string> = {
 };
 export const GITLAB_PROJECT = () => process.env.GITLAB_PROJECT ?? 'vehicle/feature-sw';
 export const JIRA_PROJECTS = { EPIC: () => process.env.JIRA_EPIC_PROJECT ?? 'FFE', CHANGE_REQUEST: () => process.env.JIRA_CR_PROJECT ?? 'FFCR', DEFECT: () => process.env.JIRA_DEFECT_PROJECT ?? 'FFD' };
-/** Epic 적용 범위가 들어 있는 JIRA 사용자 정의 필드 ID — 회사 JIRA 필드 ID(customfield_xxxxx)를 환경 변수로 준다 */
+/** Epic 적용 범위가 들어 있는 JIRA 사용자 정의 필드 ID — JIRA_FIELDS(JSON) 또는 옛 JIRA_FIELD_*(epic-fields.ts, 80-50 §4.2) */
 export const JIRA_EPIC_FIELDS: Record<EpicScopeField, () => string> = {
-  country: () => process.env.JIRA_FIELD_COUNTRY ?? 'ffCountry',
-  vehicleModel: () => process.env.JIRA_FIELD_VEHICLE_MODEL ?? 'ffVehicleModel',
-  trim: () => process.env.JIRA_FIELD_TRIM ?? 'ffTrim',
-  asil: () => process.env.JIRA_FIELD_ASIL ?? 'ffAsil',
-  ownerId: () => process.env.JIRA_FIELD_OWNER ?? 'ffOwner',
+  country: () => epicFieldIds().country ?? '',
+  vehicleModel: () => epicFieldIds().vehicleModel ?? '',
+  trim: () => epicFieldIds().trim ?? '',
+  asil: () => epicFieldIds().asil ?? '',
+  ownerId: () => epicFieldIds().ownerId ?? '',
 };
 /** Epic의 기준 기능 ID 사용자 필드(30-95 §7, D-REF-16) — JIRA 안의 FF 앱이 쓴다. 필드가 비면 라벨(ref:·ref-primary:)을 읽는다 */
-export const JIRA_REF_FIELD = () => process.env.JIRA_FIELD_FEATURE_DB ?? 'ffFeatureDb';
+export const JIRA_REF_FIELD = () => epicFieldIds().featureDb ?? '';
 export const CODEBEAMER_TRACKER = () => Number(process.env.CODEBEAMER_REQ_TRACKER ?? 4711);
 
 export function extUrl(system: ExtSystem, kind: string, key: string): string {
@@ -79,6 +80,10 @@ export class MockExtStore {
     private readonly clock: Clock,
   ) {}
 
+  /** 지금 시각(ms) — 시험 시계 */
+  now(): number {
+    return this.clock.now().getTime();
+  }
   get(system: ExtSystem, key: string): MockItem | null {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM mock_ext_item WHERE system = ? AND ext_key = ?', system, key);
     return r ? (JSON.parse(r.doc) as MockItem) : null;
@@ -150,7 +155,7 @@ export class MockExtStore {
           fields: {
             summary: it.title,
             description: it.body,
-            issuetype: { name: it.kind === 'EPIC' ? 'Epic' : it.kind === 'DEFECT' ? 'Bug' : 'Change Request' },
+            issuetype: { name: JIRA_TYPE_NAME[it.kind] ?? 'Change Request' },
             status: { name: it.status },
             updated: it.updatedAt,
             ...(it.fields.parentKey ? { parent: { key: it.fields.parentKey } } : {}),
@@ -162,6 +167,10 @@ export class MockExtStore {
             ),
             // 기준 기능 ID — 라벨(첫 값이 대표: ref-primary:, 나머지 ref:). 필드를 설정했으면 그 필드에도 싣는다(30-95 §7)
             ...epicRefPayload((it.fields.scope as { refIds?: unknown } | undefined)?.refIds),
+            // FF가 쓴 Epic 필드(80-50 §4.2) — 범위·Feature DB·읽기 전용 칸
+            ...(it.fields.epic ? encodeEpicFields(it.fields.epic as Record<string, unknown>) : {}),
+            // 하위 이슈 사용자 필드(Story의 FF Function ID 등)
+            ...((it.fields.custom ?? {}) as Record<string, unknown>),
           },
         },
         ...(change.fromStatus !== null && change.fromStatus !== it.status ? { changelog: { items: [{ field: 'status', fromString: change.fromStatus, toString: it.status }] } } : {}),
@@ -216,6 +225,9 @@ export class MockExtStore {
     return { system: 'CODEBEAMER', headers: { 'x-cb-delivery': deliveryId, 'x-cb-signature': '' }, body };
   }
 }
+
+/** 모의 JIRA 이슈 유형 이름(실서버 유형 이름과 같다) */
+const JIRA_TYPE_NAME: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request' };
 
 /** 모의 JIRA Epic 본문의 기준 기능 ID — 라벨과(설정 시) 사용자 필드 */
 function epicRefPayload(refIds: unknown): Record<string, unknown> {

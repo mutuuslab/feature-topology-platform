@@ -37,6 +37,14 @@ export interface Issue {
   created: number;
   updated: number;
   comments: Comment[];
+  /** 변경 이력(changelog) — 대사가 누가·무엇을 바꿨는지 읽는다(옛 상태 파일에는 없을 수 있다) */
+  history?: History[];
+}
+export interface History {
+  id: string;
+  author: string;
+  created: number;
+  items: { field: string; fromString: string | null; toString: string | null }[];
 }
 export interface Link {
   id: string;
@@ -80,8 +88,11 @@ export function workflows(env: Env = process.env): Record<string, { statuses: st
   // 결함은 Open에서 시작한다(FF 긴급 차단 결함이 'Open'으로 만든다 — ext:check가 이 상태를 확인)
   const bug = { statuses: ['Open', 'In Progress', 'Resolved', 'Closed'], transitions: [['Open', 'In Progress'], ['In Progress', 'Resolved'], ['Resolved', 'Closed'], ['Resolved', 'Open'], ['Closed', 'Open']] as [string, string][] };
   const crStatuses = [...new Set(Object.values(cr))];
+  const epicStatuses = [...new Set(Object.values(epic))];
+  // Epic = Feature(80-50 §4.1) — 새 Version을 만들면 Epic이 작업 중 버전 상태(Proposed)로 돌아간다. FF 서비스 계정만 쓰는 전이(사람이 쓰면 FF가 되돌림)
+  const restart = epicStatuses.filter((s) => s !== epic.PROPOSED).map((s) => [s, epic.PROPOSED] as [string, string]);
   return {
-    Epic: { statuses: [...new Set(Object.values(epic))], transitions: C.FEATURE_TRANSITIONS.map((t) => [epic[t.from], epic[t.to]] as [string, string]) },
+    Epic: { statuses: epicStatuses, transitions: [...C.FEATURE_TRANSITIONS.map((t) => [epic[t.from], epic[t.to]] as [string, string]), ...restart] },
     // CR 상태는 FF CR 표의 순서대로 앞으로만 + 반려(같은 표에 있으면). 실서버는 관리자가 워크플로를 만든다
     'Change Request': { statuses: crStatuses, transitions: crStatuses.flatMap((a) => crStatuses.filter((b) => b !== a).map((b) => [a, b] as [string, string])) },
     Story: simple,
@@ -294,8 +305,17 @@ export async function startJiraMock(o: JiraMockOptions = {}): Promise<MockServer
     }
     if (!items.length) return;
     i.updated = Math.max(now(), i.updated + 1);
-    webhook('jira:issue_updated', i, user, { changelog: { id: randomUUID(), items } });
+    const id = record(i, user, items);
+    webhook('jira:issue_updated', i, user, { changelog: { id, items } });
   }
+
+  /** 변경 이력 한 줄 — changelog API와 webhook이 같은 id */
+  function record(i: Issue, user: string, items: History['items']): string {
+    const h: History = { id: String(S().nextId++), author: user, created: i.updated, items };
+    i.history = [...(i.history ?? []), h];
+    return h.id;
+  }
+  const historyJson = (h: History) => ({ id: h.id, author: { accountId: h.author, displayName: h.author }, created: jiraTime(h.created), items: h.items.map((x) => ({ ...x, from: null, to: null })) });
 
   function transitions(i: Issue) {
     return flows[i.type].transitions
@@ -309,7 +329,8 @@ export async function startJiraMock(o: JiraMockOptions = {}): Promise<MockServer
     const from = i.status;
     i.status = t.to.name;
     i.updated = Math.max(now(), i.updated + 1);
-    webhook('jira:issue_updated', i, user, { changelog: { id: randomUUID(), items: [{ field: 'status', fromString: from, toString: i.status }] } });
+    const items = [{ field: 'status', fromString: from, toString: i.status }];
+    webhook('jira:issue_updated', i, user, { changelog: { id: record(i, user, items), items } });
   }
 
   function comment(i: Issue, body: unknown, user: string, v: 2 | 3): Comment {
@@ -356,7 +377,21 @@ export async function startJiraMock(o: JiraMockOptions = {}): Promise<MockServer
         const i = create(r.body?.fields ?? {}, r.user, v);
         return json(201, { id: i.id, key: i.key, self: `${base}${p}/issue/${i.id}` });
       })),
-      route('GET', `${p}/issue/:key`, wrap((r) => json(200, issueJson(must(r.params.key), base, v, r.query.get('fields') ? new Set(r.query.get('fields')!.split(',')) : undefined)))),
+      route('GET', `${p}/issue/:key`, wrap((r) => {
+        const i = must(r.params.key);
+        const out = issueJson(i, base, v, r.query.get('fields') ? new Set(r.query.get('fields')!.split(',')) : undefined);
+        // Data Center(v2)는 changelog를 expand로만 준다
+        const histories = (i.history ?? []).map(historyJson);
+        return json(200, (r.query.get('expand') ?? '').split(',').includes('changelog') ? { ...out, changelog: { startAt: 0, maxResults: histories.length, total: histories.length, histories } } : out);
+      })),
+      // Cloud(v3) 변경 이력 — 오래된 것부터, startAt·maxResults 페이지
+      route('GET', `${p}/issue/:key/changelog`, wrap((r) => {
+        const all = (must(r.params.key).history ?? []).map(historyJson);
+        const start = Number(r.query.get('startAt') ?? 0) || 0;
+        const max = Math.min(Number(r.query.get('maxResults') ?? 100) || 100, 100);
+        const values = all.slice(start, start + max);
+        return json(200, { self: `${base}${p}/issue/${r.params.key}/changelog`, startAt: start, maxResults: max, total: all.length, isLast: start + max >= all.length, values });
+      })),
       route('PUT', `${p}/issue/:key`, wrap((r) => (update(must(r.params.key), r.body?.fields ?? {}, r.user, v), json(204)))),
       route('DELETE', `${p}/issue/:key`, wrap((r) => {
         const i = must(r.params.key);

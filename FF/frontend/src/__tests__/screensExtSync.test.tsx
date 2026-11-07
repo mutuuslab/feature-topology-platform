@@ -167,6 +167,36 @@ describe('정책 근거 CR', () => {
   });
 });
 
+describe('외부 연계 — 주기 대사·Epic 필드 충돌 (80-50 A2)', () => {
+  const RUN = { runId: 2, system: 'JIRA', kind: 'INCREMENTAL', startedAt: '2026-11-07T01:00:00.000Z', finishedAt: '2026-11-07T01:00:02.000Z', scanned: 14, applied: 1, conflicts: 0, errors: 0, notes: ['FFE-12 FEAT-00002@1.6.0 DEPRECATED → RETIRED (JIRA FFE-12)', 'FFE-3 상태 같음'] };
+  it('대사 실행 기록 — 종류·훑은 수·반영과 처리 내용, 지금 실행은 시스템 연계 담당만', async () => {
+    handler = (url, init) => {
+      if (url === '/api/integrations/sync/reconcile-runs') return { body: { items: [RUN, { ...RUN, runId: 1, kind: 'FULL', scanned: 61, applied: 0, notes: [] }] } };
+      if (url === '/api/integrations/sync/reconcile' && init?.method === 'POST') return { body: { ...RUN, runId: 3 } };
+      return undefined;
+    };
+    mount('integrator', <ExtSyncTab />);
+    const table = await screen.findByRole('table', { name: '주기 대사' });
+    const rows = within(table).getAllByRole('row');
+    expect(within(rows[1]).getByText('증분 대사')).toBeTruthy();
+    expect(within(rows[1]).getByText(/DEPRECATED → RETIRED \(JIRA FFE-12\) · 외 1건/)).toBeTruthy();
+    expect(within(rows[2]).getByText('전체 대사')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '전체 대사 지금 실행' }));
+    await waitFor(() => expect(calls.find((c) => c.url === '/api/integrations/sync/reconcile')?.body).toEqual({ system: 'JIRA', kind: 'FULL' }));
+    cleanup();
+    mount('viewer', <ExtSyncTab />);
+    expect(((await screen.findByRole('button', { name: '증분 대사 지금 실행' })) as HTMLButtonElement).disabled).toBe(true);
+  });
+  it('Epic ASIL 충돌 — 칸 이름은 ASIL, 기능안전 담당도 처리할 수 있다', async () => {
+    handler = (url) => (url.startsWith('/api/integrations/sync/conflicts') ? { body: { items: [{ conflictId: 7, system: 'JIRA', key: 'FFE-4', field: 'asil', platformValue: 'B', externalValue: 'D', createdAt: '2026-11-07T01:00:00.000Z' }] } } : undefined);
+    mount('safety2', <ExtSyncTab />);
+    const table = await screen.findByRole('table', { name: /충돌/ });
+    expect(within(table).getByText('ASIL')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('처리 사유'), { target: { value: 'HARA 결과 유지' } });
+    expect((within(table).getByRole('button', { name: '플랫폼 값 다시 보내기' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
 describe('외부 연계 — 양방향 탭', () => {
   it('충돌은 사유를 적어야 고를 수 있고, 플랫폼 값 다시 보내기를 누르면 처리 요청', async () => {
     handler = (url) => {
@@ -192,7 +222,8 @@ describe('검토함 — 외부 연계 충돌', () => {
     mount('integrator', <ApprovalInboxScreen />, '/admin/approval');
     const table = await screen.findByRole('table', { name: '외부 연계 충돌' });
     const row = within(table).getByText('JIRA FFE-9').closest('tr')!;
-    expect(within(row).getByText('status: Deprecated ↔ Closed')).toBeTruthy();
+    // 칸 이름은 내부 코드(status)가 아니라 업무 이름
+    expect(within(row).getByText('상태: Deprecated ↔ Closed')).toBeTruthy();
     expect(within(row).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/integration/connectors?tab=sync');
     expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1');
   });

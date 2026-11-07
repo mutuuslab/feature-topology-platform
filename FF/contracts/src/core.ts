@@ -69,6 +69,8 @@ export * from './rules/rollback';
 export * from './rules/fleet-map';
 export * from './rules/population';
 export * from './rules/ext-sync';
+export * from './rules/alm/epic';
+export * from './rules/alm/api';
 export * from './rules/workflows';
 export * from './schemas/procedure';
 export * from './rules/connections';

@@ -15,7 +15,7 @@ const fake = (route: Route) => {
   }) as unknown as typeof fetch;
   return { fn, calls };
 };
-const ENV = ['JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_EPIC_PROJECT', 'GITLAB_URL', 'GITLAB_TOKEN', 'GITLAB_PROJECT', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN'];
+const ENV = ['JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_EPIC_PROJECT', 'JIRA_API', 'JIRA_FIELDS', 'IF_MODE_14', 'JIRA_CR_PROJECT', 'JIRA_DEFECT_PROJECT', 'GITLAB_URL', 'GITLAB_TOKEN', 'GITLAB_PROJECT', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN'];
 afterEach(() => {
   for (const k of ENV) delete process.env[k];
 });
@@ -29,7 +29,7 @@ describe('실제 연결 어댑터', () => {
   });
 
   it('JIRA — Basic 인증, 상태는 워크플로 전이로, 기대 개정이 다르면 쓰지 않고 충돌', async () => {
-    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example/', JIRA_USER: 'svc-ff@corp.example', JIRA_TOKEN: 't0k' });
+    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example/', JIRA_USER: 'svc-ff@corp.example', JIRA_TOKEN: 't0k', JIRA_API: '2' });
     let updated = '2026-10-18T01:00:00.000+0000';
     let status = 'Released';
     const f = fake((m, url, body) => {
@@ -58,7 +58,7 @@ describe('실제 연결 어댑터', () => {
   });
 
   it('JIRA 만들기 — 새 이슈가 이미 원하는 첫 상태면 전이하지 않는다(자기 전이가 없어 만들기가 실패하던 결함)', async () => {
-    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example', JIRA_TOKEN: 'pat', JIRA_EPIC_PROJECT: 'FFE' });
+    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example', JIRA_TOKEN: 'pat', JIRA_EPIC_PROJECT: 'FFE', JIRA_API: '2' });
     let status = 'Proposed';
     const f = fake((m, url, body) => {
       if (m === 'POST' && url.endsWith('/rest/api/2/issue')) return { status: 201, body: { key: 'FFE-9' } };
@@ -86,7 +86,7 @@ describe('실제 연결 어댑터', () => {
     expect(epicStatusPath('Proposed', 'In Progress')).toEqual(['Approved', 'In Progress']);
     expect(epicStatusPath('In Verification', 'In Progress')).toEqual(['In Progress']);
     expect(epicStatusPath('Proposed', 'Rolled Back')).toBeNull();
-    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example', JIRA_TOKEN: 'pat', JIRA_EPIC_PROJECT: 'FFE' });
+    Object.assign(process.env, { JIRA_URL: 'https://jira.corp.example', JIRA_TOKEN: 'pat', JIRA_EPIC_PROJECT: 'FFE', JIRA_API: '2' });
     const flow: Record<string, string[]> = { Proposed: ['Approved'], Approved: ['In Progress'], 'In Progress': ['In Verification'] };
     let status = 'Proposed';
     let made = 0;
@@ -109,6 +109,38 @@ describe('실제 연결 어댑터', () => {
     expect(await a.create('EPIC', { title: 'x', body: '', status: 'In Progress' })).toMatchObject({ key: 'FFE-11', status: 'Proposed' });
     expect(made).toBe(2);
     await expect(a.write('FFE-11', { status: 'In Progress' }, null)).rejects.toThrow(/'Approved'\(으\)로 가는 워크플로 전이가 없습니다/);
+  });
+
+  // 80-50 A2 §4.6 — Cloud v3 기본: ADF 본문·댓글, Epic 사용자 필드는 JIRA_FIELDS로, 증분 대사는 search/jql + changelog
+  it('JIRA v3(기본) — ADF·Epic 사용자 필드 읽고 쓰기·Epic 하위는 parent·증분 대사 검색과 변경 이력', async () => {
+    Object.assign(process.env, { IF_MODE_14: 'live', JIRA_URL: 'https://acme.atlassian.net', JIRA_USER: 'svc@acme.example', JIRA_TOKEN: 'api', JIRA_EPIC_PROJECT: 'FFE', JIRA_CR_PROJECT: 'FFCR', JIRA_DEFECT_PROJECT: 'FFD', JIRA_FIELDS: JSON.stringify({ country: 'customfield_10010', asil: 'customfield_10013', featureDb: 'customfield_10015', featureId: 'customfield_10016', workingVersion: 'customfield_10017' }) });
+    const issue = { key: 'FFE-3', fields: { summary: '[FF] 오토 홀드 — KR/NX4 PE/Premium', status: { name: 'Proposed' }, issuetype: { name: 'Epic' }, updated: '2026-11-07T01:00:00.000+0000', description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: '목표' }] }] }, customfield_10010: 'KR', customfield_10013: { value: 'B' }, customfield_10015: ['CH-BRK-009', 'CH-BRK-006'], customfield_10016: 'FEAT-00012', customfield_10017: null, reporter: { accountId: 'acc-kim' } } };
+    const f = fake((m, url, body) => {
+      if (m === 'GET' && url.includes('/rest/api/3/issue/FFE-3?fields=')) return { status: 200, body: issue };
+      if (m === 'PUT' && url.endsWith('/rest/api/3/issue/FFE-3')) return { status: 204, body: {} };
+      if (m === 'POST' && url.endsWith('/rest/api/3/issue/FFE-3/comment')) return { status: 201, body: {} };
+      if (m === 'POST' && url.endsWith('/rest/api/3/issue')) return { status: 201, body: { key: 'FFE-3' } };
+      if (m === 'POST' && url.endsWith('/rest/api/3/search/jql')) return { status: 200, body: body.nextPageToken ? { issues: [], isLast: true } : { issues: [issue], nextPageToken: 'p2' } };
+      if (m === 'GET' && url.includes('/rest/api/3/issue/FFE-3/changelog')) return { status: 200, body: { total: 1, values: [{ author: { accountId: 'acc-kim' }, created: '2026-11-07T01:00:00.000+0000', items: [{ field: 'status', fromString: 'Approved', toString: 'Proposed' }] }] } };
+      if (m === 'GET' && url.endsWith('/rest/api/3/myself')) return { status: 200, body: { accountId: 'acc-svc' } };
+      return undefined;
+    });
+    const a = new LiveAdapter('JIRA', () => 'live', f.fn);
+    const r = await a.read('FFE-3');
+    expect(r).toMatchObject({ kind: 'EPIC', fields: { description: '목표', epic: { country: 'KR', asil: 'B', featureDb: ['CH-BRK-009', 'CH-BRK-006'], featureId: 'FEAT-00012', workingVersion: null } } });
+    expect(f.calls.find((c) => c.url.includes('/issue/FFE-3?'))!.url).toContain('customfield_10015');
+    await a.write('FFE-3', { title: '[FF] 오토 홀드 2 — KR/NX4 PE/Premium', fields: { workingVersion: '1.3.0', asil: 'C', featureDb: ['CH-BRK-009'] }, comment: '플랫폼 값으로 되돌립니다.' }, null);
+    expect(f.calls.find((c) => c.method === 'PUT')!.body).toEqual({ fields: { summary: '[FF] 오토 홀드 2 — KR/NX4 PE/Premium', customfield_10017: '1.3.0', customfield_10013: { value: 'C' }, customfield_10015: ['CH-BRK-009'] } });
+    expect(f.calls.find((c) => c.url.endsWith('/comment'))!.body).toEqual({ body: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: '플랫폼 값으로 되돌립니다.' }] }] } });
+    await a.create('DEFECT', { title: '현장 문제', body: '첫 줄\n\n둘째 문단', status: 'Proposed', fields: { parentKey: 'FFE-3', epic: { featureId: 'FEAT-00012' } } });
+    const made = f.calls.find((c) => c.method === 'POST' && c.url.endsWith('/rest/api/3/issue'))!.body.fields;
+    expect(made).toMatchObject({ project: { key: 'FFD' }, issuetype: { name: 'Bug' }, parent: { key: 'FFE-3' }, customfield_10016: 'FEAT-00012', description: { type: 'doc' } });
+    expect(made.description.content).toHaveLength(2);
+    const recent = await a.recent(20);
+    const search = f.calls.filter((c) => c.url.endsWith('/search/jql'));
+    expect(search[0].body).toMatchObject({ jql: 'project in (FFE, FFCR, FFD) AND updated >= "-20m" ORDER BY updated ASC', maxResults: 100 });
+    expect(search).toHaveLength(2);
+    expect(recent).toEqual([{ key: 'FFE-3', revision: Date.parse(issue.fields.updated), issue, reporter: 'acc-kim', histories: [{ author: 'acc-kim', created: Date.parse('2026-11-07T01:00:00.000+0000'), items: [{ field: 'status', fromString: 'Approved', toString: 'Proposed' }] }] }]);
   });
 
   it('GitLab — PRIVATE-TOKEN, MR 읽기, commit status는 병합 커밋 SHA에', async () => {

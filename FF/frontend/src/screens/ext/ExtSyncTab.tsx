@@ -10,6 +10,8 @@ import { AsyncView, Button, DataTable, ErrorNote, ExplainCodes, Field, Panel, Se
 import { usePermission, when } from '../shared';
 import { ExternalToolLaunchers } from '../../external/launchers';
 import { useExternalChanges } from '../../external/useExternalChanges';
+import { alm } from '../../copy/alm';
+import { ReconcileRunsPanel } from './ReconcileRuns';
 
 const X = extSync.sync;
 const INVALIDATE = ['extSync', 'extConflicts', 'extInbox', 'extOutbox', 'extChangeRequests', 'extFeatureTrace', 'extFeatureEpics', 'featureDetail', 'policyDetail', 'mockExtItems', 'listFeatures'];
@@ -80,6 +82,8 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
         </AsyncView>
       </Panel>
 
+      <ReconcileRunsPanel />
+
       <Panel title={X.inbox} id="sync-inbox">
           <AsyncView
             state={asyncState(inbox, !(inbox.data?.items ?? []).some((r) => r.key !== '-'))}
@@ -147,7 +151,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
 }
 
 function ConflictTable({ rows }: { rows: Conflict[] }) {
-  const perm = usePermission(['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER']);
+  const perm = usePermission(['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER']);
   const resolve = useApiMutation('resolveExtConflict', INVALIDATE);
   const [reason, setReason] = useState('');
   return (
@@ -163,7 +167,7 @@ function ConflictTable({ rows }: { rows: Conflict[] }) {
           { key: 'at', header: X.conflictCol.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.createdAt)}</span> },
           { key: 's', header: X.conflictCol.system, cell: (r) => extSync.system[r.system] },
           { key: 'k', header: X.conflictCol.key, cell: (r) => <span className="ds-mono">{r.key}</span> },
-          { key: 'f', header: X.conflictCol.field, cell: (r) => r.field },
+          { key: 'f', header: X.conflictCol.field, cell: (r) => alm.conflictField(r.field) },
           { key: 'p', header: X.conflictCol.platform, cell: (r) => <strong>{r.platformValue}</strong> },
           { key: 'e', header: X.conflictCol.external, cell: (r) => <strong>{r.externalValue}</strong> },
           {

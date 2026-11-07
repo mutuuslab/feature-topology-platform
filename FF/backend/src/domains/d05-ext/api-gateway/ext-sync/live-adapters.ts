@@ -1,10 +1,12 @@
 // 실제 연결 어댑터(IF_MODE_01/13/14=live) — 각 도구의 공개 REST API. 모의 어댑터와 같은 인터페이스(읽기·만들기·기대 개정 쓰기).
-//   JIRA REST v2(Cloud·Data Center): GET/POST /rest/api/2/issue, 전이 /transitions, 댓글 /comment. 개정 = fields.updated(ms)
+//   JIRA REST v3(Cloud, 기본)·v2(Data Center, JIRA_API=2): /rest/api/{3|2}/issue, 전이 /transitions, 댓글 /comment, 검색 /search/jql(v2 /search),
+//     변경 이력 /changelog(v2 expand=changelog). v3 본문·댓글은 ADF. Epic 사용자 필드는 JIRA_FIELDS(80-50 §4.2·§4.6). 개정 = fields.updated(ms)
 //   GitLab REST v4: MR GET /projects/:id/merge_requests/:iid, 댓글 /notes, commit status POST /projects/:id/statuses/:sha. 개정 = updated_at(ms)
 //   codeBeamer REST v3: GET /api/v3/items/:id, 댓글 POST /api/v3/items/:id/comments. 개정 = item.version
 // 인증·주소는 환경 변수(아래 cfg). 토큰은 로그·감사·Evidence에 남기지 않는다. 시간 제한 10초, 실패는 보낼 함이 재시도한다.
 import { FEATURE_TRANSITIONS, JIRA_EPIC_STATUS, lifecycleOfEpicStatus, type ExtKind, type ExtSystem, type Lifecycle } from '@ff/contracts';
-import type { AdapterMode, ExtAdapter, RemoteItem, WritePatch, WriteResult } from './adapters';
+import type { AdapterMode, ExtAdapter, RecentIssue, RemoteItem, WritePatch, WriteResult } from './adapters';
+import { adfText, decodeEpicFields, encodeEpicFields, epicFieldIdList } from './epic-fields';
 
 interface Cfg {
   url: string;
@@ -14,6 +16,15 @@ interface Cfg {
 
 const env = (k: string) => (process.env[k] ?? '').trim();
 const basic = (user: string, token: string) => `Basic ${Buffer.from(`${user}:${token}`).toString('base64')}`;
+/** JIRA REST 판 — Cloud v3가 기본, Data Center는 JIRA_API=2 (80-50 §4.6). 차이는 이 어댑터 안에만 */
+export const jiraApiVersion = (): 2 | 3 => (env('JIRA_API') === '2' ? 2 : 3);
+const jira = (path: string) => `/rest/api/${jiraApiVersion()}${path}`;
+/** 글자 → ADF(v3 본문·댓글). 빈 줄로 문단을 나눈다 */
+const adf = (text: string) => ({ type: 'doc', version: 1, content: text.split('\n\n').map((p) => ({ type: 'paragraph', content: p ? [{ type: 'text', text: p }] : [] })) });
+const jiraText = (text: string) => (jiraApiVersion() === 3 ? adf(text) : text);
+/** 이슈 유형 이름 ↔ 연계 종류 */
+const JIRA_TYPE: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request' };
+const kindOfType = (type: string | undefined): ExtKind => (Object.entries(JIRA_TYPE).find(([, t]) => t === type)?.[0] as ExtKind | undefined) ?? 'CHANGE_REQUEST';
 
 /**
  * Epic 상태 경로 — JIRA Epic 워크플로는 FF 수명주기와 같은 전이만 갖는다(80-50 §4.3). Epic이 몇 단계 뒤에 있으면
@@ -85,7 +96,7 @@ export class LiveAdapter implements ExtAdapter {
   private whoAmI: Promise<void> | null = null;
   /** 서비스 계정의 외부 이름을 한 번 묻는다(실패하면 다음 호출 때 다시) — isServiceAccount */
   private learn(): Promise<void> {
-    const me = this.system === 'JIRA' ? '/rest/api/2/myself' : this.system === 'GITLAB' ? '/api/v4/user' : null;
+    const me = this.system === 'JIRA' ? jira('/myself') : this.system === 'GITLAB' ? '/api/v4/user' : null;
     if (!me) return Promise.resolve();
     this.whoAmI ??= this.req<Record<string, unknown>>('GET', me, undefined, false)
       .then((r) => {
@@ -117,12 +128,9 @@ export class LiveAdapter implements ExtAdapter {
   async read(key: string): Promise<RemoteItem | null> {
     const c = this.cfg();
     if (this.system === 'JIRA') {
-      const r = await this.req<any>('GET', `/rest/api/2/issue/${encodeURIComponent(key)}?fields=summary,status,issuetype,updated,parent`);
+      const r = await this.req<any>('GET', jira(`/issue/${encodeURIComponent(key)}?fields=${[...JIRA_READ_FIELDS, ...epicFieldIdList()].join(',')}`));
       if (r.status === 404) return null;
-      const f = r.data.fields;
-      const type = f.issuetype?.name;
-      const kind: ExtKind = type === 'Epic' ? 'EPIC' : type === 'Bug' ? 'DEFECT' : 'CHANGE_REQUEST';
-      return { system: 'JIRA', kind, key, url: `${c.url}/browse/${key}`, title: f.summary ?? '', status: f.status?.name ?? '', revision: Date.parse(f.updated), fields: { parentKey: f.parent?.key ?? null } };
+      return jiraItem(c.url, r.data);
     }
     if (this.system === 'GITLAB') {
       const iid = key.split('!').pop();
@@ -153,9 +161,12 @@ export class LiveAdapter implements ExtAdapter {
   async create(kind: ExtKind, f: { title: string; body: string; status: string; fields?: Record<string, unknown> }): Promise<RemoteItem> {
     if (this.system !== 'JIRA') throw new Error(`${this.system}에는 플랫폼이 항목을 만들지 않습니다.`);
     const project = kind === 'EPIC' ? env('JIRA_EPIC_PROJECT') || 'FFE' : kind === 'DEFECT' ? env('JIRA_DEFECT_PROJECT') || 'FFD' : this.cfg().project;
-    const issuetype = kind === 'EPIC' ? 'Epic' : kind === 'DEFECT' ? 'Bug' : 'Change Request';
-    const parent = f.fields?.parentKey ? { parent: { key: f.fields.parentKey } } : {};
-    const r = await this.req<{ key: string }>('POST', '/rest/api/2/issue', { fields: { project: { key: project }, summary: f.title, description: f.body, issuetype: { name: issuetype }, ...parent } });
+    const issuetype = JIRA_TYPE[kind] ?? 'Change Request';
+    const parentKey = f.fields?.parentKey ? String(f.fields.parentKey) : null;
+    // Epic 하위: Cloud는 parent, Data Center는 Epic Link 사용자 필드(JIRA_FIELD_EPIC_LINK)
+    const parent = parentKey ? (jiraApiVersion() === 2 && env('JIRA_FIELD_EPIC_LINK') ? { [env('JIRA_FIELD_EPIC_LINK')]: parentKey } : { parent: { key: parentKey } }) : {};
+    const custom = { ...encodeEpicFields((f.fields?.epic ?? {}) as Record<string, unknown>), ...((f.fields?.custom ?? {}) as Record<string, unknown>) };
+    const r = await this.req<{ key: string }>('POST', jira('/issue'), { fields: { project: { key: project }, summary: f.title, description: jiraText(f.body), issuetype: { name: issuetype }, ...parent, ...custom } });
     // 새 이슈는 워크플로 첫 상태로 생긴다 — 이미 그 상태면 전이하지 않는다(자기 자신으로 가는 전이는 보통 없다)
     const made = (await this.read(r.data.key))!;
     if (!f.status || made.status.toLowerCase() === f.status.toLowerCase()) return made;
@@ -170,7 +181,7 @@ export class LiveAdapter implements ExtAdapter {
   }
 
   private async transition(key: string, status: string) {
-    const base = `/rest/api/2/issue/${encodeURIComponent(key)}/transitions`;
+    const base = jira(`/issue/${encodeURIComponent(key)}/transitions`);
     const step = async (to: string) => {
       const t = await this.req<{ transitions: { id: string; to: { name: string } }[] }>('GET', base);
       const hit = (t.data.transitions ?? []).find((x) => x.to?.name?.toLowerCase() === to.toLowerCase());
@@ -194,8 +205,13 @@ export class LiveAdapter implements ExtAdapter {
       if (now.revision !== expectedRevision) return { ok: false, conflict: now };
     }
     if (this.system === 'JIRA') {
+      // 필드 먼저(제목·Epic 필드) — 전이 화면에 필수 필드가 있어도 값이 채워져 있게
+      const fields = { ...(patch.title !== undefined ? { summary: patch.title } : {}), ...encodeEpicFields(patch.fields ?? {}), ...(patch.custom ?? {}) };
+      const update = patch.labelsAdd?.length ? { update: { labels: patch.labelsAdd.map((add) => ({ add })) } } : {};
+      if (Object.keys(fields).length || patch.labelsAdd?.length) await this.req('PUT', jira(`/issue/${encodeURIComponent(key)}`), { ...(Object.keys(fields).length ? { fields } : {}), ...update });
+      if (patch.duplicateOf) await this.req('POST', jira('/issueLink'), { type: { name: 'Duplicate' }, inwardIssue: { key: patch.duplicateOf }, outwardIssue: { key } });
       if (patch.status) await this.transition(key, patch.status);
-      if (patch.comment) await this.req('POST', `/rest/api/2/issue/${encodeURIComponent(key)}/comment`, { body: patch.comment });
+      if (patch.comment) await this.req('POST', jira(`/issue/${encodeURIComponent(key)}/comment`), { body: jiraText(patch.comment) });
     } else if (this.system === 'GITLAB') {
       const iid = key.split('!').pop();
       if (patch.append?.field === 'commitStatuses') {
@@ -217,6 +233,71 @@ export class LiveAdapter implements ExtAdapter {
     }
     return { ok: true, item: (await this.read(key))! };
   }
+
+  /**
+   * 증분 대사(80-50 §4.5) — 연계 프로젝트에서 최근 minutes분 안에 바뀐 이슈와 변경 이력. JQL 상대 시각(-Nm)이라 서버 시간대와 무관하다.
+   * v3 /search/jql(nextPageToken) · v2 /search(startAt), 한 번에 100건. 이력은 v3 /changelog 마지막 쪽, v2 expand=changelog.
+   */
+  async recent(minutes: number): Promise<RecentIssue[]> {
+    if (this.system !== 'JIRA') return [];
+    const projects = [...new Set([env('JIRA_EPIC_PROJECT') || 'FFE', this.cfg().project, env('JIRA_DEFECT_PROJECT') || 'FFD'])];
+    const jql = `project in (${projects.join(', ')}) AND updated >= "-${Math.max(1, Math.ceil(minutes))}m" ORDER BY updated ASC`;
+    const fields = [...JIRA_READ_FIELDS, ...epicFieldIdList()];
+    const issues: { key: string; fields: Record<string, any> }[] = [];
+    if (jiraApiVersion() === 3) {
+      let token: string | undefined;
+      do {
+        const r = await this.req<{ issues?: typeof issues; nextPageToken?: string }>('POST', jira('/search/jql'), { jql, maxResults: 100, fields, ...(token ? { nextPageToken: token } : {}) });
+        issues.push(...(r.data?.issues ?? []));
+        token = r.data?.nextPageToken;
+      } while (token && issues.length < 5000);
+    } else {
+      for (let startAt = 0; startAt < 5000; startAt += 100) {
+        const r = await this.req<{ issues?: typeof issues; total?: number }>('POST', jira('/search'), { jql, maxResults: 100, startAt, fields });
+        issues.push(...(r.data?.issues ?? []));
+        if ((r.data?.issues ?? []).length < 100) break;
+      }
+    }
+    const out: RecentIssue[] = [];
+    for (const issue of issues) {
+      const histories = await this.histories(issue.key);
+      out.push({ key: issue.key, revision: Date.parse(issue.fields?.updated), issue, histories, reporter: issue.fields?.reporter?.accountId ?? issue.fields?.reporter?.name ?? '' });
+    }
+    return out;
+  }
+  private async histories(key: string): Promise<RecentIssue['histories']> {
+    type H = { author?: { accountId?: string; name?: string }; created: string; items?: RecentIssue['histories'][number]['items'] };
+    const map = (h: H) => ({ author: h.author?.accountId ?? h.author?.name ?? '', created: Date.parse(h.created), items: (h.items ?? []).map((x) => ({ field: x.field, fromString: x.fromString ?? null, toString: x.toString ?? null })) });
+    if (jiraApiVersion() === 2) {
+      const r = await this.req<{ changelog?: { histories?: H[] } }>('GET', jira(`/issue/${encodeURIComponent(key)}?fields=updated&expand=changelog`));
+      return (r.data?.changelog?.histories ?? []).map(map);
+    }
+    // 마지막 쪽(최근 100건)만 — 대사 창(20분) 안의 변경이면 충분하다
+    const first = await this.req<{ total?: number; values?: H[] }>('GET', jira(`/issue/${encodeURIComponent(key)}/changelog?startAt=0&maxResults=100`));
+    const total = first.data?.total ?? 0;
+    if (total <= 100) return (first.data?.values ?? []).map(map);
+    const last = await this.req<{ values?: H[] }>('GET', jira(`/issue/${encodeURIComponent(key)}/changelog?startAt=${total - 100}&maxResults=100`));
+    return (last.data?.values ?? []).map(map);
+  }
+}
+
+/** 이슈 조회에 함께 받는 기본 필드 */
+const JIRA_READ_FIELDS = ['summary', 'status', 'issuetype', 'updated', 'parent', 'description', 'labels', 'reporter'];
+
+/** JIRA 이슈 JSON → 연계 항목(Epic은 사용자 필드를 FF 키로) */
+function jiraItem(base: string, issue: { key: string; fields: Record<string, any> }): RemoteItem {
+  const f = issue.fields ?? {};
+  const kind = kindOfType(f.issuetype?.name);
+  return {
+    system: 'JIRA',
+    kind,
+    key: issue.key,
+    url: `${base}/browse/${issue.key}`,
+    title: f.summary ?? '',
+    status: f.status?.name ?? '',
+    revision: Date.parse(f.updated),
+    fields: { parentKey: f.parent?.key ?? null, description: adfText(f.description), ...(kind === 'EPIC' ? { epic: decodeEpicFields(f) } : {}) },
+  };
 }
 
 /** codeBeamer 검증 결과 댓글 — 사람이 읽고, 기계가 다시 읽을 수 있게 한 줄 머리 */

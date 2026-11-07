@@ -14,6 +14,8 @@ export interface FeatureTrace {
   featureId: string;
   version: string;
   lifecycle: string;
+  /** Epic = Feature(80-50 §4.1) — Epic 상태가 따르는 버전(작업 중 버전) */
+  epicVersion?: string;
   epicStatusExpected: string;
   requirements: ExtLink[];
   missingRequirements: string[];

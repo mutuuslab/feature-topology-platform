@@ -108,6 +108,22 @@ describe('게시본 상세 — OTA 서버 전달(IF-05)', () => {
     expect(JSON.parse(String(sent.init!.body))).toEqual({ reason: 'OTA 서버 복구 확인' });
   });
 
+  it('접수 뒤 전달 통보가 오지 않은 작업(SUBMITTED) — OTA 서버 조회로 맞추기(사유와 함께, 다시 제출 단추는 없다)', async () => {
+    otaMode = 'live';
+    delivery = { ...FAILED, state: 'SUBMITTED', otaJobId: 'ota-1', attempts: 1, lastError: null, nextAttemptAt: null };
+    mount();
+    const panel = (await screen.findByText(O.title)).closest('section') as HTMLElement;
+    expect(within(panel).getByText(O.reconcileHint)).toBeTruthy();
+    expect(within(panel).queryByRole('button', { name: O.retry })).toBeNull();
+    fireEvent.click(within(panel).getByRole('button', { name: O.reconcile }));
+    const dlg = await screen.findByRole('dialog');
+    expect(within(dlg).getByText(O.reconcileBody)).toBeTruthy();
+    fireEvent.change(within(dlg).getByRole('textbox'), { target: { value: '전달 통보 미수신' } });
+    fireEvent.click(within(dlg).getByRole('button', { name: O.reconcile }));
+    await waitFor(() => expect(calls.find((c) => c.init?.method === 'POST' && c.url.endsWith('/api/ota/jobs/OTJ-PUB-00007/reconcile'))).toBeTruthy());
+    expect(JSON.parse(String(calls.find((c) => c.url.endsWith('/reconcile'))!.init!.body))).toEqual({ reason: '전달 통보 미수신' });
+  });
+
   it('접수 뒤에는 다시 제출 단추가 없고 차량별 결과를 보인다', async () => {
     otaMode = 'live';
     delivery = { ...FAILED, state: 'COMPLETED', otaJobId: 'ota-1', attempts: 1, lastError: null, nextAttemptAt: null, counts: { DELIVERED: 1, NO_RESPONSE: 1 }, vehicles: [{ vin: 'ego-01', outcome: 'DELIVERED', detail: '시도 1', at: '2026-10-24T01:00:05.000Z' }, { vin: 'lead-01', outcome: 'NO_RESPONSE', detail: 'NOT_CONNECTED', at: '2026-10-24T02:00:00.000Z' }] };

@@ -27439,6 +27439,66 @@
           }
         }
       }
+    },
+    "/api/ota/jobs/{jobId}/reconcile": {
+      "post": {
+        "summary": "IF-05 OTA 작업 대사 — webhook이 오지 않은 작업을 OTA 서버 조회로 메운다(끝 상태는 차량 결과만)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaJobReconcile",
+        "description": "허용 역할: Feature 출시 담당자, 운영 리더, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

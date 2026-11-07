@@ -21,3 +21,5 @@ export * from './rules/ads-p5';
 // 차량 서명 메시지(FFV1-MSG)·Lake 중계 기록·검증 결과·시험 벡터(TL-M01) — 서버·도구만
 export * from './schemas/vehicle-message';
 export * from './schemas/vehicle-message.vectors';
+// OTA 전달 대사(P9) — OTA 사실 ↔ 차량 결과 불일치 규칙
+export * from './rules/ota-reconcile';

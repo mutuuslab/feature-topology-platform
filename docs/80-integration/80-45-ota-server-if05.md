@@ -59,7 +59,7 @@ FF                                  OTA 서버                         차량
 ```
 
 - 제출이 실패해도 **게시본은 서명된 채 남는다**. 전달만 `RETRY_WAIT`(화면: "전달 실패(재시도 가능)") → 지수 간격 자동 재시도 → 다 쓰면 `FAILED`(화면에서 다시 제출). 기한이 지나면 `EXPIRED`(새 게시본을 만든다).
-- 작업 상태 조회(`GET /ota/v1/jobs/{jobId}`)는 운영자 확인·장애 조사용이다. FF의 OTA 전달 기록은 webhook으로만 움직이고(조회로 보충하지 않는다 — 한계 14장), 게시본 회신 집계는 차량 회신(차량 → Lake → FF)만 움직인다(7.5).
+- 작업 상태 조회(`GET /ota/v1/jobs/{jobId}`)는 운영자 확인·장애 조사와 **webhook 유실 대사**에 쓴다. FF의 OTA 전달 기록은 webhook으로 움직이고, webhook이 기준 시간(`FF_OTA_RECONCILE_MS`, 기본 2분) 넘게 오지 않은 작업은 FF가 이 조회로 메운다(정기·수동 `POST /api/ota/jobs/{jobId}/reconcile`, `adapters/ota/ota-reconcile.service.ts`). 게시본 회신 집계는 여전히 차량 회신(차량 → Lake → FF)만 움직인다(7.5).
 
 ## 3. 차량 전달 채널과의 관계 — `FF_VEHICLE_CHANNEL=ota`
 
@@ -374,8 +374,8 @@ FF 저장소에서는 `node --test tools/ota-reference/conformance.test.ts`(veri
 
 - **집계는 차량 결과만**: Lake → FF 중계(차량 서명 FFV1-MSG, [80-75] §10, TL-M*)는 아직 구현 전이다. 그 전에는 차량 직접 창구·IF-06 `POST /api/telemetry/readback`(시스템 계정, 차량 서명 없음)으로 받는다. 경로가 없으면 OTA가 모두 `DELIVERED`여도 기한에 TIMEOUT이다(의도).
 - **U-17 대기**: OTA webhook을 OTA 사실만으로 둔 것은 [80-75] U-17의 기본안이다. 사용자 결정에 따라 7.1·7.5가 바뀔 수 있다.
-- **OTA 사실과 차량 결과의 불일치 경보 없음**: 어긋나면 차량 결과가 이기지만, 그 차이(OTA는 넘겼다, 차량 결과는 없다 등)를 이상 징후로 올리지는 않는다(노드 사유·OTA 전달 패널로만 보인다).
-- **조회 보충 없음**: OTA 전달 기록은 webhook만 본다. webhook이 끝내 오지 않으면 OTA 작업이 SUBMITTED로 남는다 — `GET /ota/v1/jobs`로 메우는 대사(reconcile)는 아직 없다.
+- **OTA 사실과 차량 결과의 불일치**(2026-11-07 구현): 게시본이 닫히면 차량별로 대사해 "OTA는 넘겼는데 차량 결과가 없음"·"OTA는 못 넘겼는데 차량 결과가 있음"을 전달 이상 징후(DELIVERY, 신호 코드 `OTA_DELIVERED_NO_VEHICLE_RESULT`·`VEHICLE_RESULT_WITHOUT_OTA_DELIVERY`)로 올린다. 끝 상태는 그대로 차량 결과가 정한다(신호는 판정을 바꾸지 않는다).
+- **조회 보충**(2026-11-07 구현): webhook이 끝내 오지 않아 SUBMITTED로 남은 작업은 `GET /ota/v1/jobs/{jobId}` 조회로 메운다(webhook과 같은 규칙 — 끝 결과를 되돌리지 않고, 같은 결과를 두 번 쓰지 않는다, 감사 `OTA_JOB_RECONCILE`·이벤트 `ota.job.reconciled`). 조회가 실패하면 다음 주기에 다시 한다.
 - **나누기 없음**: 작업 하나 = 게시본 하나 = 대상 전부. 10,000대가 넘는 게시본은 OTA 서버가 받아야 한다(FF가 작업을 나누지 않는다).
 - **mTLS는 FF 코드에 없다** — OAuth2 + TLS만. 송신 프록시로 붙인다(9.1).
 - **시험 OTA 서버는 차량을 흉내만 낸다** — 서명 검증·v2 상태 보고 서명이 없다. 차단 v2 끝 상태는 차량 시뮬레이터(`sim`)·실차·GLEO로 시험한다.

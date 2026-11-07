@@ -158,9 +158,13 @@ const OTA_LOZENGE: Record<string, LozengeAppearance> = { QUEUED: 'default', SUBM
 function OtaDelivery({ d }: { d: OtaDeliveryView }) {
   const perm = usePermission(['RELEASE_MANAGER', 'OPS_LEAD', 'OPERATOR']);
   const retry = useApiMutation('otaJobRetry', ['publicationDetail']);
-  const [open, setOpen] = useState(false);
+  const reconcile = useApiMutation('otaJobReconcile', ['publicationDetail']);
+  const [open, setOpen] = useState<'retry' | 'reconcile' | null>(null);
   const [reason, setReason] = useState('');
   const canRetry = (d.state === 'RETRY_WAIT' || d.state === 'FAILED') && !d.otaJobId;
+  // 접수 뒤 전달 통보(webhook)가 오지 않은 작업 — OTA 서버 조회로 맞춘다(80-45 §14, 정기 대사와 같은 함수)
+  const canReconcile = d.state === 'SUBMITTED';
+  const m = open === 'reconcile' ? reconcile : retry;
   return (
     <Panel
       title={O.title}
@@ -170,14 +174,20 @@ function OtaDelivery({ d }: { d: OtaDeliveryView }) {
         <>
           <Lozenge appearance={OTA_LOZENGE[d.state] ?? 'default'}>{O.state[d.state] ?? d.state}</Lozenge>
           {canRetry && (
-            <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen(true)}>
+            <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen('retry')}>
               {O.retry}
+            </Button>
+          )}
+          {canReconcile && (
+            <Button disabled={!perm.ok} title={perm.hint} onClick={() => setOpen('reconcile')}>
+              {O.reconcile}
             </Button>
           )}
         </>
       }
     >
       {canRetry && <p className="ds-field__hint">{O.kept}</p>}
+      {canReconcile && <p className="ds-field__hint">{O.reconcileHint}</p>}
       <KeyValue
         rows={[
           { k: O.row.job, v: <span className="ds-mono">{d.jobId}</span> },
@@ -201,15 +211,15 @@ function OtaDelivery({ d }: { d: OtaDeliveryView }) {
           { key: 'at', header: O.col.at, cell: (v) => <span className="ds-mono ds-nowrap">{when(v.at)}</span> },
         ]}
       />
-      <Drawer open={open} title={O.retry} onClose={() => setOpen(false)}>
+      <Drawer open={!!open} title={open === 'reconcile' ? O.reconcile : O.retry} onClose={() => setOpen(null)}>
         <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
-          <p className="ds-field__hint">{O.retryBody}</p>
+          <p className="ds-field__hint">{open === 'reconcile' ? O.reconcileBody : O.retryBody}</p>
           <Field label={ko.page.reason}>
             <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
           </Field>
-          <ErrorNote error={retry.error} />
-          <Button variant="primary" disabled={reason.trim().length < 2 || retry.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => retry.mutate({ params: { jobId: d.jobId }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) })}>
-            {O.retry}
+          <ErrorNote error={m.error} />
+          <Button variant="primary" disabled={reason.trim().length < 2 || m.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => m.mutate({ params: { jobId: d.jobId }, body: { reason } }, { onSuccess: () => (setOpen(null), setReason('')) })}>
+            {open === 'reconcile' ? O.reconcile : O.retry}
           </Button>
         </div>
       </Drawer>

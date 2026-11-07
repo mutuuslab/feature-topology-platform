@@ -637,6 +637,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // P9 OTA 전달 대사 — webhook 유실 보충(GET /ota/v1/jobs/{jobId} 조회, 80-45 §14)
+  { name: 'otaJobReconcile', method: 'POST', path: '/api/ota/jobs/:jobId/reconcile', summary: 'IF-05 OTA 작업 대사 — webhook이 오지 않은 작업을 OTA 서버 조회로 메운다(끝 상태는 차량 결과만)', component: 'D04-01', roles: ['RELEASE_MANAGER', 'OPS_LEAD', 'OPERATOR'], body: OtaJobActionBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

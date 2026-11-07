@@ -61,6 +61,7 @@ import { AbortCriteriaBody, FindingTransitionBody, LakeModelDecisionBody } from 
 import { AdsDeterminationBody, AdsReviewFindingBody } from './schemas/ads-evidence';
 import { CloseImpactPathBody, PATH_CLOSER_ROLES } from './schemas/ads-change';
 import { ApproveOddProfileBody, CreateConfigSetBody } from './schemas/ads-config';
+import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -554,6 +555,27 @@ export const ROUTES: RouteDef[] = [
   { name: 'policyCanary', method: 'GET', path: '/api/policies/:id/canary', summary: '정책 Canary 관측', component: 'D01-08' },
   { name: 'registerAbortCriteria', method: 'PUT', path: '/api/policies/:id/abort-criteria', summary: '중단 기준 사전 등록', component: 'D01-08', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: AbortCriteriaBody },
   { name: 'collectionPolicies', method: 'GET', path: '/api/collection-policies', summary: '수집 정책', component: 'D04-03' },
+  // ADS 구성 마감(P5) — ODD 적용 장소·복구 결정·분류 입력·시장 기준선·발행 미리보기·캠페인 역조회·출고 대조·OTA 설치 계약·수명주기 격리
+  { name: 'addOddSite', method: 'POST', path: '/api/odd-profiles/:id/sites', summary: 'ODD 적용 장소 추가 요청(변경 영향 확정 전 승인 대기)', component: 'D02-01', roles: ['FEATURE_AUTHOR', 'SAFETY_OFFICER'], body: CreateOddSiteBody },
+  { name: 'approveOddSite', method: 'POST', path: '/api/odd-profiles/:id/sites/:siteId/approve', summary: 'ODD 적용 장소 승인(변경 영향 확정 필요)', component: 'D02-01', roles: ['SAFETY_OFFICER'], body: ApproveOddSiteBody },
+  { name: 'recoveryDecisions', method: 'GET', path: '/api/config-sets/recovery-decisions', summary: '복구 결정 이력', component: 'D02-01', query: ['vin'] },
+  { name: 'createRecoveryDecision', method: 'POST', path: '/api/config-sets/recovery-decisions', summary: '복구 결정(메타데이터·보안 최소 버전 재검증)', component: 'D02-01', roles: ['OPS_LEAD', 'SAFETY_OFFICER'], body: RecoveryDecisionBody },
+  { name: 'updateAdsClassification', method: 'PUT', path: '/api/features/:id/versions/:ver/classification', summary: 'Feature ADS 분류 입력', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: UpdateClassificationBody },
+  { name: 'confirmAdsClassification', method: 'POST', path: '/api/features/:id/versions/:ver/classification/confirm', summary: 'Feature ADS 분류 확정', component: 'D01-01', roles: ['SAFETY_OFFICER'], body: ConfirmClassificationBody },
+  { name: 'putMarketBaseline', method: 'PUT', path: '/api/market-baselines/:id/:ver/:market', summary: '시장 기준선 입력', component: 'D01-01', roles: ['REGULATORY_OWNER'], body: PutMarketBaselineBody },
+  { name: 'publishPreview', method: 'GET', path: '/api/policies/:id/publish-preview', summary: '발행 미리보기 — 승인 상한·승인 조합·시장 기준선', component: 'D06-08' },
+  { name: 'campaign', method: 'GET', path: '/api/campaigns/:id', summary: '전송 캠페인 → 게시본·정책 릴리스', component: 'D04-01' },
+  { name: 'eolMismatches', method: 'GET', path: '/api/plants/eol/mismatches', summary: '출고 실물 구성 대조·품질 보류', component: 'D05-02' },
+  { name: 'eolVehicle', method: 'GET', path: '/api/plants/eol/vehicles/:vin', summary: '출고 대조 상세·인도 인수 항목', component: 'D05-02' },
+  { name: 'receiveAsBuilt', method: 'POST', path: '/api/plants/eol/as-built', summary: '출고 실물 구성 수신(IF-12 공장 모의)', component: 'D05-02', roles: ['BOM_APPROVER'], body: AsBuiltBody },
+  { name: 'createEolCheck', method: 'POST', path: '/api/plants/eol/checks', summary: '품질 보류 결정(생산 품질)', component: 'D05-02', roles: ['BOM_APPROVER'], body: EolCheckBody },
+  { name: 'otaInstallEvents', method: 'POST', path: '/api/ota/v1/installs', summary: 'IF-05 OTA 설치 보고 webhook(설치 단계·보류·실패 원인·안전 상태 증거)', component: 'D04-01', body: InstallReportEvent, public: true },
+  { name: 'otaInstalls', method: 'GET', path: '/api/ota/installs', summary: 'OTA 설치 현황 — 단계·실패 원인별 수', component: 'D04-01' },
+  { name: 'simulateInstall', method: 'POST', path: '/api/ota/installs/simulate', summary: '시뮬 차량 설치(사전조건·복구 경로)', component: 'D04-01', roles: ['OPERATOR', 'OPS_LEAD'], body: SimulateInstallBody },
+  { name: 'vehicleInstalls', method: 'GET', path: '/api/vehicles/:vin/installs', summary: '차량 설치 단계(5단계·갈림 상태)', component: 'D04-01' },
+  { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
+  { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
+  { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

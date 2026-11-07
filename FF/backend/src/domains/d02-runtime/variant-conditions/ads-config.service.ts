@@ -1,7 +1,7 @@
 // ADS 구성 (D02-01) — ODD 프로파일(ADS-BE09)과 승인 조합(ADS-BE10). 규칙(의미 검증·상한 비교·형상 대조·보안 최소 버전)은 contracts rules/ads-config.ts.
 // 프로파일 흐름: 초안 → 의미 검증 → 기능안전 승인(SAFETY_OFFICER) → 정책 연결 → 배포. 승인된 프로파일은 불변(새 버전), 오류가 남은 초안은 막힘 사유와 함께 거부.
 // 승인 조합은 이 화면이 원장(P-14) — 지원 조건·복구 후보 화면은 이 판정을 읽는다. 조합은 추가만, 보안 최소 버전 아래 ECU SW가 있으면 등록 거부.
-import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Param, Post, Query } from '@nestjs/common';
 import {
   AdsConfigFixture,
   ApproveOddProfileBody,
@@ -18,6 +18,15 @@ import {
   oddConditionDiff,
   siteStatus,
   validateOddProfile,
+  oddCompileBlockers,
+  reactivationCandidate,
+  recoveryDecisionBlockers,
+  recoveryMetadataVerdict,
+  siteAdditionVerdict,
+  ApproveOddSiteBody,
+  CreateOddSiteBody,
+  RecoveryDecisionBody,
+  type Publication,
   type CompatClass,
   type ConfigSet,
   type ConfigSetListItem,
@@ -146,8 +155,12 @@ export class AdsConfigService implements OnModuleInit {
     const base = p.basedOn ? this.profiles().find((x) => x.profileId === p.basedOn) ?? null : null;
     const f = this.features.get(p.featureId, p.featureVersion);
     const deploy = compareDeploySettings(this.settings(p.featureId, p.featureVersion), p.envelope);
-    const sites = this.siteRows(p);
+    const sites = [...this.siteRows(p), ...this.siteRequestRows(p)];
     const policies = this.policies.forFeature(p.featureId, p.featureVersion).map((x) => ({ policyId: x.policyId, flagKey: x.flagKey, status: x.status }));
+    // ADS-BE09 정책 컴파일 검사 — Flag별 배포 설정 ↔ 지금 승인 상한(초안 프로파일도 같은 승인 기준으로 본다)
+    const approved = this.approvedProfile(p.featureId, p.featureVersion);
+    const allSettings = this.settings(p.featureId, p.featureVersion);
+    const compile = [...new Set(allSettings.map((s) => s.flagKey))].map((flagKey) => ({ flagKey, against: approved?.profileId ?? null, blockers: oddCompileBlockers({ flagKey, settings: allSettings, profile: approved }) }));
     const configSets = this.sets().filter((s) => s.oddProfileId === p.profileId).map((s) => s.setId);
     return {
       profile: p,
@@ -162,7 +175,67 @@ export class AdsConfigService implements OnModuleInit {
       configSets,
       base: base ? { profileId: base.profileId, version: base.version, status: base.status } : null,
       diff: base ? oddConditionDiff(base.conditions, p.conditions) : [],
+      compile,
+      logs: this.verdictLogs(p),
     };
+  }
+
+  /** 판정 로그 — 이 프로파일 참조(odd_ref)로 기록된 차량 판정만 센다(다른 ODD 버전과 섞지 않는다, FFP-F025) */
+  private verdictLogs(p: OddProfile) {
+    const rows = this.db.all<{ verdict: string; n: number }>('SELECT verdict, count(*) AS n FROM safety_verdict WHERE feature_id = ? AND odd_ref = ? GROUP BY verdict', p.featureId, p.profileId);
+    const c = { ALLOW: 0, DENY: 0, UNKNOWN: 0 } as Record<string, number>;
+    for (const r of rows) c[r.verdict] = Number(r.n);
+    return { oddRef: p.profileId, ALLOW: c.ALLOW, DENY: c.DENY, UNKNOWN: c.UNKNOWN, total: c.ALLOW + c.DENY + c.UNKNOWN };
+  }
+
+  // ── 적용 장소 추가(HT02) — 변경 영향 범위 확정 전에는 승인 대기, 승인 상한(Envelope)은 바뀌지 않는다 ──
+  private siteRequests(profileId: string) {
+    return this.db.all<{ doc: string }>('SELECT doc FROM ads_odd_site_request WHERE profile_id = ? ORDER BY site_id', profileId).map((r) => JSON.parse(r.doc) as SiteRequest);
+  }
+  private siteRequestRows(p: OddProfile) {
+    return this.siteRequests(p.profileId).map((r) => {
+      const s = siteStatus({ siteId: r.siteId, name: r.name, kind: r.kind, mapVersion: r.mapVersion, infraVersion: r.infraVersion, impactConfirmed: r.status === 'APPROVED' }, p);
+      const keep = s.status === 'PENDING' && r.code ? { reason: r.reason, code: r.code } : {};
+      return { siteId: r.siteId, name: r.name, kind: r.kind, mapVersion: r.mapVersion, infraVersion: r.infraVersion, impactConfirmed: r.status === 'APPROVED', ...s, ...keep, requested: true, changeImpactRef: r.changeImpactRef, requestedBy: r.requestedBy };
+    });
+  }
+  private impact(ref: string | null) {
+    if (!ref) return null;
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM ads_change_impact WHERE impact_id = ?', ref);
+    if (!r) throw new DomainError('NOT_FOUND', `변경 영향 ${ref}을(를) 찾을 수 없습니다.`);
+    const d = JSON.parse(r.doc) as { impactId: string; featureId: string; version: string; scopeStatus: 'CONFIRMED' | 'REVIEW_REQUIRED' };
+    return { impactId: d.impactId, featureId: d.featureId, version: d.version, scopeStatus: d.scopeStatus };
+  }
+
+  addSite(actor: Actor, profileId: string, body: CreateOddSiteBody) {
+    const p = this.profile(profileId);
+    const v = siteAdditionVerdict(this.impact(body.changeImpactRef), p);
+    const n = this.db.get<{ n: number }>('SELECT count(*) AS n FROM ads_odd_site_request')!.n;
+    const doc: SiteRequest = { siteId: `SITE-${String(1001 + Number(n))}`, profileId, name: body.name, kind: body.kind, mapVersion: body.mapVersion, infraVersion: body.infraVersion, changeImpactRef: body.changeImpactRef, status: 'PENDING', code: v.code ?? null, reason: v.reason, requestedBy: actor.id, requestedAt: this.clock.iso(), approvedBy: null, approvedAt: null };
+    return this.db.tx(() => {
+      this.db.run('INSERT INTO ads_odd_site_request (site_id, profile_id, status, doc) VALUES (?, ?, ?, ?)', doc.siteId, profileId, doc.status, JSON.stringify(doc));
+      this.audit.record(actor, 'ODD_SITE_REQUEST', doc.siteId, { after: { profileId, status: doc.status, code: doc.code, changeImpactRef: doc.changeImpactRef }, reason: body.reason, componentId: 'D02-01' });
+      return doc;
+    });
+  }
+
+  /** 장소 승인(기능안전 담당) — 변경 영향이 지금도 확정이어야 한다(IMPACT_REVIEW_OPEN이면 거부) */
+  approveSite(actor: Actor, profileId: string, siteId: string, reason: string) {
+    const p = this.profile(profileId);
+    const r = this.siteRequests(profileId).find((x) => x.siteId === siteId);
+    if (!r) throw new DomainError('NOT_FOUND', `적용 장소 ${siteId}을(를) 찾을 수 없습니다.`);
+    if (r.status === 'APPROVED') throw new DomainError('CONFLICT', '이미 승인된 적용 장소입니다.');
+    const v = siteAdditionVerdict(this.impact(r.changeImpactRef), p);
+    if (v.status !== 'APPROVED') {
+      this.audit.failed(actor, 'ODD_SITE_APPROVE', siteId, v.reason, 'D02-01');
+      throw new DomainError('GUARD_FAILED', `적용 장소를 승인할 수 없습니다 — ${v.reason}`, { blockers: [{ code: v.code, message: v.reason, ref: r.changeImpactRef ?? siteId }] });
+    }
+    const next: SiteRequest = { ...r, status: 'APPROVED', code: null, reason: v.reason, approvedBy: actor.id, approvedAt: this.clock.iso() };
+    return this.db.tx(() => {
+      this.db.run('UPDATE ads_odd_site_request SET status = ?, doc = ? WHERE site_id = ?', next.status, JSON.stringify(next), siteId);
+      this.audit.record(actor, 'ODD_SITE_APPROVE', siteId, { before: { status: r.status }, after: { status: next.status, changeImpactRef: r.changeImpactRef }, reason, componentId: 'D02-01' });
+      return next;
+    });
   }
 
   /** 기능안전 승인 — 의미 검증 오류가 있으면 막힘 사유(ux 문장)와 함께 거부, 이미 승인이면 충돌 */
@@ -215,7 +288,8 @@ export class AdsConfigService implements OnModuleInit {
     const now = this.clock.now().getTime();
     return this.scope(set).map((v) => {
       const rep = this.report(v.vin);
-      return { vin: v.vin, label: v.label, reportedAt: rep?.reportedAt ?? null, sw: rep?.ecus.flatMap((e) => e.sw) ?? [], ...classifyVehicleConfig(set, rep, now) };
+      const verdict = classifyVehicleConfig(set, rep, now);
+      return { vin: v.vin, label: v.label, reportedAt: rep?.reportedAt ?? null, sw: rep?.ecus.flatMap((e) => e.sw) ?? [], ...verdict, reactivation: reactivationCandidate(verdict) };
     });
   }
   /** 차량 한 대의 최종 대조 — 같은 Feature의 조합 중 하나라도 부합이면 부합, 아니면 첫 조합 기준 */
@@ -241,7 +315,7 @@ export class AdsConfigService implements OnModuleInit {
     const rows = [...byVin.values()].map((cls) => ({ cls }));
     const counts = COMPAT_ZERO();
     for (const r of rows) counts[r.cls]++;
-    return { items, summary: { ...compatSummary(rows), counts }, staleAfterMs: CONFIG_REPORT_STALE_MS };
+    return { items, summary: { ...compatSummary(rows), counts }, staleAfterMs: CONFIG_REPORT_STALE_MS, unverified: this.unverifiedCombos(sets), decisions: this.recoveryDecisions().length };
   }
 
   setVehicles(id: string) {
@@ -273,6 +347,59 @@ export class AdsConfigService implements OnModuleInit {
     return this.db.tx(() => {
       this.db.run('INSERT INTO ads_config_set (set_id, feature_id, feature_version, doc) VALUES (?, ?, ?, ?)', doc.setId, doc.featureId, doc.featureVersion, JSON.stringify(doc));
       this.audit.record(actor, 'CONFIG_SET_CREATE', doc.setId, { after: doc, reason, componentId: 'D02-01' });
+      return doc;
+    });
+  }
+
+  /** 조합 미검증 — 배포 중 정책이 있는 F0·F1 Feature Version 중 승인 조합이 없는 것(기존 Variant 규칙으로 허용, ADS-BE10) */
+  private unverifiedCombos(sets: ConfigSet[]) {
+    const withSet = new Set(sets.map((s) => `${s.featureId}@${s.featureVersion}`));
+    const keys = [...new Set(this.policies.all().filter((x) => x.status === 'DEPLOYED').map((x) => `${x.featureId}@${x.featureVersion}`))].filter((k) => !withSet.has(k)).sort();
+    const items = keys
+      .map((k) => {
+        const [featureId, version] = k.split('@');
+        const sp = this.db.get<{ doc: string }>('SELECT doc FROM safety_profile WHERE feature_id = ? AND version = ?', featureId, version);
+        const fClass = sp ? ((JSON.parse(sp.doc) as { fClass?: string }).fClass ?? null) : null;
+        return { featureId, version, name: this.features.get(featureId, version)?.name ?? null, fClass };
+      })
+      .filter((x) => x.fClass === 'F0' || x.fClass === 'F1');
+    return { count: items.length, items };
+  }
+
+  // ── 복구 결정(차량 1대, FFP-F039·F040) — 경로·근거·형상 참조, 이전 버전 복구는 후보 게시본의 메타데이터를 지금 기준으로 재검증 ──
+  recoveryDecisions(vin?: string) {
+    return this.db.all<{ doc: string }>(`SELECT doc FROM ads_recovery_decision${vin ? ' WHERE vin = ?' : ''} ORDER BY id`, ...(vin ? [vin] : [])).map((r) => JSON.parse(r.doc) as Record<string, unknown>);
+  }
+  private candidateMetadata(publicationId: string | null, set: ConfigSet) {
+    if (!publicationId) return { keyNotAfter: null, keyEpoch: null, configSetRef: null };
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM publication WHERE publication_id = ?', publicationId);
+    if (!r) throw new DomainError('NOT_FOUND', `복구 후보 게시본 ${publicationId}을(를) 찾을 수 없습니다.`);
+    const pub = JSON.parse(r.doc) as Publication;
+    const key = this.db.get<{ not_after: string }>('SELECT not_after FROM pki_key WHERE key_id = ?', pub.signature.keyId);
+    const same = pub.payload.featureId === set.featureId && pub.payload.featureVersion === set.featureVersion;
+    return { keyNotAfter: key?.not_after ?? null, keyEpoch: pub.build?.keyEpoch ?? 1, configSetRef: same ? set.setId : null };
+  }
+  createRecoveryDecision(actor: Actor, body: RecoveryDecisionBody) {
+    if (!this.fleet.vehicle(body.vin)) throw new DomainError('NOT_FOUND', `차량 ${body.vin}을(를) 찾을 수 없습니다.`);
+    const set = this.set(body.configSetRef);
+    if (body.path === 'RESTORE_PREVIOUS' && !body.candidatePublicationId) throw new DomainError('VALIDATION', '승인 조합으로 복구하려면 복구 후보 게시본(candidatePublicationId)을 고르세요.');
+    const now = this.clock.now().getTime();
+    const report = this.report(body.vin);
+    const currentEpoch = Number(this.db.get<{ e: number | null }>("SELECT max(epoch) AS e FROM hsm_secret WHERE name = 'vehicle_root'")?.e ?? 1);
+    const metadata = body.path === 'RESTORE_PREVIOUS' ? recoveryMetadataVerdict(this.candidateMetadata(body.candidatePublicationId, set), { now, currentEpoch, approvedSetIds: this.sets().map((s) => s.setId) }) : { ok: true, reasons: [] };
+    const blockers = recoveryDecisionBlockers({ path: body.path, set, report, metadata, now });
+    const target = `${body.vin}#recovery`;
+    if (blockers.length) {
+      const msg = blockers.map((b) => b.message).join(' · ');
+      this.audit.failed(actor, 'RECOVERY_DECISION', target, msg, 'D02-01');
+      throw new DomainError('GUARD_FAILED', `복구 결정을 저장할 수 없습니다: ${msg}`, { blockers });
+    }
+    const verdict = classifyVehicleConfig(set, report, now);
+    const n = Number(this.db.get<{ n: number }>('SELECT count(*) AS n FROM ads_recovery_decision')!.n);
+    const doc = { decisionId: `RCV-${String(n + 1).padStart(5, '0')}`, vin: body.vin, path: body.path, decidedBy: actor.id, decidedRole: actor.role, rationale: body.rationale, configSetRef: set.setId, candidatePublicationId: body.candidatePublicationId, decidedAt: this.clock.iso(), metadata, verdict: { cls: verdict.cls, code: verdict.code, reasons: verdict.reasons }, reactivation: reactivationCandidate(verdict) };
+    return this.db.tx(() => {
+      this.db.run('INSERT INTO ads_recovery_decision (decision_id, vin, path, decided_by, rationale, config_set_ref, decided_at, doc) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', doc.decisionId, doc.vin, doc.path, doc.decidedBy, doc.rationale, doc.configSetRef, doc.decidedAt, JSON.stringify(doc));
+      this.audit.record(actor, 'RECOVERY_DECISION', target, { after: { decisionId: doc.decisionId, path: doc.path, configSetRef: doc.configSetRef, cls: verdict.cls }, reason: body.rationale, componentId: 'D02-01' });
       return doc;
     });
   }
@@ -322,4 +449,47 @@ export class AdsConfigController {
   vehicles(@Param('id') id: string) {
     return this.ads.setVehicles(id);
   }
+
+  @Post('odd-profiles/:id/sites')
+  @Roles('FEATURE_AUTHOR', 'SAFETY_OFFICER')
+  @AuditAction('ODD_SITE_REQUEST')
+  addSite(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(CreateOddSiteBody)) body: CreateOddSiteBody) {
+    return this.ads.addSite(actor, id, body);
+  }
+
+  @Post('odd-profiles/:id/sites/:siteId/approve')
+  @Roles('SAFETY_OFFICER')
+  @AuditAction('ODD_SITE_APPROVE')
+  approveSite(@CurrentActor() actor: Actor, @Param('id') id: string, @Param('siteId') siteId: string, @Body(new ZodPipe(ApproveOddSiteBody)) body: ApproveOddSiteBody) {
+    return this.ads.approveSite(actor, id, siteId, body.reason);
+  }
+
+  @Get('config-sets/recovery-decisions')
+  decisions(@Query('vin') vin?: string) {
+    return { items: this.ads.recoveryDecisions(vin) };
+  }
+
+  @Post('config-sets/recovery-decisions')
+  @Roles('OPS_LEAD', 'SAFETY_OFFICER')
+  @AuditAction('RECOVERY_DECISION')
+  decide(@CurrentActor() actor: Actor, @Body(new ZodPipe(RecoveryDecisionBody)) body: RecoveryDecisionBody) {
+    return this.ads.createRecoveryDecision(actor, body);
+  }
+}
+
+interface SiteRequest {
+  siteId: string;
+  profileId: string;
+  name: string;
+  kind: 'PARKING' | 'ZONE' | 'ROAD_SECTION';
+  mapVersion: string;
+  infraVersion: string;
+  changeImpactRef: string | null;
+  status: 'PENDING' | 'APPROVED';
+  code: string | null;
+  reason: string;
+  requestedBy: string;
+  requestedAt: string;
+  approvedBy: string | null;
+  approvedAt: string | null;
 }

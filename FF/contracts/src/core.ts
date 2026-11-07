@@ -105,3 +105,4 @@ export * from './schemas/ads-config';
 export * from './schemas/ads-evidence';
 export * from './schemas/ads-state';
 export * from './schemas/ads-change';
+export * from './schemas/ads-p5';

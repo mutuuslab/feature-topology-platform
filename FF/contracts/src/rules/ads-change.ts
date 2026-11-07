@@ -359,6 +359,8 @@ export interface AdsClassification {
   confirmedBy: string | null;
   confirmedAt: string | null;
   lifecycleOwners: Partial<Record<LifecycleOwnerState, string | null>>;
+  /** 확정 서명 — 확정 대상 필드(축 값·담당·상태별 책임자)의 정규 문자열(rules/ads-publish classificationConfirmHash). 바뀌면 재확정 */
+  confirmHash?: string | null;
 }
 
 /** 분류 빈 축 — ADS 여부·DDT 영향·안전 관련성·담당·상태별 책임자·확정 */
@@ -430,8 +432,10 @@ export interface ClassificationView {
   baselines: MarketBaseline[];
   /** 안전 분류(보고서 v1.1) 확정 상태 — 참고 */
   safetyProfileStatus: string | null;
-  /** 출시 전이 거부 규칙 — 켜지 않았다 */
-  ruleEnabled: false;
+  /** 출시 전이 거부 규칙 — 분류 행이 있는 Version(분류 대상 등록)에서 켜진다(ADS-BE16) */
+  ruleEnabled: boolean;
+  /** 상태별 책임자 지정 이력(추가만) */
+  ownerHistory?: { state: string; ownerId: string | null; assignedAt: string; assignedBy: string }[];
 }
 
 /* ───────────────────────── 확대 판정 (ADS-BE12 — 읽기) ───────────────────────── */

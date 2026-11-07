@@ -11,3 +11,4 @@ export * from './rules/ads-config';
 export * from './rules/ads-evidence';
 export * from './rules/ads-state';
 export * from './rules/ads-change';
+export * from './rules/ads-p5';

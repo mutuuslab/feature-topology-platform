@@ -165,10 +165,13 @@ export function sotifTrigger(i: Pick<Incident, 'featureId' | 'category' | 'sever
 }
 
 /** VOC 원문 → 범주 추정 (고객센터 VOC는 분류 없이 들어온다) */
-export function classifyVoc(text: string): IncidentCategory {
+export function classifyVoc(raw: string): IncidentCategory {
+  // 원문은 앞 2,000자만 본다 — 범주 단서는 앞부분에 있고, 정규식 비용을 입력 길이에 묶는다(CodeQL js/polynomial-redos)
+  const text = raw.slice(0, 2000);
   if (/갑자기|스스로|의도치|원하지 않|급제동|혼자/.test(text)) return 'UNEXPECTED_ACTIVATION';
   if (/작동하지 않|안 켜|꺼져|안 됨|동작 안/.test(text)) return 'NO_ACTIVATION';
-  if (/늦|느리|약하|거리.*(짧|길)|반응/.test(text)) return 'PERFORMANCE';
+  // '거리'와 '짧/길' 사이는 한 줄 40자까지 — '.*'는 '거리' 반복 입력에서 시작 위치마다 역추적해 O(n²)였다
+  if (/늦|느리|약하|거리[^\n]{0,40}(짧|길)|반응/.test(text)) return 'PERFORMANCE';
   if (/화면|표시|알림|소리|안내/.test(text)) return 'HMI';
   return 'OTHER';
 }

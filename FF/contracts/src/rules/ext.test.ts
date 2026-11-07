@@ -44,6 +44,15 @@ describe('장애·VOC → SOTIF (FFG-SOT-003)', () => {
     expect(classifyVoc('알림 소리가 너무 커요')).toBe('HMI');
   });
 
+  // CodeQL #1(js/polynomial-redos) — '거리.*(짧|길)'가 '거리' 반복 입력에서 O(n²) 역추적(10만 자 6.7초). 실 VOC 원문 연동 때 이벤트 루프 정지
+  it('VOC 범주 추정은 긴 입력에서도 선형 — 거리 반복 10만 자가 100ms 안에 OTHER, 거리·짧음 문장은 그대로 PERFORMANCE', () => {
+    const t0 = performance.now();
+    expect(classifyVoc('거리'.repeat(50000))).toBe('OTHER');
+    expect(performance.now() - t0).toBeLessThan(100);
+    expect(classifyVoc('차간 거리가 짧아요')).toBe('PERFORMANCE');
+    expect(classifyVoc('앞차와의 거리가 너무 길게 유지돼요')).toBe('PERFORMANCE');
+  });
+
   it('이상 징후 FIELD_SOTIF — 서로 다른 차량 2대의 의도하지 않은 작동(CRITICAL)이면 차단 권고, 아니면 조사', () => {
     const s = (vin: string, code: string, severity: 'INFO' | 'WARNING' | 'CRITICAL') => ({ kind: 'FIELD_SOTIF' as const, featureId: 'FEAT-00022', vin, code, severity, at: 'x', ref: null });
     expect(classifyAnomaly('FIELD_SOTIF', [s('a', 'UNEXPECTED_ACTIVATION', 'CRITICAL')], { asil: 'B' })).toMatchObject({ severity: 'CRITICAL', advice: 'INVESTIGATE' });

@@ -151,7 +151,7 @@ export class NotificationService implements OnModuleInit {
 
   /** 계정이 받는 알림 — 개인·역할·팀 수신자, 제외 계정은 빼고, 최신 순.
    *  안 읽음 수·범주별 집계는 SQL로 세고, 본문(doc)은 돌려줄 limit건만 읽는다 — 전체를 읽어 JSON으로 풀면 알림 10만 건에서
-   *  요청 하나가 이벤트 루프를 수 초 막았다(출시 준비 RD-P2-01 부하 시험, docs/20-architecture/20-92-performance.md) */
+   *  요청 하나가 이벤트 루프를 수 초 막았다(출시 준비 RD-P2-01 부하 시험, docs/20-architecture/20-95-performance.md) */
   inbox(actor: Actor, q: { unread?: boolean; category?: Category; limit?: number } = {}): { items: InboxItem[]; unread: number; byCategory: Record<string, number> } {
     const v = this.visibility(actor);
     const cat = q.category ? ' AND n.category = ?' : '';
@@ -174,7 +174,7 @@ export class NotificationService implements OnModuleInit {
 
   /** 안 읽음 수·범주별 집계 — 알림이 늘거나 읽음이 바뀔 때만 다시 센다(rev). 같은 계정·역할의 반복 조회(알림 종·화면)는 캐시에서.
    *  다시 셀 때는 수신자 색인에서 알림 ID를 먼저 고른다(IN). 그래도 볼 수 있는 알림 수에 비례한다 — 볼 수 있는 알림 5만 건이면
-   *  한 번 세는 데 약 0.3 s(남은 한계, docs/20-architecture/20-92-performance.md). 트랜잭션 안에서는 캐시하지 않는다 */
+   *  한 번 세는 데 약 0.3 s(남은 한계, docs/20-architecture/20-95-performance.md). 트랜잭션 안에서는 캐시하지 않는다 */
   private rev = 0;
   private counts = new Map<string, { rev: number; unread: number; byCategory: Record<string, number> }>();
   private unreadCounts(actor: Actor, v: ReturnType<NotificationService['visibility']>, category?: Category): { unread: number; byCategory: Record<string, number> } {

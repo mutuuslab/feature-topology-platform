@@ -1,4 +1,4 @@
-// 시연 데이터 엔진 — 정적 공개 사이트의 쓰기를 이 브라우저 안에서 서버처럼 처리한다(설계 docs/20-architecture/20-60-browser-simulator.md).
+// 시연 데이터 엔진 — 정적 공개 사이트의 쓰기를 이 브라우저 안에서 서버처럼 처리한다(설계 docs/20-architecture/20-61-browser-simulator.md).
 //  · 쓰기: 경로 이름별 핸들러(registerSimHandler). 역할(routes.ts roles)·본문(zod)을 서버와 같은 규칙으로 먼저 본다.
 //    핸들러가 바꾼 것은 끝난 뒤 한 번에 반영(트랜잭션), 규칙 위반은 서버와 같은 오류 봉투 → ApiError
 //  · 읽기: 스냅샷 위에 오버레이를 덮는다(registerSimView — ID 기준 교체·목록 앞 추가·건수) 또는 계산(registerSimReader)

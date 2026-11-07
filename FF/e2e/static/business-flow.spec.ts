@@ -1,4 +1,4 @@
-// 공개 시연 사이트 — 업무 묶음 흐름을 브라우저 안 시연 데이터로 끝까지(설계 docs/20-architecture/20-60-browser-simulator.md, handlers/business.ts).
+// 공개 시연 사이트 — 업무 묶음 흐름을 브라우저 안 시연 데이터로 끝까지(설계 docs/20-architecture/20-61-browser-simulator.md, handlers/business.ts).
 //  1. 상품: 상품 작성(commerce)이 새 Catalog Version → 구성 승인(approver) → 상품 검증 완료 → 같은 사람은 고객 출시 승인 불가(직무 분리) → 상품 Owner가 고객 출시 승인
 //  2. 개발비: 산정 작성(viewer)이 과제 만들기 → Feature 담기 → 승인 요청 → 승인자(approver) 승인 → 목록·이력이 같은 상태
 //  3. 협의 의견·체험 제안 — 받은 부서의 의견, 상품 작성의 체험 제안

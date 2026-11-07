@@ -43,7 +43,7 @@
     "20-architecture/20-50-security-architecture.md | id-unregistered | ARC-SECURITY",
     "20-architecture/20-90-production-readiness.md | no-frontmatter | -",
     "20-architecture/20-91-install-guide.md | no-frontmatter | -",
-    "20-architecture/20-92-performance.md | no-frontmatter | -",
+    "20-architecture/20-95-performance.md | no-frontmatter | -",
     "20-architecture/20-92-postgresql-migration.md | no-frontmatter | -",
     "20-architecture/20-93-browser-support.md | no-frontmatter | -",
     "30-data-model/30-00-metamodel-overview.md | id-unregistered | ARC-METAMODEL",

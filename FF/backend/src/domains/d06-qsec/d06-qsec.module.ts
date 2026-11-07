@@ -15,6 +15,7 @@ import { POLICY_VALIDATORS, ValidationService } from './validation-history/valid
 import { CarlaAdapter } from '../../adapters/sim/carla.adapter';
 import { IamController, IamService } from './iam/iam.service';
 import { PostReviewController, PostReviewService } from './iam/post-review.service';
+import { AccountController } from './iam/account.controller';
 import { TmsSubmissionService, VirtualValidationController, VirtualValidationService } from './scenario-validation/virtual-validation.service';
 import { ReharaController, ReharaService } from './change-impact-validation/rehara.service';
 import { SumsController, SumsService } from './secure-deploy/sums.service';
@@ -34,7 +35,7 @@ const VALIDATORS = [
 
 @Module({
   imports: [D01PolicyModule, ComplianceRuleModule],
-  controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController],
+  controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController, AccountController],
   providers: [
     CarlaAdapter,
     IamService,

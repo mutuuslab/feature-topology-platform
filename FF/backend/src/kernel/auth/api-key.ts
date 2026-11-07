@@ -2,7 +2,7 @@
 // 저장소에는 원문의 SHA-256만 있다(api_key, migration 161). 키 ID로 행을 찾고 해시를 상수 시간으로 비교한다.
 // 틀린·폐기·만료 키는 401 UNAUTHENTICATED(감사 DENIED). 통과하면 행위자 `apikey:<키 ID>`, 역할은 키에 묶인 역할(SYSTEM·AUDITOR).
 import { Inject, Injectable } from '@nestjs/common';
-import { API_KEY_HEADER, apiKeyState, parseApiKey, type ApiKeyRole } from '@ff/contracts';
+import { API_KEY_HEADER, apiKeyState, parseApiKey, sdkKeyFrom, type ApiKeyRole } from '@ff/contracts';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { Request } from 'express';
 import type { Actor } from '../actor';
@@ -33,6 +33,22 @@ export class ApiKeyAuth {
   authenticate(req: Request, action: string): Actor | null {
     const raw = (req.header(API_KEY_HEADER) ?? '').trim();
     if (!raw) return null;
+    return this.verify(req, raw, action);
+  }
+
+  /**
+   * OFREP SDK 키(결정 C8) — `Authorization: Bearer <키>` 또는 X-Api-Key가 필수. 없거나 틀리면 401(감사 DENIED).
+   * 키 검증(해시·폐기·만료)은 외부 API 키와 같다 — 발급·폐기 화면에서 그대로 관리한다
+   */
+  authenticateSdk(req: Request, action: string): Actor {
+    const raw = sdkKeyFrom({ authorization: req.header('authorization'), apiKey: req.header(API_KEY_HEADER) });
+    if (raw) return this.verify(req, raw, action);
+    const correlationId = (req.header('x-correlation-id') ?? '').trim() || randomUUID();
+    this.audit.denied({ id: 'anonymous-sdk', role: 'AUDITOR', correlationId }, action, req.path, 'SDK 키 없음', 'D05-01');
+    throw new DomainError('UNAUTHENTICATED', 'OFREP 평가에는 SDK 키가 필요합니다. Authorization: Bearer <발급받은 키>를 넣으세요.');
+  }
+
+  private verify(req: Request, raw: string, action: string): Actor {
     const correlationId = (req.header('x-correlation-id') ?? '').trim() || randomUUID();
     const parsed = parseApiKey(raw);
     const reject = (keyId: string, why: string, message: string): never => {

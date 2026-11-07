@@ -48,6 +48,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "R-PLM",
    "R-RDA"
   ],
+  "sysadmin": [
+   "R-SYS"
+  ],
   "viewer": [
    "R-QA",
    "R-CE",
@@ -216,6 +219,13 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "name": "원가 기준 관리자",
    "platformRoles": [
     "COST_BASIS_ADMIN"
+   ]
+  },
+  {
+   "id": "R-SYS",
+   "name": "시스템 관리자",
+   "platformRoles": [
+    "SYSTEM_ADMIN"
    ]
   }
  ],

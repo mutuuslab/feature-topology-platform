@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
-import { ofrepSnapshotFile, type EligibilityReason, type EligibilityState, type CompatClass } from '@ff/contracts';
+import { DEMO_SDK_KEY, ofrepSnapshotFile, type EligibilityReason, type EligibilityState, type CompatClass } from '@ff/contracts';
 import { ELIGIBILITY_LABEL, REASON_AXIS_LABEL, REASON_RESULT_LABEL } from '../../../../contracts/src/rules/ads-config';
 import { STATIC_MODE, call, readSnapshotFile } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
@@ -197,7 +197,7 @@ function PolicyEvaluation() {
     // 정적 데모는 스냅샷을 만들 때 같은 요청(차량·Flag)으로 받아 둔 응답을 읽는다
     (STATIC_MODE
       ? readSnapshotFile<{ flags?: Record<string, unknown> }>(ofrepSnapshotFile(vin), controller.signal).then((s) => s.flags?.[flagKey] ?? null)
-      : fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey: vin } }) }).then((r) => r.json())
+      : fetch(`/ofrep/v1/evaluate/flags/${encodeURIComponent(flagKey)}`, { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEMO_SDK_KEY}` }, body: JSON.stringify({ context: { targetingKey: vin } }) }).then((r) => r.json())
     )
       .then((value) => { if (!controller.signal.aborted) setOfrep(value); }, () => { if (!controller.signal.aborted) setOfrep(null); });
     return () => controller.abort();

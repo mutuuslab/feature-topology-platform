@@ -34,9 +34,14 @@ import {
   type ComplianceRuleVersion,
   type FeatureVersionRow,
   type ValidatorResult,
+  ownerTransferBlocker,
+  SYSTEM_ADMIN_ROLES,
+  TransferOwnerBody,
+  type OwnerTransfer,
 } from '@ff/contracts';
 import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
+import { AccountDirectory } from '../../../kernel/account-directory';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
@@ -117,6 +122,7 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
     private readonly events: EventService,
     private readonly features: FeatureRepo,
     private readonly policies: PolicyRepo,
+    private readonly accounts: AccountDirectory,
   ) {}
 
   onApplicationBootstrap() {
@@ -260,7 +266,7 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
         ruleId,
       )
       .map((c) => ({ id: c.id, ruleId: c.rule_id, version: c.version, action: c.action, field: c.field, before: c.before_value == null ? null : JSON.parse(c.before_value), after: c.after_value == null ? null : JSON.parse(c.after_value), by: c.by_actor, at: c.at, reason: c.reason }));
-    return { rule, versions, changes, requests: this.requests(ruleId) };
+    return { rule, versions, changes, requests: this.requests(ruleId), ownerState: this.accounts.state(rule.ownerId), ownerTransfers: this.ownerTransfers(ruleId) };
   }
 
   /**
@@ -517,6 +523,39 @@ export class ComplianceRuleService implements OnApplicationBootstrap, OnApplicat
       .map(({ seq: _seq, ...x }) => x);
     return { items };
   }
+
+  /** 소유자 이관 이력 — 오래된 순 */
+  private ownerTransfers(ruleId: string): OwnerTransfer[] {
+    return this.db
+      .all<{ from_owner: string | null; from_state: OwnerTransfer['fromState']; to_owner: string; by_actor: string; at: string; reason: string }>("SELECT from_owner, from_state, to_owner, by_actor, at, reason FROM owner_transfer WHERE entity = 'compliance-rule' AND record_id = ? ORDER BY id", ruleId)
+      .map((r) => ({ entity: 'compliance-rule', recordId: ruleId, fromOwnerId: r.from_owner, fromState: r.from_state, toOwnerId: r.to_owner, by: r.by_actor, at: r.at, reason: r.reason }));
+  }
+
+  /**
+   * 소유자 이관(B13, D-GAP-1) — 시스템 관리자만, 소유자 계정이 없거나 비활성일 때만, 새 소유자는 룰 담당 역할의 사용 중 계정.
+   * 내용·버전·상태·열린 승인 요청은 그대로 두고 소유자만 바꾼다(관리자는 내용을 고치지 않는다). 이관 기록(추가만)·감사·이벤트
+   * @req FR-CRC-001-020
+   */
+  transferOwner(actor: Actor, ruleId: string, body: TransferOwnerBody): ComplianceRule {
+    const cur = this.require(ruleId);
+    const ownerState = this.accounts.state(cur.ownerId);
+    const toState = this.accounts.state(body.toOwnerId);
+    const why = ownerTransferBlocker({ ownerId: cur.ownerId, ownerState, toId: body.toOwnerId, toState, toRoles: this.accounts.roles(body.toOwnerId), allowedRoles: COMPLIANCE_RULE_ROLES, actorId: actor.id, actorRole: actor.role });
+    if (why) {
+      this.audit.failed(actor, 'COMPLIANCE_RULE_OWNER_TRANSFER', ruleId, why, COMPONENT);
+      throw new DomainError('CONFLICT', why, { ownerId: cur.ownerId, ownerState, toState });
+    }
+    if (ownerState !== 'INACTIVE' && ownerState !== 'ABSENT') throw new DomainError('CONFLICT', '소유자 계정이 없거나 비활성일 때만 이관합니다.');
+    const now = this.clock.iso();
+    const next: ComplianceRule = { ...cur, ownerId: body.toOwnerId };
+    return this.db.tx(() => {
+      this.save(next);
+      this.db.run("INSERT INTO owner_transfer (entity, record_id, from_owner, from_state, to_owner, by_actor, at, reason) VALUES ('compliance-rule', ?, ?, ?, ?, ?, ?, ?)", ruleId, cur.ownerId, ownerState, body.toOwnerId, actor.id, now, body.reason);
+      this.audit.record(actor, 'COMPLIANCE_RULE_OWNER_TRANSFER', ruleId, { before: { ownerId: cur.ownerId, ownerState }, after: { ownerId: body.toOwnerId }, reason: body.reason, componentId: COMPONENT });
+      this.events.publish('compliance.rule.owner-transferred', ruleId, { ruleId, from: cur.ownerId, to: body.toOwnerId, by: actor.id }, { componentId: COMPONENT, correlationId: actor.correlationId });
+      return next;
+    });
+  }
 }
 
 const cmpVersion = (a: string, b: string) => {
@@ -574,6 +613,12 @@ export class ComplianceRuleController {
   @Roles(...COMPLIANCE_RULE_ROLES)
   decide(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(ComplianceDecisionBody)) body: ComplianceDecisionBody) {
     return this.svc.decide(actor, id, body);
+  }
+
+  @Post(':id/owner-transfer')
+  @Roles(...SYSTEM_ADMIN_ROLES)
+  transferOwner(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(TransferOwnerBody)) body: TransferOwnerBody) {
+    return this.svc.transferOwner(actor, id, body);
   }
 }
 

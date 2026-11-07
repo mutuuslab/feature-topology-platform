@@ -3,11 +3,12 @@ import { Module } from '@nestjs/common';
 import { D01PolicyModule } from '../../d01-policy/d01-policy.module';
 import { ComplianceRuleController, ComplianceRuleService, ComplianceValidationController } from './compliance-rule.service';
 import { ComplianceRuleSeeder } from './compliance-rule.seed';
+import { OwnerTransferSeeder } from './owner-transfer.seed';
 
 @Module({
   imports: [D01PolicyModule],
   controllers: [ComplianceRuleController, ComplianceValidationController],
-  providers: [ComplianceRuleService, ComplianceRuleSeeder],
+  providers: [ComplianceRuleService, ComplianceRuleSeeder, OwnerTransferSeeder],
   exports: [ComplianceRuleService],
 })
 export class ComplianceRuleModule {}

@@ -901,6 +901,7 @@
       "tested": [
         "contracts/src/rules/api-gateway.test.ts",
         "backend/test/d05/api-gateway.spec.ts",
+        "backend/test/d05/ofrep-sdk-key.spec.ts",
         "frontend/src/__tests__/extGateway.test.tsx"
       ]
     },

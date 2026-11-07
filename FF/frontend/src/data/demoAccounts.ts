@@ -8,7 +8,9 @@ export const EXTRA_DEMO_ACCOUNTS: SpecRoleInfo[] = [
   { key: 'opslead', name: '강태윤', label: '운영 리더', id: 'usr-opslead', group: 'Feature 운영', scopes: ['LIGHT-KR', 'LIGHT-EU'] },
   { key: 'safety2', name: '오세린', label: '기능안전 담당', id: 'usr-safety2', group: '독립 검증', scopes: ['LIGHT-KR', 'LIGHT-EU'] },
   { key: 'productowner', name: '문하린', label: '고객 출시 승인', id: 'usr-productowner', group: '상품 운영', scopes: ['LIGHT-KR', 'LIGHT-EU'] },
+  // 시스템 관리자(2026-11-07) — 계정 상태·소유자가 없는 기록의 소유자 이관만
+  { key: 'sysadmin', name: '서지훈', label: '시스템 관리자', id: 'usr-sysadmin', group: 'IT 인프라', scopes: ['LIGHT-KR', 'LIGHT-EU'] },
 ];
 
-/** 화면 역할 전환기·행위자 ID가 쓰는 전체 데모 계정(12) */
+/** 화면 역할 전환기·행위자 ID가 쓰는 전체 데모 계정(13) */
 export const DEMO_ACCOUNTS: SpecRoleInfo[] = [...SPEC_ROLES, ...EXTRA_DEMO_ACCOUNTS];

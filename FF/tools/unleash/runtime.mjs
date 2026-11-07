@@ -2,7 +2,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:net';
 import { createHash, randomBytes } from 'node:crypto';
-import { existsSync, mkdirSync, openSync, closeSync, readFileSync, writeFileSync, rmSync, appendFileSync } from 'node:fs';
+import { existsSync, mkdirSync, openSync, closeSync, readFileSync, writeFileSync, rmSync, appendFileSync, renameSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -31,6 +31,34 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 function processAlive(pid) { try { process.kill(pid, 0); return true; } catch { return false; } }
 export function redactor(values) { return (text) => values.filter(Boolean).sort((a, b) => b.length - a.length).reduce((s, value) => s.split(value).join('[REDACTED]'), String(text)); }
+// Lock and secrets are created exclusively (wx) and written through the same descriptor; updates replace the file atomically (CodeQL js/file-system-race).
+export function writeSupervisorLock(lockPath, info) {
+  const fd = openSync(lockPath, 'wx', 0o600);
+  try { writeFileSync(fd, JSON.stringify(info)); } finally { closeSync(fd); }
+}
+const newSecrets = () => ({ owner: secret(), ff: secret(), unleash: secret(), admin: `*:*.` + secret(), backend: `default:development.` + secret(), frontend: `default:development.` + secret(), adminPassword: secret(), vehicleRoot: randomBytes(32).toString('base64'), kek: randomBytes(32).toString('base64') });
+export function ensureSecrets(secretPath) {
+  const created = newSecrets();
+  try { writeFileSync(secretPath, JSON.stringify(created), { flag: 'wx', mode: 0o600 }); return created; } catch (e) { if (e.code !== 'EEXIST') throw e; }
+  const s = readJson(secretPath);
+  if (s.vehicleRoot && s.kek) return s;
+  const next = { ...s, vehicleRoot: s.vehicleRoot ?? created.vehicleRoot, kek: s.kek ?? created.kek };
+  const tmp = `${secretPath}.${process.pid}.${randomBytes(4).toString('hex')}.tmp`;
+  writeFileSync(tmp, JSON.stringify(next), { flag: 'wx', mode: 0o600 });
+  try { renameSync(tmp, secretPath); } catch (e) { rmSync(tmp, { force: true }); throw e; }
+  return next;
+}
+// Restrict the entire private data tree to the current Windows account before any secret exists. No credentials go in arguments/logs.
+export function restrictDataDir(data, { platform = process.platform, run = spawnSync } = {}) {
+  if (platform !== 'win32') return;
+  const who = run('whoami.exe', ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', windowsHide: true });
+  const sid = String(who.stdout ?? '').match(/S-1-[0-9-]+/)?.[0];
+  if (!sid || run('icacls.exe', [data, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`], { windowsHide: true, stdio: 'ignore' }).status !== 0) throw new Error('Unable to restrict runtime secrets to the current account');
+}
+export function prepareSecrets(data, options = {}) {
+  restrictDataDir(data, options);
+  return ensureSecrets(join(data, 'secrets.json'));
+}
 
 export async function runRuntime(options = {}) {
   const started = Date.now();
@@ -52,8 +80,7 @@ export async function runRuntime(options = {}) {
   mkdirSync(data, { recursive: true });
   const lockPath = join(data, 'supervisor.lock');
   if (existsSync(lockPath)) { const old = readJson(lockPath); if (processAlive(old.pid)) throw new Error('This runtime data directory is already supervised.'); rmSync(lockPath); }
-  closeSync(openSync(lockPath, 'wx', 0o600));
-  writeFileSync(lockPath, JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString(), ports }), { mode: 0o600 });
+  writeSupervisorLock(lockPath, { pid: process.pid, startedAt: new Date().toISOString(), ports });
   const stopPath = join(data, 'stop.request');
   rmSync(stopPath, { force: true });
   const children = [];
@@ -93,17 +120,7 @@ export async function runRuntime(options = {}) {
     if (!existsSync(join(assets, 'server/node_modules/unleash-server/dist/server.js')) || !existsSync(join(assets, 'edge/unleash-edge.exe')) || !existsSync(exe('initdb'))) throw new Error('Native sidecar assets are missing. Run npm run unleash:native:prepare first.');
     const pins = readJson(join(assets, 'pins.json'));
     if (pins.server.version !== '8.3.1' || pins.edge.version !== '20.6.0' || pins.postgres.version !== '18.3') throw new Error('Native sidecar version mismatch');
-    const secretPath = join(data, 'secrets.json');
-    if (!existsSync(secretPath)) writeFileSync(secretPath, JSON.stringify({ owner: secret(), ff: secret(), unleash: secret(), admin: `*:*.` + secret(), backend: `default:development.` + secret(), frontend: `default:development.` + secret(), adminPassword: secret() }), { mode: 0o600 });
-    // Restrict the entire private data tree to the current Windows account. No credentials go in arguments/logs.
-    if (process.platform === 'win32') {
-      const who = spawnSync('whoami.exe', ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', windowsHide: true });
-      const sid = who.stdout.match(/S-1-[0-9-]+/)?.[0];
-      if (!sid || spawnSync('icacls.exe', [data, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`], { windowsHide: true, stdio: 'ignore' }).status !== 0) throw new Error('Unable to restrict runtime secrets to the current account');
-    }
-    const s = readJson(secretPath);
-    if (!s.vehicleRoot) { s.vehicleRoot = randomBytes(32).toString('base64'); writeFileSync(secretPath, JSON.stringify(s), { mode: 0o600 }); }
-    if (!s.kek) { s.kek = randomBytes(32).toString('base64'); writeFileSync(secretPath, JSON.stringify(s), { mode: 0o600 }); }
+    const s = prepareSecrets(data);
     const redact = redactor(Object.values(s));
     const log = (text) => appendFileSync(join(data, 'runtime.log'), redact(text));
     const phase = (name) => log(`[runtime] phase=${name} elapsedMs=${Date.now() - started}\n`);

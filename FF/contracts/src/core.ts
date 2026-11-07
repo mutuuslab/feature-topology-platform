@@ -119,3 +119,6 @@ export * from './rules/api-gateway';
 export * from './rules/legacy-link';
 export * from './rules/settlement';
 export * from './schemas/ads-p5';
+// F0 — 소유자 인가·계정 상태·소유자 이관(D-GAP-1·B13), 초안 삭제 공용 규칙(B2)
+export * from './rules/owner-authz';
+export * from './rules/draft-deletion';

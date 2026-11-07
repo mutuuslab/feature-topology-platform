@@ -1800,7 +1800,7 @@
     "FR-CRC-001-020": {
       "verdict": "구현",
       "evidence": "수정 `PATCH /api/compliance-rules/:id` — 룰 역할(법규·기능안전·사이버보안) + 소유자 본인만(D-GAP-1 기본안: 역할 계약 고정 + ownerId 검사) `B/d03-safety/compliance-checker/compliance-rule.service.ts:308`; 시험 `backend/test/d03/compliance-rules.spec.ts:79`",
-      "gap": "결정 B13 확정: 규칙 담당 역할 + 그 룰의 소유자 본인, 소유자 계정이 없거나 비활성일 때만 시스템 관리자가 소유자 이관(내용 수정 불가·감사) — 묶음 F0"
+      "gap": "—(B13 확정 2026-11-07: 규칙 담당 역할 + 그 룰의 소유자 본인만 내용 수정. 소유자 계정이 없거나 비활성일 때만 시스템 관리자가 소유자 이관 `B/d03-safety/compliance-checker/compliance-rule.service.ts:539` — 관리자는 내용 수정 불가·이관 감사, 시험 `backend/test/kernel/f0-owner-draft.spec.ts:62`)"
     },
     "FR-CRC-001-021": {
       "verdict": "구현",

@@ -1061,7 +1061,7 @@
       "verdict": "부분",
       "evidence": [
         "backend/src/domains/d06-qsec/iam/post-review.service.ts:58",
-        "contracts/src/rules/duty-separation.ts:83",
+        "contracts/src/rules/duty-separation.ts:85",
         "backend/src/domains/d01-policy/registry/release-signoff.service.ts:3"
       ],
       "tests": [

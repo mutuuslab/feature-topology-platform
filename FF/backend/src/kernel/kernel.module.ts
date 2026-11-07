@@ -28,6 +28,8 @@ import { Scheduler } from './scheduler';
 import { DbSharedState, SHARED_STATE } from './shared-state';
 import { VehicleAuthService } from './vehicle-auth';
 import { ApiKeyAuth } from './auth/api-key';
+import { AccountDirectory } from './account-directory';
+import { DraftDeletionService } from './draft-deletion';
 
 @Global()
 @Module({
@@ -86,8 +88,10 @@ import { ApiKeyAuth } from './auth/api-key';
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
     ApiKeyAuth, // 외부 시스템 API 키(D05-01) — 역할 가드가 쓴다
+    AccountDirectory, // 계정 상태(F0, D-GAP-1) — 소유자 이관·소유자 인가
+    DraftDeletionService, // 초안 삭제 공용(F0, B2) — 묘비·감사·이벤트
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink, ApiKeyAuth],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink, ApiKeyAuth, AccountDirectory, DraftDeletionService],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

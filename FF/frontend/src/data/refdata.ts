@@ -46,4 +46,5 @@ export const permMatrix: Record<string, string[]> = {
   opslead:      ['view', 'edit', 'kill', 'rollback'],
   safety2:      ['view', 'edit', 'approve'],
   productowner: ['view', 'edit', 'approve'],
+  sysadmin:     ['view', 'admin'],
 };

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Asil, GATES } from '../enums';
 import { CALS } from '../rules/gate-evidence';
 import { MARKETS } from './wire';
+import type { AccountState, OwnerTransfer } from '../rules/owner-authz';
 
 export const COMPLIANCE_RULE_TYPES = ['LEGAL', 'PRIVACY', 'SAFETY', 'SECURITY'] as const;
 export type ComplianceRuleType = (typeof COMPLIANCE_RULE_TYPES)[number];
@@ -196,4 +197,8 @@ export interface ComplianceRuleDetail {
   versions: ComplianceRuleVersion[];
   changes: ComplianceRuleChange[];
   requests: ComplianceApprovalRequest[];
+  /** 소유자 계정 상태(F0) — 없거나 비활성이면 시스템 관리자가 소유자를 이관할 수 있다 */
+  ownerState?: AccountState;
+  /** 소유자 이관 이력(추가만, 오래된 순) */
+  ownerTransfers?: OwnerTransfer[];
 }

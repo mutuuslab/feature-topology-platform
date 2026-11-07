@@ -7,7 +7,7 @@ import { vehiclePseudonym } from '../../src/kernel/crypto';
 import { DB, type Db } from '../../src/kernel/db';
 import { Clock } from '../../src/kernel/clock';
 import { Scheduler } from '../../src/kernel/scheduler';
-import { actor, bootApp, killV2, restoreV2 } from '../helpers';
+import { actor, bootApp, killV2, restoreV2, SDK_KEY } from '../helpers';
 
 /** 운영 중 계속 커지는 표 — 요청마다 통째로 읽으면 안 된다 */
 const BIG = ['audit', 'events', 'vehicle', 'notification', 'notification_recipient', 'status_report', 'vehicle_delivery', 'vehicle_request', 'readback', 'entitlement', 'gate_record', 'vehicle_envelope', 'vehicle_feature_status'];
@@ -80,7 +80,7 @@ describe.skipIf(!!process.env.FF_TEST_PG_URL)('질의 계획 — 주요 API가 �
     ['차량 목록 한 페이지', () => app.http().get('/api/vehicles?limit=5').expect(200)],
     ['긴급 차단 영향 범위(차량 지정)', () => app.http().get('/api/kill-requests/preview?featureId=FEAT-00022&featureVersion=1.0.0&vins=ego-01').expect(200)],
     ['긴급 차단 영향 범위(범위 전체)', () => app.http().get('/api/kill-requests/preview?featureId=FEAT-00022&featureVersion=1.0.0').expect(200)],
-    ['OFREP 전체 평가(가명)', () => app.http().post('/ofrep/v1/evaluate/flags').send({ context: { targetingKey: vehiclePseudonym('ego-01') } }).expect(200)],
+    ['OFREP 전체 평가(가명)', () => app.http().post('/ofrep/v1/evaluate/flags').set(SDK_KEY).send({ context: { targetingKey: vehiclePseudonym('ego-01') } }).expect(200)],
     ['감사 커서 페이지', () => app.http().get('/api/audit?limit=100').expect(200)],
     ['이벤트 커서 페이지', () => app.http().get('/api/events?after=0&limit=200').expect(200)],
   ];

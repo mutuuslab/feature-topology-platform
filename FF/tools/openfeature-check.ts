@@ -39,6 +39,12 @@ for (const f of [...walk(join(FF, 'frontend', 'src'), ['.ts', '.tsx']), ...walk(
   }
 }
 
+// 3) OFREP SDK 키(결정 C8) — 평가 창구는 SDK 키 가드를 거치고, SDK 예시는 Bearer 키를 넣는다
+const OFREP_CTRL = join(FF, 'backend', 'src', 'domains', 'd05-ext', 'api-gateway', 'ofrep.controller.ts');
+if (!/@UseGuards\(OfrepSdkKeyGuard\)/.test(readFileSync(OFREP_CTRL, 'utf8'))) errors.push(`${rel(OFREP_CTRL)} — OFREP 평가 창구에 SDK 키 가드(OfrepSdkKeyGuard)가 없다 (결정 C8)`);
+const SDK_README = join(FF, 'examples', 'feature-flag-consumer', 'README.md');
+if (!/Authorization', `Bearer /.test(readFileSync(SDK_README, 'utf8'))) errors.push(`${rel(SDK_README)} — SDK 예시에 OFREP SDK 키(Authorization: Bearer) 설정이 없다 (결정 C8)`);
+
 if (errors.length) {
   console.error(`openfeature:check ✗ ${errors.length}건\n  ${errors.join('\n  ')}`);
   process.exit(1);

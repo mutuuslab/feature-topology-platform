@@ -235,6 +235,7 @@ workflows:
     WF-ROLE-CA: "SW 개발비 산정 승인자 업무 절차서"
     WF-ROLE-CV: "SW 개발비 산정 열람자 업무 절차서"
     WF-ROLE-CBA: "원가 기준 관리자 업무 절차서"
+    WF-ROLE-SYS: "시스템 관리자 업무 절차서"
   departments:
     WF-DEP-INDEX: "부서별 R&R — 부서×프로세스 RACI·부서 간 흐름"
     WF-DEP-PDP: "상품기획팀 R&R 문서"

@@ -141,4 +141,5 @@ export const roleHome: Record<string, string> = {
   opslead: '/ops/kill', // 긴급 차단·복구 — 운영 리더 승인
   safety2: '/ops/kill', // 긴급 차단·복구 — 복원 승인(차단 승인자와 다른 FSM)
   productowner: '/admin/approval', // 검토함 — 고객 출시 승인
+  sysadmin: '/admin/iam', // 플랫폼 인증·권한 — 계정 상태·소유자 이관
 };

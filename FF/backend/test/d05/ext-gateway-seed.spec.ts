@@ -22,6 +22,7 @@ describe('P2 데모 시드', () => {
       ['AK-0003', 'SYSTEM', 'REVOKED'],
       ['AK-0002', 'AUDITOR', 'ACTIVE'],
       ['AK-0001', 'SYSTEM', 'ACTIVE'],
+      ['AK-0000', 'AUDITOR', 'ACTIVE'], // 데모 기본 SDK 키(OFREP, 결정 C8)
     ]);
     const links = (await http().get('/api/legacy/links').expect(200)).body.items;
     expect(links.map((l: any) => [l.system, l.bridgeType, l.status, l.lastRun?.status ?? null])).toEqual([
@@ -47,6 +48,6 @@ describe('P2 데모 시드', () => {
 
   it('다시 부팅해도 한 번만 — meta 표식', async () => {
     get<ExtGatewaySeeder>(ExtGatewaySeeder).onApplicationBootstrap();
-    expect((await http().get('/api/api-keys').expect(200)).body.items).toHaveLength(3);
+    expect((await http().get('/api/api-keys').expect(200)).body.items).toHaveLength(4);
   });
 });

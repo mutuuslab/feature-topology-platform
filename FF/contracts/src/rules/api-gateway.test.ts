@@ -1,7 +1,7 @@
 // 외부 API 게이트웨이 규칙(FR-AGW-001-003~007) — 키 모양·상태·만료일, 버전 상태·머리글·지원 종료 410, 런타임 명세 생성
 import { describe, expect, it } from 'vitest';
 import { ROUTES } from '../routes';
-import { API_KEY_ROLES, API_VERSION_POLICY, API_VERSIONS, apiKeyExpiry, apiKeyPrefix, apiKeyState, apiVersionStatus, apiVersionsAt, currentApiVersion, IssueApiKeyBody, parseApiKey, resolveApiVersion } from './api-gateway';
+import { API_KEY_ROLES, API_VERSION_POLICY, API_VERSIONS, apiKeyExpiry, apiKeyPrefix, apiKeyState, apiVersionStatus, apiVersionsAt, currentApiVersion, DEMO_SDK_KEY, DEMO_SDK_KEY_ID, demoSdkKeyEnabled, IssueApiKeyBody, parseApiKey, resolveApiVersion, sdkKeyFrom } from './api-gateway';
 import { buildOpenApiDocument, openApiSummary, ROUTE_RESPONSES } from './openapi-doc';
 
 const KEY = `ffk_AK-0001_${'a'.repeat(43)}`;
@@ -97,5 +97,28 @@ describe('런타임 명세 (FR-AGW-001-006)', () => {
     expect(text).not.toContain('"$defs"');
     expect(text).not.toContain('"$schema"');
     for (const m of text.matchAll(/"\$ref":"#\/components\/schemas\/([^"]+)"/g)) expect(doc.components.schemas).toHaveProperty([m[1]]);
+  });
+});
+
+// C8 OFREP 인증(2026-11-07 결정 (b)) — SDK 키(Bearer) 필수, 데모 설치는 공개 기본 키
+describe('OFREP SDK 키', () => {
+  it('데모 기본 키는 발급 키와 같은 모양이고 예약 ID(AK-0000)를 쓴다', () => {
+    expect(parseApiKey(DEMO_SDK_KEY)).toEqual({ keyId: DEMO_SDK_KEY_ID, secret: expect.any(String) });
+    expect(DEMO_SDK_KEY_ID).toBe('AK-0000');
+  });
+  it('Authorization: Bearer 또는 X-Api-Key에서 키 원문을 읽는다 — 다른 방식·빈 값은 null', () => {
+    expect(sdkKeyFrom({ authorization: `Bearer ${DEMO_SDK_KEY}` })).toBe(DEMO_SDK_KEY);
+    expect(sdkKeyFrom({ authorization: `bearer   ${DEMO_SDK_KEY}  ` })).toBe(DEMO_SDK_KEY);
+    expect(sdkKeyFrom({ apiKey: DEMO_SDK_KEY })).toBe(DEMO_SDK_KEY);
+    expect(sdkKeyFrom({ authorization: `Basic ${DEMO_SDK_KEY}` })).toBeNull();
+    expect(sdkKeyFrom({ authorization: 'Bearer ' })).toBeNull();
+    expect(sdkKeyFrom({})).toBeNull();
+  });
+  it('기본 키는 데모 인증 방식에서만 둔다(회사 SSO 설치에는 없음, 끌 수도 있다)', () => {
+    expect(demoSdkKeyEnabled({})).toBe(true);
+    expect(demoSdkKeyEnabled({ FF_AUTH: 'demo' })).toBe(true);
+    expect(demoSdkKeyEnabled({ FF_AUTH: 'oidc' })).toBe(false);
+    expect(demoSdkKeyEnabled({ FF_OFREP_DEMO_KEY: 'off' })).toBe(false);
+    expect(demoSdkKeyEnabled({ FF_ENV: 'production' })).toBe(false);
   });
 });

@@ -10,3 +10,33 @@ paths-ignore:
   # JSON.stringify로 직렬화해 저장소 내부 고정 경로 _source/platform_iam.json에 저장하는 것이 목적이다.
   # 응답은 파일 경로·실행 코드로 쓰이지 않는다. 운영 서버·번들에는 포함되지 않는다. CodeQL #30, 2026-10-25 검토.
   - docs/65-workflows/scripts/extract_platform.mjs
+  # ── 시험 코드(2026-11-07 결정 CQ-1 (a)) — 시험이 소스·고정 파일을 읽고 기대값 정규식을 만든다. 운영 빌드·서버·번들에 들어가지 않는다.
+  # js/incomplete-sanitization #6 #50 #67 · js/file-system-race #15 #16 #49 · js/incomplete-url-substring-sanitization #68
+  - FF/backend/test
+  - FF/frontend/src/__tests__
+  - FF/e2e
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.test.mjs"
+  - "**/*.spec.ts"
+  # ── 저장소 도구(같은 결정) — 개발자가 저장소 안 고정 입력으로 돌리는 생성·검사 CLI. 고객 설치·서버·번들에 들어가지 않는다.
+  # 고객 설치 코드(FF/tools/unleash/runtime.mjs·legacy-migration.mjs·archive.mjs·create-env.mjs)는 빼지 않는다.
+  # ads-sync.ts — 저장소에 고정된 ADS·UNECE 원문 HTML에서 글자를 뽑는다(정화 용도 아님, 출력 JSON은 React가 이스케이프). #2 #3 #4 #5
+  - FF/tools/ads-sync.ts
+  # demo-publish.ts — 자체 vite 빌드 결과의 자산 참조 검사(정화 아님). #51
+  - FF/tools/demo-publish.ts
+  # requirements.ts — 요구 카탈로그·판정·보고서 생성(Markdown 표 칸 이스케이프는 표시 문제뿐). #7 #21 #22 #23
+  - FF/tools/requirements.ts
+  # ads-team.ts·standards.ts·anchors.ts·docs-meta.ts — 저장소 JSON·생성 문서·잠금 파일 갱신 CLI. #17 #20 #45 #46 #47
+  - FF/tools/ads-team.ts
+  - FF/tools/standards.ts
+  - FF/tools/anchors.ts
+  - FF/tools/docs-meta.ts
+  # load/ — 부하 시험 시드(빌드 산출물 해시). #48
+  - FF/tools/load
+  # frontend/scripts — 저장소 소스를 읽는 감사 스크립트. #14
+  - FF/frontend/scripts
+  # unleash/prepare.mjs — 빌드 때 pins.json의 공식 Edge URL을 받아 SHA-256을 확인하고 저장(의도된 동작). #60 #64 #65
+  - FF/tools/unleash/prepare.mjs
+  # unleash/smoke.mjs — 로컬 스모크(127.0.0.1 status.json 포트 호출·고정 경로 증명 파일). #61 #62 #66
+  - FF/tools/unleash/smoke.mjs

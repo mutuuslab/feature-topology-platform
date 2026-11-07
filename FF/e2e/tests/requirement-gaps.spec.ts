@@ -2,6 +2,7 @@
 // 운영 리더가 수신자 규칙에 사람을 더하고 → 파이프라인 실패가 오류 이력·알림으로 이어지고 → 감사 화면에서 기간·변경 전후 값·내보내기,
 // Feature 상세 '평가 운영' 탭에서 앱별 평가 횟수를 본다.
 import { expect, test, type Page } from '@playwright/test';
+import { DEMO_SDK_KEY } from '../../contracts/src/rules/api-gateway';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -68,7 +69,7 @@ test('수신자 규칙 → 파이프라인 실패 알림·오류 이력 → 감�
   await expect(page.getByTestId('policy-stats').getByRole('table')).toBeVisible();
 
   // 4) Feature 상세 '평가 운영' — 앱 평가(OFREP)를 보낸 앱 이름·환경으로 센다
-  for (let i = 0; i < 3; i++) await request.post(`${API}/ofrep/v1/evaluate/flags/ivi_00024_guide`, { data: { context: { targetingKey: 'ego-01', appName: 'ivi-e2e', environment: 'staging' } } });
+  for (let i = 0; i < 3; i++) await request.post(`${API}/ofrep/v1/evaluate/flags/ivi_00024_guide`, { headers: { Authorization: `Bearer ${DEMO_SDK_KEY}` }, data: { context: { targetingKey: 'ego-01', appName: 'ivi-e2e', environment: 'staging' } } });
   await page.goto('/features/FEAT-00024/1.0.0?tab=evaluations');
   const ev = page.getByTestId('evaluations');
   await expect(ev.getByRole('table', { name: '애플리케이션·환경별' })).toContainText('ivi-e2e');

@@ -5,6 +5,7 @@ import request from 'supertest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AppModule } from '../src/app.module';
+import { DEMO_SDK_KEY } from '@ff/contracts';
 
 /** 메모리 DB + v0.81 시드로 앱을 띄운다. 테스트마다 독립 DB. */
 export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?: Type<unknown>[]; at?: string; demoActivity?: boolean; costDemo?: boolean; flagCode?: boolean | string; showcaseFill?: boolean } = {}) {
@@ -126,3 +127,5 @@ export function nextRefId(asil = 'QM'): string {
 }
 /** Feature 등록 본문에 대표 기준 행을 붙인다 — 본문 ASIL과 같은 대표 ASIL 행이라 ASIL 사유가 필요 없다 */
 export const withRef = <T extends { asil?: string }>(body: T, refId = nextRefId(body.asil ?? 'QM')) => ({ ...body, featureRefs: [{ refId, role: 'PRIMARY' as const }] });
+/** OFREP SDK 키(결정 C8) — 데모 인증 방식의 공개 기본 키를 Bearer로 */
+export const SDK_KEY = { Authorization: `Bearer ${DEMO_SDK_KEY}` };

@@ -22,8 +22,8 @@ describe('API 키 (FR-AGW-001-003~005)', () => {
   beforeAll(async () => ({ app, http, get } = await bootApp({ at: AT })));
   afterAll(() => app.close());
 
-  it('발급된 키가 없으면 빈 목록', async () => {
-    expect((await http().get('/api/api-keys').expect(200)).body).toEqual({ items: [] });
+  it('발급한 키가 없으면 데모 기본 SDK 키(AK-0000, OFREP 평가용 조회 전용)만', async () => {
+    expect((await http().get('/api/api-keys').expect(200)).body.items.map((k: any) => [k.keyId, k.state, k.role])).toEqual([['AK-0000', 'ACTIVE', 'AUDITOR']]);
   });
 
   it('발급 — 보안 담당·운영 리더만, 원문은 응답 한 번뿐이고 저장소에는 해시만', async () => {
@@ -41,6 +41,7 @@ describe('API 키 (FR-AGW-001-003~005)', () => {
     expect(list.body.items.map((k: any) => [k.keyId, k.state, k.role])).toEqual([
       ['AK-0002', 'ACTIVE', 'AUDITOR'],
       ['AK-0001', 'ACTIVE', 'SYSTEM'],
+      ['AK-0000', 'ACTIVE', 'AUDITOR'],
     ]);
     const db = get<Db>(DB);
     const audit = JSON.stringify(db.all('SELECT * FROM audit'));

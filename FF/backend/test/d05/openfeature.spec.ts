@@ -8,7 +8,7 @@ import { ErrorCode, OpenFeature, type Client } from '@openfeature/server-sdk';
 import { OFREPProvider } from '@openfeature/ofrep-provider';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { vehiclePseudonym } from '../../src/kernel/crypto';
-import { actor, bootApp, killV2 } from '../helpers';
+import { actor, bootApp, killV2, SDK_KEY } from '../helpers';
 
 const FLAG = 'ivi_00024_guide';
 const F3_FLAG = 'care_00022_param';
@@ -22,7 +22,7 @@ describe('OpenFeature SDK ↔ FF OFREP', () => {
     ({ app, http } = await bootApp({ at: '2026-10-12T01:00:00.000Z' }));
     await app.listen(0, '127.0.0.1');
     const { port } = app.getHttpServer().address() as AddressInfo;
-    await OpenFeature.setProviderAndWait('ff', new OFREPProvider({ baseUrl: `http://127.0.0.1:${port}` }));
+    await OpenFeature.setProviderAndWait('ff', new OFREPProvider({ baseUrl: `http://127.0.0.1:${port}`, headers: [['Authorization', SDK_KEY.Authorization]] }));
     client = OpenFeature.getClient('ff');
   });
   afterAll(async () => {
@@ -77,7 +77,7 @@ describe('OpenFeature SDK ↔ FF OFREP', () => {
     });
 
     it('FFG-OFT-005: OFREP bulk 응답에 F2 이상 키 0건', async () => {
-      const r = await http().post('/ofrep/v1/evaluate/flags').send({ context: { targetingKey: 'ego-01' } }).expect(200);
+      const r = await http().post('/ofrep/v1/evaluate/flags').set(SDK_KEY).send({ context: { targetingKey: 'ego-01' } }).expect(200);
       expect(r.body.flags.map((f: { key: string }) => f.key)).toEqual([FLAG]);
     });
 

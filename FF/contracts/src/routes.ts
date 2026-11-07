@@ -63,6 +63,7 @@ import { CloseImpactPathBody, PATH_CLOSER_ROLES } from './schemas/ads-change';
 import { ApproveOddProfileBody, CreateConfigSetBody } from './schemas/ads-config';
 import { ComplianceApprovalRequestBody, ComplianceDecisionBody, COMPLIANCE_RULE_ROLES, CreateComplianceRuleBody, UpdateComplianceRuleBody } from './schemas/compliance-rule';
 import { API_KEY_ADMIN_ROLES, IssueApiKeyBody, RevokeApiKeyBody } from './rules/api-gateway';
+import { AccountStatusBody, SYSTEM_ADMIN_ROLES, TransferOwnerBody } from './rules/owner-authz';
 import { CreateLegacyLinkBody, CreateLegacyRuleBody, DeleteLegacyLinkBody, LEGACY_BRIDGE_RUNNERS, LEGACY_LINK_EDITORS, LEGACY_RULE_EDITORS, LegacyMessageBody, RunLegacyBridgeBody, UpdateLegacyLinkBody, UpdateLegacyRuleBody } from './rules/legacy-link';
 import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
@@ -655,6 +656,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'releaseCandidate', method: 'GET', path: '/api/features/:id/versions/:ver/release-candidate', summary: '출시 후보 통합 스냅샷 — 출시 승인 시점 Feature·요구·Variant·정책·Test Evidence, 해시 검증', component: 'D01-01' },
   { name: 'releaseCandidates', method: 'GET', path: '/api/release-candidates', summary: '출시 후보 통합 스냅샷 목록', component: 'D01-01', query: ['featureId'] },
   { name: 'policyStages', method: 'GET', path: '/api/policy-stages', summary: '정책 생애주기 값(Draft·Review·Approved·Deployed·Monitored) 대응표·단계별 정책', component: 'D01-06', query: ['stage', 'featureId'] },
+  // F0 — 계정 상태·소유자 이관(D-GAP-1·B13). 시스템 관리자는 기록 내용을 고치지 않는다
+  { name: 'accounts', method: 'GET', path: '/api/accounts', summary: '계정 상태 — 사용 중·비활성·없는 계정·확인 불가, 마지막 상태 기록(사유)', component: 'D06-09' },
+  { name: 'deactivateAccount', method: 'POST', path: '/api/accounts/:id/deactivate', summary: '계정 비활성 기록 — 시스템 관리자, 사유 필수(자기 계정 제외)', component: 'D06-09', roles: SYSTEM_ADMIN_ROLES, body: AccountStatusBody },
+  { name: 'reactivateAccount', method: 'POST', path: '/api/accounts/:id/reactivate', summary: '계정 재활성 — 비활성인 계정만, 사유 필수', component: 'D06-09', roles: SYSTEM_ADMIN_ROLES, body: AccountStatusBody },
+  { name: 'transferComplianceRuleOwner', method: 'POST', path: '/api/compliance-rules/:id/owner-transfer', summary: '컴플라이언스 룰 소유자 이관 — 시스템 관리자, 소유자 계정이 없거나 비활성일 때만(내용·버전·상태는 그대로)', component: 'D03-01', roles: SYSTEM_ADMIN_ROLES, body: TransferOwnerBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

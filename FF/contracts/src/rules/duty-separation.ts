@@ -37,6 +37,8 @@ export const DEMO_PERSONAS: Record<string, Role[]> = {
   opslead: ['OPS_LEAD'], // 운영 리더 — 긴급 차단 승인·복원 승인의 운영 몫
   safety2: ['SAFETY_OFFICER'], // 두 번째 Safety Manager — 차단을 승인하지 않은 FSM이 복원을 승인한다
   productowner: ['PRODUCT_APPROVER'], // 상품 Owner — 구성 승인자와 다른 고객 출시 승인자
+  // 시스템 관리자(D-GAP-1, 2026-11-07) — 13계정, 분리 직무 없음(겸직 0건 유지). 계정 비활성·소유자 이관만
+  sysadmin: ['SYSTEM_ADMIN'],
 };
 
 export const dutiesOf = (roles: readonly Role[]): Duty[] => (Object.keys(DUTY_ROLES) as Duty[]).filter((d) => DUTY_ROLES[d].some((r) => roles.includes(r)));

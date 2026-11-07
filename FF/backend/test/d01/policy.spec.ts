@@ -2,7 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
-import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
+import { actor, bootApp, confirmSafety, signG7, withRef, SDK_KEY } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -62,20 +62,20 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
 
   describe('OFREP (IF-10) — 행위자 헤더 없는 SDK 호출', () => {
     it('단일 평가: OpenFeature 사유·변형·메타데이터 — F0·F1(IVI flag)만 값을 계산, F2 이상은 DISABLED(FFG-OFT-001)', async () => {
-      const r = await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
+      const r = await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
       expect(r.body).toMatchObject({ key: 'ivi_00024_guide', value: true, variant: 'on', reason: 'TARGETING_MATCH', metadata: { decision: 'ALLOW' } });
-      const g = await http().post('/ofrep/v1/evaluate/flags/care_00022_param').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
+      const g = await http().post('/ofrep/v1/evaluate/flags/care_00022_param').set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
       expect(g.body).toMatchObject({ key: 'care_00022_param', value: false, reason: 'DISABLED', metadata: { decided_by: 'vehicle_safety_guard' } });
     });
     it('오류는 OFREP 규격: 키 누락 400, 미등록 차량 400, 없는 flag 404', async () => {
-      expect((await http().post('/ofrep/v1/evaluate/flags/care_00022_param').send({ context: {} }).expect(400)).body.errorCode).toBe('TARGETING_KEY_MISSING');
-      expect((await http().post('/ofrep/v1/evaluate/flags/care_00022_param').send({ context: { targetingKey: 'NOPE' } }).expect(400)).body.errorCode).toBe('INVALID_CONTEXT');
-      expect((await http().post('/ofrep/v1/evaluate/flags/nope_flag').send({ context: { targetingKey: 'ego-01' } }).expect(404)).body.errorCode).toBe('FLAG_NOT_FOUND');
+      expect((await http().post('/ofrep/v1/evaluate/flags/care_00022_param').set(SDK_KEY).send({ context: {} }).expect(400)).body.errorCode).toBe('TARGETING_KEY_MISSING');
+      expect((await http().post('/ofrep/v1/evaluate/flags/care_00022_param').set(SDK_KEY).send({ context: { targetingKey: 'NOPE' } }).expect(400)).body.errorCode).toBe('INVALID_CONTEXT');
+      expect((await http().post('/ofrep/v1/evaluate/flags/nope_flag').set(SDK_KEY).send({ context: { targetingKey: 'ego-01' } }).expect(404)).body.errorCode).toBe('FLAG_NOT_FOUND');
     });
     it('일괄 평가: ETag, 같으면 304', async () => {
-      const a = await http().post('/ofrep/v1/evaluate/flags').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
+      const a = await http().post('/ofrep/v1/evaluate/flags').set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
       expect(a.body.flags.map((f: any) => f.key)).toEqual(['ivi_00024_guide']); // F2 이상 키는 OpenFeature 백엔드에 내보내지 않는다(FFG-OFT-005)
-      await http().post('/ofrep/v1/evaluate/flags').set('If-None-Match', a.headers.etag).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(304);
+      await http().post('/ofrep/v1/evaluate/flags').set(SDK_KEY).set('If-None-Match', a.headers.etag).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(304);
     });
   });
 
@@ -136,7 +136,7 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
     it('배포 → OFREP·활성화 판단에 반영 (권한 불필요 정책)', async () => {
       await http().post(`/api/policies/${pid}/deploy`).set(JUDGE).send({ reason: '배포' }).expect(403);
       await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '서버 배포' }).expect(200);
-      const r = await http().post(`/ofrep/v1/evaluate/flags/${spec().flagKey}`).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200); // 지원 조건(SW ≥ 1.2.1)을 만족하는 차량
+      const r = await http().post(`/ofrep/v1/evaluate/flags/${spec().flagKey}`).set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200); // 지원 조건(SW ≥ 1.2.1)을 만족하는 차량
       expect(r.body).toMatchObject({ value: true, reason: 'TARGETING_MATCH' });
     });
 

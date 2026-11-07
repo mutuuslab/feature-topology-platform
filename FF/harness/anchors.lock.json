@@ -122,7 +122,7 @@
     "contracts/src/rules/deactivation.ts:139": "b6b993372c0b",
     "contracts/src/rules/deactivation.ts:43": "14ff275d0bbd",
     "contracts/src/rules/deactivation.ts:8": "e23bba9f9a1e",
-    "contracts/src/rules/duty-separation.ts:83": "0861c4d5135a",
+    "contracts/src/rules/duty-separation.ts:85": "0861c4d5135a",
     "contracts/src/rules/eol.ts:26": "dd3b8e27c8fa",
     "contracts/src/rules/eol.ts:55": "2f2777a367d3",
     "contracts/src/rules/ext-sync.ts:185": "0a907161126a",

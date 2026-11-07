@@ -51,7 +51,7 @@ last_updated: 2026-11-05
 | [시험·검증팀](DEP-VAL.md) | 시험 조직 | 심사 결재함 | quality | 4 |
 | [품질팀](DEP-QA.md) | 품질 조직 | 심사 결재함 | quality, viewer | 8 |
 | [OTA·서비스운영팀](DEP-OPS.md) | 운영 조직 | 관제실 | operator, opslead | 9 |
-| [IT인프라·보안운영팀](DEP-ITSEC.md) | PKI 운영 | 관제실 | viewer | 0 (2차 초안만) |
+| [IT인프라·보안운영팀](DEP-ITSEC.md) | PKI 운영, 시스템 관리자 | 관제실 | sysadmin | 0 (2차 초안만) |
 | [구매팀](DEP-PUR.md) | 구매, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 | 검토 포털 | viewer, approver | 0 (2차 초안만) |
 | [법무팀](DEP-LEG.md) | 법무 | 검토 포털 | viewer | 0 (2차 초안만) |
 | [개인정보보호팀](DEP-DPO.md) | 데이터 보호 담당 | 검토 포털 | viewer | 0 (2차 초안만) |

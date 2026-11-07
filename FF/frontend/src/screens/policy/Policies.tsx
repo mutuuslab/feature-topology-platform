@@ -1,7 +1,7 @@
 // /policies · /policies/new · /policies/:id · /validations — 정책 저장·버전(D01-06), 분야별 검증 8종(D06-04), 배포 안전성(D03-02),
 // 단계적 기능 배포(D01-08). PoC ② 정책 준비·검증·승인.
-import { lazy, Suspense, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ControlPointType, effectiveBasisPoints, type PolicyExpansionView } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
@@ -149,6 +149,15 @@ export function PolicyDetail() {
   const [drawer, setDrawer] = useState<null | 'decide' | 'deploy' | 'stage'>(null);
   const d = q.data;
   const p = d?.policy;
+  // ?follow=deployed — 따라하기처럼 시드 정책 번호로 연 화면이, 그 판이 같은 값의 새 판으로 대체(RETIRED)됐으면 같은 flag의 배포 중 판으로 옮긴다
+  const [sp] = useSearchParams();
+  const nav = useNavigate();
+  const follow = sp.get('follow') === 'deployed' && !!p && p.status !== 'DEPLOYED';
+  const live = useApi<{ items: Policy[] }>('listPolicies', { query: { status: 'DEPLOYED' } }, { enabled: follow });
+  const next = follow ? live.data?.items.find((x) => x.flagKey === p!.flagKey && x.policyId !== p!.policyId) : undefined;
+  useEffect(() => {
+    if (next) nav(`/policies/${next.policyId}`, { replace: true });
+  }, [next, nav]);
   // 출시 뒤 열린 재-HARA가 있으면 배포 서명 버튼 대신 사유(ADS-UI09) — 서버 거부는 결함 ADS-BE06이 맞춘다
   const change = useFeatureChange(p?.featureId ?? '', p?.featureVersion ?? '');
   const signBlocked = !!change && reharaAfterRelease(change) > 0;

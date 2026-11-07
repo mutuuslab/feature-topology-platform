@@ -5,7 +5,7 @@
 // 성공해야 완료 — 다른 시나리오·이전 실행이 남긴 상태로 미리 통과하지 않는다(api/writes).
 import { useEffect, useId, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { clausesOf, onCheckPath, reportRule, reportTest, standardFamily, stepCheckMet, stepPath, tutorialById, type TutorialStep } from '@ff/contracts';
+import { clausesOf, onCheckPath, onStepScreen, reportRule, reportTest, standardFamily, stepCheckMet, tutorialById, type TutorialStep } from '@ff/contracts';
 import { STATIC_MODE } from '../api/client';
 import { onWrite } from '../api/writes';
 import { ko } from '../copy/ko';
@@ -94,7 +94,7 @@ export function GuideDock() {
   const stepDescId = useId();
   const t = st ? tutorialById(st.scenarioId) : undefined;
   const step = t && st ? t.steps[Math.min(st.step, t.steps.length - 1)] : undefined;
-  const here = !!step && pathname === stepPath(step) && (!step.route.includes('?') || search.includes(step.route.split('?')[1]));
+  const here = !!step && onStepScreen(step, pathname, search);
   const rect = useSpotlight(step && here && !st?.collapsed ? step.anchor : null, stepDescId);
   const checking = !!step && onCheckPath(step, pathname);
   const i0 = t && st ? Math.min(st.step, t.steps.length - 1) : 0;

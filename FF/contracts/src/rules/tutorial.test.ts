@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { REPORT_RULES } from './report-catalog-installed';
 import { clausesOf, clausesOfRules, reportRule, reportTest, standardFamily } from './standards';
-import { onCheckPath, stepCheckMet, stepPath, TUTORIALS } from './tutorial';
+import { onCheckPath, onStepScreen, stepCheckMet, stepPath, tutorialById, TUTORIALS } from './tutorial';
 import { DEMO_PERSONAS } from './duty-separation';
 import { ROUTES } from '../routes';
 
@@ -52,6 +52,21 @@ describe('따라하기 시나리오 표', () => {
       }
     }
   });
+  // 통합 3차 — 전시 채우기가 POL-00002를 같은 값의 새 판으로 대체하면 Canary 단계는 옮겨 간 판 화면에서 강조·판정한다
+  it('단계 화면 패턴(screen)이 있으면 옮겨 간 화면도 단계 화면이다 — 없으면 경로·질의가 같아야', () => {
+    const canary = tutorialById('CLASSIFY-GATE')!.steps.find((s) => s.id === 'canary')!;
+    expect(canary.route).toBe('/policies/POL-00002?follow=deployed');
+    for (const at of ['/policies/POL-00002', '/policies/POL-00022']) {
+      expect(onStepScreen(canary, at, ''), at).toBe(true);
+      expect(onCheckPath(canary, at), at).toBe(true);
+    }
+    expect(onStepScreen(canary, '/policies', '')).toBe(false);
+    const plain = { route: '/ops/kill?tab=requests' };
+    expect(onStepScreen(plain, '/ops/kill', '?tab=requests')).toBe(true);
+    expect(onStepScreen(plain, '/ops/kill', '')).toBe(false);
+    for (const t of TUTORIALS) for (const s of t.steps) if (s.screen) expect(onStepScreen(s, stepPath(s), ''), `${t.id}/${s.id}`).toBe(true);
+  });
+
   it('조작·실패 단계는 화면 결과로 완료를 판정한다 — 판정 경로가 없으면 단계 화면에서 판정', () => {
     const missing: string[] = [];
     for (const t of TUTORIALS)

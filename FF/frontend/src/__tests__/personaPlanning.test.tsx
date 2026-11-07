@@ -235,3 +235,24 @@ describe('체험 제안 — 상품 고르기·범위·시뮬레이터 제외', (
     await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ catalogId: 'CAT-00064', vins: ['KMH-NX4-0002'] }));
   });
 });
+
+// 따라하기 CLASSIFY-GATE 'Canary 단계 조정'은 시드 정책 POL-00002를 연다 — 전시 채우기가 같은 값의 새 판(POL-00022)을 배포해 앞 판은 RETIRED가 된다.
+// ?follow=deployed로 열면 같은 flag의 배포 중 판으로 옮겨 [단계 조정]이 보인다(통합 3차 learn e2e 2건 실패 원인)
+describe('정책 상세 ?follow=deployed — 대체된 판이면 같은 flag의 배포 중 판으로', () => {
+  const live = { ...POL, policyId: 'POL-00122', revision: 1, status: 'DEPLOYED' };
+  const body = (p: object) => ({ policy: p, feature: { name: '안전거리 경고', asil: 'QM' }, hashMatchesValidation: true, lastRun: RUN, runs: [RUN], approval: { eligible: false, reasons: [] } });
+  beforeEach(() => {
+    handler = (url) =>
+      url === '/api/policies/POL-00099' ? { body: body({ ...POL, status: 'RETIRED' }) } : url === '/api/policies/POL-00122' ? { body: body(live) } : url.startsWith('/api/policies?') && url.includes('status=DEPLOYED') ? { body: { items: [live, { ...live, policyId: 'POL-00123', flagKey: 'other_00191_flag' }] } } : undefined;
+  });
+  it('따라오기를 청하면 배포 중 판으로 옮겨 단계 조정을 보인다', async () => {
+    mount('coordinator', '/policies/POL-00099?follow=deployed', '/policies/:id', <PolicyDetail />);
+    expect(await screen.findByRole('button', { name: /단계 조정/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /POL-00122/ })).toBeTruthy();
+  });
+  it('청하지 않으면 연 판 그대로(RETIRED, 단계 조정 없음)', async () => {
+    mount('coordinator', '/policies/POL-00099', '/policies/:id', <PolicyDetail />);
+    expect(await screen.findByRole('button', { name: /POL-00099/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /단계 조정/ })).toBeNull();
+  });
+});

@@ -40,6 +40,8 @@ export interface TutorialStep {
   role: string;
   /** 실제 화면 경로 */
   route: string;
+  /** 단계 화면 경로 패턴(정규식) — 화면이 다른 경로로 옮겨 가는 단계만(예: 대체된 정책 → 배포 중 판). 없으면 route의 경로·질의 그대로 */
+  screen?: string;
   /** 스포트라이트 대상 data-tour 값 */
   anchor: string;
   /** 강조 대상의 이름 — "어디서"에 보인다 */
@@ -337,10 +339,12 @@ export const TUTORIALS: Tutorial[] = /* @__PURE__ */ (() => [
         id: 'canary',
         kind: 'act',
         title: 'Canary 단계 조정',
-        doKo: '운영 중인 정책 POL-00002에서 [단계 조정]을 누르고 코호트 비율 500(5%)과 사유를 적어 [단계 조정]을 누르세요.',
+        doKo: '운영 중인 정책 POL-00002(같은 값의 새 판으로 바뀌었으면 그 판)에서 [단계 조정]을 누르고 코호트 비율 500(5%)과 사유를 적어 [단계 조정]을 누르세요.',
         whyKo: '배포와 효력은 분리합니다. F2 이상은 Canary(5% 이하)에서 시작해 24시간 관찰·이상 없음·배포자와 다른 사람의 결정이 있어야 넓힙니다. 줄이기는 언제나 허용됩니다.',
         role: 'coordinator',
-        route: '/policies/POL-00002',
+        // 전시 채우기(같은 값의 새 판 배포)가 POL-00002를 대체하면 앞 판은 RETIRED라 [단계 조정]이 없다 — 같은 flag의 배포 중 판으로 따라간다
+        route: '/policies/POL-00002?follow=deployed',
+        screen: '^/policies/POL-[0-9]{5}$',
         anchor: 'policy-stage',
         targetKo: '정책 상세 › [단계 조정]',
         rules: ['FFG-LCY-009', 'FFG-PLT-008'],
@@ -1257,7 +1261,11 @@ export const tutorialById = (id: string) => TUTORIALS.find((t) => t.id === id);
 export const stepPath = (s: Pick<TutorialStep, 'route'>) => s.route.split('?')[0];
 
 /** 판정할 화면에 있는가 — 판정 경로(path)가 있으면 그것, 없으면 단계 화면 */
-export const onCheckPath = (s: Pick<TutorialStep, 'route' | 'check'>, pathname: string) => !!s.check && (s.check.path ? new RegExp(s.check.path).test(pathname) : pathname === stepPath(s));
+export const onCheckPath = (s: Pick<TutorialStep, 'route' | 'check' | 'screen'>, pathname: string) => !!s.check && (s.check.path ? new RegExp(s.check.path).test(pathname) : s.screen ? new RegExp(s.screen).test(pathname) : pathname === stepPath(s));
+
+/** 단계 화면에 있는가(강조·'다른 화면' 안내) — screen 패턴이 있으면 그것, 없으면 route의 경로가 같고 route의 질의가 지금 질의에 들어 있다 */
+export const onStepScreen = (s: Pick<TutorialStep, 'route' | 'screen'>, pathname: string, search: string) =>
+  s.screen ? new RegExp(s.screen).test(pathname) : pathname === stepPath(s) && (!s.route.includes('?') || search.includes(s.route.split('?')[1]));
 
 /** 화면 요소를 찾는 최소 모양 — DOM document·element */
 export interface CheckRoot {

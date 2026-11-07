@@ -18,6 +18,6 @@ import { IntegrationErrorModule } from './d04-ops/event-history/integration-erro
   imports: [D01PolicyModule, OpsLoopModule, IntegrationErrorModule],
   controllers: [IntegrationController, ExperimentController, IncidentController, SyncController, LegacyController, LegacySdvController, FieldPortalController],
   providers: [OtelExporter, ExternalSystems, ExperimentRepo, ExperimentService, IncidentService, SyncService, LegacyService, LegacySdvService, FieldPortalService],
-  exports: [ExternalSystems, IncidentService, ExperimentService],
+  exports: [ExternalSystems, IncidentService, ExperimentService, LegacyService],
 })
 export class ExtModule {}

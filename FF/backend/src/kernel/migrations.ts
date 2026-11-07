@@ -1249,4 +1249,35 @@ CREATE TRIGGER compliance_check_no_update BEFORE UPDATE ON compliance_check BEGI
 CREATE TRIGGER compliance_check_no_delete BEFORE DELETE ON compliance_check BEGIN SELECT RAISE(ABORT, 'compliance_check는 추가만 가능'); END;
 `,
   },
+  {
+    // 외부 시스템 API 키(P2, FR-AGW-001-003~005) — 해시(SHA-256)만 저장, 폐기하면 해시를 지운다(행은 감사용으로 남김). 원문은 발급 응답에만
+    name: '161_api_key',
+    sql: `
+CREATE TABLE api_key (key_id TEXT PRIMARY KEY, hash TEXT, status TEXT NOT NULL CHECK (status IN ('ACTIVE','REVOKED')), expires_on TEXT NOT NULL, last_used_at TEXT, doc TEXT NOT NULL);
+CREATE UNIQUE INDEX api_key_hash ON api_key (hash);
+`,
+  },
+  {
+    // Legacy 연계 설정·브리지(설정 문서 안)·등록 변환 규칙(P2, FR-LGCY-001-001~006), Legacy↔SDV 메시지 변환 기록(FR-SDVI-001-002, 추가만)
+    name: '162_legacy_link',
+    sql: `
+CREATE TABLE legacy_link (link_id TEXT PRIMARY KEY, system TEXT NOT NULL UNIQUE, status TEXT NOT NULL CHECK (status IN ('ACTIVE','INACTIVE')), doc TEXT NOT NULL);
+CREATE TABLE legacy_transform_rule (legacy_code TEXT PRIMARY KEY, system TEXT NOT NULL, feature_id TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE legacy_message_log (id INTEGER PRIMARY KEY AUTOINCREMENT, message_id TEXT NOT NULL UNIQUE, at TEXT NOT NULL, direction TEXT NOT NULL CHECK (direction IN ('LEGACY_TO_SDV','SDV_TO_LEGACY')), vin TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('CONVERTED','FAILED')), doc TEXT NOT NULL);
+CREATE INDEX legacy_message_log_vin ON legacy_message_log (vin, id);
+CREATE TRIGGER legacy_message_log_no_update BEFORE UPDATE ON legacy_message_log BEGIN SELECT RAISE(ABORT, 'legacy_message_log는 추가만 가능'); END;
+CREATE TRIGGER legacy_message_log_no_delete BEFORE DELETE ON legacy_message_log BEGIN SELECT RAISE(ABORT, 'legacy_message_log는 추가만 가능'); END;
+`,
+  },
+  {
+    // Feature 사용량 정산 전송 기록(P2, FR-BIL-001-002) — 시도마다 한 줄(추가만), 기간마다 성공은 하나
+    name: '163_settlement',
+    sql: `
+CREATE TABLE settlement_transmission (id INTEGER PRIMARY KEY AUTOINCREMENT, transmission_id TEXT NOT NULL UNIQUE, period TEXT NOT NULL, at TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('SENT','FAILED')), doc TEXT NOT NULL);
+CREATE INDEX settlement_transmission_period ON settlement_transmission (period, id);
+CREATE UNIQUE INDEX settlement_transmission_sent ON settlement_transmission (period) WHERE status = 'SENT';
+CREATE TRIGGER settlement_transmission_no_update BEFORE UPDATE ON settlement_transmission BEGIN SELECT RAISE(ABORT, 'settlement_transmission은 추가만 가능'); END;
+CREATE TRIGGER settlement_transmission_no_delete BEFORE DELETE ON settlement_transmission BEGIN SELECT RAISE(ABORT, 'settlement_transmission은 추가만 가능'); END;
+`,
+  },
 ];

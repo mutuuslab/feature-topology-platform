@@ -2635,59 +2635,59 @@
       "gap": "외부 시스템이 호출할 제어 동작 범위(예: 체험 제안·수락은 SYSTEM 허용 routes.ts:133-136) 정의. 배포·차단은 승인·직무 분리 게이트를 우회하지 않는 \"요청 접수\" 형태로 한정 필요"
     },
     "FR-AGW-001-003": {
-      "verdict": "미구현",
-      "evidence": "인증은 `X-Actor-Id`/`X-Actor-Role` 헤더 신뢰 방식 `kernel/actor.ts:36-49`. API Key 저장·발급 코드 없음(grep `apiKey` 0건)",
-      "gap": "외부 시스템용 키 발급(해시 저장, 원문 1회 반환), 키→역할 매핑"
+      "verdict": "구현",
+      "evidence": "발급 `POST /api/api-keys`(ROUTES issueApiKey, 보안 담당·운영 리더) `B/d05-ext/api-gateway/api-keys/api-key.service.ts:72` — 비밀 32바이트 원문은 발급 응답에만(secret), 저장은 SHA-256 해시 `api_key`(migration 161), 감사·이벤트에는 앞부분만; 키→역할 SYSTEM·AUDITOR `C/rules/api-gateway.ts:10`, 인증 `backend/src/kernel/auth/api-key.ts:33`(역할 가드 `backend/src/kernel/actor.ts:118`); 화면 `/integration/connectors?tab=apikeys`(`frontend/src/screens/ext/ApiKeysTab.tsx`, 원문은 서랍을 닫으면 사라짐). 시험 `T/d05/api-gateway.spec.ts:29`·`:54`, `contracts/src/rules/api-gateway.test.ts:10`, `frontend/src/__tests__/extGateway.test.tsx:48`, `e2e/tests/ext-gateway.spec.ts:23`",
+      "gap": ""
     },
     "FR-AGW-001-004": {
-      "verdict": "미구현",
-      "evidence": "해당 경로·저장소 없음",
-      "gap": "키 목록·상태(활성/폐기·마지막 사용) 조회, 빈 목록 계약"
+      "verdict": "구현",
+      "evidence": "목록 `GET /api/api-keys` `B/d05-ext/api-gateway/api-keys/api-key.service.ts:64` — 키 ID·앞부분·이름·외부 시스템·역할·상태(사용 중·만료·삭제됨, `C/rules/api-gateway.ts` apiKeyState)·만료일·마지막 사용·발급자, 원문·해시 없음, 없으면 빈 목록 `{ items: [] }`. 시험 `T/d05/api-gateway.spec.ts:25`(빈 목록)·`:54`(마지막 사용)·`:89`(만료), `frontend/src/__tests__/extGateway.test.tsx:48`",
+      "gap": ""
     },
     "FR-AGW-001-005": {
-      "verdict": "미구현",
-      "evidence": "해당 경로 없음. 현재는 헤더만 있으면 통과하므로 \"삭제된 키 거부\"를 검증할 수 없음",
-      "gap": "키 폐기 + 폐기 키 401 `UNAUTHENTICATED` 회귀 시험"
+      "verdict": "구현",
+      "evidence": "삭제 `DELETE /api/api-keys/:id`(이유, 보안 담당·운영 리더) `B/d05-ext/api-gateway/api-keys/api-key.service.ts:93` — 상태 REVOKED·시각·사유를 남기고 해시를 지움(감사용 행 유지), 두 번째 삭제 409·없는 키 404; 삭제·만료·틀린 키 요청은 401 `UNAUTHENTICATED`+감사 DENIED `backend/src/kernel/auth/api-key.ts:44`. 시험 `T/d05/api-gateway.spec.ts:74`(폐기 키 401 회귀)·`:66`·`:89`, `e2e/tests/ext-gateway.spec.ts:23`(화면 삭제 뒤 같은 키 401)",
+      "gap": "시스템 관리자 역할은 따로 없다(D-GAP-1) — 사이버보안 담당·운영 리더 역할 기반"
     },
     "FR-AGW-001-006": {
-      "verdict": "부분",
-      "evidence": "`tools/openapi.ts:1-55` — contracts ROUTES+zod → OpenAPI 3.0.3, `--check`로 최신 여부 검사; 산출물은 상위 저장소 `docs/80-integration/openapi.json`(v0.81.0). 시험 `backend/test/routes.spec.ts`(ROUTES↔컨트롤러 정합)",
-      "gap": "런타임 명세 조회 경로(예: `GET /api/openapi.json`) 없음 — \"조회 요청 시 최신 명세 반환\" 미충족. 응답 스키마(200 본문)도 비어 있음"
+      "verdict": "구현",
+      "evidence": "런타임 명세 `GET /api/openapi.json` `B/d05-ext/api-gateway/api-spec.controller.ts:52` — 실행 중인 서버의 경로 표(ROUTES)·zod 본문 스키마·응답 계약에서 OpenAPI 3.0.3 `C/rules/openapi-doc.ts:66`(zod 내장 변환, 운영 이미지 의존성 없음), ETag·If-None-Match 304, 공통 오류 봉투·API 키 보안 방식·버전 머리글; 저장 사본 `docs/80-integration/openapi.json`(tools/openapi.ts --check)과 연산 목록 일치 시험; 요약·받기 화면 `/integration/connectors?tab=apispec`. 시험 `T/d05/api-gateway.spec.ts:104`, `contracts/src/rules/api-gateway.test.ts:73`·`:92`, `frontend/src/__tests__/extGateway.test.tsx:92`, `e2e/tests/ext-gateway.spec.ts:55`",
+      "gap": "200 본문 상세 스키마는 응답 계약을 둔 경로(ROUTE_RESPONSES, `C/rules/openapi-doc.ts:15`)만 — 그 밖의 경로는 JSON 객체로 적는다"
     },
     "FR-AGW-001-007": {
-      "verdict": "부분",
-      "evidence": "경로 버전은 차량·OFREP 채널만 `/vehicle/v1`(d02 vehicle-request.service.ts:309), `/ofrep/v1`(ofrep.controller.ts:158). `/api/**`는 무버전",
-      "gap": "버전 정책(지원·폐기 일정), 구버전 호환 응답, 지원 종료 버전 요청 시 안내 포함 오류(예: 410 + Sunset 헤더) 및 시험"
+      "verdict": "구현",
+      "evidence": "버전 정책 `C/rules/api-gateway.ts:87`(추가만 호환·예고 최소 180일)·버전 표 `:108`(지원·폐기 예고·지원 종료 일정, 상태는 시계로 `:117`), `X-Api-Version` 처리 `:135` → 역할 가드 `backend/src/kernel/actor.ts:97`(신원보다 먼저): 폐기 예고 버전은 같은 본문 + Deprecation·Sunset·Link 머리글, 지원 종료 버전은 410 `API_VERSION_RETIRED`+Sunset+옮길 버전 안내, 모르는 버전 400; 정책 조회 `GET /api/api-versions`·화면 `/integration/connectors?tab=apispec`. 시험 `T/d05/api-gateway.spec.ts:129`·`:139`, `contracts/src/rules/api-gateway.test.ts:39`·`:52`·`:62`, `e2e/tests/ext-gateway.spec.ts:55`",
+      "gap": ""
     },
     "FR-LGCY-001-001": {
-      "verdict": "미구현",
-      "evidence": "연계 대상은 코드 고정(`adapters/if-mocks/external-systems.ts:29-41` IF→컴포넌트 표), 켜기/끄기는 환경변수 `IF_MODE_xx`(`:56-61`)",
-      "gap": "연계 설정 엔터티(시스템·엔드포인트·주기·상태) 저장, 동일 시스템 중복 409"
+      "verdict": "구현",
+      "evidence": "등록 `POST /api/legacy/links`(연계 담당·운영 리더) `B/d05-ext/legacy/legacy-config.service.ts:104` — 시스템 코드·이름·종류·연결 주소·브리지 유형·주기·공장·상태·메모 `C/rules/legacy-link.ts`(CreateLegacyLinkBody, 조합 검사 `:86`), 같은 시스템 409(`legacy_link.system` UNIQUE, migration 162), 감사·이벤트; 화면 `/integration/legacy` 연계 설정. 시험 `T/d05/legacy-links.spec.ts:36`·`:45`, `contracts/src/rules/legacy-link.test.ts:11`·`:17`, `frontend/src/__tests__/extGateway.test.tsx:195`, `e2e/tests/ext-gateway.spec.ts:87`",
+      "gap": ""
     },
     "FR-LGCY-001-002": {
-      "verdict": "미구현",
-      "evidence": "`GET /api/integrations/systems`(integration.controller.ts:11-14)는 IF-01~13 연결 현황(모의/내장·호출 수) 조회일 뿐, 등록 설정 목록 아님. 시험 p10.spec.ts:155-165",
-      "gap": "등록된 설정 목록·빈 목록 계약"
+      "verdict": "구현",
+      "evidence": "조회 `GET /api/legacy/links` `B/d05-ext/legacy/legacy-config.service.ts:81` — 등록 순 목록(브리지·최근 실행 포함), 없으면 빈 목록. 시험 `T/d05/legacy-links.spec.ts:32`, `frontend/src/__tests__/extGateway.test.tsx:195`",
+      "gap": ""
     },
     "FR-LGCY-001-003": {
-      "verdict": "미구현",
-      "evidence": "수정 경로 없음",
-      "gap": "수정 + 없는 설정 404"
+      "verdict": "구현",
+      "evidence": "수정 `PATCH /api/legacy/links/:id`(이유) `B/d05-ext/legacy/legacy-config.service.ts:124` — 바뀐 항목만 저장·버전 증가·감사 전후 값, 조합 다시 검사, 브리지 다시 구성; 없는 설정 404. 시험 `T/d05/legacy-links.spec.ts:53`",
+      "gap": "시스템 관리자 역할은 따로 없다(D-GAP-1) — 연계 담당·운영 리더 역할 기반"
     },
     "FR-LGCY-001-004": {
-      "verdict": "미구현",
-      "evidence": "삭제 경로 없음",
-      "gap": "활성 연계 삭제 거부(422) 규칙"
+      "verdict": "구현",
+      "evidence": "삭제 `DELETE /api/legacy/links/:id`(이유) `B/d05-ext/legacy/legacy-config.service.ts:145` — 활성 연계는 삭제하지 않고 422 '활성 상태인 연계 설정은 삭제할 수 없습니다'(감사 FAILED), 중지한 연계만 삭제·감사; 화면은 활성 행의 삭제를 막고 사유를 보임. 시험 `T/d05/legacy-links.spec.ts:94`, `frontend/src/__tests__/extGateway.test.tsx:195`, `e2e/tests/ext-gateway.spec.ts:87`",
+      "gap": ""
     },
     "FR-LGCY-001-005": {
-      "verdict": "부분",
-      "evidence": "IF-12 해외공장 브리지 `legacy/legacy.service.ts:42-53`(`POST /api/legacy/orders/import`, 멱등 upsert), if_call 멱등 기록 `adapters/if-call/if-call.repo.ts:21-29`. 시험 `backend/test/ext/p10.spec.ts:122-130`",
-      "gap": "브리지가 \"설정 등록 시 구성\"되지 않고 코드에 고정. 브리지 유형(배치/실시간/파일) 정의와 설정→브리지 생성 연결"
+      "verdict": "구현",
+      "evidence": "설정→브리지 `C/rules/legacy-link.ts:113`(legacyBridge — 유형 배치·실시간·파일 정의 `:23`, 방향·IF·변환 규칙 묶음·실행 계기·단계), 등록·수정 때 구성 `B/d05-ext/legacy/legacy-config.service.ts:104`·`:124`; 실행 `POST /api/legacy/links/:id/run` `:164`(활성만, IF-12 주문 가져오기·변환, 최근 실행·실패 사유), 주기 실행 `:187`(매시 점검, 주기 지난 활성 배치·파일), 실시간 브리지는 메시지 받기(`:289`). 시험 `T/d05/legacy-links.spec.ts:36`·`:64`·`:73`·`:82`, `contracts/src/rules/legacy-link.test.ts:27`·`:34`",
+      "gap": ""
     },
     "FR-LGCY-001-006": {
-      "verdict": "부분",
-      "evidence": "옵션 코드→FEAT 매핑 조회 `GET /api/legacy/mappings`(legacy.service.ts:29-34, 픽스처 `legacyMappings` external-systems.ts:147-149), 해석 규칙 `contracts/src/rules/ext.ts`(`resolveOrder`), 시험 p10.spec.ts:129, `contracts/src/rules/ext.test.ts`",
-      "gap": "변환 규칙 등록·수정 API 없음(픽스처 읽기 전용). 미해석 코드는 남기지만 담당자가 매핑을 추가할 경로가 없음"
+      "verdict": "구현",
+      "evidence": "변환 규칙 등록 `POST /api/legacy/mappings` `B/d05-ext/legacy/legacy-config.service.ts:230`(같은 코드 409·Feature 실재), 수정 `PATCH /api/legacy/mappings/:code` `:247`(기본 규칙은 등록 규칙으로 덮어씀, 판 증가·감사 전후), 조회 `GET /api/legacy/mappings` `B/d05-ext/legacy/legacy.service.ts:36`(출처·판), 해석에 반영 `:50`; 규칙 항목(레거시 코드·묶음·설명·대상 Feature·메모) `C/rules/legacy-link.ts:172`, 저장 `legacy_transform_rule`(migration 162); 화면은 미해석 코드에서 바로 등록. 시험 `T/d05/legacy-links.spec.ts:112`·`:117`·`:131`, `contracts/src/rules/legacy-link.test.ts:45`, `frontend/src/__tests__/extGateway.test.tsx:221`, `e2e/tests/ext-gateway.spec.ts:87`",
+      "gap": ""
     },
     "FR-LGCY-001-007": {
       "verdict": "구현",
@@ -2722,12 +2722,12 @@
     "FR-SDVI-001-001": {
       "verdict": "부분",
       "evidence": "`POST /api/legacy-sdv/translate`, `GET /api/legacy-sdv/vehicles`(legacy-sdv/legacy-sdv.service.ts:46-61). 쓰기 요청은 행위자 헤더 없으면 401(kernel/actor.ts:44)",
-      "gap": "실시간 IVI·CCS 프로토콜 연동이 아니라 딜러 진단기 코딩 계획 생성. 헤더는 검증된 인증이 아님(API Key/mTLS 부재). 지원 프로토콜 정의 필요"
+      "gap": "실시간 IVI·CCS 프로토콜 연동이 아니라 딜러 진단기 코딩 계획·코딩 메시지 변환(FR-SDVI-001-002). 지원 프로토콜 범위는 결정 대기(D7). 외부 시스템 인증은 API 키(X-Api-Key, FR-AGW-001-003)로 가능"
     },
     "FR-SDVI-001-002": {
-      "verdict": "부분",
-      "evidence": "SDV Feature → Legacy 코딩 명령(BCM DID) 변환 `legacyPlan`(legacy-sdv.service.ts:37), 변환 불가 시 사유·시각을 감사 FAILED로 기록(:39). 시험 p10.spec.ts:132-139",
-      "gap": "Legacy→SDV 방향 변환 없음, 메시지 포맷 정의 없음"
+      "verdict": "구현",
+      "evidence": "메시지 형식 표 `C/rules/legacy-link.ts:210`(LGC-CODING-1·SDV-FEATURE-STATE-1, `GET /api/legacy-sdv/formats`), Legacy→SDV `POST /api/legacy-sdv/messages` `B/d05-ext/legacy/legacy-config.service.ts:289`(legacyToSdv `C/rules/legacy-link.ts:276` — 형식·차량·제어기·DID·값·Feature 대응 검사, 보낸 시스템은 활성 실시간 연계), SDV→Legacy 코딩 메시지 `B/d05-ext/legacy-sdv/legacy-sdv.service.ts:42`(toLegacyCodingMessage), 변환 실패는 사유·발생 시점을 기록 `legacy_message_log`(migration 162, 추가만)·감사 FAILED, 조회 `GET /api/legacy-sdv/messages`·화면 메시지 변환 기록. 시험 `T/d05/legacy-links.spec.ts:152`·`:157`·`:162`·`:172`, `contracts/src/rules/legacy-link.test.ts:56`·`:59`·`:75`, `frontend/src/__tests__/extGateway.test.tsx:236`, `e2e/tests/ext-gateway.spec.ts:87`",
+      "gap": ""
     },
     "FR-BIL-001-001": {
       "verdict": "부분",
@@ -2735,9 +2735,9 @@
       "gap": "과금 시스템 권한 조회 연계·조회 실패 기록 없음. 권한 원천(플랫폼 vs 과금)을 명세와 합의 필요"
     },
     "FR-BIL-001-002": {
-      "verdict": "미구현",
-      "evidence": "사용량 집계·정산 전송 코드 없음(체험 전환 결제만 존재)",
-      "gap": "사용량 항목·전송 주기 정의, 정산 IF 모의 어댑터, 전송 실패 기록"
+      "verdict": "구현",
+      "evidence": "전송 항목 `C/rules/settlement.ts:11`(구독 차량·일수·구매·체험 전환, 체험 차량 참고)·주기 `:21`(매월 1일 직전 달, 실패 24시간마다 재시도), 사용량 집계 `:77`(이용 권한 원장, 합성 제외) `GET /api/settlement/usage`; 전송 `POST /api/settlement/transmissions` `B/d05-ext/billing/settlement.service.ts:120`(끝난 달만·달마다 성공 한 번 409) → 정산 IF 모의 어댑터 `backend/src/adapters/if-mocks/settlement.adapter.ts:21`(if_call SETTLEMENT·영수 번호, IF_MODE_SETTLEMENT=off·운영 미연결 실패), 실패는 사유·시각·연계 오류 ID를 전송 기록 `settlement_transmission`(migration 163, 추가만)과 오류 이력·알림(BILLING)에, 주기 전송 `:149`; 화면 `/integration/connectors?tab=settlement`. 시험 `T/d05/settlement.spec.ts:36`·`:49`·`:62`·`:81`, `contracts/src/rules/settlement.test.ts:8`·`:23`, `frontend/src/__tests__/extGateway.test.tsx:133`, `e2e/tests/ext-gateway.spec.ts:70`",
+      "gap": "사용량 원천을 과금 시스템으로 둘지는 결정 대기(D7, FR-BIL-001-001) — 지금은 플랫폼 이용 권한 원장"
     },
     "FR-BIL-001-003": {
       "verdict": "구현",

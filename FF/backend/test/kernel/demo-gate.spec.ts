@@ -187,6 +187,26 @@ describe('공개 데모 게이트 — 서버 세션 + 데모 계정 표', () => 
     expect(corsOrigins(process.env)).toEqual([]);
   });
 
+  // 통합 15단계(P2 API 키 × 게이트) — 외부 시스템 키는 세션 없이 키 신원으로, 틀린 키·키 없는 요청은 그대로 401, 지원 종료 버전은 410
+  it('게이트 아래에서도 외부 시스템 API 키는 세션 없이 키 역할로 쓴다 — 틀린 키·없는 키는 401, 키 역할 밖은 403', async () => {
+    const { agent } = await login();
+    const issued = await agent.post('/api/api-keys').set({ 'X-Actor-Id': 'usr-integrator', 'X-Actor-Role': 'SECURITY_OFFICER', Origin: PUBLIC }).send({ name: '해외공장 주문 수집', system: 'TMA 공장 ERP', role: 'SYSTEM', reason: 'IF-12 주문 자동 가져오기' });
+    expect(issued.status, JSON.stringify(issued.body)).toBe(201);
+    const key = issued.body.secret as string;
+    await http().post('/api/legacy/orders/import').set({ 'X-Api-Key': key }).send({ plant: 'TMA' }).expect(200);
+    // 키 신원은 머리글 행위자 주장을 덮는다 — 감사에 키 ID로
+    expect(audit.list({ action: 'PLANT_ORDER_IMPORT', limit: 5 })[0]).toMatchObject({ actorId: expect.stringMatching(/^apikey:AK-/), actorRole: 'SYSTEM' });
+    await http().post('/api/legacy/orders/import').set({ 'X-Api-Key': key.slice(0, -2) + 'xx' }).send({ plant: 'TMA' }).expect(401);
+    await http().post('/api/legacy/orders/import').send({ plant: 'TMA' }).expect(401);
+    // SYSTEM 키로 사람 승인 경로는 역할 거부
+    await http().post(READ_ALL).set({ 'X-Api-Key': key }).send({}).expect(403);
+  });
+
+  it('API 버전은 게이트 판정보다 먼저 — 모르는 버전은 400, 세션 없는 현재 버전 요청은 401', async () => {
+    expect((await http().get('/api/features').set('X-Api-Version', '0.0')).status).toBe(400);
+    await http().get('/api/features').expect(401);
+  });
+
   it('https 공개 주소면 HSTS를 붙인다', async () => {
     const r = await http().get('/api/health/live');
     expect(r.headers['strict-transport-security']).toContain('max-age=');

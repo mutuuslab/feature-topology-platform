@@ -62,6 +62,9 @@ import { AdsDeterminationBody, AdsReviewFindingBody } from './schemas/ads-eviden
 import { CloseImpactPathBody, PATH_CLOSER_ROLES } from './schemas/ads-change';
 import { ApproveOddProfileBody, CreateConfigSetBody } from './schemas/ads-config';
 import { ComplianceApprovalRequestBody, ComplianceDecisionBody, COMPLIANCE_RULE_ROLES, CreateComplianceRuleBody, UpdateComplianceRuleBody } from './schemas/compliance-rule';
+import { API_KEY_ADMIN_ROLES, IssueApiKeyBody, RevokeApiKeyBody } from './rules/api-gateway';
+import { CreateLegacyLinkBody, CreateLegacyRuleBody, DeleteLegacyLinkBody, LEGACY_BRIDGE_RUNNERS, LEGACY_LINK_EDITORS, LEGACY_RULE_EDITORS, LegacyMessageBody, RunLegacyBridgeBody, UpdateLegacyLinkBody, UpdateLegacyRuleBody } from './rules/legacy-link';
+import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -578,6 +581,28 @@ export const ROUTES: RouteDef[] = [
   { name: 'requestComplianceApproval', method: 'POST', path: '/api/compliance-rules/:id/approval-requests', summary: '룰 승인 요청 — 요청자·대상 룰 버전·승인 대상자·요청 일시', component: 'D03-01', roles: [...COMPLIANCE_RULE_ROLES], body: ComplianceApprovalRequestBody },
   { name: 'decideComplianceRule', method: 'POST', path: '/api/compliance-rules/:id/decision', summary: '룰 승인·반려 — 지정 승인 대상자 본인만(작성자 제외)', component: 'D03-01', roles: [...COMPLIANCE_RULE_ROLES], body: ComplianceDecisionBody },
   { name: 'complianceValidations', method: 'GET', path: '/api/compliance-validations', summary: '컴플라이언스 검증 결과 — 배포(정책) ID·Feature ID·대상 지역', component: 'D03-01', query: ['policyId', 'featureId', 'market'] },
+  // 외부 API 게이트웨이(P2, FR-AGW-001-003~007) — 외부 시스템 API 키(해시 저장·원문 1회·키→역할), 런타임 명세, 버전 정책(410+Sunset)
+  { name: 'apiKeys', method: 'GET', path: '/api/api-keys', summary: '외부 시스템 API 키 목록 — 상태(활성·만료·폐기)·마지막 사용, 원문·해시 없음', component: 'D05-01' },
+  { name: 'issueApiKey', method: 'POST', path: '/api/api-keys', summary: 'API 키 발급 — 외부 시스템·역할(SYSTEM·AUDITOR)·만료일, 원문은 이 응답 한 번만', component: 'D05-01', roles: API_KEY_ADMIN_ROLES, body: IssueApiKeyBody },
+  { name: 'revokeApiKey', method: 'DELETE', path: '/api/api-keys/:id', summary: 'API 키 삭제(폐기) — 해시를 지워 이후 요청은 401, 기록은 감사용으로 남긴다', component: 'D05-01', roles: API_KEY_ADMIN_ROLES, body: RevokeApiKeyBody },
+  { name: 'openapiSpec', method: 'GET', path: '/api/openapi.json', summary: '실행 중인 서버의 OpenAPI 3.0 명세(최신 경로 표에서, ETag)', component: 'D05-01' },
+  { name: 'apiVersions', method: 'GET', path: '/api/api-versions', summary: 'API 버전 정책 — 버전별 상태·폐기 예고·지원 종료일, 명세 요약', component: 'D05-01' },
+  // Legacy 연계 설정·데이터 브리지·변환 규칙(P2, FR-LGCY-001-001~006)
+  { name: 'legacyLinks', method: 'GET', path: '/api/legacy/links', summary: '기존 운영 시스템 연계 설정 — 시스템·주소·브리지 유형·주기·상태·최근 실행', component: 'D05-03' },
+  { name: 'createLegacyLink', method: 'POST', path: '/api/legacy/links', summary: '연계 설정 등록 — 같은 시스템 중복 409, 설정에서 데이터 브리지 구성', component: 'D05-03', roles: LEGACY_LINK_EDITORS, body: CreateLegacyLinkBody },
+  { name: 'updateLegacyLink', method: 'PATCH', path: '/api/legacy/links/:id', summary: '연계 설정 수정(사유) — 없는 설정 404, 브리지 다시 구성', component: 'D05-03', roles: LEGACY_LINK_EDITORS, body: UpdateLegacyLinkBody },
+  { name: 'deleteLegacyLink', method: 'DELETE', path: '/api/legacy/links/:id', summary: '연계 설정 삭제(사유) — 활성 연계는 422', component: 'D05-03', roles: LEGACY_LINK_EDITORS, body: DeleteLegacyLinkBody },
+  { name: 'runLegacyBridge', method: 'POST', path: '/api/legacy/links/:id/run', summary: '배치·파일 브리지 지금 실행 — 활성 설정만, IF-12 주문 가져오기·변환', component: 'D05-03', roles: LEGACY_BRIDGE_RUNNERS, body: RunLegacyBridgeBody },
+  { name: 'createLegacyRule', method: 'POST', path: '/api/legacy/mappings', summary: '변환 규칙 등록 — 레거시 코드 → FEAT ID(같은 코드 409)', component: 'D05-03', roles: LEGACY_RULE_EDITORS, body: CreateLegacyRuleBody },
+  { name: 'updateLegacyRule', method: 'PATCH', path: '/api/legacy/mappings/:code', summary: '변환 규칙 수정(사유) — 기본 규칙은 등록 규칙으로 덮어쓴다', component: 'D05-03', roles: LEGACY_RULE_EDITORS, body: UpdateLegacyRuleBody },
+  // Legacy ↔ SDV 메시지 변환(P2, FR-SDVI-001-002)
+  { name: 'legacyMessageFormats', method: 'GET', path: '/api/legacy-sdv/formats', summary: 'Legacy·SDV 메시지 형식 표', component: 'D05-07' },
+  { name: 'legacyMessages', method: 'GET', path: '/api/legacy-sdv/messages', summary: '메시지 변환 기록 — 방향·형식·결과, 실패 사유·시각(추가만)', component: 'D05-07', query: ['vin', 'status', 'limit'] },
+  { name: 'receiveLegacyMessage', method: 'POST', path: '/api/legacy-sdv/messages', summary: '레거시 코딩 메시지 받기 → SDV Feature 상태로 변환(실패는 사유·시각 기록)', component: 'D05-07', roles: ['OPERATOR', 'VARIANT_OWNER', 'SYSTEM'], body: LegacyMessageBody },
+  // Feature 사용량 정산 전송(P2, FR-BIL-001-002)
+  { name: 'settlementUsage', method: 'GET', path: '/api/settlement/usage', summary: '정산 기간 사용량 — 전송 항목·주기, 상품별 집계(기본: 직전 달)', component: 'D05-04', query: ['period'] },
+  { name: 'settlementTransmissions', method: 'GET', path: '/api/settlement/transmissions', summary: '정산 전송 기록 — 성공·실패 사유·시각·영수 번호(추가만)', component: 'D05-04', query: ['period'] },
+  { name: 'sendSettlement', method: 'POST', path: '/api/settlement/transmissions', summary: '정산 시스템으로 사용량 보내기(끝난 달, 성공은 달마다 한 번)', component: 'D05-04', roles: SETTLEMENT_SENDERS, body: SendSettlementBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

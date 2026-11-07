@@ -7,12 +7,14 @@
 // @Roles로 허용 역할을 선언하고, 거부는 감사 이력에 DENIED로 남긴다(상세설계서: 실패한 승인도 기록).
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, createParamDecorator } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role, ROLE_LABEL, type Role as RoleT } from '@ff/contracts';
-import type { Request } from 'express';
+import { resolveApiVersion, Role, ROLE_LABEL, API_VERSION_HEADER, type Role as RoleT } from '@ff/contracts';
+import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { AuditService } from './audit.service';
 import { authModeOf } from './auth/auth-config';
 import { AuthService } from './auth/auth.service';
+import { ApiKeyAuth } from './auth/api-key';
+import { Clock } from './clock';
 import { demoGateOn, gateActorOf, gateRejected } from './auth/demo-gate';
 import { DomainError } from './errors';
 import { VehicleAuthService } from './vehicle-auth';
@@ -85,10 +87,14 @@ export class RolesGuard implements CanActivate {
     private readonly audit: AuditService,
     private readonly auth: AuthService,
     private readonly vehicleAuth: VehicleAuthService,
+    private readonly apiKeys: ApiKeyAuth,
+    private readonly clock: Clock,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest<Request>();
+    // API 버전(FR-AGW-001-007, X-Api-Version) — 신원보다 먼저: 지원 종료 버전은 410, 폐기 예고 버전은 같은 응답 + Deprecation·Sunset 머리글
+    if (req.path.startsWith('/api/')) this.applyApiVersion(req, ctx.switchToHttp().getResponse<Response>());
     if (this.reflector.getAllAndOverride<boolean>(READONLY_KEY, [ctx.getHandler(), ctx.getClass()])) {
       (req as Request & { actor?: Actor }).actor ??= { id: (req.header('x-actor-id') ?? '').trim() || 'anonymous-sdk', role: 'AUDITOR', correlationId: randomUUID() };
       return true;
@@ -108,13 +114,23 @@ export class RolesGuard implements CanActivate {
     // 게이트를 끈 데모에서도 POST /api/auth/demo-login이 머리글 401이 아니라 창구의 404를 돌려줘야 화면이 브라우저 판정으로 넘어간다
     if (this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [ctx.getHandler(), ctx.getClass()])) return true;
     const roles = this.reflector.getAllAndOverride<RoleT[] | undefined>(ROLES_KEY, [ctx.getHandler(), ctx.getClass()]);
-    if (this.auth.mode === 'oidc') await this.oidcActor(req, roles, ctx);
+    // 외부 시스템 API 키(FR-AGW-001-003~005) — 머리글이 있으면 어느 인증 방식이든 키 신원(틀리면 401). 역할 검사는 아래 그대로
+    const keyActor = this.apiKeys.authenticate(req, this.reflector.get<string | undefined>(ACTION_KEY, ctx.getHandler()) ?? `${req.method} ${req.route?.path ?? req.path}`);
+    if (keyActor) (req as Request & { actor?: Actor }).actor = keyActor;
+    else if (this.auth.mode === 'oidc') await this.oidcActor(req, roles, ctx);
     else if (this.auth.gate) this.gateActor(req, ctx);
     const actor = actorOf(req);
     if (!roles || roles.includes(actor.role)) return true;
     const action = this.reflector.get<string | undefined>(ACTION_KEY, ctx.getHandler()) ?? `${req.method} ${req.route?.path ?? req.path}`;
     this.audit.denied(actor, action, req.path, `역할 ${ROLE_LABEL[actor.role]}은(는) 허용되지 않음 (허용: ${roles.map((x) => ROLE_LABEL[x]).join(', ')})`);
     throw new DomainError('FORBIDDEN', `${ROLE_LABEL[actor.role]} 역할로는 이 작업을 할 수 없습니다.`, { allowed: roles });
+  }
+
+  /** 요청 버전 → 응답 머리글, 지원 종료·모르는 버전은 오류(410·400) */
+  private applyApiVersion(req: Request, res: Response) {
+    const v = resolveApiVersion(req.header(API_VERSION_HEADER) ?? undefined, this.clock.iso());
+    for (const [k, x] of Object.entries(v.headers)) res.setHeader(k, x);
+    if (v.ok === false) throw new DomainError(v.code, v.message, v.details);
   }
 
   /**

@@ -115,3 +115,6 @@ export * from './schemas/ads-state';
 export * from './schemas/ads-change';
 export * from './schemas/compliance-rule';
 export * from './rules/compliance-rule';
+export * from './rules/api-gateway';
+export * from './rules/legacy-link';
+export * from './rules/settlement';

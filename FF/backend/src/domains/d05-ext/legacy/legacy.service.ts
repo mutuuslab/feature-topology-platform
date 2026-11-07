@@ -13,6 +13,7 @@ import { EventService } from '../../../kernel/event.service';
 import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { FeatureRepo } from '../../d01-policy/repos';
+import { effectiveLegacyRules } from './legacy-rules';
 
 type Resolved = ReturnType<typeof resolveOrder> & { importedAt: string };
 
@@ -28,9 +29,12 @@ export class LegacyService {
     private readonly errors: IntegrationErrorService,
   ) {}
 
-  /** 매핑 + 대상 Feature 이름 (데이터셋에 없는 FEAT를 가리키면 표시) */
+  /**
+   * 변환 규칙 — 기본 규칙 + 등록 규칙(출처·버전), 대상 Feature 이름 (데이터셋에 없는 FEAT를 가리키면 표시)
+   * @req FR-LGCY-001-006
+   */
   mappings() {
-    return this.ext.legacyMappings().map((m) => {
+    return effectiveLegacyRules(this.db, this.ext.legacyMappings()).map((m) => {
       const f = this.features.versions(m.featureId).at(-1);
       return { ...m, featureName: f?.name ?? null, known: !!f };
     });
@@ -43,7 +47,7 @@ export class LegacyService {
 
   /** 해외공장 주문 가져오기(IF-12) — 같은 주문은 다시 넣지 않고 해석만 갱신 */
   importOrders(actor: Actor, plant: string) {
-    const mappings = this.ext.legacyMappings();
+    const mappings = effectiveLegacyRules(this.db, this.ext.legacyMappings());
     const at = this.ext.now();
     let fetched: ReturnType<ExternalSystems['plantOrders']>;
     try {

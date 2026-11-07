@@ -18,10 +18,16 @@ import { ExtSyncTab } from './ExtSyncTab';
 import { integrationErrors } from '../../copy/records';
 import { Link } from 'react-router-dom';
 import { lake as LK } from '../../copy/lake';
+import { apiKeys as apiKeysCopy, apiSpec as apiSpecCopy, legacyRules as LR, settlement as settlementCopy } from '../../copy/ext-gateway';
+import { LegacyLinksPanel, LegacyMessagesPanel, LegacyRuleDrawer, useRuleEditor, type RuleRow } from './LegacyLinks';
 
 const G = p10.integrations;
 // 오류 이력 탭(B6) — 탭을 열 때만 읽는다
 const IntegrationErrorsTab = lazy(() => import('./IntegrationErrorsTab'));
+// 외부 API 키·API 명세·버전·정산 전송 탭(묶음 P2) — 탭을 열 때만 읽는다
+const ApiKeysTab = lazy(() => import('./ApiKeysTab'));
+const ApiSpecTab = lazy(() => import('./ApiSpecTab'));
+const SettlementTab = lazy(() => import('./SettlementTab'));
 const S = p10.sync;
 const L = p10.legacy;
 
@@ -54,8 +60,8 @@ export function IntegrationsScreen() {
     <div className="ds-screen">
       <PageHeader codes="D05-01 · IF-01~14" title={G.title} lead={G.lead} message={!sync.data ? { tone: 'neutral', value: '—', text: extSync.sync.key.ok } : attention ? { tone: 'warn', value: attention, text: extSync.sync.key.attention } : !exchanged ? { tone: 'neutral', text: extSync.sync.key.idle } : { tone: 'ok', text: extSync.sync.key.ok }}
         meta={sys.data ? (seamless ? G.keyAll(items.length) : G.key(mock, items.length - mock)) : undefined} />
-      <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] })), { key: 'errors', label: integrationErrors.tab }]}>
-        {(tab) => (tab === 'sync' ? <ExtSyncTab quiet={!!sync.data && !attention && !exchanged} /> : tab === 'errors' ? <Suspense fallback={<AsyncView state="loading">{null}</AsyncView>}><IntegrationErrorsTab /></Suspense> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
+      <Tabs tabs={[{ key: 'sync', label: extSync.sync.tab }, ...(['systems', 'alm', 'supplier', 'otel', 'calls'] as const).map((k) => ({ key: k, label: G.tabs[k] })), { key: 'errors', label: integrationErrors.tab }, { key: 'apikeys', label: apiKeysCopy.tab }, { key: 'apispec', label: apiSpecCopy.tab }, { key: 'settlement', label: settlementCopy.tab }]}>
+        {(tab) => (tab === 'sync' ? <ExtSyncTab quiet={!!sync.data && !attention && !exchanged} /> : tab === 'errors' ? <Suspense fallback={<AsyncView state="loading">{null}</AsyncView>}><IntegrationErrorsTab /></Suspense> : tab === 'apikeys' || tab === 'apispec' || tab === 'settlement' ? <Suspense fallback={<AsyncView state="loading">{null}</AsyncView>}>{tab === 'apikeys' ? <ApiKeysTab /> : tab === 'apispec' ? <ApiSpecTab /> : <SettlementTab />}</Suspense> : tab === 'alm' ? <AlmTab /> : tab === 'supplier' ? <SupplierTab /> : tab === 'otel' ? <OtelTab /> : tab === 'calls' ? <CallsTab /> : <SystemsTab />)}
       </Tabs>
     </div>
   );
@@ -316,7 +322,10 @@ function SyncDrawer({ targetId, onClose }: { targetId: string | null; onClose: (
 // ───────── Legacy 연계 · Legacy-SDV ─────────
 
 export function LegacyScreen() {
-  const maps = useApi<{ items: { legacyCode: string; system: string; description: string; featureId: string; featureName: string | null; note: string | null }[] }>('legacyMappings');
+  const maps = useApi<{ items: (RuleRow & { featureName: string | null; source?: 'FIXTURE' | 'REGISTERED'; version?: number })[] }>('legacyMappings');
+  const ruler = useRuleEditor();
+  // 변환 규칙 서랍(FR-LGCY-001-006) — 행 수정 또는 미해석 코드에서 등록
+  const [ruleEdit, setRuleEdit] = useState<{ rule: RuleRow | null; code: string } | null>(null);
   const orders = useApi<{ items: { orderId: string; plant: string; market: string; vin: string; resolved: { legacyCode: string; featureId: string }[]; unresolved: string[] }[] }>('legacyOrders');
   const perm = usePermission(['OPERATOR', 'SYSTEM']);
   const imp = useApiMutation<{ plant: string; unresolved: string[] }>('importPlantOrders', ['legacyOrders', 'integrationSystems', 'events', 'audit']);
@@ -333,7 +342,15 @@ export function LegacyScreen() {
           return !orders.data ? { tone: 'neutral', value: '—', text: L.key.bad } : bad ? { tone: 'warn', value: bad, text: L.key.bad } : { tone: 'ok', text: L.key.clean };
         })()}
       />
-      <Panel title={L.mappings}>
+      <LegacyLinksPanel />
+      <Panel
+        title={L.mappings}
+        actions={
+          <Button disabled={!ruler.ok} reason={ruler.hint} onClick={() => setRuleEdit({ rule: null, code: '' })}>
+            {LR.add}
+          </Button>
+        }
+      >
         <AsyncView state={asyncState(maps)} error={maps.error} onRetry={() => maps.refetch()}>
           <DataTable caption={L.mappings} rows={maps.data?.items ?? []} rowKey={(r) => r.legacyCode} columns={[
             { key: 'c', header: C.code, cell: (r) => <span className="ds-mono ds-nowrap">{r.legacyCode}</span> },
@@ -341,6 +358,8 @@ export function LegacyScreen() {
             { key: 'd', header: C.desc, cell: (r) => r.description },
             { key: 'f', header: C.feature, cell: (r) => <span className="ds-nowrap"><span className="ds-mono">{r.featureId}</span> {r.featureName ?? ''}</span> },
             { key: 'n', header: C.note, cell: (r) => r.note ?? '—' },
+            { key: 'o', header: LR.col.source, cell: (r) => <span className="ds-nowrap">{`${LR.sources[r.source ?? 'FIXTURE']}${r.version ? ` · v${r.version}` : ''}`}</span> },
+            { key: 'e', header: '', cell: (r) => <Button disabled={!ruler.ok} title={ruler.hint} onClick={() => setRuleEdit({ rule: r, code: r.legacyCode })}>{LR.edit}</Button> },
           ]} />
         </AsyncView>
       </Panel>
@@ -367,8 +386,24 @@ export function LegacyScreen() {
             { key: 'u', header: C.unresolvedCol, cell: (r) => <span className="ds-mono">{r.unresolved.join(', ') || '—'}</span> },
           ]} />
         </AsyncView>
+        {(() => {
+          // 규칙이 없는 미해석 코드 — 담당자가 바로 규칙을 더한다(FR-LGCY-001-006)
+          const known = new Set((maps.data?.items ?? []).map((m) => m.legacyCode));
+          const open = [...new Set(orderRows.flatMap((o) => o.unresolved))].filter((c) => !known.has(c));
+          return open.length > 0 ? (
+            <div className="ds-toolbar">
+              {open.map((c) => (
+                <Button key={c} disabled={!ruler.ok} title={ruler.hint} onClick={() => setRuleEdit({ rule: null, code: c })}>
+                  {LR.fromUnresolved(c)}
+                </Button>
+              ))}
+            </div>
+          ) : null;
+        })()}
       </Panel>
       <LegacySdvPanel />
+      <LegacyMessagesPanel />
+      {ruleEdit && <LegacyRuleDrawer rule={ruleEdit.rule} code={ruleEdit.code} onClose={() => setRuleEdit(null)} />}
     </div>
   );
 }
@@ -376,7 +411,7 @@ export function LegacyScreen() {
 function LegacySdvPanel() {
   const v = useApi<{ items: { vin: string; vehicleModel: string; modelYear: string; market: string; codingUnit: string }[] }>('legacyVehicles');
   const perm = usePermission(['OPERATOR', 'VARIANT_OWNER']);
-  const tr = useApiMutation<{ supported: boolean; reason: string | null; fClass: string; commands: { unit: string; did: string; value: string; note: string }[] }>('translateLegacy', ['audit']);
+  const tr = useApiMutation<{ supported: boolean; reason: string | null; fClass: string; commands: { unit: string; did: string; value: string; note: string }[] }>('translateLegacy', ['audit', 'legacyMessages']);
   const vs = v.data?.items ?? [];
   const [vin, setVin] = useState('');
   const [typedF, setF] = useState<string | null>(null);

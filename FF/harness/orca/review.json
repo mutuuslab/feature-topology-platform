@@ -644,7 +644,7 @@
       "current": "해외공장(IF-12) 주문의 레거시 옵션 코드를 FEAT ID로 해석하고 미해석 코드를 남길 뿐, 생산라인 최종 검사(EOL)에서 주문 옵션과 실제 부품·SW·승인 구성을 대조하는 기능은 없다.",
       "evidence": [
         "contracts/src/rules/ext.ts:249",
-        "backend/src/domains/d05-ext/legacy/legacy.service.ts:45",
+        "backend/src/domains/d05-ext/legacy/legacy.service.ts:49",
         "backend/src/kernel/migrations.ts:331"
       ],
       "tests": [

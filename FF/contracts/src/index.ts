@@ -18,3 +18,6 @@ export * from './rules/relation-types';
 export * from './schemas/trace-link';
 export * from './rules/trace-link';
 export * from './rules/ads-p5';
+export * from './rules/ads-config-approval';
+export * from './rules/role-scope';
+export * from './schemas/role-scope';

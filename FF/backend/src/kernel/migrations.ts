@@ -1324,4 +1324,25 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // AC — 승인 조합 제안→승인(작성자 ≠ 승인자, ads_config_set은 추가만이라 승인은 별도 표), 보안 최소 버전 표(사이버보안 담당 승인, 추가만),
+    // 권한 범위(ADS-BE15 — 계정별 시장·Feature·환경, 지정 이력 추가만 · 지금 범위 = 계정의 마지막 행)
+    name: '341_ads_config_approval_scope',
+    sql: `
+CREATE TABLE ads_config_set_approval (set_id TEXT PRIMARY KEY, approved_by TEXT NOT NULL, approved_role TEXT NOT NULL, approved_at TEXT NOT NULL, reason TEXT NOT NULL);
+CREATE TRIGGER ads_config_set_approval_no_update BEFORE UPDATE ON ads_config_set_approval BEGIN SELECT RAISE(ABORT, 'ads_config_set_approval은 추가만 가능'); END;
+CREATE TRIGGER ads_config_set_approval_no_delete BEFORE DELETE ON ads_config_set_approval BEGIN SELECT RAISE(ABORT, 'ads_config_set_approval은 추가만 가능'); END;
+CREATE TABLE ads_security_min (entry_id TEXT PRIMARY KEY, sw_id TEXT NOT NULL, version TEXT NOT NULL, rationale TEXT NOT NULL, proposed_by TEXT NOT NULL, proposed_at TEXT NOT NULL);
+CREATE INDEX ads_security_min_sw ON ads_security_min (sw_id);
+CREATE TRIGGER ads_security_min_no_update BEFORE UPDATE ON ads_security_min BEGIN SELECT RAISE(ABORT, 'ads_security_min은 추가만 가능'); END;
+CREATE TRIGGER ads_security_min_no_delete BEFORE DELETE ON ads_security_min BEGIN SELECT RAISE(ABORT, 'ads_security_min은 추가만 가능'); END;
+CREATE TABLE ads_security_min_approval (entry_id TEXT PRIMARY KEY, approved_by TEXT NOT NULL, approved_at TEXT NOT NULL, reason TEXT NOT NULL);
+CREATE TRIGGER ads_security_min_approval_no_update BEFORE UPDATE ON ads_security_min_approval BEGIN SELECT RAISE(ABORT, 'ads_security_min_approval은 추가만 가능'); END;
+CREATE TRIGGER ads_security_min_approval_no_delete BEFORE DELETE ON ads_security_min_approval BEGIN SELECT RAISE(ABORT, 'ads_security_min_approval은 추가만 가능'); END;
+CREATE TABLE role_scope (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, doc TEXT NOT NULL, assigned_by TEXT NOT NULL, assigned_at TEXT NOT NULL);
+CREATE INDEX role_scope_account ON role_scope (account_id, id);
+CREATE TRIGGER role_scope_no_update BEFORE UPDATE ON role_scope BEGIN SELECT RAISE(ABORT, 'role_scope는 추가만 가능'); END;
+CREATE TRIGGER role_scope_no_delete BEFORE DELETE ON role_scope BEGIN SELECT RAISE(ABORT, 'role_scope는 추가만 가능'); END;
+`,
+  },
 ];

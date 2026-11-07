@@ -69,8 +69,12 @@ export const AdsConfigFixture = z
           oddProfileId: z.string().nullable(),
           flagKey: z.string().nullable(),
           securityMin: z.array(z.object({ swId: z.string(), version: Ver }).strict()),
-          approvedBy: z.string(),
-          approvedAgo: Ago,
+          /** 제안(등록)한 계정 — 승인 계정과 달라야 한다(승인 대기 조합은 approvedBy·approvedAgo가 null) */
+          proposedBy: z.string(),
+          proposedAgo: Ago,
+          approvedBy: z.string().nullable(),
+          approvedAgo: Ago.nullable(),
+          approvalReason: z.string().nullable().default(null),
         })
         .strict(),
     ),
@@ -85,6 +89,18 @@ export const AdsConfigFixture = z
           recovery: z.object({ targets: z.array(z.string()), recovered: z.array(z.string()) }).strict().nullable(),
           recoveryCandidate: z.object({ swId: z.string(), version: Ver }).strict().nullable(),
         })
+        .strict(),
+    ),
+    /** 보안 최소 버전 표(사이버보안 담당 승인) — 승인 대기 행은 approvedBy·approvedAgo가 null */
+    securityMins: z.array(
+      z
+        .object({ entryId: z.string().regex(/^SMV-\d{4}$/), swId: z.string(), version: Ver, rationale: z.string(), proposedBy: z.string(), proposedAgo: Ago, approvedBy: z.string().nullable(), approvedAgo: Ago.nullable(), approvalReason: z.string().nullable() })
+        .strict(),
+    ),
+    /** 권한 범위(ADS-BE15) — 축마다 null = 제한 없음 */
+    roleScopes: z.array(
+      z
+        .object({ accountId: z.string(), markets: z.array(z.string()).nullable(), featureIds: z.array(z.string()).nullable(), environments: z.array(z.string()).nullable(), assignedBy: z.string(), assignedAgo: Ago, reason: z.string() })
         .strict(),
     ),
     productMarketApprovals: z.array(z.object({ catalogId: z.string().regex(/^CAT-\d{5}$/), market: z.string(), approvedBy: z.string(), approvedAgo: Ago, rationale: z.string() }).strict()),

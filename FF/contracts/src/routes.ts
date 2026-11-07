@@ -67,6 +67,8 @@ import { CreateLegacyLinkBody, CreateLegacyRuleBody, DeleteLegacyLinkBody, LEGAC
 import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
+import { ApproveConfigSetBody, ApproveSecurityMinBody, ProposeSecurityMinBody } from './schemas/ads-config';
+import { PutRoleScopeBody } from './schemas/role-scope';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
 
 const EmptyBody = z.object({}).strict();
@@ -637,6 +639,13 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // AC — 승인 조합 제안→승인(작성자 ≠ 승인자), 보안 최소 버전 표(사이버보안 담당 승인), 권한 범위(시장·Feature·환경)
+  { name: 'approveConfigSet', method: 'POST', path: '/api/config-sets/:id/approve', summary: '승인 조합 승인 — 제안자 본인 제외, 보안 최소 버전 표 재확인', component: 'D02-01', roles: ['SAFETY_OFFICER'], body: ApproveConfigSetBody },
+  { name: 'securityMins', method: 'GET', path: '/api/security-mins', summary: '보안 최소 버전 표 — SW별 지금 하한·제안·승인 이력', component: 'D02-01' },
+  { name: 'proposeSecurityMin', method: 'POST', path: '/api/security-mins', summary: '보안 최소 버전 제안(올리기만)', component: 'D02-01', roles: ['SECURITY_OFFICER', 'VARIANT_OWNER'], body: ProposeSecurityMinBody },
+  { name: 'approveSecurityMin', method: 'POST', path: '/api/security-mins/:id/approve', summary: '보안 최소 버전 승인 — 사이버보안 담당, 제안자 본인 제외', component: 'D02-01', roles: ['SECURITY_OFFICER'], body: ApproveSecurityMinBody },
+  { name: 'roleScopes', method: 'GET', path: '/api/iam/scopes', summary: '권한 범위 — 계정별 시장·Feature·환경(종료·해제·발행 명령에 적용)', component: 'D06-09' },
+  { name: 'putRoleScope', method: 'PUT', path: '/api/iam/scopes/:accountId', summary: '권한 범위 지정(추가만 이력)', component: 'D06-09', roles: ['SECURITY_OFFICER'], body: PutRoleScopeBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

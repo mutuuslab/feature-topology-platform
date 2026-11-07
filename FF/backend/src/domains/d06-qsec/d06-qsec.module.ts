@@ -1,6 +1,7 @@
 // 06·03·04 검증 계열 — 분야별 검증 8종(병렬)·검증 이력(D06-04)·배포 안전성(D03-02).
 // 검증기는 각 컴포넌트 디렉터리에 있고, POLICY_VALIDATORS 토큰으로 묶어 ValidationService가 병렬 실행한다.
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { D01PolicyModule } from '../d01-policy/d01-policy.module';
 import { ComplianceCheckerService } from '../d03-safety/compliance-checker/validator';
 import { DeploySafetyService } from '../d03-safety/deploy-safety/deploy-safety.service';
@@ -20,6 +21,7 @@ import { ReharaController, ReharaService } from './change-impact-validation/reha
 import { SumsController, SumsService } from './secure-deploy/sums.service';
 import { SecurityEventController, SecurityEventService } from './anomaly-response/security-events.service';
 import { ComplianceRuleModule } from '../d03-safety/compliance-checker/compliance-rule.module';
+import { RoleScopeController, RoleScopeInterceptor, RoleScopeService } from './iam/role-scope.service';
 
 const VALIDATORS = [
   PolicyValidationService,
@@ -34,7 +36,7 @@ const VALIDATORS = [
 
 @Module({
   imports: [D01PolicyModule, ComplianceRuleModule],
-  controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController],
+  controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController, RoleScopeController],
   providers: [
     CarlaAdapter,
     IamService,
@@ -48,6 +50,8 @@ const VALIDATORS = [
     { provide: POLICY_VALIDATORS, useFactory: (...vs: unknown[]) => vs, inject: VALIDATORS },
     ValidationService,
     DeploySafetyService,
+    RoleScopeService,
+    { provide: APP_INTERCEPTOR, useClass: RoleScopeInterceptor },
   ],
   exports: [ValidationService, DeploySafetyService, VirtualValidationService, ComplianceRuleModule],
 })

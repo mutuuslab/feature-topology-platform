@@ -57,9 +57,10 @@ describe('ODD 프로파일 (ADS-BE09)', () => {
 describe('승인 조합 (ADS-BE10)', () => {
   it('목록 — 승인 조합 밖 차량 3대(부분 복구 1대 포함), 형상 미확인 1대는 부합으로 세지 않음', async () => {
     const r = (await app.http().get('/api/config-sets').expect(200)).body;
-    expect(r.items.map((s: { setId: string }) => s.setId)).toEqual(['CFG-FEAT-00004-01', 'CFG-FEAT-00022-01']);
+    // 승인 대기 조합(CFG-FEAT-00004-02)은 행으로만 보이고 요약에는 넣지 않는다(B14, ac-config-approval.spec)
+    expect(r.items.map((s: { setId: string }) => s.setId)).toEqual(['CFG-FEAT-00004-01', 'CFG-FEAT-00004-02', 'CFG-FEAT-00022-01']);
     expect(r.summary).toMatchObject({ outside: 3, partial: 1, unconfirmed: 1, match: 3, total: 7 });
-    expect(r.items[1].counts).toEqual({ MATCH: 2, MISMATCH: 1, PARTIAL_RECOVERY: 1, BELOW_SECURITY_MIN: 1, UNCONFIRMED: 1 });
+    expect(r.items[2].counts).toEqual({ MATCH: 2, MISMATCH: 1, PARTIAL_RECOVERY: 1, BELOW_SECURITY_MIN: 1, UNCONFIRMED: 1 });
   });
 
   it('차량 대조 — 부분 복구 ECU 글자, 보안 최소 버전 미달 복구 후보 불가, 오래된 보고는 형상 미확인', async () => {
@@ -88,14 +89,14 @@ describe('승인 조합 (ADS-BE10)', () => {
     expect(ok.body.setId).toBe('CFG-FEAT-00022-02');
   });
 
-  it('등록 — 보안 최소 버전은 요청 본문으로 낮출 수 없다(같은 Feature 승인 조합의 최소 버전이 하한), 앞자리 0 버전은 형식 오류', async () => {
+  it('등록 — 보안 최소 버전은 요청 본문으로 낮출 수 없다(보안 최소 버전 표가 하한), 앞자리 0 버전은 형식 오류', async () => {
     const body = {
       featureId: 'FEAT-00022', featureVersion: '1.0.0',
       hw: [{ ecuPno: '99211-NX400', hwRevision: 'Rev.B' }],
       ecuSw: [{ ecuPno: '99211-NX400', swId: 'SW-CARE-SDIST-APP', version: '1.1.0' }],
       reason: '보안 최소 버전 생략 시도',
     };
-    // 본문에 보안 최소 버전을 빼거나 낮춰도 기존 승인 조합의 하한(SW-CARE-SDIST-APP 1.2.0)으로 거부
+    // 본문에 보안 최소 버전을 빼거나 낮춰도 보안 최소 버전 표의 하한(SW-CARE-SDIST-APP 1.2.0, 사이버보안 담당 승인)으로 거부
     expect((await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, securityMin: [] }).expect(422)).body.error.message).toBe('ECU SW 하나가 보안 최소 버전보다 낮아 이 조합을 등록할 수 없습니다.');
     await app.http().post('/api/config-sets').set(VARIANT).send({ ...body, securityMin: [{ swId: 'SW-CARE-SDIST-APP', version: '1.0.0' }] }).expect(422);
     // 01.1.0 — 비교할 수 없는 버전이 보안 검사를 지나가지 않는다

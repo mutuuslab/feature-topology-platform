@@ -27,6 +27,7 @@ import { TopologyService } from '../topology/topology.service';
 import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 import { FeatureRefLinker, type RefWarning } from './feature-refs';
 import { ReleaseSignoffService } from './release-signoff.service';
+import { adsTransitionBlockers } from './ads-release-guard';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -97,7 +98,8 @@ export class LifecycleService {
       ko: r.ko,
       auto: r.auto,
       roles: r.roles.map((x) => ROLE_LABEL[x]),
-      blockers: evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers,
+      // ADS-BE16 — 분류 대상 Version은 미분류·상태 책임자 미지정이면 전이를 막는다
+      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to)],
     }));
   }
 
@@ -114,7 +116,9 @@ export class LifecycleService {
   /** 사람이 실행하는 전이 — 기준 행 경고가 있으면 응답에 warnings를 붙인다 */
   transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string): FeatureVersionRow & { warnings?: RefWarning[] } {
     const f = this.require(featureId, version);
-    const { rule, blockers } = evaluateTransition(f, to, this.context(f, { actor, reason }));
+    const evaluated = evaluateTransition(f, to, this.context(f, { actor, reason }));
+    const rule = evaluated.rule;
+    const blockers = evaluated.rule ? [...evaluated.blockers, ...adsTransitionBlockers(this.db, f, to)] : evaluated.blockers;
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
     const target = `${featureId}@${version}`;
     if (rule?.auto && actor.role !== 'SYSTEM') {

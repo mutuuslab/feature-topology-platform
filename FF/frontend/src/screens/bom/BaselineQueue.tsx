@@ -1,8 +1,9 @@
 // /baselines — BOM 기준선·확정 승인 (v2). 요청 큐 + 체크리스트 8항목 + 이전 Baseline diff + 결정(요청자≠승인자).
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
+import { eol as EOL } from '../../copy/ads-p5';
 import { AsyncView, Button, DataTable, DiffView, Drawer, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Tabs, VerdictBadge } from '../../design';
 import { Checklist } from '../features/FeatureDetail';
 import { usePermission, when } from '../shared';
@@ -28,6 +29,7 @@ export default function BaselineQueue() {
         title={T.title}
         lead={T.lead}
         message={!reqs.data ? { tone: 'neutral', value: '—', text: T.key.pending } : pending ? { tone: 'warn', value: pending, text: T.key.pending } : { tone: 'neutral', value: 0, text: T.key.none }}
+        meta={<Link to="/baselines/eol">{EOL.title}</Link>}
       />
       <Tabs tabs={tabs}>
         {(tab) => (tab === 'requests' ? <div data-tour="baseline-approve"><Requests /></div> : <Baselines />)}

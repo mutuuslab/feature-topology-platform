@@ -118,3 +118,4 @@ export * from './rules/compliance-rule';
 export * from './rules/api-gateway';
 export * from './rules/legacy-link';
 export * from './rules/settlement';
+export * from './schemas/ads-p5';

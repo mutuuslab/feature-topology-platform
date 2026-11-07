@@ -25,6 +25,8 @@ const VehicleAxesPanel = lazy(() => statePanels().then((m) => ({ default: m.Vehi
 const VerdictsPanel = lazy(() => statePanels().then((m) => ({ default: m.VerdictsPanel })));
 const CustomerPanel = lazy(() => statePanels().then((m) => ({ default: m.CustomerPanel })));
 const FleetAxesPanel = lazy(() => statePanels().then((m) => ({ default: m.FleetAxesPanel })));
+// ADS-OTA01 — '구성과 설치' 행 상세: OTA 설치 단계(선형 5단계 + 갈림 상태)
+const InstallDetail = lazy(() => import('../ads/OtaInstalls').then((m) => ({ default: m.InstallDetail })));
 const STREAM = ['publication.', 'vehicle.', 'kill.', 'virtual.'];
 /** 차량 × flag 표 한 번에 그리는 줄 — 수백 대를 다 그리면 표 하나가 수천 칸이라 메뉴를 열 때 멈췄다(CPU 4배 느림 3초) */
 const MATRIX_PAGE = 60;
@@ -305,6 +307,7 @@ export function VehicleRuntimeScreen() {
                 {fs.data?.features ? (
                   <Suspense fallback={null}>
                     <VehicleAxesPanel view={fs.data} />
+                    <InstallDetail vin={vin} />
                   </Suspense>
                 ) : null}
               </AsyncView>

@@ -13,6 +13,7 @@ import { report, scanDirs, type Leak } from './local-leaks.ts';
 import { snapshotP1 } from './snapshot-p1.ts';
 import { snapshotP2 } from './snapshot-p2.ts';
 import { snapshotP3 } from './snapshot-p3.ts';
+import { snapshotP5 } from './snapshot-p5.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
@@ -675,6 +676,8 @@ async function main() {
   for (const x of all.items as { featureId: string; version: string }[]) await save('adsClassification', { id: x.featureId, ver: x.version });
   // 확대 판정(통합 D-INT-4) — 배포 정책마다 Canary 관측·축별 근거를 한 응답으로. 판정을 못 읽으면 화면이 그리지 않는 빈 판정({decision: null})
   for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('policyExpansion', { id: p.policyId }).catch(() => saveBody('policyExpansion', { id: p.policyId }, { decision: null, canary: null, evidence: null, stage: null })); // ExpansionPanel은 decision이 없으면 그리지 않는다
+  // ADS 구성 마감(P5) — 발행 후보·복구 결정·캠페인·출고 대조·OTA 설치 단계·지원 종료 연습
+  await snapshotP5(save, { vehicles: vehicles.items, features: all.items, publications: pubs.items });
   // ISO/IEC 26580 정합(docs/20-architecture/20-60) — 카탈로그·Bill-of-Features(상품마다)·제품 구성기·공유 자산·등록 현황·Feature 프로필
   await save('featureCatalogue');
   const bof = await save('billOfFeaturesPortfolio');

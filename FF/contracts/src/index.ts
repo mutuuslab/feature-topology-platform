@@ -17,3 +17,4 @@ export * from './rules/openapi-doc';
 export * from './rules/relation-types';
 export * from './schemas/trace-link';
 export * from './rules/trace-link';
+export * from './rules/ads-p5';

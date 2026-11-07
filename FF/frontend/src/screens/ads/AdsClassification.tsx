@@ -1,6 +1,7 @@
 // Feature 분류·시장 기준선(ADS-UI12) — Feature Version 상세 '안전 분류' 탭의 ADS 분류 패널, Feature 등록(/master/define) 목록의 'ADS 분류' 열·미분류 핵심 메시지.
 // 판정은 확정 여부만(contracts classificationCompleteness) — 추정(INFERRED)은 '추정 — 확정 전' 배지로 보이되 미분류로 센다.
-// 출시 전이 거부 규칙은 아직 켜지 않았다 — 막힘 사유와 빈칸 목록만 먼저 보인다(기존 Feature 일괄 막힘 방지).
+// 출시 전이 거부 규칙은 분류 행이 있는 Version에서 켜진다(ADS-BE16) — 행이 없는 Version은 막힘 사유와 빈칸 목록만(기존 Feature 일괄 막힘 방지).
+// 입력(Feature 작성자)·확정(기능안전 담당)·시장 기준선 입력(법규 담당)·지원 종료 연습(ADS-LC02)은 P5Panels.
 import { type ClassificationView, type UnclassifiedRow, type UnclassifiedView } from '@ff/contracts';
 import { CLASS_GAPS, LIFECYCLE_OWNER_STATES, LIFECYCLE_TO_OWNER_STATE } from '../../../../contracts/src/rules/ads-change';
 import { asyncState, useApi } from '../../api/hooks';
@@ -8,6 +9,7 @@ import { adsChange } from '../../copy/ads-change';
 import { AsyncView, IdChip, KeyValue, Panel, StatusGlyph, SummaryLine, type KeyMessageSpec } from '../../design';
 import { BlockedAction, fmtAt, SimulatedDataNotice, TableScroll, UnknownMark, VerdictReason } from '../../design/ads';
 import { usePermission } from '../shared';
+import { BaselineAction, ClassificationActions, SupportDrillPanel } from './P5Panels';
 import './ads-change.css';
 
 const L = adsChange.cls;
@@ -75,10 +77,11 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
               {!done && PRE_RELEASE.has(lifecycle) ? (
                 <>
                   <BlockedAction label={L.releaseAction} reason={L.releaseBlocked} />
-                  <p className="adc-note">{L.ruleOff}</p>
+                  {v.ruleEnabled ? null : <p className="adc-note">{L.ruleOff}</p>}
                 </>
               ) : null}
               <p className="adc-note">{L.countRule}</p>
+              <ClassificationActions v={v} />
               {!editor.ok ? <p className="adc-note">{L.noPermission}</p> : null}
             </div>
           </Panel>
@@ -143,6 +146,7 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
                   </table>
                 </TableScroll>
                 <p className="adc-note">{B.source}</p>
+                <BaselineAction v={v} />
                 {(v.baselines ?? []).some((b) => b.assumed) ? <SimulatedDataNotice text={B.assumed} /> : null}
               </div>
             ) : (
@@ -150,6 +154,7 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
             )}
           </Panel>
           ) : null}
+          <SupportDrillPanel id={id} ver={ver} />
         </div>
       )}
     </AsyncView>

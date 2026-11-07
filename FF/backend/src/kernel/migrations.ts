@@ -1293,4 +1293,35 @@ CREATE TRIGGER trace_test_evidence_no_update BEFORE UPDATE ON trace_test_evidenc
 CREATE TRIGGER trace_test_evidence_no_delete BEFORE DELETE ON trace_test_evidence BEGIN SELECT RAISE(ABORT, 'trace_test_evidence는 추가만 가능'); END;
 `,
   },
+  {
+    // ADS 구성 마감(P5 — ADS-BE09·BE10·BE16·ORC-UI08·ADS-OTA01·LC02) — 적용 장소 추가 요청(변경 영향 확정 전 승인 대기), 복구 결정(추가만),
+    // 상태별 책임자 지정 이력(추가만), 출고 실물 구성(IF-12)·품질 보류 결정(추가만, 재대조 없는 출고 근거 금지), OTA 설치 보고(추가만, 실패는 원인 필수)·이벤트 ID, 지원 종료 연습(추가만)
+    name: '191_ads_p5',
+    sql: `
+CREATE TABLE ads_odd_site_request (site_id TEXT PRIMARY KEY, profile_id TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('PENDING','APPROVED')), doc TEXT NOT NULL);
+CREATE INDEX ads_odd_site_request_profile ON ads_odd_site_request (profile_id);
+CREATE TABLE ads_recovery_decision (id INTEGER PRIMARY KEY AUTOINCREMENT, decision_id TEXT NOT NULL UNIQUE, vin TEXT NOT NULL, path TEXT NOT NULL CHECK (path IN ('RESTORE_PREVIOUS','APPLY_FIX','SAFE_STATE','SERVICE')), decided_by TEXT NOT NULL, rationale TEXT NOT NULL, config_set_ref TEXT NOT NULL, decided_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ads_recovery_decision_vin ON ads_recovery_decision (vin, id);
+CREATE TRIGGER ads_recovery_decision_no_update BEFORE UPDATE ON ads_recovery_decision BEGIN SELECT RAISE(ABORT, 'ads_recovery_decision은 추가만 가능'); END;
+CREATE TRIGGER ads_recovery_decision_no_delete BEFORE DELETE ON ads_recovery_decision BEGIN SELECT RAISE(ABORT, 'ads_recovery_decision은 추가만 가능'); END;
+CREATE TABLE ads_lifecycle_owner (id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, version TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('CREATE','OPERATE','SUSPEND','DISPOSE')), owner_id TEXT, assigned_at TEXT NOT NULL, assigned_by TEXT NOT NULL);
+CREATE INDEX ads_lifecycle_owner_feature ON ads_lifecycle_owner (feature_id, version, id);
+CREATE TRIGGER ads_lifecycle_owner_no_update BEFORE UPDATE ON ads_lifecycle_owner BEGIN SELECT RAISE(ABORT, 'ads_lifecycle_owner는 추가만 가능'); END;
+CREATE TRIGGER ads_lifecycle_owner_no_delete BEFORE DELETE ON ads_lifecycle_owner BEGIN SELECT RAISE(ABORT, 'ads_lifecycle_owner는 추가만 가능'); END;
+CREATE TABLE as_built_config (vin TEXT PRIMARY KEY, plant TEXT NOT NULL, scanned_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE eol_check (id INTEGER PRIMARY KEY AUTOINCREMENT, check_id TEXT NOT NULL UNIQUE, vin TEXT NOT NULL, decision TEXT NOT NULL CHECK (decision IN ('HOLD','REWORK','RELEASE')), decided_by TEXT NOT NULL, decided_role TEXT NOT NULL, decided_at TEXT NOT NULL, recheck_result TEXT CHECK (recheck_result IN ('PASS','FAIL')), shipped_evidence TEXT, doc TEXT NOT NULL, CHECK (shipped_evidence IS NULL OR recheck_result IS NOT NULL));
+CREATE INDEX eol_check_vin ON eol_check (vin, id);
+CREATE TRIGGER eol_check_no_update BEFORE UPDATE ON eol_check BEGIN SELECT RAISE(ABORT, 'eol_check는 추가만 가능'); END;
+CREATE TRIGGER eol_check_no_delete BEFORE DELETE ON eol_check BEGIN SELECT RAISE(ABORT, 'eol_check는 추가만 가능'); END;
+CREATE TABLE ota_install_record (id INTEGER PRIMARY KEY AUTOINCREMENT, install_id TEXT NOT NULL, vin TEXT NOT NULL, stage TEXT NOT NULL, at TEXT NOT NULL, source TEXT NOT NULL CHECK (source IN ('OTA_SERVER','SIMULATED')), failure_kind TEXT CHECK (failure_kind IN ('POWER','LINK','VERIFY')), event_id TEXT, received_at TEXT NOT NULL, doc TEXT NOT NULL, CHECK (stage <> 'FAILED' OR failure_kind IS NOT NULL));
+CREATE INDEX ota_install_record_vin ON ota_install_record (vin, id);
+CREATE TRIGGER ota_install_record_no_update BEFORE UPDATE ON ota_install_record BEGIN SELECT RAISE(ABORT, 'ota_install_record는 추가만 가능'); END;
+CREATE TRIGGER ota_install_record_no_delete BEFORE DELETE ON ota_install_record BEGIN SELECT RAISE(ABORT, 'ota_install_record는 추가만 가능'); END;
+CREATE TABLE ota_install_event (event_id TEXT PRIMARY KEY, body_sha256 TEXT NOT NULL, received_at TEXT NOT NULL);
+CREATE TABLE ads_support_drill (id INTEGER PRIMARY KEY AUTOINCREMENT, drill_id TEXT NOT NULL UNIQUE, feature_id TEXT NOT NULL, version TEXT NOT NULL, passed INTEGER NOT NULL, run_by TEXT NOT NULL, run_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ads_support_drill_feature ON ads_support_drill (feature_id, version, id);
+CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
+CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
+`,
+  },
 ];

@@ -19,6 +19,7 @@ import { FeatureRepo } from '../repos';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
 import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
 import { FlagCoverageService } from '../flag-code/flag-coverage.service';
+import { AdsPublishGate } from '../../d02-runtime/variant-conditions/ads-publish-gate';
 
 /** 같은 사람이 같은 정책을 다시 조회해도 이 시간 안이면 조회 감사를 한 번만 남긴다(화면 재조회·새로고침 잡음) */
 const VIEW_AUDIT_WINDOW_MS = 10 * 60_000;
@@ -42,6 +43,7 @@ export class PolicyService implements OnModuleInit {
     private readonly flags: SafetyProfileService,
     private readonly errors: IntegrationErrorService,
     private readonly flagCode: FlagCoverageService,
+    private readonly adsGate: AdsPublishGate,
   ) {}
 
   /**
@@ -299,6 +301,13 @@ export class PolicyService implements OnModuleInit {
       const msg = flagCode.map((b) => `Flag ${b.flagKey}: ${b.message}`).join(' · ');
       this.audit.failed(actor, 'POLICY_DEPLOY', id, msg, 'D01-06');
       throw new DomainError('GUARD_FAILED', `정책을 게시할 수 없습니다: ${msg}`, { blockers: flagCode.map((b) => ({ code: 'FLAG_CODE_MISSING', message: `Flag ${b.flagKey}: ${b.message}`, ref: b.flagKey, status: b.status })) });
+    }
+    // ADS-BE09·BE10·BE16 — 승인 상한(ODD) 밖 배포 설정은 빌드하지 않고, ADS Feature는 분류 미등록·승인 조합 없음이면 발행하지 않는다
+    const ads = this.adsGate.deployBlockers(p, this.secureDeploy.targetsFor(p.featureId, p.featureVersion));
+    if (ads.length) {
+      const msg = ads.map((b) => b.message).join(' · ');
+      this.audit.failed(actor, 'POLICY_DEPLOY', id, msg, 'D01-06');
+      throw new DomainError('GUARD_FAILED', `정책을 게시할 수 없습니다: ${msg}`, { blockers: ads });
     }
     try {
       return this.db.tx(() => {

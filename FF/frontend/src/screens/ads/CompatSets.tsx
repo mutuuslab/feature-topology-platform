@@ -11,6 +11,8 @@ import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, PageHeader, Pan
 import { BlockedAction, StageCounts, UnknownMark, VerdictReason, type SegTone, type VerdictTone } from '../../design/ads';
 import { FreshnessChip } from '../../design/freshness';
 import { usePermission } from '../shared';
+import { PublishTab, RecoveryTab } from './P5Panels';
+import { publish as PB, recovery as RC } from '../../copy/ads-p5';
 import './ads-config.css';
 
 interface Summary {
@@ -25,6 +27,9 @@ interface ListResp {
   items: ConfigSetListItem[];
   summary: Summary;
   staleAfterMs: number;
+  /** 조합 미검증 — 배포 중 F0·F1 Feature Version 중 승인 조합 없음 */
+  unverified?: { count: number; items: { featureId: string; version: string; name: string | null; fClass: string | null }[] };
+  decisions?: number;
 }
 interface VehResp {
   set: ConfigSet & { featureName: string | null };
@@ -51,6 +56,10 @@ export default function CompatSetsScreen() {
   const s = q.data?.summary;
   const [registering, setRegistering] = useState(false);
   const perm = usePermission(['VARIANT_OWNER']);
+  // 발행 후보 — 승인 조합이 있는 Feature Version의 배포 정책
+  const pols = useApi<{ items: { policyId: string; status: string; featureId: string; featureVersion: string }[] }>('listPolicies', { query: { status: 'DEPLOYED' } });
+  const withSet = new Set(items.map((x) => `${x.featureId}@${x.featureVersion}`));
+  const deployedPolicies = (pols.data?.items ?? []).filter((p) => p.status === 'DEPLOYED' && withSet.has(`${p.featureId}@${p.featureVersion}`)).map((p) => p.policyId);
   return (
     <div className="ds-screen">
       <PageHeader
@@ -70,8 +79,8 @@ export default function CompatSetsScreen() {
         <RegisterForm sets={items} onDone={() => setRegistering(false)} />
       </Drawer>
       <AsyncView state={asyncState(q, items.length === 0)} error={q.error ? T.error : null} onRetry={() => q.refetch()} empty={T.empty}>
-        <Tabs tabs={[{ key: 'sets', label: T.tabs.sets, count: items.length }, { key: 'vehicles', label: T.tabs.vehicles, count: s?.total }]}>
-          {(active) => (active === 'vehicles' ? <VehiclesTab sets={items} /> : <SetsTab sets={items} />)}
+        <Tabs tabs={[{ key: 'sets', label: T.tabs.sets, count: items.length }, { key: 'vehicles', label: T.tabs.vehicles, count: s?.total }, { key: 'publish', label: PB.tab }, { key: 'recovery', label: RC.tab, count: q.data?.decisions }]}>
+          {(active) => (active === 'vehicles' ? <VehiclesTab sets={items} /> : active === 'publish' ? <PublishTab policyIds={deployedPolicies} unverified={q.data?.unverified} /> : active === 'recovery' ? <RecoveryTab setIds={items.map((x) => x.setId)} /> : <SetsTab sets={items} />)}
         </Tabs>
       </AsyncView>
     </div>

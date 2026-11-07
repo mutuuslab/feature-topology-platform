@@ -21,6 +21,8 @@ export interface OddCondition {
   /** 수치(경계값) 또는 범주 목록. null = 값 없음 */
   value: number | string[] | null;
   unit: string | null;
+  /** 승인 상한의 필수 조건 — 프로파일 조건에 반드시 있어야 한다(FFP-F026, rules/ads-publish validateOddRequired) */
+  required?: boolean;
 }
 
 /** 조건 키 → 양(quantity)·경계 방향. max = 값이 클수록 넓은 ODD, min = 작을수록 넓은 ODD, set = 범주 */
@@ -60,7 +62,7 @@ export function oddConditionText(c: Pick<OddCondition, 'op' | 'value' | 'unit'>)
   return `${c.value}${c.unit ? ` ${c.unit}` : ''} ${ODD_OP_TEXT[c.op]}`;
 }
 
-export type OddIssueCode = 'UNIT_MIX' | 'UNIT_UNKNOWN' | 'OPERATOR_MISUSE' | 'ENVELOPE_EXCEEDED' | 'EXCLUSION_OVERLAP';
+export type OddIssueCode = 'UNIT_MIX' | 'UNIT_UNKNOWN' | 'OPERATOR_MISUSE' | 'ENVELOPE_EXCEEDED' | 'EXCLUSION_OVERLAP' | 'REQUIRED_MISSING';
 export interface OddIssue {
   code: OddIssueCode;
   key: string;
@@ -150,6 +152,9 @@ export function validateOddProfile(p: { conditions: OddCondition[]; envelope: Od
       if (r.verdict === 'EXCEEDS') out.push({ code: 'ENVELOPE_EXCEEDED', key: c.key, short: '승인 상한 초과', message: `${c.label} ${r.reason}` });
     }
   }
+  // 필수 조건(FFP-F026) — 승인 상한에 required로 둔 조건이 프로파일에 없으면 승인하지 않는다
+  for (const e of p.envelope.filter((x) => x.required && !p.conditions.some((c) => c.key === x.key && c.axis !== 'EXCLUSION')))
+    out.push({ code: 'REQUIRED_MISSING', key: e.key, short: `필수 조건 없음(${e.label})`, message: `승인 상한의 필수 조건 ${e.label}이(가) 프로파일 조건에 없습니다.` });
   for (const ex of p.conditions.filter((c) => c.axis === 'EXCLUSION' && Array.isArray(c.value))) {
     for (const c of p.conditions.filter((x) => x.axis !== 'EXCLUSION' && x.key === ex.key && x.op === 'IN' && Array.isArray(x.value))) {
       const both = (c.value as string[]).filter((v) => (ex.value as string[]).includes(v));

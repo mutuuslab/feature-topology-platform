@@ -79,7 +79,7 @@ describe('Feature 분류·시장 기준선 (ADS-BE16)', () => {
   it('확정된 분류는 분류됨, 시장 기준선은 시장별 행(판단 불가 포함)', async () => {
     const v = (await app.http().get('/api/features/FEAT-00004/versions/4.1.0/classification').expect(200)).body as ClassificationView;
     expect(v.completeness.classified).toBe(true);
-    expect(v.ruleEnabled).toBe(false);
+    expect(v.ruleEnabled).toBe(true); // ADS-BE16 — 분류 행이 있는 Version은 출시 전이 거부 규칙이 켜진다
     expect(v.baselines.map((b) => b.market)).toEqual(['EU', 'KR']);
     expect(v.baselines.find((b) => b.market === 'EU')!.approvalStatus).toBe('UNKNOWN');
     expect(v.baselines.every((b) => b.oddProfileRef === 'ODD-FEAT-00004-v1')).toBe(true);

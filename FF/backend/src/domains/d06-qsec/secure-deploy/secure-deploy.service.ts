@@ -21,6 +21,7 @@ import { PkiService } from '../pki-kms/pki.service';
 import { PublicationRepo } from './publication.repo';
 import { SbomService } from '../vuln-monitor/sbom.service';
 import { OtaJobRepo } from '../../../adapters/ota/ota-job.repo';
+import { AdsPublishGate, type CandidateView } from '../../d02-runtime/variant-conditions/ads-publish-gate';
 
 const OTA_TIMEOUT_MS = Number(process.env.PUBLICATION_TIMEOUT_MS ?? 8000);
 const EMERGENCY_TIMEOUT_MS = Number(process.env.KILL_TIMEOUT_MS ?? 5000);
@@ -34,6 +35,8 @@ interface Draft {
   kill: { killId: string; safeMode: KillRequest['safeMode']; featureIds: string[] } | null;
   targets: string[];
   desired: string;
+  /** 정책 게시 후보(승인 조합·시장 기준선, ADS-BE10·BE16) — build 기록에 남긴다 */
+  candidates?: CandidateView | null;
 }
 
 @Injectable()
@@ -54,6 +57,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     private readonly policies: PolicyRepo,
     private readonly sbom: SbomService,
     private readonly otaJobs: OtaJobRepo,
+    private readonly adsGate: AdsPublishGate,
   ) {}
 
   onModuleInit() {
@@ -87,14 +91,17 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
   }
 
   publishPolicy(policy: Policy, actor: Actor) {
+    // ADS-BE10·BE16 — 승인 구성 조합·시장 기준선 밖 차량은 ADS Feature면 게시 대상에서 뺀다(그 밖 Feature는 사유만 build에 남긴다)
+    const candidates = this.adsGate.candidates(policy.featureId, policy.featureVersion, this.targetsFor(policy.featureId, policy.featureVersion));
     return this.create('POLICY', actor, {
       featureId: policy.featureId,
       featureVersion: policy.featureVersion,
       flagKey: policy.flagKey,
       policy,
       kill: null,
-      targets: this.targetsFor(policy.featureId, policy.featureVersion),
+      targets: candidates.targets,
       desired: policy.contentHash,
+      candidates,
     });
   }
 
@@ -112,7 +119,8 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
   private create(kind: PublicationKind, actor: Actor, d: Draft, applyWithinMs = 0): Publication {
     if (!this.db.inTransaction) throw new Error('게시본은 원 변경과 같은 트랜잭션 안에서 만든다');
     const publicationId = this.repo.nextId();
-    const payload = { publicationId, kind, sequence: 0, issuedAt: this.clock.iso(), ...d };
+    const { candidates, ...draft } = d;
+    const payload = { publicationId, kind, sequence: 0, issuedAt: this.clock.iso(), ...draft };
     const scopeKey = scopeKeyOf(payload);
     payload.sequence = this.repo.nextSequence(scopeKey);
     const emergency = kind !== 'POLICY';
@@ -134,6 +142,8 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       nodes: [],
       ackOnly: [],
       closedAt: null,
+      // ADS-BE11 — 서명 payload 밖 빌드 기록(결정적 digest·컴파일러 판·ODD 프로파일 참조·키 epoch·발행 후보)
+      build: this.adsGate.build(payload, candidates ?? null),
     };
     // SBOM(D06-11) — 이 패키지(payloadHash)에 결합된 CycloneDX SBOM이 스키마를 통과해야 게시본이 남는다(FFG-SBOM-002·003).
     // 실패하면 던져서 트랜잭션 전체(원 변경·서명)를 되돌린다 — 해시가 맞지 않는 패키지는 서명된 채로 배포되지 않는다

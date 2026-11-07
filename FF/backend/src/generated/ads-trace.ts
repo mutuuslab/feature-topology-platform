@@ -35,15 +35,16 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d01-policy/registry/safety-profile.service.ts:195",
-     "contracts/src/rules/classification.ts:49",
-     "contracts/src/rules/lifecycle.ts:22"
+     "contracts/src/rules/ads-publish.ts:100",
+     "backend/src/domains/d01-policy/registry/ads-release-guard.ts:15",
+     "backend/src/domains/d01-policy/registry/ads-classification.service.ts:103"
     ],
     "tests": [
-     "backend/test/d01/safety-profile.spec.ts",
-     "contracts/src/rules/classification.test.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts",
+     "backend/test/ads/change.spec.ts"
     ],
-    "gap": "ADS 여부·안전 등급·ownerId는 등록되고 Safety Manager 미확정이면 G2 이후 Gate가 막히지만, DDT 영향 축이 없고 분류가 추정 초안(INFERRED)으로 자동 생성되어 '미등록' 상태 자체가 없다.",
+    "gap": "ADS 여부·DDT 영향·안전 관련성·담당·상태별 책임자를 작성자가 입력하고 Safety Manager가 확정(확정 서명 = 축 값 정규 해시, 바뀌면 재확정)한다. 분류 행이 있는 Version은 미분류면 출시 전이를, ADS Feature는 발행을 CLS_UNREGISTERED로 거부한다. 분류 행이 없는 Version은 미분류 목록에만 보이고 막지 않는다(전체 적용은 사용자 결정 대기).",
     "plan": [
      "ADS-UI12",
      "ADS-BE16"
@@ -105,17 +106,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H01"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/policy-gate.ts:193",
-     "contracts/src/rules/compliance-profile.ts:53",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:77"
+     "contracts/src/rules/ads-publish.ts:112",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:95",
+     "backend/src/domains/d01-policy/registry/ads-classification.service.ts:124"
     ],
     "tests": [
-     "backend/test/d03/policy-gate.spec.ts",
-     "contracts/src/rules/compliance-profile.test.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts"
     ],
-    "gap": "승인 시장과 시장 Profile 상태는 Kill 게이트에서만 확인한다. 승인 유형·규정 series·승인 ODD를 기준선에 연결하는 구조가 없고 정책 대상은 국가/차종/트림으로만 고른다.",
+    "gap": "시장 기준선(승인 유형·규정 series·승인 ODD)을 법규 담당이 입력하고, 게시 후보 계산이 미승인 시장·다른 승인 ODD 대상을 MARKET_NOT_APPROVED·ODD_NOT_APPROVED로 제외한다(ADS Feature는 게시 대상에서 제외, ADAS는 사유만 build·미리보기에 기록).",
     "plan": [
      "ADS-UI12",
      "ADS-BE16"
@@ -142,17 +143,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H01"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:128",
-     "contracts/src/rules/lifecycle.ts:53",
-     "backend/src/domains/d01-policy/registry/lifecycle.service.ts:161"
+     "backend/src/domains/d01-policy/registry/ads-classification.service.ts:95",
+     "backend/src/domains/d01-policy/registry/ads-release-guard.ts:15",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:130"
     ],
     "tests": [
-     "backend/test/d01/registry.spec.ts",
+     "backend/test/ads/p5-publish.spec.ts",
      "backend/test/d01/retirement.spec.ts"
     ],
-    "gap": "DEPRECATED·RETIRED Feature의 정책 생성 거부 코드는 있지만 직접 시험이 없고, 상태별 책임자는 감사 행위자·소유 조직으로만 남는다.",
+    "gap": "상태별(생성·운영·중단·폐기) 책임자 지정을 추가만 기록하고, 분류 대상 Version은 도착 상태 책임자가 비면 전이를 LIFECYCLE_OWNER_MISSING으로 거부한다. DEPRECATED·RETIRED Feature의 신규 정책 생성 거부를 직접 시험한다(TC23).",
     "plan": [
      "ADS-BE16"
     ]
@@ -178,15 +179,18 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H01"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/variant.ts:44",
-     "contracts/src/rules/catalog.ts:53"
+     "contracts/src/rules/ads-publish.ts:112",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:95",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:121"
     ],
     "tests": [
-     "backend/test/d06/iam-variant.spec.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts",
+     "backend/test/ads/config.spec.ts"
     ],
-    "gap": "개별 SW 요구 버전 이상 여부만 판정한다. HW·ECU SW·모델·보정·ODD 프로파일의 승인 조합 집합 등록과 조합 기준 거부가 없다.",
+    "gap": "게시 후보 계산과 차량 증명이 보고 형상을 승인 조합과 대조해 조합 밖이면 CONFIG_SET_NOT_APPROVED로 제외한다(개별 버전이 유효해도). 승인 조합 없는 F2+ ADS Feature는 CONFIG_SET_MISSING으로 발행 거부. 강제 범위는 ADS Feature — F2+ ADAS는 사유만 기록(확대는 사용자 결정 제안).",
     "plan": [
      "ADS-UI05",
      "ADS-BE10"
@@ -251,7 +255,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/lifecycle.ts:169",
-     "backend/src/domains/d01-policy/registry/lifecycle.service.ts:82",
+     "backend/src/domains/d01-policy/registry/lifecycle.service.ts:83",
      "backend/src/domains/d01-policy/registry/release-signoff.service.ts:87"
     ],
     "tests": [
@@ -290,7 +294,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/policy-version.ts:59",
      "frontend/src/screens/policy/PolicyVersions.tsx:35",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:381"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:390"
     ],
     "tests": [
      "contracts/src/rules/policy-version.test.ts",
@@ -325,8 +329,8 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/lifecycle.ts:176",
-     "backend/src/domains/d01-policy/registry/lifecycle.service.ts:124",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:262"
+     "backend/src/domains/d01-policy/registry/lifecycle.service.ts:128",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:264"
     ],
     "tests": [
      "backend/test/d01/policy.spec.ts",
@@ -360,7 +364,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d01-policy/topology/gate.service.ts:105",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:286",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:288",
      "contracts/src/rules/lifecycle.ts:160"
     ],
     "tests": [
@@ -466,16 +470,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H02"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d01-policy/policy-repos.ts:21",
-     "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:33",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:115"
+     "contracts/src/rules/ads-publish.ts:158",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:105",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:146"
     ],
     "tests": [
-     "backend/test/d06/policy-golden.spec.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts"
     ],
-    "gap": "정규화 정책 해시는 결정적이지만 서명 payload에 issuedAt·publicationId가 들어가 재빌드 digest가 달라지고, 빌드 도구 버전을 기록하지 않는다.",
+    "gap": "게시본 build 기록이 승인 입력(정책 명세·내용 해시·기대 값·ODD 참조)만의 정규 digest와 컴파일러 판을 서명 payload 밖에 남긴다 — 재빌드하면 publicationId·issuedAt·서명 해시는 달라도 bundle digest가 같다(TC21).",
     "plan": [
      "ADS-BE11"
     ]
@@ -573,16 +578,16 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H02"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:35",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:77",
-     "contracts/src/rules/odd-restriction.ts:38"
+     "contracts/src/rules/ads-publish.ts:28",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:306"
     ],
     "tests": [
-     "backend/test/d01/policy.spec.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts"
     ],
-    "gap": "코호트 상한과 국가/차종/트림 범위만 제한한다. 승인 ODD·지역·속도 경계 초과 정책을 빌드에서 거부하는 검사가 없다.",
+    "gap": "정책 배포(빌드)가 그 Flag의 배포 설정을 승인 ODD 프로파일의 승인 상한과 대조해 속도·지역 확대, 경계 포함 오기, 판단 불가를 ODD_ENVELOPE_EXCEEDED·ODD_UNDECIDABLE로 거부한다(감사 FAILED).",
     "plan": [
      "ADS-UI04",
      "ADS-BE09"
@@ -609,16 +614,15 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H03"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-     "contracts/src/routes.ts:247"
+     "backend/src/domains/d06-qsec/secure-deploy/ads-publish.controller.ts:46"
     ],
     "tests": [
-     "backend/test/d03/delivery.spec.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "frontend/src/__tests__/screensAdsP5.test.tsx"
     ],
-    "gap": "게시본에 campaignId(CMP-)가 저장되어 게시본→캠페인은 조회되지만 campaignId→게시본·정책 릴리스 역방향 조회가 없다.",
+    "gap": "GET /api/campaigns/:id가 전송 campaign ID로 게시본·정책 릴리스를 찾는다(없는 캠페인 404, 연결 없는 캠페인 빈 목록). 게시본 → 캠페인은 기존 게시본 상세.",
     "plan": [
      "ADS-BE17"
     ]
@@ -895,16 +899,15 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H04"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/odd-restriction.ts:8",
-     "contracts/src/rules/odd-restriction.ts:37",
-     "contracts/src/schemas/policy.ts:48"
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:105",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-config.service.ts:184"
     ],
     "tests": [
-     "contracts/src/rules/odd-restriction.test.ts"
+     "backend/test/ads/p5-publish.spec.ts"
     ],
-    "gap": "ODD 축소를 새 Version으로 강제하지만 버전형 ODD 프로파일 엔티티와 로그·정책의 ODD 프로파일 결합 식별자가 없다.",
+    "gap": "승인 ODD 프로파일 참조(odd_profile_ref)를 게시본 build에 남기고, 판정 로그(safety_verdict.odd_ref)는 프로파일별로 따로 센다 — 같은 Feature의 두 ODD 버전 로그를 섞지 않는다.",
     "plan": [
      "ADS-UI04",
      "ADS-BE09"
@@ -931,12 +934,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H04"
    ],
    "review": {
-    "verdict": "미구현",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/odd-restriction.ts:8"
+     "contracts/src/rules/ads-config.ts:157",
+     "contracts/src/rules/ads-publish.ts:28"
     ],
-    "tests": [],
-    "gap": "ODD 조건의 단위·경계 포함·필수/배제를 표현하는 스키마와 단위 혼용·연산자 오기 검사가 없다.",
+    "tests": [
+     "contracts/src/rules/ads-publish.test.ts",
+     "contracts/src/rules/ads-config.test.ts",
+     "backend/test/ads/config.spec.ts"
+    ],
+    "gap": "의미 검증이 단위 혼용(km/h·m/s)·단위 해석 실패·연산자 오기(경계 방향)·배제 우선 위반·필수 조건 누락(REQUIRED_MISSING)을 탐지하고, 정책 컴파일이 km/h↔m/s를 환산해 경계를 비교한다.",
     "plan": [
      "ADS-UI04",
      "ADS-BE09"
@@ -1286,7 +1294,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:287",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:107",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:114",
      "contracts/src/rules/kill-timeline.ts:62"
     ],
     "tests": [
@@ -1321,15 +1329,16 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H07"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/rollback.ts:224",
-     "contracts/src/rules/rollback.ts:262"
+     "contracts/src/rules/ota-install.ts:72",
+     "backend/src/adapters/ota/ota-install.service.ts:138"
     ],
     "tests": [
-     "backend/test/d03/rollback.spec.ts"
+     "backend/test/ads/p5-plant-ota.spec.ts",
+     "contracts/src/rules/ota-install.test.ts"
     ],
-    "gap": "정책 롤백은 검증된 기준으로만 하지만 SW 롤백은 OTA로 넘기고, 복구 불가 시 안전 상태 경로와 그 증거를 남기는 계약·시뮬레이션이 없다.",
+    "gap": "IF-05 설치 보고가 실패 원인·복구 결과·정지 유지(안전 상태) 도달 시각·근거를 담고, 시뮬 차량의 이전 이미지 손상 경로가 정지 유지 증거를 남긴다(재시작 뒤 같은 상태, TC18).",
     "plan": [
      "ADS-OTA01"
     ]
@@ -1355,12 +1364,16 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H07"
    ],
    "review": {
-    "verdict": "미구현",
+    "verdict": "구현",
     "evidence": [
-     "frontend/src/data/twin/engine.ts:614"
+     "contracts/src/rules/ota-install.ts:59",
+     "contracts/src/schemas/ads-p5.ts:109"
     ],
-    "tests": [],
-    "gap": "설치 사전조건(배터리·정지 유지)과 설치 보류를 담는 계약 필드·시뮬레이터 동작이 없다.",
+    "tests": [
+     "backend/test/ads/p5-plant-ota.spec.ts",
+     "contracts/src/rules/ota-install.test.ts"
+    ],
+    "gap": "차량 로컬 사전조건(SOC·정지 유지·DDT 수행 중) 실패 시 INSTALL_DEFERRED{POWER·HOLD·DDT}를 보고하고 설치 단계에 설치 보류로 보인다(TC16).",
     "plan": [
      "ADS-OTA01"
     ]
@@ -1386,15 +1399,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H07"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/attestation.ts:44",
-     "contracts/src/schemas/wire.ts:85"
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:121",
+     "contracts/src/rules/ota-install.ts:203",
+     "contracts/src/rules/ads-publish.ts:192"
     ],
     "tests": [
-     "backend/test/d02/attestation.spec.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "backend/test/ads/p5-plant-ota.spec.ts"
     ],
-    "gap": "Attestation은 flag별 정책 해시·Feature Version·BOM Baseline만 비교하고 명령 target은 ECU 하나 — 다중 ECU·모델·보정 호환 집합 재검증과 부분 복구 표시가 없다.",
+    "gap": "차량 증명이 ECU·모델·보정·복구 진행 전체를 보고하면 승인 조합과 재대조해 일부 ECU만 복구는 RECOVERY_PARTIAL·재활성화 후보 아님, 설치 확인은 매니페스트와 차량 형상 보고가 맞을 때만(매니페스트 단독 완료 0건, TC17).",
     "plan": [
      "ADS-UI05",
      "ADS-BE10",
@@ -1422,17 +1437,16 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H07"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/rollback.ts:262",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:112",
-     "contracts/src/rules/status-v2.ts:102"
+     "contracts/src/rules/ads-publish.ts:169",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-config.service.ts:184"
     ],
     "tests": [
-     "backend/test/d03/rollback.spec.ts",
-     "backend/test/d04/status-v2.spec.ts"
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts"
     ],
-    "gap": "정책 복원은 새 개정본·재검증·새 서명·증가 순번으로 재게시되고 이전 key_epoch는 거부되지만 보안 최소 버전·SW anti-rollback 하한 검사가 없다.",
+    "gap": "복구 결정이 후보 게시본의 서명 유효기간·키 epoch·형상 참조를 지금 기준으로 재검증하고(EPOCH_STALE·SIGNATURE_EXPIRED), 보안 최소 버전 아래 후보로 이전 버전 복구를 거부한다(TC14).",
     "plan": [
      "ADS-BE10"
     ]
@@ -1462,7 +1476,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "frontend/src/data/twin/engine.ts:409",
      "contracts/src/flags/evaluate.ts:89",
-     "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:197"
+     "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:199"
     ],
     "tests": [
      "frontend/src/__tests__/twinEngine.test.ts",
@@ -1566,7 +1580,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "frontend/src/screens/ops/FleetLive.tsx:430",
+     "frontend/src/screens/ops/FleetLive.tsx:433",
      "frontend/src/components/liveMonitor.ts:80",
      "contracts/src/flags/p0.ts:224"
     ],
@@ -1726,7 +1740,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:155",
      "frontend/src/screens/ops/Deployments.tsx:279",
-     "frontend/src/screens/ops/FleetLive.tsx:89"
+     "frontend/src/screens/ops/FleetLive.tsx:98"
     ],
     "tests": [
      "backend/test/d04/status-v2.spec.ts",
@@ -2061,7 +2075,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "frontend/src/screens/ops/Deployments.tsx:283",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:198"
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:208"
     ],
     "tests": [],
     "gap": "게시본 상세에 차량별 상태·사유를 한 표로만 보인다. 미수신과 로컬 거부를 따로 조회하는 목록·필터와 시험이 없다.",
@@ -2166,17 +2180,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H08"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d01-policy/experiment/experiment.service.ts:151",
-     "contracts/src/rules/ext.ts:63"
+     "contracts/src/rules/lifecycle-isolation.ts:21",
+     "contracts/src/rules/lifecycle-isolation.ts:43",
+     "backend/src/domains/d01-policy/registry/support-drill.service.ts:45"
     ],
     "tests": [
-     "backend/test/ext/p10.spec.ts",
-     "contracts/src/rules/ext.test.ts",
-     "e2e/tests/p10.spec.ts"
+     "backend/test/ads/p5-lifecycle.spec.ts",
+     "contracts/src/rules/lifecycle-isolation.test.ts"
     ],
-    "gap": "Shadow는 서버에서 판단만 계산하고 정책을 쓰지 않지만, 차량 쪽 Shadow 경로의 출력·활성화·설치 권한 격리는 계약·시험이 없다.",
+    "gap": "Shadow 정책 봉투는 출력·활성화·설치 권한이 늘 거짓이고, 권한을 켠 봉투는 와이어 검사가 거부, 시뮬 차량은 판단 기록만 남기고 액추에이터·정책 수락·설치 상태를 바꾸지 않는다(TC23). 실차 쪽 적용은 차량 소관.",
     "plan": [
      "ADS-LC01"
     ]
@@ -2242,18 +2256,17 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H08"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/policy-gate.ts:102",
-     "contracts/src/rules/retirement.ts:59",
-     "contracts/src/flags/openfeature.ts:141"
+     "contracts/src/rules/lifecycle-isolation.ts:80",
+     "contracts/src/rules/lifecycle-isolation.ts:52",
+     "backend/src/domains/d01-policy/registry/support-drill.service.ts:45"
     ],
     "tests": [
-     "backend/test/d01/retirement.spec.ts",
-     "contracts/src/rules/policy-gate.test.ts",
-     "backend/test/d03/policy-gate.spec.ts"
+     "backend/test/ads/p5-lifecycle.spec.ts",
+     "contracts/src/rules/lifecycle-isolation.test.ts"
     ],
-    "gap": "폐기 Feature는 비활성화만 허용되고 Retirement 6단계·Safe State 기본값이 있지만, 지원 종료·서버 교체 연습과 기준선·키 갱신 지속 절차·시험이 없다.",
+    "gap": "지원 종료·서버 교체 연습이 기준선·차단·키 갱신·미승인 ON 네 칸을 판정해 추가만 기록한다 — 모르는 키 게시본은 받지 않고 마지막 검증 기준선 또는 안전 기본값(OFF)을 유지한다(TC23).",
     "plan": [
      "ADS-LC02"
     ]
@@ -2309,8 +2322,10 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F003"
    ],
    "review": {
-    "status": "일부",
+    "status": "자동 시험 있음",
     "evidence": [
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts",
      "contracts/src/rules/compliance-profile.test.ts",
      "backend/test/d03/policy-gate.spec.ts",
      "contracts/src/rules/classification.test.ts"
@@ -2350,8 +2365,10 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F026"
    ],
    "review": {
-    "status": "일부",
+    "status": "자동 시험 있음",
     "evidence": [
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/ads-publish.test.ts",
      "backend/test/d01/odd-restriction.spec.ts",
      "contracts/src/rules/odd-restriction.test.ts"
     ],
@@ -2557,8 +2574,9 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F040"
    ],
    "review": {
-    "status": "일부",
+    "status": "자동 시험 있음",
     "evidence": [
+     "backend/test/ads/p5-publish.spec.ts",
      "backend/test/d03/delivery.spec.ts",
      "backend/test/d04/status-v2.spec.ts",
      "backend/test/d03/gleo-v2-vectors.spec.ts"
@@ -2602,8 +2620,11 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F038"
    ],
    "review": {
-    "status": "없음",
-    "evidence": [],
+    "status": "자동 시험 있음",
+    "evidence": [
+     "backend/test/ads/p5-plant-ota.spec.ts",
+     "contracts/src/rules/ota-install.test.ts"
+    ],
     "plan": [
      "ADS-OTA01"
     ]
@@ -2619,8 +2640,10 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F039"
    ],
    "review": {
-    "status": "일부",
+    "status": "자동 시험 있음",
     "evidence": [
+     "backend/test/ads/p5-publish.spec.ts",
+     "backend/test/ads/p5-plant-ota.spec.ts",
      "contracts/src/flags/p0.test.ts"
     ],
     "plan": [
@@ -2636,8 +2659,11 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F037"
    ],
    "review": {
-    "status": "없음",
-    "evidence": [],
+    "status": "자동 시험 있음",
+    "evidence": [
+     "backend/test/ads/p5-plant-ota.spec.ts",
+     "contracts/src/rules/ota-install.test.ts"
+    ],
     "plan": [
      "ADS-OTA01"
     ]
@@ -2700,6 +2726,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "status": "자동 시험 있음",
     "evidence": [
+     "backend/test/ads/p5-publish.spec.ts",
      "backend/test/d06/virtual.spec.ts",
      "backend/test/d01/gate-decision.spec.ts",
      "backend/test/d01/release-signoff.spec.ts"
@@ -2741,8 +2768,11 @@ export const ADS_TRACE: AdsTraceDoc = {
     "FFP-F063"
    ],
    "review": {
-    "status": "일부",
+    "status": "자동 시험 있음",
     "evidence": [
+     "backend/test/ads/p5-lifecycle.spec.ts",
+     "backend/test/ads/p5-publish.spec.ts",
+     "contracts/src/rules/lifecycle-isolation.test.ts",
      "backend/test/ext/p10.spec.ts",
      "contracts/src/rules/policy-gate.test.ts",
      "backend/test/d01/retirement.spec.ts"

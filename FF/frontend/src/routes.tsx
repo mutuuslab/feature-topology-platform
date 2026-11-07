@@ -295,6 +295,10 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/consults/:id', element: named(() => import('./screens/workspaces/Consults'), 'ConsultScreen'), title: '협의 요청', group: 'home', parent: '/', components: ['D04-04'], v2: true },
   // 추적 커버리지(P3) — Feature별 요구·필수 Test Evidence 비율, 요구 미연결·Evidence 미등록 Feature
   { path: '/trace/coverage', element: def(() => import('./screens/master/TraceCoverage')), title: '추적 커버리지', group: 'verify', parent: '/trace/design', components: ['D01-02'], v2: true },
+  // ADS 구성 마감(P5) — 출고 실물 구성 대조(ORC-UI08), OTA 설치 단계(ADS-OTA01), 전송 캠페인 역조회(ADS-BE17)
+  { path: '/baselines/eol', element: def(() => import('./screens/bom/EolChecks')), title: '출고 실물 구성 대조', group: 'config', parent: '/baselines', components: ['D05-02'], v2: true },
+  { path: '/ops/ota-installs', element: def(() => import('./screens/ads/OtaInstalls')), title: 'OTA 설치 단계', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },
+  { path: '/deployments/campaigns/:id', element: def(() => import('./screens/ads/Campaign')), title: '전송 캠페인', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },
 ];
 
 export const routesFor = (desktop: boolean): AppRoute[] => (desktop ? ALL_ROUTES.filter((r) => !DESKTOP_EXCLUDED.has(r.path) && !(r.parent && DESKTOP_EXCLUDED.has(r.parent))) : ALL_ROUTES);

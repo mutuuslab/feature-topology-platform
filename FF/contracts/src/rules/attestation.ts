@@ -57,3 +57,20 @@ export function attestationMismatches(reported: AttestationEntry[], expected: Ex
   for (const r of reported) if (!expected.some((e) => e.flagKey === r.flagKey)) out.push({ code: 'UNEXPECTED', featureId: r.featureId, flagKey: r.flagKey, expected: null, reported: r.policyHash });
   return out;
 }
+
+/**
+ * 차량 형상 전체(ADS-BE10·FFP-F039) — 증명 보고에 덧붙이는 ECU별 HW 개정·SW 버전·모델·보정·복구 진행. 승인 구성 조합(config_set)과 대조한다.
+ * 개별 버전이 모두 유효해도 조합이 다르면 CONFIG_SET_NOT_APPROVED, 일부 ECU만 복구면 RECOVERY_PARTIAL(복구 완료·재활성화 후보 아님).
+ */
+const Ref = z.object({ id: z.string().min(1).max(80), version: z.string().min(1).max(40) }).strict();
+const SwVer = z.object({ swId: z.string().min(1).max(60), version: z.string().min(1).max(40) }).strict();
+export const AttestationVehicleConfig = z
+  .object({
+    ecus: z.array(z.object({ ecuPno: z.string().min(3).max(40), hwRevision: z.string().min(1).max(40), sw: z.array(SwVer).max(20) }).strict()).min(1).max(40),
+    model: Ref.nullable(),
+    calibration: Ref.nullable(),
+    recovery: z.object({ targets: z.array(z.string().min(1).max(40)).max(40), recovered: z.array(z.string().min(1).max(40)).max(40) }).strict().nullable(),
+    recoveryCandidate: SwVer.nullable(),
+  })
+  .strict();
+export type AttestationVehicleConfig = z.infer<typeof AttestationVehicleConfig>;

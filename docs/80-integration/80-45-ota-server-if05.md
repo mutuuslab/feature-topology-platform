@@ -3,14 +3,15 @@ id: INT-OTA
 type: integration
 title: "80-45 OTA 서버 연동 규격 (IF-05 v1.0)"
 status: draft
-version: 1.0.0
+version: 1.1.0
 owner: feature-architect
+cycle: 0
 standards: [OpenAPI-3.1.0, RFC-6749, RFC-9110, ISO-24089, UNECE-R156]
 traces:
   satisfies: [RD-OPS-04, RD-UX-04]
   implemented_by: [FF/backend/src/adapters/ota, FF/tools/ota-reference]
-  verified_by: [FF/backend/test/d04/ota-server.spec.ts, FF/backend/test/d04/ota-adapter.spec.ts, FF/tools/ota-reference/conformance.test.ts]
-last_updated: 2026-10-24
+  verified_by: [FF/backend/test/d04/ota-server.spec.ts, FF/backend/test/d04/ota-adapter.spec.ts, FF/tools/ota-reference/conformance.test.ts, FF/backend/test/ads/p5-plant-ota.spec.ts]
+last_updated: 2026-11-07
 ---
 
 # 80-45 OTA 서버 연동 규격 (IF-05 v1.0)
@@ -220,6 +221,26 @@ GitLab·JIRA·codeBeamer webhook(`X-Hub-Signature: sha256=<HMAC(원문)>`, D05-0
 5. OTA 사실 안에서는 `DELIVERED`를 늦게 온 다른 값으로 덮지 않고, 끝 사실(`DELIVERED`·`NO_RESPONSE`·`CANCELLED`·`NOT_ELIGIBLE`)을 `DELIVERING`으로 덮지 않는다. 모든 대상이 끝 사실을 받거나 `job.state`가 끝 상태면 FF의 OTA 작업이 닫힌다(게시본 집계와 별개).
 6. 전환 기간([80-75] §10.1)에 같은 차량 결과가 직접 창구와 Lake 둘 다로 오면 FF가 (vin, publicationId, sequence)로 합친다 — 어느 쪽이든 차량 결과다.
 
+### 7.6 설치 보고 — `POST /api/ota/v1/installs` (`type: install.report`, 1.1.0에 추가)
+
+SW 설치는 OTA에 위임(D7)한다. OTA 원장은 설치 단계를 이 webhook으로 알린다 — 서명(7.2)·시각 창·eventId 규칙과 비밀(`FF_OTA_WEBHOOK_SECRET`)은 7장과 같고, 판 머리글은 1.0 그대로(필드·이벤트 추가만, 10장).
+
+| 필드 | 뜻 |
+|---|---|
+| `stage` | 선형 `NOT_STARTED`(설치 전)→`DOWNLOADED`→`READY`(설치 준비)→`INSTALLING`→`INSTALLED` + 갈림 `DEFERRED`(설치 보류)·`FAILED`·`RECOVERING`·`SAFE_STATE_HELD`(정지 유지)·`SERVICE_REQUIRED` |
+| `schedule` | `windowFrom`·`windowTo`·`estDurationMin`·`driveRestriction` — 예정 창·예상 소요·운행 제한(완료 시각 약속이 아니다) |
+| `deferredReason` | 차량 로컬 사전조건 실패(`INSTALL_DEFERRED{reason}`) — `POWER`(배터리 부족)·`HOLD`(정지 유지 불충족)·`DDT`(주행 과업 수행 중). `DEFERRED`면 필수 |
+| `failureKind` | `POWER`·`LINK`·`VERIFY` — `FAILED`면 필수(없으면 400). 집계에서 따로 센다 |
+| `recoveryResult` | `RESTORED`·`PARTIAL`·`FAILED` |
+| `safeState` | `reachedAt`·`basis` — 복구 불가 시 안전 상태 도달 증거. `SAFE_STATE_HELD`면 필수 |
+| `manifest` | 설치한 ECU·SW 버전 — FF 형상 대조 입력 |
+
+FF가 정하는 것(7.5와 같은 원칙): 설치 보고는 OTA 원장의 사실로 화면·집계에 보이되 끝 상태를 정하지 않는다.
+- **설치 확인됨**은 차량이 서명된 차량 창구로 보낸 형상 보고(ATTESTATION `vehicleConfig`)가 manifest와 맞을 때만 — manifest 단독으로 완료 처리하지 않는다. 다운로드됨은 호환·설치로 세지 않는다.
+- **복구 뒤 활성 적격**은 승인 구성 조합(ADS-BE10)으로 다시 대조해 조합 밖이면 '조건 부족 — 승인 조합 밖(복구 뒤 재검증)'.
+- 차량 결과를 OTA webhook에서 받을지는 결정 U-17 대기 — 이 보고도 차량 서명 없는 결과로 끝 상태를 정하지 않는다.
+- 시뮬 차량(`POST /api/ota/installs/simulate`, 모의 기록 `SIMULATED`)이 같은 계약으로 사전조건 검사(TC16)·이전 이미지 손상 → 정지 유지(TC18)를 재현한다.
+
 ## 8. 오류 코드 (OTA 서버 응답)
 
 | HTTP | `code` | `retryable` | 뜻 · FF 동작 |
@@ -365,6 +386,7 @@ FF 저장소에서는 `node --test tools/ota-reference/conformance.test.ts`(veri
 
 | 판 | 날짜 | 내용 |
 |---|---|---|
+| 1.1.0 | 2026-11-07 | 7.6 설치 보고(`install.report`, `POST /api/ota/v1/installs`) 추가 — 설치 단계·예정 창·보류 사유·실패 원인(필수)·복구·정지 유지 증거·manifest. 판 머리글 1.0 유지(추가만) |
 | 1.0.0 | 2026-10-24 | 첫 판 — 책임·흐름·API 4개·webhook·HMAC·OAuth2 client credentials·멱등·재시도·오류 표·판 규칙, FF 어댑터·시험 OTA 서버·적합성 검사. 사용자 결정 "차량 → Lake → FF"·[80-75] C8: webhook은 OTA 사실만(DELIVERING·DELIVERED·NO_RESPONSE·CANCELLED·NOT_ELIGIBLE), 끝 상태는 서명 확인된 차량 결과(7.5, U-17 기본안) |
 
 [80-75]: 80-75-data-lake-server.md

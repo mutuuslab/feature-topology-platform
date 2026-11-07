@@ -28,6 +28,7 @@ import { EventService } from '../../../kernel/event.service';
 import { SHARED_STATE, type SharedStateStore } from '../../../kernel/shared-state';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { ActivationService } from '../../d01-policy/activation/activation.service';
+import { AdsPublishGate } from '../variant-conditions/ads-publish-gate';
 import { EntitlementService } from '../../d01-policy/entitlement/entitlement.service';
 import { FleetRepo, PolicyRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo } from '../../d01-policy/repos';
@@ -61,6 +62,7 @@ export class VehicleRequestService {
     private readonly features: FeatureRepo,
     /** 차량별 고정 창 빈도 카운터 — 공유 상태(DB): 인스턴스가 여럿이어도·재시작해도 같은 창(RD-OPS-14) */
     @Inject(SHARED_STATE) private readonly shared: SharedStateStore,
+    private readonly adsGate: AdsPublishGate,
   ) {}
 
   // ---- 공통 관문 ----
@@ -234,7 +236,11 @@ export class VehicleRequestService {
       case 'ATTESTATION': {
         const expected = this.expectedConfigs(vin);
         const mismatches = attestationMismatches(body.configs, expected);
-        const attestation = { compared: expected.length, reported: body.configs.length, mismatches };
+        // ADS-BE10 — 형상 전체(ECU·모델·보정·복구 진행)를 함께 보고하면 승인 구성 조합과 대조한다(부분 복구는 재활성화 후보 아님)
+        const configSets = body.vehicleConfig ? this.adsGate.attest(vin, { ecus: body.vehicleConfig.ecus, model: body.vehicleConfig.model ?? null, calibration: body.vehicleConfig.calibration ?? null, recovery: body.vehicleConfig.recovery ?? null, recoveryCandidate: body.vehicleConfig.recoveryCandidate ?? null }, body.observedAt) : undefined;
+        const attestation = { compared: expected.length, reported: body.configs.length, mismatches, ...(configSets ? { configSets } : {}) };
+        const outside = (configSets ?? []).filter((c) => c.cls !== 'MATCH');
+        if (outside.length) this.events.publish('vehicle.config.outside_set', vin, { vin, configSets: outside.map((c) => ({ featureId: c.featureId, setId: c.setId, code: c.code })) }, meta);
         this.audit.record(actor, 'VEHICLE_ATTESTATION', vin, { after: attestation, componentId: COMPONENT });
         // 불일치는 이상 건(D06-12)으로 — 보고를 받는 즉시(FFG-VEH-007)
         if (mismatches.length) this.events.publish('vehicle.config.mismatch', vin, { vin, mismatches, publications: expected.map((e) => e.publicationId) }, meta);

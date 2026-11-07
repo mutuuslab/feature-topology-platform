@@ -62,6 +62,16 @@ export const PublicationSchema = z.object({
   /** 회신 의무가 없는 대상(예: GLEO 영상 키트는 policy_push에 회신하지 않는다) */
   ackOnly: z.array(z.string()).default([]),
   closedAt: z.string().nullable(),
+  /** 빌드 기록(ADS-BE11·BE09·BE10) — 서명 payload 밖. 승인 입력의 결정적 digest·컴파일러 판·ODD 프로파일 참조·키 epoch·발행 후보(제외 사유) */
+  build: z
+    .object({
+      bundleDigest: z.string(),
+      compilerVersion: z.string(),
+      oddProfileRef: z.string().nullable(),
+      keyEpoch: z.number().int(),
+      candidates: z.object({ enforced: z.boolean(), excluded: z.array(z.object({ vin: z.string(), code: z.string(), reason: z.string() })), unverifiedCombo: z.number().int(), blockers: z.array(z.object({ code: z.string(), message: z.string(), ref: z.string() })) }).nullable(),
+    })
+    .optional(),
 });
 export type Publication = z.infer<typeof PublicationSchema>;
 

@@ -408,7 +408,7 @@
       "evidence": [
         "frontend/src/data/twin/engine.ts:409",
         "contracts/src/flags/p0.ts:224",
-        "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:198"
+        "backend/src/domains/d02-runtime/vehicle-requests/vehicle-request.service.ts:200"
       ],
       "tests": [
         "frontend/src/__tests__/twinEngine.test.ts",
@@ -640,17 +640,20 @@
       ]
     },
     "B06": {
-      "verdict": "미구현",
-      "current": "해외공장(IF-12) 주문의 레거시 옵션 코드를 FEAT ID로 해석하고 미해석 코드를 남길 뿐, 생산라인 최종 검사(EOL)에서 주문 옵션과 실제 부품·SW·승인 구성을 대조하는 기능은 없다.",
+      "verdict": "구현",
+      "current": "공장 VIN 스캔(IF-12 모의)을 주문 사양과 대조해 불일치를 품질 보류로 두고, 재작업·재대조·출고 근거를 추가만 기록한다(재대조 없는 출고 근거 거부). 지원 판정 HW 칸이 출고 구성 기록을 읽어 부품 누락을 정책 ON으로 덮지 않는다.",
       "evidence": [
-        "contracts/src/rules/ext.ts:249",
-        "backend/src/domains/d05-ext/legacy/legacy.service.ts:49",
-        "backend/src/kernel/migrations.ts:331"
+        "contracts/src/rules/eol.ts:26",
+        "contracts/src/rules/eol.ts:55",
+        "backend/src/domains/d05-ext/data-sync/eol.service.ts:112",
+        "backend/src/domains/d02-runtime/support-conditions/eligibility.service.ts:71"
       ],
       "tests": [
-        "backend/test/ext/p10.spec.ts"
+        "backend/test/ads/p5-plant-ota.spec.ts",
+        "contracts/src/rules/eol.test.ts",
+        "frontend/src/__tests__/screensAdsP5.test.tsx"
       ],
-      "gap": "EOL 대조·불일치 원인별 격리·재작업 후 재검증·출고 증거·인도 시점 인수 항목이 모두 없고, 차량 Attestation은 운행 중 정책 보고 비교일 뿐 출고 검사와 연결되지 않는다.",
+      "gap": "실물 구성 원장은 공장 품질 시스템 — 실 연동은 외부 자원. 품질 보류 결정 역할은 BOM 승인자 위임(신설 여부 D-ADS-7).",
       "plan": [
         "ORC-UI08"
       ]
@@ -713,16 +716,17 @@
       ]
     },
     "C1": {
-      "verdict": "미구현",
-      "current": "정책 게시본에서 서버 전송(DISPATCHED)과 차량 되읽기 확인(CONFIRMED/PARTIAL)을 구분하지만, 소비자용 변경 내용·예상 설치시간 안내, 설치 예약, 첫 사용 과업 확인은 없다.",
+      "verdict": "부분",
+      "current": "IF-05 설치 보고(예정 창·예상 소요·운행 제한·설치 보류 사유·실패 원인·복구·정지 유지 증거)를 받아 차량별 설치 단계로 보이고, 운행 제한은 예상 글자로만 낸다.",
       "evidence": [
-        "contracts/src/schemas/ops.ts:16",
-        "contracts/src/rules/rollback.ts:225"
+        "contracts/src/rules/ota-install.ts:59",
+        "backend/src/adapters/ota/ota-install.service.ts:138"
       ],
       "tests": [
-        "backend/test/d03/delivery.spec.ts"
+        "backend/test/ads/p5-plant-ota.spec.ts",
+        "contracts/src/rules/ota-install.test.ts"
       ],
-      "gap": "SW 설치는 OTA(IF-05)에 위임돼 설치 예약·전원/주차 조건·설치 중 운행 제한·설치 실패 복구 상태와 실제 경로 검색 성공 확인이 플랫폼에 없다.",
+      "gap": "소비자용 변경 내용 안내·첫 사용 과업 확인·실제 경로 검색 성공 확인과 고객 상태 API 연결은 남음(ORC-UI03·ORC-BE08).",
       "plan": [
         "ORC-UI03",
         "ADS-OTA01",

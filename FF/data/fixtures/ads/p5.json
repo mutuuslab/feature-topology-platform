@@ -1,0 +1,64 @@
+{
+  "assumed": true,
+  "note": "ADS 구성 마감(P5) 시연 시드 — 출고 실물 구성(IF-12 공장 모의)·품질 보류 결정·OTA 설치 보고(모의). 시각은 시드 시각 기준 상대값(분 전). 실물 원장은 공장 품질 시스템·OTA 원장이다.",
+  "asBuilt": [
+    {
+      "vin": "KMH-NX4-0001",
+      "plant": "HMMC 체코 공장",
+      "scannedAgoMin": 4320,
+      "orderEcus": [{ "ecuPno": "99211-NX400", "hwRevision": "Rev.B" }, { "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }],
+      "builtEcus": [{ "ecuPno": "99211-NX400", "hwRevision": "Rev.B" }, { "ecuPno": "95790-NX300", "hwRevision": "Rev.B" }]
+    },
+    {
+      "vin": "KMH-NX4-0002",
+      "plant": "HMMC 체코 공장",
+      "scannedAgoMin": 2880,
+      "orderEcus": [{ "ecuPno": "99211-NX400", "hwRevision": "Rev.B" }, { "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }],
+      "builtEcus": [{ "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }]
+    },
+    {
+      "vin": "KMH-NX4-0101",
+      "plant": "울산 3공장",
+      "scannedAgoMin": 5760,
+      "orderEcus": [{ "ecuPno": "99211-NX400", "hwRevision": "Rev.B" }, { "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }],
+      "builtEcus": [{ "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }]
+    },
+    {
+      "vin": "KMH-NX4-0003",
+      "plant": "울산 3공장",
+      "scannedAgoMin": 1440,
+      "orderEcus": [{ "ecuPno": "99211-NX400", "hwRevision": "Rev.B" }, { "ecuPno": "95790-NX300", "hwRevision": "Rev.C" }],
+      "builtEcus": [{ "ecuPno": "99211-NX400", "hwRevision": "Rev.B" }, { "ecuPno": "95790-NX300", "hwRevision": null }]
+    },
+    {
+      "vin": "KMH-GN7-0001",
+      "plant": "아산 공장",
+      "scannedAgoMin": 10080,
+      "orderEcus": [{ "ecuPno": "99211-GN700", "hwRevision": "Rev.B" }],
+      "builtEcus": [{ "ecuPno": "99211-GN700", "hwRevision": "Rev.B" }]
+    }
+  ],
+  "eolChecks": [
+    { "vin": "KMH-NX4-0001", "decision": "HOLD", "cause": "전방 카메라(95790-NX300) Rev.B 장착 — 주문 Rev.C", "decidedBy": "usr-steward", "agoMin": 4300, "reworkRef": null, "recheckResult": null, "shippedEvidence": null },
+    { "vin": "KMH-NX4-0101", "decision": "HOLD", "cause": "통합 제어기(99211-NX400) 미장착", "decidedBy": "usr-steward", "agoMin": 5700, "reworkRef": null, "recheckResult": null, "shippedEvidence": null },
+    { "vin": "KMH-NX4-0101", "decision": "REWORK", "cause": "통합 제어기 장착 재작업 지시", "decidedBy": "usr-steward", "agoMin": 5600, "reworkRef": "RW-2026-1029", "recheckResult": null, "shippedEvidence": null }
+  ],
+  "installs": [
+    { "installId": "INS-0001", "vin": "KMH-GN7-0001", "stage": "DOWNLOADED", "agoMin": 300, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0001", "vin": "KMH-GN7-0001", "stage": "READY", "agoMin": 200, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0001", "vin": "KMH-GN7-0001", "stage": "INSTALLING", "agoMin": 190, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0001", "vin": "KMH-GN7-0001", "stage": "INSTALLED", "agoMin": 150, "campaignId": "OTA-SW-2026-11", "manifest": { "ecus": [{ "ecuPno": "99211-GN700", "swId": "SW-HDA2-APP", "version": "4.1.0" }] } },
+    { "installId": "INS-0002", "vin": "KMH-NX4-0002", "stage": "DOWNLOADED", "agoMin": 60, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0002", "vin": "KMH-NX4-0002", "stage": "READY", "agoMin": 30, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0002", "vin": "KMH-NX4-0002", "stage": "DEFERRED", "agoMin": 20, "campaignId": "OTA-SW-2026-11", "deferredReason": "POWER" },
+    { "installId": "INS-0003", "vin": "KMH-NX4-0001", "stage": "READY", "agoMin": 100, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0003", "vin": "KMH-NX4-0001", "stage": "INSTALLING", "agoMin": 99, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0003", "vin": "KMH-NX4-0001", "stage": "FAILED", "agoMin": 80, "campaignId": "OTA-SW-2026-11", "failureKind": "VERIFY" },
+    { "installId": "INS-0003", "vin": "KMH-NX4-0001", "stage": "RECOVERING", "agoMin": 79, "campaignId": "OTA-SW-2026-11", "recoveryResult": "FAILED" },
+    { "installId": "INS-0003", "vin": "KMH-NX4-0001", "stage": "SAFE_STATE_HELD", "agoMin": 78, "campaignId": "OTA-SW-2026-11", "safeState": { "reachedAgoMin": 78, "basis": "이전 이미지 손상 — 복구 불가, 정지 유지" } },
+    { "installId": "INS-0004", "vin": "ego-01", "stage": "NOT_STARTED", "agoMin": 10, "campaignId": "OTA-SW-2026-11", "schedule": { "fromInMin": 120, "toInMin": 240, "estDurationMin": 25, "driveRestriction": true } },
+    { "installId": "INS-0005", "vin": "KMH-NX4-0101", "stage": "DOWNLOADED", "agoMin": 30, "campaignId": "OTA-SW-2026-11" },
+    { "installId": "INS-0006", "vin": "KMH-NX4-0003", "stage": "FAILED", "agoMin": 400, "campaignId": "OTA-SW-2026-11", "failureKind": "LINK" },
+    { "installId": "INS-0007", "vin": "KMH-NX4-0101", "stage": "FAILED", "agoMin": 900, "campaignId": "OTA-SW-2026-10", "failureKind": "POWER" }
+  ]
+}

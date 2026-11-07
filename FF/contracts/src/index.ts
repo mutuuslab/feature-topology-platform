@@ -18,3 +18,6 @@ export * from './rules/relation-types';
 export * from './schemas/trace-link';
 export * from './rules/trace-link';
 export * from './rules/ads-p5';
+// 차량 서명 메시지(FFV1-MSG)·Lake 중계 기록·검증 결과·시험 벡터(TL-M01) — 서버·도구만
+export * from './schemas/vehicle-message';
+export * from './schemas/vehicle-message.vectors';

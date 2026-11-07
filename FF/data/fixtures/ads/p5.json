@@ -39,9 +39,9 @@
     }
   ],
   "eolChecks": [
-    { "vin": "KMH-NX4-0001", "decision": "HOLD", "cause": "전방 카메라(95790-NX300) Rev.B 장착 — 주문 Rev.C", "decidedBy": "usr-bom", "agoMin": 4300, "reworkRef": null, "recheckResult": null, "shippedEvidence": null },
-    { "vin": "KMH-NX4-0101", "decision": "HOLD", "cause": "통합 제어기(99211-NX400) 미장착", "decidedBy": "usr-bom", "agoMin": 5700, "reworkRef": null, "recheckResult": null, "shippedEvidence": null },
-    { "vin": "KMH-NX4-0101", "decision": "REWORK", "cause": "통합 제어기 장착 재작업 지시", "decidedBy": "usr-bom", "agoMin": 5600, "reworkRef": "RW-2026-1029", "recheckResult": null, "shippedEvidence": null }
+    { "vin": "KMH-NX4-0001", "decision": "HOLD", "cause": "전방 카메라(95790-NX300) Rev.B 장착 — 주문 Rev.C", "decidedBy": "usr-steward", "agoMin": 4300, "reworkRef": null, "recheckResult": null, "shippedEvidence": null },
+    { "vin": "KMH-NX4-0101", "decision": "HOLD", "cause": "통합 제어기(99211-NX400) 미장착", "decidedBy": "usr-steward", "agoMin": 5700, "reworkRef": null, "recheckResult": null, "shippedEvidence": null },
+    { "vin": "KMH-NX4-0101", "decision": "REWORK", "cause": "통합 제어기 장착 재작업 지시", "decidedBy": "usr-steward", "agoMin": 5600, "reworkRef": "RW-2026-1029", "recheckResult": null, "shippedEvidence": null }
   ],
   "installs": [
     { "installId": "INS-0001", "vin": "KMH-GN7-0001", "stage": "DOWNLOADED", "agoMin": 300, "campaignId": "OTA-SW-2026-11" },

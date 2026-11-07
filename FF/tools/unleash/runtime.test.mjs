@@ -4,7 +4,7 @@ import { createServer } from 'node:net';
 import { readFileSync, mkdtempSync, writeFileSync, rmSync, mkdirSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { portsOf, assertFree, redactor, runRuntime } from './runtime.mjs';
+import { portsOf, assertFree, redactor, runRuntime, writeSupervisorLock, ensureSecrets, prepareSecrets } from './runtime.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -106,4 +106,49 @@ test('native startup can be cancelled before FF readiness and stops its private 
   } finally {
     if (child.exitCode === null) { child.stdin.write('stop\n'); await Promise.race([exited, new Promise((r) => { const timer = setTimeout(r, 30000); timer.unref(); })]); if (child.exitCode === null) child.kill(); }
   }
+});
+
+// CodeQL #55~#59(js/file-system-race) 회귀 — 잠금·비밀 파일은 한 번에 만들고(wx), 갱신은 임시 파일 + rename 한 번, 권한 제한은 비밀 생성 앞
+test('supervisor lock is created and written through one exclusive descriptor', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ff-ul-lock-')), lock = join(dir, 'supervisor.lock');
+  try {
+    writeSupervisorLock(lock, { pid: 1, startedAt: 'x', ports: { ff: 1 } });
+    assert.deepEqual(JSON.parse(readFileSync(lock, 'utf8')), { pid: 1, startedAt: 'x', ports: { ff: 1 } });
+    assert.throws(() => writeSupervisorLock(lock, { pid: 2 }), /EEXIST/);
+    assert.equal(JSON.parse(readFileSync(lock, 'utf8')).pid, 1, '다른 감독자가 만든 잠금을 덮어쓰지 않는다');
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+test('secrets are created exclusively once with every key and legacy files are completed in one atomic write', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ff-ul-secret-')), path = join(dir, 'secrets.json');
+  try {
+    const s = ensureSecrets(path);
+    for (const k of ['owner', 'ff', 'unleash', 'admin', 'backend', 'frontend', 'adminPassword', 'vehicleRoot', 'kek']) assert.ok(s[k], `${k} 생성`);
+    assert.deepEqual(JSON.parse(readFileSync(path, 'utf8')), s);
+    assert.deepEqual(ensureSecrets(path), s, '이미 있는 비밀은 그대로 읽는다(다시 만들지 않음)');
+    const legacy = { ...s }; delete legacy.vehicleRoot; delete legacy.kek;
+    writeFileSync(path, JSON.stringify(legacy));
+    const done = ensureSecrets(path);
+    assert.equal(done.owner, s.owner, '기존 키 보존');
+    assert.ok(done.vehicleRoot && done.kek, '빠진 키만 채운다');
+    assert.deepEqual(JSON.parse(readFileSync(path, 'utf8')), done);
+    assert.deepEqual(readdirSync(dir), ['secrets.json'], '임시 파일이 남지 않는다');
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+test('windows data directory is restricted before the secret file exists', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ff-ul-acl-')), path = join(dir, 'secrets.json');
+  const calls = [];
+  const run = (cmd, args) => {
+    calls.push({ cmd, args, secretExists: existsSync(path) });
+    return cmd === 'whoami.exe' ? { status: 0, stdout: '"HOST-PC/user","S-1-5-21-1-2-3-1001"' } : { status: 0 };
+  };
+  try {
+    prepareSecrets(dir, { platform: 'win32', run });
+    assert.deepEqual(calls.map((c) => c.cmd), ['whoami.exe', 'icacls.exe']);
+    assert.equal(calls[1].secretExists, false, 'icacls가 비밀 생성보다 먼저');
+    assert.ok(calls[1].args.includes('*S-1-5-21-1-2-3-1001:(OI)(CI)F'));
+    assert.ok(existsSync(path));
+    rmSync(path);
+    assert.throws(() => prepareSecrets(dir, { platform: 'win32', run: (cmd) => (cmd === 'whoami.exe' ? { status: 0, stdout: '' } : { status: 0 }) }), /restrict/);
+    assert.equal(existsSync(path), false, '권한 제한에 실패하면 비밀을 만들지 않는다');
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

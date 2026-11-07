@@ -8,7 +8,8 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { compat as T } from '../../copy/ads-config';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, PageHeader, Panel, Select, Tabs, type KeyMessageSpec } from '../../design';
-import { BlockedAction, FreshnessChip, StageCounts, UnknownMark, VerdictReason, type SegTone, type VerdictTone } from '../../design/ads';
+import { BlockedAction, StageCounts, UnknownMark, VerdictReason, type SegTone, type VerdictTone } from '../../design/ads';
+import { FreshnessChip } from '../../design/freshness';
 import { usePermission } from '../shared';
 import './ads-config.css';
 

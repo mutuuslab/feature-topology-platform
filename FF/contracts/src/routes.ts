@@ -446,7 +446,6 @@ export const ROUTES: RouteDef[] = [
   { name: 'adsClassification', method: 'GET', path: '/api/features/:id/versions/:ver/classification', summary: 'Feature ADS 분류', component: 'D01-01' },
   { name: 'adsUnclassified', method: 'GET', path: '/api/classification/unclassified', summary: '미분류 Feature', component: 'D01-01' },
   { name: 'adsMarketBaselines', method: 'GET', path: '/api/market-baselines', summary: '시장 기준선', component: 'D01-01', query: ['featureId', 'version'] },
-  { name: 'adsPolicyExpansion', method: 'GET', path: '/api/policies/:id/expansion', summary: '확대 판정', component: 'D01-08' },
   // 장애·VOC(D04-05)
   { name: 'incidents', method: 'GET', path: '/api/incidents', summary: '현장 장애·VOC 이력', component: 'D04-05', query: ['status', 'featureId', 'source'] },
   { name: 'createIncident', method: 'POST', path: '/api/incidents', summary: '장애·VOC 접수 — SOTIF 트리거면 이상 징후로 (FFG-SOT-003)', component: 'D04-05', roles: ['OPERATOR', 'SYSTEM'], body: CreateIncidentBody },
@@ -563,8 +562,9 @@ export const ROUTES: RouteDef[] = [
   { name: 'featureHealthFinding', method: 'GET', path: '/api/feature-health/findings/:id', summary: '점검 결과 상세', component: 'D04-03' },
   { name: 'moveFinding', method: 'POST', path: '/api/feature-health/findings/:id/transition', summary: '점검 결과 상태 이동', component: 'D04-03', roles: ['OPERATOR', 'OPS_LEAD', 'SAFETY_OFFICER', 'FEATURE_AUTHOR', 'RELEASE_MANAGER', 'SECURITY_OFFICER'], body: FindingTransitionBody },
   { name: 'featureOpsMetrics', method: 'GET', path: '/api/features/:id/ops-metrics', summary: 'Feature 운영 지표', component: 'D04-03' },
+  // 확대 판정(통합 D-INT-4) — Canary 관측·축별 근거를 judgeExpansion 하나로, 단계 조정 거부와 같은 판정
+  { name: 'policyExpansion', method: 'GET', path: '/api/policies/:id/expansion', summary: '확대 판정 — Canary 관측·축별 근거', component: 'D01-08' },
   { name: 'canaryOverview', method: 'GET', path: '/api/canary', summary: 'Canary 관측 목록', component: 'D01-08' },
-  { name: 'policyCanary', method: 'GET', path: '/api/policies/:id/canary', summary: '정책 Canary 관측', component: 'D01-08' },
   { name: 'registerAbortCriteria', method: 'PUT', path: '/api/policies/:id/abort-criteria', summary: '중단 기준 사전 등록', component: 'D01-08', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: AbortCriteriaBody },
   { name: 'collectionPolicies', method: 'GET', path: '/api/collection-policies', summary: '수집 정책', component: 'D04-03' },
 ];

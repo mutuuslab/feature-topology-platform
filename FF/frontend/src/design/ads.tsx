@@ -2,6 +2,7 @@
 // 화면에서 직접 가져온다(import from '../../design/ads') — 첫 화면 묶음에 들어가지 않게 barrel(index.ts)에 넣지 않는다.
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { ads } from '../copy/ads';
+import { fmtAt } from './freshness';
 import { StatusGlyph } from './icons';
 import { Button } from './primitives';
 import './ads.css';
@@ -21,56 +22,8 @@ export function UnknownMark({ kind, reason }: { kind: UnknownKind; reason?: Reac
   );
 }
 
-export type Freshness = 'FRESH' | 'DELAYED' | 'OFFLINE' | 'UNOBSERVED';
-
-/** 상대 시간(분·시간·일 전) — 화면 공통 */
-export function relAgo(at: string | null | undefined, now: number = Date.now()): string {
-  if (!at) return '—';
-  const ms = Math.max(0, now - Date.parse(at));
-  const m = Math.round(ms / 60_000);
-  if (m < 1) return '방금';
-  if (m < 60) return `${m}분 전`;
-  const h = Math.round(m / 60);
-  if (h < 48) return `${h}시간 전`;
-  return `${Math.round(h / 24)}일 전`;
-}
-
-/** 절대 시각(KST, 월-일 시:분) */
-export function fmtAt(at: string | null | undefined): string {
-  if (!at) return '—';
-  const d = new Date(Date.parse(at) + 9 * 3600_000).toISOString();
-  return `${d.slice(5, 10)} ${d.slice(11, 16)}`;
-}
-
-/** 마지막 관측 — 상대+절대 시각과 기준 시간을 글자로(title 아님). 모든 마지막 관측 표시는 이 부품 하나 */
-export function FreshnessChip({
-  state,
-  observedAt,
-  staleAfterMs,
-  now,
-  note,
-}: {
-  state: Freshness;
-  observedAt?: string | null;
-  staleAfterMs?: number | null;
-  now?: number;
-  note?: ReactNode;
-}) {
-  const glyph = state === 'FRESH' ? 'PASS' : state === 'DELAYED' ? 'REVIEW' : state === 'OFFLINE' ? 'FAIL' : 'UNJUDGED';
-  return (
-    <span className="ads-fresh" data-freshness={state}>
-      <span className="ads-fresh__state">
-        <StatusGlyph kind={glyph} />
-        {U.freshness[state]}
-      </span>
-      <span className="ads-fresh__at">
-        {observedAt ? `${U.freshness.ago(relAgo(observedAt, now))} · ${fmtAt(observedAt)}` : U.freshness.never}
-        {staleAfterMs ? ` · ${U.freshness.basis(Math.round(staleAfterMs / 60_000))}` : ''}
-      </span>
-      {note ? <span className="ads-fresh__note">{note}</span> : null}
-    </span>
-  );
-}
+// 상대·절대 시각은 신선도 칩과 같은 함수(design/freshness) — 마지막 관측 표시는 FreshnessChip 하나(통합 D-INT-4)
+export { fmtAt, relAgo } from './freshness';
 
 export type SegTone = 'ok' | 'warn' | 'danger' | 'neutral' | 'unknown';
 export interface Segment {

@@ -38,11 +38,17 @@ test('운영 점검 허브 → 점검 결과 상세 — 조치 필요·기한 �
 test('정책 Canary 관측 — 사전 등록 중단 기준을 넘은 정책은 확대 중단, 모델 점수는 권고', async ({ page }) => {
   await asRole(page, 'coordinator');
   await page.goto('/policies/POL-00002');
-  const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Canary 관측' }) });
+  // 확대 판정 패널 하나(통합 D-INT-4) — Canary 관측은 그 안의 한 영역
+  const panel = page.locator('section[aria-labelledby="expansion-h"]');
+  await expect(panel.getByRole('heading', { name: 'Canary 관측' })).toBeVisible();
   await expect(panel.locator('[data-canary-verdict]')).toHaveAttribute('data-canary-verdict', 'ABORT');
   await expect(panel).toContainText('확대 중단');
   await expect(panel).toContainText('모델 점수는 권고입니다');
   await expect(panel.getByRole('img')).toHaveCount(3);
+  // 같은 패널에 축별 근거(ADS-UI11) — 가정값 근거는 알림, 패널은 하나
+  await expect(panel).toContainText('차량 보고 Active');
+  await expect(panel).toContainText('알림 — 가정값 근거라 막지 않습니다');
+  await expect(page.getByRole('heading', { name: '확대 판정' })).toHaveCount(1);
 });
 
 test('Data Lake 연계 — 지연 계약, 모델 사용 승인은 서로 다른 두 사람(운영 리더가 두 번째)', async ({ page }) => {

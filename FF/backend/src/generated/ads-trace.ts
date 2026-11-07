@@ -432,8 +432,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/rollout-stage.ts:57",
-     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:45"
+     "contracts/src/rules/rollout-stage.ts:177",
+     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:43"
     ],
     "tests": [
      "backend/test/d01/rollout-stage.spec.ts",
@@ -575,7 +575,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:39",
+     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:35",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:77",
      "contracts/src/rules/odd-restriction.ts:38"
     ],
@@ -720,8 +720,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/rollout-stage.ts:44",
-     "contracts/src/rules/rollout-stage.ts:67"
+     "contracts/src/rules/rollout-stage.ts:48",
+     "contracts/src/rules/rollout-stage.ts:68"
     ],
     "tests": [
      "backend/test/d01/rollout-stage.spec.ts"
@@ -1799,8 +1799,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/rollout-stage.ts:44",
-     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:47",
+     "contracts/src/rules/rollout-stage.ts:48",
+     "backend/src/domains/d01-policy/staged-rollout/expansion.service.ts:39",
      "contracts/src/rules/ext.ts:63"
     ],
     "tests": [

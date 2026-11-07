@@ -10,7 +10,8 @@ import { AppProvider } from '../store';
 import ImpactScreen from '../screens/governance/Impact';
 import { AdsClassificationPanel } from '../screens/ads/AdsClassification';
 import { KillBulkPreview } from '../screens/ads/BulkPreviews';
-import { ExpansionPanel } from '../screens/ads/ExpansionPanel';
+import { ExpansionPanel } from '../screens/policy/ExpansionPanel';
+import { judgeExpansion } from '../../../contracts/src/rules/rollout-stage';
 import { DefineScreen } from '../screens/home/Inbox';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
@@ -280,8 +281,11 @@ describe('확대 판정 (ADS-UI11)', () => {
       { comboId: 'NX4 PE · Modern · KR', vehicleActive: 700, usageConfirmed: 510, errors: 1, samples: 180, minSamples: 300, windowHours: 72, alert: false },
     ];
     const result = expansionVerdict({ frozen: null, metrics, combos, now });
-    handler = (url) => (url.includes('/expansion') ? { body: { policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', result, vehicleActive: 1820, unconfirmed: 140, policyAllowed: 2400, metrics, combos, frozen: null, assumed: true } } : undefined);
-    mount('viewer', '/x', '/x', <ExpansionPanel policyId="POL-00002" />);
+    // 통합 확대 판정(D-INT-4) — 축별 근거는 evidence, 판정은 서버와 같은 judgeExpansion. 실측 근거면 단계 확대를 막는다
+    const evidence = { policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', result, vehicleActive: 1820, unconfirmed: 140, policyAllowed: 2400, metrics, combos, frozen: null, assumed: false };
+    const view = { policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', canary: null, evidence, decision: judgeExpansion({ canary: null, evidence }) };
+    handler = (url) => (url.includes('/expansion') ? { body: view } : undefined);
+    mount('viewer', '/x', '/x', <ExpansionPanel policyId="POL-00002" deployed />);
     expect(await screen.findByText('확대 보류')).toBeTruthy();
     expect(screen.getByText('감시 지표가 2시간 지연')).toBeTruthy();
     expect(screen.getByText('1,820대')).toBeTruthy();
@@ -292,12 +296,32 @@ describe('확대 판정 (ADS-UI11)', () => {
     expect((document.querySelector('.adc-combos') as HTMLDetailsElement).open).toBe(true);
     expect(screen.getByText('표본 부족')).toBeTruthy();
     expect(screen.getByText('동결·해제·확대는 Feature 출시 담당자·운영 리더 역할이 할 수 있습니다.')).toBeTruthy();
+    expect(document.querySelector('[data-expansion="HOLD"][data-expansion-blocked]')).toBeTruthy();
   });
 
-  it('이 정책에 판정 입력이 없으면(404) 그리지 않는다', async () => {
-    handler = (url) => (url.includes('/expansion') ? { status: 404, body: { message: 'x' } } : undefined);
-    mount('viewer', '/x', '/x', <ExpansionPanel policyId="POL-00009" />);
+  it('가정값 근거는 판정을 보이되 단계 확대를 막지 않는다 — 막힌 행동 대신 알림', async () => {
+    const now = Date.now();
+    const metrics = [{ key: 'takeoverRate', observedAt: new Date(now - 125 * 60_000).toISOString(), staleAfterMs: 30 * 60_000, value: 0.8, threshold: 2, breached: false }];
+    const combos = [{ comboId: 'NX4 PE · Premium · KR', vehicleActive: 1120, usageConfirmed: 860, errors: 3, samples: 1120, minSamples: 300, windowHours: 72, alert: false }];
+    const evidence = { policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', result: expansionVerdict({ frozen: null, metrics, combos, now }), vehicleActive: 1120, unconfirmed: 0, policyAllowed: 2400, metrics, combos, frozen: null, assumed: true };
+    handler = (url) => (url.includes('/expansion') ? { body: { policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', canary: null, evidence, decision: judgeExpansion({ canary: null, evidence }) } } : undefined);
+    mount('viewer', '/x', '/x', <ExpansionPanel policyId="POL-00002" deployed />);
+    expect(await screen.findByText('확대 보류')).toBeTruthy();
+    expect(screen.getByText('감시 지표가 2시간 지연')).toBeTruthy();
+    expect(document.querySelector('[data-blocked-action]')).toBeNull();
+    expect(screen.getByText('알림 — 가정값 근거라 막지 않습니다')).toBeTruthy();
+    expect(screen.getByText('축별 근거는 가정값입니다 — 실측이 연동되면 같은 판정이 단계 확대를 막습니다.')).toBeTruthy();
+  });
+
+  it('근거가 둘 다 없거나(Canary·축별 근거 null) 정책이 없으면(404) 그리지 않는다', async () => {
+    handler = (url) => (url.includes('/expansion') ? { body: { policyId: 'POL-00009', featureId: 'FEAT-00013', featureVersion: '0.3.0', canary: null, evidence: null, decision: judgeExpansion({ canary: null, evidence: null }) } } : undefined);
+    mount('viewer', '/x', '/x', <ExpansionPanel policyId="POL-00009" deployed />);
     await waitFor(() => expect(calls.some((c) => c.url.includes('/expansion'))).toBe(true));
+    expect(document.querySelector('[data-expansion]')).toBeNull();
+    cleanup();
+    handler = (url) => (url.includes('/expansion') ? { status: 404, body: { message: 'x' } } : undefined);
+    mount('viewer', '/x', '/x', <ExpansionPanel policyId="POL-00010" deployed />);
+    await waitFor(() => expect(calls.some((c) => c.url.includes('POL-00010'))).toBe(true));
     expect(document.querySelector('[data-expansion]')).toBeNull();
   });
 });

@@ -10,7 +10,10 @@ import { FreshnessChip } from '../design/freshness';
 import { FeatureHealthScreen, FindingScreen } from '../screens/ops/FeatureHealth';
 import { CollectionScreen } from '../screens/ops/Collection';
 import { DataLakeScreen } from '../screens/ext/DataLake';
-import { CanaryPanel } from '../screens/policy/CanaryPanel';
+import { ExpansionPanel } from '../screens/policy/ExpansionPanel';
+import { judgeExpansion, type StageCriteriaInput } from '../../../contracts/src/rules/rollout-stage';
+import { stageGuard } from '../screens/policy/expansion-text';
+import { expansionVerdict } from '../../../contracts/src/rules/ads-change';
 import { OpsMetricsTab } from '../screens/features/OpsMetricsTab';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body: unknown } | undefined;
@@ -154,15 +157,70 @@ const OBS: CanaryObservation = {
   risk: { modelId: 'LAKE-M3-DEPLOY-RISK', version: '2.1.0', score: 0.71, factors: [{ name: 'Canary 24시간 DTC 증가', weight: 0.41 }], usable: false },
 };
 
-describe('Canary 관측 패널 (TL-UI02·UI03)', () => {
+// 확대 판정 응답(통합 D-INT-4) — 서버와 같은 규칙(judgeExpansion)으로 판정을 만든다
+const VIEW = (canary: CanaryObservation | null, evidence: any = null) => ({
+  policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', canary, evidence,
+  decision: judgeExpansion({
+    canary: canary && { verdict: canary.verdict, lagMinutes: canary.freshness.lagSeconds == null ? null : Math.round(canary.freshness.lagSeconds / 60), breached: canary.breached, registered: canary.criteria.registered },
+    evidence: evidence && { result: evidence.result, metrics: evidence.metrics, frozen: evidence.frozen, assumed: evidence.assumed },
+  }),
+});
+
+describe('확대 판정 패널 — Canary 관측 (TL-UI02·UI03, 통합 D-INT-4)', () => {
   it('규칙 ① 판정 문장, 추이(중단 기준선), 사용 승인 전 모델 점수는 참고 불가', async () => {
-    handler = (url) => (url === '/api/policies/POL-00002/canary' ? { body: { item: OBS } } : undefined);
-    mount('/policies/POL-00002', '/policies/:id', <CanaryPanel policyId="POL-00002" deployed />, 'coordinator');
-    expect(await screen.findByText('DTC 상대위험 1.8 — 확대 중단')).toBeTruthy();
+    handler = (url) => (url === '/api/policies/POL-00002/expansion' ? { body: VIEW(OBS) } : undefined);
+    mount('/policies/POL-00002', '/policies/:id', <ExpansionPanel policyId="POL-00002" deployed />, 'coordinator');
+    expect((await screen.findAllByText('DTC 상대위험 1.8 — 확대 중단')).length).toBe(2); // 판정 머리 사유 + Canary 판정
     expect(screen.getAllByRole('img').length).toBe(3);
     expect(screen.getAllByText('참고 불가 — 사용 승인 전이거나 드리프트').length).toBe(1);
     expect(screen.getByText(/사전 등록 · usr-safety/)).toBeTruthy();
     expect(screen.getByRole('button', { name: '중단 기준 등록' })).toBeTruthy();
+    // 사전 등록한 기준을 넘었으므로 서버가 막는다 — 막힌 행동과 같은 사유
+    expect(document.querySelector('[data-expansion="STOP"][data-expansion-blocked]')).toBeTruthy();
+    expect(screen.getByText('단계 확대는 지금 서버가 막습니다 — 막는 사유 1건')).toBeTruthy();
+    expect(screen.getByText('사전 등록한 중단 기준을 넘어 확대할 수 없습니다. 줄이기·멈추기는 됩니다.')).toBeTruthy();
+  });
+
+  it('패널 하나에 Canary 관측과 축별 근거 — 미등록 기준 초과·가정값 근거는 알림, 신선도 칩은 한 부품', async () => {
+    const now = Date.now();
+    const metrics = [{ key: 'takeoverRate', observedAt: new Date(now - 125 * 60_000).toISOString(), staleAfterMs: 30 * 60_000, value: 0.8, threshold: 2, breached: false }];
+    const combos = [{ comboId: 'NX4 PE · Premium · KR', vehicleActive: 1120, usageConfirmed: 860, errors: 3, samples: 1120, minSamples: 300, windowHours: 72, alert: false }];
+    const evidence = { policyId: 'POL-00002', featureId: 'FEAT-00022', featureVersion: '1.0.0', result: expansionVerdict({ frozen: null, metrics, combos, now }), vehicleActive: 1120, unconfirmed: 140, policyAllowed: 2400, metrics, combos, frozen: null, assumed: true };
+    const obs = { ...OBS, criteria: { ...OBS.criteria, registered: false, registeredBy: null, registeredAt: null } };
+    handler = (url) => (url === '/api/policies/POL-00002/expansion' ? { body: VIEW(obs, evidence) } : undefined);
+    mount('/policies/POL-00002', '/policies/:id', <ExpansionPanel policyId="POL-00002" deployed />, 'coordinator');
+    expect(await screen.findByRole('heading', { name: '확대 판정' })).toBeTruthy();
+    expect(screen.getAllByRole('heading', { name: 'Canary 관측' })).toHaveLength(1);
+    expect(document.querySelectorAll('section[aria-labelledby="expansion-h"]')).toHaveLength(1);
+    expect(document.querySelector('[data-expansion="STOP"]:not([data-expansion-blocked])')).toBeTruthy();
+    expect(screen.getByText('단계 확대는 서버가 막지 않습니다 — 알림 사유를 보고 넓히세요')).toBeTruthy();
+    expect(screen.getByText('알림 — 중단 기준을 사전 등록하면 막습니다')).toBeTruthy();
+    expect(screen.getByText('알림 — 가정값 근거라 막지 않습니다')).toBeTruthy();
+    expect(document.querySelector('[data-blocked-action]')).toBeNull();
+    // 두 근거의 신선도는 같은 칩 — Lake 집계(출처 데이터셋)와 감시 지표(마지막 보고·기준 시간)
+    const chips = document.querySelectorAll('.ds-fresh');
+    expect(chips).toHaveLength(2);
+    expect(document.querySelector('.ds-fresh[data-freshness="DELAYED"]')?.textContent).toContain('기준 30분');
+    expect(document.querySelector('.ds-fresh .ds-fresh__src')?.textContent).toBe('gold.canary_5m_kr');
+    expect(screen.getByText('1,120대')).toBeTruthy();
+  });
+
+  it('단계 기준도 같은 판정 — Canary 관측 기간 미달·진행 중 차단은 막는 사유, 효력 범위·관측 시간·열린 이상 징후를 한 패널에', async () => {
+    const stage: StageCriteriaInput = { fClass: 'F3', current: 300, beyondCanary: true, observedMs: 10 * 3600_000, openAnomalies: [], activeKills: ['KILL-00007'] };
+    const ok = { ...OBS, verdict: 'OK' as const, breached: [] };
+    const v = { ...VIEW(ok), decision: judgeExpansion({ canary: { verdict: 'OK', lagMinutes: 2, breached: [], registered: true }, evidence: null, stage }), stage: { fClass: 'F3', current: 300, ceiling: 10000, applies: true, observedMs: 10 * 3600_000, requiredMs: 86_400_000, openAnomalies: [], activeKills: ['KILL-00007'] } };
+    handler = (url) => (url === '/api/policies/POL-00002/expansion' ? { body: v } : undefined);
+    mount('/policies/POL-00002', '/policies/:id', <ExpansionPanel policyId="POL-00002" deployed />, 'coordinator');
+    expect(await screen.findByRole('heading', { name: /단계 기준/ })).toBeTruthy();
+    expect(document.querySelector('[data-expansion="STOP"][data-expansion-blocked]')).toBeTruthy();
+    expect(screen.getByText('단계 확대는 지금 서버가 막습니다 — 막는 사유 2건')).toBeTruthy();
+    expect(screen.getByText('진행 중 차단 — KILL-00007')).toBeTruthy();
+    expect(screen.getByText('Canary 관측 기간 미달 · 10시간 / 24시간')).toBeTruthy();
+    expect(screen.getByText('3% / 승인 100%')).toBeTruthy();
+    expect(screen.getByText('1건 · KILL-00007')).toBeTruthy();
+    // 단계 조정 Drawer — Canary 범위 안(≤ 5%)으로 넓히면 단계 기준은 보지 않는다(서버와 같다), 넘으면 막는다
+    expect(stageGuard(v as never, 500).block).toBeUndefined();
+    expect(stageGuard(v as never, 5000).block).toContain('진행 중 차단 1건');
   });
 });
 

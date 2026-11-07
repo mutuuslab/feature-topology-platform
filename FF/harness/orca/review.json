@@ -365,8 +365,8 @@
       "verdict": "부분",
       "current": "F2 이상은 Canary(≤5%)부터 시작해 24시간 관측·열린 이상 징후·진행 중 차단을 중단 기준으로 확대를 막고 배포자와 확대 승인자를 분리한다.",
       "evidence": [
-        "contracts/src/rules/rollout-stage.ts:57",
-        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:47",
+        "contracts/src/rules/rollout-stage.ts:177",
+        "backend/src/domains/d01-policy/staged-rollout/expansion.service.ts:39",
         "contracts/src/rules/ext.ts:88"
       ],
       "tests": [

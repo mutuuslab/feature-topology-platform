@@ -27893,6 +27893,314 @@
         }
       }
     },
+    "/api/termination/inhibits": {
+      "get": {
+        "summary": "사건별 종료 차단 집합 — 사건 → Feature → 차량 수·설정·해제 시각, 차량별 남은 사건",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "terminationInhibits",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "incidentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/rescind": {
+      "post": {
+        "summary": "사건 범위 선택 해제 — 이 차단의 사건만(다른 사건 409), 복원 요청·2인 승인 그대로, 다른 사건 차단이 남는 차량",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "rescindKill",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "evidenceRef": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 512
+                  },
+                  "cohort": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 500
+                  },
+                  "resolved": {
+                    "type": "boolean"
+                  },
+                  "causeFixed": {
+                    "type": "boolean"
+                  },
+                  "approverTargets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "maxItems": 6
+                  },
+                  "incidentId": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 60
+                  }
+                },
+                "required": [
+                  "reason",
+                  "evidenceRef",
+                  "cohort",
+                  "incidentId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/incidents/{id}/impact-set": {
+      "get": {
+        "summary": "영향 차량 산정 — 후보·구성 미확인·통신 미수신 3분류, 고정 스냅샷·재평가 이력·확정 영향군·식별 정확도",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "impactSet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/incidents/{id}/impact-set/reevaluate": {
+      "post": {
+        "summary": "영향 차량 재평가 — 구성 기준 시각, 새 스냅샷(이전 불변)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "reevaluateImpactSet",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영 리더, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "configAsOf": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "configAsOf",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/incidents/{id}/impact-set/confirm": {
+      "post": {
+        "summary": "확정 영향군 저장 — 분석 근거 필수, 후보 산정 복사 거부",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "confirmImpactSet",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영 리더 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vins": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 5000
+                  },
+                  "analysisRef": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "calcId": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "vins",
+                  "analysisRef"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/kill-requests/blocked-scope": {
       "get": {
         "summary": "현재 차단 상태인 범위 — Feature에 걸린 차단별 남은 차량(부분 복원 차량 제외), 해제 대상 선택",

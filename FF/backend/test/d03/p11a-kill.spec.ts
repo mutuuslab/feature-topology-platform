@@ -237,3 +237,73 @@ describe('FR-SVS-002-001 비활성화 조건 충족 여부 확인 (자동 비활
     expect((await http().get('/api/kill-intake').expect(200)).body.items).toHaveLength(0);
   });
 });
+
+describe('ADS-BE02 사건 범위 종료 차단·선택 해제 (TC12)', () => {
+  const SAFETY_BODY = { ...BODY, reasonCategory: 'SAFETY', incidentId: 'INC-A-0001' };
+  it('F2 이상 종료 명령은 사건 ID를 담고, 발행 때 차량·Feature·사건별 차단 집합이 생긴다', async () => {
+    const { http } = await boot();
+    const k = await killV2(http, SAFETY_BODY);
+    expect(k.incidentId).toBe('INC-A-0001');
+    const env = (await http().get(`/api/kill-requests/${k.killId}/envelopes`).expect(200)).body;
+    expect(env.commands[0].reason.incident_id).toBe('INC-A-0001');
+    const inh = (await http().get('/api/termination/inhibits?featureId=FEAT-00022').expect(200)).body;
+    expect(inh.incidents).toEqual([expect.objectContaining({ incidentId: 'INC-A-0001', featureId: 'FEAT-00022', killId: k.killId, active: 2, released: 0 })]);
+    expect(inh.vehicles.map((v: { vin: string; incidents: string[] }) => [v.vin, v.incidents])).toEqual([
+      ['ego-01', ['INC-A-0001']],
+      ['lead-01', ['INC-A-0001']],
+    ]);
+  });
+  it('다른 사건은 해제할 수 없다(409) — 지정 사건만 해제하고, 다른 사건 차단이 남은 차량은 해제 뒤에도 차단 유지', async () => {
+    const { http, db } = await boot();
+    const k = await killV2(http, SAFETY_BODY);
+    // 같은 차량에 다른 사건(INC-B)의 종료 차단이 걸려 있다
+    db.run("INSERT INTO termination_inhibit (vin, feature_id, incident_id, kill_id, set_at, set_by) VALUES ('ego-01', 'FEAT-00022', 'INC-B-0002', 'KILL-09999', '2026-10-12T00:00:00.000Z', 'usr-safety')");
+    const rb = { ...(await restoreBody(http, k.killId)), resolved: true, causeFixed: true };
+    const other = await http().post(`/api/kill-requests/${k.killId}/rescind`).set(KILL_REQUESTER).send({ ...rb, incidentId: 'INC-B-0002' }).expect(409);
+    expect(other.body.error.details.code).toBe('OTHER_INCIDENT');
+    const r = (await http().post(`/api/kill-requests/${k.killId}/rescind`).set(KILL_REQUESTER).send({ ...rb, incidentId: 'INC-A-0001' }).expect(201)).body;
+    expect(r.restoreRequest.status).toBe('REQUESTED');
+    expect(r.heldByOther).toEqual([{ vin: 'ego-01', incidents: ['INC-B-0002'] }]);
+    await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(RESTORE_APPROVERS[0]).send({}).expect(201);
+    await http().post(`/api/kill-requests/${k.killId}/restore/approvals`).set(RESTORE_APPROVERS[1]).send({}).expect(201);
+    const inh = (await http().get('/api/termination/inhibits?featureId=FEAT-00022').expect(200)).body;
+    expect(inh.incidents.find((i: { incidentId: string }) => i.incidentId === 'INC-A-0001')).toMatchObject({ active: 0, released: 2 });
+    // ego-01은 다른 사건 차단이 남아 차단 유지, lead-01은 풀림
+    expect(inh.vehicles.map((v: { vin: string; incidents: string[] }) => [v.vin, v.incidents])).toEqual([['ego-01', ['INC-B-0002']]]);
+  });
+});
+
+describe('ADS-BE21 영향 차량 산정 — 후보·구성 미확인·통신 미수신 3분류와 식별 정확도', () => {
+  it('3분류·스냅샷 고정·재평가 이력·확정 집합(근거 필수, 후보 복사 거부)·정확도', async () => {
+    const { http, db } = await boot();
+    const k = await killV2(http, { ...BODY, vins: ['ego-01', 'lead-01', 'KMH-NX4-0003'], reasonCategory: 'SAFETY', incidentId: 'INC-R01-0001' });
+    // 연결 이력이 없는 차량 — 시험에서 KMH-NX4-0003(통신 끊김 차량)의 회신을 지운다
+    db.run("DELETE FROM readback WHERE vin = 'KMH-NX4-0003'");
+    // ego-01·lead-01은 차단 뒤 회신
+    for (const vin of ['ego-01', 'lead-01']) db.run("INSERT INTO readback (publication_id, vin, at, doc) VALUES ('PUB-T', ?, '2026-10-12T02:00:00.000Z', '{}')", vin);
+    // 첫 산정은 차단 발행 때 고정 — 조회는 바꾸지 않는다
+    const s0 = (await http().get('/api/incidents/INC-R01-0001/impact-set').expect(200)).body;
+    expect(s0.current).toMatchObject({ kind: 'CANDIDATE', configAsOf: k.requestedAt });
+    expect(s0.accuracy).toMatchObject({ status: 'UNKNOWN', value: null }); // 확정 영향군이 없으면 판단 불가
+    expect((await http().get('/api/incidents/INC-R01-0001/impact-set').expect(200)).body.history).toHaveLength(1);
+    const SAFETY = actor('usr-safety', 'SAFETY_OFFICER');
+    const re = (configAsOf: string) => http().post('/api/incidents/INC-R01-0001/impact-set/reevaluate').set(SAFETY).send({ configAsOf, reason: '구성 보고 기준 갱신' }).expect(201);
+    // 재평가 — 구성 기준 시각을 회신보다 뒤로: 회신이 오래돼 구성 미확인
+    const s1 = (await re('2026-10-12T03:00:00.000Z')).body;
+    expect(s1.current.counts).toEqual({ CANDIDATE: 0, CONFIG_UNKNOWN: 2, NO_CONTACT: 1 });
+    expect(s1.current.vins.NO_CONTACT).toEqual(['KMH-NX4-0003']);
+    const s2 = (await re(k.requestedAt)).body;
+    expect(s2.current.counts).toEqual({ CANDIDATE: 2, CONFIG_UNKNOWN: 0, NO_CONTACT: 1 });
+    expect(s2.history.map((h: { setId: string }) => h.setId)).toEqual([s0.current.setId, s1.current.setId, s2.current.setId]);
+    expect(s2.history[0].counts).toEqual(s0.current.counts); // 이전 스냅샷 불변
+    // 확정 집합 — 확정자·분석 근거 필수, 후보 산정을 그대로 복사하면 거부
+    await http().post('/api/incidents/INC-R01-0001/impact-set/confirm').set(SAFETY).send({ vins: ['ego-01'] }).expect(400);
+    const copy = await http().post('/api/incidents/INC-R01-0001/impact-set/confirm').set(SAFETY).send({ vins: ['ego-01'], analysisRef: 'RCA-0001', calcId: s2.current.calcId }).expect(409);
+    expect(copy.body.error.details.code).toBe('COPIED_CANDIDATE');
+    const c = (await http().post('/api/incidents/INC-R01-0001/impact-set/confirm').set(SAFETY).send({ vins: ['ego-01'], analysisRef: 'RCA-0001' }).expect(201)).body;
+    expect(c.confirmed).toMatchObject({ kind: 'CONFIRMED', confirmedBy: 'usr-safety', analysisRef: 'RCA-0001', vins: ['ego-01'] });
+    // 정확도 — 확정 때 본 후보 산정(2대) 중 확정 영향 1대
+    expect(c.accuracy).toMatchObject({ status: 'KNOWN', value: 0.5, candidates: 2, confirmed: 1, matched: 1 });
+    await http().get('/api/incidents/INC-NONE-0001/impact-set').expect(404);
+  });
+});

@@ -45,7 +45,7 @@ import { ProcedureCompleteBody } from './schemas/procedure';
 import { AddCostFeatureBody, COST_MONEY_ROLES, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostActualBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
 
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
-import { KillIntakeBody, KillIntakeDismissBody } from './rules/kill-intake';
+import { ImpactConfirmBody, ImpactReevaluateBody, KillIntakeBody, KillIntakeDismissBody, RescindBody } from './rules/kill-intake';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
 import { OtaEvent, OtaJobActionBody } from './rules/ota';
@@ -645,6 +645,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'killIntakes', method: 'GET', path: '/api/kill-intake', summary: '차단 요청 접수 목록 — 외부 시스템·이상 징후 조건 충족(중단 필요), 검토 대기·옮김·닫음', component: 'D03-03', query: ['status'] },
   { name: 'dismissKillIntake', method: 'POST', path: '/api/kill-intake/:id/dismiss', summary: '차단 요청 접수 닫기(사유)', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillIntakeDismissBody },
   { name: 'deactivationChecks', method: 'GET', path: '/api/deactivation-checks', summary: '비활성화 조건 확인 기록 — 이상 건마다 조건 넷·미충족 사유·접수', component: 'D03-03', query: ['anomalyId', 'featureId'] },
+  { name: 'terminationInhibits', method: 'GET', path: '/api/termination/inhibits', summary: '사건별 종료 차단 집합 — 사건 → Feature → 차량 수·설정·해제 시각, 차량별 남은 사건', component: 'D03-03', query: ['featureId', 'incidentId'] },
+  { name: 'rescindKill', method: 'POST', path: '/api/kill-requests/:id/rescind', summary: '사건 범위 선택 해제 — 이 차단의 사건만(다른 사건 409), 복원 요청·2인 승인 그대로, 다른 사건 차단이 남는 차량', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: RescindBody },
+  { name: 'impactSet', method: 'GET', path: '/api/incidents/:id/impact-set', summary: '영향 차량 산정 — 후보·구성 미확인·통신 미수신 3분류, 고정 스냅샷·재평가 이력·확정 영향군·식별 정확도', component: 'D03-03' },
+  { name: 'reevaluateImpactSet', method: 'POST', path: '/api/incidents/:id/impact-set/reevaluate', summary: '영향 차량 재평가 — 구성 기준 시각, 새 스냅샷(이전 불변)', component: 'D03-03', roles: ['SAFETY_OFFICER', 'OPS_LEAD', 'OPERATOR'], body: ImpactReevaluateBody },
+  { name: 'confirmImpactSet', method: 'POST', path: '/api/incidents/:id/impact-set/confirm', summary: '확정 영향군 저장 — 분석 근거 필수, 후보 산정 복사 거부', component: 'D03-03', roles: ['SAFETY_OFFICER', 'OPS_LEAD'], body: ImpactConfirmBody },
   { name: 'killBlockedScope', method: 'GET', path: '/api/kill-requests/blocked-scope', summary: '현재 차단 상태인 범위 — Feature에 걸린 차단별 남은 차량(부분 복원 차량 제외), 해제 대상 선택', component: 'D03-04', query: ['featureId'], requiredQuery: ['featureId'], sample: { featureId: 'FEAT-00022' } },
 ];
 

@@ -3,13 +3,14 @@
 import { Module } from '@nestjs/common';
 import { D01PolicyModule } from './d01-policy/d01-policy.module';
 import { DeliveryModule } from './delivery.module';
+import { ImpactSetController, ImpactSetService, RescindController, TerminationController, TerminationService } from './d03-safety/kill-switch/termination.service';
 import { DeactivationCheckController, DeactivationCheckService, ExtKillIntakeController, KillIntakeController, KillIntakeService } from './d03-safety/kill-switch/kill-intake.service';
 
 
 @Module({
   imports: [D01PolicyModule, DeliveryModule],
-  controllers: [ExtKillIntakeController, KillIntakeController, DeactivationCheckController],
-  providers: [KillIntakeService, DeactivationCheckService],
+  controllers: [ExtKillIntakeController, KillIntakeController, DeactivationCheckController, TerminationController, RescindController, ImpactSetController],
+  providers: [KillIntakeService, DeactivationCheckService, TerminationService, ImpactSetService],
   exports: [KillIntakeService],
 })
 export class KillResponseModule {}

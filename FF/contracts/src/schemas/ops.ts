@@ -212,6 +212,10 @@ export const KillRequestSchema = z.object({
   releaseReason: z.string().nullable(),
   restorePublicationId: z.string().nullable(),
   anomalyId: z.string().nullable().default(null),
+  /** 차단 요청 접수에서 옮긴 요청(P11a) */
+  intakeId: z.string().nullable().optional(),
+  /** 종료 사건(ADS-BE02) — 차단 집합·선택 해제의 단위. 이전 행에는 없다(차단 ID가 사건) */
+  incidentId: z.string().nullable().optional(),
   /** 요청 때 쓴 차단 대상 범위(P11a) — 이전 행에는 없다 */
   scope: KillScopeFilter.nullable().optional(),
 });
@@ -243,6 +247,16 @@ export const KillCreateBody = z
     anomalyId: z
       .string()
       .regex(/^ANM-\d{5}$/)
+      .optional(),
+    /** 차단 요청 접수(외부 시스템·이상 징후 조건 충족)에서 옮긴 요청 — 접수는 '차단 요청으로 옮김'이 된다(P11a) */
+    intakeId: z
+      .string()
+      .regex(/^KIN-\d{5}$/)
+      .optional(),
+    /** 종료 사건 ID(ADS-BE02) — 현장 장애(INC-)·이상 건(ANM-)·리콜 등. 비우면 이상 건, 그것도 없으면 이 차단 자체가 사건 */
+    incidentId: z
+      .string()
+      .regex(/^[A-Z][A-Z0-9]{1,9}-[A-Z0-9-]{3,40}$/)
       .optional(),
   })
   .strict();

@@ -684,7 +684,7 @@ export class DemoActivitySeeder implements OnApplicationBootstrap, OnApplication
     if (k.status !== 'ACTIVE') throw new Error(`데모 차단이 실행되지 않았습니다: ${k.status}`);
     const evidence = this.svc(GateRepo).allEvidence().find((e) => e.featureId === k.featureId && e.inputResult === 'PASS');
     if (!evidence) throw new Error('데모 복원 검토의 PASS 근거가 없습니다');
-    this.svc(RestoreService).request(operator, k.killId, RestoreRequestBody.parse({ reason: '데모 — 원인 조치 근거 검토 뒤 1대 Canary 복원 요청', evidenceRef: evidence.evidenceRef, cohort: k.vins }));
+    this.svc(RestoreService).request(operator, k.killId, RestoreRequestBody.parse({ reason: '데모 — 원인 조치 근거 검토 뒤 1대 Canary 복원 요청', evidenceRef: evidence.evidenceRef, cohort: k.vins, resolved: true, causeFixed: true }));
     return `${k.killId} ACTIVE, safety2·opslead 복원 승인 대기`;
   }
 

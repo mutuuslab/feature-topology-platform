@@ -45,6 +45,7 @@ import { ProcedureCompleteBody } from './schemas/procedure';
 import { AddCostFeatureBody, COST_MONEY_ROLES, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostActualBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
 
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
+import { KillIntakeBody, KillIntakeDismissBody } from './rules/kill-intake';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
 import { OtaEvent, OtaJobActionBody } from './rules/ota';
@@ -639,6 +640,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
   // 긴급 차단·해제·사건 범위(P11a)
   { name: 'killParties', method: 'GET', path: '/api/kill-requests/:id/parties', summary: '차단 관련 담당자 — Feature Owner·요청자·승인자·협력사(구현 SW 납품 정보)', component: 'D03-03' },
+  { name: 'extKillIntake', method: 'POST', path: '/api/ext/v1/kill-intake', summary: '외부 시스템 차단 요청 접수(API 키) — 실행하지 않고 사람의 차단 요청·2인 승인 대기열로. 접수 ID·상태를 돌려준다', component: 'D03-03', roles: ['SYSTEM'], body: KillIntakeBody },
+  { name: 'extKillIntakeStatus', method: 'GET', path: '/api/ext/v1/kill-intake/:id', summary: '차단 요청 접수 상태 — 옮긴 차단 ID·상태·승인 수(외부 시스템 결과 조회)', component: 'D03-03', roles: ['SYSTEM', 'AUDITOR'] },
+  { name: 'killIntakes', method: 'GET', path: '/api/kill-intake', summary: '차단 요청 접수 목록 — 외부 시스템·이상 징후 조건 충족(중단 필요), 검토 대기·옮김·닫음', component: 'D03-03', query: ['status'] },
+  { name: 'dismissKillIntake', method: 'POST', path: '/api/kill-intake/:id/dismiss', summary: '차단 요청 접수 닫기(사유)', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillIntakeDismissBody },
+  { name: 'deactivationChecks', method: 'GET', path: '/api/deactivation-checks', summary: '비활성화 조건 확인 기록 — 이상 건마다 조건 넷·미충족 사유·접수', component: 'D03-03', query: ['anomalyId', 'featureId'] },
   { name: 'killBlockedScope', method: 'GET', path: '/api/kill-requests/blocked-scope', summary: '현재 차단 상태인 범위 — Feature에 걸린 차단별 남은 차량(부분 복원 차량 제외), 해제 대상 선택', component: 'D03-04', query: ['featureId'], requiredQuery: ['featureId'], sample: { featureId: 'FEAT-00022' } },
 ];
 

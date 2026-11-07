@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { DB, type Db } from '../../src/kernel/db';
 import { KillRepo } from '../../src/domains/d03-safety/kill-switch/kill.repo';
+import { AnomalyService } from '../../src/domains/d06-qsec/anomaly-response/anomaly.service';
 import { actor, bootApp, killV2, RESTORE_APPROVERS, restoreBody, KILL_REQUESTER } from '../helpers';
 
 // 가상검증 실행기(가짜 CARLA) — 정책 검증 GO에 시나리오 Evidence가 필요하다
@@ -167,5 +168,72 @@ describe('FR-KSW-003-002 관련 담당자 산출', () => {
     expect(p.suppliers.length).toBeGreaterThan(0);
     expect(p.suppliers[0]).toMatchObject({ supplier: expect.any(String), swId: expect.any(String), version: expect.any(String) });
     expect((await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.parties).toEqual(p);
+  });
+});
+
+describe('FR-AGW-001-002 외부 차단 요청 접수 (결정 D1 a — 실행 없음, 사람 승인 대기열로)', () => {
+  it('API 키(SYSTEM)로 접수 → 차단 요청은 생기지 않는다, 운영자가 차단 요청으로 옮기면 상태 조회에 차단 ID·상태가 보인다', async () => {
+    const { http, db } = await boot();
+    const CSM = actor('usr-csm', 'SECURITY_OFFICER');
+    const key = (await http().post('/api/api-keys').set(CSM).send({ name: '품질 관제 연계', system: '품질 관제 시스템', role: 'SYSTEM', reason: '차단 요청 접수' }).expect(201)).body.secret as string;
+    const K = { 'X-Api-Key': key };
+    const body = { featureId: 'FEAT-00022', featureVersion: '1.0.0', reasonCategory: 'SAFETY', reasonCode: 'DIST_EST_BIAS', reason: '현장 결함 다발', vins: ['ego-01', 'lead-01'], externalRef: 'QMS-7781' };
+    // 사람 역할·키 없음은 이 창구를 못 쓴다
+    await http().post('/api/ext/v1/kill-intake').set(KILL_REQUESTER).send(body).expect(403);
+    const before = (await http().get('/api/kill-requests').expect(200)).body.items.length;
+    const r = (await http().post('/api/ext/v1/kill-intake').set(K).send(body).expect(201)).body;
+    expect(r).toMatchObject({ intakeId: 'KIN-00001', status: 'RECEIVED', source: 'EXTERNAL', receivedBy: 'apikey:AK-0001', externalRef: 'QMS-7781', killId: null });
+    expect((await http().get('/api/kill-requests').expect(200)).body.items.length).toBe(before); // 실행·요청 생성 없음
+    expect(db.get<{ action: string; actor_id: string }>("SELECT action, actor_id FROM audit WHERE action = 'KILL_INTAKE' ORDER BY id DESC LIMIT 1")).toMatchObject({ actor_id: 'apikey:AK-0001' });
+    // 없는 Feature·범위 밖 차량은 접수하지 않는다
+    await http().post('/api/ext/v1/kill-intake').set(K).send({ ...body, featureId: 'FEAT-09999' }).expect(404);
+    await http().post('/api/ext/v1/kill-intake').set(K).send({ ...body, vins: ['NO-SUCH'] }).expect(400);
+    // 운영자가 차단 요청으로 옮긴다(type-to-confirm·사유 그대로) — 이후는 2인 승인
+    const k = (await http().post('/api/kill-requests').set(KILL_REQUESTER).send({ ...BODY, reasonCategory: 'SAFETY', containmentJustification: '원인 분석 전 봉쇄', intakeId: r.intakeId }).expect(201)).body;
+    expect(k.intakeId).toBe('KIN-00001');
+    const st = (await http().get(`/api/ext/v1/kill-intake/${r.intakeId}`).set(K).expect(200)).body;
+    expect(st).toMatchObject({ status: 'CONVERTED', killId: k.killId, killStatus: 'REQUESTED', externalRef: 'QMS-7781' });
+    // 이미 옮긴 접수는 다시 쓸 수 없다
+    await http().post('/api/kill-requests').set(KILL_REQUESTER).send({ ...BODY, reasonCategory: 'SAFETY', containmentJustification: '봉쇄', intakeId: r.intakeId }).expect(409);
+  });
+  it('운영자가 사유와 함께 닫는다(DISMISSED) — 목록·상태에 남는다', async () => {
+    const { http } = await boot();
+    const key = (await http().post('/api/api-keys').set(actor('usr-csm', 'SECURITY_OFFICER')).send({ name: '연계', system: '외부', role: 'SYSTEM', reason: '접수' }).expect(201)).body.secret as string;
+    const r = (await http().post('/api/ext/v1/kill-intake').set({ 'X-Api-Key': key }).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', reason: '오탐 가능' }).expect(201)).body;
+    await http().post(`/api/kill-intake/${r.intakeId}/dismiss`).set(actor('lee.approver', 'FEATURE_APPROVER')).send({ reason: '오탐' }).expect(403);
+    const d = (await http().post(`/api/kill-intake/${r.intakeId}/dismiss`).set(KILL_REQUESTER).send({ reason: '중복 보고 — 오탐 확인' }).expect(201)).body;
+    expect(d).toMatchObject({ status: 'DISMISSED', closedBy: 'usr-ops', closeReason: '중복 보고 — 오탐 확인' });
+    expect((await http().get('/api/kill-intake?status=DISMISSED').expect(200)).body.items.map((x: { intakeId: string }) => x.intakeId)).toEqual([r.intakeId]);
+    await http().post(`/api/kill-intake/${r.intakeId}/dismiss`).set(KILL_REQUESTER).send({ reason: '다시' }).expect(409);
+  });
+});
+
+describe('FR-SVS-002-001 비활성화 조건 충족 여부 확인 (자동 비활성화 없음)', () => {
+  it('긴급 차단 권고 이상 → 조건 충족이면 확인 기록 + 중단 필요 접수·알림, 차단은 만들지 않는다', async () => {
+    const { http, get, db } = await boot();
+    get(AnomalyService).signal({ kind: 'FEATURE_FAULT', featureId: 'FEAT-00022', vin: 'ego-01', code: 'DIST_EST_BIAS', severity: 'CRITICAL', at: '2026-10-12T01:00:00.000Z', ref: 't1' } as never);
+    const checks = (await http().get('/api/deactivation-checks?featureId=FEAT-00022').expect(200)).body.items;
+    expect(checks[0]).toMatchObject({ anomalyId: 'ANM-00001', featureId: 'FEAT-00022', met: true, unmet: [], intakeId: 'KIN-00001' });
+    expect(checks[0].conditions.map((c: { id: string; ok: boolean }) => [c.id, c.ok])).toEqual([
+      ['ADVICE_KILL', true],
+      ['REMOTE_ALLOWED', true],
+      ['VEHICLES', true],
+      ['NO_OPEN_KILL', true],
+    ]);
+    const intake = (await http().get('/api/kill-intake').expect(200)).body.items[0];
+    expect(intake).toMatchObject({ intakeId: 'KIN-00001', source: 'ANOMALY', anomalyId: 'ANM-00001', vins: ['ego-01'], status: 'RECEIVED' });
+    expect((await http().get('/api/kill-requests').expect(200)).body.items).toHaveLength(0);
+    expect(db.get<{ n: number }>("SELECT count(*) AS n FROM events WHERE type = 'kill.intake-received'")!.n).toBe(1);
+    // 같은 이상 건이 다시 격상돼도 접수는 하나 — 두 번째 확인은 '진행 중 접수'로 미충족 기록
+    get(AnomalyService).signal({ kind: 'FEATURE_FAULT', featureId: 'FEAT-00022', vin: 'lead-01', code: 'DIST_EST_BIAS', severity: 'CRITICAL', at: '2026-10-12T01:01:00.000Z', ref: 't2' } as never);
+    expect((await http().get('/api/kill-intake').expect(200)).body.items).toHaveLength(1);
+  });
+  it('미충족이면 실행하지 않고 미충족 사유를 기록한다', async () => {
+    const { http, get } = await boot();
+    get(AnomalyService).signal({ kind: 'FEATURE_FAULT', featureId: 'FEAT-00022', vin: 'ego-01', code: 'MINOR', severity: 'WARNING', at: '2026-10-12T01:00:00.000Z', ref: 't1' } as never);
+    const c = (await http().get('/api/deactivation-checks?anomalyId=ANM-00001').expect(200)).body.items[0];
+    expect(c).toMatchObject({ met: false, intakeId: null });
+    expect(c.unmet[0]).toContain('긴급 차단 권고');
+    expect((await http().get('/api/kill-intake').expect(200)).body.items).toHaveLength(0);
   });
 });

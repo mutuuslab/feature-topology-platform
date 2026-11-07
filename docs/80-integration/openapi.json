@@ -11694,6 +11694,57 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "countries": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "vehicleModels": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "trims": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "upgVcs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "swVersions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      }
+                    },
+                    "additionalProperties": false
+                  },
                   "featureId": {
                     "type": "string",
                     "pattern": "^FEAT-\\d{5}$"
@@ -11750,6 +11801,14 @@
                   "anomalyId": {
                     "type": "string",
                     "pattern": "^ANM-\\d{5}$"
+                  },
+                  "intakeId": {
+                    "type": "string",
+                    "pattern": "^KIN-\\d{5}$"
+                  },
+                  "incidentId": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]{1,9}-[A-Z0-9-]{3,40}$"
                   }
                 },
                 "required": [
@@ -11787,7 +11846,7 @@
     },
     "/api/kill-requests/preview": {
       "get": {
-        "summary": "차단 영향 범위 미리보기 (의존 Feature·flag·차량)",
+        "summary": "차단 영향 범위 미리보기 (의존 Feature·flag·차량, 범위 유형 — 적용 지역·차종·트림·Variant 조건·SW 버전, Variant 판정·영향 그룹)",
         "tags": [
           "D03-03"
         ],
@@ -11811,6 +11870,54 @@
           },
           {
             "name": "vins",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reasonCategory",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "countries",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleModels",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trims",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upgVcs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "swVersions",
             "in": "query",
             "required": false,
             "schema": {
@@ -12079,6 +12186,21 @@
                     },
                     "minItems": 1,
                     "maxItems": 500
+                  },
+                  "resolved": {
+                    "type": "boolean"
+                  },
+                  "causeFixed": {
+                    "type": "boolean"
+                  },
+                  "approverTargets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "maxItems": 6
                   }
                 },
                 "required": [
@@ -27436,6 +27558,367 @@
           },
           "422": {
             "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/{id}/parties": {
+      "get": {
+        "summary": "차단 관련 담당자 — Feature Owner·요청자·승인자·협력사(구현 SW 납품 정보)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killParties",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ext/v1/kill-intake": {
+      "post": {
+        "summary": "외부 시스템 차단 요청 접수(API 키) — 실행하지 않고 사람의 차단 요청·2인 승인 대기열로. 접수 ID·상태를 돌려준다",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "extKillIntake",
+        "description": "허용 역할: 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "featureVersion": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "reasonCategory": {
+                    "type": "string",
+                    "enum": [
+                      "SAFETY",
+                      "SECURITY",
+                      "REGULATORY",
+                      "COMMERCIAL",
+                      "OPERATIONAL"
+                    ],
+                    "default": "SAFETY"
+                  },
+                  "reasonCode": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9_]{3,40}$",
+                    "default": "FIELD_FAULT"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "vins": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "maxItems": 500
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "countries": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "vehicleModels": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "trims": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "upgVcs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      },
+                      "swVersions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "maxItems": 500
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "externalRef": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "featureVersion",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ext/v1/kill-intake/{id}": {
+      "get": {
+        "summary": "차단 요청 접수 상태 — 옮긴 차단 ID·상태·승인 수(외부 시스템 결과 조회)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "extKillIntakeStatus",
+        "description": "허용 역할: 시스템, 운영·감사 조회자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-intake": {
+      "get": {
+        "summary": "차단 요청 접수 목록 — 외부 시스템·이상 징후 조건 충족(중단 필요), 검토 대기·옮김·닫음",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "killIntakes",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-intake/{id}/dismiss": {
+      "post": {
+        "summary": "차단 요청 접수 닫기(사유)",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "dismissKillIntake",
+        "description": "허용 역할: 운영자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/deactivation-checks": {
+      "get": {
+        "summary": "비활성화 조건 확인 기록 — 이상 건마다 조건 넷·미충족 사유·접수",
+        "tags": [
+          "D03-03"
+        ],
+        "operationId": "deactivationChecks",
+        "parameters": [
+          {
+            "name": "anomalyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/kill-requests/blocked-scope": {
+      "get": {
+        "summary": "현재 차단 상태인 범위 — Feature에 걸린 차단별 남은 차량(부분 복원 차량 제외), 해제 대상 선택",
+        "tags": [
+          "D03-04"
+        ],
+        "operationId": "killBlockedScope",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
           }
         }
       }

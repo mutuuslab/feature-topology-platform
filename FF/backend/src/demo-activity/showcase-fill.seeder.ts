@@ -774,7 +774,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
     const next = await this.heroPolicy(ver, '고속도로 주행 보조 2 — 차로 변경 시작 지연 단축 보정(코호트 50% 승인, Canary부터 재배포)', { deploy: false });
     out.push(`${next.policyId} ${this.svc(PolicyRepo).get(next.policyId)?.status}`);
     // ⑥ 복원 요청 — 4.1.1 재검증 근거(G3 PASS)로 적용군 Canary 1대부터(Safety Manager·운영 리더 승인 대기)
-    const r = this.svc(RestoreService).request(operator, k.killId, RestoreRequestBody.parse({ reason: `${ver} 재검증 PASS — 적용군 Canary 1대부터 복원`, evidenceRef: evidence('G5'), cohort: targets.slice(0, 1) }));
+    const r = this.svc(RestoreService).request(operator, k.killId, RestoreRequestBody.parse({ reason: `${ver} 재검증 PASS — 적용군 Canary 1대부터 복원`, evidenceRef: evidence('G5'), cohort: targets.slice(0, 1), resolved: true, causeFixed: true }));
     out.push(`복원 요청 ${(r as { restoreRequest?: { status?: string } | null }).restoreRequest?.status ?? '-'}`);
     return out.join(', ');
   }

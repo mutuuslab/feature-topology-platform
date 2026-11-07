@@ -702,6 +702,31 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
+  // 중단 필요(이상 징후 조건 충족)·외부 차단 요청 접수(P11a) — 실행이 아니라 접수. 운영자가 차단 요청으로 옮기면 2인 승인
+  'kill.intake-received': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const fid = String(p.featureId);
+      const anomaly = p.source === 'ANOMALY';
+      return {
+        category: 'SAFETY',
+        severity: anomaly ? 'CRITICAL' : 'WARNING',
+        title: anomaly ? `중단 필요 — ${featureLabel(ctx, fid)} (${p.anomalyId})` : `외부 차단 요청 접수 — ${featureLabel(ctx, fid)} (${p.intakeId})`,
+        fields: [
+          { label: '접수', value: String(p.intakeId) },
+          { label: '출처', value: anomaly ? `이상 징후 ${p.anomalyId} — 비활성화 조건 충족` : `외부 시스템${p.externalRef ? ` · ${p.externalRef}` : ''}` },
+          { label: '대상 차량', value: `${p.vins ?? 0}대` },
+          { label: '사유', value: String(p.reason ?? '-') },
+          { label: '다음', value: '운영자가 차단 요청으로 옮기거나 사유와 함께 닫는다 — 차단은 2인 승인 뒤에만 실행' },
+        ],
+        link: `/ops/kill?intake=${p.intakeId}`,
+        recipients: [...owner(ctx), ...roles(['OPERATOR', 'SAFETY_OFFICER'])],
+        exclude: [],
+        requirementIds: ['FR-SVS-002-001', 'FR-AGW-001-002'],
+      };
+    },
+  },
 };
 
 /** 보고서 승인 역할 → 업무 이름(알림 문구) */

@@ -1324,4 +1324,48 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // 긴급 차단 요청 접수(P11a, FR-AGW-001-002·FR-SVS-002-001) — 외부 시스템(API 키)·이상 징후 조건 충족이 만든 접수. 실행이 아니라 사람의 차단 요청·2인 승인 대기열로
+    name: '231_kill_intake',
+    sql: `
+CREATE TABLE kill_intake (intake_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, source TEXT NOT NULL CHECK (source IN ('EXTERNAL','ANOMALY')), status TEXT NOT NULL CHECK (status IN ('RECEIVED','CONVERTED','DISMISSED')), anomaly_id TEXT, received_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX kill_intake_status ON kill_intake (status, intake_id);
+CREATE INDEX kill_intake_anomaly ON kill_intake (anomaly_id);
+`,
+  },
+  {
+    // 비활성화 조건 확인 기록(P11a, FR-SVS-002-001) — 이상 건마다 조건 넷의 판정·미충족 사유(추가만). 충족이면 접수 ID
+    name: '232_deactivation_check',
+    sql: `
+CREATE TABLE deactivation_check (id INTEGER PRIMARY KEY AUTOINCREMENT, check_id TEXT NOT NULL UNIQUE, anomaly_id TEXT NOT NULL, feature_id TEXT NOT NULL, met INTEGER NOT NULL, checked_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX deactivation_check_anomaly ON deactivation_check (anomaly_id, id);
+CREATE INDEX deactivation_check_feature ON deactivation_check (feature_id, id);
+CREATE TRIGGER deactivation_check_no_update BEFORE UPDATE ON deactivation_check BEGIN SELECT RAISE(ABORT, 'deactivation_check는 추가만 가능'); END;
+CREATE TRIGGER deactivation_check_no_delete BEFORE DELETE ON deactivation_check BEGIN SELECT RAISE(ABORT, 'deactivation_check는 추가만 가능'); END;
+`,
+  },
+  {
+    // 종료 차단 집합(P11a, ADS-BE02) — 차량·Feature·사건마다 설정(추가만), 해제는 지정 사건만 별도 행(추가만). 다른 사건 차단이 남으면 차량은 차단 유지
+    name: '233_termination_inhibit',
+    sql: `
+CREATE TABLE termination_inhibit (id INTEGER PRIMARY KEY AUTOINCREMENT, vin TEXT NOT NULL, feature_id TEXT NOT NULL, incident_id TEXT NOT NULL, kill_id TEXT NOT NULL, set_at TEXT NOT NULL, set_by TEXT NOT NULL);
+CREATE INDEX termination_inhibit_feature ON termination_inhibit (feature_id, vin);
+CREATE INDEX termination_inhibit_incident ON termination_inhibit (incident_id, id);
+CREATE TRIGGER termination_inhibit_no_update BEFORE UPDATE ON termination_inhibit BEGIN SELECT RAISE(ABORT, 'termination_inhibit는 추가만 가능'); END;
+CREATE TRIGGER termination_inhibit_no_delete BEFORE DELETE ON termination_inhibit BEGIN SELECT RAISE(ABORT, 'termination_inhibit는 추가만 가능'); END;
+CREATE TABLE termination_inhibit_release (id INTEGER PRIMARY KEY AUTOINCREMENT, inhibit_id INTEGER NOT NULL UNIQUE, incident_id TEXT NOT NULL, kill_id TEXT NOT NULL, released_at TEXT NOT NULL, released_by TEXT NOT NULL, reason TEXT NOT NULL);
+CREATE TRIGGER termination_inhibit_release_no_update BEFORE UPDATE ON termination_inhibit_release BEGIN SELECT RAISE(ABORT, 'termination_inhibit_release는 추가만 가능'); END;
+CREATE TRIGGER termination_inhibit_release_no_delete BEFORE DELETE ON termination_inhibit_release BEGIN SELECT RAISE(ABORT, 'termination_inhibit_release는 추가만 가능'); END;
+`,
+  },
+  {
+    // 영향 차량 산정 스냅샷(P11a, ADS-BE21) — 사건마다 후보(CANDIDATE: 후보·구성 미확인·통신 미수신 3분류) 산정과 확정(CONFIRMED) 집합(추가만, 재평가는 새 행)
+    name: '234_impact_set',
+    sql: `
+CREATE TABLE impact_set (id INTEGER PRIMARY KEY AUTOINCREMENT, set_id TEXT NOT NULL UNIQUE, incident_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('CANDIDATE','CONFIRMED')), calc_id TEXT NOT NULL, created_by TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX impact_set_incident ON impact_set (incident_id, id);
+CREATE TRIGGER impact_set_no_update BEFORE UPDATE ON impact_set BEGIN SELECT RAISE(ABORT, 'impact_set는 추가만 가능'); END;
+CREATE TRIGGER impact_set_no_delete BEFORE DELETE ON impact_set BEGIN SELECT RAISE(ABORT, 'impact_set는 추가만 가능'); END;
+`,
+  },
 ];

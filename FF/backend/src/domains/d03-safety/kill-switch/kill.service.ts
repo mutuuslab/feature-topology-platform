@@ -18,6 +18,7 @@ import {
   scopeKinds,
   scopeMatches,
   variantRow,
+  type KillIntake,
   type KillParties,
   type KillScopeFilter,
   jcs,
@@ -218,6 +219,13 @@ export class KillService {
       this.audit.failed(actor, 'KILL_REQUEST', body.featureId, 'type-to-confirm 불일치', 'D03-03');
       throw new DomainError('VALIDATION', `확인 입력이 차단 대상 Feature ID(${body.featureId})와 다릅니다.`);
     }
+    // 차단 요청 접수에서 옮기는 요청(P11a) — 접수가 있고 아직 검토 대기이며 같은 Feature여야 한다
+    const intake = body.intakeId ? this.intakeOf(body.intakeId) : null;
+    if (body.intakeId) {
+      if (!intake) throw new DomainError('NOT_FOUND', `차단 요청 접수 ${body.intakeId}을(를) 찾을 수 없습니다.`);
+      if (intake.status !== 'RECEIVED') throw new DomainError('CONFLICT', `이미 처리한 접수입니다 (${intake.status}${intake.killId ? ` · ${intake.killId}` : ''}).`, { intakeId: intake.intakeId });
+      if (intake.featureId !== body.featureId) throw new DomainError('VALIDATION', `접수 ${intake.intakeId}의 Feature(${intake.featureId})와 다릅니다.`, { field: 'intakeId' });
+    }
     const pv = this.preview(body.featureId, body.featureVersion, body.vins, body.reasonCategory, body.scope);
     if (pv.activeKill) throw new DomainError('CONFLICT', `${body.featureId}은(는) 이미 차단 중이거나 승인 대기 중입니다 (${pv.activeKill}).`, { killId: pv.activeKill });
     if (pv.unknownVins.length) throw new DomainError('VALIDATION', `영향 범위 밖의 차량이 있습니다: ${pv.unknownVins.join(', ')}`, { unknownVins: pv.unknownVins });
@@ -253,7 +261,7 @@ export class KillService {
         releasedAt: null,
         releaseReason: null,
         restorePublicationId: null,
-        anomalyId: body.anomalyId ?? null,
+        anomalyId: body.anomalyId ?? intake?.anomalyId ?? null,
         version: 2,
         reasonCategory: body.reasonCategory,
         reasonCode: body.reasonCode,
@@ -272,8 +280,16 @@ export class KillService {
         rejectedBy: null,
         rejectReason: null,
         restoreRequest: null,
+        intakeId: intake?.intakeId ?? null,
       };
+      // 종료 사건(ADS-BE02) — 지정 사건, 없으면 이상 건·접수의 이상 건, 그것도 없으면 이 차단이 사건
+      k.incidentId = body.incidentId ?? body.anomalyId ?? intake?.anomalyId ?? k.killId;
       this.kills.insert(k);
+      if (intake) {
+        const done: KillIntake = { ...intake, status: 'CONVERTED', killId: k.killId, closedBy: actor.id, closedAt: k.requestedAt, closeReason: null };
+        this.db.run('UPDATE kill_intake SET status = ?, doc = ? WHERE intake_id = ?', done.status, JSON.stringify(done), done.intakeId);
+        this.audit.record(actor, 'KILL_INTAKE_CONVERT', done.intakeId, { before: { status: 'RECEIVED' }, after: { status: 'CONVERTED', killId: k.killId }, componentId: 'D03-03' });
+      }
       this.audit.record(actor, 'KILL_REQUEST', k.killId, {
         after: { featureId: k.featureId, vins: k.vins.length, reason: `${k.reasonCategory}/${k.reasonCode}`, deactClass: k.deactClass, fsmRequired: plan.fsm },
         reason: body.reason,
@@ -288,6 +304,12 @@ export class KillService {
       );
       return this.withProgress(k);
     });
+  }
+
+  /** 차단 요청 접수 한 건(P11a) */
+  intakeOf(id: string): KillIntake | null {
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM kill_intake WHERE intake_id = ?', id);
+    return r ? (JSON.parse(r.doc) as KillIntake) : null;
   }
 
   /** 승인 대기가 기한을 넘겼으면 EXPIRED로 본다(저장은 다음 변경 때) */
@@ -441,6 +463,7 @@ export class KillService {
       reasonCategory?: ReasonCategory;
       reasonCode?: string;
       anomalyId?: string | null;
+      incidentId?: string | null;
       recallCampaignId?: string | null;
       containmentJustification?: string | null;
       userNoticeRef?: string | null;
@@ -465,7 +488,8 @@ export class KillService {
       command_seq: (this.gate.ledger(k.featureId).last_order_seq ?? 0) + 1,
       request,
       feature: { id: k.featureId, version: k.featureVersion, f_class: reg.f_class, deact_class: reg.deact_class },
-      reason: { category: k.reasonCategory ?? 'SAFETY', code: k.reasonCode ?? 'FIELD_FAULT', ...(k.anomalyId ? { incident_id: k.anomalyId } : {}) },
+      // F2 이상 종료 명령은 사건 ID가 필수(ADS-BE02) — 사건이 없던 이전 행은 이상 건 ID(있으면)
+      reason: { category: k.reasonCategory ?? 'SAFETY', code: k.reasonCode ?? 'FIELD_FAULT', ...((k.incidentId ?? k.anomalyId) && (k.anomalyId || ['F2', 'F3', 'F4'].includes(reg.f_class)) ? { incident_id: (k.incidentId ?? k.anomalyId)! } : {}) },
       scope: { vehicle_ids: [...k.vins], max_vehicles: k.vins.length },
       target: {
         market: marketOf(f.country),

@@ -72,6 +72,7 @@ export const NOTIFICATION_RULE_SPECS: NotificationRuleSpec[] = [
   { event: NOTIFICATION_SENT_EVENT, name: '직접 보낸 알림', category: 'DIRECT', recipients: ['CHOSEN'], excludes: '보낸 사람 본인', requirementIds: [], fixed: true },
   { event: 'compliance.rule.expired', name: '컴플라이언스 룰 만료', category: 'GATE', recipients: ['OWNER_TEAM', 'AUTHOR', 'NAMED_APPROVERS'], requirementIds: ['FR-CRC-001-026'] },
   { event: 'compliance.rule.approval-requested', name: '컴플라이언스 룰 승인 요청', category: 'APPROVAL', recipients: ['NAMED_APPROVERS'], excludes: '요청자 본인', requirementIds: ['FR-CRC-001-014'] },
+  { event: 'kill.intake-received', name: '중단 필요·차단 요청 접수', category: 'SAFETY', recipients: ['OWNER_TEAM', 'OPERATOR', 'SAFETY_OFFICER'], requirementIds: ['FR-SVS-002-001', 'FR-AGW-001-002'] },
 ];
 
 /** 수신자 표시 이름 — 규칙 토큰·역할 */

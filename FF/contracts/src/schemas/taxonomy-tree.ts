@@ -2,9 +2,8 @@
 // 그 아래 L2~L5 노드(차량·시스템 기능 → SW 기능 → 정책·Flag·파라미터 → 코드·신호·로직)를 플랫폼이 관리한다. Feature는 자기 분류 수준의 노드에 배치한다.
 import { z } from 'zod';
 
-export const TAXONOMY_LEVELS = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'] as const;
-export const TaxonomyLevelCode = z.enum(TAXONOMY_LEVELS);
-export type TaxonomyLevelCode = z.infer<typeof TaxonomyLevelCode>;
+import { TaxonomyLevelCode } from './taxonomy-level';
+export { TAXONOMY_LEVELS, TaxonomyLevelCode } from './taxonomy-level';
 /** 명세 표기(FR-REG-001-008 비고) */
 export const TAXONOMY_LEVEL_LABEL: Record<TaxonomyLevelCode, string> = {
   L0: 'Domain/Capability',

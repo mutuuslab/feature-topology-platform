@@ -1,21 +1,13 @@
 // 분류 계층 L0~L5·Feature 분류 경로·적용 지역 코드·브랜드별 정책 화면 문구 — ko.ts와 분리.
-import type { TaxonomyLevelCode } from '../../../contracts/src/schemas/taxonomy-tree';
 
-const LEVEL_KO: Record<TaxonomyLevelCode, string> = {
-  L0: '도메인·역량',
-  L1: '고객·사업 기능',
-  L2: '차량·시스템 기능',
-  L3: '소프트웨어 기능',
-  L4: '정책·Flag·파라미터',
-  L5: '코드·신호·로직',
-};
+import { LEVEL_KO, taxonomyLevelNames } from './taxonomy-level-names';
 
 export const taxonomyCopy = {
   levelKo: LEVEL_KO,
-  levels: Object.keys(LEVEL_KO) as TaxonomyLevelCode[],
-  levelName: (l: TaxonomyLevelCode) => `${l} ${LEVEL_KO[l]}`,
+  levels: taxonomyLevelNames.levels,
+  levelName: taxonomyLevelNames.levelName,
   title: '분류 계층',
-  lead: 'Feature DB 분류(도메인·클러스터·컴포넌트) 아래에 차량·시스템 기능부터 코드·신호까지 L0~L5로 나눠 Feature를 배치합니다.',
+  lead: 'Feature DB 분류 아래 차량·시스템 기능부터 코드·신호까지 L0~L5로 나눠 Feature를 배치합니다.',
   key: (features: number, nodes: number) => `Feature ${features}개를 노드 ${nodes}개에 배치했습니다`,
   back: '태그·범위 분류로',
   toLevels: 'L0~L5 분류 계층',
@@ -49,7 +41,7 @@ export const taxonomyCopy = {
     platformOnly: '플랫폼 노드만 고치고 지울 수 있습니다',
   },
   feature: {
-    tab: '분류 경로',
+    tab: taxonomyLevelNames.tab,
     level: '분류 수준',
     placement: '배치 노드',
     unplaced: '배치 전 — 아래에서 같은 수준의 노드를 고르세요',
@@ -64,8 +56,6 @@ export const taxonomyCopy = {
     toTree: '분류 계층 전체 보기',
     placedBy: (who: string, at: string) => `${who} · ${at}`,
   },
-  propose: { level: '분류 수준', levelHint: 'Feature Master는 보통 L2(차량·시스템 기능)입니다', levelWhy: '분류 수준을 고르세요', choose: '고르세요' },
-  list: { level: '분류 수준', all: '전체' },
 };
 
 export const regionCopy = {

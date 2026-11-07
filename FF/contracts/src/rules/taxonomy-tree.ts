@@ -1,12 +1,9 @@
 // 분류 계층 L0~L5 규칙(B7 (b)) — 노드 등록(상위 존재·한 단계 아래·ID 재사용 금지)·삭제 제한(하위·배치·Feature DB 관리)·경로·트리·수준별 분류·Feature 배치.
 // 백엔드(taxonomy-tree.service)·화면(분류 계층·Feature 상세 분류 경로)이 같은 판정을 쓴다.
-import type { Role } from '../enums';
-import { TAXONOMY_LEVELS, type CreateTaxonomyNodeBody, type TaxonomyLevelCode, type TaxonomyTreeNode, type TaxonomyTreeView } from '../schemas/taxonomy-tree';
+import { TAXONOMY_LEVELS, type TaxonomyLevelCode } from '../schemas/taxonomy-level';
+import type { CreateTaxonomyNodeBody, TaxonomyTreeNode, TaxonomyTreeView } from '../schemas/taxonomy-tree';
+export { TAXONOMY_EDITOR_ROLES, TAXONOMY_PLACEMENT_ROLES } from './taxonomy-roles';
 
-/** 노드 등록·수정·삭제 — Feature DB 관리자(분류·출처 관리, 30-95 §8.1) */
-export const TAXONOMY_EDITOR_ROLES: Role[] = ['REFDB_ADMIN'];
-/** Feature 배치 — Feature 작성자·Feature DB 관리자 */
-export const TAXONOMY_PLACEMENT_ROLES: Role[] = ['FEATURE_AUTHOR', 'REFDB_ADMIN'];
 
 export type TaxonomyCode =
   | 'TAXONOMY_ID_USED'

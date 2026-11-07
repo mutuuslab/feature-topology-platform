@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { Asil, CatalogType, ControlPointType, DependencyVerdict, GateId, GateResult, GateStatus, Lifecycle, RelationType, SaleType, TargetVersionCheck } from '../enums';
 import { AsilDeviation, FeatureRefLinks } from './refdb';
-import { TaxonomyLevelCode } from './taxonomy-tree';
+import { TaxonomyLevelCode } from './taxonomy-level';
 
 export const MissingReason = z.enum(['미입력', '미발급', '해당 없음', '의존 관계 없음']);
 export type MissingReason = z.infer<typeof MissingReason>;

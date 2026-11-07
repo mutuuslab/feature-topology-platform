@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 292,
-      "부분": 218,
-      "미구현": 113,
+      "구현": 316,
+      "부분": 216,
+      "미구현": 91,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 131,
-        "부분": 57,
-        "미구현": 48,
+        "구현": 150,
+        "부분": 55,
+        "미구현": 31,
         "범위 밖": 3
       },
       {
@@ -29,9 +29,9 @@
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 81,
+        "구현": 83,
         "부분": 23,
-        "미구현": 5,
+        "미구현": 3,
         "범위 밖": 0
       },
       {
@@ -45,9 +45,9 @@
       {
         "sheet": "05_시스템 연계·확장",
         "leaves": 34,
-        "구현": 22,
+        "구현": 25,
         "부분": 9,
-        "미구현": 3,
+        "미구현": 0,
         "범위 밖": 0
       },
       {
@@ -59,13 +59,42 @@
         "범위 밖": 0
       }
     ],
-    "traced": 140,
+    "traced": 166,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 9,
     "specIssues": 3
   },
   "traces": {
+    "FR-REG-001-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/registry.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/taxonomy.spec.ts"
+      ]
+    },
+    "FR-REG-001-002": {
+      "implemented": [
+        "frontend/src/screens/home/propose/ProposeScreen.tsx"
+      ],
+      "tested": []
+    },
+    "FR-REG-001-008": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "backend/src/domains/d01-policy/registry/registry.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-REG-001-011": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/registry.service.ts"
+      ],
+      "tested": []
+    },
     "FR-REG-002-008": {
       "implemented": [
         "contracts/src/rules/lifecycle.ts"
@@ -97,6 +126,159 @@
       ],
       "tested": [
         "contracts/src/rules/notification.test.ts"
+      ]
+    },
+    "FR-CAT-001-001": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-001-002": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-003": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-004": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-005": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-006": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-001": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-004-002": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-003": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-004": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-005": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-004-006": {
+      "implemented": [
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-004-007": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-008": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-009": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-004-010": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
       ]
     },
     "FR-DEP-001-001": {
@@ -395,6 +577,29 @@
       ],
       "tested": [
         "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-001-002": {
+      "implemented": [
+        "contracts/src/rules/region-code.test.ts",
+        "contracts/src/rules/region-code.ts",
+        "contracts/src/schemas/compliance-rule.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/region-code.test.ts",
+        "backend/test/d01/taxonomy.spec.ts"
+      ]
+    },
+    "FR-CRC-001-003": {
+      "implemented": [
+        "contracts/src/rules/region-code.test.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/region-code.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
       ]
     },
     "FR-CRC-001-004": {
@@ -1039,6 +1244,55 @@
         "contracts/src/rules/notification-gaps.test.ts",
         "backend/test/d04/notify-recipients.spec.ts",
         "frontend/src/__tests__/requirementGaps.test.tsx"
+      ]
+    },
+    "FR-GLB-001-001": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/global-scope.ts",
+        "contracts/src/schemas/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/region-code.test.ts",
+        "backend/test/d01/taxonomy.spec.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-GLB-001-002": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/schemas/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts"
+      ]
+    },
+    "FR-GLB-001-003": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-GLB-001-004": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
       ]
     },
     "FR-VHM-002-003": {

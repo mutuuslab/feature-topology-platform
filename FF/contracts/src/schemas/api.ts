@@ -4,7 +4,7 @@ import { patchOf } from './patch';
 import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
 import { AsilDeviation, FeatureRefLinkInputs } from './refdb';
 import { FeatureVariability } from './ple';
-import { TaxonomyLevelCode } from './taxonomy-tree';
+import { TaxonomyLevelCode } from './taxonomy-level';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
 

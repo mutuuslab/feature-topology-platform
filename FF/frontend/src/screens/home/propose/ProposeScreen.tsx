@@ -9,8 +9,8 @@ import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
 import { planning as W } from '../../../copy/planning';
-import { taxonomyCopy as TX } from '../../../copy/taxonomy-levels';
-import type { TaxonomyLevelCode } from '../../../../../contracts/src/schemas/taxonomy-tree';
+import { taxonomyLevelNames as TX } from '../../../copy/taxonomy-level-names';
+import type { TaxonomyLevelCode } from '../../../../../contracts/src/schemas/taxonomy-level';
 import { Button, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefPicker, refWarning } from './RefPicker';
@@ -180,7 +180,7 @@ export default function ProposeScreen() {
     [!perm.ok, perm.hint],
     [!primary, P.nextWhy],
     [!f.name.trim() || !f.description.trim() || !f.ownerId.trim(), P.requiredWhy],
-    [!f.taxonomyLevel, TX.propose.levelWhy],
+    [!f.taxonomyLevel, TX.propose.levelWhy], // @req FR-REG-001-002
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
     [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
   );

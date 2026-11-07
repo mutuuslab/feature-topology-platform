@@ -39,7 +39,7 @@ import { flags as flagCopy } from '../../copy/flags';
 import { evaluations as evaluationsCopy } from '../../copy/records';
 import { featureRefsTab } from '../../copy/propose';
 import { traceCopy } from '../../copy/trace-links';
-import { taxonomyCopy } from '../../copy/taxonomy-levels';
+import { taxonomyLevelNames } from '../../copy/taxonomy-level-names';
 import { flagCode as flagCodeCopy } from '../../copy/flag-code';
 import { RefWarningList, type RefWarning } from '../refdb/common';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
@@ -174,7 +174,7 @@ export default function FeatureDetail() {
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
                 { key: 'trace', label: T.tabs.trace, count: d.trace.length },
                 { key: 'links', label: traceCopy.tab },
-                { key: 'taxonomy', label: taxonomyCopy.feature.tab },
+                { key: 'taxonomy', label: taxonomyLevelNames.tab },
                 { key: 'ops', label: T.tabs.ops },
                 { key: 'ext', label: extSync.feature.tab },
                 { key: 'baseline', label: T.tabs.baseline },

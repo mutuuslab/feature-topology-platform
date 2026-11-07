@@ -69,7 +69,7 @@ import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
 import { CreateTaxonomyNodeBody, DeleteTaxonomyNodeBody, PlaceFeatureBody, UpdateTaxonomyNodeBody } from './schemas/taxonomy-tree';
-import { TAXONOMY_EDITOR_ROLES, TAXONOMY_PLACEMENT_ROLES } from './rules/taxonomy-tree';
+import { TAXONOMY_EDITOR_ROLES, TAXONOMY_PLACEMENT_ROLES } from './rules/taxonomy-roles';
 import { PolicyGlobalScopeBody } from './schemas/global-scope';
 import { GLOBAL_SCOPE_AUTHOR_ROLES } from './rules/global-scope';
 

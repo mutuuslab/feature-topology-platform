@@ -8,7 +8,7 @@ import { ko } from '../../copy/ko';
 import { ExtRefChip } from '../../design/ext-ref';
 import { AsyncView, ClassBadges, DataTable, IdChip, LifecycleBadge, PageHeader, Segmented, Select, SummaryLine, Toolbar } from '../../design';
 import { homeEntry as HE } from '../../copy/ple';
-import { taxonomyCopy as TX } from '../../copy/taxonomy-levels';
+import { taxonomyLevelNames as TX } from '../../copy/taxonomy-level-names';
 import { PleNav } from '../ple/PleNav';
 import { MiniGates, scopeOf, Segments } from '../shared';
 import type { FeatureList as FeatureListT } from '../types';

@@ -105,7 +105,7 @@ export class RegistryService {
       .filter((f) => !q.country || f.country === q.country)
       .filter((f) => !q.vehicleModel || f.vehicleModel === q.vehicleModel)
       .filter((f) => !q.latestOnly || latestOf.get(f.featureId) === f.version)
-      .filter((f) => !q.taxonomyLevel || (f.taxonomyLevel ?? FEATURE_BASE_LEVEL) === q.taxonomyLevel)
+      .filter((f) => !q.taxonomyLevel || (f.taxonomyLevel ?? FEATURE_BASE_LEVEL) === q.taxonomyLevel) // @req FR-REG-001-011
       .filter((f) => !needle || [f.featureId, f.name, f.ownerId, ...f.tags].some((s) => s.toLowerCase().includes(needle)));
     const count = (k: 'lifecycle' | 'country' | 'vehicleModel') => {
       const m: Record<string, number> = {};

@@ -74,13 +74,13 @@
   "verdicts": {
     "FR-REG-001-001": {
       "verdict": "부분",
-      "evidence": "`C/schemas/api.ts:8-21` CreateFeatureBody(이름·Owner·국가·차종·트림·ASIL·태그·CP)",
-      "gap": "Feature ID는 자동 발급(사용자 입력 아님), Lifecycle은 PROPOSED 고정, **Taxonomy Level 입력 없음**"
+      "evidence": "`C/schemas/api.ts` CreateFeatureBody(이름·Owner·국가·차종·트림·ASIL·태그·CP·Taxonomy Level), 저장 `B/d01-policy/registry/registry.service.ts:227`",
+      "gap": "Feature ID는 자동 발급(사용자 입력 아님), Lifecycle은 PROPOSED 고정"
     },
     "FR-REG-001-002": {
-      "verdict": "부분",
-      "evidence": "Zod min(1) 검증 → 400 VALIDATION (`T/kernel/kernel.spec.ts` '입력 검증 실패는 400')",
-      "gap": "Taxonomy Level 필수 검사 없음(항목 자체 부재)"
+      "verdict": "구현",
+      "evidence": "필수 항목(이름·설명·Owner·Taxonomy Level) 비면 등록 버튼 막힘·사유 `frontend/src/screens/home/propose/ProposeScreen.tsx:180-184`(Taxonomy Level 기본 L2 선택, 비우면 저장 불가); 서버는 빠진 수준을 Feature Master 기준 L2로 저장(이전 호출 호환) `B/d01-policy/registry/registry.service.ts:227`",
+      "gap": "API는 수준이 빠져도 L2로 저장(화면 필수 검사)"
     },
     "FR-REG-001-003": {
       "verdict": "구현",
@@ -108,9 +108,9 @@
       "gap": "값은 '선택'이 아니라 전이로만 바뀜(의도된 설계)"
     },
     "FR-REG-001-008": {
-      "verdict": "미구현",
-      "evidence": "L0~L5 모델 없음 (`/api/master/taxonomy`는 태그·범위 집계뿐, `topology/master.controller.ts:119-126`)",
-      "gap": "Taxonomy Level enum·필드 추가"
+      "verdict": "구현",
+      "evidence": "Taxonomy Level 값 L0~L5 `C/schemas/taxonomy-tree.ts`(TaxonomyLevelCode), 등록 본문 `taxonomyLevel`(`C/schemas/api.ts:36`) 목록 밖 400, 저장 `B/d01-policy/registry/registry.service.ts:227`; 등록 화면 선택(`frontend/src/screens/home/propose/ProposeScreen.tsx:302`); 시험 `T/d01/taxonomy.spec.ts:91`",
+      "gap": "—"
     },
     "FR-REG-001-009": {
       "verdict": "구현",
@@ -123,9 +123,9 @@
       "gap": "—"
     },
     "FR-REG-001-011": {
-      "verdict": "부분",
-      "evidence": "`registry.service.ts:68-90` q(ID·이름·Owner·태그)·lifecycle·국가·차종 필터",
-      "gap": "Taxonomy Level 검색 기준 없음"
+      "verdict": "구현",
+      "evidence": "검색 기준 Feature ID·이름·Owner(q)·Lifecycle·Taxonomy Level `GET /api/features?taxonomyLevel=`(`B/d01-policy/registry/registry.service.ts:108`), 일치 없음 빈 목록; 목록 화면 분류 수준 거르기(`frontend/src/screens/features/FeatureList.tsx`); 시험 `T/d01/taxonomy.spec.ts:91`",
+      "gap": "—"
     },
     "FR-REG-001-012": {
       "verdict": "구현",
@@ -388,34 +388,34 @@
       "gap": "Safe Default 등록·Rollback Plan·Kill 실행 가능 여부 자동 검사"
     },
     "FR-CAT-001-001": {
-      "verdict": "미구현",
-      "evidence": "Taxonomy 계층 모델 없음(태그만)",
-      "gap": "Taxonomy Node·Level 모델"
+      "verdict": "구현",
+      "evidence": "수준별 분류 `GET /api/taxonomy/levels/:level`(`B/d01-policy/taxonomy/taxonomy.service.ts:142`, 판정 `C/rules/taxonomy-tree.ts:104` classifyByLevel — 노드 경로 위·아래에 배치된 Feature) — L0 Domain/Capability 노드마다 L0부터 경로·Feature, 개요 `GET /api/taxonomy/levels`; 화면 `/master/taxonomy/levels`(`frontend/src/screens/master/TaxonomyLevels.tsx`) 수준별 분류 탭; 시험 `T/d01/taxonomy.spec.ts:32`, `contracts/src/rules/taxonomy-tree.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-001-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "수준별 분류 `GET /api/taxonomy/levels/:level`(`B/d01-policy/taxonomy/taxonomy.service.ts:142`, 판정 `C/rules/taxonomy-tree.ts:104` classifyByLevel — 노드 경로 위·아래에 배치된 Feature) — L1 Customer/Business(Feature DB 클러스터·컴포넌트) 노드마다 L0부터 경로·Feature, 개요 `GET /api/taxonomy/levels`; 화면 `/master/taxonomy/levels`(`frontend/src/screens/master/TaxonomyLevels.tsx`) 수준별 분류 탭; 시험 `T/d01/taxonomy.spec.ts:32`, `contracts/src/rules/taxonomy-tree.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-001-003": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "수준별 분류 `GET /api/taxonomy/levels/:level`(`B/d01-policy/taxonomy/taxonomy.service.ts:142`, 판정 `C/rules/taxonomy-tree.ts:104` classifyByLevel — 노드 경로 위·아래에 배치된 Feature) — L2 Vehicle/System 노드마다 L0부터 경로·Feature, 개요 `GET /api/taxonomy/levels`; 화면 `/master/taxonomy/levels`(`frontend/src/screens/master/TaxonomyLevels.tsx`) 수준별 분류 탭; 시험 `T/d01/taxonomy.spec.ts:32`, `contracts/src/rules/taxonomy-tree.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-001-004": {
-      "verdict": "미구현",
-      "evidence": "(SW 구조 `/api/master/structure`는 ECU→SW→Function→Feature로 별개)",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "수준별 분류 `GET /api/taxonomy/levels/:level`(`B/d01-policy/taxonomy/taxonomy.service.ts:142`, 판정 `C/rules/taxonomy-tree.ts:104` classifyByLevel — 노드 경로 위·아래에 배치된 Feature) — L3 Software Feature 노드마다 L0부터 경로·Feature, 개요 `GET /api/taxonomy/levels`; 화면 `/master/taxonomy/levels`(`frontend/src/screens/master/TaxonomyLevels.tsx`) 수준별 분류 탭; 시험 `T/d01/taxonomy.spec.ts:32`, `contracts/src/rules/taxonomy-tree.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-001-005": {
-      "verdict": "미구현",
-      "evidence": "(`/api/master/control-points`는 CP 유형별 정책 목록으로 일부 대체)",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "수준별 분류 `GET /api/taxonomy/levels/:level`(`B/d01-policy/taxonomy/taxonomy.service.ts:142`, 판정 `C/rules/taxonomy-tree.ts:104` classifyByLevel — 노드 경로 위·아래에 배치된 Feature) — L4 Policy/Flag/Parameter 노드마다 L0부터 경로·Feature, 개요 `GET /api/taxonomy/levels`; 화면 `/master/taxonomy/levels`(`frontend/src/screens/master/TaxonomyLevels.tsx`) 수준별 분류 탭; 시험 `T/d01/taxonomy.spec.ts:32`, `contracts/src/rules/taxonomy-tree.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-001-006": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "수준별 분류 `GET /api/taxonomy/levels/:level`(`B/d01-policy/taxonomy/taxonomy.service.ts:142`, 판정 `C/rules/taxonomy-tree.ts:104` classifyByLevel — 노드 경로 위·아래에 배치된 Feature) — L5 Code/Signal/Logic 노드마다 L0부터 경로·Feature, 개요 `GET /api/taxonomy/levels`; 화면 `/master/taxonomy/levels`(`frontend/src/screens/master/TaxonomyLevels.tsx`) 수준별 분류 탭; 시험 `T/d01/taxonomy.spec.ts:32`, `contracts/src/rules/taxonomy-tree.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-002-001": {
       "verdict": "구현",
@@ -473,54 +473,54 @@
       "gap": "매핑 해제(이력 보존형)"
     },
     "FR-CAT-004-001": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "Taxonomy Node 엔터티·API"
+      "verdict": "구현",
+      "evidence": "노드 등록 `POST /api/taxonomy/nodes` — Node ID·명칭·Level(L0~L5)·상위 Node ID·등록자(요청 계정) `C/schemas/taxonomy-tree.ts`, `B/d01-policy/taxonomy/taxonomy.service.ts:190`(마이그레이션 261 `taxonomy_level_node`); 노드 관리 탭; 시험 `T/d01/taxonomy.spec.ts:47`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-004-002": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "상위 Node 존재 확인 `C/rules/taxonomy-tree.ts:28` checkNewNode(TAXONOMY_PARENT_NOT_FOUND 400, 감사 FAILED) — Feature DB 분류 노드도 상위로; 시험 `T/d01/taxonomy.spec.ts:47`, `contracts/src/rules/taxonomy-tree.test.ts`",
+      "gap": "—"
     },
     "FR-CAT-004-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "정확히 한 단계 아래 검증 `C/rules/taxonomy-tree.ts:28`(TAXONOMY_LEVEL_MISMATCH); 시험 `T/d01/taxonomy.spec.ts:47`, `contracts/src/rules/taxonomy-tree.test.ts`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-CAT-004-004": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "정합성 위반이면 저장하지 않고 400·사유 `B/d01-policy/taxonomy/taxonomy.service.ts:190`; 시험 `T/d01/taxonomy.spec.ts:47`",
+      "gap": "—"
     },
     "FR-CAT-004-005": {
-      "verdict": "미구현",
-      "evidence": "태그 목록만 (`master.controller.ts:119-126`)",
-      "gap": "계층 조회"
+      "verdict": "구현",
+      "evidence": "계층 트리 `GET /api/taxonomy/nodes`(수준·상위 거르면 평면 목록) `B/d01-policy/taxonomy/taxonomy.service.ts:128`, `C/rules/taxonomy-tree.ts:90` toTree; 계층 트리 탭; 시험 `T/d01/taxonomy.spec.ts:40`, `frontend/src/__tests__/taxonomyLevels.test.tsx`",
+      "gap": "—"
     },
     "FR-CAT-004-006": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "명칭·설명 수정 `PATCH /api/taxonomy/nodes/:id`(Feature DB 관리자, 감사 전후) `B/d01-policy/taxonomy/taxonomy.service.ts:203`; Feature DB 발행 분류(L0·L1)는 Feature DB 변경 요청으로(409 IMMUTABLE); 시험 `T/d01/taxonomy.spec.ts:61`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "수준·상위 이동은 하위 정합성 때문에 새 노드로(수정 대상 아님)"
     },
     "FR-CAT-004-007": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "—"
+      "verdict": "구현",
+      "evidence": "삭제 `POST /api/taxonomy/nodes/:id/delete`(사유) `B/d01-policy/taxonomy/taxonomy.service.ts:219` — 지운 ID는 묘비(`taxonomy_node_tombstone`, 추가만)로 재사용 금지, 배치 Feature가 있으면 거부(공용 초안 삭제 규칙 B2와 같은 뜻); 시험 `T/d01/taxonomy.spec.ts:67`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "공용 초안 삭제 규칙(F0) 병합 뒤 그 규칙으로 바꿔 끼울 것"
     },
     "FR-CAT-004-008": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "하위 Node가 있으면 거부 `C/rules/taxonomy-tree.ts:41` checkDeleteNode(TAXONOMY_HAS_CHILDREN 409); 시험 `T/d01/taxonomy.spec.ts:67`, `contracts/src/rules/taxonomy-tree.test.ts`, `e2e/tests/taxonomy-levels.spec.ts`",
       "gap": "—"
     },
     "FR-CAT-004-009": {
-      "verdict": "미구현",
-      "evidence": "태그 지정만 가능",
-      "gap": "Node 배치"
+      "verdict": "구현",
+      "evidence": "Feature 배치 `PUT /api/features/:id/taxonomy` — Feature 분류 수준과 같은 수준 노드만 `B/d01-policy/taxonomy/taxonomy.service.ts:234`, `C/rules/taxonomy-tree.ts:49`; Feature 상세 '분류 경로' 탭(`frontend/src/screens/features/TaxonomyTab.tsx`); 시험 `T/d01/taxonomy.spec.ts:100`, `frontend/src/__tests__/taxonomyLevels.test.tsx`",
+      "gap": "—"
     },
     "FR-CAT-004-010": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "L0~L5 경로 조회"
+      "verdict": "구현",
+      "evidence": "`GET /api/features/:id/taxonomy` — L0부터 배치 노드까지 경로 + 배치 노드 아래 구성(L3~L5) `B/d01-policy/taxonomy/taxonomy.service.ts:162`, `C/rules/taxonomy-tree.ts:56`; 시험 `T/d01/taxonomy.spec.ts:100`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-DEP-001-001": {
       "verdict": "구현",
@@ -1695,14 +1695,14 @@
       "gap": "적용 지역 코드 체계(1~9·A~D·G)는 결정 대기(D8, FR-CRC-001-002) — 지금은 시장 구분(MARKETS)"
     },
     "FR-CRC-001-002": {
-      "verdict": "미구현",
-      "evidence": "지역 코드 체계 없음, 시장 enum `schemas/wire.ts` Market만",
-      "gap": "1~9·A~D·G 코드 체계 정의, 시장(market)·country와의 매핑, 등록 시 거부·사유"
+      "verdict": "구현",
+      "evidence": "적용 지역 코드 체계 1~9·A~D·G ↔ 시장·국가 대응 표 `C/rules/region-code.ts:19`(코드·지역명은 HMG 제공 자료, 시장·국가 대응은 플랫폼 표), 룰 등록·수정 검증(체계 밖·중복·시장 불일치 400·사유) `C/rules/region-code.ts:54`·`C/schemas/compliance-rule.ts:99`; 대응 표 `GET /api/region-codes`; 등록 서랍 지역 코드 칸(`frontend/src/screens/master/ComplianceRules.tsx`); 시험 `T/d01/taxonomy.spec.ts:121`, `contracts/src/rules/region-code.test.ts`",
+      "gap": "시장·국가 대응(일반·중동·러시아·터키·인니 → OTHER)은 확인 필요"
     },
     "FR-CRC-001-003": {
-      "verdict": "미구현",
-      "evidence": "Variant Rule 엔티티 없음(`rules/variant.ts:7`은 Feature 속성)",
-      "gap": "Variant Rule을 독립 개념으로 둘지 결정 후 지역 코드 기준 후보 조회"
+      "verdict": "구현",
+      "evidence": "지역 코드 기준 Variant Rule 후보 `GET /api/region-codes/variant-candidates?codes=` `B/d01-policy/taxonomy/global-scope.service.ts:173`, `C/rules/region-code.ts:114` — Variant Rule = 기존 Variant 조건(국가·차종·트림·UPG-VC) + 26580 구성 규칙(상품), 등록 서랍에 코드별 후보(`frontend/src/screens/master/RegionCandidates.tsx`); 시험 `T/d01/taxonomy.spec.ts:130`, `contracts/src/rules/region-code.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "Variant Rule 대응 정의(독립 엔티티 없음, B7 (b))는 확인 필요"
     },
     "FR-CRC-001-004": {
       "verdict": "부분",
@@ -2750,24 +2750,24 @@
       "gap": ""
     },
     "FR-GLB-001-001": {
-      "verdict": "부분",
-      "evidence": "정책 제약에 `country` 문맥(contracts/src/flags/evaluate.ts:60,96), 시장별 규제 Profile `contracts/src/rules/compliance-profile.ts:25-37`, 배포 게이트 시장 승인 검사 `contracts/src/rules/policy-gate.ts:192-194`",
-      "gap": "권역·법규 조건 엔터티와 정책 연계 저장, \"조건으로 연계 정책 조회\" API 없음. 글로벌 출시 관리 컴포넌트가 manifest(D05-01~07)에 없음"
+      "verdict": "구현",
+      "evidence": "정책 ↔ 권역(적용 지역 코드)·법규 조건(컴플라이언스 룰) 연계 저장 `POST /api/policies/:id/global-scope`(`B/d01-policy/taxonomy/global-scope.service.ts:105`, 마이그레이션 261 `policy_global_scope`·`policy_global_link`), 조건으로 연계 정책 조회 `GET /api/global-scopes?regionCode=&ruleId=&brand=`(`B/d01-policy/taxonomy/global-scope.service.ts:89`, `C/rules/global-scope.ts:26`); 화면 `/policies/global-scope`; 시험 `T/d01/taxonomy.spec.ts:164`, `contracts/src/rules/global-scope.test.ts`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "글로벌 출시 관리 컴포넌트는 manifest에 따로 두지 않고 D01-01 경로로 둠"
     },
     "FR-GLB-001-002": {
-      "verdict": "미구현",
-      "evidence": "브랜드 속성이 데이터 모델에 없음(`VehicleSchema` contracts/src/schemas/policy.ts:81-99, grep brand 0건)",
-      "gap": "브랜드 목록(현대·기아·제네시스) 상수, 정책↔브랜드 연계, 목록 외 브랜드 400"
+      "verdict": "구현",
+      "evidence": "브랜드 상수 3종(현대·기아·제네시스) `C/schemas/global-scope.ts`, 목록 밖 브랜드 400·등록 불가 메시지(`C/schemas/global-scope.ts:11`), 정책 연계 저장 `B/d01-policy/taxonomy/global-scope.service.ts:105`; 시험 `T/d01/taxonomy.spec.ts:156`, `contracts/src/rules/global-scope.test.ts`",
+      "gap": "—"
     },
     "FR-GLB-001-003": {
-      "verdict": "미구현",
-      "evidence": "해당 경로 없음",
-      "gap": "브랜드 식별자 조회·빈 목록 계약"
+      "verdict": "구현",
+      "evidence": "`GET /api/brands/:brand/policies` — 없으면 빈 목록, 목록 밖 식별자 400 `B/d01-policy/taxonomy/global-scope.service.ts:78`; 브랜드 탭 화면; 시험 `T/d01/taxonomy.spec.ts:164`, `frontend/src/__tests__/taxonomyLevels.test.tsx`, `e2e/tests/taxonomy-levels.spec.ts`",
+      "gap": "—"
     },
     "FR-GLB-001-004": {
-      "verdict": "미구현",
-      "evidence": "해당 경로 없음",
-      "gap": "Feature Owner·시스템 관리자만 수정(403) 규칙"
+      "verdict": "부분",
+      "evidence": "수정 `PUT /api/policies/:id/global-scope` — Feature Owner 또는 시스템 관리자만, 그 밖 403·수정 불가 메시지·감사 DENIED `B/d01-policy/taxonomy/global-scope.service.ts:116`, `C/rules/global-scope.ts:15`; 화면은 Owner가 아니면 수정 버튼 막힘·사유; 시험 `T/d01/taxonomy.spec.ts:176`, `frontend/src/__tests__/taxonomyLevels.test.tsx`",
+      "gap": "시스템 관리자 역할(SYSTEM_ADMIN, D-GAP-1)은 F0 묶음이 추가 — 그 전에는 Owner만 수정. 시드 Feature Owner가 팀 이름이라 데모 계정은 수정 불가"
     },
     "FR-FSP-001-001": {
       "verdict": "구현",

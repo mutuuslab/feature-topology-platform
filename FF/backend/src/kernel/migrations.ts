@@ -1324,4 +1324,26 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // Lifecycle·Gate 보강(P10 — FR-REG-002-010~016·004-003·004·005-008·013·015) — Gate 해당 없음(N/A) 요청·승인, 정의 승인 반려·검증 재작업 기록(추가만),
+    // 즉시 폐기 요청·승인, BOM Baseline ChangeSet(추가만), 출시 후보 통합 스냅샷(추가만, Version당 1건)
+    name: '241_p10_lifecycle_gate',
+    sql: `
+CREATE TABLE gate_na_request (request_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, gate TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('PENDING','APPROVED','REJECTED')), doc TEXT NOT NULL);
+CREATE INDEX gate_na_request_fv ON gate_na_request (feature_id, version, gate);
+CREATE TABLE feature_review_record (record_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('REJECT','REWORK')), at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX feature_review_record_fv ON feature_review_record (feature_id, version, at);
+CREATE TRIGGER feature_review_record_no_update BEFORE UPDATE ON feature_review_record BEGIN SELECT RAISE(ABORT, 'feature_review_record는 추가만 가능'); END;
+CREATE TRIGGER feature_review_record_no_delete BEFORE DELETE ON feature_review_record BEGIN SELECT RAISE(ABORT, 'feature_review_record는 추가만 가능'); END;
+CREATE TABLE feature_retire_request (request_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('PENDING','APPROVED','REJECTED')), doc TEXT NOT NULL);
+CREATE INDEX feature_retire_request_fv ON feature_retire_request (feature_id, version, status);
+CREATE TABLE baseline_changeset (changeset_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, from_baseline TEXT, to_baseline TEXT NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX baseline_changeset_feature ON baseline_changeset (feature_id, at);
+CREATE TRIGGER baseline_changeset_no_update BEFORE UPDATE ON baseline_changeset BEGIN SELECT RAISE(ABORT, 'baseline_changeset은 추가만 가능'); END;
+CREATE TRIGGER baseline_changeset_no_delete BEFORE DELETE ON baseline_changeset BEGIN SELECT RAISE(ABORT, 'baseline_changeset은 추가만 가능'); END;
+CREATE TABLE release_candidate_baseline (rcb_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, content_hash TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL, UNIQUE (feature_id, version));
+CREATE TRIGGER release_candidate_baseline_no_update BEFORE UPDATE ON release_candidate_baseline BEGIN SELECT RAISE(ABORT, 'release_candidate_baseline은 추가만 가능'); END;
+CREATE TRIGGER release_candidate_baseline_no_delete BEFORE DELETE ON release_candidate_baseline BEGIN SELECT RAISE(ABORT, 'release_candidate_baseline은 추가만 가능'); END;
+`,
+  },
 ];

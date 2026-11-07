@@ -44,8 +44,9 @@ describe('G2 PASS — 이 Version의 HARA(+ 보안 관련이면 TARA)', () => {
     expect(r.body.error.details.blockers.map((b: any) => b.message)).toEqual([expect.stringContaining('HARA(위험 분석) 기록이 없습니다')]);
     expect(JSON.stringify(r.body.error.details)).not.toMatch(/GUARD_FAILED|usr-/);
     expect(db.get<any>("SELECT result FROM audit WHERE action = 'GATE_JUDGE G2' ORDER BY id DESC LIMIT 1").result).toBe('FAILED');
-    // CONDITIONAL은 근거가 빠졌다는 판정으로 남길 수 있다
-    await judge(http, id, 'G2', { inputResult: 'CONDITIONAL', evidenceRef: null }).expect(201);
+    // CONDITIONAL은 근거가 빠졌다는 판정으로 남길 수 있다 — 근거 산출물은 판정마다 1건 이상(FR-REG-005-011)
+    await judge(http, id, 'G2', { inputResult: 'CONDITIONAL', evidenceRef: null }).expect(400);
+    await judge(http, id, 'G2', { inputResult: 'CONDITIONAL', evidenceRef: 'EV-TEST-G2-HARA-MISSING' }).expect(201);
     const h = (await hara(http, id).expect(201)).body;
     expect(h).toMatchObject({ recordId: expect.stringMatching(/^ANL-\d{5}$/), kind: 'HARA', signedBy: 'usr-safety2', signedRole: 'SAFETY_OFFICER', provenance: 'PERSONAL', sig: expect.any(String) });
     await judge(http, id, 'G2').expect(201);

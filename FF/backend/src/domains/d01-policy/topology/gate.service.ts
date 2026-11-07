@@ -30,6 +30,8 @@ import { ReharaRepo } from './rehara.repo';
 import { changeRecordFindings, REHARA_BLOCKED_GATES, REHARA_LABEL, type ChangeRecordBody } from '@ff/contracts';
 import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
 import { AnalysisEvidenceService } from './analysis-evidence.service';
+import { GateCheckService } from './gate-check.service';
+import { GATE_STATUS_SPEC, goNoGo, type GateStatus } from '@ff/contracts';
 
 @Injectable()
 @PlatformComponent('D01-02')
@@ -46,13 +48,20 @@ export class GateService {
     private readonly decisions: GateDecisionService,
     private readonly rehara: ReharaRepo,
     private readonly analysis: AnalysisEvidenceService,
+    private readonly checks: GateCheckService,
   ) {}
 
   view(featureId: string, version: string) {
     const f = this.lifecycle.require(featureId, version);
     const history = this.gates.history(featureId, version);
     const latest = this.gates.latest(featureId, version);
+    // P10 — 자동 검사(전이 때 다시 본다)·최종 Go/No-Go·해당 없음 요청
+    const checks = this.checks.checks(f);
     return {
+      // @req FR-REG-005-009 FR-REG-005-016 — 9 Gate 현재 상태·최종 Go/No-Go·Gate별 Evidence를 한 번에
+      goNoGo: goNoGo(Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r?.status ?? null]))),
+      checks,
+      naRequests: this.db.all<{ doc: string }>('SELECT doc FROM gate_na_request WHERE feature_id = ? AND version = ? ORDER BY request_id', featureId, version).map((r) => JSON.parse(r.doc)),
       gates: GATES.map((g) => ({
         gate: g,
         name: GATE_META[g].name,
@@ -63,6 +72,9 @@ export class GateService {
         decision: latest[g] ? this.decisions.verify(latest[g]!) : null,
         /** 레코드 없음 = 미판정 (Registry 표시 '미발급') */
         status: latest[g]?.status ?? '미판정',
+        /** 명세 4상태(PASS·PENDING·FAIL·N/A), 미판정은 null — FR-REG-005-008 */
+        specStatus: latest[g] ? GATE_STATUS_SPEC[latest[g]!.status as GateStatus] : null,
+        checks: checks.filter((x) => x.gate === g),
         evidence: latest[g] ? this.gates.evidence(latest[g]!.gateRecordId) ?? null : null,
         history: history.filter((h) => h.gate === g).map((h) => ({ ...h, decision: this.decisions.verify(h).state })),
         /** 이 플랫폼 Gate가 대응하는 절차 Gate(P3-9) */
@@ -94,7 +106,8 @@ export class GateService {
       scope: [f.country, f.vehicleModel, f.trim].filter(Boolean).join(' · '),
       owner: f.ownerId,
       lifecycle: f.lifecycle,
-      inputResult: record.inputResult,
+      // 판정(judge)에서만 부른다 — N/A 기록은 해당 없음 요청이 근거라 원장 행을 만들지 않는다
+      inputResult: record.inputResult as EvidenceRow['inputResult'],
       resultReason: `${record.inputResult} — ${record.rationale}`,
       additionalEvidence: null,
       _missing: {},

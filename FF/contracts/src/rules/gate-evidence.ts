@@ -166,7 +166,7 @@ export function gateStageBlocker(input: { lifecycle: Lifecycle; gate: GateId; ro
   const stage = gateStageOf(gate);
   if (rank(lifecycle) < rank(STAGE_NEED[stage])) return { reason: `${gate}은(는) ${GATE_META[gate].stage} 단계 Gate입니다 — 지금은 ${lifecycle} 단계라 판정할 수 없습니다.`, readOnly: false };
   for (const prev of STAGES.slice(0, stage).flat())
-    if (latest[prev] !== 'PASS') return { reason: `앞 단계 ${prev}이(가) PASS가 아닙니다 (${latest[prev] ?? '미판정'}) — ${prev}부터 판정합니다.`, readOnly: false };
+    if (latest[prev] !== 'PASS' && latest[prev] !== 'N/A') return { reason: `앞 단계 ${prev}이(가) PASS가 아닙니다 (${latest[prev] ?? '미판정'}) — ${prev}부터 판정합니다.`, readOnly: false };
   return null;
 }
 

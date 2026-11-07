@@ -71,7 +71,7 @@ export class RegistryController {
   @Roles('FEATURE_APPROVER', 'RELEASE_MANAGER', 'GATE_JUDGE')
   @AuditAction('FEATURE_TRANSITION')
   transition(@CurrentActor() actor: Actor, @Param('id') id: string, @Param('ver') ver: string, @Body(new ZodPipe(TransitionBody)) body: TransitionBody) {
-    return this.lifecycle.transition(actor, id, ver, body.to, body.reason);
+    return this.lifecycle.transition(actor, id, ver, body.to, body.reason, body.issues);
   }
 
   @Get(':id/versions/:ver/gates')
@@ -84,6 +84,11 @@ export class RegistryController {
   @AuditAction('GATE_JUDGE')
   judge(@CurrentActor() actor: Actor, @Param('id') id: string, @Param('ver') ver: string, @Body(new ZodPipe(JudgeGateBody)) body: JudgeGateBody) {
     return this.gates.judge(actor, id, ver, body);
+  }
+
+  @Get(':id/baselines')
+  featureBaselines(@Param('id') id: string) {
+    return this.baselines.forFeature(id);
   }
 
   @Get(':id/versions/:ver/baseline-checklist')
@@ -110,6 +115,16 @@ export class BaselineController {
   @AuditAction('BASELINE_REQUEST')
   request(@CurrentActor() actor: Actor, @Body(new ZodPipe(BaselineRequestBody)) body: BaselineRequestBody) {
     return this.baselines.request(actor, body);
+  }
+
+  @Get('compare')
+  compare(@Query('left') left?: string, @Query('right') right?: string) {
+    return this.baselines.compare(left, right);
+  }
+
+  @Get('changesets')
+  changesets(@Query('featureId') featureId?: string) {
+    return { items: this.baselines.changesets(featureId || undefined) };
   }
 
   @Get('requests/:rid')

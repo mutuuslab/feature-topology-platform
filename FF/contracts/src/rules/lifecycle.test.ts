@@ -46,7 +46,7 @@ describe('Lifecycle 전이 표', () => {
     expect(codes(evaluateTransition(at('VERIFIED'), 'RELEASED', ctx({ ...base, releaseSignoff: null })))).toEqual(['RELEASE_SIGNOFF_MISSING']);
     expect(evaluateTransition(at('VERIFIED'), 'RELEASED', ctx({ ...base, releaseSignoff: SIGNED })).blockers).toEqual([]);
     // 출시 외 전이에는 요구하지 않는다
-    expect(codes(evaluateTransition(at('VERIFIED'), 'DEVELOPING', ctx({ actor: { id: 'q', role: 'GATE_JUDGE' }, reason: '재검증' })))).toEqual([]);
+    expect(codes(evaluateTransition(at('VERIFIED'), 'DEVELOPING', ctx({ actor: { id: 'q', role: 'GATE_JUDGE' }, reason: '재검증', issues: [{ item: '회귀 오류', detail: '' }] })))).toEqual([]);
   });
 
   it('정의되지 않은 전이(되돌리기·건너뛰기)는 NO_RULE', () => {

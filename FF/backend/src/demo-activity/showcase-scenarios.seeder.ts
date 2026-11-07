@@ -169,8 +169,11 @@ export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplic
       const [draft, revise, review, approved] = rows.slice(offset, offset + STATES.length);
       connect(draft, approved, 'REQUIRES', group % 3 === 0);
       if (group < 6) {
-        connect(review, revise, group < 3 ? 'EXCLUDES' : 'REQUIRES');
-        this.lifecycle.transition(approver, review.featureId, review.version, 'APPROVED', '전시 — 의존관계의 승인 뒤 PASS/선행단계미달 FAIL 재판정');
+        // REQUIRES 원천은 대상이 출시돼야 정의 승인을 받는다(P10 G1 자동 검사, FR-REG-005-001) — 승인할 review가 출시 전 Feature를 필요로 하지 않게,
+        // 보완 중인 revise가 review를 필요로 한다(revise는 승인 대기, 관계는 미판정으로 남는다)
+        if (group < 3) connect(review, revise, 'EXCLUDES');
+        else connect(revise, review, 'REQUIRES');
+        this.lifecycle.transition(approver, review.featureId, review.version, 'APPROVED', '전시 — 의존관계의 승인 뒤 PASS 재판정');
       }
     }
     return added;

@@ -67,6 +67,8 @@ import { CreateLegacyLinkBody, CreateLegacyRuleBody, DeleteLegacyLinkBody, LEGAC
 import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
+import { GATE_NA_APPROVERS, GATE_NA_REQUESTERS, GateNaDecisionBody, GateNaRequestBody } from './rules/gate-outcome';
+import { FEATURE_REJECTERS, FEATURE_RETIRE_APPROVERS, FEATURE_RETIRE_REQUESTERS, RejectFeatureBody, RetireDecisionBody, RetireFeatureBody } from './rules/feature-retire';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
 
 const EmptyBody = z.object({}).strict();
@@ -637,6 +639,21 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // Lifecycle·Gate·즉시 폐기·Baseline 보강(P10) — Gate 해당 없음(N/A)·반려·재작업 기록·즉시 폐기·변경 이력·Baseline 비교·ChangeSet·출시 후보 통합 스냅샷
+  { name: 'gateNaRequests', method: 'GET', path: '/api/features/:id/versions/:ver/gate-na-requests', summary: 'Gate 해당 없음(N/A) 요청 목록 — 사유·요청자·승인자·결과', component: 'D01-02' },
+  { name: 'requestGateNa', method: 'POST', path: '/api/features/:id/versions/:ver/gate-na-requests', summary: 'Gate 해당 없음(N/A) 요청 — 사유 필수, G1·G4·G9와 QM 아닌 G2·G7은 불가', component: 'D01-02', roles: GATE_NA_REQUESTERS, body: GateNaRequestBody },
+  { name: 'decideGateNa', method: 'POST', path: '/api/gate-na-requests/:rid/decision', summary: 'Gate 해당 없음 승인·반려 — 요청자 외 기능안전 담당자, 승인하면 N/A Gate 기록(승인자 서명)', component: 'D01-02', roles: GATE_NA_APPROVERS, body: GateNaDecisionBody },
+  { name: 'featureHistory', method: 'GET', path: '/api/features/:id/history', summary: 'Feature 변경 이력 — 변경자·기간·변경 항목·Version 필터(없는 Feature는 404)', component: 'D01-01', query: ['actorId', 'from', 'to', 'item', 'version'] },
+  { name: 'featureReviews', method: 'GET', path: '/api/features/:id/reviews', summary: '정의 승인 반려·검증 재작업 기록 — 사유·이슈 항목·재작업 사유·일시', component: 'D01-01', query: ['version'] },
+  { name: 'rejectFeature', method: 'POST', path: '/api/features/:id/versions/:ver/rejection', summary: '정의 승인 반려 — PROPOSED 유지, 반려 사유·이슈 항목·재작업 사유(작성자는 불가)', component: 'D01-01', roles: FEATURE_REJECTERS, body: RejectFeatureBody },
+  { name: 'requestFeatureRetire', method: 'POST', path: '/api/features/:id/versions/:ver/retire-requests', summary: 'Feature 즉시 폐기 요청 — 어느 단계든, 사유 필수', component: 'D01-01', roles: FEATURE_RETIRE_REQUESTERS, body: RetireFeatureBody },
+  { name: 'featureRetireRequests', method: 'GET', path: '/api/feature-retire-requests', summary: 'Feature 즉시 폐기 요청 목록 — 사유·요청자·승인자·상태', component: 'D01-01', query: ['featureId', 'status'] },
+  { name: 'decideFeatureRetire', method: 'POST', path: '/api/feature-retire-requests/:rid/decision', summary: 'Feature 즉시 폐기 승인·반려 — 요청자·작성자 제외, 출시된 Version은 Flag Retirement 완료 필요', component: 'D01-01', roles: FEATURE_RETIRE_APPROVERS, body: RetireDecisionBody },
+  { name: 'featureBaselines', method: 'GET', path: '/api/features/:id/baselines', summary: 'Feature의 BOM Baseline 목록·내용·해시 검증(없는 Feature는 404)', component: 'D01-01' },
+  { name: 'compareBaselines', method: 'GET', path: '/api/baselines/compare', summary: '두 BOM Baseline 비교 — 변경 유형·영역·항목', component: 'D01-01', query: ['left', 'right'], requiredQuery: ['left', 'right'], sample: { left: 'BL-00001', right: 'BL-00028' } },
+  { name: 'baselineChangesets', method: 'GET', path: '/api/baselines/changesets', summary: 'BOM Baseline ChangeSet — 확정마다 직전 대비 변경 유형·영역·항목·일시', component: 'D01-01', query: ['featureId'] },
+  { name: 'releaseCandidate', method: 'GET', path: '/api/features/:id/versions/:ver/release-candidate', summary: '출시 후보 통합 스냅샷 — 출시 승인 시점 Feature·요구·Variant·정책·Test Evidence, 해시 검증', component: 'D01-01' },
+  { name: 'releaseCandidates', method: 'GET', path: '/api/release-candidates', summary: '출시 후보 통합 스냅샷 목록', component: 'D01-01', query: ['featureId'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

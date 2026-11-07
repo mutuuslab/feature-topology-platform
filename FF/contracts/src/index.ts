@@ -18,3 +18,8 @@ export * from './rules/relation-types';
 export * from './schemas/trace-link';
 export * from './rules/trace-link';
 export * from './rules/ads-p5';
+// Lifecycle·Gate 보강(P10) — Go/No-Go·N/A·자동 검사·반려·즉시 폐기·Baseline 비교·출시 후보 통합 스냅샷
+export * from './rules/gate-outcome';
+export * from './rules/gate-checks';
+export * from './rules/feature-retire';
+export * from './rules/baseline-p10';

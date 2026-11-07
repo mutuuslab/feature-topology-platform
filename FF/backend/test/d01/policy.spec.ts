@@ -95,7 +95,10 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       const d = await http().get(`/api/features/${fid}/versions/0.1.0`).expect(200);
       expect(d.body.feature.lifecycle).toBe('DEVELOPING');
-      expect(d.body.transitions.find((t: any) => t.to === 'VERIFIED').blockers.map((b: any) => b.code)).toEqual(['POLICY_MISSING']);
+      // 정책이 없으면 G4 자동 검사(Safe Default·Rollback Plan·긴급 차단 Flag)도 함께 막는다(P10, FR-REG-005-020)
+      const vb = d.body.transitions.find((t: any) => t.to === 'VERIFIED').blockers;
+      expect(vb.map((b: any) => b.code)).toEqual(['GATE_CHECK_FAILED', 'GATE_CHECK_FAILED', 'GATE_CHECK_FAILED', 'POLICY_MISSING']);
+      expect(vb.filter((b: any) => b.code === 'GATE_CHECK_FAILED').map((b: any) => b.ref)).toEqual(['G4:SAFE_DEFAULT', 'G4:ROLLBACK_PLAN', 'G4:KILL_READY']);
     });
 
     it('정책 작성(DRAFT) → 검증: 8종 결과가 모두 오고 판정 GO → VALIDATED', async () => {

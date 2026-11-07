@@ -20,7 +20,8 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
     http()
       .post(`/api/features/${id}/versions/${ver}/gates`)
       .set(who)
-      .send({ gate, inputResult, rationale: `${gate} 검토 완료`, evidenceRef: inputResult === 'PASS' ? `EV-TEST-${gate}` : null });
+      // 판정마다 근거 1건 이상(FR-REG-005-011) — FAIL·CONDITIONAL도 근거 산출물을 붙인다
+      .send({ gate, inputResult, rationale: `${gate} 검토 완료`, evidenceRef: `EV-TEST-${gate}${inputResult === 'PASS' ? '' : `-${inputResult}`}` });
 
   describe('조회', () => {
     it('목록: 80개 버전, 최신만 68개, 상태별 집계', async () => {
@@ -104,6 +105,13 @@ describe('Feature Registry (D01-01) · Gate (D01-02) · BOM Baseline', () => {
     it('증거 없는 PASS는 400', async () => {
       const r = await http().post(`/api/features/${id}/versions/0.1.0/gates`).set(JUDGE).send({ gate: 'G1', inputResult: 'PASS', rationale: '확인' }).expect(400);
       expect(r.body.error.details[0].path).toBe('evidenceRef');
+    });
+
+    it('FAIL·CONDITIONAL도 근거 없이는 400 (FR-REG-005-011)', async () => {
+      for (const inputResult of ['FAIL', 'CONDITIONAL']) {
+        const r = await http().post(`/api/features/${id}/versions/0.1.0/gates`).set(JUDGE).send({ gate: 'G1', inputResult, rationale: '누락 확인', evidenceRef: null }).expect(400);
+        expect(r.body.error.details[0].path).toBe('evidenceRef');
+      }
     });
 
     it('앞 단계 Gate가 PASS가 아니면 다음 단계 Gate를 판정할 수 없다', async () => {

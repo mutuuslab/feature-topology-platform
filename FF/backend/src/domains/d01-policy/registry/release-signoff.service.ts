@@ -37,7 +37,8 @@ export class ReleaseSignoffService {
   /** 현재 G8·G9 최신 판정 기록 ID — 둘 다 PASS일 때만 */
   private passedGates(featureId: string, version: string): { G8: string; G9: string } | string {
     const latest = this.gates.latest(featureId, version);
-    const missing = (['G8', 'G9'] as const).filter((g) => latest[g]?.status !== 'PASS');
+    // 승인된 N/A(해당 없음, G8만 가능)도 통과로 본다 — 서명은 그 기록 ID에 묶인다
+    const missing = (['G8', 'G9'] as const).filter((g) => latest[g]?.status !== 'PASS' && latest[g]?.status !== 'N/A');
     if (missing.length) return `${missing.join('·')} 최신 판정이 PASS가 아닙니다 — G8·G9 PASS 뒤에 서명합니다.`;
     return { G8: latest.G8!.gateRecordId, G9: latest.G9!.gateRecordId };
   }

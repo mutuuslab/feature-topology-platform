@@ -30,8 +30,8 @@ export const GATE_META: Record<GateId, { name: string; judgeRole: string; stage:
 export const GateResult = z.enum(['PASS', 'CONDITIONAL', 'FAIL']);
 export type GateResult = z.infer<typeof GateResult>;
 
-/** 판정 상태 — CONDITIONAL 이후는 '검토 중'. 미실행 Gate는 레코드 없음(=미판정). */
-export const GateStatus = z.enum(['PASS', '검토 중', 'FAIL']);
+/** 판정 상태 — CONDITIONAL 이후는 '검토 중'(명세 PENDING). 미실행 Gate는 레코드 없음(=미판정). N/A는 사유·승인자가 있는 해당 없음 판정(FR-REG-005-008·013, rules/gate-outcome.ts) */
+export const GateStatus = z.enum(['PASS', '검토 중', 'FAIL', 'N/A']);
 export type GateStatus = z.infer<typeof GateStatus>;
 
 /** 의존관계 판정 결과 (원천이 PROPOSED면 미판정) */

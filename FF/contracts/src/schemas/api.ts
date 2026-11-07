@@ -4,6 +4,7 @@ import { patchOf } from './patch';
 import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, RelationType, SaleType } from '../enums';
 import { AsilDeviation, FeatureRefLinkInputs } from './refdb';
 import { FeatureVariability } from './ple';
+import { IssueItem } from '../rules/feature-retire';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
 
@@ -60,10 +61,11 @@ export const CreateVersionBody = z.object({
 });
 export type CreateVersionBody = z.infer<typeof CreateVersionBody>;
 
-export const TransitionBody = z.object({ to: Lifecycle, reason: z.string().trim().max(500).default('') });
+/** issues — 검증 이슈로 VERIFIED → DEVELOPING 되돌릴 때 이슈 항목(FR-REG-002-013, 1개 이상) */
+export const TransitionBody = z.object({ to: Lifecycle, reason: z.string().trim().max(500).default(''), issues: z.array(IssueItem).max(20).default([]) });
 export type TransitionBody = z.infer<typeof TransitionBody>;
 
-/** Gate 판정 등록 — PASS는 Evidence Ref 필수 (증거 없는 PASS 금지) */
+/** Gate 판정 등록 — 모든 판정(PASS·CONDITIONAL·FAIL)에 근거 산출물·Evidence Link 1건 이상(FR-REG-005-011, 증거 없는 PASS 금지) */
 export const JudgeGateBody = z
   .object({
     gate: GateId,
@@ -73,7 +75,8 @@ export const JudgeGateBody = z
     /** G2 — 대표 ASIL 변경 사유를 판정자가 검토했다는 확인(P3-1). ASIL을 바꾼 Version의 G2 PASS에 필요 */
     asilReasonReviewed: z.boolean().optional(),
   })
-  .refine((b) => b.inputResult !== 'PASS' || !!b.evidenceRef, { message: '증거(Evidence Ref) 없는 PASS는 등록할 수 없습니다.', path: ['evidenceRef'] });
+  .refine((b) => b.inputResult !== 'PASS' || !!b.evidenceRef, { message: '증거(Evidence Ref) 없는 PASS는 등록할 수 없습니다.', path: ['evidenceRef'] })
+  .refine((b) => !!b.evidenceRef, { message: '판정 근거(Evidence Ref·근거 산출물)를 1건 이상 입력하세요 — FAIL·CONDITIONAL도 근거가 필요합니다.', path: ['evidenceRef'] });
 export type JudgeGateBody = z.infer<typeof JudgeGateBody>;
 
 export const BaselineRequestBody = z.object({

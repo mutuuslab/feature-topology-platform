@@ -4,6 +4,9 @@ import { GATE_META, GATES, LIFECYCLE, ROLE_LABEL, type Asil, type GateId, type G
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
 import type { RefStatus } from '../schemas/refdb';
 import { refLinksBlockApproval } from './refdb/status-policy';
+import { gateSatisfied } from './gate-outcome';
+import { gateCheckMessage, TRANSITION_CHECK_GATES, transitionCheckFailures, type GateCheck } from './gate-checks';
+import { retirementGateBlockers, type IssueItem, type RetirementGateFacts } from './feature-retire';
 
 export interface TransitionRule {
   from: Lifecycle;
@@ -56,7 +59,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED' | 'FLAG_CODE_MISSING';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED' | 'FLAG_CODE_MISSING' | 'GATE_CHECK_FAILED' | 'RETIREMENT_INCOMPLETE' | 'ISSUE_REQUIRED';
 
 export interface Blocker {
   code: BlockerCode;
@@ -102,6 +105,15 @@ export interface TransitionContext {
    * 승인된 출시 차단 해제는 호출자가 계산에 넣는다. 빠지면(대사 연결 전 호출자) 이 조건을 보지 않는다.
    */
   flagCodeGate?: { pass: boolean; blockers: { flagKey: string; status: string; message: string }[] } | null;
+  /**
+   * Gate 자동 검사(rules/gate-checks.ts, FR-REG-005-001·002·004·006·007·020) — 주면 정의 승인(G1·G3)·검증 완료(G4·G5)·출시(G8·G9) 전이에서
+   * 그 Gate의 실패한 검사를 막는다. 빠지면(검사 사실을 모으기 전 호출자) 보지 않는다.
+   */
+  gateChecks?: GateCheck[];
+  /** Retired 전이 관문(FR-REG-005-017·018) — 주면 RELEASED·DEPRECATED에서 RETIRED로 갈 때 배포 중 Flag·끝나지 않은 Flag Retirement를 막는다 */
+  retirementGate?: RetirementGateFacts;
+  /** 검증 이슈 항목(FR-REG-002-013) — 사람이 VERIFIED → DEVELOPING으로 되돌릴 때 1개 이상 */
+  issues?: IssueItem[];
   reason?: string;
 }
 
@@ -128,7 +140,8 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
   for (const g of gates) {
     const s = ctx.latestGates[g];
     if (!s) blockers.push({ code: 'GATE_UNJUDGED', message: `${g} ${GATE_META[g].name} 미판정`, ref: g });
-    else if (s !== 'PASS') blockers.push({ code: 'GATE_NOT_PASSED', message: `${g} ${GATE_META[g].name} ${s}`, ref: g });
+    // 승인된 N/A(해당 없음)는 통과로 본다(FR-REG-005-008·013 — 사유·승인자 기록)
+    else if (!gateSatisfied(s)) blockers.push({ code: 'GATE_NOT_PASSED', message: `${g} ${GATE_META[g].name} ${s}`, ref: g });
     else if (ctx.unsignedGates?.[g]) blockers.push({ code: 'GATE_UNSIGNED', message: `${g} ${GATE_META[g].name} — ${ctx.unsignedGates[g]}`, ref: g });
   }
   for (const k of rule.inputs) if (isEmpty(f[k])) blockers.push({ code: 'INPUT_MISSING', message: `필수 입력 누락: ${INPUT_LABEL[k] ?? String(k)}`, ref: String(k) });
@@ -167,6 +180,16 @@ export function evaluateTransition(f: FeatureVersionRow, to: Lifecycle, ctx: Tra
   if (rule.to === 'RELEASED')
     for (const r of ctx.openRehara ?? [])
       blockers.push({ code: 'REHARA_OPEN', message: `재-HARA 요청 ${r.requestId}(${r.condition})이 열려 있습니다 — 영향 검토(G2 재판정)를 마친 뒤 출시합니다.`, ref: r.requestId });
+
+  // @req FR-REG-005-001 FR-REG-005-002 FR-REG-005-004 FR-REG-005-006 FR-REG-005-007 FR-REG-005-020
+  // Gate 자동 검사 — 판정 PASS 뒤에 바뀐 데이터(관계 대상 Lifecycle·Evidence·정책·Flag 결속)도 전이 시점에 다시 본다
+  if (TRANSITION_CHECK_GATES[rule.to] && ctx.gateChecks) for (const x of transitionCheckFailures(rule.to, ctx.gateChecks)) blockers.push({ code: 'GATE_CHECK_FAILED', message: gateCheckMessage(x), ref: `${x.gate}:${x.key}` });
+
+  // @req FR-REG-005-017 FR-REG-005-018 — 출시된 적 있는 Version은 Flag Retirement가 끝나야 RETIRED
+  if (rule.to === 'RETIRED' && ctx.retirementGate) for (const m of retirementGateBlockers(rule.from, ctx.retirementGate)) blockers.push({ code: 'RETIREMENT_INCOMPLETE', message: m });
+
+  // @req FR-REG-002-013 — 검증 이슈로 되돌릴 때 이슈 항목(구조화)·재작업 사유(전이 사유)
+  if (rule.from === 'VERIFIED' && rule.to === 'DEVELOPING' && ctx.actor && !(ctx.issues ?? []).length) blockers.push({ code: 'ISSUE_REQUIRED', message: '식별한 이슈 항목을 1개 이상 입력하세요.' });
 
   if (rule.from === 'DEVELOPING' && rule.to === 'VERIFIED' && ctx.policyCoverage < f.controlPoints.length)
     blockers.push({ code: 'POLICY_MISSING', message: `Control Point ${f.controlPoints.length}개 중 정책 등록 ${ctx.policyCoverage}개` });

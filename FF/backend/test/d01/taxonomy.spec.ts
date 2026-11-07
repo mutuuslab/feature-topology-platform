@@ -148,7 +148,7 @@ describe('분류 계층·브랜드·지역 코드 (TX)', () => {
       const db = get<Db>(DB);
       db.run('DELETE FROM policy_global_scope WHERE policy_id = ?', policyId);
       db.run('DELETE FROM policy_global_link WHERE policy_id = ?', policyId);
-      const repo = get(FeatureRepo);
+      const repo = get<FeatureRepo>(FeatureRepo);
       const f = repo.versions(p.featureId).at(-1)!;
       repo.update({ ...f, ownerId: 'usr-author' });
     });

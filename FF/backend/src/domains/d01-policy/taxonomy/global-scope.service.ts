@@ -191,11 +191,11 @@ export class GlobalScopeService implements OnApplicationBootstrap {
   }
 
   // ── 데모 시드 ──
-  /** 배포·승인된 정책 일부에 브랜드·지역 코드(Feature 국가에서) — 화면이 브랜드별 목록·조건 조회를 바로 보인다 */
+  /** 폐기 안 된 정책에 브랜드·지역 코드(Feature 국가에서)·시장이 맞는 승인 룰 — 화면이 브랜드별 목록·조건 조회를 바로 보인다 */
   private seed() {
     const ps = this.policies
       .all()
-      .filter((p) => p.status === 'DEPLOYED' || p.status === 'APPROVED')
+      .filter((p) => p.status !== 'RETIRED')
       .sort((a, b) => a.policyId.localeCompare(b.policyId));
     const rules = this.rules().filter((r) => r.status === 'APPROVED');
     const rows: PolicyGlobalScope[] = [];
@@ -204,8 +204,9 @@ export class GlobalScopeService implements OnApplicationBootstrap {
       const f = this.features.get(p.featureId, p.featureVersion) ?? this.features.versions(p.featureId).at(-1);
       if (!f) return;
       const regionCodes = REGION_CODE_TABLE.filter((r) => r.countries.includes(f.country)).map((r) => r.code);
-      // 제네시스는 고급 트림, 현대·기아는 번갈아 — 시연용 분포(가정)
-      const brands: Brand[] = /premium|prestige|signature/i.test(f.trim) ? ['GENESIS'] : i % 3 === 0 ? ['HYUNDAI', 'KIA'] : i % 3 === 1 ? ['HYUNDAI'] : ['KIA'];
+      // 브랜드 분포(시연 가정) — 두 브랜드씩 돌려 세 브랜드 모두 정책이 있게, 고급 트림은 제네시스를 함께
+      const pair: Brand[][] = [['HYUNDAI', 'KIA'], ['HYUNDAI', 'GENESIS'], ['KIA', 'GENESIS']];
+      const brands: Brand[] = [...new Set<Brand>([...pair[i % 3], ...(/premium|prestige|signature/i.test(f.trim) ? (['GENESIS'] as Brand[]) : [])])];
       const market = REGION_CODE_TABLE.find((r) => r.countries.includes(f.country))?.market;
       const complianceRuleIds = rules.filter((r) => market && r.markets.includes(market)).slice(0, 2).map((r) => r.ruleId);
       rows.push({ policyId: p.policyId, featureId: p.featureId, brands, regionCodes, complianceRuleIds, revision: 1, updatedBy: SEED_ACTOR, updatedAt: at, reason: '시연 데이터 — 브랜드·권역 조건' });

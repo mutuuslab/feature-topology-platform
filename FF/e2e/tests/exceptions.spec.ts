@@ -25,7 +25,7 @@ test('예외 목록: 적용 중·1차 승인·반려·만료 예외와 우회 �
   // 만료된 예외 상세 — 원복 메시지와 상태 전이 기록
   await table.getByRole('row').filter({ hasText: '만료·원복' }).first().click();
   const dlg = page.getByRole('dialog');
-  await expect(dlg.getByText(/되돌릴 정책 상태가 없습니다/)).toBeVisible();
+  await expect(dlg.getByText(/되돌릴 정책 상태가 없습니다/).first()).toBeVisible();
   await expect(dlg.getByRole('table', { name: '상태 전이 기록' })).toContainText('2차 승인·적용');
 });
 

@@ -4,6 +4,7 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { apiRefs, REF } from './refdb';
 import { recordAnalysisApi, signG7Api } from './analysis';
 import { waiveFlagCodeGate } from './flag-code-gate';
+import { releaseVersionApi } from './release';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -47,6 +48,8 @@ async function deploy(request: APIRequestContext, featureId: string, flagKey: st
   await post(request, `/api/policies/${p.policyId}/decision`, ['usr-approver', 'FEATURE_APPROVER'], { decision: 'APPROVE', reason: 'GO 확인' }, 200);
   // 새 정책 키는 차량 SW 저장소에 호출이 없다 — 출시 차단 해제(구현 담당 요청 → 승인자 승인) 뒤 배포(20-97 출시 관문)
   await waiveFlagCodeGate(request, flagKey, featureId, '0.1.0');
+  // 출시 전 Version은 Shadow만(FR-RDD-001-006) — 실제 배포·되돌리기는 출시한 Version으로
+  await releaseVersionApi(request, featureId, '0.1.0');
   const d = await post(request, `/api/policies/${p.policyId}/deploy`, ['usr-coordinator', 'RELEASE_MANAGER'], { reason: `${description} 배포` }, 200);
   await expect
     .poll(async () => (await (await request.get(`${API}/api/publications/${d.publicationId}`)).json()).publication.status, { timeout: 40_000 })

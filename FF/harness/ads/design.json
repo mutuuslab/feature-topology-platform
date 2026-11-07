@@ -215,7 +215,8 @@
         "verify:full 녹색"
       ],
       "deps": [],
-      "coord": ""
+      "coord": "",
+      "status": "부분 — 시각 기준 8장(verify:full 전용)만 남음"
     },
     {
       "id": "ADS-UI01",
@@ -842,7 +843,7 @@
         "HT03",
         "R01"
       ],
-      "status": "완료(커밋 전)"
+      "status": "완료 — 커밋 b7932a5(통합 병합), 시험 backend/test/ads/defects.spec.ts:47,65"
     },
     {
       "id": "ADS-BE04",
@@ -867,7 +868,7 @@
       ],
       "deps": [],
       "coord": "status-v2.ts:96 · deactivation.ts:133",
-      "status": "완료(커밋 전)"
+      "status": "완료 — 커밋 b7932a5(통합 병합), 시험 backend/test/ads/defects.spec.ts:87"
     },
     {
       "id": "ADS-BE05",
@@ -893,7 +894,7 @@
       ],
       "deps": [],
       "coord": "기능명세서 결함 추적(review.json defects)과 연결",
-      "status": "완료(커밋 전)"
+      "status": "완료 — 커밋 b7932a5(통합 병합), 시험 backend/test/ads/defects.spec.ts:169,200"
     },
     {
       "id": "ADS-BE06",
@@ -1387,7 +1388,7 @@
       "cases": [
         "HT06"
       ],
-      "status": "완료(커밋 전)"
+      "status": "완료 — 커밋 b7932a5(통합 병합), 시험 backend/test/kernel/audit-anchor-io.spec.ts·backend/test/ads/defects.spec.ts:300"
     },
     {
       "id": "ADS-BE20",
@@ -2575,79 +2576,79 @@
       "id": "D-ADS-1",
       "question": "FF_IMP GLEO 와이어를 2.1로 확장해도 되는가?",
       "why": "판정·전달 단계·제어 책임·사건별 차단(ADS-BE01·BE02)은 와이어 필드가 필요하다. 정본은 FF_IMP gleo/이고 FF verify가 커밋을 고정한다.",
-      "proposal": "FF는 2.0·2.1을 함께 수락하도록 먼저 만들고, FF_IMP는 승인 후 별도 커밋."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — FF가 2.0·2.1을 함께 수락하도록 먼저(묶음 W), FF_IMP 와이어 2.1 커밋은 FF 병합 뒤 별도."
     },
     {
       "id": "D-ADS-2",
       "question": "보고서 1단계의 '대표 ADS 1개 + 비 ADS 1개'를 어느 Feature로 할까?",
       "why": "상태 계약·정상/실패 전이를 먼저 합의할 기준 Feature가 필요하다.",
-      "proposal": "ADS: 고속도로 자율주행(ADSF-2 성격) 1개, 비 ADS: 체험권 IVI 기능 1개 — 데이터셋에서 후보를 골라 제시."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — ADS: 고속도로 자율주행(ADSF-2 성격) 1개, 비 ADS: 체험권 IVI 1개. 후보 2개는 데이터셋에서 골라(묶음 DM) 사용자 확인 뒤 ADS-SIM03·1단계 상태 계약(묶음 S)에 넘긴다."
     },
     {
       "id": "D-ADS-3",
       "question": "사건 보고의 시장별 기한·양식은 누가 소유하는가?",
       "why": "GTR은 '지체 없이·30일·매년'만 정하고 시장별 기한은 법이 정한다.",
-      "proposal": "플랫폼은 인지 시각·기한 계산·초안만, 시장별 기한 표는 규제 담당(R-REG) 승인 데이터."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 플랫폼은 인지 시각·기한 계산·초안만, 시장별 기한 표는 규제 담당(R-REG) 승인 데이터(묶음 P6)."
     },
     {
       "id": "D-ADS-4",
       "question": "업무 절차 모델(FPW.8·FPW.13)은 어느 세션이 고칠까?",
       "why": "route 권한을 바꾸면 workflow:check가 실패하고, 모델은 다른 세션 소유다.",
-      "proposal": "이 세션이 항목마다 모델 diff를 제안하고, 업무 절차 세션 기준(scripts/check.py)으로 같은 커밋에 반영."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 각 묶음이 절차가 바뀌면 모델 diff(docs/65-workflows/model/*.yaml)를 내고 scripts/check.py 기준으로 같은 커밋에 반영(공통 지시에 한 줄)."
     },
     {
       "id": "D-ADS-5",
       "question": "차량 팀과 확정할 결정 5건(HARA·ASIL·시간 예산, ODD 신호·한계, 설치·정지 유지·전원, 컴포넌트 대응, 시장 운영 절차)의 담당은?",
       "why": "보고서는 플랫폼이 단독으로 정할 수 없다고 명시한다.",
-      "proposal": "플랫폼은 계약·시뮬레이터 기본값을 '가정값'으로 표시하고 차량 팀 확정 후 교체."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 플랫폼은 계약·시뮬레이터 기본값을 '가정값'으로 표시하고 차량 팀 확정 후 교체(묶음 S). 확대 판정의 가정값 근거는 알림만, 실측은 막음."
     },
     {
       "id": "D-ADS-6",
       "question": "FFP 요구 64개를 codeBeamer 요구 항목으로 등록할까?",
       "why": "사양의 원장은 codeBeamer(IF-01)라는 결정과 맞추려면 FFP 요구도 codeBeamer가 주인이어야 한다.",
-      "proposal": "카탈로그를 ReqIF로 내보내 codeBeamer에 등록하고, FF는 판정·Evidence만 쓰기."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 지금은 ReqIF 파일 내보내기만(묶음 P6), codeBeamer 등록은 실서버가 생기면. FF는 판정·Evidence만 쓴다."
     },
     {
       "id": "D-ORC-1",
       "question": "고객에게 보이는 화면을 FF에 둘까?",
       "why": "사례 C1~C8은 고객 앱 화면을 전제한다. FF는 운영 콘솔이다.",
-      "proposal": "고객 상태 API + 운영자용 \"고객에게 보이는 상태\" 미리보기만(ORC-UI03). 고객 앱은 만들지 않음."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 고객 상태 API + 운영자용 \"고객에게 보이는 상태\" 미리보기만(ORC-UI03, 묶음 P7b). 고객 앱은 만들지 않음."
     },
     {
       "id": "D-ORC-2",
       "question": "FF_IMP 영상 자막의 표현 충돌 목록을 그 세션에 전달할까?",
       "why": "그 세션 소유 산출물이다. 충돌 문구가 외부 공개되면 오해를 만든다.",
-      "proposal": "사용자 승인 후 SendMessage로 목록 전달, 수정은 그 세션이."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 자막 충돌 목록을 문서 1개로 시연 키트(FF_IMP)에 전달, 자막 수정은 그 작업이."
     },
     {
       "id": "D-ORC-3",
       "question": "커머스·결제 연동 범위",
       "why": "주문↔권리 연결(B02)에 결제 시스템 경계가 필요하다.",
-      "proposal": "기존 과금 모의(if_call BILLING — 지금은 체험→구매 전환 경로만)에 직접 주문·환불 이벤트를 넣어 시작, 실제 커머스 연동은 서버 정보가 오면. (IF-09는 TMS 모의라 쓰지 않음)"
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 과금 모의(if_call BILLING)에 직접 주문·환불 이벤트만 넣어 시작(묶음 P7a), 실제 커머스 연동은 서버 정보가 오면. (IF-09는 TMS 모의라 쓰지 않음)"
     },
     {
       "id": "D-ORC-4",
       "question": "내부 참고자료 I1~I5(Hyundai 아키텍처 슬라이드·CCS/OTA 메시지 아키텍처 등) 원본을 받을 수 있나?",
       "why": "Orca 보고서가 출처로 적었지만 zip에 없다. 6축·경계 설계의 원 근거다.",
-      "proposal": "받으면 sources에 sha로 고정하고 영향 문장을 재검토."
+      "proposal": "확정(2026-11-07, 사용자): 자료 유무에 따름 — 사용자에게 I1~I5 원본을 요청, 받으면 sources에 sha로 고정하고 영향 문장 재검토. 받기 전에는 '원본 미확보' 표시 유지."
     },
     {
       "id": "D-ADS-7",
       "question": "설계가 쓰는 역할 중 계약 역할 목록에 없는 것(분석 전용·독립 검토자·공장 품질 담당, 새 절차 후보의 고객 지원·커머스 운영·정비 거점)을 기존 역할로 바꿀지, 신설할지?",
       "why": "역할을 늘리면 IAM·데모 계정·업무 절차 정합성 게이트(check.py --live)가 함께 바뀐다. 정하지 않으면 권한 없음 상태와 막힘 사유 문구를 쓸 수 없다.",
-      "proposal": "분석 전용 → 감사 조회자(기존), 독립 검토자 → Safety Manager 중 비작성자(직무 분리 규칙). 신설은 고객 지원·정비 거점 2개만 업무 절차 세션에 제안(D-ADS-4 방식)."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 분석 전용 → 감사 조회자, 독립 검토자 → 작성자 아닌 Safety Manager(직무 분리), 출고 품질 보류 → BOM 승인자. 신설은 고객 지원·정비 거점 2개만 업무 절차 쪽에 제안(docs/65-workflows/proposals), 역할 추가는 하지 않음."
     },
     {
       "id": "D-ADS-8",
       "question": "2단계(Safety Case 화면·manifest 전) 동안 SW·MODEL·ODD 개정의 Safety Case 갱신 확인을 Safety Manager 수동 확인 기록으로 통과시킬지?",
       "why": "수단이 없다고 막으면 2~3단계 동안 해당 종류 개정을 하나도 발행할 수 없다.",
-      "proposal": "수동 확인 기록(사유·서명)으로 통과, ADS-BE14 뒤 evidence_manifest 확인으로 교체."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 수동 확인 기록(사유·서명)으로 통과(ADS-BE14 중간 단계, 묶음 P6), ADS-BE14 뒤 evidence_manifest 확인으로 교체."
     },
     {
       "id": "D-ORC-5",
       "question": "내부 상품 승인(상품 × 시장)의 출처를 어디로 할까? 지금 플랫폼에는 시장별 상품 출시 승인 기록이 없다.",
       "why": "없으면 1~2단계에 법적 승인만으로 결제가 열리거나(예: 유럽), 반대로 모든 구매가 막혀 HT01 시험을 못 돌린다.",
-      "proposal": "상품 출시 승인(FPW.7-A10)에 시장을 넣어 product_market_approval로 기록하고, 결정 전에는 시드 승인 시장만 통과."
+      "proposal": "확정(2026-11-07, 사용자): 기본안 — 상품 출시 승인(FPW.7-A10)에 시장을 넣어 product_market_approval로 기록(묶음 P7a), 결정 전에는 시드 승인 시장만 통과."
     }
   ],
   "phases": [

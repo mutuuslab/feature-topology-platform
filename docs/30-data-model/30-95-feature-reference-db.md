@@ -10,7 +10,7 @@ standards: [ISO-26262, COCOMO-II, COVESA-VSS, AUTOSAR]
 traces:
   satisfies: [FR-1, FR-2]
   related: [ARC-TAXONOMY, ARC-COST-ESTIMATION]
-last_updated: 2026-11-05
+last_updated: 2026-11-07
 ---
 
 # 30-95 Feature DB — Feature 등록 정보 원천
@@ -18,7 +18,7 @@ last_updated: 2026-11-05
 > 원본: `Automotive_SW_개발비_산정도구_FeatureDB_v1.3.xlsx`의 `03_FeatureDB`(1,052행 × 75열)와 딸린 시트
 > `03b_Feature카탈로그`·`09_출처`·`13_세부기능후보`·`15_DB운영`·`10_UVL검증`.
 > 짝 문서: 개발비 산정 `20-94-cost-estimation.md`. 작성 2026-11-04, 설계 브랜치 `docs/feature-refdb-cost`.
-> 상태: **승인·구현 완료(R1~R3, `feat/feature-db`)** — 구현 기록 §13.1. 남은 결정은 D-REF-15(Feature ID 형식)뿐이다.
+> 상태: **승인·구현 완료(R1~R3, `feat/feature-db`)** — 구현 기록 §13.1. D-REF-15(Feature ID 형식)는 2026-11-07 확정 — ID는 그대로, 도메인 약어는 표시용 별칭(§3).
 
 ## 1. 한 줄 요약
 
@@ -44,7 +44,7 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | D-REF-12 | `03b` 상세 정의는 기준 행 `definition`으로 이전, `13` 세부기능 후보는 읽기 전용 참고 (R-2) | §5.1·§5.5 |
 | D-REF-13 | 같은 범위·같은 대표 행 중복은 409, 사유 입력 시 허용 (R-3) | §6.2 |
 | D-REF-14 | 런타임 xlsx는 **새 의존성 없는 최소 쓰기**(`backend/src/kernel/xlsx-write.ts`) (R-4) — 처음엔 SheetJS 백엔드 의존성으로 정했다가 구현 뒤 다시 결정(2026-11-04 사용자) | §10 |
-| D-REF-15 | FF Feature ID를 **도메인 포함 형식으로 변경** (R-5) — 형식·기존 ID 처리는 `80-50` §11 A-2 | §3 |
+| D-REF-15 | ~~FF Feature ID를 도메인 포함 형식으로 변경~~ → **확정(2026-11-07, 사용자 D9 (b)): Feature ID는 `FEAT-\d{5}` 그대로, 도메인 약어는 표시용 별칭** (R-5, `80-50` §11 A-2) | §3 |
 | D-REF-16 | JIRA Epic의 기준 ID·범위는 **JIRA 안의 FF 앱**이 사용자 필드에 기록 (R-6) | §7, `80-50` §4.7 |
 | D-REF-17 | **R1·R2 구현 승인**(2026-11-04) | §13 |
 | D-REF-18 | **연결 없는 Feature 정의 승인을 막는다** — 대표 기준 행 연결이 없으면 PROPOSED→APPROVED 차단(`REFDB_LINK_BLOCKED`). 이미 승인된 버전은 그대로 둔다(2026-11-04 사용자, 하네스 리뷰) | §5.2 |
@@ -60,9 +60,9 @@ FF Feature(국가·차종·트림 범위, 버전·수명주기)는 등록할 때
 | 분류 | Feature에 도메인 없음. ECU.domain 자유 문자열(Body·ADAS…). 분류는 태그에서 유도 | 도메인 → 클러스터 → 컴포넌트 기준 정보 |
 | 관계 | REQUIRES·EXCLUDES(Feature 간) | 기준 행 수준 선행·배타 제약 추가 → Feature 등록·산정 때 경고 |
 | xlsx | 오프라인 `data:import`(DATASET v0.81 → fixture) | 같은 방식으로 `refdb:import` 1회 이전 |
-| ID | `FEAT-\d{5}` | **형식 확정 대기(D-REF-15)** — 지금 구현은 `FEAT-\d{5}` 그대로. 기준 행은 엑셀 ID(`BC-BCM-001`) 유지 |
+| ID | `FEAT-\d{5}` | **확정(D-REF-15, 2026-11-07): `FEAT-\d{5}` 그대로** — 도메인 약어는 화면 표시용 별칭. 기준 행은 엑셀 ID(`BC-BCM-001`) 유지 |
 
-Feature ID를 도메인 포함 형식으로 바꾸기로 했다(D-REF-15) — 대표 기준 행의 도메인 약어를 쓰는 기본안 `FEAT-BC-0001`, 기존 `FEAT-00001`은 유지(두 형식 허용). 형식이 `80-50` §11 A-2에서 확정되기 전이라 **아직 구현하지 않았다**(새 Feature도 `FEAT-\d{5}`).
+Feature ID는 바꾸지 않는다(**D-REF-15 확정 2026-11-07**, 사용자 D9 (b)). 차량 와이어 스키마가 `FEAT-` + 숫자 5자리를 정규식으로 고정해(`FF/contracts/src/schemas/wire.ts:62,141`) 서명·상태 보고·Unleash 키가 모두 이 ID를 쓰기 때문이다. 도메인 식별은 **표시용 별칭**으로 채운다 — 대표 기준 행의 도메인 약어(예: `BC`)를 Feature ID 옆에 보여 주고(화면만, 구현 묶음 P14), 와이어·서명·Unleash 키·API 경로·감사 기록의 ID는 그대로다. 이전 기본안 `FEAT-BC-0001`(두 형식 허용)은 쓰지 않는다.
 
 ## 4. 분류 체계 (D-REF-9)
 
@@ -79,6 +79,12 @@ Feature ID를 도메인 포함 형식으로 바꾸기로 했다(D-REF-15) — �
 - 분류 표 `taxonomy_node(node_id, level, parent_id, name_en, name_ko, abbr, status)` — 컴포넌트 약어(BCM, BRK…)는 ID 규칙(§5.1)에 쓴다.
 - **ECU.domain 정리**: `contracts/src/rules/refdb/domain-alias.ts`에 자유 문자열 → 공식 도메인 대응표(예: `Body` → `Body & Comfort`, `ADAS` → `ADAS & AD`). `data:check`가 대응 안 되는 ECU.domain을 경고한다. ECU 표 자체는 1단계에서 바꾸지 않고, 화면·필터가 대응표로 공식 도메인을 보여 준다.
 - SW 계층(Application 702 · Platform 278 · Back-end 72), 수명주기(Commodity 818 · Differentiating 178 · Innovation 56), 차량 유형, 적용 권역은 기준 행의 열거형 속성으로 둔다(태그로 미리 채움).
+
+### 4.1 분류 확장과 명세의 Variant Rule 대응 (기능명세서 결정 D8, 2026-11-07)
+
+- **분류 확장**: 위 분류 표(L0~L2)를 30-70 Taxonomy의 L5까지 넓히고(노드 배치·Level 정합성·L0~L5 경로 조회), 브랜드 3종(현대·기아·제네시스)과 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표를 둔다 — 구현 묶음 TX. 노드 삭제는 초안 삭제 규칙(결정 D2 — 하위 노드가 있으면 거부)을 따른다.
+- **Variant Rule 대응(가정)**: 기능명세서의 'Variant Rule'은 독립 엔티티로 만들지 않는다. 명세의 Variant Rule = 기존 Variant 조건(`FF/backend/src/domains/d02-runtime/variant-conditions`, 차종·트림·SW 버전·시장 조건) + ISO 26580 구성 규칙(20-60 bill-of-features 제약)으로 읽는다.
+- 영향 요구와 조회를 맡는 묶음: FR-CST-001-002(R04, RP) · FR-DSV-001-002 · FR-PDA-001-004(P11b) · FR-KSW-001-002 · FR-KSW-002-003 · FR-KSW-003-001(P11a) · FR-REG-005-002(P10) · FR-CRC-001-003(TX). 판정·사유는 `FF/harness/requirements/review.json`(specNotes·verdicts)에 있다.
 
 ## 5. 데이터 모델
 
@@ -317,7 +323,7 @@ DB 관리자가 점검을 기록하면(`POST /api/refdb/sources/reviews` — 출
 | R-2 | `03b` 상세 정의와 `13` 세부기능 후보 840개 범위 | **결정: 추천대로** — D-REF-12 |
 | R-3 | 같은 범위 같은 대표 행 중복 | **결정: 409 + 사유 입력 시 허용** — D-REF-13 |
 | R-4 | 런타임 xlsx 내보내기 방식 | **결정: 새 의존성 없는 최소 쓰기**(구현 뒤 2026-11-04 다시 결정) — D-REF-14 |
-| R-5 | `30-90`의 `FEAT-{DOMAIN}-{NNN}` 정리 | **결정: 도메인 포함으로 변경** — D-REF-15, 형식은 `80-50` A-2 |
+| R-5 | `30-90`의 `FEAT-{DOMAIN}-{NNN}` 정리 | ~~결정: 도메인 포함으로 변경~~ → **확정(2026-11-07): ID 그대로, 도메인 약어는 표시용 별칭** — D-REF-15 |
 | R-6 | JIRA 기준 ID 전달 방법 | **결정: JIRA 안의 FF 앱** — D-REF-16 |
 
 ## 13. 단계
@@ -333,7 +339,7 @@ DB 관리자가 점검을 기록하면(`POST /api/refdb/sources/reviews` — 출
 - R1~R3 구현 완료. 두 세션 구현(`feat/feature-db-alm` R1·R2 백엔드)을 병합해 하나로 정리했다 — 겹치는 구현은 `feat/feature-db` 기준, 결정(D-REF-12~17)·JIRA 필드·배포 묶음·원본 엑셀 대조는 옮겨 담았다.
 - 업무 절차: FPW.1-A06(추가 요청)·FPW.14(Feature DB 운영), 역할 R-RDA(`REFDB_ADMIN`)·R-DRV(`DOMAIN_REVIEWER`), 직무 분리 SOD-13(요청자≠승인자)·SOD-14(요청자≠검토자)·SOD-15(검토자≠승인자) — 모두 사람 단위.
 - 하네스: `backend/test/d01/refdb-harness.spec.ts`(경로·권한표·직무 분리·시드·연결·상태), `tools/refdb/check.test.ts`(이전 점검·다시 가져오기·배포 묶음), e2e `refdb.spec.ts`. 이 문서의 수치(1,052행·995/53/4·출처 73·세부기능 840·정의 24·도메인 10·컴포넌트 69 등) ↔ `data/reference/feature-db/v1.3` 대조는 `tools/docs-meta.ts`가 한다.
-- 남은 것: D-REF-15(Feature ID 도메인 포함 형식 — `80-50` A-2 확정 뒤), 도메인 검토 범위 배정(D-REF-19), 벤치마크 열람을 산정 역할로 넓히기(`20-94` 구현 때).
+- 남은 것: D-REF-15 도메인 별칭 표시(화면, 묶음 P14), 도메인 검토 범위 배정(D-REF-19), 벤치마크 열람을 산정 역할로 넓히기(`20-94` 구현 때).
 - 시드 ASIL 차이(2026-11-04 사용자 결정 "대표 기준 행 다시 고르기"): 6개 기능명(23개 Feature·31개 Version) 모두 같은 ASIL의 맞는 기준 행이 없어 대표 행을 유지하고 사유를 `seed-links.json` `asilDeviation`(from 대표 ASIL·to 시드 ASIL·사유)으로 기록했다. 하네스 고정 목록 0건 — 새 불일치는 실패. 더 나은 해결은 ASIL C 기준 행 변형을 추가 요청(D-REF-7)하는 것. 확인 권장: 차로 유지 보조를 LFA(AD-LAT-004, C)로 볼지, AR HUD는 A→QM 하향이라 기능안전 확인.
 
 각 단계는 `npm run verify` 통과, UI 변경은 `verify:full`(시각 기준)까지.

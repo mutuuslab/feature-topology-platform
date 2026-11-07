@@ -36,9 +36,9 @@
 - **두 세션 병합(2026-11-04)** — `-cost` 세션의 `feat/feature-db-alm`(설계 80-50·80-51, R1·R2 백엔드, 화면 WIP e521a18)을 `feat/feature-db`에 병합. 같은 설계로 두 구현이 겹쳐(34개 파일, 080 마이그레이션·/api/refdb·화면) `feat/feature-db` 구현을 기준으로 하고, 그쪽에서 옮겨 담음: 결정 D-REF-12~17·20-94 D-COST-8~13 문서, Docker·데스크톱 런타임의 `data/reference` 복사(빠지면 고객 설치 첫 기동 시드 NO_DATA — 회귀 시험), 원본 엑셀 사본 `data/source/feature_db_v1.3.xlsx`와 data:check 다시 가져오기 대조(7개 파일), JIRA `JIRA_FIELD_FEATURE_DB`(필드가 기준·비면 라벨, live 필수, ext:check 후보 — D-REF-16).
 - **R1~R3 구현** — 엑셀 v1.3 → `data/reference/feature-db/v1.3`(1,052행·995/53/4·출처 73·세부기능 840·도메인 10/컴포넌트 69). 마이그레이션 080·081, 시드는 FF_SEED=none에도(FF_REFDB_SEED=off로 끔), 데모 Feature 연결 `seed-links.json`(60개 연결·8개 미연결). `/api/refdb` 검색·상세·분류·현황·추가 요청(정식 ID, PENDING)·변경 요청 → 도메인 검토(DOMAIN_REVIEWER) → 관리자 승인(REFDB_ADMIN) → 릴리스 발행(정규화 해시·append-only)·xlsx 내보내기. Feature 등록 2단계(기준 행 고르기 → 내용), 연결 필수(대표 1+포함 N)·ASIL 사유·같은 범위 같은 대표 409(사유 시 허용)·PENDING/RETIRED 연결은 APPROVED 막음(REFDB_LINK_BLOCKED). 업무 절차 FPW.1-A06·FPW.14, 역할 R-RDA·R-DRV, SOD-13/14. 시험: contracts rules/refdb·schemas, backend refdb-*.spec·refdb-harness.spec·epic-ref-ids.spec, tools/refdb/check.test, e2e refdb.spec.
 - **결정(2026-11-04 사용자)** D-REF-14 다시 결정 — xlsx 쓰기는 지금 구현(의존성 없는 `kernel/xlsx-write.ts`) 유지. 시드 ASIL 불일치는 대표 기준 행을 다시 고른다(맞는 행 없으면 사유 기록).
-- **시드 ASIL 차이 정리** 6개 기능명(23 Feature·31 Version)은 같은 ASIL의 맞는 기준 행이 없어 대표 유지 + seed-links asilDeviation 사유(from·to·reason) — 하네스 고정 목록 31→0. 확인 권장: 차로 유지 보조 LFA(AD-LAT-004) 여부, AR HUD A→QM 하향(기능안전).
+- **시드 ASIL 차이 정리** 6개 기능명(23 Feature·31 Version)은 같은 ASIL의 맞는 기준 행이 없어 대표 유지 + seed-links asilDeviation 사유(from·to·reason) — 하네스 고정 목록 31→0. 확인 권장: 차로 유지 보조 LFA(AD-LAT-004) 여부, AR HUD A→QM 하향(기능안전). **결정(2026-11-07, D15)**: 기능안전 담당 확인 전까지 지금 사유 기록 유지 — 결과가 오면 seed-links 사유만 고친다.
 - **데스크톱 설치 파일(2026-11-04)** `src-tauri/target/release/bundle/nsis/Feature Platform_0.1.0_x64-setup.exe`(66.03 MiB, sha256 606437163fe4…6bac75, -dept에서 빌드) — Feature DB 이전본 포함. 빌드 중 잡은 결함: 정적 데모 스냅샷 파일 이름이 Feature DB 질의로 181자가 되어 NSIS가 경로 길이로 실패 → `snapshotFile`이 120자 넘으면 앞부분+URL 해시(회귀 시험), 데스크톱 스모크의 Feature 등록에 대표 연결. 스모크: 패키지 서버 통과, 네이티브 4회 중 첫 기동 1회만 창 종료 뒤 백엔드 5초 안 미종료(강제 정리) — 재현 안 됨, 관찰 중.
-- **남은 것** Feature ID 도메인 포함 형식(D-REF-15, 80-50 A-2 확인 필요), C1~C4 개발비 산정, 80-50 승인 뒤 A1~A6. 모의 서버 `tools/ext-mocks` 미작성.
+- **남은 것** Feature ID 도메인 별칭 표시(D-REF-15 확정 2026-11-07 — ID는 `FEAT-\d{5}` 그대로, 도메인 약어는 표시용 별칭, 묶음 P14), 80-50 A2~A5(묶음 ALM, 2026-11-07 재개 승인). C1~C4 개발비 산정은 완료(`20-94` §단계 표), 모의 서버 `tools/ext-mocks`는 `-alm`(e9dd38a)에서 작성(미병합).
 
 ## 출시 준비(Production Readiness) + Jira식 대시보드 (2026-10-24 사용자 요청 "전체 하네스 엔지니어링으로 실제 고객이 사용할 수 있을 정도의 퀄리티" · "대시보드는 Jira 스타일, Layout은 Drag로 조정·추가")
 - **업무 이름 표시(2026-10-25 사용자 요청)** — 내부 절차·활동 코드는 사용자 화면에 쓰지 않는다. 홈 가젯·내 업무·담당자 표·절차 흐름도/텍스트·상세·산출물 참조·따라하기·완료 서랍·접근성 이름을 업무 이름으로 통일한다. 원천 모델·저장 식별자·주소는 보존한다. 문장 속 절차 참조도 이름으로 읽고 중복 괄호 참조는 제거한다. 화면·접근성의 코드 노출 회귀 18건 포함 프론트 837건 통과. 실제 브라우저 8경로에서 코드 노출·페이지 가로 넘침 0 확인. `verify:full`의 39단계 모두 통과(선행 32단계 + 시험 문구 수정 후 브라우저 이후 7단계 분할 재검증, 주 브라우저 787건 포함). 브라우저 시험 중 다음 시험 준비에서 응답하지 않던 작업자 하나는 이 실행기의 소유를 확인한 뒤 중지했고, 실행기가 새 작업자로 이어서 나머지 시험을 통과했다. 로컬 앱 프론트 반영·백엔드 재시작·health 200 확인.
@@ -64,7 +64,7 @@
 - **운영 값·개인정보(2026-10-25, 브랜치 `feat/prod-enums-privacy`, worktree `-priv`)** — RD-OPS-03(마지막 P0)·RD-P2-05 완료(열린 P0 1→0). 운영 값: 권한 출처·Fleet에 `PRODUCTION`(contracts `rules/reference-data.ts`), 고객 차량 권한은 PRODUCTION 기록·체험 만료 sweep 포함(회귀 시험), 목록·지도 출처 `FLEET`(등록 차량) 기본·화면 "등록 차량". 고객 기준 값: 판매국·지역·차종·트림 `GET/POST /api/reference-values`·사용 중지(VARIANT_OWNER), 마이그레이션 065, 화면 `/master/reference-values`, 데모 값은 시드(origin SEED)만, 운영 차량 등록 `POST /api/fleet/vehicles`(기준 값 검사). 개인정보: 목록 `rules/privacy.ts`(41개 저장소·사용자/차량·삭제/가명/법정 보존), 내보내기 JSON·삭제 요청 → 다른 보안 담당자 실행(4안), 감사 체인 v2(칸별 소금 해시 — 가명 처리 뒤 verifyChain 통과, 처리 기록 없는 변조 검출), 마이그레이션 066, 보존 기한 `FF_RETENTION_SESSION/NOTIFICATION/AUDIT_IDENTITY_DAYS`(housekeeping과 함께), Data Lake 삭제 접점 `kernel/lake-erasure.ts`(FF_LAKE_URL·TOKEN, 없으면 NOT_CONNECTED), 화면 데이터·규제 기록 → 개인정보 탭. 결정 대기 D-RD-9(이벤트 보존 일수)·D-RD-10(서명 기록 식별자)·D-RD-11(4안 원칙). 정본 20-90 §11·§12, 설치 안내서 §9.4·9.5, 사용자 설명서. 함께 고친 결함: 대시보드 가젯·AsyncView 불러오기 골격과 이름 붙인 요약 줄이 역할 없는 aria-label(axe aria-prohibited-attr)이라 느린 기기에서 홈 axe 검사(e2e login)가 실패 — 골격 role=progressbar, 요약 줄 role=group, 회귀 시험 dashboardSkeletonA11y. 내보내기 응답(개인정보 사본)은 재전송 보관함에 남기지 않는다(NoReplayStore).
 - **단일 인스턴스·PostgreSQL 이전 1단계(2026-10-25, D-RD-3, 브랜치 `feat/postgres-phase1`, worktree `-pg`)** — RD-OPS-14 완료(열린 P1 1→0, 이중화는 새 P2 RD-OPS-15). 설계 정본 `docs/20-architecture/20-92-postgresql-migration.md`(현재 DB 접근 목록·목표 구조·5단계·데이터 이전·위험 R1~R11). 단일 인스턴스 임대 `kernel/instance-lease.ts`(두 번째 인스턴스 부팅 거부·같은 호스트 재시작 넘겨받기·백업 사본에서 제외), 공유 상태 `kernel/shared-state.ts`(멱등 예약·차량 빈도 창, 마이그레이션 075), PG 어댑터 미리보기(`FF_DB_URL`, 동기 다리 `pg-sync-db.ts` + 방언 번역 `pg-dialect.ts`, 비동기 Db 계약 `async-db.ts`), SQLite→PG 데이터 이전 `ops/sqlite-to-pg.ts`(감사 체인 다시 계산), 하네스 `npm run test:pg`(verify --full, Docker postgres:16 :9690, 래칫 pgBackendPass) **PG 769/775 통과·실패 0**. 새 의존성 `pg`(표준 드라이버 — 사용자 허용). 남은 것: 20-92 2단계(호출부 비동기화·PG 백업)·3단계(LISTEN/NOTIFY·지도자 임대·감사 추가 직렬화).
 - **CI 녹색·시험 결정성(2026-10-25 사용자 요청 "하네스 엔지니어링으로 품질을 올려", 브랜치 `feat/quality-ci`, worktree `-qci`)** — CodeQL 15건: 제품 코드 2건 수정(Bearer 자리에 ID 토큰을 받지 않음 `ID_TOKEN_AS_ACCESS_TOKEN`·질의 배열/객체 변조로 페이지 나눔 우회 차단, 회귀 시험), 시험 OTA 서버 SSRF·타이머(허용 호스트·경로·지연 상한·7일 기한), 시험 코드 경쟁·escape·약한 키·URL 비교 수정, `snapshot-api.ts`만 이유와 함께 `.github/codeql/codeql-config.yml`. OTA 연동 시험 흔들림 근본 원인 둘: ① 제품 결함 — 재시도 타이머(단조 시계)가 벽시계보다 일찍 깨면 '때가 됐나'를 벽시계로 다시 물어 작업이 RETRY_WAIT에 멈춤(다시 걸지도 않음) → `kick(upTo)`(시계를 멈춰 재현하는 회귀 시험) ② 회신 기한이 모듈 로드 때 정해져 시험의 4초가 아닌 8초가 실시간으로 경주 → `vi.hoisted` 10분 + 시험 OTA 서버 `/_sim/expire`·FF `close()`로 기한을 시험이 직접 닫음. 정적 데모 `/activation/decide` 누락 근본 원인: Fleet 조회(useQueries)에 enabled가 없어 정책 목록보다 차량 목록이 먼저 오면 flagKey 없이 요청 → 수정 + contracts `requiredQuery` + data:check 정적 검사. 하네스 `test:hygiene`(래칫 고정 포트 0·잠자기 15·실시간 기한 0·Date.now 3·waitForTimeout 3, vitest 설정 0)·`npm run flaky -- <시험> --repeat N --parallel K`(tools/README.md). snapshot:api 고정 포트 9199 → OS 포트. CI 차량 상세 흔들림(배치 시험 page.evaluate 60초·3D 보기 뒤 화면 안 판정): 화면 밖 3D 씬이 'demand'로도 시뮬 시계마다 다시 그려 소프트웨어 렌더가 본문 스레드를 막음 → 화면 밖·첫 판정 전 `frameloop=never`(단위 회귀 시험) + e2e 동작 줄이기. 셸 로고 시험 한 번 재기 → expect.poll. 대시보드 메뉴 초점 경합: 편집 모드의 다음 그림 틀 초점 이동이 시험의 초점을 빼앗음 → 편집 제목 초점을 기다린 뒤 진행. 시각 기준 13장 갱신(기능안전 부품·관제실 영역 — 업무 절차 흐름도 화면 기준은 없음·다른 작업이 고치는 중이라 손대지 않음).
-- **성능·브라우저(2026-10-25, 브랜치 `feat/perf-browsers`, worktree `-perf`)** — RD-P2-01·03 완료(완료 36/40). 부하 시험 `tools/load`(full: Feature 2천·차량 10만·감사 100만·이벤트 50만·알림 10만, 별도 프로세스·이벤트 루프 막힘 탐침), p95 예산 `harness/perf-budgets.json`(verify `perf` light·`perf:full`), 질의 계획 회귀 시험 `query-plans.spec`. 고침: Feature 목록 N+1(p95 2.2 s→74 ms)·최근 활동 색인(12 s→16 ms)·알림 SQL 집계(17 s→45 ms)·차량 가젯 수만(10 s→11 ms)·Kill 영향 범위(1.1 s→13 ms)·감사 체인 묶음 검증(32 s 막힘 제거)·가명 표, 마이그레이션 070. 브라우저: firefox·webkit 핵심 흐름 스모크(기본 verify·CI), 768·390 스모크(상단바 넘침 수정), --full은 좁은 폭을 다른 엔진으로. 문서 `20-92-performance.md`·`20-93-browser-support.md`.
+- **성능·브라우저(2026-10-25, 브랜치 `feat/perf-browsers`, worktree `-perf`)** — RD-P2-01·03 완료(완료 36/40). 부하 시험 `tools/load`(full: Feature 2천·차량 10만·감사 100만·이벤트 50만·알림 10만, 별도 프로세스·이벤트 루프 막힘 탐침), p95 예산 `harness/perf-budgets.json`(verify `perf` light·`perf:full`), 질의 계획 회귀 시험 `query-plans.spec`. 고침: Feature 목록 N+1(p95 2.2 s→74 ms)·최근 활동 색인(12 s→16 ms)·알림 SQL 집계(17 s→45 ms)·차량 가젯 수만(10 s→11 ms)·Kill 영향 범위(1.1 s→13 ms)·감사 체인 묶음 검증(32 s 막힘 제거)·가명 표, 마이그레이션 070. 브라우저: firefox·webkit 핵심 흐름 스모크(기본 verify·CI), 768·390 스모크(상단바 넘침 수정), --full은 좁은 폭을 다른 엔진으로. 문서 `20-95-performance.md`·`20-93-browser-support.md`.
 - **남은 것(순서)** ① 대시보드 시각 검토 반영 ② ~~인증 OIDC(RD-SEC-01~05)·데모 빌드 분리~~ ③ 오류 화면 UX(RD-UX-01)·입력 보호(UX-02) ④ 멱등 경쟁(OPS-13)·예약 작업 복구(OPS-06)·마이그레이션 업그레이드 시험(OPS-10)·관측(OPS-11)·감사 앵커(SEC-13) ⑤ 빈 DB e2e(OPS-02)·운영 출처 값(OPS-03) ⑥ Docker·설치 안내서(OPS-05·SEC-09·P2-04) ⑦ PostgreSQL(OPS-09·14) ⑧ 결함 12건(FN-01)·롤백(FN-02). 대시보드 배치의 서버 저장(사용자 설정 API)은 OIDC 뒤에.
 
 ## ADS·UNECE 보고서 v3.0 반영 (2026-10-18 사용자 요청 "FF Platform 목적·vision·시나리오가 들어 있으니 모두 반영 — 분석·저장·HTML 보고" → "다른 세션과 통합, UI/UX·프론트·백엔드·DB 수정 설계")
@@ -81,7 +81,7 @@
   - 용어집 '차량 상태 용어 고정', 표준 등록부 ADS 절(GTR 26·R185·R156 01·R157)
   - verify 단계 `ads`
 - **판정 결과**(2026-10-18 재검증 반영)
-  - 요건: 구현 3 · 부분 52 · 미구현 6 · 범위 밖 3
+  - 요건: 구현 3 · 부분 52 · 미구현 6 · 범위 밖 3 → 2026-11-07 `harness/ads/review.json` 기준 구현 19 · 부분 38 · 미구현 4 · 범위 밖 3
     - '구현' 7건을 적대적으로 재검증해 F022·F062·F033·F060을 반려했다.
   - 인수시험: 자동 3 · 일부 17 · 없음 4
 - **결함 6건**(it.fails 기록, 설계 1단계 ADS-BE03~06·BE19에서 회귀 시험과 함께 수정)
@@ -142,7 +142,7 @@
   - **문서 숫자 대조**: Orca 절의 "결함 3건"을 ADS 결함 수와 혼동하는 문제를 잡아 표현을 분리했다.
   - **보고서 화면**(서브에이전트가 스크린샷 판정): 모바일 가로 넘침, 앵커 대상 가림, ID 줄바꿈을 고쳤다.
 - **다른 세션과 통합**: 3초 테스트(Kill 보류 항목은 ADS-UI02), 업무 절차 FPW.8·FPW.13, FF_IMP 와이어 2.1, 텔레메트리 TL-UI02·TL-B01/B02, 양방향 연계
-- **확인 필요(사용자)**: D-ADS-1~6. FF_IMP 와이어 2.1, 대표 Feature 2개, 사건 보고 기한 소유, RACI 모델 수정 주체, 차량 팀 결정 5건, FFP 요구의 codeBeamer 등록.
+- **결정(2026-11-07 확정)**: D-ADS-1~8·D-ORC-1~5 모두 기본안 — `harness/ads/design.json` decisions·BACKLOG ADS 절(FF_IMP 와이어 2.1은 FF 동시 수락 뒤 별도 커밋, 대표 Feature 2개는 후보 확인 뒤, codeBeamer는 ReqIF 내보내기만).
 - **main 통합(2026-10-18 사용자 "커밋한 것 모두 통합")**
   - `npm run verify` 전 단계 통과(e2e 460·정적 데모 72) 뒤 `main`을 `feat/v081-integration`으로 빨리감기했다. p10·docs/workflows는 이미 포함돼 있었다.
   - FF_IMP도 `main`을 `docs/standards-report-v1.1`(2cf3f10, 영상 문서 포함)로 빨리감기했다.
@@ -158,7 +158,7 @@
 - **Closed loop(사용자 요청)**: Lake의 Feature별 데이터로 4축(동작·문제·개선·위험)을 계속 판정한다. 흐름은 점검 결과(Finding) → 조치(JIRA·codeBeamer·정책) → 효과 확인 → 닫기/다시 열기이고, 결과는 라벨로 Lake에 돌려보낸다. 80-70 9장, INV-20·21.
 - **Backlog**: [`BACKLOG.md`](BACKLOG.md) 텔레메트리 절(TL-*). P1 UI/UX(TL-UI01~15, IF-15 mock fixture로 먼저)를 먼저 하고, 그다음 P2 계약·FF backend → P3 Lake 서버 → P4 차량 → P5 실제 연결 순이다.
 - 핵심 결정(내가 정함): 제어 채널(상태 보고, 지금 그대로)과 데이터 채널(MQTT→Kafka→Lake) 분리 · 원천 원장은 Lake, 플랫폼은 Gold 집계·안전 이벤트·모델 점수만 받음 · 플랫폼→Lake 라벨 CDC(보낼 함 재사용) · 수집 정책은 서명 게시본 경로 · ML 점수는 권고(Evidence), 자동 HOLD는 사전 등록 통계 규칙과 신선도 초과만 · CN은 현지 학습, 국외는 k≥5 집계·점수만.
-- **확인 필요(사용자)**: Lake 제품·접근(Kafka·REST·SQL)·인증, 신호 목록 소유 조직·로거 용량, 동의·위치(D5)·CN, 안전 지표 신선도 SLA(제안 10분), ISO/PAS 8800 적용 범위.
+- **확인 필요 → 확정(2026-11-07)**: Lake U-2~U-19 기본안 승인, 신호 목록·로거 용량은 차량 팀(가정값 표시), ISO/PAS 8800은 판정 밖이라 적용 밖(80-70 §8). 원래 질문 — Lake 제품·접근(Kafka·REST·SQL)·인증, 신호 목록 소유 조직·로거 용량, 동의·위치(D5)·CN, 안전 지표 신선도 SLA(제안 10분), ISO/PAS 8800 적용 범위.
 
 ## GitLab · JIRA · codeBeamer 양방향 연계 (2026-10-18 사용자 요청 "소스는 GitLab, CR·Feature 상태는 JIRA, 사양은 codeBeamer — 사이트에 반영, 방향 의견" → "양방향이 되게끔")
 - 계획 `~/.claude/plans/c-users-taehokim-downloads-feature-flag-snappy-heron.md`.
@@ -201,7 +201,7 @@
   | 첫 화면 경쟁 요소 | 5~8 | 1~6 | 1~5 |
 
   반영: 감사 불러오는 중 "해시 체인이 끊겼습니다" 거짓 경보, Fleet 실시간 미수신·STALE인데 "모두 같습니다"(ok) 거짓 안심 → 둘 다 회귀 시험. 정책 상세 미검증 warn, 컴플라이언스 75/75 중복·Feature 목록 안내 문장·감사 해시 조각·Learn 중복 행동 링크 제거.
-- **남은 일:** [BACKLOG.md](BACKLOG.md) "3초 테스트 잔여" `UX3-01`~`UX3-14`(화면별 S4 근거·고칠 것·결정 필요 D-UX3-1·2). 사용자 결정 전 미착수.
+- **남은 일:** [BACKLOG.md](BACKLOG.md) "3초 테스트 잔여" `UX3-01`~`UX3-14`(화면별 S4 근거·고칠 것·결정 필요 D-UX3-1·2) — UX3-01~15 모두 완료(BACKLOG '3초 테스트 잔여').
 - 검증: `verify:full`은 공유 작업 트리의 다른 세션 백엔드 WIP 실패로 중간에 멈춰, 이후 단계를 직접 실행 — test:frontend 484·conformance·standards·req·build·budget·e2e 451(poc 포함)·e2e:static 70·e2e:visual 23·backend 전부 통과. push·배포 안 함.
 
 ## 5년 운영 규모 데이터 (2026-10-17 사용자 요청 "현대차 연 700만 대, 플랫폼 5년 운영 가정 · 모든 차가 해당되지는 않음 · Test·시뮬레이션")
@@ -212,10 +212,10 @@
   - 짧은 재생(125일) CI 시험 `backend/test/ops5y/replay.spec.ts`.
   - 재생이 찾아 고친 결함: 서명 키 365일 만료 후에도 서명(전 차량 거부), 상업 비활성화가 안전 긴급 차단을 막음, 지도 격자 무제한(2 MB), 정적 데모 URL 어긋남.
 - dev: `npm run dev:backend:ops5y`(9101, 재생 DB 사본으로 — 재시작하면 재생 직후 상태). 화면: 지도 묶음(대표 대수)·화면 범위 요청, 체험 분석 26주/1년/5년, 홈 대상 차량, 만·억 표기.
-- **사용자 결정 대기**
-  1. 오래된 배포 산출물 롤백: 서명 키가 이미 만료된 3년 전 산출물은 "서명을 확인할 수 없습니다"로 롤백 거부(현재 동작). 서명 당시 유효했으면 허용할지.
+- **사용자 결정(2026-11-07 확정 — 1·3)**
+  1. 오래된 배포 산출물 롤백: 서명 키가 이미 만료된 3년 전 산출물은 "서명을 확인할 수 없습니다"로 롤백 거부(현재 동작). 서명 당시 유효했으면 허용할지. → **결정(C10): 거부 유지** — 신뢰 타임스탬프 없이 만료 키 서명은 위조와 구별할 수 없다.
   2. FEAT-00025·FEAT-00028 안전 프로파일에 sbomRef 없음 → 긴급 차단 뒤 복원이 게이트 FFG-PLT-010에서 막힘(EU·US 기능은 차단하면 복구 불가). → **해소(2026-11-06, 커밋 전, 규칙 결함)**: 복원·활성화 명령은 확정 프로파일 sbomRef가 없으면 그 Feature Version의 **마지막 정책 배포 게시본 SBOM**(D06-11)을 BOM-Link `urn:cdx:<serial>/<version>`로 참조(코디네이터 결정 — 차단·복원 게시본 SBOM은 쓰지 않음, 배포 게시본 SBOM이 없으면 FFG-PLT-010으로 복원 막음; kill.service·SbomService.deployedRef). 회귀 시험 ads/defects.spec '5년 재생 결정 ①'(3건)·ops5y/replay.spec(FEAT-00025 차단→복원).
-  3. 가정값(탑재율·커넥티드율·시장 비중)을 실제 비율로 바꿀지 — `POPULATION_ASSUMPTIONS`만 바꾸고 재생.
+  3. 가정값(탑재율·커넥티드율·시장 비중)을 실제 비율로 바꿀지 — `POPULATION_ASSUMPTIONS`만 바꾸고 재생. → **결정(D11)**: 실제 값이 오면 상수만 바꿔 재생, 그전엔 '가정값' 표시 유지.
 
 ## P10·P11 진행 (2026-10-13 시작 — worktree `../2026-06-04_Feature_Platform-p10`, 브랜치 `feat/p10`)
 > 표준 보고서 세션(ffp-standards-implementation-plan)이 같은 브랜치·작업 트리에서 WP 작업 중 → P10은 별도 worktree에서 하고 단계마다 feat/v081-integration에 merge(merge 전 알림). e2e 포트 9121/9122, 마이그레이션 020~029(표준 세션 017~019·030~). P11 마감은 WP8(D06-11) 뒤.
@@ -491,36 +491,36 @@
 
 | ID | 컴포넌트 | Tier | 상태 | 화면 | 테스트 |
 |---|---|---|---|---|---|
-| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /master/define /baselines /change/cr /master/taxonomy /flag-retirements /master/feature-db /master/feature-db/:refId /master/feature-db/changes /master/feature-db/changes/:id | 33 |
-| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /analysis/impact /precheck /master/upg /master/artifacts /master/structure /master/control-points /trace/design /change/eo | 15 |
-| D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver | 3 |
+| D01-01 | Feature Registry | A | ✅ | /features /features/:id/:ver /master/define /baselines /change/cr /master/taxonomy /flag-retirements /flag-code/lifecycle /master/feature-db /master/feature-db/:refId /master/feature-db/changes /master/feature-db/changes/:id /features/catalogue | 42 |
+| D01-02 | Feature Topology | A | ✅ | /features/:id/:ver /features/shared-assets /analysis/impact /precheck /master/upg /master/artifacts /master/structure /master/control-points /trace/design /change/eo /trace/coverage | 23 |
+| D01-03 | Feature Catalog | A | ✅ | /products /products/new /products/:id/:ver /products/bill-of-features /products/configurator | 8 |
 | D01-04 | 적용 대상 선정 규칙 | A | ✅ | /activation/decide | 5 |
 | D01-05 | 사용 권한 관리 | A | ✅ | /entitlements | 6 |
 | D01-06 | 정책 저장·버전 관리 | A | ✅ | /policies /policies/new /policies/:id | 15 |
 | D01-07 | 실험·효과 검증 관리 | B | ✅ | /experiments | 4 |
-| D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 4 |
+| D01-08 | 단계적 기능 배포 | B | ✅ | /policies/:id | 8 |
 | D01-09 | 정책 기반 활성화 제어 | A | ✅ | /activation/decide | 5 |
-| D01-10 | 감사 이력 관리 | A | ✅ | /audit | 3 |
-| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions /master/reference-values /config/odd /config/compat | 8 |
+| D01-10 | 감사 이력 관리 | A | ✅ | /audit | 5 |
+| D02-01 | Variant 조건 관리 | A | ✅ | /variant-conditions /master/reference-values /config/odd /config/compat | 10 |
 | D02-02 | 기능 지원 조건 관리 | B | ✅ | /variant-conditions /fleet/vehicles/:vin /activation/decide | 4 |
 | D02-03 | 차량 런타임 실행 모듈 | A | ✅ | /fleet/live /fleet/vehicles/:vin /fleet/map /deployments/:id | 16 |
-| D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations | 4 |
+| D03-01 | 컴플라이언스 룰 체커 | B | ✅ | /policies/:id /validations /verify/compliance | 8 |
 | D03-02 | 배포 안전성 검증 | A | ✅ | /policies/:id /validations | 5 |
 | D03-03 | 긴급 기능 차단 | A | ✅ | /ops/kill | 4 |
 | D03-04 | 이전 상태 복구 | A | ✅ | /ops/kill /ops/rollback /policies/:id | 9 |
-| D04-01 | 배포 파이프라인 연계 | A | ✅ | /deployments /deployments/:id | 3 |
+| D04-01 | 배포 파이프라인 연계 | A | ✅ | /deployments /deployments/:id /ops/ota-installs /deployments/campaigns/:id | 8 |
 | D04-02 | 품질 기준 검증 | B | ✅ | /policies/:id /validations /validations/virtual /verify/evidence | 7 |
-| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id /ops/telemetry /ops/safety-kpi | 7 |
-| D04-04 | 이벤트 이력 추적 | A | ✅ | /events | 3 |
+| D04-03 | 운영 데이터 수집 | A | ✅ | /fleet/live /deployments/:id /ops/telemetry /ops/safety-kpi /ops/feature-health /ops/feature-health/:findingId /ops/collection | 12 |
+| D04-04 | 이벤트 이력 추적 | A | ✅ | /events /notifications/rules | 5 |
 | D04-05 | 장애·VOC 이력 연계 | C | ✅ | /ops/incidents /ops/incident-reports /ops/incident-reports/:id | 7 |
 | D04-06 | 품질 피드백 반영 | A | ✅ | /quality/feedback | 4 |
-| D05-01 | API Gateway | C | ✅ | /activation/decide /integration/openfeature /integration/connectors /supplier/portal | 12 |
-| D05-02 | 데이터 동기화 | C | ✅ | /integration/sync /data/workbench | 6 |
-| D05-03 | Legacy 시스템 연계 | C | ✅ | /integration/legacy | 4 |
-| D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements | 4 |
+| D05-01 | API Gateway | C | ✅ | /activation/decide /integration/openfeature /integration/connectors /supplier/portal /integration/datalake | 20 |
+| D05-02 | 데이터 동기화 | C | ✅ | /integration/sync /data/workbench /baselines/eol | 10 |
+| D05-03 | Legacy 시스템 연계 | C | ✅ | /integration/legacy | 8 |
+| D05-04 | 과금 시스템 연계 | C | ✅ | /entitlements /integration/connectors | 8 |
 | D05-05 | 현장 지원 포털 | C | ✅ | /field | 3 |
 | D05-06 | 사업 지표 모니터링 | C | ✅ | /biz/trials | 4 |
-| D05-07 | Legacy-SDV Interface | C | ✅ | /integration/legacy | 4 |
+| D05-07 | Legacy-SDV Interface | C | ✅ | /integration/legacy | 8 |
 | D06-01 | 정책 검증 | A | ✅ | /policies/:id /validations | 4 |
 | D06-02 | 시스템 연동 검증 | B | ✅ | /policies/:id /validations | 4 |
 | D06-03 | 차량 시나리오 검증 | B | ✅ | /policies/:id /validations /validations/virtual | 7 |
@@ -541,16 +541,16 @@
 |---|---|---|---|
 | rawColors | 0 | ↓ 줄이기 | 레거시 원시 색상(hex/rgb) 사용 수 — 재디자인으로 0까지 줄인다 |
 | featBdcFiles | 0 | ↓ 줄이기 | FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지 |
-| implementedComponents | 42 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
+| implementedComponents | 43 | ↑ 늘리기 | 구현 완료 컴포넌트 수 — 줄어들 수 없다 |
 | twinTermLines | 0 | ↓ 줄이기 | 레거시 화면에 보이는 'Twin/트윈' 표기 줄 수 — Digital Twin 용어 금지(2026-10-12), 0까지 |
 | guideTermLines | 0 | ↓ 줄이기 | 보고서 v1.1 용어 규칙 위반 줄 수(증적→Evidence, SAFE_STOP·KILLED·즉시 비활성화·상태기계) — 0까지 |
 | platformRulesImplemented | 75 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 @rule 표식으로 구현이 추적되는 규칙 수 — 늘려 나간다 |
 | platformRulesTested | 75 | ↑ 늘리기 | 보고서 v1.1 플랫폼 규칙 중 시험이 있는 규칙 수 — 늘려 나간다 |
 | reportTestsReferenced | 16 | ↑ 늘리기 | 시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다 |
-| req.verdict.implemented | 199 | ↑ 늘리기 | 기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다 |
-| req.verdict.missing | 172 | ↓ 줄이기 | 기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다 |
-| req.traced | 45 | ↑ 늘리기 | @req 표식으로 코드에 추적된 요구사항 수 |
-| req.untracedImplemented | 155 | ↓ 줄이기 | 구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다 |
+| req.verdict.implemented | 293 | ↑ 늘리기 | 기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다 |
+| req.verdict.missing | 91 | ↓ 줄이기 | 기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다 |
+| req.traced | 140 | ↑ 늘리기 | @req 표식으로 코드에 추적된 요구사항 수 |
+| req.untracedImplemented | 154 | ↓ 줄이기 | 구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다 |
 | req.defects | 0 | ↓ 줄이기 | 미해결 결함(it.fails 결함 기록) 수 — 늘면 안 된다 |
 | platformTermLines | 0 | ↓ 줄이기 | 플랫폼 용어 규칙 위반 줄 수(은퇴→Retirement) — 0까지 |
 | offScaleSpacing | 0 | ↓ 줄이기 | 스케일 밖 간격(padding·margin·gap px) 선언 수 — 0을 유지한다 |

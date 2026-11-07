@@ -87,7 +87,7 @@ architecture:
   ARC-FLAG-CODE-COVERAGE: "20-97 Flag 코드 연결·대사·통제(차량 SW 저장소)"
   ARC-UNLEASH-LIVE:    "20-98 Unleash 실제 런타임 통합"
   ARC-CLOUD-VM:        "20-99 클라우드 VM 공개 시연 배포"
-  ARC-BROWSER-SIM:     "20-60 공개 시연 사이트 브라우저 안 쓰기(시연 데이터 엔진)"
+  ARC-BROWSER-SIM:     "20-61 공개 시연 사이트 브라우저 안 쓰기(시연 데이터 엔진)"
   INT-UNLEASH-VEHICLE: "80-98 차량 Unleash 서명 조회와 설치"
   INT-GRAFANA:         "80-80 Grafana Cloud 운영 관측·Closed loop"
 
@@ -251,6 +251,8 @@ workflows:
     WF-DEP-PUR: "구매팀 R&R 문서"
     WF-DEP-LEG: "법무팀 R&R 문서"
     WF-DEP-DPO: "개인정보보호팀 R&R 문서"
+  proposals:
+    WF-PROP-NEW-ROLES: "신설 역할 제안 — 고객 지원·정비 거점(D-ADS-7, 제안만)"
 
 # ── 다이어그램 타입 ───────────────────────────────────────
 diagram_types: [ERD, CLS, STA, SEQ, FLW, C4, JNY]

@@ -9,7 +9,7 @@ cycle: 0
 standards: [OpenFeature]
 traces:
   depends_on: [ARC-FLAG-SOURCE, ARC-UNLEASH-LIVE]
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 # Flag 코드 연결·대사·통제 — 차량 SW 저장소와 Feature Platform
@@ -24,12 +24,12 @@ last_updated: 2026-11-06
 
 이 문서는 [20-96](20-96-feature-flag-source.md)의 스캐너·가져오기·5단계 탭 위에 다음을 설계한다. 대상은 저장소 연결, 자동 Flag PR, 서명된 스캔, 5원천 대사, 출시 관문, 평가 모니터링이다. 계약은 `FF/contracts/src/schemas/flag-code.ts`·`rules/flag-coverage.ts`·`rules/flag-scaffold.ts`와 `routes.ts`의 20개 경로로 고정했다(§4). 구현은 백엔드·화면·생성기 세 갈래로 병렬 진행한다(§9).
 
-사용자가 질문을 건너뛰어 아래는 **확정 전 기본값**(추천안)이다. 결정이 바뀌면 이 표와 해당 절만 고친다.
+아래 B-1~B-7은 **확정값**이다(2026-11-07 사용자 결정 C6 (a) — 추천안 그대로). 결정이 바뀌면 이 표와 해당 절만 고친다.
 
-| 번호 | 항목 | 확정 전 기본값 | 바뀌면 영향 |
+| 번호 | 항목 | 확정값(2026-11-07) | 바뀌면 영향 |
 | --- | --- | --- | --- |
 | B-1 | 대상 저장소 | 플랫폼과 분리한 가상 차량 SW 저장소 `mutuuslab/vehicle-feature-apps`. 도메인 패키지 `packages/<adas·ivi·body·chassis·powertrain·safety·connectivity·platform>`. 저장소 표·패키지 표로 다중 저장소 확장 | 생성기 출력 경로·저장소 URL |
-| B-2 | 저장소 생성·push | 사용자 확인 뒤 코디네이터가 한다. 그 전에는 로컬 미러(DEMO_MIRROR)로 동작한다 | GitHub 링크의 실제 존재 여부 |
+| B-2 | 저장소 생성·push | 사용자 승인(2026-11-07)으로 코디네이터가 두 저장소에 push했다(공개 유지 — 가상 SW, 이력 유지·병합 커밋만 덧붙임). push 전에는 로컬 미러(DEMO_MIRROR)로 동작했다 | GitHub 링크의 실제 존재 여부 |
 | B-3 | 코드 반영 | Feature Version 승인 시 FF가 Flag 상수·호출 뼈대 PR을 자동 생성한다. 개발자가 다른 위치에 직접 작성해도 스캔이 찾으면 연결로 인정한다 | §1.3, PR 검사 규칙 |
 | B-4 | 시연 데이터 | 현재 데이터(FF_SEED=v0.81, FF_DEMO_ACTIVITY, FF_SHOWCASE)의 모든 Flag 코드를 미리 생성한다 | §5 |
 | B-5 | 통제 | GitHub PR 검사(미등록 키·등록 Flag 호출 삭제·동적 키 → 실패)와 FF 출시 관문(코드 연결 없는 Flag의 출시 차단)을 모두 둔다 | §3.4·§3.5 |
@@ -631,8 +631,8 @@ F2 이상 ASIL Feature는 `runtime`의 로컬 Guard(`localGuard.allows(flagKey, 
 ## 10. 남은 결정과 한계
 
 - **사용자 결정 필요**.
-  - B-1~B-7 확정.
-  - GitHub 저장소 실제 생성·push와 공개 범위(공개/비공개).
+  - ~~B-1~B-7 확정~~ → 확정(2026-11-07, C6).
+  - ~~GitHub 저장소 실제 생성·push와 공개 범위~~ → push 완료(2026-11-07), 공개 저장소 유지.
   - GitHub App 등록 주체(조직 mutuuslab).
 - **한계**.
   - 스캐너는 TypeScript 정적 호출만 해석한다. 차량 SW의 C/C++·Kotlin 등은 언어별 스캐너가 같은 manifest v2를 내야 한다(후속).

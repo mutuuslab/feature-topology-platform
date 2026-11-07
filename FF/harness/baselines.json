@@ -40,12 +40,12 @@
     "note": "시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다"
   },
   "req.verdict.implemented": {
-    "value": 292,
+    "value": 293,
     "direction": "min",
     "note": "기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다"
   },
   "req.verdict.missing": {
-    "value": 113,
+    "value": 91,
     "direction": "max",
     "note": "기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다"
   },

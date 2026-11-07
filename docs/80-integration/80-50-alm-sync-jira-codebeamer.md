@@ -9,7 +9,7 @@ cycle: 0
 traces:
   depends_on: [ARC-FEATURE-REFDB, INT-CODEBEAMER-EVIDENCE]
   related: [INT-CODEBEAMER, ARC-COST-ESTIMATION]
-last_updated: 2026-11-04
+last_updated: 2026-11-07
 ---
 
 # 80-50 JIRA·codeBeamer 연계 — Feature 등록 동기화와 산출물 추적
@@ -308,9 +308,9 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 
 | # | 질문 | 제 기본값 |
 |---|---|---|
-| A-1 | 한 Feature에 버전이 여럿일 때 Epic 상태 | 작업 중 버전 상태, 출시 버전은 필드 |
-| A-2 | Feature ID 도메인 포함 형식과 기존 ID | `FEAT-BC-0001`(Feature DB 도메인 약어 2글자 + 도메인별 4자리), 기존 `FEAT-00001`은 유지·두 형식 허용 |
+| A-1 | 한 Feature에 버전이 여럿일 때 Epic 상태 | **확정(2026-11-07, 기본값)**: 작업 중 버전 상태, 출시 버전은 필드 |
+| A-2 | Feature ID 도메인 포함 형식과 기존 ID | **확정(2026-11-07, 사용자 D9 (b))**: ID는 `FEAT-00001` 형식 그대로, 도메인 약어는 표시용 별칭(30-95 §3). ~~`FEAT-BC-0001` 두 형식 허용~~은 쓰지 않는다 |
 | A-3 | 실제 JIRA 환경(Cloud·Data Center)과 앱 형태 | 모의는 Cloud v3, 앱은 환경 확정 뒤 |
-| A-4 | 사이버보안 요구가 필수인 Feature의 기준 | 안전 프로파일의 TARA 대상(차량 외부 통신·원격 제어·OTA 관련) |
+| A-4 | 사이버보안 요구가 필수인 Feature의 기준 | **확정(2026-11-07, 기본값)**: 안전 프로파일의 TARA 대상(차량 외부 통신·원격 제어·OTA 관련) |
 | A-5 | codeBeamer 실서버 버전, 사내 Java 리스너 플러그인 유무 | **역공학으로 확인(80-51)**: 바깥 webhook 없음·관계별 suspect REST 없음 → 주기 대사 + FF 계산이 기본. 실서버 판 번호와 플러그인 유무만 남음 |
 | A-6 | 실서버 트래커·필드 ID | 실서버 접근 뒤 `CODEBEAMER_TRACKERS`로 대응 |

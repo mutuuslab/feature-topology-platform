@@ -41,6 +41,9 @@ export class AlmGateService implements OnModuleInit {
     return wpStageBlockers(this.result(f), stage).map((p) => `${WORK_PRODUCT[p.kind].ko}: ${p.why}`);
   }
 
+  /**
+   * @req FR-REG-005-019 정의 승인 전 연결 요구의 시스템·SW 요구 추적(WP-2) · @req FR-DEP-005-002 요구 ID가 codeBeamer에 있는지
+   */
   private transitionBlockers(f: FeatureVersionRow, to: Lifecycle): Blocker[] {
     if (!this.enforce()) return [];
     const out: Blocker[] = [];

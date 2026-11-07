@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 199,
+      "구현": 201,
       "부분": 252,
-      "미구현": 172,
+      "미구현": 170,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 99,
+        "구현": 101,
         "부분": 76,
-        "미구현": 61,
+        "미구현": 59,
         "범위 밖": 3
       },
       {
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 45,
+    "traced": 47,
     "untracedImplemented": 155,
     "defects": 0,
     "decisionsPending": 9,
@@ -97,6 +97,22 @@
       ],
       "tested": [
         "contracts/src/rules/notification.test.ts"
+      ]
+    },
+    "FR-REG-005-019": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/ext-sync/alm-gate.service.ts"
+      ],
+      "tested": [
+        "backend/test/d05/alm-gate.spec.ts"
+      ]
+    },
+    "FR-DEP-005-002": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/ext-sync/alm-gate.service.ts"
+      ],
+      "tested": [
+        "backend/test/d05/alm-gate.spec.ts"
       ]
     },
     "FR-POL-002-004": {

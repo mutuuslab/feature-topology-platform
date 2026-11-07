@@ -124,5 +124,6 @@ test('Legacy 연계: 연계 등록 → 브리지 → 삭제, 변환 규칙 등�
   await m.getByRole('button', { name: '변환' }).click();
   await expect(m.getByRole('status')).toContainText('FEAT-00024 ENABLED');
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('region', { name: '메시지 변환 기록' }).getByRole('table')).toContainText('대응하는 Feature가 없습니다'); // 시드 실패
+  // 같은 영역에 메시지 형식 표(P2 7f89707)가 함께 있다 — 변환 기록 표를 이름으로 고른다
+  await expect(page.getByRole('region', { name: '메시지 변환 기록' }).getByRole('table', { name: '메시지 변환 기록' })).toContainText('대응하는 Feature가 없습니다'); // 시드 실패
 });

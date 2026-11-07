@@ -35,8 +35,12 @@ test('ODD 프로파일: 적용 장소 추가 — 변경 영향 확정 전이면 
 });
 
 test('승인 구성 조합: 발행 후보 — ADAS는 대상 유지·사유 기록, 복구 결정은 사유와 재활성화 후보', async ({ page }) => {
+  // care_00022_param의 배포 중 판 — 전시 채우기가 POL-00002를 같은 값의 새 판으로 대체한다(통합 3차)
+  const api = `http://localhost:${process.env.E2E_API_PORT}`;
+  const pols = (await (await page.request.get(`${api}/api/policies?status=DEPLOYED`, { headers: { 'X-Actor-Id': 'usr-viewer', 'X-Actor-Role': 'AUDITOR' } })).json()).items as { policyId: string; flagKey: string }[];
+  const live = pols.find((p) => p.flagKey === 'care_00022_param')!.policyId;
   await page.goto('/config/compat?tab=publish');
-  await expect(main(page).locator('[data-publish-preview="POL-00002"]')).toContainText('부분 복구');
+  await expect(main(page).locator(`[data-publish-preview="${live}"]`)).toContainText('부분 복구');
   await expect(main(page)).toContainText('조합 미검증 Feature');
   await page.goto('/config/compat?tab=recovery');
   await asRole(page, 'opslead');

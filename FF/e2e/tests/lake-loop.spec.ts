@@ -37,7 +37,9 @@ test('운영 점검 허브 → 점검 결과 상세 — 조치 필요·기한 �
 
 test('정책 Canary 관측 — 사전 등록 중단 기준을 넘은 정책은 확대 중단, 모델 점수는 권고', async ({ page }) => {
   await asRole(page, 'coordinator');
-  await page.goto('/policies/POL-00002');
+  // 전시 채우기가 POL-00002를 같은 값의 새 판으로 대체하면 앞 판은 RETIRED라 패널이 없다 — 배포 중 판으로 따라간다(통합 3차)
+  await page.goto('/policies/POL-00002?follow=deployed');
+  await expect(page).toHaveURL(/\/policies\/POL-\d{5}$/);
   // 확대 판정 패널 하나(통합 D-INT-4) — Canary 관측은 그 안의 한 영역
   const panel = page.locator('section[aria-labelledby="expansion-h"]');
   await expect(panel.getByRole('heading', { name: 'Canary 관측' })).toBeVisible();

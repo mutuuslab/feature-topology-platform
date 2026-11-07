@@ -1,7 +1,8 @@
 // 비활성화 조건 확인(FR-SVS-002-001)·차단 범위 규칙(P11a)
 import { describe, expect, it } from 'vitest';
 import { deactivationCheck, KillIntakeBody } from './kill-intake';
-import { activationBlockers, blockedVins, impactGroups, isKilled, missingRestoreChecks, scopeKinds, scopeMatches } from './kill-scope';
+import { activationBlockers, blockedVins, impactGroups, isKilled, missingRestoreChecks, scopeKinds, scopeMatches, terminationSummary } from './kill-scope';
+import { classifyImpact, impactAccuracy, inhibitSummary } from './kill-intake';
 
 const OK = { advice: 'KILL', severity: 'CRITICAL', registry: { deact_class: 'DC2', gsr_mandatory: false }, vehicles: 3, openKill: null, openIntake: null };
 describe('비활성화 조건 확인', () => {
@@ -47,5 +48,27 @@ describe('차단 범위 규칙', () => {
       [2, { APPLICABLE: 1, UNKNOWN: 1 }],
       [1, { APPLICABLE: 1 }],
     ]);
+  });
+});
+
+describe('종료 결과·사건 차단·영향 산정 규칙', () => {
+  const pt = (trust: 'TRUSTED' | 'UNCERTAIN') => ({ at: '2026-10-12T01:00:00Z', trust, timeSync: trust === 'TRUSTED' ? 'SYNCED' : 'DEGRADED' });
+  const d = (x: object) => ({ deactivate: { commandId: 'c', accepted: null, completed: null, mrc: null, mrcApplicable: true, ...x }, uncertain: [] });
+  it('종료 결과는 배타 구간 — MRC·비활성 확인만 확인, 미확인 수', () => {
+    const s = terminationSummary([d({ mrc: pt('TRUSTED') }), d({ completed: pt('TRUSTED') }), d({ completed: pt('UNCERTAIN') }), d({ accepted: pt('TRUSTED') }), d({})], false);
+    expect(s).toEqual({ counts: { MRC_REACHED: 1, CONFIRMED_INACTIVE: 1, TRANSITIONING: 1, NO_REPORT: 1, TIMED_OUT: 0, EVIDENCE_LACKING: 1 }, unconfirmed: 3, total: 5 });
+    expect(terminationSummary([d({})], true).counts.TIMED_OUT).toBe(1);
+  });
+  it('사건별 차단 집합 — 해제 행이 있으면 해제, 차량별 남은 사건', () => {
+    const r = (id: number, vin: string, inc: string, rel: string | null) => ({ id, vin, featureId: 'F', incidentId: inc, killId: 'K', setAt: '2026-01-01', releasedAt: rel });
+    const s = inhibitSummary([r(1, 'A', 'I1', '2026-01-02'), r(2, 'B', 'I1', null), r(3, 'A', 'I2', null)]);
+    expect(s.incidents.map((i) => [i.incidentId, i.active, i.released])).toEqual([['I1', 1, 1], ['I2', 1, 0]]);
+    expect(s.vehicles).toEqual([{ vin: 'A', incidents: ['I2'] }, { vin: 'B', incidents: ['I1'] }]);
+  });
+  it('영향 3분류·정확도', () => {
+    const c = classifyImpact(['A', 'B', 'C', 'D'], (v) => ({ lastContactAt: v === 'C' ? null : v === 'B' ? '2026-01-01T00:00:00Z' : '2026-02-01T00:00:00Z', quality: v === 'D' ? 'STALE' : 'TRUSTED' }), '2026-01-15T00:00:00Z');
+    expect(c).toEqual({ CANDIDATE: ['A'], CONFIG_UNKNOWN: ['B', 'D'], NO_CONTACT: ['C'] });
+    expect(impactAccuracy(['A', 'B'], null).status).toBe('UNKNOWN');
+    expect(impactAccuracy(['A', 'B'], ['A'])).toMatchObject({ value: 0.5, matched: 1 });
   });
 });

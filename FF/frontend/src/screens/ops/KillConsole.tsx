@@ -60,6 +60,8 @@ import { evidenceLabel, nodeReasonLabel, nodeStateLabel, personLabel, Progress, 
 import { KillBulkPreview } from '../ads/BulkPreviews';
 import type { KillScopeFilter } from '../../../../contracts/src/rules/kill-scope';
 import { KillParties, KillScopePanel, scopedRows, type PartiesView, type VariantRuleView } from './KillScopePanel';
+import { ImpactSetPanel, IncidentInhibits, IntakeQueue, RestoreThreeState, TerminationOutcome } from './KillIncidentPanels';
+import { killScope as KS } from '../../copy/kill-scope';
 import { adsChange } from '../../copy/ads-change';
 
 const K = ko.kill;
@@ -104,6 +106,8 @@ interface Kill {
   expiresAt?: string;
   gate?: { result: string; failed: string[] } | null;
   command?: CommandRef | null;
+  incidentId?: string | null;
+  intakeId?: string | null;
   rejectedBy?: string | null;
   rejectReason?: string | null;
   restoreRequest?: {
@@ -230,6 +234,8 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   // 이상 징후 대응(/ops/anomalies)에서 넘어오면 대상 Feature·이상 건을 채워 둔다
   const [sp] = useSearchParams();
   const anomalyId = sp.get('anomaly');
+  // 차단 요청 접수(외부 시스템·중단 필요)에서 옮기는 요청 — 요청을 만들면 접수는 '옮김'이 된다
+  const intakeId = sp.get('intake');
   // 사용자가 적기 전에는 예시 Feature(있으면)·첫 Feature — 없는 데모 ID를 미리 채우지 않는다(출시 준비 RD-OPS-02)
   const [typedId, setFeatureId] = useState<string | null>(sp.get('featureId'));
   const [typedVer, setVersion] = useState<string | null>(sp.get('featureId') ? (sp.get('version') ?? '1.0.0') : null);
@@ -348,6 +354,11 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
             {K.fromAnomaly}: <Link to={`/ops/anomalies?id=${anomalyId}`}>{anomalyId}</Link>
           </p>
         )}
+        {intakeId && (
+          <p className="ds-field__hint" role="status" data-testid="kill-from-intake">
+            {KS.intake.from(intakeId)}
+          </p>
+        )}
         <div className="ds-form-grid">
           <Select label={K.reasonCategory} value={category} onChange={(e) => setCategory(e.target.value as ReasonCategory)}>
             {REASON_CATEGORIES.map((c) => (
@@ -415,6 +426,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                 ...(containment.trim() && { containmentJustification: containment.trim() }),
                 ...(safetyF2 && defectAt && { defectDeterminedAt: new Date(defectAt).toISOString() }),
                 ...(anomalyId && { anomalyId }),
+                ...(intakeId && { intakeId }),
                 ...(Object.keys(scope).length && { scope }),
               },
             },
@@ -811,7 +823,11 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ? personLabel(k.rejectedBy) : undefined }] : []),
             ]}
           />
+          {v2 && k.command && <TerminationOutcome killId={k.killId} deadlinePassed={k.delivery?.status === 'TIMEOUT'} />}
           {k.parties && <KillParties p={k.parties} person={personLabel} />}
+          {v2 && k.command && <IncidentInhibits featureId={k.featureId} incidentId={k.incidentId ?? k.killId} vins={k.vins} />}
+          {v2 && k.command && <ImpactSetPanel incidentId={k.incidentId ?? k.killId} />}
+          {v2 && !!k.restoreStages?.length && <RestoreThreeState verified={k.restore?.status === 'CONFIRMED'} released={k.status === 'RELEASED'} activatable={k.status === 'RELEASED'} />}
           {(k.recallCampaignId || k.containmentJustification || !!k.recallReports?.length) && (
             <div data-tour="kill-recall">
               <KeyValue
@@ -1001,6 +1017,7 @@ export function KillConsole() {
       >
         <NewKill onDone={(k) => (setComposing(false), setOpen(k.killId))} />
       </Drawer>
+      <IntakeQueue />
       <Panel title={K.list} id="kills" tour="kill-approve">
         <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable

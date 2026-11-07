@@ -4,6 +4,7 @@
 // · 해제 요청 확인 항목(FR-KSW-004-001·002): 차단 사유 해소·원인 조치 완료 둘 다 체크해야 요청을 만든다.
 import { z } from 'zod';
 import type { KillRequest } from '../schemas/ops';
+import type { KillTimeline } from './kill-timeline';
 
 /** 활성화를 막는 차단 사유 — 상업 사유(체험 만료 등 차량 한 대의 비활성화)는 기능 배포를 막지 않는다 */
 export const ACTIVATION_BLOCKING_CATEGORIES = ['SAFETY', 'SECURITY', 'REGULATORY', 'OPERATIONAL'] as const;
@@ -117,4 +118,21 @@ export interface KillParties {
   approvers: string[];
   /** 협력사 — 대상 Feature 구현 SW의 납품 정보(IF-08) */
   suppliers: { supplier: string; swId: string; version: string; ecuPno: string | null }[];
+}
+
+// ─── 종료 결과 분포(ADS-UI02 핵심 메시지 — P-11 배타 구간) ───
+export const TERMINATION_OUTCOMES = ['MRC_REACHED', 'CONFIRMED_INACTIVE', 'TRANSITIONING', 'NO_REPORT', 'TIMED_OUT', 'EVIDENCE_LACKING'] as const;
+export type TerminationOutcome = (typeof TERMINATION_OUTCOMES)[number];
+/** 차량 한 대의 종료 결과 — 한 구간에만 든다. MRC 도달·비활성 확인(신뢰 시간)만 '확인', 나머지는 미확인 */
+export function terminationOutcome(t: Pick<KillTimeline, 'deactivate' | 'uncertain'>, deadlinePassed: boolean): TerminationOutcome {
+  const d = t.deactivate;
+  if (d?.mrc) return 'MRC_REACHED';
+  if (d?.completed) return d.completed.trust === 'TRUSTED' ? 'CONFIRMED_INACTIVE' : 'EVIDENCE_LACKING';
+  if (d?.accepted) return 'TRANSITIONING';
+  return deadlinePassed ? 'TIMED_OUT' : 'NO_REPORT';
+}
+export function terminationSummary(items: readonly Pick<KillTimeline, 'deactivate' | 'uncertain'>[], deadlinePassed: boolean) {
+  const counts = Object.fromEntries(TERMINATION_OUTCOMES.map((o) => [o, 0])) as Record<TerminationOutcome, number>;
+  for (const t of items) counts[terminationOutcome(t, deadlinePassed)] += 1;
+  return { counts, unconfirmed: items.length - counts.MRC_REACHED - counts.CONFIRMED_INACTIVE, total: items.length };
 }

@@ -122,6 +122,7 @@ export const legacyMessages = {
   directions: { LEGACY_TO_SDV: 'Legacy → SDV', SDV_TO_LEGACY: 'SDV → Legacy' } as Record<string, string>,
   states: { CONVERTED: '변환함', FAILED: '변환 실패' } as Record<string, string>,
   formats: '메시지 형식',
+  formatCol: { format: '형식', side: '이름', fields: '필드·규칙' },
   receive: '코딩 메시지 받기',
   form: {
     title: '레거시 코딩 메시지 받기',

@@ -356,8 +356,31 @@ export function LegacyMessagesPanel() {
           ]}
         />
       </AsyncView>
+      <MessageFormats />
       {receiving && <ReceiveDrawer onClose={() => setReceiving(false)} />}
     </Panel>
+  );
+}
+
+/** 메시지 형식 표(FR-SDVI-001-002 "메시지 포맷 정의") — 형식마다 필드와 규칙 */
+function MessageFormats() {
+  const q = useApi<{ formats: Record<string, { side: string; label: string; fields: { name: string; rule: string }[] }> }>('legacyMessageFormats');
+  const rows = Object.entries(q.data?.formats ?? {}).map(([format, f]) => ({ format, ...f }));
+  const C = M.formatCol;
+  return (
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
+      <DataTable
+        caption={M.formats}
+        rows={rows}
+        rowKey={(r) => r.format}
+        pageSize={0}
+        columns={[
+          { key: 'f', header: C.format, cell: (r) => <span className="ds-mono ds-nowrap">{r.format}</span> },
+          { key: 's', header: C.side, cell: (r) => <span className="ds-nowrap">{r.label}</span> },
+          { key: 'd', header: C.fields, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.fields.map((x) => `${x.name}: ${x.rule}`).join(' · ')}</span> },
+        ]}
+      />
+    </AsyncView>
   );
 }
 

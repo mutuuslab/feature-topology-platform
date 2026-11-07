@@ -239,6 +239,7 @@ describe('Legacy 연계 설정·변환 규칙·메시지 (FR-LGCY-001-001~006, F
     const row = (await screen.findByText('DID F1999에 대응하는 Feature가 없습니다')).closest('tr')!;
     expect(within(row).getByText('변환 실패')).toBeTruthy();
     expect(screen.getByText('변환 실패 1건')).toBeTruthy();
+    expect(within(screen.getByRole('table', { name: '메시지 형식' })).getByText('LGC-CODING-1')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '코딩 메시지 받기' }));
     const dlg = await screen.findByRole('dialog', { name: '레거시 코딩 메시지 받기' });
     await within(dlg).findByRole('option', { name: /KMH-LF-0001/ });

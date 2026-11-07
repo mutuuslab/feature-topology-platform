@@ -4,9 +4,9 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 225,
-      "부분": 246,
-      "미구현": 152,
+      "구현": 238,
+      "부분": 241,
+      "미구현": 144,
       "범위 밖": 5
     },
     "sheets": [
@@ -45,9 +45,9 @@
       {
         "sheet": "05_시스템 연계·확장",
         "leaves": 34,
-        "구현": 9,
-        "부분": 14,
-        "미구현": 11,
+        "구현": 22,
+        "부분": 9,
+        "미구현": 3,
         "범위 밖": 0
       },
       {
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 71,
+    "traced": 84,
     "untracedImplemented": 155,
     "defects": 0,
     "decisionsPending": 9,
@@ -516,6 +516,90 @@
         "backend/test/d04/notify-recipients.spec.ts"
       ]
     },
+    "FR-AGW-001-003": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/api-keys/api-key.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/api-gateway.test.ts",
+        "backend/test/d05/api-gateway.spec.ts",
+        "frontend/src/__tests__/extGateway.test.tsx"
+      ]
+    },
+    "FR-AGW-001-004": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/api-keys/api-key.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-AGW-001-005": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/api-keys/api-key.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-AGW-001-006": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/api-spec.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/api-gateway.test.ts",
+        "backend/test/d05/api-gateway.spec.ts",
+        "frontend/src/__tests__/extGateway.test.tsx"
+      ]
+    },
+    "FR-AGW-001-007": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/api-spec.controller.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/api-gateway.test.ts"
+      ]
+    },
+    "FR-LGCY-001-001": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/legacy-link.test.ts",
+        "backend/test/d05/legacy-links.spec.ts",
+        "frontend/src/__tests__/extGateway.test.tsx"
+      ]
+    },
+    "FR-LGCY-001-002": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-LGCY-001-003": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-LGCY-001-004": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-LGCY-001-005": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-LGCY-001-006": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts",
+        "backend/src/domains/d05-ext/legacy/legacy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/legacy-link.test.ts",
+        "backend/test/d05/legacy-links.spec.ts"
+      ]
+    },
     "FR-LGCY-001-007": {
       "implemented": [
         "backend/src/domains/d04-ops/event-history/integration-error.service.ts"
@@ -539,6 +623,26 @@
       ],
       "tested": [
         "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-SDVI-001-002": {
+      "implemented": [
+        "backend/src/domains/d05-ext/legacy/legacy-config.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/legacy-link.test.ts",
+        "backend/test/d05/legacy-links.spec.ts",
+        "frontend/src/__tests__/extGateway.test.tsx"
+      ]
+    },
+    "FR-BIL-001-002": {
+      "implemented": [
+        "backend/src/domains/d05-ext/billing/settlement.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/settlement.test.ts",
+        "backend/test/d05/settlement.spec.ts",
+        "frontend/src/__tests__/extGateway.test.tsx"
       ]
     },
     "FR-BIL-001-003": {

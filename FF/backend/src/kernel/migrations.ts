@@ -1324,4 +1324,22 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // 분류 계층 L0~L5(TX, B7 (b)) — Feature DB 분류 표(080 taxonomy_node, L0·L1)는 그대로 두고 플랫폼 노드(L0~L5)를 따로 둔다.
+    // taxonomy_level_node: 플랫폼 노드(상위는 이 표 또는 taxonomy_node). taxonomy_node_tombstone: 지운 노드 ID(재사용 금지, 추가만).
+    // feature_taxonomy_placement: Feature 하나 ↔ 노드 하나. policy_global_scope·policy_global_link: 정책의 브랜드·적용 지역 코드·법규(룰) 조건과 조회 색인.
+    name: '261_taxonomy_global_scope',
+    sql: `
+CREATE TABLE taxonomy_level_node (node_id TEXT PRIMARY KEY, level TEXT NOT NULL CHECK (level IN ('L0','L1','L2','L3','L4','L5')), parent_id TEXT, status TEXT NOT NULL CHECK (status IN ('ACTIVE','RETIRED')), doc TEXT NOT NULL);
+CREATE INDEX taxonomy_level_node_parent ON taxonomy_level_node (parent_id, level);
+CREATE TABLE taxonomy_node_tombstone (node_id TEXT PRIMARY KEY, deleted_by TEXT NOT NULL, deleted_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE TRIGGER taxonomy_node_tombstone_no_update BEFORE UPDATE ON taxonomy_node_tombstone BEGIN SELECT RAISE(ABORT, 'taxonomy_node_tombstone은 추가만 가능'); END;
+CREATE TRIGGER taxonomy_node_tombstone_no_delete BEFORE DELETE ON taxonomy_node_tombstone BEGIN SELECT RAISE(ABORT, 'taxonomy_node_tombstone은 추가만 가능'); END;
+CREATE TABLE feature_taxonomy_placement (feature_id TEXT PRIMARY KEY, node_id TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX feature_taxonomy_placement_node ON feature_taxonomy_placement (node_id);
+CREATE TABLE policy_global_scope (policy_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, revision INTEGER NOT NULL, doc TEXT NOT NULL);
+CREATE TABLE policy_global_link (policy_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('BRAND','REGION','RULE')), value TEXT NOT NULL, PRIMARY KEY (policy_id, kind, value));
+CREATE INDEX policy_global_link_value ON policy_global_link (kind, value);
+`,
+  },
 ];

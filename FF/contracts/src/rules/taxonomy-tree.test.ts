@@ -84,11 +84,11 @@ describe('경로·트리·수준별 분류 @req FR-CAT-001-001 FR-CAT-001-006 FR
     expect(tree).toHaveLength(1);
     expect(tree[0].children[0].children[0]).toMatchObject({ nodeId: 'BC-RDL', featureCount: 1, childCount: 1 });
   });
-  it('수준별 분류 — 노드와 그 아래에 배치된 Feature를 모은다', () => {
+  it('수준별 분류 — 노드 위·아래 한 경로에 배치된 Feature를 모은다', () => {
     const placed = new Map([['FEAT-00001', 'BC-RDL-FLAG'], ['FEAT-00002', 'BC-RDL']]);
     const l2 = classifyByLevel('L2', ALL, placed);
     expect(l2).toEqual([{ node: L2, featureIds: ['FEAT-00001', 'FEAT-00002'] }]);
-    expect(classifyByLevel('L4', ALL, placed)).toEqual([{ node: L4, featureIds: ['FEAT-00001'] }]);
+    expect(classifyByLevel('L4', ALL, placed)).toEqual([{ node: L4, featureIds: ['FEAT-00001', 'FEAT-00002'] }]); // FEAT-00002는 L2에 배치 — 그 아래 Flag 노드로 분류
     expect(classifyByLevel('L0', ALL, placed)[0].featureIds).toEqual(['FEAT-00001', 'FEAT-00002']);
   });
 });

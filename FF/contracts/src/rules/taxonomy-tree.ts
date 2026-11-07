@@ -97,13 +97,18 @@ export function toTree(all: readonly TaxonomyTreeNode[], placedByNode: ReadonlyM
   return all.filter((n) => !n.parentId || !ids.has(n.parentId)).sort((a, b) => a.nodeId.localeCompare(b.nodeId)).map(build);
 }
 
-/** 수준별 분류 — 그 수준의 노드마다 자기와 아래에 배치된 Feature(placed: Feature ID → 노드 ID) @req FR-CAT-001-001 FR-CAT-001-002 FR-CAT-001-003 FR-CAT-001-004 FR-CAT-001-005 FR-CAT-001-006 */
+/**
+ * 수준별 분류 — 그 수준의 노드마다 연결된 Feature(placed: Feature ID → 노드 ID). 노드 경로 위(상위 분류)든 아래(그 Feature의 SW·Flag·신호 구성)든
+ * 배치 노드와 한 경로에 있으면 그 Feature다. @req FR-CAT-001-001 FR-CAT-001-002 FR-CAT-001-003 FR-CAT-001-004 FR-CAT-001-005 FR-CAT-001-006
+ */
 export function classifyByLevel(level: TaxonomyLevelCode, all: readonly TaxonomyTreeNode[], placed: ReadonlyMap<string, string>): { node: TaxonomyTreeNode; featureIds: string[] }[] {
   const byId = new Map(all.map((n) => [n.nodeId, n]));
   const out = new Map<string, Set<string>>();
+  const add = (nodeId: string, featureId: string) => out.set(nodeId, (out.get(nodeId) ?? new Set()).add(featureId));
   for (const [featureId, nodeId] of placed) {
     const hit = taxonomyPath(nodeId, byId).find((n) => n.level === level);
-    if (hit) out.set(hit.nodeId, (out.get(hit.nodeId) ?? new Set()).add(featureId));
+    if (hit) add(hit.nodeId, featureId);
+    else for (const n of nodesBelow(nodeId, all)) if (n.level === level) add(n.nodeId, featureId);
   }
   return all
     .filter((n) => n.level === level && out.has(n.nodeId))

@@ -8,11 +8,13 @@ import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { adsChange } from '../../copy/ads-change';
 import { impactPlus as IP } from '../../copy/impactSupplier';
+import { traceCopy } from '../../copy/trace-links';
 import { useDefaultFeature } from '../../data/first-run';
 import { AsyncView, Button, GateBadge, IdChip, LifecycleBadge, PageHeader, Panel, Select, SummaryLine, Tabs } from '../../design';
 import { ApprovalPathsTab, pathsMessage, ReleaseDiffTab, releaseMessage, useChangeImpacts, useReleasePick } from '../ads/ChangeImpact';
 
 const T = ko.impact;
+const TI = traceCopy.impact;
 const CHANGEABLE = Object.keys(REJUDGE_MAP);
 const TAB_KEYS = ['paths', 'release', 'scope'];
 
@@ -23,7 +25,11 @@ interface Impact {
   products: { catalogId: string; version: string; name: string; lifecycle: string; ownerId: string; via: { baselineId: string; featureId: string; direct: boolean }[] }[];
   rejudge: string[];
   owners: string[];
-  summary: { dependents: number; products: number; releasedProducts: number; rejudgeGates: number };
+  summary: { dependents: number; products: number; releasedProducts: number; rejudgeGates: number; policies?: number; livePolicies?: number; vehicles?: number; otaPackages?: number };
+  /** 차량·정책·OTA 영향 범위(FR-DEP-003-001) */
+  policies?: { policyId: string; featureId: string; featureVersion: string; flagKey: string; status: string; direct: boolean; live: boolean }[];
+  vehicles?: { total: number; byScope: { scope: string; vehicles: number }[]; sample: string[] };
+  ota?: { linkId: string; featureId: string; packageId: string; name: string | null; version: string | null; direct: boolean }[];
 }
 
 export default function ImpactScreen() {
@@ -165,6 +171,7 @@ function ScopeTab() {
                 { k: T.dependents, v: d.summary.dependents },
                 { k: T.products, v: `${d.summary.products} (RELEASED ${d.summary.releasedProducts})` },
                 { k: T.owners, v: d.owners.length },
+                ...(d.policies ? [{ k: TI.policies, v: `${d.policies.length} (${TI.live} ${d.policies.filter((p) => p.live).length})` }, { k: TI.vehicles, v: d.vehicles?.total ?? 0 }, { k: TI.ota, v: d.ota?.length ?? 0 }] : []),
               ]}
             />
             <div className="ds-chain" aria-label={T.title}>
@@ -224,6 +231,7 @@ function ScopeTab() {
                 </div>
               </section>
             </div>
+            {d.policies && <ScopeChain d={d} />}
             <div className="ds-split">
               <Panel title={T.rejudge} id="rejudge">
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
@@ -240,5 +248,57 @@ function ScopeTab() {
         )}
       </AsyncView>
     </>
+  );
+}
+
+/** 차량·정책·OTA 영향(FR-DEP-003-001) — 바뀐 Feature와 의존 Feature의 정책, 켜진 정책 범위의 차량, 연결된 OTA 패키지 */
+function ScopeChain({ d }: { d: Impact }) {
+  const pol = d.policies ?? [];
+  const ota = d.ota ?? [];
+  const veh = d.vehicles;
+  return (
+    <div className="ds-chain" aria-label={`${TI.policies} · ${TI.vehicles} · ${TI.ota}`} data-ui="impactScope">
+      <section>
+        <h3>
+          {TI.policies} <span className="ds-mono">{pol.length}</span>
+        </h3>
+        <div className="ds-stack">
+          {pol.map((p) => (
+            <div key={p.policyId}>
+              <Link to={`/policies/${p.policyId}`} className="ds-mono">{p.policyId}</Link> <span className="ds-tag">{p.status}</span>
+              <div className="ds-field__hint">
+                {p.flagKey} · {p.featureId} · {p.direct ? TI.direct : TI.indirect}{p.live ? ` · ${TI.live}` : ''}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section>
+        <h3>
+          {TI.vehicles} <span className="ds-mono">{veh?.total ?? 0}</span>
+        </h3>
+        <div className="ds-stack">
+          <span>{TI.vehicleTotal(veh?.total ?? 0)}</span>
+          {(veh?.byScope ?? []).map((s) => (
+            <span key={s.scope} className="ds-field__hint">{`${s.scope} · ${s.vehicles}`}</span>
+          ))}
+        </div>
+      </section>
+      <section>
+        <h3>
+          {TI.ota} <span className="ds-mono">{ota.length}</span>
+        </h3>
+        <div className="ds-stack">
+          {ota.map((o) => (
+            <div key={o.linkId}>
+              <span className="ds-mono">{o.packageId}</span>
+              <div className="ds-field__hint">
+                {o.featureId} · {o.direct ? TI.direct : TI.indirect}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }

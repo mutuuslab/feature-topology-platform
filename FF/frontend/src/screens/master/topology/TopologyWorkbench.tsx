@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { LIFECYCLE } from '@ff/contracts';
 import { topologyGraph as G } from '../../../copy/topology-graph';
 import { topologyMotion as M } from '../../../copy/topology-motion';
+import { traceCopy } from '../../../copy/trace-links';
+import { RELATION_TYPE_LIST, RELATION_TYPES } from '../../../../../contracts/src/rules/relation-types';
 import { ko } from '../../../copy/ko';
 import { DataTable, GateRail, LifecycleBadge, Segmented, Select, VerdictBadge } from '../../../design';
 import { GraphStage, type Highlight, type NodeState, type StageHandle } from './GraphStage';
@@ -164,8 +166,10 @@ export function TopologyWorkbench({
     setView('graph');
     requestAnimationFrame(() => requestAnimationFrame(() => stage.current?.focusNode(hit.id)));
   };
-  const activeFilters = filters.domains.size + filters.asil.size + (filters.lifecycle ? 1 : 0) + (filters.flagsOnly ? 1 : 0) + (filters.verdict ? 1 : 0) + (filters.isolated ? 1 : 0);
-  const toggleIn = (k: 'domains' | 'asil', v: string) => setFilters((f) => { const s = new Set(f[k]); if (s.has(v)) s.delete(v); else s.add(v); return { ...f, [k]: s }; });
+  const activeFilters = filters.domains.size + filters.asil.size + filters.types.size + (filters.lifecycle ? 1 : 0) + (filters.flagsOnly ? 1 : 0) + (filters.verdict ? 1 : 0) + (filters.isolated ? 1 : 0);
+  // 그래프에 있는 관계 유형과 수 — 유형 칩(FR-DEP-004-002)
+  const typeCounts = RELATION_TYPE_LIST.map((t) => [t, model.edges.filter((e) => e.type === t).length] as const).filter(([, n]) => n > 0);
+  const toggleIn = (k: 'domains' | 'asil' | 'types', v: string) => setFilters((f) => { const s = new Set(f[k]); if (s.has(v)) s.delete(v); else s.add(v); return { ...f, [k]: s }; });
   const domainCounts = useMemo(() => {
     const m = new Map<string, number>();
     for (const n of model.nodes.values()) m.set(n.domain, (m.get(n.domain) ?? 0) + 1);
@@ -216,6 +220,14 @@ export function TopologyWorkbench({
           <div className="topo-chips" role="group" aria-label={G.asil}>
             {asils.map((a) => (
               <button key={a} type="button" className="topo-chip" aria-pressed={filters.asil.has(a)} onClick={() => toggleIn('asil', a)}>{a === 'QM' ? a : `ASIL ${a}`}</button>
+            ))}
+          </div>
+          <div className="topo-chips" role="group" aria-label={traceCopy.topology.types}>
+            {typeCounts.map(([t, n]) => (
+              <button key={t} type="button" className="topo-chip" data-type={t} aria-pressed={filters.types.has(t)} title={RELATION_TYPES[t].description} onClick={() => toggleIn('types', t)}>
+                {G.type[t] ?? t}
+                <span className="topo-chip__n">{n}</span>
+              </button>
             ))}
           </div>
           <Select label={G.lifecycle} value={filters.lifecycle} onChange={(e) => setFilters((f) => ({ ...f, lifecycle: e.target.value }))}>
@@ -307,10 +319,10 @@ function RelationPanel({ e, model }: { e: TEdge; model: TModel }) {
       </header>
       <div className="topo-insp__pair">
         <div><span className="topo-insp__k">{M.source}</span>{endpointOf(model, e.source, e.sourceVersion)}</div>
-        <span className="topo-insp__arrow" aria-hidden="true">{e.type === 'REQUIRES' ? '→' : '⇄'}</span>
+        <span className="topo-insp__arrow" aria-hidden="true">{RELATION_TYPES[e.type]?.symmetric ? '⇄' : '→'}</span>
         <div><span className="topo-insp__k">{M.target}</span>{endpointOf(model, e.target, e.targetVersion)}</div>
       </div>
-      <p className="topo-insp__state">{e.type === 'REQUIRES' ? M.requires : M.excludes}</p>
+      <p className="topo-insp__state">{e.type === 'REQUIRES' ? M.requires : e.type === 'EXCLUDES' ? M.excludes : `${RELATION_TYPES[e.type].label} — ${RELATION_TYPES[e.type].description}`}</p>
       {(e.versionCheck || e.mismatch || e.cycle) && (
         <p className="topo-insp__warn" data-on={!!(e.mismatch || e.cycle) || undefined}>
           {[e.versionCheck ? `${G.versionCheck}: ${e.versionCheck}` : null, e.mismatch ? G.mismatch[e.mismatch] : null, e.cycle ? G.cycle : null].filter(Boolean).join(' · ')}
@@ -447,6 +459,7 @@ function Legend() {
     <ul className="topo-legend" aria-label={G.legend}>
       <li>{line('PASS', 'REQUIRES')}{L.requires}</li>
       <li>{line('PASS', 'EXCLUDES')}{L.excludes}</li>
+      <li>{line('PASS', 'REQUIRES')}{traceCopy.topology.other}</li>
       {(['PASS', 'CONDITIONAL', 'FAIL', 'PENDING'] as const).map((t) => (
         <li key={t}><span className="topo-legend__sw" data-tone={t} aria-hidden="true" />{L[t.toLowerCase() as 'pass']}</li>
       ))}

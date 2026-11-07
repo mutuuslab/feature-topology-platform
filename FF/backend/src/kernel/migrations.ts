@@ -1280,4 +1280,17 @@ CREATE TRIGGER settlement_transmission_no_update BEFORE UPDATE ON settlement_tra
 CREATE TRIGGER settlement_transmission_no_delete BEFORE DELETE ON settlement_transmission BEGIN SELECT RAISE(ABORT, 'settlement_transmission은 추가만 가능'); END;
 `,
   },
+  {
+    // Feature 추적 연결(P3, FR-DEP-002-004·005~008) — 요구·설계 요소·인터페이스·Test Case·OTA 패키지 연결(해제는 상태로 남김), Test Case별 Test Evidence(추가만)
+    name: '171_feature_trace_link',
+    sql: `
+CREATE TABLE feature_trace_link (link_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('REQUIREMENT','ARCHITECTURE','INTERFACE','TEST_CASE','OTA')), element_id TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('ACTIVE','UNLINKED')), doc TEXT NOT NULL);
+CREATE INDEX feature_trace_link_feature ON feature_trace_link (feature_id, kind, status);
+CREATE INDEX feature_trace_link_element ON feature_trace_link (kind, element_id);
+CREATE TABLE trace_test_evidence (record_id TEXT PRIMARY KEY, link_id TEXT NOT NULL, feature_id TEXT NOT NULL, evidence_id TEXT NOT NULL, executed_at TEXT NOT NULL, result TEXT NOT NULL CHECK (result IN ('PASS','FAIL','BLOCKED')), doc TEXT NOT NULL, UNIQUE (link_id, evidence_id));
+CREATE INDEX trace_test_evidence_feature ON trace_test_evidence (feature_id, link_id);
+CREATE TRIGGER trace_test_evidence_no_update BEFORE UPDATE ON trace_test_evidence BEGIN SELECT RAISE(ABORT, 'trace_test_evidence는 추가만 가능'); END;
+CREATE TRIGGER trace_test_evidence_no_delete BEFORE DELETE ON trace_test_evidence BEGIN SELECT RAISE(ABORT, 'trace_test_evidence는 추가만 가능'); END;
+`,
+  },
 ];

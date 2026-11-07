@@ -215,7 +215,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/topology.ts:55",
+     "contracts/src/rules/topology.ts:67",
      "contracts/src/rules/catalog.ts:85",
      "contracts/src/rules/lifecycle.ts:136"
     ],
@@ -613,7 +613,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-     "contracts/src/routes.ts:245"
+     "contracts/src/routes.ts:247"
     ],
     "tests": [
      "backend/test/d03/delivery.spec.ts"

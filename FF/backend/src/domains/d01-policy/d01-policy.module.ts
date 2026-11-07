@@ -43,10 +43,15 @@ import { PleController, PleFeatureController } from './ple/ple.controller';
 import { PleRepo } from './ple/ple.repo';
 import { PleSeed } from './ple/ple-seed';
 import { PleService } from './ple/ple.service';
+import { TraceLinkController } from './registry/trace-link.controller';
+import { TraceLinkRepo } from './registry/trace-link.repo';
+import { TraceLinkService } from './registry/trace-link.service';
+import { RelationGuardService } from './topology/relation-guard.service';
+import { TraceSources } from '../../adapters/if-mocks/trace-sources';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController, PolicyExpansionController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController, PolicyExpansionController, TraceLinkController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -78,7 +83,9 @@ import { PleService } from './ple/ple.service';
     PleRepo,
     PleService,
     PleSeed,
+    // Feature 추적 연결·관계 경고(P3) — 요구·설계 요소·인터페이스·Test Case·OTA 연결, excludes 동시 활성화, 변경 영향의 차량·정책·OTA
+    TraceLinkRepo, TraceSources, TraceLinkService, RelationGuardService,
   ],
-  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService],
+  exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService, TraceLinkRepo, TraceLinkService],
 })
 export class D01PolicyModule {}

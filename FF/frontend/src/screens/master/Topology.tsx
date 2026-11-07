@@ -7,13 +7,16 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, GateBadge, PageHeader, Panel, Select, SummaryLine, Toolbar } from '../../design';
 import { usePermission } from '../shared';
 import { TopologyWorkbench } from './topology/TopologyWorkbench';
+import { RELATION_TYPE_LIST } from '../../../../contracts/src/rules/relation-types';
+import { topologyGraph } from '../../copy/topology-graph';
+import { traceCopy } from '../../copy/trace-links';
 import type { FeatureRow, FlagRow, PrecheckRule } from './topology/model';
 
 const T = ko.master.topology;
 
 interface Dep {
   dependencyId: string;
-  type: 'REQUIRES' | 'EXCLUDES';
+  type: (typeof RELATION_TYPE_LIST)[number];
   sourceFeatureId: string;
   sourceVersion: string;
   targetFeatureId: string;
@@ -111,8 +114,9 @@ export function TopologyScreen() {
         <Toolbar label={T.verdict}>
           <Select label={T.type} value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">{T.all}</option>
-            <option value="REQUIRES">REQUIRES</option>
-            <option value="EXCLUDES">EXCLUDES</option>
+            {RELATION_TYPE_LIST.map((t) => (
+              <option key={t} value={t}>{topologyGraph.type[t] ?? t}</option>
+            ))}
           </Select>
           <Select label={T.verdict} value={verdict} onChange={(e) => setParam('verdict', e.target.value)}>
             <option value="">{T.all}</option>
@@ -147,15 +151,16 @@ export function TopologyScreen() {
 
 function CreateDependency() {
   const perm = usePermission(['FEATURE_AUTHOR', 'VARIANT_OWNER']);
-  const create = useApiMutation<{ dependencyId: string; verdict: string }>('createDependency', ['dependencies', 'topologyGraph', 'events', 'audit']);
+  const create = useApiMutation<{ dependencyId: string; verdict: string; warnings?: ExclusionWarning[] }>('createDependency', ['dependencies', 'topologyGraph', 'events', 'audit']);
   const [f, setF] = useState({ type: 'REQUIRES', sourceFeatureId: '', sourceVersion: '', targetFeatureId: '', targetVersion: '' });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value.trim() }));
   return (
     <Panel title={T.create} id="topo-create">
       <div className="ds-toolbar">
         <Select label={T.type} value={f.type} onChange={set('type')}>
-          <option value="REQUIRES">REQUIRES</option>
-          <option value="EXCLUDES">EXCLUDES</option>
+          {RELATION_TYPE_LIST.map((t) => (
+            <option key={t} value={t}>{topologyGraph.type[t] ?? t}</option>
+          ))}
         </Select>
         {(['sourceFeatureId', 'sourceVersion', 'targetFeatureId', 'targetVersion'] as const).map((k) => (
           <label key={k} className="ds-field ds-field--inline">
@@ -166,9 +171,28 @@ function CreateDependency() {
       </div>
       <ErrorNote error={create.error} />
       {create.data && <p className="ds-ok" role="status">{T.done(create.data.dependencyId, create.data.verdict)}</p>}
+      {create.data?.warnings?.map((w) => <ExclusionNote key={w.dependencyId} w={w} />)}
       <Button variant="primary" disabled={!perm.ok || !f.sourceFeatureId || !f.sourceVersion || !f.targetFeatureId || create.isPending} title={perm.hint} onClick={() => create.mutate({ body: { ...f, targetVersion: f.targetVersion || null } })}>
         {T.submit}
       </Button>
     </Panel>
+  );
+}
+
+/** excludes 동시 활성화 경고(FR-DEP-009-003) — 등록 응답의 정책·차량 단위 검사 결과 */
+interface ExclusionWarning {
+  dependencyId: string;
+  level: 'VEHICLE' | 'POLICY' | null;
+  policies: { source: { policyId: string }[]; target: { policyId: string }[] };
+  vehicles: { checked: number; both: number; sample: string[] };
+}
+function ExclusionNote({ w }: { w: ExclusionWarning }) {
+  const W = traceCopy.topology;
+  return (
+    <div className="ds-callout" data-tone="warn" role="status" data-testid="exclusion-warning">
+      <p className="ds-callout__title">{w.level === 'VEHICLE' ? W.warn(w.vehicles.both) : W.warnPolicy}</p>
+      <p className="ds-mono">{W.warnPolicies(w.policies.source.map((p) => p.policyId).join(', '), w.policies.target.map((p) => p.policyId).join(', '))}</p>
+      {w.vehicles.sample.length > 0 && <p className="ds-mono">{w.vehicles.sample.join(', ')}</p>}
+    </div>
   );
 }

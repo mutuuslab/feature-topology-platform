@@ -38,7 +38,8 @@ export type GateStatus = z.infer<typeof GateStatus>;
 export const DependencyVerdict = z.enum(['PASS', 'CONDITIONAL', 'FAIL', '미판정']);
 export type DependencyVerdict = z.infer<typeof DependencyVerdict>;
 
-export const RelationType = z.enum(['REQUIRES', 'EXCLUDES']);
+/** Feature 관계 유형 10종(FR-DEP-009-002) — 뜻·검증 속성은 rules/relation-types.ts RELATION_TYPES */
+export const RelationType = z.enum(['REQUIRES', 'EXCLUDES', 'PARENT_OF', 'CHILD_OF', 'COMPOSED_OF', 'OVERRIDES', 'FALLBACK_TO', 'DEGRADES_TO', 'REPLACES', 'DUPLICATES']);
 export type RelationType = z.infer<typeof RelationType>;
 
 export const TargetVersionCheck = z.enum(['단일 후보', '버전 확정']);

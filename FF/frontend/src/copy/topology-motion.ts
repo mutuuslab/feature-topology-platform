@@ -32,5 +32,5 @@ export const topologyMotion = {
   dense: '관계가 많아 전체 그래프의 이름 표기를 줄였습니다. 노드를 선택하면 전체 이름과 상세 화면을 확인할 수 있습니다.',
   relation: (id: string) => `관계 ${id}`,
   edge: (id: string, type: string, verdict: string) => `${id} ${type} ${verdict} 설명 선택`,
-  diagram: (source: string, type: string, target: string) => `${source} ${type === 'REQUIRES' ? '의존 대상' : '상호 배제'} ${target}`,
+  diagram: (source: string, type: string, target: string) => `${source} ${type === 'REQUIRES' ? '의존 대상' : type === 'EXCLUDES' ? '상호 배제' : type} ${target}`,
 };

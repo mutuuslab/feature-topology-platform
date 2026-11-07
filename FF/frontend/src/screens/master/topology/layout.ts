@@ -12,7 +12,7 @@ export interface LayoutInputEdge {
   id: string;
   source: string;
   target: string;
-  type: 'REQUIRES' | 'EXCLUDES';
+  type: string;
 }
 export interface LayoutOptions {
   nodeW: number;

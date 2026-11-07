@@ -4,6 +4,7 @@ import type { DependencyVerdict } from '../enums';
 import type { DependencyRow, FeatureVersionRow } from '../schemas/dataset';
 import { LIFECYCLE_RANK } from './lifecycle';
 import { findRequiresCycles } from './precheck';
+import { cycleEdge, cycleWith, RELATION_TYPES } from './relation-types';
 
 /** DEPRECATED/RETIRED 대상도 한때 RELEASED였으므로 선행 단계는 충족한 것으로 본다 */
 const rank = (f: FeatureVersionRow) => Math.min(LIFECYCLE_RANK[f.lifecycle], LIFECYCLE_RANK.RELEASED);
@@ -19,20 +20,31 @@ export function judgeDependency(
   if (!target) return { verdict: 'FAIL', rationale: `대상 ${d.targetFeatureId} ${d.targetVersion}이(가) Registry에 없음.` };
   if (scope(source) !== scope(d) || scope(target) !== scope(d)) return { verdict: 'FAIL', rationale: `적용 범위 불일치: 원천 ${scope(source)}, 대상 ${scope(target)}, 관계 ${scope(d)}.` };
   if (source.lifecycle === 'PROPOSED') return { verdict: '미판정', rationale: '원천 PROPOSED — 승인 전 관계 판정 대기.' };
-  if (d.type === 'REQUIRES' && rank(target) < rank(source))
+  const rule = RELATION_TYPES[d.type];
+  if (rule.targetMaturity && rank(target) < rank(source))
     return { verdict: 'FAIL', rationale: `대상 ${target.lifecycle}가 원천 ${source.lifecycle}의 필수 선행 단계 미달.` };
+  if (d.type === 'REQUIRES') return { verdict: 'PASS', rationale: `대상 ${target.featureId} ${target.version} ${target.lifecycle} 확정; 범위 일치 및 원천 ${source.lifecycle}의 필수 선행 단계 충족.` };
+  if (d.type === 'EXCLUDES') return { verdict: 'PASS', rationale: `배타 관계 범위 일치 — 같은 상품·범위에서 동시 구성 금지 (Catalog 구성 검증에서 확인).` };
   return {
     verdict: 'PASS',
-    rationale:
-      d.type === 'REQUIRES'
-        ? `대상 ${target.featureId} ${target.version} ${target.lifecycle} 확정; 범위 일치 및 원천 ${source.lifecycle}의 필수 선행 단계 충족.`
-        : `배타 관계 범위 일치 — 같은 상품·범위에서 동시 구성 금지 (Catalog 구성 검증에서 확인).`,
+    rationale: rule.targetMaturity
+      ? `${rule.label}(${rule.spec}) — 대상 ${target.featureId} ${target.version} ${target.lifecycle} 확정; 범위 일치 및 원천 ${source.lifecycle}의 선행 단계 충족.`
+      : `${rule.label}(${rule.spec}) 관계 범위 일치 — ${rule.description}.`,
   };
 }
 
-export type NewDependencyIssue = 'SELF_REFERENCE' | 'DUPLICATE_KEY' | 'EXCLUDES_SYMMETRIC_DUPLICATE' | 'REQUIRES_CYCLE' | 'SCOPE_MISMATCH';
+export type NewDependencyIssue =
+  | 'SELF_REFERENCE'
+  | 'DUPLICATE_KEY'
+  | 'EXCLUDES_SYMMETRIC_DUPLICATE'
+  | 'REQUIRES_CYCLE'
+  | 'SCOPE_MISMATCH'
+  | 'SYMMETRIC_DUPLICATE'
+  | 'INVERSE_DUPLICATE'
+  | 'CONFLICTING_RELATION'
+  | 'RELATION_CYCLE';
 
-/** 등록 전 구조 검증 — 존재·방향·자기참조·중복·범위·REQUIRES 순환·EXCLUDES 대칭 */
+/** 등록 전 구조 검증 — 존재·방향·자기참조·중복·범위·REQUIRES 순환·EXCLUDES 대칭, 관계 유형별(대칭·반대 짝·함께/배제 충돌·묶음 순환, rules/relation-types) @req FR-DEP-001-001 FR-DEP-009-002 */
 export function validateNewDependency(
   existing: DependencyRow[],
   d: Pick<DependencyRow, 'type' | 'sourceFeatureId' | 'sourceVersion' | 'targetFeatureId' | 'targetVersion'>,
@@ -53,6 +65,27 @@ export function validateNewDependency(
     const cycles = findRequiresCycles([...existing.filter((e) => e.type === 'REQUIRES'), d as DependencyRow]);
     const mine = cycles.find((c) => c.includes(`${d.sourceFeatureId}@${d.sourceVersion}`));
     if (mine) out.push({ code: 'REQUIRES_CYCLE', message: `순환이 생깁니다: ${mine.join(' → ')}` });
+  }
+  const rule = RELATION_TYPES[d.type];
+  const pair = (e: { sourceFeatureId: string; targetFeatureId: string }) =>
+    (e.sourceFeatureId === d.sourceFeatureId && e.targetFeatureId === d.targetFeatureId) || (e.sourceFeatureId === d.targetFeatureId && e.targetFeatureId === d.sourceFeatureId);
+  if (rule.symmetric && d.type !== 'EXCLUDES') {
+    const sym = existing.find((e) => e.type === d.type && e.sourceFeatureId === d.targetFeatureId && e.targetFeatureId === d.sourceFeatureId);
+    if (sym) out.push({ code: 'SYMMETRIC_DUPLICATE', message: `${rule.spec}는 대칭입니다 — ${sym.dependencyId}가 이미 같은 관계를 표현합니다.` });
+  }
+  if (rule.inverse) {
+    const inv = existing.find((e) => e.type === rule.inverse && e.sourceFeatureId === d.targetFeatureId && e.targetFeatureId === d.sourceFeatureId);
+    if (inv) out.push({ code: 'INVERSE_DUPLICATE', message: `${inv.dependencyId}(${RELATION_TYPES[inv.type].spec})가 반대 방향으로 같은 관계를 표현합니다.` });
+  }
+  // 함께 쓰여야 하는 관계(requires·composed_of)와 상호 배제(excludes)를 같은 두 Feature에 두지 않는다
+  if (d.type === 'EXCLUDES' || rule.together) {
+    const clash = existing.find((e) => pair(e) && (d.type === 'EXCLUDES' ? RELATION_TYPES[e.type].together : e.type === 'EXCLUDES'));
+    if (clash) out.push({ code: 'CONFLICTING_RELATION', message: `${clash.dependencyId}(${RELATION_TYPES[clash.type].spec})와 함께 둘 수 없습니다 — 같은 두 Feature를 함께 쓰면서 배제할 수 없습니다.` });
+  }
+  if (rule.cycle && rule.cycle !== 'REQUIRES') {
+    const group = existing.filter((e) => RELATION_TYPES[e.type].cycle === rule.cycle).map(cycleEdge);
+    const loop = cycleWith(group, cycleEdge(d));
+    if (loop && d.sourceFeatureId !== d.targetFeatureId) out.push({ code: 'RELATION_CYCLE', message: `${rule.label} 관계가 되돌아옵니다: ${loop.join(' → ')}` });
   }
   return out;
 }

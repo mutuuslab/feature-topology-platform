@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 266,
-      "부분": 235,
-      "미구현": 122,
+      "구현": 292,
+      "부분": 218,
+      "미구현": 113,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 105,
-        "부분": 74,
-        "미구현": 57,
+        "구현": 131,
+        "부분": 57,
+        "미구현": 48,
         "범위 밖": 3
       },
       {
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 114,
+    "traced": 140,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 9,
@@ -97,6 +97,182 @@
       ],
       "tested": [
         "contracts/src/rules/notification.test.ts"
+      ]
+    },
+    "FR-DEP-001-001": {
+      "implemented": [
+        "contracts/src/rules/topology.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-002-004": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-003-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/topology/relation-guard.service.ts"
+      ],
+      "tested": [
+        "frontend/src/__tests__/traceLinks.test.tsx"
+      ]
+    },
+    "FR-DEP-004-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/topology/topology.service.ts"
+      ],
+      "tested": [
+        "frontend/src/__tests__/traceLinks.test.tsx"
+      ]
+    },
+    "FR-DEP-005-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-005-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-005-004": {
+      "implemented": [
+        "contracts/src/rules/trace-link.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/trace-link.test.ts"
+      ]
+    },
+    "FR-DEP-005-005": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/trace-links.spec.ts"
+      ]
+    },
+    "FR-DEP-005-006": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-006-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-006-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-006-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-006-004": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-007-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-007-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-007-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-007-004": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-008-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-008-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-008-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-008-004": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/trace-link.test.ts"
+      ]
+    },
+    "FR-DEP-008-005": {
+      "implemented": [
+        "contracts/src/rules/trace-link.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-008-006": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/trace-links.spec.ts"
+      ]
+    },
+    "FR-DEP-008-007": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/trace-link.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-009-001": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/relation-types.test.ts"
+      ]
+    },
+    "FR-DEP-009-002": {
+      "implemented": [
+        "contracts/src/rules/topology.ts"
+      ],
+      "tested": []
+    },
+    "FR-DEP-009-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/topology/relation-guard.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/relation-types.test.ts"
       ]
     },
     "FR-POL-002-004": {

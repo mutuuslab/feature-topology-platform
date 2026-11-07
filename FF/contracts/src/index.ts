@@ -18,3 +18,5 @@ export * from './rules/relation-types';
 export * from './schemas/trace-link';
 export * from './rules/trace-link';
 export * from './rules/ads-p5';
+// 긴급 차단 범위·해제·사건 범위(P11a) — 화면은 파일에서 직접 읽는다
+export * from './rules/kill-scope';

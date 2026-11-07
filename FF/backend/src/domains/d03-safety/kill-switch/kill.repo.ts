@@ -1,6 +1,6 @@
 // 긴급 차단 요청 저장소 — KILL_STATE 포트의 실제 구현. 서버 평가기(D01-09)의 KILL 단계가 여기서 결정된다.
 import { Inject, Injectable } from '@nestjs/common';
-import type { KillRequest } from '@ff/contracts';
+import { activationBlockers, isKilled, type KillRequest } from '@ff/contracts';
 import { DB, type Db } from '../../../kernel/db';
 import type { KillState } from '../../d01-policy/activation/kill-state';
 
@@ -34,8 +34,13 @@ export class KillRepo implements KillState {
     return this.list('ACTIVE');
   }
 
-  /** 이 차량에서 이 Feature가 차단 중인가 — 차단 대상 Feature(의존 포함)·차량 범위 모두에 들어야 한다 */
+  /** 이 차량에서 이 Feature가 차단 중인가 — 차단 대상 Feature(의존 포함)·차량 범위 모두에 들어야 한다. 부분 복원한 차량은 빠진다(FR-KSW-004-007) */
   killed(featureId: string, vin: string): boolean {
-    return this.active().some((k) => k.featureIds.includes(featureId) && k.vins.includes(vin));
+    return isKilled(this.active(), featureId, vin);
+  }
+
+  /** 활성화(배포)를 막는 긴급 차단 — 상업 차단 제외, 남은 차단 차량이 있는 것(FR-KSW-002-006) */
+  activationBlockers(featureId: string): KillRequest[] {
+    return activationBlockers(this.active(), featureId) as KillRequest[];
   }
 }

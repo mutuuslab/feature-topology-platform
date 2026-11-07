@@ -3,7 +3,7 @@
 // → 원장 +1 → kill_command v2(request=restore, 복원 용도 키) → 차량별 봉투 → 서명된 복구 게시본(RESTORE, 같은 Feature 순번 공간 — 오래된 차단 재전송 방지).
 // v1 레거시 차단(safeMode 있음)은 기존 단일 해제를 유지한다.
 import { Body, Controller, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
-import { approvalPlan, KillApproveBody, KillRejectBody, RestoreRequestBody, type KillRequest, type RestoreRequest } from '@ff/contracts';
+import { approvalPlan, blockedVins, KillApproveBody, KillRejectBody, missingRestoreChecks, RESTORE_CHECK_LABEL, RestoreRequestBody, type KillRequest, type RestoreRequest } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -97,6 +97,23 @@ export class RestoreService {
       this.audit.failed(actor, 'RESTORE_REQUEST', killId, `재검증 Evidence ${evidenceRef} 없음 또는 대상 Feature의 PASS 판정 아님`, 'D03-04');
       throw new DomainError('VALIDATION', `재검증 Evidence ${evidenceRef}을(를) ${k.featureId}의 PASS 판정 근거에서 찾을 수 없습니다 — 원인 수정 뒤 PASS로 판정한 Evidence를 고르세요.`, { field: 'evidenceRef' });
     }
+    // FR-KSW-004-002 — 차단 사유 해소·원인 조치 완료를 둘 다 체크해야 요청을 만든다
+    const missing = missingRestoreChecks(body);
+    if (missing.length) {
+      const names = missing.map((c) => RESTORE_CHECK_LABEL[c]).join('·');
+      this.audit.failed(actor, 'RESTORE_REQUEST', killId, `확인 항목 미체크: ${names}`, 'D03-04');
+      throw new DomainError('VALIDATION', `해제 요청 전에 확인 항목을 체크하세요: ${names}`, { field: 'checks', missing });
+    }
+    // FR-KSW-004-001 — 지정 승인대상자는 복원 승인 후보(직전 차단 승인자·요청자 제외)에서만
+    const targets = [...new Set(body.approverTargets ?? [])];
+    if (targets.length) {
+      const can = new Set(this.killService.restoreOutlookOf(k).candidates.map((c) => c.id));
+      const invalid = targets.filter((t) => !can.has(t) || t === actor.id);
+      if (invalid.length) {
+        this.audit.failed(actor, 'RESTORE_REQUEST', killId, `승인대상자 아님: ${invalid.join(', ')}`, 'D03-04');
+        throw new DomainError('VALIDATION', `복원을 승인할 수 없는 사람이 승인대상자에 있습니다: ${invalid.join(', ')} — 직전 차단 승인자·요청자는 복원을 승인하지 않습니다.`, { field: 'approverTargets', invalid });
+      }
+    }
     const rr: RestoreRequest = {
       requestedBy: actor.id,
       requestedAt: this.clock.iso(),
@@ -109,6 +126,8 @@ export class RestoreService {
       rejectReason: null,
       evidenceRef,
       cohort: k.vins.filter((v) => cohort.includes(v)),
+      checks: { resolved: true, causeFixed: true },
+      approverTargets: targets,
     };
     return this.db.tx(() => {
       const next = { ...k, restoreRequest: rr };
@@ -119,7 +138,7 @@ export class RestoreService {
       this.events.publish(
         'kill.restore-requested',
         killId,
-        { killId, featureId: k.featureId, cohort: rr.cohort!.length, evidenceRef, candidates: outlook.candidates.map((c) => c.id), complete: outlook.complete, excluded },
+        { killId, featureId: k.featureId, cohort: rr.cohort!.length, evidenceRef, candidates: targets.length ? targets : outlook.candidates.map((c) => c.id), complete: outlook.complete, excluded },
         { componentId: 'D03-04', correlationId: actor.correlationId },
       );
       return this.killService.detail(killId);
@@ -136,6 +155,11 @@ export class RestoreService {
     if (k.status !== 'ACTIVE' || rr?.status !== 'REQUESTED') {
       this.audit.failed(actor, 'RESTORE_APPROVE', killId, '복원 승인 대기 아님', 'D03-04');
       throw new DomainError('CONFLICT', '복원 승인 대기 중인 요청이 아닙니다.');
+    }
+    // 지정 승인대상자가 있으면 그 사람만(FR-KSW-004-001)
+    if (rr.approverTargets?.length && !rr.approverTargets.includes(actor.id)) {
+      this.audit.failed(actor, 'RESTORE_APPROVE', killId, `지정 승인대상자 아님(${rr.approverTargets.join(', ')})`, 'D03-04');
+      throw new DomainError('FORBIDDEN', `이 복원 요청의 승인대상자가 아닙니다 — 지정: ${rr.approverTargets.join(', ')}`, { code: 'NOT_DESIGNATED' });
     }
     const plan = approvalPlan(k.fClass!, 'restore', k.reasonCategory!);
     // 직전 차단 승인자 — 이 차단의 승인자와 원장의 마지막 Kill 승인자
@@ -169,11 +193,18 @@ export class RestoreService {
         const restoredVins = [...(k.restoredVins ?? []), ...cohort];
         // 모든 차단 차량이 복원되면 해제(RELEASED), 아니면 차단 유지 — 다음 Cohort로 넓힌다(FPW.8-A10)
         const all = k.vins.every((v) => restoredVins.includes(v));
+        const status = all ? ('RELEASED' as const) : k.status;
+        // 해제 기록(FR-KSW-004-007) — 변경 전/후 상태와 남은 차단 차량
+        const before = { status: k.status, blockedVins: blockedVins(k) };
+        const after = { status, blockedVins: blockedVins({ ...k, status, restoredVins }) };
         const done: KillRequest = {
           ...k,
-          ...(all ? { status: 'RELEASED' as const, releasedBy: actor.id, releasedAt: at, releaseReason: rr.reason } : {}),
+          ...(all ? { status, releasedBy: actor.id, releasedAt: at, releaseReason: rr.reason } : {}),
           restoredVins,
-          restoreStages: [...(k.restoreStages ?? []), { cohort, evidenceRef: rr.evidenceRef ?? null, publicationId: pub.publicationId, approvedAt: at, approvers: approvals.map((x) => x.approverId) }],
+          restoreStages: [
+            ...(k.restoreStages ?? []),
+            { cohort, evidenceRef: rr.evidenceRef ?? null, publicationId: pub.publicationId, approvedAt: at, approvers: approvals.map((x) => x.approverId), featureId: k.featureId, requestedBy: rr.requestedBy, before, after },
+          ],
           restorePublicationId: pub.publicationId,
           restoreRequest: { ...rr, cohort, approvals, status: 'APPROVED', gate: { result: 'PASS', failed: [], at }, command: this.killService.commandRef(issued) },
         };

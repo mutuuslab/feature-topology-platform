@@ -12,6 +12,7 @@ import {
   approvalSubject,
   approverRef,
   authBlock,
+  blockedVins,
   jcs,
   KillApproveBody,
   KillCreateBody,
@@ -567,6 +568,20 @@ export class KillService {
     return { killId: id, featureId: k.featureId, items: k.vins.map((vin) => killTimeline(vin, commands, reports, { adsFeature: ads })) };
   }
 
+  /**
+   * 현재 차단 상태인 범위(FR-KSW-004-004) — 이 Feature(의존 포함)에 걸린 ACTIVE 차단별 남은 차단 차량. 부분 복원한 차량은 빠진다.
+   * 해제 요청 화면이 여기서 해제 대상을 고른다.
+   */
+  blockedScope(featureId: string) {
+    if (!/^FEAT-\d{5}$/.test(featureId)) throw new DomainError('VALIDATION', 'featureId(FEAT-NNNNN)가 필요합니다.', { field: 'featureId' });
+    const kills = this.kills
+      .active()
+      .filter((k) => k.featureIds.includes(featureId))
+      .map((k) => ({ killId: k.killId, featureId: k.featureId, reasonCategory: k.reasonCategory ?? null, requestedAt: k.requestedAt, blockedVins: blockedVins(k), restoredVins: k.restoredVins ?? [] }))
+      .filter((k) => k.blockedVins.length);
+    return { featureId, vins: [...new Set(kills.flatMap((k) => k.blockedVins))], kills };
+  }
+
   list(status?: string) {
     return this.kills
       .list()
@@ -678,6 +693,12 @@ export class KillController {
     const picked = list?.length ? pv.vehicles.map((v) => v.vin).filter((v) => list.includes(v)) : pv.vehicles.map((v) => v.vin);
     const checks = reasonCategory && picked.length && pv.registry ? this.kills.dryRun(featureId, featureVersion, picked, reasonCategory, { recallCampaignId, containmentJustification }) : [];
     return { ...pv, unknownVins, checks };
+  }
+
+  /** 현재 차단 상태인 범위 — 해제 대상 선택(FR-KSW-004-004) */
+  @Get('blocked-scope')
+  blockedScope(@Query('featureId') featureId = '') {
+    return this.kills.blockedScope(featureId);
   }
 
   @Get(':id')

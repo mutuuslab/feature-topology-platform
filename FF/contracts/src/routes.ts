@@ -637,6 +637,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // 긴급 차단·해제·사건 범위(P11a)
+  { name: 'killBlockedScope', method: 'GET', path: '/api/kill-requests/blocked-scope', summary: '현재 차단 상태인 범위 — Feature에 걸린 차단별 남은 차량(부분 복원 차량 제외), 해제 대상 선택', component: 'D03-04', query: ['featureId'], requiredQuery: ['featureId'], sample: { featureId: 'FEAT-00022' } },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

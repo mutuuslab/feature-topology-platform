@@ -20,6 +20,8 @@ import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.
 import { IntegrationErrorService } from '../../d04-ops/event-history/integration-error.service';
 import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 import { AdsPublishGate } from '../../d02-runtime/variant-conditions/ads-publish-gate';
+import { KILL_STATE, type KillState } from '../activation/kill-state';
+import { activationBlockedMessage } from '@ff/contracts';
 
 /** 같은 사람이 같은 정책을 다시 조회해도 이 시간 안이면 조회 감사를 한 번만 남긴다(화면 재조회·새로고침 잡음) */
 const VIEW_AUDIT_WINDOW_MS = 10 * 60_000;
@@ -44,6 +46,7 @@ export class PolicyService implements OnModuleInit {
     private readonly errors: IntegrationErrorService,
     private readonly flagCode: FlagCoverageService,
     private readonly adsGate: AdsPublishGate,
+    @Inject(KILL_STATE) private readonly kills: KillState,
   ) {}
 
   /**
@@ -286,6 +289,13 @@ export class PolicyService implements OnModuleInit {
       throw new DomainError('GUARD_FAILED', `승인된(APPROVED) 정책만 배포할 수 있습니다 (현재 ${p.status}).`);
     }
     if (p.contentHash !== policyHash(p)) throw new DomainError('GUARD_FAILED', '승인 이후 정책 내용이 바뀌었습니다 (해시 불일치).');
+    // FR-KSW-002-006 — 긴급 차단 중인 Feature는 활성화(배포)를 받지 않는다. 거부도 기록한다
+    const killed = this.kills.activationBlockers?.(p.featureId) ?? [];
+    if (killed.length) {
+      const msg = activationBlockedMessage(p.featureId, killed);
+      this.audit.failed(actor, 'POLICY_DEPLOY', id, msg, 'D01-06');
+      throw new DomainError('GUARD_FAILED', msg, { code: 'KILL_ACTIVE', killIds: killed.map((k) => k.killId) });
+    }
     this.assertDeployableLifecycle(actor, p, 'POLICY_DEPLOY');
     const odd = this.oddFindings(p);
     if (odd.length) {

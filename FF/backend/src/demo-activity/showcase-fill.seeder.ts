@@ -579,7 +579,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
     const stage = vins.filter((v) => !keep.includes(v));
     if (!evidence || !stage.length) return `${k.killId} ACTIVE(완료 ${done()}/${vins.length}대, 복원 근거 없음)`;
     const restore = this.svc(RestoreService);
-    restore.request(operator, k.killId, RestoreRequestBody.parse({ reason: '원인 조치·재검증 근거 확인 — 복원 요청', evidenceRef: evidence.evidenceRef, cohort: stage }));
+    restore.request(operator, k.killId, RestoreRequestBody.parse({ reason: '원인 조치·재검증 근거 확인 — 복원 요청', evidenceRef: evidence.evidenceRef, cohort: stage, resolved: true, causeFixed: true }));
     restore.approve(who('safety2', 'SAFETY_OFFICER', `restore-${featureId}`), k.killId, KillApproveBody.parse({ comment: '재검증 근거 확인 — 복원 승인(차단 승인자와 다른 FSM)' }));
     const after = restore.approve(who('opslead', 'OPS_LEAD', `restore-${featureId}`), k.killId, KillApproveBody.parse({ comment: '운영 영향 확인 — 복원 승인' }));
     const pub = after.restoreStages?.at(-1)?.publicationId;

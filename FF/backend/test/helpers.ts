@@ -87,7 +87,8 @@ export async function restoreBody(http: Http, killId: string, reason = '복구')
   const ev = (await http().get(`/api/evidence?featureId=${encodeURIComponent(k.featureId)}`).expect(200)).body.items.find((e: { inputResult: string }) => e.inputResult === 'PASS');
   if (!ev) throw new Error(`${k.featureId}의 Evidence가 없습니다 — 복원 요청에 재검증 근거가 필요합니다`);
   const done = new Set<string>(k.restoredVins ?? []);
-  return { reason, evidenceRef: ev.evidenceRef as string, cohort: (k.vins as string[]).filter((v) => !done.has(v)) };
+  // 해제 확인 항목(FR-KSW-004-002) — 둘 다 체크해야 요청이 만들어진다
+  return { reason, evidenceRef: ev.evidenceRef as string, cohort: (k.vins as string[]).filter((v) => !done.has(v)), resolved: true, causeFixed: true };
 }
 
 /** 복원 요청 → 다른 2인 승인(복구 게시) */

@@ -129,6 +129,10 @@ export const RestoreRequest = z.object({
   evidenceRef: z.string().nullable().optional(),
   /** 이번 단계에 복원할 차량(Canary Cohort, FPW.8-A10) — 차단 차량의 부분집합. 이전 행은 차단 차량 전체 */
   cohort: z.array(z.string()).optional(),
+  /** 해제 확인 항목(FR-KSW-004-001·002) — 차단 사유 해소·원인 조치 완료. 이전 행에는 없다 */
+  checks: z.object({ resolved: z.boolean(), causeFixed: z.boolean() }).optional(),
+  /** 지정 승인대상자(FR-KSW-004-001) — 비우면 복원 승인 후보 누구나. 지정하면 그 사람만 승인 칸을 채운다 */
+  approverTargets: z.array(z.string()).optional(),
 });
 export type RestoreRequest = z.infer<typeof RestoreRequest>;
 
@@ -138,12 +142,29 @@ export const RestoreRequestBody = z
     reason: z.string().trim().min(2).max(500),
     evidenceRef: z.string().trim().min(3).max(512),
     cohort: z.array(z.string().min(1)).min(1).max(500),
+    /** 해제 확인 항목 — 둘 다 체크해야 요청을 만든다(FR-KSW-004-002, 서버가 빠진 항목을 알려 준다) */
+    resolved: z.boolean().optional(),
+    causeFixed: z.boolean().optional(),
+    /** 지정 승인대상자 — 복원 승인 후보(직전 차단 승인자 제외)에서 고른다 */
+    approverTargets: z.array(z.string().min(1).max(100)).max(6).optional(),
   })
   .strict();
 export type RestoreRequestBody = z.infer<typeof RestoreRequestBody>;
 
 /** 단계적 복원 기록 — 단계마다 Cohort·Evidence·복구 게시본 */
-export const RestoreStage = z.object({ cohort: z.array(z.string()), evidenceRef: z.string().nullable(), publicationId: z.string(), approvedAt: z.string(), approvers: z.array(z.string()) });
+const BlockState = z.object({ status: z.string(), blockedVins: z.array(z.string()) });
+/** 해제 기록(FR-KSW-004-007) — Feature·해제 범위·요청자·승인자·일시·변경 전/후 상태. 이전 행에는 뒤 칸들이 없다 */
+export const RestoreStage = z.object({
+  cohort: z.array(z.string()),
+  evidenceRef: z.string().nullable(),
+  publicationId: z.string(),
+  approvedAt: z.string(),
+  approvers: z.array(z.string()),
+  featureId: z.string().optional(),
+  requestedBy: z.string().optional(),
+  before: BlockState.optional(),
+  after: BlockState.optional(),
+});
 export type RestoreStage = z.infer<typeof RestoreStage>;
 
 export const KillRequestSchema = z.object({

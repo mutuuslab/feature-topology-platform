@@ -290,7 +290,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/policy-version.ts:59",
      "frontend/src/screens/policy/PolicyVersions.tsx:35",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:378"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:381"
     ],
     "tests": [
      "contracts/src/rules/policy-version.test.ts",
@@ -613,7 +613,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d04-ops/pipeline-link/pipeline.service.ts:23",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151",
-     "contracts/src/routes.ts:241"
+     "contracts/src/routes.ts:242"
     ],
     "tests": [
      "backend/test/d03/delivery.spec.ts"
@@ -1876,7 +1876,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d06-qsec/scenario-validation/virtual-run.repo.ts:43",
      "contracts/src/rules/virtual.ts:86",
-     "contracts/src/rules/validators.ts:106"
+     "contracts/src/rules/validators.ts:116"
     ],
     "tests": [
      "backend/test/d06/virtual.spec.ts",
@@ -1950,7 +1950,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "contracts/src/rules/validators.ts:106",
+     "contracts/src/rules/validators.ts:116",
      "contracts/src/rules/tool-qualification.ts:73",
      "contracts/src/rules/virtual.ts:106"
     ],

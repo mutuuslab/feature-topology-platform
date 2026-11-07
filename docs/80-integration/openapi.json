@@ -23536,6 +23536,853 @@
           }
         }
       }
+    },
+    "/api/compliance-rules": {
+      "get": {
+        "summary": "컴플라이언스 룰 조회 — 룰 ID·유형·적용 지역·Feature·상태",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "complianceRules",
+        "parameters": [
+          {
+            "name": "ruleId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "컴플라이언스 룰 등록(승인 대기, 버전 1.0) — 룰 ID 중복은 409",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "createComplianceRule",
+        "description": "허용 역할: 법규 담당, 기능안전 담당자(FSM), 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ruleId": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+){1,4}$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "LEGAL",
+                      "PRIVACY",
+                      "SAFETY",
+                      "SECURITY"
+                    ]
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "markets": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "UNECE",
+                            "EU",
+                            "UK",
+                            "CN",
+                            "US",
+                            "CA",
+                            "MX",
+                            "BR",
+                            "KR",
+                            "JP",
+                            "IN",
+                            "AU",
+                            "OTHER"
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 13
+                      },
+                      "featureIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^FEAT-\\d{5}$"
+                        },
+                        "maxItems": 50,
+                        "default": []
+                      },
+                      "rolloutModes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "ALL",
+                            "COHORT",
+                            "NONE"
+                          ]
+                        },
+                        "maxItems": 3,
+                        "default": []
+                      },
+                      "asil": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "QM",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                          ]
+                        },
+                        "maxItems": 5,
+                        "default": []
+                      },
+                      "cal": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CAL1",
+                            "CAL2",
+                            "CAL3",
+                            "CAL4"
+                          ]
+                        },
+                        "maxItems": 4,
+                        "default": []
+                      }
+                    },
+                    "required": [
+                      "markets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "criteria": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "check": {
+                          "type": "string",
+                          "enum": [
+                            "SAFE_DEFAULT_OFF",
+                            "STAGED_ROLLOUT",
+                            "REQUIREMENT_TRACE",
+                            "GATE_PASS",
+                            "ENTITLEMENT_REQUIRED",
+                            "NO_VEHICLE_ID_TARGETING",
+                            "MARKET_PROFILE_CONFIRMED",
+                            "TARA_RECORDED"
+                          ]
+                        },
+                        "gate": {
+                          "type": "string",
+                          "enum": [
+                            "G1",
+                            "G2",
+                            "G3",
+                            "G4",
+                            "G5",
+                            "G6",
+                            "G7",
+                            "G8",
+                            "G9"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "check"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 8
+                  },
+                  "approverIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 80
+                    },
+                    "minItems": 1,
+                    "maxItems": 5
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 500,
+                        "default": null
+                      },
+                      "docName": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "default": null
+                      },
+                      "clause": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "default": null
+                      },
+                      "memo": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 1000,
+                        "default": null
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "validFrom": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "validTo": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "ruleId",
+                  "name",
+                  "type",
+                  "scope",
+                  "criteria",
+                  "approverIds",
+                  "evidence",
+                  "validFrom"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/compliance-rules/feature-candidates": {
+      "get": {
+        "summary": "룰 적용 대상 Feature 후보 — 적용 지역(판매국)·ASIL·지정 Feature",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "complianceRuleCandidates",
+        "parameters": [
+          {
+            "name": "markets",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "asil",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureIds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/compliance-rules/applicable": {
+      "get": {
+        "summary": "정책 배포 검증에 적용할 룰 — Feature·대상 지역·배포 유형·Safety/Security 등급·배포 시점",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "complianceRulesApplicable",
+        "parameters": [
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "at",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/compliance-rules/{id}": {
+      "get": {
+        "summary": "컴플라이언스 룰 상세 — 버전·변경 이력·승인 요청",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "complianceRule",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "patch": {
+        "summary": "컴플라이언스 룰 수정 — 소유자만, Major.Minor 증가, 승인된 룰은 승인 대기로",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "updateComplianceRule",
+        "description": "허용 역할: 법규 담당, 기능안전 담당자(FSM), 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "LEGAL",
+                      "PRIVACY",
+                      "SAFETY",
+                      "SECURITY"
+                    ]
+                  },
+                  "scope": {
+                    "type": "object",
+                    "properties": {
+                      "markets": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "UNECE",
+                            "EU",
+                            "UK",
+                            "CN",
+                            "US",
+                            "CA",
+                            "MX",
+                            "BR",
+                            "KR",
+                            "JP",
+                            "IN",
+                            "AU",
+                            "OTHER"
+                          ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 13
+                      },
+                      "featureIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^FEAT-\\d{5}$"
+                        },
+                        "maxItems": 50,
+                        "default": []
+                      },
+                      "rolloutModes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "ALL",
+                            "COHORT",
+                            "NONE"
+                          ]
+                        },
+                        "maxItems": 3,
+                        "default": []
+                      },
+                      "asil": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "QM",
+                            "A",
+                            "B",
+                            "C",
+                            "D"
+                          ]
+                        },
+                        "maxItems": 5,
+                        "default": []
+                      },
+                      "cal": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "CAL1",
+                            "CAL2",
+                            "CAL3",
+                            "CAL4"
+                          ]
+                        },
+                        "maxItems": 4,
+                        "default": []
+                      }
+                    },
+                    "required": [
+                      "markets"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "criteria": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "check": {
+                          "type": "string",
+                          "enum": [
+                            "SAFE_DEFAULT_OFF",
+                            "STAGED_ROLLOUT",
+                            "REQUIREMENT_TRACE",
+                            "GATE_PASS",
+                            "ENTITLEMENT_REQUIRED",
+                            "NO_VEHICLE_ID_TARGETING",
+                            "MARKET_PROFILE_CONFIRMED",
+                            "TARA_RECORDED"
+                          ]
+                        },
+                        "gate": {
+                          "type": "string",
+                          "enum": [
+                            "G1",
+                            "G2",
+                            "G3",
+                            "G4",
+                            "G5",
+                            "G6",
+                            "G7",
+                            "G8",
+                            "G9"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "check"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 8
+                  },
+                  "approverIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 80
+                    },
+                    "minItems": 1,
+                    "maxItems": 5
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 500,
+                        "default": null
+                      },
+                      "docName": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "default": null
+                      },
+                      "clause": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "default": null
+                      },
+                      "memo": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 1000,
+                        "default": null
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "validFrom": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "validTo": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/compliance-rules/{id}/approval-requests": {
+      "post": {
+        "summary": "룰 승인 요청 — 요청자·대상 룰 버전·승인 대상자·요청 일시",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "requestComplianceApproval",
+        "description": "허용 역할: 법규 담당, 기능안전 담당자(FSM), 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/compliance-rules/{id}/decision": {
+      "post": {
+        "summary": "룰 승인·반려 — 지정 승인 대상자 본인만(작성자 제외)",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "decideComplianceRule",
+        "description": "허용 역할: 법규 담당, 기능안전 담당자(FSM), 사이버보안 담당자(CSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/compliance-validations": {
+      "get": {
+        "summary": "컴플라이언스 검증 결과 — 배포(정책) ID·Feature ID·대상 지역",
+        "tags": [
+          "D03-01"
+        ],
+        "operationId": "complianceValidations",
+        "parameters": [
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

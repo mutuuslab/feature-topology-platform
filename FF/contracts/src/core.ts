@@ -113,3 +113,5 @@ export * from './schemas/ads-config';
 export * from './schemas/ads-evidence';
 export * from './schemas/ads-state';
 export * from './schemas/ads-change';
+export * from './schemas/compliance-rule';
+export * from './rules/compliance-rule';

@@ -1690,9 +1690,9 @@
       "gap": "프로파일이 없으면 추정 초안을 만들어 반환(safety-profile.service.ts:66-70) — \"존재하지 않음 오류\" 아님. Feature ID 단위가 아니라 Version 단위"
     },
     "FR-CRC-001-001": {
-      "verdict": "미구현",
-      "evidence": "룰 등록 API·스키마 없음(routes.ts). Profile은 소스 상수 `compliance-profile.ts:24`",
-      "gap": "룰 엔티티(룰 ID·명칭·유형·지역 코드·검증 기준·승인 대상자)와 등록 API·화면"
+      "verdict": "구현",
+      "evidence": "룰 등록 `POST /api/compliance-rules`(ROUTES complianceRules·createComplianceRule) — 룰 ID·명칭·유형(법규·개인정보·안전·보안)·적용 지역(시장)·검증 기준·승인 대상자 `C/schemas/compliance-rule.ts:100`, 저장 `B/d03-safety/compliance-checker/compliance-rule.service.ts:281`, 등록 폼 화면 `/verify/compliance?tab=registry`(`frontend/src/screens/master/ComplianceRules.tsx`); 시험 `contracts/src/rules/compliance-rule.test.ts:89`, `backend/test/d03/compliance-rules.spec.ts:44`, `frontend/src/__tests__/complianceRegistry.test.tsx:147`, `e2e/tests/compliance-rules.spec.ts:43`",
+      "gap": "적용 지역 코드 체계(1~9·A~D·G)는 결정 대기(D8, FR-CRC-001-002) — 지금은 시장 구분(MARKETS)"
     },
     "FR-CRC-001-002": {
       "verdict": "미구현",
@@ -1705,139 +1705,139 @@
       "gap": "Variant Rule을 독립 개념으로 둘지 결정 후 지역 코드 기준 후보 조회"
     },
     "FR-CRC-001-004": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "Variant Rule→Feature 후보 조회"
+      "verdict": "부분",
+      "evidence": "적용 대상 Feature 후보 `GET /api/compliance-rules/feature-candidates` — 적용 지역(판매국)·ASIL·지정 Feature 기준 `C/rules/compliance-rule.ts:157`, `B/d03-safety/compliance-checker/compliance-rule.service.ts:270`, 상세 서랍 후보 목록; 시험 `contracts/src/rules/compliance-rule.test.ts:213`, `backend/test/d03/compliance-rules.spec.ts:115`",
+      "gap": "Variant Rule을 거쳐 Feature를 찾는 경로는 Variant Rule 엔티티 결정(D8) 뒤"
     },
     "FR-CRC-001-005": {
-      "verdict": "미구현",
-      "evidence": "Profile에 근거·유효기간 필드 없음(`compliance-profile.ts:10-21`)",
-      "gap": "근거 정보·유효 시작/종료일 필드"
+      "verdict": "구현",
+      "evidence": "근거 정보·유효 시작/종료일 필드 `C/schemas/compliance-rule.ts:57-89`; 시험 `contracts/src/rules/compliance-rule.test.ts:89`",
+      "gap": "—"
     },
     "FR-CRC-001-006": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "URL·문서명·조항 번호·메모 분리 입력"
+      "verdict": "구현",
+      "evidence": "근거 URL·문서명·조항 번호·메모를 따로 받는다 `C/schemas/compliance-rule.ts:57`, 폼 칸 화면 `/verify/compliance?tab=registry`(`frontend/src/screens/master/ComplianceRules.tsx`); 시험 `contracts/src/rules/compliance-rule.test.ts:89`, `frontend/src/__tests__/complianceRegistry.test.tsx:147`",
+      "gap": "—"
     },
     "FR-CRC-001-007": {
-      "verdict": "미구현",
-      "evidence": "입력 경로 없음",
-      "gap": "http(s) 형식 zod 검증"
+      "verdict": "구현",
+      "evidence": "http·https만 허용(URL 해석 + 형식) `C/schemas/compliance-rule.ts:41`, 서버 400·화면 사전 검사; 시험 `contracts/src/rules/compliance-rule.test.ts:99`, `backend/test/d03/compliance-rules.spec.ts:44`, `frontend/src/__tests__/complianceRegistry.test.tsx:147`, `e2e/tests/compliance-rules.spec.ts:43`",
+      "gap": "—"
     },
     "FR-CRC-001-008": {
-      "verdict": "미구현",
-      "evidence": "유효기간 개념 없음",
-      "gap": "종료일 null = 무기한"
+      "verdict": "구현",
+      "evidence": "종료일 없음 = null(무기한) `C/schemas/compliance-rule.ts:89`, 유효 판정 `C/rules/compliance-rule.ts:92`; 시험 `contracts/src/rules/compliance-rule.test.ts:89`, `contracts/src/rules/compliance-rule.test.ts:164`",
+      "gap": "—"
     },
     "FR-CRC-001-009": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "종료일 ≥ 시작일 검증"
+      "verdict": "구현",
+      "evidence": "종료일 ≥ 시작일(등록·수정) `C/schemas/compliance-rule.ts:92`, 서버 수정 병합 뒤 다시 확인 `B/d03-safety/compliance-checker/compliance-rule.service.ts:306`; 시험 `contracts/src/rules/compliance-rule.test.ts:107`, `backend/test/d03/compliance-rules.spec.ts:44`, `frontend/src/__tests__/complianceRegistry.test.tsx:147`",
+      "gap": "—"
     },
     "FR-CRC-001-010": {
-      "verdict": "미구현",
-      "evidence": "룰 저장 경로 없음",
-      "gap": "필수 항목·Feature ID 실재 확인(FeatureRepo 재사용)"
+      "verdict": "구현",
+      "evidence": "필수 항목 zod 검사 + 지정 Feature ID Registry 실재 확인(FeatureRepo) `B/d03-safety/compliance-checker/compliance-rule.service.ts:286`; 시험 `backend/test/d03/compliance-rules.spec.ts:44`",
+      "gap": "—"
     },
     "FR-CRC-001-011": {
-      "verdict": "미구현",
-      "evidence": "저장 테이블 없음",
-      "gap": "룰 ID 유일 제약"
+      "verdict": "구현",
+      "evidence": "룰 ID 유일(PRIMARY KEY, 마이그레이션 151_compliance_rule) + 저장 전 확인 `B/d03-safety/compliance-checker/compliance-rule.service.ts:282`; 시험 `backend/test/d03/compliance-rules.spec.ts:56`",
+      "gap": "—"
     },
     "FR-CRC-001-012": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "중복 시 409"
+      "verdict": "구현",
+      "evidence": "중복 룰 ID는 409 CONFLICT·실패 감사 `B/d03-safety/compliance-checker/compliance-rule.service.ts:282`; 시험 `backend/test/d03/compliance-rules.spec.ts:56`",
+      "gap": "—"
     },
     "FR-CRC-001-013": {
-      "verdict": "미구현",
-      "evidence": "Profile 상태는 CONFIRMED/VERIFY_REQUIRED 두 값(`compliance-profile.ts:7`)",
-      "gap": "Proposed/Approved/Rejected/Retired 상태 머신"
+      "verdict": "구현",
+      "evidence": "상태 PROPOSED·APPROVED·REJECTED·RETIRED(DB CHECK) `C/schemas/compliance-rule.ts:12`, 전이 표 `C/rules/compliance-rule.ts:33`; 시험 `contracts/src/rules/compliance-rule.test.ts:134`, `backend/test/d03/compliance-rules.spec.ts:69`",
+      "gap": "—"
     },
     "FR-CRC-001-014": {
-      "verdict": "미구현",
-      "evidence": "룰 승인 요청 경로 없음",
-      "gap": "요청자·대상 룰·승인 대상자·요청 일시 저장"
+      "verdict": "구현",
+      "evidence": "승인 요청 `POST /api/compliance-rules/:id/approval-requests` — 요청자·대상 룰 버전·승인 대상자·요청 일시 저장, 승인 대상자 알림 `B/d03-safety/compliance-checker/compliance-rule.service.ts:341`; 시험 `backend/test/d03/compliance-rules.spec.ts:61`, `contracts/src/rules/compliance-rule.test.ts:295`, `e2e/tests/compliance-rules.spec.ts:43`",
+      "gap": "—"
     },
     "FR-CRC-001-015": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "승인/반려·승인자·일시·룰 버전 저장(작성자≠승인자)"
+      "verdict": "구현",
+      "evidence": "승인/반려 `POST /api/compliance-rules/:id/decision` — 지정 승인 대상자 본인만(작성자·요청자 403 SEPARATION_OF_DUTY), 상태·승인자·일시·룰 버전을 룰·버전 행·요청에 저장 `B/d03-safety/compliance-checker/compliance-rule.service.ts:359`; 시험 `backend/test/d03/compliance-rules.spec.ts:69`, `frontend/src/__tests__/complianceRegistry.test.tsx:121`, `e2e/tests/compliance-rules.spec.ts:43`",
+      "gap": "—"
     },
     "FR-CRC-001-016": {
-      "verdict": "부분",
-      "evidence": "게이트가 시장 Profile을 조회해 CONFIRMED만 '확인'으로 본다 `compliance-profile.ts:47-59`, `deploy-safety/policy-gate.service.ts:134`; 시험 `backend/test/d03/policy-gate.spec.ts:74`",
-      "gap": "kill_command 게이트에만 적용 — 정책 배포 검증(validateCompliance)에는 Profile 조회가 없다. 승인 룰 집합을 배포 검증 입력으로"
+      "verdict": "구현",
+      "evidence": "정책 배포 검증(D03-01)이 레지스트리 룰을 입력으로 받고 Approved·유효 기간 안 룰만 판정에 넣는다 `C/rules/compliance-rule.ts:138`, `C/rules/validators.ts:103`, `B/d03-safety/compliance-checker/validator.ts:17`; 시험 `contracts/src/rules/compliance-rule.test.ts:188`, `contracts/src/rules/compliance-rule.test.ts:257`, `backend/test/d03/compliance-rules.spec.ts:177`",
+      "gap": "—"
     },
     "FR-CRC-001-017": {
       "verdict": "부분",
-      "evidence": "미확인 Profile은 F2 이상 활성화·복원을 **차단**한다(`compliance-profile.ts:57-59`)",
-      "gap": "명세는 \"미승인 룰은 적용하지 않음\"(무시), 현재 설계는 \"미확인이면 넓히는 조치 차단\"(fail-closed) — 설계 충돌, 결정 필요"
+      "evidence": "레지스트리 룰은 Approved가 아니면 판정에 넣지 않고 참고(INFO)로만 남긴다 `C/rules/compliance-rule.ts:138`(시험 `contracts/src/rules/compliance-rule.test.ts:257`). 시장 Compliance Profile은 미확인이면 F2 이상 활성화·복원을 **차단**한다(`compliance-profile.ts:57-59`)",
+      "gap": "Profile 쪽은 명세(\"미승인은 적용하지 않음\")와 현재 설계(fail-closed)가 충돌 — 결정 필요(D4)"
     },
     "FR-CRC-001-018": {
-      "verdict": "미구현",
-      "evidence": "유효기간 없음",
-      "gap": "배포 시점 기준 만료 룰 제외"
+      "verdict": "구현",
+      "evidence": "배포 시점 기준 유효 기간 밖(종료일 지남) 룰 제외 `C/rules/compliance-rule.ts:92`, 배포 요청 때 다시 판정 `B/d03-safety/deploy-safety/deploy-safety.service.ts:31`(`policy.service.ts:257`); 시험 `contracts/src/rules/compliance-rule.test.ts:188`, `backend/test/d03/compliance-rules.spec.ts:189`",
+      "gap": "—"
     },
     "FR-CRC-001-019": {
-      "verdict": "부분",
-      "evidence": "Profile 표를 화면에 표시(`frontend/src/screens/master/Ops.tsx`, COMPLIANCE_PROFILES) — 조회 API 없음",
-      "gap": "룰 ID·유형·지역·Feature·상태 필터 조회 API"
+      "verdict": "구현",
+      "evidence": "`GET /api/compliance-rules?ruleId&type&market&featureId&status` `B/d03-safety/compliance-checker/compliance-rule.service.ts:237`, 화면 상태·유형·지역 필터 화면 `/verify/compliance?tab=registry`(`frontend/src/screens/master/ComplianceRules.tsx`); 시험 `backend/test/d03/compliance-rules.spec.ts:103`, `frontend/src/__tests__/complianceRegistry.test.tsx:106`",
+      "gap": "—"
     },
     "FR-CRC-001-020": {
-      "verdict": "미구현",
-      "evidence": "Profile은 소스 상수(수정은 코드 변경)",
-      "gap": "권한 기반 수정 API(권한 기준 정의 필요)"
+      "verdict": "구현",
+      "evidence": "수정 `PATCH /api/compliance-rules/:id` — 룰 역할(법규·기능안전·사이버보안) + 소유자 본인만(D-GAP-1 기본안: 역할 계약 고정 + ownerId 검사) `B/d03-safety/compliance-checker/compliance-rule.service.ts:308`; 시험 `backend/test/d03/compliance-rules.spec.ts:79`",
+      "gap": "수정 권한 기준은 D-GAP-1 기본안으로 정함 — 다른 기준이면 결정 필요"
     },
     "FR-CRC-001-021": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "Approved 수정 → Proposed"
+      "verdict": "구현",
+      "evidence": "Approved(또는 Rejected) 룰을 고치면 PROPOSED로, 열린 요청은 철회 `B/d03-safety/compliance-checker/compliance-rule.service.ts:306`, 전이 표 `C/rules/compliance-rule.ts:33`; 시험 `backend/test/d03/compliance-rules.spec.ts:79`",
+      "gap": "—"
     },
     "FR-CRC-001-022": {
-      "verdict": "미구현",
-      "evidence": "룰 감사 기록 없음(감사 커널 `kernel/audit.service.ts`는 재사용 가능)",
-      "gap": "변경 항목·전/후 값 감사"
+      "verdict": "구현",
+      "evidence": "변경 이력(추가만, compliance_rule_change) — 등록·수정(항목별 전후 값)·승인 요청·승인/반려·만료마다 일시·변경자·항목·전/후 값 `B/d03-safety/compliance-checker/compliance-rule.service.ts:327`, 감사 함께; 화면 변경 이력 표; 시험 `backend/test/d03/compliance-rules.spec.ts:79`, `backend/test/d03/compliance-rules.spec.ts:123`",
+      "gap": "—"
     },
     "FR-CRC-001-023": {
-      "verdict": "미구현",
-      "evidence": "Profile `version` 문자열만 있고 이전 버전 보존 없음(`compliance-profile.ts:12`)",
-      "gap": "버전별 행 보존"
+      "verdict": "구현",
+      "evidence": "버전 행 보존(compliance_rule_version, 버전별 내용·상태·결정) `B/d03-safety/compliance-checker/compliance-rule.service.ts:306`; 시험 `backend/test/d03/compliance-rules.spec.ts:79`",
+      "gap": "—"
     },
     "FR-CRC-001-024": {
-      "verdict": "미구현",
-      "evidence": "Profile 버전은 x.y.z 고정 문자열",
-      "gap": "Major.Minor 증가 규칙(변경 항목별)"
+      "verdict": "구현",
+      "evidence": "Major.Minor — 명칭·유형·적용 지역·검증 기준(적용 범위 조건 포함) 변경은 Major, 승인 대상자·근거·유효 기간은 Minor `C/rules/compliance-rule.ts:74-85`, `B/d03-safety/compliance-checker/compliance-rule.service.ts:321`; 시험 `contracts/src/rules/compliance-rule.test.ts:144`, `backend/test/d03/compliance-rules.spec.ts:79`",
+      "gap": "—"
     },
     "FR-CRC-001-025": {
-      "verdict": "미구현",
-      "evidence": "만료 스케줄러 없음(Trial 만료 리스너 `kill-switch/trial-expiry.listener.ts`는 별개)",
-      "gap": "일 단위 만료 → Retired"
+      "verdict": "구현",
+      "evidence": "종료일이 기준일보다 이전이면 Retired(부팅·한 시간마다 점검, 일 단위 판정) `B/d03-safety/compliance-checker/compliance-rule.service.ts:397`, `C/rules/compliance-rule.ts:98`; 시험 `backend/test/d03/compliance-rules.spec.ts:123`, `e2e/tests/compliance-rules.spec.ts:21`",
+      "gap": "—"
     },
     "FR-CRC-001-026": {
-      "verdict": "미구현",
-      "evidence": "수신자 알림 없음(공통 사실)",
-      "gap": "컴플라이언스 룰 레지스트리(FR-CRC-001-020~025: 수정·버전·만료 자동 변경)가 없어 '룰 만료' 사건이 생기지 않는다 — 레지스트리를 만들면 알림 규칙 한 줄(수신자 규칙 표·추가 수신자는 마련됨, 2026-11-06)"
+      "verdict": "구현",
+      "evidence": "만료 알림 `compliance.rule.expired` — 룰 ID·명칭·유형·적용 지역·유효 종료일·만료 일시를 관련 Feature Owner 팀·작성자·승인 대상자에게(Web 알림, D-RD-7) `C/rules/notification.ts:661`, 발행 `B/d03-safety/compliance-checker/compliance-rule.service.ts:397`; 시험 `contracts/src/rules/compliance-rule.test.ts:280`, `backend/test/d03/compliance-rules.spec.ts:123`, `e2e/tests/compliance-rules.spec.ts:21`",
+      "gap": "—"
     },
     "FR-CRC-002-001": {
-      "verdict": "부분",
-      "evidence": "정책 검증 8종 중 D03-01이 ASIL·사용 권한 상품 규칙을 본다 `rules/validators.ts:87-97`; 시장 Profile은 kill 게이트에서만 `policy-gate.service.ts:134`",
-      "gap": "Feature ID·대상 지역·배포 유형·Safety/Security 등급으로 룰 집합을 고르는 단계 없음"
+      "verdict": "구현",
+      "evidence": "Feature·대상 지역(판매국 시장)·배포 유형(rollout)·Safety(ASIL)/Security(TARA CAL) 등급으로 룰 선정 `C/rules/compliance-rule.ts:113`, `GET /api/compliance-rules/applicable?policyId` `B/d03-safety/compliance-checker/compliance-rule.service.ts:441`; 시험 `contracts/src/rules/compliance-rule.test.ts:177`, `backend/test/d03/compliance-rules.spec.ts:162`",
+      "gap": "—"
     },
     "FR-CRC-002-002": {
-      "verdict": "부분",
-      "evidence": "Profile CONFIRMED 확인(kill_command activate/restore만) `compliance-profile.ts:51-59`",
-      "gap": "정책 배포 검증에도 적용"
+      "verdict": "구현",
+      "evidence": "적용 룰마다 승인 완료 여부를 확인해 Approved만 판정(정책 배포 검증·배포 시점 모두) `C/rules/compliance-rule.ts:138`; 시험 `contracts/src/rules/compliance-rule.test.ts:188`, `backend/test/d03/compliance-rules.spec.ts:162`",
+      "gap": "—"
     },
     "FR-CRC-002-003": {
-      "verdict": "미구현",
-      "evidence": "유효기간 없음",
-      "gap": "배포 시점 포함 여부"
+      "verdict": "구현",
+      "evidence": "유효 시작~종료일이 배포 시점을 포함하는지 — 검증 시각과 배포 요청 시각에 각각 판정 `C/rules/compliance-rule.ts:92`, `B/d03-safety/deploy-safety/deploy-safety.service.ts:31`; 시험 `contracts/src/rules/compliance-rule.test.ts:164`, `backend/test/d03/compliance-rules.spec.ts:189`",
+      "gap": "—"
     },
     "FR-CRC-002-004": {
-      "verdict": "부분",
-      "evidence": "검증 결과 findings(메시지)·componentId 저장 `validators.ts:14-21`, 게이트 findings(rule ID) `policy-gate.ts:44`",
-      "gap": "정책 배포 경로는 룰 ID 없이 메시지만 — 미충족 룰 ID·항목 구조화"
+      "verdict": "구현",
+      "evidence": "미충족은 룰 ID·항목(검증 기준 코드)·사유로 구조화(플랫폼 기본 규칙은 항목만) `C/rules/compliance-rule.ts:215`, `C/rules/validators.ts:96-103`; 시험 `contracts/src/rules/compliance-rule.test.ts:227`, `contracts/src/rules/compliance-rule.test.ts:257`, `backend/test/d03/compliance-rules.spec.ts:177`",
+      "gap": "—"
     },
     "FR-CRC-002-005": {
       "verdict": "구현",
@@ -1850,14 +1850,14 @@
       "gap": "—"
     },
     "FR-CRC-002-007": {
-      "verdict": "부분",
-      "evidence": "검증 이력에 결과·사유 저장 `policy.service.ts:167-180`(insertRun, reasons)",
-      "gap": "미충족 룰 ID·항목 단위 저장"
+      "verdict": "구현",
+      "evidence": "정책 검증 이력(validation_run)에 D03-01 미충족 룰 ID·항목·사유·적용 룰 저장, 배포 시점 차단은 compliance_check(추가만)에 `B/d03-safety/compliance-checker/compliance-rule.service.ts:458`; 시험 `backend/test/d03/compliance-rules.spec.ts:177`, `backend/test/d03/compliance-rules.spec.ts:189`",
+      "gap": "—"
     },
     "FR-CRC-002-008": {
-      "verdict": "부분",
-      "evidence": "`GET /api/policies/validations?policyId` (routes.ts:121)",
-      "gap": "배포 ID 외 Feature ID·대상 지역 필터"
+      "verdict": "구현",
+      "evidence": "`GET /api/compliance-validations?policyId&featureId&market` — 정책 검증·배포 시점 결과 `B/d03-safety/compliance-checker/compliance-rule.service.ts:483`, 화면 배포 검증 결과 표 화면 `/verify/compliance?tab=registry`(`frontend/src/screens/master/ComplianceRules.tsx`); 시험 `backend/test/d03/compliance-rules.spec.ts:210`, `frontend/src/__tests__/complianceRegistry.test.tsx:184`, `e2e/tests/compliance-rules.spec.ts:21`",
+      "gap": "배포 ID는 정책 ID(policyId) — 별도 배포 ID 개념 없음(FR-CRC-002-009와 같음)"
     },
     "FR-CRC-002-009": {
       "verdict": "구현",
@@ -3372,7 +3372,7 @@
     {
       "id": "B1",
       "title": "수신자 지정 알림(Web — 메일은 사용자 결정 D-RD-7로 두지 않음)",
-      "current": "규칙표 알림(Owner·요청자·승인대상자·역할) + 수신자 규칙 화면(이벤트별 추가 수신자 사람·역할·팀)·직접 보내기 — 충돌·품질 Gate·배포 중단·파이프라인·Legacy·과금 오류 알림까지. 룰 만료 알림만 레지스트리 없음(FR-CRC-001-026)",
+      "current": "규칙표 알림(Owner·요청자·승인대상자·역할) + 수신자 규칙 화면(이벤트별 추가 수신자 사람·역할·팀)·직접 보내기 — 충돌·품질 Gate·배포 중단·파이프라인·Legacy·과금 오류 알림까지. 컴플라이언스 룰 만료·승인 요청 알림(레지스트리 D03-01)까지",
       "requirements": [
         "FR-REG-005-014",
         "FR-CPT-003-003",

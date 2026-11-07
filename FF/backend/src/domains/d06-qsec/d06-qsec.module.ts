@@ -19,6 +19,7 @@ import { TmsSubmissionService, VirtualValidationController, VirtualValidationSer
 import { ReharaController, ReharaService } from './change-impact-validation/rehara.service';
 import { SumsController, SumsService } from './secure-deploy/sums.service';
 import { SecurityEventController, SecurityEventService } from './anomaly-response/security-events.service';
+import { ComplianceRuleModule } from '../d03-safety/compliance-checker/compliance-rule.module';
 
 const VALIDATORS = [
   PolicyValidationService,
@@ -32,7 +33,7 @@ const VALIDATORS = [
 ];
 
 @Module({
-  imports: [D01PolicyModule],
+  imports: [D01PolicyModule, ComplianceRuleModule],
   controllers: [VirtualValidationController, IamController, ReharaController, SumsController, SecurityEventController, PostReviewController],
   providers: [
     CarlaAdapter,
@@ -48,6 +49,6 @@ const VALIDATORS = [
     ValidationService,
     DeploySafetyService,
   ],
-  exports: [ValidationService, DeploySafetyService, VirtualValidationService],
+  exports: [ValidationService, DeploySafetyService, VirtualValidationService, ComplianceRuleModule],
 })
 export class D06QsecModule {}

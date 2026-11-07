@@ -10,6 +10,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FF } from './lib.ts';
 import { report, scanDirs, type Leak } from './local-leaks.ts';
+import { snapshotP1 } from './snapshot-p1.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
@@ -682,6 +683,9 @@ async function main() {
   await save('sharedAssets');
   await save('featureRegistrations');
   for (const f of all.items as { featureId: string; version: string }[]) await save('featureVariability', { id: f.featureId, ver: f.version });
+  // 미구현 묶음(2026-11-07) — 묶음별 새 화면의 GET 응답(tools/snapshot-pN.ts)
+  const contracts = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+  await snapshotP1(save, { contracts });
 
   // 운영 지표 탭 — Prometheus 텍스트(스냅샷을 찍는 동안 받은 요청)를 JSON으로 감싸 둔다. 마지막에 받아야 위 조회가 모두 들어간다
   const metricsUrl = routeUrl('healthMetrics');

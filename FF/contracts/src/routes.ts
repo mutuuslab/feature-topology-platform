@@ -61,6 +61,7 @@ import { AbortCriteriaBody, FindingTransitionBody, LakeModelDecisionBody } from 
 import { AdsDeterminationBody, AdsReviewFindingBody } from './schemas/ads-evidence';
 import { CloseImpactPathBody, PATH_CLOSER_ROLES } from './schemas/ads-change';
 import { ApproveOddProfileBody, CreateConfigSetBody } from './schemas/ads-config';
+import { ComplianceApprovalRequestBody, ComplianceDecisionBody, COMPLIANCE_RULE_ROLES, CreateComplianceRuleBody, UpdateComplianceRuleBody } from './schemas/compliance-rule';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -567,6 +568,16 @@ export const ROUTES: RouteDef[] = [
   { name: 'canaryOverview', method: 'GET', path: '/api/canary', summary: 'Canary 관측 목록', component: 'D01-08' },
   { name: 'registerAbortCriteria', method: 'PUT', path: '/api/policies/:id/abort-criteria', summary: '중단 기준 사전 등록', component: 'D01-08', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: AbortCriteriaBody },
   { name: 'collectionPolicies', method: 'GET', path: '/api/collection-policies', summary: '수집 정책', component: 'D04-03' },
+  // 컴플라이언스 룰 레지스트리(D03-01, FR-CRC-001·002) — 등록·조회·수정(버전)·승인 요청·승인/반려, 적용 대상 Feature 후보·적용 룰, 검증 결과
+  { name: 'complianceRules', method: 'GET', path: '/api/compliance-rules', summary: '컴플라이언스 룰 조회 — 룰 ID·유형·적용 지역·Feature·상태', component: 'D03-01', query: ['ruleId', 'type', 'market', 'featureId', 'status'] },
+  { name: 'complianceRuleCandidates', method: 'GET', path: '/api/compliance-rules/feature-candidates', summary: '룰 적용 대상 Feature 후보 — 적용 지역(판매국)·ASIL·지정 Feature', component: 'D03-01', query: ['markets', 'asil', 'featureIds'], requiredQuery: ['markets'], sample: { markets: 'KR' } },
+  { name: 'complianceRulesApplicable', method: 'GET', path: '/api/compliance-rules/applicable', summary: '정책 배포 검증에 적용할 룰 — Feature·대상 지역·배포 유형·Safety/Security 등급·배포 시점', component: 'D03-01', query: ['policyId', 'at'], requiredQuery: ['policyId'], sample: { policyId: 'POL-00001' } },
+  { name: 'complianceRule', method: 'GET', path: '/api/compliance-rules/:id', summary: '컴플라이언스 룰 상세 — 버전·변경 이력·승인 요청', component: 'D03-01' },
+  { name: 'createComplianceRule', method: 'POST', path: '/api/compliance-rules', summary: '컴플라이언스 룰 등록(승인 대기, 버전 1.0) — 룰 ID 중복은 409', component: 'D03-01', roles: [...COMPLIANCE_RULE_ROLES], body: CreateComplianceRuleBody },
+  { name: 'updateComplianceRule', method: 'PATCH', path: '/api/compliance-rules/:id', summary: '컴플라이언스 룰 수정 — 소유자만, Major.Minor 증가, 승인된 룰은 승인 대기로', component: 'D03-01', roles: [...COMPLIANCE_RULE_ROLES], body: UpdateComplianceRuleBody },
+  { name: 'requestComplianceApproval', method: 'POST', path: '/api/compliance-rules/:id/approval-requests', summary: '룰 승인 요청 — 요청자·대상 룰 버전·승인 대상자·요청 일시', component: 'D03-01', roles: [...COMPLIANCE_RULE_ROLES], body: ComplianceApprovalRequestBody },
+  { name: 'decideComplianceRule', method: 'POST', path: '/api/compliance-rules/:id/decision', summary: '룰 승인·반려 — 지정 승인 대상자 본인만(작성자 제외)', component: 'D03-01', roles: [...COMPLIANCE_RULE_ROLES], body: ComplianceDecisionBody },
+  { name: 'complianceValidations', method: 'GET', path: '/api/compliance-validations', summary: '컴플라이언스 검증 결과 — 배포(정책) ID·Feature ID·대상 지역', component: 'D03-01', query: ['policyId', 'featureId', 'market'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

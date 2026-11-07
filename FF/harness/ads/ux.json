@@ -2328,7 +2328,7 @@
       "screens": [
         {
           "path": "/baselines/eol",
-          "kind": "new"
+          "kind": "modify"
         }
       ],
       "keyMessage": "품질 보류 차량 3대 — 주문 사양과 실물 구성 불일치",

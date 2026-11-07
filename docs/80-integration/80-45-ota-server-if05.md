@@ -5,6 +5,7 @@ title: "80-45 OTA 서버 연동 규격 (IF-05 v1.0)"
 status: draft
 version: 1.1.0
 owner: feature-architect
+cycle: 0
 standards: [OpenAPI-3.1.0, RFC-6749, RFC-9110, ISO-24089, UNECE-R156]
 traces:
   satisfies: [RD-OPS-04, RD-UX-04]

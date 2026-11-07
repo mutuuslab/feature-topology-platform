@@ -10175,6 +10175,161 @@
                           "additionalProperties": false
                         },
                         "maxItems": 64
+                      },
+                      "vehicleConfig": {
+                        "type": "object",
+                        "properties": {
+                          "ecus": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "ecuPno": {
+                                  "type": "string",
+                                  "minLength": 3,
+                                  "maxLength": 40
+                                },
+                                "hwRevision": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 40
+                                },
+                                "sw": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "swId": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 60
+                                      },
+                                      "version": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 40
+                                      }
+                                    },
+                                    "required": [
+                                      "swId",
+                                      "version"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "maxItems": 20
+                                }
+                              },
+                              "required": [
+                                "ecuPno",
+                                "hwRevision",
+                                "sw"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "minItems": 1,
+                            "maxItems": 40
+                          },
+                          "model": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "version": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "version"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "calibration": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 80
+                              },
+                              "version": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "version"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "recovery": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "targets": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 40
+                                },
+                                "maxItems": 40
+                              },
+                              "recovered": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 40
+                                },
+                                "maxItems": 40
+                              }
+                            },
+                            "required": [
+                              "targets",
+                              "recovered"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "recoveryCandidate": {
+                            "type": "object",
+                            "nullable": true,
+                            "properties": {
+                              "swId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 60
+                              },
+                              "version": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 40
+                              }
+                            },
+                            "required": [
+                              "swId",
+                              "version"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "ecus",
+                          "model",
+                          "calibration",
+                          "recovery",
+                          "recoveryCandidate"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
@@ -17260,6 +17415,132 @@
             "description": "없음 (오류 봉투)"
           }
         }
+      },
+      "put": {
+        "summary": "Feature ADS 분류 입력",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "updateAdsClassification",
+        "description": "허용 역할: Feature 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "adsFeature": {
+                    "type": "boolean",
+                    "nullable": true
+                  },
+                  "ddtImpact": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "NONE",
+                      "SUPPORT",
+                      "PARTIAL",
+                      "FULL",
+                      null
+                    ]
+                  },
+                  "safetyRelated": {
+                    "type": "boolean",
+                    "nullable": true
+                  },
+                  "owner": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "lifecycleOwners": {
+                    "type": "object",
+                    "properties": {
+                      "CREATE": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "OPERATE": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "SUSPEND": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "DISPOSE": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 1,
+                        "maxLength": 80
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "adsFeature",
+                  "ddtImpact",
+                  "safetyRelated",
+                  "owner",
+                  "lifecycleOwners",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
       }
     },
     "/api/classification/unclassified": {
@@ -22822,6 +23103,1320 @@
           },
           "404": {
             "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/odd-profiles/{id}/sites": {
+      "post": {
+        "summary": "ODD 적용 장소 추가 요청(변경 영향 확정 전 승인 대기)",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "addOddSite",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "PARKING",
+                      "ZONE",
+                      "ROAD_SECTION"
+                    ]
+                  },
+                  "mapVersion": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "infraVersion": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "changeImpactRef": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 60,
+                    "default": null
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "name",
+                  "kind",
+                  "mapVersion",
+                  "infraVersion",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/odd-profiles/{id}/sites/{siteId}/approve": {
+      "post": {
+        "summary": "ODD 적용 장소 승인(변경 영향 확정 필요)",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "approveOddSite",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "siteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/config-sets/recovery-decisions": {
+      "get": {
+        "summary": "복구 결정 이력",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "recoveryDecisions",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "복구 결정(메타데이터·보안 최소 버전 재검증)",
+        "tags": [
+          "D02-01"
+        ],
+        "operationId": "createRecoveryDecision",
+        "description": "허용 역할: 운영 리더, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 64
+                  },
+                  "path": {
+                    "type": "string",
+                    "enum": [
+                      "RESTORE_PREVIOUS",
+                      "APPLY_FIX",
+                      "SAFE_STATE",
+                      "SERVICE"
+                    ]
+                  },
+                  "configSetRef": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 60
+                  },
+                  "candidatePublicationId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^PUB-\\d{5}$",
+                    "default": null
+                  },
+                  "rationale": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "vin",
+                  "path",
+                  "configSetRef",
+                  "rationale"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/classification/confirm": {
+      "post": {
+        "summary": "Feature ADS 분류 확정",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "confirmAdsClassification",
+        "description": "허용 역할: 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/market-baselines/{id}/{ver}/{market}": {
+      "put": {
+        "summary": "시장 기준선 입력",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "putMarketBaseline",
+        "description": "허용 역할: 법규 담당 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "market",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "approvalType": {
+                    "type": "string",
+                    "enum": [
+                      "TYPE_APPROVAL",
+                      "SELF_CERT"
+                    ]
+                  },
+                  "regulations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "reg": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 40
+                        },
+                        "series": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 10
+                        }
+                      },
+                      "required": [
+                        "reg",
+                        "series"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 20
+                  },
+                  "oddProfileRef": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 60
+                  },
+                  "approvalStatus": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVED",
+                      "PENDING",
+                      "UNKNOWN"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 300,
+                    "default": null
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "approvalType",
+                  "regulations",
+                  "oddProfileRef",
+                  "approvalStatus",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/publish-preview": {
+      "get": {
+        "summary": "발행 미리보기 — 승인 상한·승인 조합·시장 기준선",
+        "tags": [
+          "D06-08"
+        ],
+        "operationId": "publishPreview",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/campaigns/{id}": {
+      "get": {
+        "summary": "전송 캠페인 → 게시본·정책 릴리스",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "campaign",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/plants/eol/mismatches": {
+      "get": {
+        "summary": "출고 실물 구성 대조·품질 보류",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "eolMismatches",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/plants/eol/vehicles/{vin}": {
+      "get": {
+        "summary": "출고 대조 상세·인도 인수 항목",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "eolVehicle",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/plants/eol/as-built": {
+      "post": {
+        "summary": "출고 실물 구성 수신(IF-12 공장 모의)",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "receiveAsBuilt",
+        "description": "허용 역할: BOM 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 64
+                  },
+                  "plant": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 40
+                  },
+                  "scannedAt": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 40
+                  },
+                  "orderEcus": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ecuPno": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 40
+                        },
+                        "hwRevision": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        }
+                      },
+                      "required": [
+                        "ecuPno",
+                        "hwRevision"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 40
+                  },
+                  "builtEcus": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "ecuPno": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 40
+                        },
+                        "hwRevision": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 40
+                        }
+                      },
+                      "required": [
+                        "ecuPno",
+                        "hwRevision"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 40
+                  }
+                },
+                "required": [
+                  "vin",
+                  "plant",
+                  "scannedAt",
+                  "orderEcus",
+                  "builtEcus"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/plants/eol/checks": {
+      "post": {
+        "summary": "품질 보류 결정(생산 품질)",
+        "tags": [
+          "D05-02"
+        ],
+        "operationId": "createEolCheck",
+        "description": "허용 역할: BOM 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 64
+                  },
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "HOLD",
+                      "REWORK",
+                      "RELEASE"
+                    ]
+                  },
+                  "cause": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 300
+                  },
+                  "reworkRef": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 60,
+                    "default": null
+                  },
+                  "recheckResult": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "PASS",
+                      "FAIL",
+                      null
+                    ],
+                    "default": null
+                  },
+                  "shippedEvidence": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 120,
+                    "default": null
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "vin",
+                  "decision",
+                  "cause",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ota/v1/installs": {
+      "post": {
+        "summary": "IF-05 OTA 설치 보고 webhook(설치 단계·보류·실패 원인·안전 상태 증거)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaInstallEvents",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "specVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+$"
+                  },
+                  "eventId": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 100
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "install.report"
+                    ]
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 40
+                  },
+                  "installs": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "installId": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 60
+                        },
+                        "vin": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 64
+                        },
+                        "stage": {
+                          "type": "string",
+                          "enum": [
+                            "NOT_STARTED",
+                            "DOWNLOADED",
+                            "READY",
+                            "INSTALLING",
+                            "INSTALLED",
+                            "DEFERRED",
+                            "FAILED",
+                            "RECOVERING",
+                            "SAFE_STATE_HELD",
+                            "SERVICE_REQUIRED"
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "minLength": 10,
+                          "maxLength": 40
+                        },
+                        "campaignId": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 3,
+                          "maxLength": 60
+                        },
+                        "schedule": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "windowFrom": {
+                              "type": "string",
+                              "minLength": 10,
+                              "maxLength": 40
+                            },
+                            "windowTo": {
+                              "type": "string",
+                              "minLength": 10,
+                              "maxLength": 40
+                            },
+                            "estDurationMin": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 600
+                            },
+                            "driveRestriction": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "windowFrom",
+                            "windowTo",
+                            "estDurationMin",
+                            "driveRestriction"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "deferredReason": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "POWER",
+                            "HOLD",
+                            "DDT",
+                            null
+                          ]
+                        },
+                        "failureKind": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "POWER",
+                            "LINK",
+                            "VERIFY",
+                            null
+                          ]
+                        },
+                        "recoveryResult": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            "RESTORED",
+                            "PARTIAL",
+                            "FAILED",
+                            null
+                          ]
+                        },
+                        "safeState": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "reachedAt": {
+                              "type": "string",
+                              "minLength": 10,
+                              "maxLength": 40
+                            },
+                            "basis": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 300
+                            }
+                          },
+                          "required": [
+                            "reachedAt",
+                            "basis"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "manifest": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "ecus": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "ecuPno": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 40
+                                  },
+                                  "swId": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 60
+                                  },
+                                  "version": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 40
+                                  }
+                                },
+                                "required": [
+                                  "ecuPno",
+                                  "swId",
+                                  "version"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "minItems": 1,
+                              "maxItems": 40
+                            }
+                          },
+                          "required": [
+                            "ecus"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "installId",
+                        "vin",
+                        "stage",
+                        "at"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 500
+                  }
+                },
+                "required": [
+                  "specVersion",
+                  "eventId",
+                  "type",
+                  "occurredAt",
+                  "installs"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ota/installs": {
+      "get": {
+        "summary": "OTA 설치 현황 — 단계·실패 원인별 수",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "otaInstalls",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/ota/installs/simulate": {
+      "post": {
+        "summary": "시뮬 차량 설치(사전조건·복구 경로)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "simulateInstall",
+        "description": "허용 역할: 운영자, 운영 리더 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "vin": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 64
+                  },
+                  "socPct": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "parkHold": {
+                    "type": "boolean"
+                  },
+                  "ddtActive": {
+                    "type": "boolean"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "OK",
+                      "POWER_LOSS",
+                      "LINK_LOSS",
+                      "VERIFY_FAIL",
+                      "VERIFY_FAIL_PREVIOUS_CORRUPT",
+                      "RECOVERY_PARTIAL"
+                    ]
+                  },
+                  "campaignId": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 3,
+                    "maxLength": 60,
+                    "default": null
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "vin",
+                  "socPct",
+                  "parkHold",
+                  "ddtActive",
+                  "outcome",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles/{vin}/installs": {
+      "get": {
+        "summary": "차량 설치 단계(5단계·갈림 상태)",
+        "tags": [
+          "D04-01"
+        ],
+        "operationId": "vehicleInstalls",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/experiments/{id}/shadow-envelope": {
+      "get": {
+        "summary": "Shadow 정책 봉투(출력·활성화·설치 권한 없음)",
+        "tags": [
+          "D01-07"
+        ],
+        "operationId": "shadowEnvelope",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/support-drills": {
+      "get": {
+        "summary": "지원 종료·서버 교체 연습 기록",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "supportDrills",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "지원 종료·서버 교체 연습 실행",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "runSupportDrill",
+        "description": "허용 역할: Feature 출시 담당자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "horizonDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3650,
+                    "default": 90
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
           }
         }
       }

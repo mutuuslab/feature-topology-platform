@@ -1,9 +1,9 @@
 # Cloudflare Pages 배포 (GitHub Actions 러너에서 빌드→직접 업로드). 소스 repo는 private 유지.
 # verify 게이트를 통과한 커밋만 배포한다. FF/는 npm workspaces — 설치는 FF 루트에서.
 name: Deploy to Cloudflare Pages
+# main push 자동 배포는 끈다(2026-11-07): main에는 최신 앱 코드가 없어 워크플로만 바꿔도 옛 판이 게시됐다.
+# 공개 사이트는 검증된 브랜치를 골라 수동 실행(workflow_dispatch)으로만 게시한다.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 jobs:
   verify:

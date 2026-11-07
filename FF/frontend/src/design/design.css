@@ -214,6 +214,12 @@ h3 {
   color: inherit;
   text-decoration: none;
 }
+/* 좁은 칸(390 폭 키-값)의 긴 ID 칩은 칸 안에서 줄바꿈(통합 12단계) */
+.ds-kv dd .ds-id {
+  max-width: 100%;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
+}
 /* 문장 속 링크 — 색만으로 구분하지 않는다 (WCAG 1.4.1, axe link-in-text-block) */
 .ds-screen p a,
 .ds-field__hint a {
@@ -374,6 +380,8 @@ button.ds-gate:hover {
 
 /* ── 데이터 표 ─────────────────────────────────────── */
 .ds-table-wrap {
+  /* 칸 안의 화면 낭독용 글(ds-sr, position:absolute)이 이 스크롤 상자를 벗어나 본문을 넓히지 않게 — 390 폭(통합 12단계) */
+  position: relative;
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--surface);
@@ -923,6 +931,13 @@ details.ds-panel[open] {
 .ds-page__actions .ds-btn-why__text {
   left: auto;
   right: 0;
+}
+/* 좁은 화면 — 비활성 이유 말풍선을 버튼 아래 줄로(오른쪽 밖으로 나가지 않게, 390 폭 하네스·통합 12단계) */
+@media (max-width: 600px) {
+  .ds-btn-why__text {
+    position: static;
+    width: auto;
+  }
 }
 .ds-toolbar {
   display: flex;
@@ -2355,8 +2370,9 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
 /* 외부 항목 칩 (GitLab·JIRA·codeBeamer) — IdChip과 같은 높이, 도구 이름은 글자 표지 */
 .ds-ext {
   display: inline-flex;
+  flex-wrap: wrap; /* 칸이 좁으면 외부 상태가 다음 줄로(겹치지 않게) */
   align-items: center;
-  gap: 6px;
+  gap: 0 6px;
   max-width: 100%;
   font-size: 0.92em;
   border: 1px solid var(--line);
@@ -2381,16 +2397,20 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   align-items: center;
   min-width: 24px;
   min-height: 24px;
+  /* 좁은 칸에서 키 글자가 줄어든 칸 밖으로 나가 옆 외부 상태와 겹쳤다(1920 Feature 첫 화면, 통합 12단계) — 키·상태는 줄지 않고 제목만 줄인다 */
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-weight: 600;
 }
 .ds-ext__title {
+  min-width: 0;
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 28ch;
 }
 .ds-ext__status {
+  flex-shrink: 0;
   color: var(--muted);
 }
 .ds-ext__sync {

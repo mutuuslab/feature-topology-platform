@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanFlagFiles } from '../../backend/src/domains/d01-policy/flag-code/scanner.ts';
-import { alignEvents, alignmentOf, buildEvaluations, buildEvents, buildFeatures, C, currentPolicyOf, REPO_START, REPOS, selectAnomalies, type Model, type PolicyM, type VersionM } from './plan.ts';
+import { alignEvents, alignmentOf, buildEvaluations, buildEvents, buildFeatures, C, currentPolicyOf, evaluationTargets, REPO_START, REPOS, selectAnomalies, type Model, type PolicyM, type VersionM } from './plan.ts';
 import { git, scanCommits, writeRepo } from './repo-writer.ts';
 import { featureSource, featureTest, repoRootFiles } from './templates.ts';
 import { generate, isFastForward, refsOf, registryOf, stringify, testRepo } from './generate-vehicle-apps.ts';
@@ -288,4 +288,16 @@ test('대사 — 키의 현재 정책은 백엔드와 같은 순서로 고른다
   assert.equal(currentPolicyOf([p('POL-00001', 'VALIDATED'), p('POL-00002', 'APPROVED')], 'ivi_00111_banner')!.policyId, 'POL-00002');
   assert.equal(currentPolicyOf([p('POL-00001', 'RETIRED'), p('POL-00002', 'RETIRED')], 'ivi_00111_banner')!.policyId, 'POL-00002', '같은 순위면 나중 정책');
   assert.equal(currentPolicyOf([p('POL-00001', 'DEPLOYED')], 'other_key'), undefined);
+});
+
+// 통합 12단계 결함 4 — 서명 오류 급증 시연 Flag의 Feature에 승인 전 새 Version이 생기면(최신이 RELEASED가 아님) 평가 대상에서 빠져
+// 급증 시계열이 사라졌다(운영 '평가' 화면 e2e). 급증 Flag는 늘 평가 대상이다
+test('평가 지표 — 서명 오류 급증 Flag는 Feature 최신 Version이 출시 전이어도 평가 대상', () => {
+  const base = buildFeatures(fakeModel());
+  const a = selectAnomalies(base);
+  const owner = base.find((f) => f.plan.some((e) => e.flagKey === a.signatureSpike))!;
+  const later = { ...owner, latest: { ...owner.latest, lifecycle: 'DEVELOPING' }, policies: [], allPolicies: [] }; // 정책 없는 계획 Flag(시연 실제: adas_00004_param)
+  const features = base.map((f) => (f === owner ? later : f));
+  assert.ok(evaluationTargets(features, a).some((t) => t.flagKey === a.signatureSpike));
+  assert.ok(buildEvaluations(features, a).flags.some((f) => f.flagKey === a.signatureSpike && f.buckets.length > 0));
 });

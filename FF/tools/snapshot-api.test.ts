@@ -2,7 +2,7 @@
 // 원인(바깥 timeout이 프로세스 트리를 끊음·포트 충돌)을 알 수 없었다. 종료 신호·코드·포트·마지막 출력과 힌트가 보이는지 본다.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { backendGoneMessage, evidenceManifestIds, pushTail } from './snapshot-api.ts';
+import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError } from './snapshot-api.ts';
 
 test('출력 꼬리는 색 코드를 빼고 빈 줄 없이 마지막 N줄만', () => {
   const tail: string[] = [];
@@ -29,4 +29,15 @@ test('Safety Case 응답의 Evidence manifest ID를 중복 없이 모두 찾는�
   const sc = { features: [{ featureId: 'FEAT-00004', evidence: [{ manifestId: 'EVM-0001' }, { ref: 'EVM-0002' }] }, { note: 'EVM-0001 재사용' }] };
   assert.deepEqual(evidenceManifestIds(sc), ['EVM-0001', 'EVM-0002']);
   assert.deepEqual(evidenceManifestIds({ text: 'EVM-dddd' }), []);
+});
+
+// 통합 12단계 — 공개본 스냅샷(전시 480대·ADS 차량별 판정 수천 건)을 찍다 유지 연결(keep-alive)을 서버가 닫는 순간 다시 쓴 GET이 ECONNRESET으로 끊겨 빌드 전체가 멈췄다.
+// 읽기(GET)는 한 번 다시 보내고, 쓰기·다른 오류는 그대로 실패시킨다
+test('끊긴 연결의 GET만 한 번 다시 보낸다', () => {
+  const err = (code: string) => Object.assign(new TypeError('fetch failed'), { cause: { code } });
+  assert.equal(retryableFetchError(err('ECONNRESET')), true);
+  assert.equal(retryableFetchError(err('UND_ERR_SOCKET'), { method: 'GET' }), true);
+  assert.equal(retryableFetchError(err('ECONNRESET'), { method: 'POST' }), false, '쓰기는 다시 보내지 않는다');
+  assert.equal(retryableFetchError(err('ECONNREFUSED')), false, '서버가 없으면 다시 보내도 같다');
+  assert.equal(retryableFetchError(new Error('x')), false);
 });

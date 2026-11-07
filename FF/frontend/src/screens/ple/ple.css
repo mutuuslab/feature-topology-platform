@@ -47,6 +47,8 @@
 .af__chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .af__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-1); font-size: var(--fs-sm); }
 .af__list li { display: flex; flex-wrap: wrap; gap: var(--sp-1h); align-items: baseline; }
+/* 목록의 링크(구성기 정책 등)는 누르는 칸 24px 이상(WCAG 2.2 target-size, 통합 12단계 — 시연 데이터로 정책 목록이 생겼다) */
+.af__list li > a { display: inline-flex; align-items: center; min-height: 24px; }
 .af__profile { border: 1px solid var(--line-strong); border-radius: var(--r); padding: var(--sp-3) var(--sp-4); background: var(--surface-2); display: grid; gap: var(--sp-3); }
 .af__profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-3); }
 

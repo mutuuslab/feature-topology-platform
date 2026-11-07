@@ -408,11 +408,12 @@ export const EVAL_WINDOW_END = NOW;
 const WINDOW_HOURS = 7 * 24;
 export interface EvalTarget { flagKey: string; featureId: string; basisPoints: number }
 /** 평가 대상 — 차량에 실린 Flag: 승인·배포된 정책이 있거나 RELEASED·DEPRECATED Feature(초안·반려 정책은 차량에 가지 않아 뺀다) */
-export function evaluationTargets(features: FeatureP[], _a?: Anomalies): EvalTarget[] {
+export function evaluationTargets(features: FeatureP[], a?: Anomalies): EvalTarget[] {
   const out: EvalTarget[] = [];
   for (const f of features) for (const e of f.plan) {
     const p = f.policies.find((x) => x.flagKey === e.flagKey && (x.status === 'DEPLOYED' || x.status === 'APPROVED'));
-    if (!p && f.latest.lifecycle !== 'RELEASED' && f.latest.lifecycle !== 'DEPRECATED') continue;
+    // 서명 오류 급증 시연 Flag는 늘 대상 — 그 Feature에 출시 전 새 Version이 생겨도 급증 시계열이 남는다(통합 12단계)
+    if (!p && f.latest.lifecycle !== 'RELEASED' && f.latest.lifecycle !== 'DEPRECATED' && e.flagKey !== a?.signatureSpike) continue;
     out.push({ flagKey: e.flagKey, featureId: f.featureId, basisPoints: p?.basisPoints ?? 0 });
   }
   return out.sort((x, y) => x.flagKey.localeCompare(y.flagKey));

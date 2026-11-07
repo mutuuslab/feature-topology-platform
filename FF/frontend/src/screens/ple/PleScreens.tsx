@@ -325,7 +325,7 @@ export function ConfiguratorScreen() {
       <PleNav />
       <AsyncView state={asyncState(list, !items.length)} onRetry={() => list.refetch()} rows={2}>
         <Field label={CF.product}>
-          <select className="ds-select" name="configProduct" value={pick} onChange={(e) => setSp({ product: e.target.value }, { replace: true })}>
+          <select className="ds-select" name="configProduct" style={{ minWidth: 0, width: '100%', maxWidth: '100%' }} value={pick} onChange={(e) => setSp({ product: e.target.value }, { replace: true })}>
             {items.map((i) => (
               <option key={productKey(i)} value={productKey(i)}>{`${productKey(i)} · ${i.name} · ${i.country} ${i.vehicleModel} ${i.trim}`}</option>
             ))}

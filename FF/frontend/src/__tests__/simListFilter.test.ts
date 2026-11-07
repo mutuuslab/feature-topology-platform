@@ -82,3 +82,19 @@ describe('거르기 규칙(순수 함수)', () => {
     expect(r).toEqual({ total: 2, items: [{ id: 'X-3', status: 'A', tags: ['t'] }] });
   });
 });
+
+// 통합 12단계 — 다른 묶음의 새 화면(이벤트 이력·연계 오류 이력)의 발생 기간(from·to)을 고르면 그 질의 스냅샷이 없어 '스냅샷에 없음'이었다.
+// 서버와 같은 기간 규칙(periodBounds — 날짜는 한국 시각 하루, at이 [from, to) 안)으로 받아 둔 목록을 거른다
+describe('거르기 규칙 — 발생 기간', () => {
+  const ev = { items: [{ seq: 1, at: '2026-11-04T14:59:00.000Z' }, { seq: 2, at: '2026-11-04T15:00:00.000Z' }, { seq: 3, at: '2026-11-05T14:59:59.000Z' }, { seq: 4, at: '2026-11-05T15:00:00.000Z' }] };
+  it('이벤트 — 날짜 하루(한국 시각)만', () => {
+    expect(applyQuerySpec(QUERY_SPECS.events, ev, { from: '2026-11-05', to: '2026-11-05' }).items.map((e: { seq: number }) => e.seq)).toEqual([2, 3]);
+    expect(applyQuerySpec(QUERY_SPECS.events, ev, { from: '2026-11-05' }).items.map((e: { seq: number }) => e.seq)).toEqual([2, 3, 4]);
+  });
+  it('연계 오류 — 거른 목록으로 시스템별 건수를 다시 센다', () => {
+    const base = { items: [{ system: 'LEGACY', at: '2026-11-01T00:00:00.000Z' }, { system: 'BILLING', at: '2026-11-05T01:00:00.000Z' }], counts: { LEGACY: 1, BILLING: 1, PIPELINE: 0 } };
+    const r = applyQuerySpec(QUERY_SPECS.integrationErrors, base, { from: '2026-11-05', to: '2026-11-05' });
+    expect(r.items.map((i: { system: string }) => i.system)).toEqual(['BILLING']);
+    expect(r.counts).toEqual({ LEGACY: 0, BILLING: 1, PIPELINE: 0 });
+  });
+});

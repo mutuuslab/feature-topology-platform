@@ -9,7 +9,7 @@ import { FeatureProfilePanel } from '../screens/ple/FeatureProfilePanel';
 import { RegistrationsTable } from '../screens/ple/Registrations';
 import { IssueList } from '../screens/ple/PleScreens';
 import { ProductDetail } from '../screens/products/Products';
-import { autofill as A, bof as B } from '../copy/ple';
+import { autofill as A, bof as B, profile as PR } from '../copy/ple';
 
 type Reply = { status?: number; body?: unknown } | undefined;
 let handler: (url: string) => Reply;
@@ -61,6 +61,18 @@ describe('Feature 상세 — 자동 채움 이력', () => {
     expect(table.textContent).not.toMatch(CODE);
     expect(table.textContent).toContain('26580 변이 프로필 제안');
     expect(table.textContent).toContain('BC-SEAT-001 · 대표 ASIL(L)');
+  });
+});
+
+// 통합 12단계 — 기준 행이 없는 Feature(FEAT-00022 등)는 프로필이 없어 패널이 빈 상자로 남았다(정적 하네스 '숨은 빈 목록') — 패널을 그리지 않는다
+describe('Feature 상세 — 프로필이 없는 Version', () => {
+  it('프로필·이력이 없으면 패널을 그리지 않는다', async () => {
+    let asked = false;
+    handler = (u) => (u.startsWith('/api/features/FEAT-00998/versions/1.0.0/variability') ? ((asked = true), { body: { featureId: 'FEAT-00998', version: '1.0.0', variability: null, source: null, updatedBy: null, updatedAt: null, history: [] } }) : undefined);
+    const { container } = wrap(<FeatureProfilePanel featureId="FEAT-00998" version="1.0.0" />);
+    // 불러오는 동안은 패널(자리 표시)이 있다가, 프로필이 없다고 오면 사라진다
+    await vi.waitFor(() => expect(asked && !container.querySelector('#feature-profile-h')).toBe(true));
+    expect(screen.queryByText(PR.title)).toBeNull();
   });
 });
 

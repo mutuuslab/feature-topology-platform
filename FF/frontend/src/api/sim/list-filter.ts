@@ -2,7 +2,7 @@
 // 고르면 그 질의 파일이 없어 '스냅샷에 없음' 오류 상자가 떴다(2026-11-06 하네스 리뷰). 질의 파일이 없으면 같은 경로의 기본 목록(필터 키를 뺀 질의)을
 // 오버레이까지 덮어 읽고, 서버 컨트롤러와 같은 규칙으로 거른다. 경로마다 서버 규칙(필드 대응)을 여기 적고 경로별 시험(simListFilter.test.ts)으로 맞춘다.
 // 순수 모듈(엔진·화면 상태를 읽지 않는다) — tools/snapshot-coverage.ts가 이 표의 경로·키를 '시연 엔진 계산'으로 센다.
-import { gatesToRejudge, type FeatureVersionRow, type Lifecycle } from '@ff/contracts';
+import { gatesToRejudge, periodBounds, type FeatureVersionRow, type Lifecycle } from '@ff/contracts';
 
 /** 질의 키 하나의 서버 규칙 */
 export type ListMatch =
@@ -47,6 +47,13 @@ export type QuerySpec = ListFilterSpec | DeriveSpec;
  *  · impact: TopologyService.impact — changed(쉼표)는 재판정 Gate(gatesToRejudge)와 요약 건수만 바꾼다
  *  · rollbacks: d03-safety/restore RollbackService.history — 배포·Feature·계획·요청·상태·결과 같음, 대상 유형·VIN은 배열 포함(기간 from·to는 화면에 없다)
  */
+/** 발생 기간 — 서버와 같은 periodBounds(날짜는 한국 시각 하루), at이 [from, to) 안. 잘못된 기간은 서버가 400 — 여기서는 빈 목록 */
+const inPeriod = <T extends { at: string }>(items: T[] = [], q: Record<string, string>): T[] => {
+  const p = periodBounds(q.from || undefined, q.to || undefined);
+  if (p.error) return [];
+  return items.filter((i) => (!p.from || i.at >= p.from) && (!p.to || i.at < p.to));
+};
+
 export const QUERY_SPECS: Record<string, QuerySpec> = {
   incidents: {
     kind: 'list',
@@ -71,6 +78,17 @@ export const QUERY_SPECS: Record<string, QuerySpec> = {
       vin: { kind: 'has', field: 'vins' },
       status: { kind: 'eq', field: 'status' },
       result: { kind: 'eq', field: 'result' },
+    },
+  },
+  // 이벤트 이력 발생 기간(event-history.controller — periodBounds, 통합 12단계)
+  events: { kind: 'derive', keys: ['from', 'to'], derive: (base, q) => ({ ...base, items: inPeriod(base.items, q) }) },
+  // 연계 오류 이력 기간(integration-error.service — periodBounds, 건수는 거른 목록으로)
+  integrationErrors: {
+    kind: 'derive',
+    keys: ['from', 'to'],
+    derive: (base, q) => {
+      const items = inPeriod<{ at: string; system: string }>(base.items, q);
+      return { ...base, items, counts: Object.fromEntries(Object.keys(base.counts ?? {}).map((k) => [k, items.filter((i) => i.system === k).length])) };
     },
   },
   impact: {

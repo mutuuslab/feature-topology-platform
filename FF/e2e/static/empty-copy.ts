@@ -23,6 +23,9 @@ const NOT_EMPTY: [string, string][] = [
   ['ko:ko.fleetMap.noRuntime', '합성 모집단 차량의 성격 설명 — 빈 목록이 아니다'],
   ['ko:ko.fleetMap.noWebgl', '브라우저 환경 안내(표로 대신 보인다)'],
   ['ko:ko.shell.noItems', '메뉴 거르기 결과 안내(사람이 고른 조건)'],
+  ['ple:autofill.intentEmpty', "입력 칸 도움말(두 글자를 적기 전) — 추천 목록은 적으면 받아 둔 Feature DB에서 채워진다(26580, 통합 12단계)"],
+  ['records:notifyRules.picker.empty', '직접 보내기 폼의 받는 대상 칸 도움말 — 사람이 고르기 전 상태, 빈 목록이 아니다(reqgaps, 통합 12단계)'],
+  ['ads-evidence:traceAds.noResultNote', '판정 규칙 문장(실행 결과가 없으면 통과로 세지 않음) — 시나리오 실행 결과 연계는 ADS 결정 대기(사용자 결정, 통합 12단계)'],
 ];
 const SKIP = new Set(NOT_EMPTY.map(([k]) => k));
 

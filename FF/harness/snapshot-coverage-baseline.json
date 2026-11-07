@@ -2,7 +2,10 @@
   "note": "정적 데모 스냅샷 ↔ 화면 조회 대조(tools/snapshot-coverage.ts). allow = 고칠 일이 아닌 틈(이유). gaps = 기존 틈 래칫 — 새 틈만 실패, 고치면 지운다.",
   "allow": {
     "route listDashboards frontend/src/screens/home/dashboard/store.ts": "serverBackend 전용 — 정적 데모는 같은 파일의 브라우저 저장소(ff.dashboards.v2) 백엔드를 쓴다",
-    "key audit frontend/src/screens/governance/AuditEvents.tsx": "시연 엔진(api/sim/engine.ts readRoute)이 감사 첫 쪽(500건) 스냅샷을 같은 조건(대상 앞부분·행위·결과)으로 걸러 쓴다"
+    "key audit frontend/src/screens/governance/AuditEvents.tsx": "시연 엔진(api/sim/engine.ts readRoute)이 감사 첫 쪽(500건) 스냅샷을 같은 조건(대상 앞부분·행위·결과)으로 걸러 쓴다",
+    "route featureAutofill frontend/src/screens/home/propose/AutofillPanel.tsx": "정적은 enabled: !STATIC_MODE — 받아 둔 Feature 목록과 고른 기준 행으로 같은 규칙(autofillFromRef)을 브라우저에서 계산한다(26580, 통합 12단계)",
+    "route refSuggestions frontend/src/screens/home/propose/IntentSuggest.tsx": "정적은 enabled: !STATIC_MODE — 받아 둔 Feature DB 전체 목록에 같은 규칙(suggestRefsFromText)을 쓴다(26580, 통합 12단계)",
+    "key flagScans frontend/src/screens/flag-code/Scans.tsx": "다음 쪽(cursor) 버튼은 정적에서 그리지 않는다(next && !STATIC_MODE) — 받아 둔 첫 쪽만 보인다(flaggit, 통합 12단계)"
   },
   "gaps": []
 }

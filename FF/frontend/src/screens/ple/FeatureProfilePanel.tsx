@@ -23,6 +23,8 @@ export function FeatureProfilePanel({ featureId, version }: { featureId: string;
   const q = useApi<VariabilityView>('featureVariability', { params: { id: featureId, ver: version } });
   const v = q.data?.variability;
   const h = q.data?.history ?? [];
+  // 기준 행이 없어 프로필이 없는 Version(이력도 없음)은 패널을 그리지 않는다 — 빈 상자로 남지 않게(통합 12단계)
+  if (q.isSuccess && !v && !h.length) return null;
   return (
     <Panel title={PR.title} id="feature-profile">
       <AsyncView state={asyncState(q, !v)} onRetry={() => q.refetch()} rows={3} emptyHidden>

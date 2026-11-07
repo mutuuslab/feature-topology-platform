@@ -73,6 +73,7 @@
 }
 .jd-actions {
   display: flex;
+  flex-wrap: wrap; /* 390 폭에서 머리 행동이 본문 밖으로 나가지 않게(통합 12단계) */
   align-items: center;
   gap: var(--sp-2);
 }

@@ -120,13 +120,20 @@ async function start() {
 }
 
 /** 우리 백엔드에 요청 — 도중에 끝났으면 바로, 연결이 끊기면 그 URL과 백엔드 상태를 담아 멈춘다 */
-async function call(url: string, init?: RequestInit): Promise<Response> {
+/** 다시 보낼 만한 연결 오류인가 — 유지 연결(keep-alive)을 서버가 닫는 순간 다시 쓴 읽기(GET)만. 쓰기·연결 거부는 그대로 실패 */
+export function retryableFetchError(e: unknown, init?: Pick<RequestInit, 'method'>): boolean {
+  const code = (e as { cause?: { code?: string } })?.cause?.code;
+  return (init?.method ?? 'GET').toUpperCase() === 'GET' && (code === 'ECONNRESET' || code === 'UND_ERR_SOCKET' || code === 'EPIPE');
+}
+
+async function call(url: string, init?: RequestInit, retried = false): Promise<Response> {
   if (serverExit !== null) throw gone('도중에');
   try {
     return await fetch(BASE + url, init);
   } catch (e) {
     await new Promise((r) => setTimeout(r, 200)); // 종료 이벤트가 따라 들어올 틈
     if (serverExit !== null) throw gone(`${url} 요청 중에`);
+    if (!retried && retryableFetchError(e, init)) return call(url, init, true);
     throw new Error(`${url} 요청 실패: ${(e as Error).message}${(e as { cause?: { code?: string } }).cause?.code ? ` (${(e as { cause: { code: string } }).cause.code})` : ''}`);
   }
 }
@@ -338,6 +345,16 @@ async function main() {
     writeFileSync(file, JSON.stringify(body));
     n++;
     return body;
+  };
+  /** 서버가 '없음'(404)으로 답하는 조회 — 화면이 비워 두는 같은 뜻의 본문을 둔다(정적 데모가 '스냅샷에 없음' 오류 대신 빈 패널, 통합 12단계) */
+  const saveBody = (name: string, params: Record<string, string>, body: unknown) => {
+    const url = routeUrl(name, params, {});
+    const rel = snapshotFile(url);
+    claimSnapshotFile(written, rel, url);
+    const file = join(OUT, rel);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, JSON.stringify(body));
+    n++;
   };
 
   // 가상검증 실행 기록(시험 대역, start 참고) — 키트 Feature 정책마다 한 번. 다른 조회보다 먼저 만들어 이력·이벤트에 함께 찍힌다
@@ -654,8 +671,8 @@ async function main() {
   for (const r of releases.items as { releaseId: string }[]) await save('adsReleaseDiff', { id: r.releaseId });
   await save('adsUnclassified');
   for (const x of all.items as { featureId: string; version: string }[]) await save('adsClassification', { id: x.featureId, ver: x.version });
-  // 확대 판정 — 판정 입력이 있는 배포 정책만(없으면 404, 화면은 패널을 그리지 않는다)
-  for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('adsPolicyExpansion', { id: p.policyId }).catch(() => undefined);
+  // 확대 판정 — 판정 입력이 있는 배포 정책은 그 응답, 없으면(서버 404) 화면이 그리지 않는 빈 판정({result: null})
+  for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('adsPolicyExpansion', { id: p.policyId }).catch(() => saveBody('adsPolicyExpansion', { id: p.policyId }, { result: null })); // ExpansionPanel은 result가 없으면 그리지 않는다
   // ISO/IEC 26580 정합(docs/20-architecture/20-60) — 카탈로그·Bill-of-Features(상품마다)·제품 구성기·공유 자산·등록 현황·Feature 프로필
   await save('featureCatalogue');
   const bof = await save('billOfFeaturesPortfolio');

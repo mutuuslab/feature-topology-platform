@@ -9,7 +9,7 @@ cycle: 0
 standards: [ISO/IEC-26580, ISO/IEC-26550, ISO/IEC-26558, ISO/IEC-26559]
 traces:
   depends_on: [ARC-FEATURE-REFDB]
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 ---
 
 # 20-60 ISO/IEC 26580 feature 기반 PLE 정합
@@ -54,7 +54,7 @@ FF의 **Feature DB 기준 행**을 26580의 *feature catalogue* 항목(제품 �
   8.4 bill-of-features portfolio engineering, 8.5 shared asset superset engineering, 8.6 product asset instance 자동 구성, 8.7 V&V·제품 인도, 8.8 형상 관리,
   8.9 추적성 관리, 8.10 변경 관리 — **각 절이 Purpose·Role·Outcomes·Inputs·Tasks·Tools 구조**) · 9 사업 조직 관리 계층(26550·26556·26562 과정 편입, 9.3 PLE factory 자금) ·
   부속서 A 26550 용어 특수화 · 부속서 B UML.
-- 8절 각 활동의 **역할 이름**은 미리보기에 없다. 아래 FF 역할 대응(§6.5)은 FF의 가정안이다.
+- 8절 각 활동의 **역할 이름**은 미리보기에 없다. 아래 FF 역할 대응(§6.5)은 FF의 가정안이며, **가정안 채택으로 확정했다(2026-11-07, D-26580-5)** — 문서·화면에 '가정' 표시를 두고, 원문을 얻으면 바꾼다.
 
 ### 3.2 용어 (3절, [S2] 원문 요지)
 
@@ -89,7 +89,7 @@ variation point는 모든 자산에서 **같은 feature 언어**로 일관되게
 - **feature 유형**: Gears는 Boolean·Enumeration(정확히 하나)·Set(0개 이상)과 정수·실수·문자열 같은 단순 유형을 둔다 [S3].
 - **primary feature / sub-feature**: 26580은 제품 라인의 **계층**(product line of product lines, 6.6)을 다룬다. Gears는 feature 모델을 하위 시스템별로 나누고 상위가
   하위를 묶는다 [S3]. FF는 이를 "주요 feature(상위) — 하위 feature" 두 층으로 단순화한다(§5.2).
-- FF는 **두 가지를 나눠** 쓴다(결정 필요 D-26580-1): (a) **Feature 변이 프로필** = 한 Feature의 카탈로그 위치·유형·변이성·결합 시점·variation point(등록 때 정함),
+- FF는 **두 가지를 나눠** 쓴다(**확정 2026-11-07, D-26580-1**): (a) **Feature 변이 프로필** = 한 Feature의 카탈로그 위치·유형·변이성·결합 시점·variation point(등록 때 정함),
   (b) **bill-of-features** = 제품(Catalog)별 선택(Gears의 feature profile 뜻).
 
 ### 3.4 26550 참조 모델과 관련 부 [S7]
@@ -213,11 +213,11 @@ Feature 문서(`feature_version.doc`)·`FeatureVersionRow` 스키마는 바꾸�
 
 | ID | 질문 | 이번 가정 |
 |---|---|---|
-| D-26580-1 | "feature profile"을 Feature 변이 프로필(한 Feature의 유형·변이점)로 쓸지, Gears 뜻(제품별 선택)으로만 쓸지 | 둘을 나눔 — 변이 프로필 + bill-of-features |
+| D-26580-1 | "feature profile"을 Feature 변이 프로필(한 Feature의 유형·변이점)로 쓸지, Gears 뜻(제품별 선택)으로만 쓸지 | **확정(2026-11-07): 둘을 나눔** — 변이 프로필 + bill-of-features(현재 구현) |
 | D-26580-2 | bill-of-features 위반(카탈로그 제약)을 상품 구성 승인의 **막힘**으로 할지 | **확정(2026-11-06): 막는다** — §9 |
 | D-26580-3 | member product = Catalog 상품(CAT)인지, 차량 사양(국가·차종·트림)인지 | **확정(2026-11-06): 판매 상품(Catalog) 유지.** 차량 사양별 BoF는 포트폴리오 표의 묶음 기준으로만 |
 | D-26580-4 | 메뉴 이름 'Feature 제안' → 'Feature 등록', 기존 'Feature 등록'(/master/define) → 'Feature 등록 현황' | **확정(2026-11-06)** |
-| D-26580-5 | 26580 8절 활동의 FF 역할 대응(§6.5) | 가정안 |
+| D-26580-5 | 26580 8절 활동의 FF 역할 대응(§6.5) | **확정(2026-11-07): 가정안 채택** — '가정' 표시 유지, 원문 확보 뒤 교체 |
 
 ## 11. 구현 기록 (2026-11-06, `feat/feature-26580`, 커밋 전)
 

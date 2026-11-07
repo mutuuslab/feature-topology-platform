@@ -1,6 +1,6 @@
 // 질의 계획 회귀 시험(출시 준비 RD-P2-01) — 부하 시험(tools/load)에서 찾은 전체 훑기·N+1을 시간과 무관하게 막는다.
 // 주요 API를 부르며 실행된 SELECT를 모아 EXPLAIN QUERY PLAN으로 확인한다: 큰 표(감사·이벤트·차량·알림…)를 LIMIT 없이 통째로 훑으면 실패.
-// 데이터 크기와 무관한 판정이라 기본 verify(CI)에서 기계 속도 잡음 없이 돈다. 전후 수치는 docs/20-architecture/20-92-performance.md.
+// 데이터 크기와 무관한 판정이라 기본 verify(CI)에서 기계 속도 잡음 없이 돈다. 전후 수치는 docs/20-architecture/20-95-performance.md.
 // readiness: RD-P2-01
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { vehiclePseudonym } from '../../src/kernel/crypto';

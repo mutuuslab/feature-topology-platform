@@ -1,4 +1,4 @@
-# 20-92 성능 — 부하 시험·예산·동기 SQLite (출시 준비 RD-P2-01)
+# 20-95 성능 — 부하 시험·예산·동기 SQLite (출시 준비 RD-P2-01)
 
 > 2026-10-25. 도구 `FF/tools/load/`(Node 내장만, 새 의존성 없음), 예산 `FF/harness/perf-budgets.json`, 질의 계획 회귀 시험 `FF/backend/test/kernel/query-plans.spec.ts`.
 

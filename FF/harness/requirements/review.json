@@ -75,12 +75,12 @@
     "FR-REG-001-001": {
       "verdict": "부분",
       "evidence": "`C/schemas/api.ts:8-21` CreateFeatureBody(이름·Owner·국가·차종·트림·ASIL·태그·CP)",
-      "gap": "Feature ID는 자동 발급(사용자 입력 아님), Lifecycle은 PROPOSED 고정, **Taxonomy Level 입력 없음**"
+      "gap": "Feature ID는 자동 발급(사용자 입력 아님), Lifecycle은 PROPOSED 고정, **Taxonomy Level 입력 없음** — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-REG-001-002": {
       "verdict": "부분",
       "evidence": "Zod min(1) 검증 → 400 VALIDATION (`T/kernel/kernel.spec.ts` '입력 검증 실패는 400')",
-      "gap": "Taxonomy Level 필수 검사 없음(항목 자체 부재)"
+      "gap": "Taxonomy Level 필수 검사 없음(항목 자체 부재) — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-REG-001-003": {
       "verdict": "구현",
@@ -110,7 +110,7 @@
     "FR-REG-001-008": {
       "verdict": "미구현",
       "evidence": "L0~L5 모델 없음 (`/api/master/taxonomy`는 태그·범위 집계뿐, `topology/master.controller.ts:119-126`)",
-      "gap": "Taxonomy Level enum·필드 추가"
+      "gap": "Taxonomy Level enum·필드 추가 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-REG-001-009": {
       "verdict": "구현",
@@ -125,7 +125,7 @@
     "FR-REG-001-011": {
       "verdict": "부분",
       "evidence": "`registry.service.ts:68-90` q(ID·이름·Owner·태그)·lifecycle·국가·차종 필터",
-      "gap": "Taxonomy Level 검색 기준 없음"
+      "gap": "Taxonomy Level 검색 기준 없음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-REG-001-012": {
       "verdict": "구현",
@@ -135,12 +135,12 @@
     "FR-REG-001-013": {
       "verdict": "미구현",
       "evidence": "삭제 API 없음. 설계는 퇴역(RETIRED)·ID 재사용 금지(FFG-CODE-020)",
-      "gap": "**설계와 충돌** — '삭제'를 '퇴역/폐기'로 재정의하거나, PROPOSED 미참조 초안만 삭제 허용으로 한정"
+      "gap": "**설계와 충돌** — '삭제'를 '퇴역/폐기'로 재정의하거나, PROPOSED 미참조 초안만 삭제 허용으로 한정 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
     },
     "FR-REG-001-014": {
       "verdict": "부분",
       "evidence": "삭제 자체가 없어 사실상 충족",
-      "gap": "삭제를 도입하면 RELEASED·정책·상품·CP 참조 검사 필요"
+      "gap": "삭제를 도입하면 RELEASED·정책·상품·CP 참조 검사 필요 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
     },
     "FR-REG-002-001": {
       "verdict": "구현",
@@ -295,7 +295,7 @@
     "FR-REG-005-002": {
       "verdict": "부분",
       "evidence": "G3 수동 판정, 국가·차종·트림 필수",
-      "gap": "Variant Rule(UPG-VC 등) 등록 여부 자동 검사 없음"
+      "gap": "Variant Rule(UPG-VC 등) 등록 여부 자동 검사 없음 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 P10"
     },
     "FR-REG-005-003": {
       "verdict": "구현",
@@ -335,7 +335,7 @@
     "FR-REG-005-010": {
       "verdict": "미구현",
       "evidence": "강제 통과 경로 의도적으로 없음 (`gate.service.ts:89-91` FFG-LCY-002)",
-      "gap": "**설계와 충돌** — 예외 승인 도입 시 fail-closed 원칙과 조정(제한 배포만 허용 등)"
+      "gap": "**설계와 충돌** — 예외 승인 도입 시 fail-closed 원칙과 조정(제한 배포만 허용 등) — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-REG-005-011": {
       "verdict": "부분",
@@ -390,32 +390,32 @@
     "FR-CAT-001-001": {
       "verdict": "미구현",
       "evidence": "Taxonomy 계층 모델 없음(태그만)",
-      "gap": "Taxonomy Node·Level 모델"
+      "gap": "Taxonomy Node·Level 모델 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-001-002": {
       "verdict": "미구현",
       "evidence": "위와 같음",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-001-003": {
       "verdict": "미구현",
       "evidence": "위와 같음",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-001-004": {
       "verdict": "미구현",
       "evidence": "(SW 구조 `/api/master/structure`는 ECU→SW→Function→Feature로 별개)",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-001-005": {
       "verdict": "미구현",
       "evidence": "(`/api/master/control-points`는 CP 유형별 정책 목록으로 일부 대체)",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-001-006": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-002-001": {
       "verdict": "구현",
@@ -475,52 +475,52 @@
     "FR-CAT-004-001": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "Taxonomy Node 엔터티·API"
+      "gap": "Taxonomy Node 엔터티·API — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-002": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-003": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-004": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-005": {
       "verdict": "미구현",
       "evidence": "태그 목록만 (`master.controller.ts:119-126`)",
-      "gap": "계층 조회"
+      "gap": "계층 조회 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-006": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-007": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-008": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-009": {
       "verdict": "미구현",
       "evidence": "태그 지정만 가능",
-      "gap": "Node 배치"
+      "gap": "Node 배치 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CAT-004-010": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "L0~L5 경로 조회"
+      "gap": "L0~L5 경로 조회 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-DEP-001-001": {
       "verdict": "구현",
@@ -545,7 +545,7 @@
     "FR-DEP-001-005": {
       "verdict": "미구현",
       "evidence": "삭제 API 없음; 원천 PROPOSED만 변경, 이후 새 Version",
-      "gap": "초안 단계 관계 삭제"
+      "gap": "초안 단계 관계 삭제 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
     },
     "FR-DEP-002-001": {
       "verdict": "구현",
@@ -570,7 +570,7 @@
     "FR-DEP-002-005": {
       "verdict": "부분",
       "evidence": "PROPOSED 초안 수정·상품 새 Version으로만",
-      "gap": "매핑 해제 기능"
+      "gap": "매핑 해제 기능 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
     },
     "FR-DEP-003-001": {
       "verdict": "구현",
@@ -745,7 +745,7 @@
     "FR-POL-001-005": {
       "verdict": "구현",
       "evidence": "긴급 차단 v2 2인 승인·서명 봉투 (`B/d03-safety/kill-switch/kill.service.ts`, `T/d03/kill-v2.spec.ts`), 평가 최우선 (`evaluate.ts:90-91`)",
-      "gap": "'즉시'와 2인 승인(최대 2시간 대기) 관계를 명세에 반영"
+      "gap": "결정 D1(a) 확정(11-07): 명세 '즉시'는 2인 승인 긴급 차단(승인 뒤 서버 판단 즉시 Safe Default)으로 정정 — 자동 실행·외부 직접 실행은 두지 않는다"
     },
     "FR-POL-002-001": {
       "verdict": "구현",
@@ -758,9 +758,10 @@
       "gap": "Rule Builder 화면 없음(정책 화면에 조건 편집 없음), HW 버전 문맥 없음"
     },
     "FR-POL-002-003": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "제어점당 배포 정책 1개(BD-06), 새 배포가 이전 것 RETIRED (`policy.service.ts:227-231`)",
-      "gap": "**설계와 충돌** — 우선순위 대신 '단일 배포' 원칙. 명세 조정 필요"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-POL-002-004": {
       "verdict": "구현",
@@ -810,7 +811,7 @@
     "FR-CPT-001-004": {
       "verdict": "부분",
       "evidence": "위와 같음",
-      "gap": "—"
+      "gap": "결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P11b"
     },
     "FR-CPT-002-001": {
       "verdict": "부분",
@@ -910,12 +911,12 @@
     "FR-ROL-002-001": {
       "verdict": "부분",
       "evidence": "기준이 상수(Canary 5%, 관측 24h) (`rollout-stage.ts:8-10`)",
-      "gap": "기준 설정 저장"
+      "gap": "확대 기준(Canary 5%·관측 24h `rollout-stage.ts`)은 상수 — 설정 저장 없음. 중단 기준은 등록된다(FR-ROL-002-006)"
     },
     "FR-ROL-002-002": {
       "verdict": "부분",
-      "evidence": "판정 기록에 criteria(관측·이상·차단) 남음",
-      "gap": "기준 조회 API"
+      "evidence": "확대 판정 `GET /api/policies/:id/expansion`(`contracts/src/routes.ts:573`)이 단계 기준(관측·요구 시간·이상·차단)과 축별 근거를 함께 반환",
+      "gap": "확대 기준이 상수라 '저장된 기준' 조회가 아니다(FR-ROL-002-001과 함께)"
     },
     "FR-ROL-002-003": {
       "verdict": "구현",
@@ -934,18 +935,18 @@
     },
     "FR-ROL-002-006": {
       "verdict": "부분",
-      "evidence": "중단 기준(열린 이상 징후·진행 중 차단) 고정",
-      "gap": "기준 설정 저장"
+      "evidence": "중단 기준 사전 등록 `PUT /api/policies/:id/abort-criteria`(`contracts/src/routes.ts:575`, RELEASE_MANAGER·SAFETY_OFFICER) → `policy_abort_criteria` 추가만·감사 ABORT_CRITERIA·이벤트 (`backend/src/domains/d01-policy/staged-rollout/canary.service.ts:100-114`) · 시험 `backend/test/d04/lake-loop.spec.ts:103`",
+      "gap": "구현 근거는 충분하다 — 코드에 @req 표식이 없어(추적 0) 판정은 표식을 달 때 함께 구현으로 올린다(P14)"
     },
     "FR-ROL-002-007": {
       "verdict": "부분",
-      "evidence": "판정 기록에만",
-      "gap": "조회 API"
+      "evidence": "등록 기준 조회 — 확대 판정 `GET /api/policies/:id/expansion`·`GET /api/canary`(`contracts/src/routes.ts:573-574`)가 criteria(지표·신뢰도·관측·지연·등록자·시각)를 돌려준다(`canary.service.ts:47-60`) · 시험 `lake-loop.spec.ts:110,118`",
+      "gap": "구현 근거는 충분하다 — 코드에 @req 표식이 없어(추적 0) 판정은 표식을 달 때 함께 구현으로 올린다(P14)"
     },
     "FR-ROL-002-008": {
       "verdict": "부분",
       "evidence": "멈추기(0%)는 기준과 무관하게 언제나 허용 (`rollout-stage.ts:44`)",
-      "gap": "**설계와 상충** — 명세는 기준 충족 시에만 중단. 안전상 '언제나 중단 가능'이 맞으므로 명세 조정 권고"
+      "gap": "확정 2(11-07): 중단 요청 때 중단 기준 충족 여부는 판정해 기록만 하고, 중단(멈추기 0%)은 언제나 허용 — 기준 미충족 중단은 사유 필수. 명세 '충족해야만 중단'은 정정 — 묶음 GX"
     },
     "FR-ROL-002-009": {
       "verdict": "구현",
@@ -1040,12 +1041,12 @@
     "FR-PVER-001-004": {
       "verdict": "미구현",
       "evidence": "삭제 API 없음(RETIRED로 대체)",
-      "gap": "미배포 초안 삭제 여부 결정"
+      "gap": "미배포 초안 삭제 여부 결정 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P11b"
     },
     "FR-PVER-001-005": {
       "verdict": "부분",
       "evidence": "삭제 자체가 없어 충족",
-      "gap": "삭제 도입 시 DEPLOYED 거부"
+      "gap": "삭제 도입 시 DEPLOYED 거부 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P11b"
     },
     "FR-PVER-002-001": {
       "verdict": "구현",
@@ -1100,37 +1101,37 @@
     "FR-EXC-001-001": {
       "verdict": "미구현",
       "evidence": "예외·우회 정책 기능 없음",
-      "gap": "**설계 검토 필요** — fail-closed·강제 통과 금지(FFG-LCY-002)와 조정"
+      "gap": "**설계 검토 필요** — fail-closed·강제 통과 금지(FFG-LCY-002)와 조정 — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-EXC-001-002": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "위와 같음 — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-EXC-001-003": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-EXC-002-001": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-EXC-002-002": {
       "verdict": "미구현",
       "evidence": "(체험권 만료 sweep은 권한용으로 별개)",
-      "gap": "—"
+      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-EXC-002-003": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-EXC-002-004": {
       "verdict": "미구현",
       "evidence": "—",
-      "gap": "만료 시 이전 정책 자동 원복"
+      "gap": "만료 시 이전 정책 자동 원복 — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-CON-001-001": {
       "verdict": "부분",
@@ -1148,9 +1149,10 @@
       "gap": ""
     },
     "FR-CON-001-004": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "단일 배포 원칙으로 충돌 자체를 막음",
-      "gap": "**설계와 충돌** (FR-POL-002-003과 같음)"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-CON-001-005": {
       "verdict": "미구현",
@@ -1158,24 +1160,28 @@
       "gap": "충돌 목록·결정 결과 조회"
     },
     "FR-CON-002-001": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "—",
-      "gap": "설계 결정 후"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-CON-002-002": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-CON-002-003": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "—",
-      "gap": "—"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-RBAC-001-001": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D-GAP-1)",
       "evidence": "역할은 고정 enum 17종 (`C/enums.ts` ROLES), 권한은 ROUTES에서 파생",
-      "gap": "역할 정의 관리(또는 전사 IAM 위임 결정)"
+      "gap": "결정 D-GAP-1(11-07): 역할 정의는 계약 고정(업무 절차 IAM 정합성 게이트) — 역할 등록·수정·삭제 화면은 두지 않는다."
     },
     "FR-RBAC-001-002": {
       "verdict": "구현",
@@ -1183,14 +1189,16 @@
       "gap": "—"
     },
     "FR-RBAC-001-003": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D-GAP-1)",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "결정 D-GAP-1(11-07): 역할 정의는 계약 고정(업무 절차 IAM 정합성 게이트) — 역할 등록·수정·삭제 화면은 두지 않는다."
     },
     "FR-RBAC-001-004": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D-GAP-1)",
       "evidence": "—",
-      "gap": "위와 같음"
+      "gap": "결정 D-GAP-1(11-07): 역할 정의는 계약 고정(업무 절차 IAM 정합성 게이트) — 역할 등록·수정·삭제 화면은 두지 않는다."
     },
     "FR-RBAC-001-005": {
       "verdict": "범위 밖",
@@ -1285,12 +1293,12 @@
     "FR-VAR-001-004": {
       "verdict": "부분",
       "evidence": "`PATCH /api/features/:id/versions/:ver` 역할 FEATURE_AUTHOR·SAFETY_OFFICER·VARIANT_OWNER·IMPLEMENTER(ROUTES:85), PROPOSED만(REG:173), 국가·차종·트림 불변(API:24) · 시험 registry.spec.ts:125,151",
-      "gap": "\"해당 Feature Owner(ownerId)·시스템 관리자\" 기준 인가 없음 — 역할 기반만. 시스템 관리자 역할 자체가 없음(enums.ts:59-77)"
+      "gap": "\"해당 Feature Owner(ownerId)·시스템 관리자\" 기준 인가 없음 — 역할 기반만. 시스템 관리자 역할 자체가 없음(enums.ts:59-77) — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 P12"
     },
     "FR-VAR-001-005": {
       "verdict": "미구현",
       "evidence": "DELETE 경로 전무(ROUTES 검색 0건)",
-      "gap": "플랫폼은 불변·새 Version 설계 — 삭제 대신 Version 폐기/해제 정의 필요(설계 상충)"
+      "gap": "플랫폼은 불변·새 Version 설계 — 삭제 대신 Version 폐기/해제 정의 필요(설계 상충) — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P12"
     },
     "FR-VAR-001-006": {
       "verdict": "부분",
@@ -1360,12 +1368,12 @@
     "FR-SUP-001-004": {
       "verdict": "부분",
       "evidence": "FR-VAR-001-004와 동일(ROUTES:85, REG:173)",
-      "gap": "Owner·시스템 관리자 인가 없음"
+      "gap": "Owner·시스템 관리자 인가 없음 — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 P12"
     },
     "FR-SUP-001-005": {
       "verdict": "미구현",
       "evidence": "DELETE 없음",
-      "gap": "불변 설계와의 정합 결정"
+      "gap": "불변 설계와의 정합 결정 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P12"
     },
     "FR-SUP-002-001": {
       "verdict": "부분",
@@ -1385,12 +1393,12 @@
     "FR-SUP-002-004": {
       "verdict": "부분",
       "evidence": "초안 수정으로 ecuPnos 변경(ROUTES:85)",
-      "gap": "센서 없음, Owner 인가 없음"
+      "gap": "센서 없음, Owner 인가 없음 — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 P12"
     },
     "FR-SUP-002-005": {
       "verdict": "미구현",
       "evidence": "DELETE 없음",
-      "gap": "—"
+      "gap": "결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P12"
     },
     "FR-SUP-003-001": {
       "verdict": "미구현",
@@ -1398,9 +1406,10 @@
       "gap": "통신 상태 조건 항목·등록"
     },
     "FR-SUP-003-002": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D5)",
       "evidence": "주행·정차·충전 상태 개념 없음. 동적 상태는 문맥 금지 속성(openfeature.ts:59)",
-      "gap": "차량 상태 목록·등록 — **설계 상충**(문맥 정책은 동적 상태 금지, Guard DC1·DC3 대기로 처리)"
+      "gap": "결정 D5(a): 주행·정차·충전 같은 동적 차량 상태는 서버 조건으로 두지 않고 차량 Guard(DC1·DC3)가 판단한다."
     },
     "FR-SUP-003-003": {
       "verdict": "부분",
@@ -1425,7 +1434,7 @@
     "FR-SUP-004-003": {
       "verdict": "부분",
       "evidence": "quality STALE/UNTRUSTED → UNKNOWN·HOLD·Safe Default(VAR:128, EVAL:125) · 시험 evaluate.test.ts:69",
-      "gap": "시각 기준 최신성 임계값 없음(품질 플래그 의존), \"판단 미진행·메시지\" 대신 Safe Default"
+      "gap": "시각 기준 최신성 임계값 없음(품질 플래그 의존), \"판단 미진행·메시지\" 대신 Safe Default — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-TGT-001-001": {
       "verdict": "부분",
@@ -1443,9 +1452,10 @@
       "gap": "지역 값 목록 검증"
     },
     "FR-TGT-002-002": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D5)",
       "evidence": "문맥에 사용자·계정 없음(VAL:42), 권한은 VIN 단위",
-      "gap": "계정 문맥은 개인정보 문맥 정책과 충돌 가능 — 설계 결정 필요"
+      "gap": "결정 D5(a): 사용자·계정 원문 타겟팅은 두지 않는다 — 가명 subject만(FFG-OFT-003/004), 권한 단위는 VIN."
     },
     "FR-TGT-002-003": {
       "verdict": "부분",
@@ -1460,12 +1470,12 @@
     "FR-TGT-003-002": {
       "verdict": "부분",
       "evidence": "`PATCH /api/policies/:id` 역할 FEATURE_AUTHOR·IMPLEMENTER(ROUTES:123), 없는 정책 NOT_FOUND(POL:92), DEPLOYED 불변(POL:148-151) · 시험 policy.spec.ts:113,161",
-      "gap": "Owner·시스템 관리자 기준 인가 없음"
+      "gap": "Owner·시스템 관리자 기준 인가 없음 — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 P12"
     },
     "FR-TGT-003-003": {
       "verdict": "미구현",
       "evidence": "DELETE 없음, 대체 시 RETIRED(POL:230)",
-      "gap": "삭제 vs 폐기 설계 결정"
+      "gap": "삭제 vs 폐기 설계 결정 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P12"
     },
     "FR-TGT-004-001": {
       "verdict": "구현",
@@ -1475,7 +1485,7 @@
     "FR-TGT-004-002": {
       "verdict": "구현",
       "evidence": "ALLOW/DENY/HOLD + reason(EVAL:7-17), `GET /api/activation/decide`(ROUTES:139) · 시험 evaluate.test.ts",
-      "gap": "명세는 2분류(대상/제외), 플랫폼은 3치(HOLD=Safe Default) — 대응 정의"
+      "gap": "결정 D6(a) 대응 정의: 평가 대상 = ALLOW, 평가 제외 = DENY·HOLD(HOLD는 Safe Default) — 명세 2분류를 3분류로 정정"
     },
     "FR-TGT-004-003": {
       "verdict": "부분",
@@ -1488,24 +1498,27 @@
       "gap": "Flag 단위 통합 제외 사유 목록·코드 없음"
     },
     "FR-TGT-005-001": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "전략은 OR, 우선순위 필드 없음(policy.ts:18,44)",
-      "gap": "— (설계 상충, 아래 참조)"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-TGT-005-002": {
       "verdict": "부분",
       "evidence": "전략 내 IN 모순 FAIL, flagKey 중복 FAIL, 같은 제어점 대체 INFO(VAL:73-81) · 시험 evaluate.test.ts:134",
-      "gap": "정책 간 대상 겹침 탐지·Owner/작성자 알림 없음"
+      "gap": "정책 간 대상 겹침 탐지·Owner/작성자 알림 없음 — 결정 D6: 의미 변경 없이 정책 간 대상 겹침 탐지·Owner/작성자 알림을 구현 — 묶음 P12"
     },
     "FR-TGT-005-003": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "flagKey당 배포 정책 1건, 새 배포가 이전을 RETIRED(POL:230)",
-      "gap": "—"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-TGT-005-004": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "검증 findings만 반환",
-      "gap": "우선순위 결과·미해소 목록"
+      "gap": "결정 D6(a): 제어점당 배포 정책 1건(BD-06)·전략 OR이라 정책·규칙 우선순위를 두지 않는다."
     },
     "FR-RTE-001-001": {
       "verdict": "부분",
@@ -1597,10 +1610,10 @@
       "gap": "—"
     },
     "FR-RTE-005-002": {
-      "verdict": "부분",
-      "detail": "(시뮬)",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D5)",
       "evidence": "DC1 비작동 대기·DC3 다음 시동·활성화 ACT_PENDING(VRS:212-249)",
-      "gap": "주행·정차·충전 상태 판단 없음(실차 몫)"
+      "gap": "결정 D5(a): 실행 전 차량 상태(주행·정차·충전) 판단은 차량 Guard 몫 — FF는 시뮬의 DC1·DC3 대기만. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 주행·정차·충전 상태 판단 없음(실차 몫))."
     },
     "FR-RTE-005-003": {
       "verdict": "부분",
@@ -1697,12 +1710,12 @@
     "FR-CRC-001-002": {
       "verdict": "미구현",
       "evidence": "지역 코드 체계 없음, 시장 enum `schemas/wire.ts` Market만",
-      "gap": "1~9·A~D·G 코드 체계 정의, 시장(market)·country와의 매핑, 등록 시 거부·사유"
+      "gap": "1~9·A~D·G 코드 체계 정의, 시장(market)·country와의 매핑, 등록 시 거부·사유 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-CRC-001-003": {
       "verdict": "미구현",
       "evidence": "Variant Rule 엔티티 없음(`rules/variant.ts:7`은 Feature 속성)",
-      "gap": "Variant Rule을 독립 개념으로 둘지 결정 후 지역 코드 기준 후보 조회"
+      "gap": "Variant Rule을 독립 개념으로 둘지 결정 후 지역 코드 기준 후보 조회 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 TX"
     },
     "FR-CRC-001-004": {
       "verdict": "부분",
@@ -1772,7 +1785,7 @@
     "FR-CRC-001-017": {
       "verdict": "부분",
       "evidence": "레지스트리 룰은 Approved가 아니면 판정에 넣지 않고 참고(INFO)로만 남긴다 `C/rules/compliance-rule.ts:138`(시험 `contracts/src/rules/compliance-rule.test.ts:257`). 시장 Compliance Profile은 미확인이면 F2 이상 활성화·복원을 **차단**한다(`compliance-profile.ts:57-59`)",
-      "gap": "Profile 쪽은 명세(\"미승인은 적용하지 않음\")와 현재 설계(fail-closed)가 충돌 — 결정 필요(D4)"
+      "gap": "Profile 쪽은 명세(\"미승인은 적용하지 않음\")와 현재 설계(fail-closed)가 충돌 — 결정 필요(D4) — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
     },
     "FR-CRC-001-018": {
       "verdict": "구현",
@@ -1787,7 +1800,7 @@
     "FR-CRC-001-020": {
       "verdict": "구현",
       "evidence": "수정 `PATCH /api/compliance-rules/:id` — 룰 역할(법규·기능안전·사이버보안) + 소유자 본인만(D-GAP-1 기본안: 역할 계약 고정 + ownerId 검사) `B/d03-safety/compliance-checker/compliance-rule.service.ts:308`; 시험 `backend/test/d03/compliance-rules.spec.ts:79`",
-      "gap": "수정 권한 기준은 D-GAP-1 기본안으로 정함 — 다른 기준이면 결정 필요"
+      "gap": "결정 B13 확정: 규칙 담당 역할 + 그 룰의 소유자 본인, 소유자 계정이 없거나 비활성일 때만 시스템 관리자가 소유자 이관(내용 수정 불가·감사) — 묶음 F0"
     },
     "FR-CRC-001-021": {
       "verdict": "구현",
@@ -1872,7 +1885,7 @@
     "FR-DSV-001-002": {
       "verdict": "부분",
       "evidence": "Feature 범위·UPG-VC로 차량 산출 `validators.ts:119-133`, `rules/variant.ts`",
-      "gap": "Variant Rule 엔티티 부재(공통 사실)"
+      "gap": "Variant Rule 엔티티 부재(공통 사실) — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 P11b"
     },
     "FR-DSV-001-003": {
       "verdict": "구현",
@@ -1920,9 +1933,10 @@
       "gap": ""
     },
     "FR-DSV-002-001": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "status_report v2: 상태·DTC·offline_since·time_sync `schemas/wire.ts:135-166`",
-      "gap": "배터리·제어기 상태 필드 없음(차량 원격진단 데이터는 외부 연계 범위 확인 필요)"
+      "gap": "결정 D7(a): 배포 진행 중 배터리·제어기 상태는 OTA·원격진단 원장 몫 — FF는 status_report의 상태·DTC만 받는다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 배터리·제어기 상태 필드 없음(차량 원격진단 데이터는 외부 연계 범위 확인 필요))."
     },
     "FR-DSV-002-002": {
       "verdict": "구현",
@@ -1941,18 +1955,18 @@
     },
     "FR-DSV-003-001": {
       "verdict": "부분",
-      "evidence": "확대 시 열린 이상 징후·진행 중 차단 확인 `rules/rollout-stage.ts:52-53`",
-      "gap": "실패율·차량 상태 기준 없음, F0·F1은 검사 안 함(`rollout-stage.ts:46`)"
+      "evidence": "확대 판정 judgeExpansion — Canary 지표(적용 실패율·DTC·안전 이벤트 `contracts/src/rules/lake.ts:99`) 지연은 STALE_DATA 보류, 등록 기준 초과는 ABORT_CRITERIA 중단(`contracts/src/rules/rollout-stage.ts:157-158`, 등급과 무관), 열린 이상 징후·진행 중 차단은 F2 이상 STOP_CRITERIA(`:192`)",
+      "gap": "확대 요청 때만 판정 — 배포 진행 중 주기 확인 없음. 배터리 등 차량 상태는 결정 D7로 OTA 몫"
     },
     "FR-DSV-003-002": {
       "verdict": "부분",
       "evidence": "확대 요청 시 STOP_CRITERIA blocker만 `rollout-stage.ts:52`",
-      "gap": "'중단 필요' 배포 상태로 자동 판정·저장 없음"
+      "gap": "'중단 필요' 배포 상태로 자동 판정·저장 없음 — 결정 D1(a): 자동은 '중단 필요' 알림·차단 요청 생성까지(자동 정지 0%는 하지 않음) — 묶음 P11a"
     },
     "FR-DSV-003-003": {
       "verdict": "부분",
       "evidence": "기준 충족 전 확대 거부 `staged-rollout.service.ts:48-54`; 시험 `backend/test/d01/rollout-stage.spec.ts:41`",
-      "gap": "F0·F1 미적용, 자동 정지(0%)·서버 배포 차단 없음"
+      "gap": "F0·F1 미적용, 자동 정지(0%)·서버 배포 차단 없음 — 결정 D1(a): 자동은 '중단 필요' 알림·차단 요청 생성까지(자동 정지 0%는 하지 않음) — 묶음 P11a"
     },
     "FR-DSV-003-004": {
       "verdict": "부분",
@@ -1992,7 +2006,7 @@
     "FR-KSW-001-002": {
       "verdict": "부분",
       "evidence": "범위는 VIN 목록(비우면 영향 범위 전체) `schemas/ops.ts:169-170`",
-      "gap": "생산 지역·적용 지역 코드·Variant Rule·차종·SW 버전 단위 범위"
+      "gap": "생산 지역·적용 지역 코드·Variant Rule·차종·SW 버전 단위 범위 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 P11a"
     },
     "FR-KSW-001-003": {
       "verdict": "구현",
@@ -2022,12 +2036,12 @@
     "FR-KSW-002-003": {
       "verdict": "부분",
       "evidence": "REQUIRES 의존 Feature·배포 flag·Feature 범위 차량 산출 `kill.service.ts:89-123`; 시험 `delivery.spec.ts:142`",
-      "gap": "Variant Rule 기준 아님"
+      "gap": "Variant Rule 기준 아님 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 P11a"
     },
     "FR-KSW-002-004": {
       "verdict": "구현",
       "evidence": "2인 승인 → 정책 게이트 → kill_command v2 서명·차량별 봉투, 서버 판단 즉시 Safe Default `evaluate.ts:90-91`; 회신 PARTIAL·거부 사유 기록; 시험 `delivery.spec.ts:160,183,231`, `kill-v2.spec.ts:86`",
-      "gap": "차량 내 실행은 RTE-004(명세 비고)"
+      "gap": "차량 내 실행은 RTE-004(명세 비고). 결정 D1(a) 확정(11-07): 명세 '즉시'는 2인 승인 긴급 차단(승인 뒤 서버 판단 즉시 Safe Default)으로 정정 — 자동 실행·외부 직접 실행은 두지 않는다"
     },
     "FR-KSW-002-005": {
       "verdict": "구현",
@@ -2042,7 +2056,7 @@
     "FR-KSW-003-001": {
       "verdict": "부분",
       "evidence": "`GET /api/kill-requests/preview` `kill.service.ts:89-123`",
-      "gap": "Variant Rule·범위 유형별 산출"
+      "gap": "Variant Rule·범위 유형별 산출 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 P11a"
     },
     "FR-KSW-003-002": {
       "verdict": "미구현",
@@ -2105,9 +2119,10 @@
       "gap": ""
     },
     "FR-RBK-001-003": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "대상 유형으로 정책 버전·SW 버전을 받지만 SW 버전은 실행하지 않고 OTA(IF-05) 위임 사유로 거부 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
-      "gap": "SW 버전 롤백(결정 대기 D7)"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — SW 버전 대상·SW 배포 이력은 OTA 원장에서 본다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: SW 버전 롤백(결정 대기 D7))."
     },
     "FR-RBK-001-004": {
       "verdict": "구현",
@@ -2175,9 +2190,9 @@
       "gap": ""
     },
     "FR-RBK-004-001": {
-      "verdict": "부분",
+      "verdict": "구현",
       "evidence": "`POST /api/rollback-requests` — 배포 ID·유형·복구 기준 버전·사유·승인대상자, 배포 ID로 Feature·범위 조회 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
-      "gap": "SW 버전 대상은 D7 결정 대기"
+      "gap": "SW 버전 대상은 결정 D7(a)로 제외(OTA IF-05 위임) — 정책 버전 대상은 근거대로 구현"
     },
     "FR-RBK-004-002": {
       "verdict": "구현",
@@ -2185,9 +2200,10 @@
       "gap": ""
     },
     "FR-RBK-004-003": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "`GET /api/rollbacks/deployments/:id` — Feature·배포 버전·적용 범위·정책 변경 이력·배포 이력 — 규칙 `contracts/src/rules/rollback.ts` · `d03-safety/restore/rollback.service.ts`(migration 040) · 화면 `/ops/rollback` (시험 `backend/test/d03/rollback.spec.ts`)",
-      "gap": "SW 변경 이력 원천 없음(OTA IF-05, D7)"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — SW 버전 대상·SW 배포 이력은 OTA 원장에서 본다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: SW 변경 이력 원천 없음(OTA IF-05, D7))."
     },
     "FR-RBK-004-004": {
       "verdict": "구현",
@@ -2237,22 +2253,23 @@
     "FR-OPD-001-001": {
       "verdict": "부분",
       "evidence": "`ofrep.controller.ts:138-144`, `bundle-provider.ts:68-90` 평가마다 span(flagKey·reason·variant·시각). 시험 `backend/test/d05/openfeature.spec.ts:90` (FFG-OFT-004 평가 수 = 기록 수)",
-      "gap": "평가 이벤트 유형(isEnabled/getVariant 구분) 속성 없음. 서버 내부 평가(`activation.service decide`, Unleash 대조)는 기록되지 않음. 모의 수집기가 아닌 영속 평가 이벤트 저장소 필요"
+      "gap": "평가 이벤트 유형(isEnabled/getVariant) 구분 없음(boolean 전용, 결정 D6). 플랫폼 판단·차량 SDK·Unleash Edge 평가까지 시 단위 집계로 영속(`flag_eval_hourly`) — 개별 이벤트 저장은 아님"
     },
     "FR-OPD-001-002": {
       "verdict": "부분",
-      "evidence": "`evaluate.ts:79` variant `on/off`, span 속성 `feature_flag.result.variant` (`openfeature.ts:95`)",
-      "gap": "활성/비활성이 별도 결과 필드가 아니라 variant 문자열(F2 이상은 `safe_default`)로만 남음 — 정규 결과 enum 필요"
+      "evidence": "결과 enum ON·OFF·SAFE_DEFAULT·ERROR(`contracts/src/rules/evaluation-stats.ts:15`)로 `flag_eval_hourly`에 저장(`evaluation-stats.service.ts:74,131`) · 시험 `backend/test/d04/evaluation-stats.spec.ts:26,56`",
+      "gap": "구현 근거는 충분하다 — 코드에 @req 표식이 없어(추적 0) 판정은 표식을 달 때 함께 구현으로 올린다(P14)"
     },
     "FR-OPD-001-003": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "variant는 `on/off/safe_default` 뿐 (`evaluate.ts:28`, `bundle-provider.ts:48-56` boolean 외 TYPE_MISMATCH)",
-      "gap": "**설계 상충**: 다값 variant(분기값 명칭·값)를 차량 flag에서 금지. \"분기값 미평가 시 빈 값\" 규칙도 없음"
+      "gap": "결정 D6(a): 다값 분기값 명칭·값을 차량 flag에 두지 않는다(boolean 전용) — 분기값 on/off/safe_default는 집계된다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: **설계 상충**: 다값 variant(분기값 명칭·값)를 차량 flag에서 금지. \"분기값 미평가 시 빈 값\" 규칙도 없음)."
     },
     "FR-OPD-001-004": {
       "verdict": "부분",
       "evidence": "span에는 가명 `feature_flag.context.id`만 (`openfeature.ts:92`), 금지 문맥(위치·운전자·연락처)은 INVALID_CONTEXT (`openfeature.spec.ts:84`)",
-      "gap": "appName·environment·sessionId 미수집. **설계 상충**: remoteAddress·userId 원문 수집은 FFG-OFT-003/004(원본 식별자 금지)와 충돌 — 가명화 범위 확정 필요"
+      "gap": "원문 userId·remoteAddress 수집은 결정 D5(a)로 제외(가명만, FFG-OFT-003/004). appName·environment는 평가 집계에 들어간다(`flag_eval_hourly`, 시험 `backend/test/d04/evaluation-stats.spec.ts:26`) — sessionId 등 나머지 평가 조건 정보 수집이 남음"
     },
     "FR-OPD-001-005": {
       "verdict": "구현",
@@ -2272,7 +2289,7 @@
     "FR-OPD-001-008": {
       "verdict": "구현",
       "evidence": "분기값 단위 집계(byVariant — 차량 flag는 boolean이라 on/off/safe_default, 다값 Variant가 허용되면 그 값 그대로 센다 — D6) · 집계 `flag_eval_hourly`(migration 102, 시 칸 — Flag 평가 모니터링과 한 저장소) — 평가 span(OFREP·차량 SDK 감사 Hook)을 OtelExporter가, Unleash Edge 서명본 평가를 `unleash-live.module.ts`가 시(UTC)·flag·평가 경로·앱·환경·결과·분기값·폴백 사유로 센다(`d04-ops/telemetry-ingest/evaluation-stats.service.ts`, 수집기 IF-11이 꺼져도 집계). 화면 Feature 상세 '평가 운영' 탭 (시험 `backend/test/d04/evaluation-stats.spec.ts`, `contracts/src/rules/evaluation-stats.test.ts`)",
-      "gap": ""
+      "gap": "다값 Variant는 결정 D6(a)로 두지 않는다"
     },
     "FR-OPD-002-001": {
       "verdict": "구현",
@@ -2291,8 +2308,8 @@
     },
     "FR-QFL-001-001": {
       "verdict": "부분",
-      "evidence": "오류 평가도 span(error.type·시각·flagKey) (`openfeature.spec.ts:90-102` `invalid_context`)",
-      "gap": "appName·environment 없음, 신호로 분류·저장되지 않음(모의 span 표뿐)"
+      "evidence": "오류 평가는 결과 ERROR로 flag·평가 경로·appName·environment·시(UTC)와 함께 집계(`backend/src/domains/d04-ops/telemetry-ingest/evaluation-stats.service.ts:71-74,116,131`) · 시험 `backend/test/d04/evaluation-stats.spec.ts:43`",
+      "gap": "오류 시점은 시 단위. 구현 근거는 충분하다 — 코드에 @req 표식이 없어(추적 0) 판정은 표식을 달 때 함께 구현으로 올린다(P14)"
     },
     "FR-QFL-001-002": {
       "verdict": "부분",
@@ -2310,9 +2327,10 @@
       "gap": "평가 조건 정보·유형 속성 없음, 영속 이벤트 이력 아님"
     },
     "FR-EVT-001-002": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D6)",
       "evidence": "variant on/off만",
-      "gap": "**설계 상충**(boolean 전용). getVariant 상당 이벤트 없음"
+      "gap": "결정 D6(a): 차량 flag는 boolean 전용(FP-VEHICLE-BOOL-1)이라 다값 분기값(getVariant) 이벤트를 두지 않는다 — on/off/safe_default는 평가 이벤트로 남는다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: **설계 상충**(boolean 전용). getVariant 상당 이벤트 없음)."
     },
     "FR-EVT-001-003": {
       "verdict": "구현",
@@ -2330,9 +2348,9 @@
       "gap": "aggregate가 FEAT@ver·POL·VIN으로 흩어져 Feature 단위 통합 조회 불가, 미등록 Feature도 빈 목록(404 아님)"
     },
     "FR-EVT-002-002": {
-      "verdict": "미구현",
-      "evidence": "애플리케이션 개념 없음",
-      "gap": "appName 필터"
+      "verdict": "부분",
+      "evidence": "Feature 평가 운영 집계가 앱·환경별(`GET /api/features/:id/evaluations` `contracts/src/routes.ts:164`, 시험 `backend/test/d04/evaluation-stats.spec.ts:26`)",
+      "gap": "앱 이름으로 이벤트 이력 목록을 고르는 조회 없음(Feature별 시 단위 집계만)"
     },
     "FR-EVT-002-003": {
       "verdict": "미구현",
@@ -2351,8 +2369,8 @@
     },
     "FR-EVT-003-002": {
       "verdict": "부분",
-      "evidence": "차단 측 지표의 변동 경보(ONBOARD_FAULT_RATIO 이전 주 2배, INCOMPLETE_DEACTIVATION 증가) — 조회 시 계산 (`safety-kpi.service.ts:114`, 시험 `backend/test/d04/safety-kpi.spec.ts:32`)",
-      "gap": "평가 횟수·활성화 비율·롤백 건수 변동 기준, 이상 이벤트로 기록(현재 경보는 저장되지 않음)"
+      "evidence": "차단 측 지표의 변동 경보(ONBOARD_FAULT_RATIO 이전 주 2배, INCOMPLETE_DEACTIVATION 증가) — 조회 시 계산 (`safety-kpi.service.ts:114`, 시험 `backend/test/d04/safety-kpi.spec.ts:32`); Grafana 경보 → 운영 관찰 저장(`GET /api/ops/observations` `contracts/src/routes.ts:479`, 시험 `backend/test/d04/grafana-alert.spec.ts:47,84`)",
+      "gap": "평가 횟수·활성화 비율·롤백 건수 변동 기준은 없다(경보 규칙은 Grafana 쪽) — 경보는 이제 운영 관찰로 저장된다"
     },
     "FR-EVT-003-003": {
       "verdict": "구현",
@@ -2395,14 +2413,15 @@
       "gap": "일반 장애·VOC 반복(Feature·앱·차량 그룹, 기간) 식별과 반복 이슈 기록"
     },
     "FR-VOC-002-005": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "배포 시점 전후 건수 비교·증가 기록"
+      "verdict": "부분",
+      "evidence": "Feature 운영 지표 Version별 `vocAfterDeploy`(`backend/src/domains/d04-ops/telemetry-ingest/feature-health.service.ts:283,292`, `GET /api/features/:id/ops-metrics`)",
+      "gap": "그 Feature의 사건 수 전체 — 배포 ID 기준 전후 비교·증가 시점·이슈 증가 기록 없음"
     },
     "FR-RDD-001-001": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "게시본: ID·종류·순번·대상·상태(SIGNED/DISPATCHED/CONFIRMED/PARTIAL/TIMEOUT/DIVERGED) (`secure-deploy.service.ts:114-211`), 시험 `delivery.spec.ts:63-84`",
-      "gap": "S/W 바이너리 Deployment Unit(배포 버전·유형) 상태 저장 없음 — 게시본이 정책 단위"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — SW 버전 대상·SW 배포 이력은 OTA 원장에서 본다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: S/W 바이너리 Deployment Unit(배포 버전·유형) 상태 저장 없음 — 게시본이 정책 단위)."
     },
     "FR-RDD-001-002": {
       "verdict": "구현",
@@ -2427,12 +2446,13 @@
     "FR-RDD-001-006": {
       "verdict": "부분",
       "evidence": "검증 미완·해시 불일치·자기 승인 거부(`deploy-safety.service.ts:15-30`), 차량별 SW 미달 비활성(FFG-VEH-006)",
-      "gap": "정책 배포가 VERIFIED(G4~G7)에서 가능 — 출시 Gate G8·G9(`lifecycle.ts:27`) 미통과여도 활성화됨. 서버 측 \"SW 배포 완료\" 확인 없음"
+      "gap": "정책 배포가 VERIFIED(G4~G7)에서 가능 — 출시 Gate G8·G9(`lifecycle.ts:27`) 미통과여도 활성화됨. 서버 측 \"SW 배포 완료\" 확인 없음 — 결정 D9(c) 확정: 출시 Gate(G8·G9) 전 Version은 차량 동작을 바꾸지 않는 Shadow만 배포 — 묶음 GX. SW 배포 완료 확인은 결정 D7로 OTA 몫"
     },
     "FR-RDD-002-001": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "게시본 목록 `/api/publications`, IF-05 캠페인 호출 기록 `/api/integrations/calls` (`pipeline.service.ts:16-34`)",
-      "gap": "S/W 배포 유형·버전·일시·결과 이력"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — SW 버전 대상·SW 배포 이력은 OTA 원장에서 본다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: S/W 배포 유형·버전·일시·결과 이력)."
     },
     "FR-RDD-002-002": {
       "verdict": "구현",
@@ -2440,9 +2460,10 @@
       "gap": "—"
     },
     "FR-RDD-002-003": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "`policy.deployed` 페이로드에 publicationId, 게시본 상세에 IF 호출 (`/api/publications/:id`)",
-      "gap": "배포 ID·Feature ID로 S/W 배포 이력과 활성화 이력을 한 번에 엮는 조회 없음"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — SW 버전 대상·SW 배포 이력은 OTA 원장에서 본다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 배포 ID·Feature ID로 S/W 배포 이력과 활성화 이력을 한 번에 엮는 조회 없음)."
     },
     "FR-CICD-001-001": {
       "verdict": "구현",
@@ -2461,13 +2482,13 @@
     },
     "FR-CICD-001-004": {
       "verdict": "부분",
-      "evidence": "변경 기록 swId·swVersion → 그 SW를 쓰는 Feature의 G5 판정 (`gate.service.ts:106-144`)",
-      "gap": "실행 ↔ 배포 ID ↔ Feature ID 명시 연계"
+      "evidence": "파이프라인 실행 기록 `POST/GET /api/pipeline/runs`(`contracts/src/routes.ts:280-281`) — 실행 ID·환경·상태·Feature ID(`contracts/src/rules/integration-error.ts:56-68`) · 시험 `backend/test/d04/notify-recipients.spec.ts:162-166`; 변경 기록 swId → G5 판정(`gate.service.ts:106-144`)",
+      "gap": "실행 ↔ 배포 ID(게시본) 연계 없음 — Feature ID 연계만"
     },
     "FR-CICD-001-005": {
       "verdict": "부분",
       "evidence": "게시본 ID를 멱등 키로 IF-13·IF-05 호출 기록 (`pipeline.service.ts:20-29`)",
-      "gap": "정책 변경 ↔ 파이프라인 실행 이력·ChangeSet 연결"
+      "gap": "정책 변경 ↔ 파이프라인 실행 이력·ChangeSet 연결 없음 — 실행 기록(`/api/pipeline/runs`)은 Feature ID 기준만"
     },
     "FR-CICD-001-006": {
       "verdict": "구현",
@@ -2492,7 +2513,7 @@
     "FR-PDA-001-004": {
       "verdict": "부분",
       "evidence": "정책 검증에서 지원 조건 미달 차량 검출 (`validators.ts:31`), 승인 범위 초과 단계 거부 (`staged-rollout.service.ts:37-41`)",
-      "gap": "단계별 대상 조건이 Variant Rule·차량 그룹에 맞는지 저장 시 검증"
+      "gap": "단계별 대상 조건이 Variant Rule·차량 그룹에 맞는지 저장 시 검증 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 P11b"
     },
     "FR-PDA-001-005": {
       "verdict": "부분",
@@ -2502,12 +2523,12 @@
     "FR-PDA-001-006": {
       "verdict": "부분",
       "evidence": "단계 조정 역할 RELEASE_MANAGER·OPERATOR (`routes.ts:127`), 배포자 ≠ 확대자(SoD); 배포 정책 본문은 IMMUTABLE (`policy.spec.ts:161`)",
-      "gap": "Feature Owner·시스템 관리자 기준 권한 — 현재 역할 기반"
+      "gap": "Feature Owner·시스템 관리자 기준 권한 — 현재 역할 기반 — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 P11b"
     },
     "FR-PDA-001-007": {
       "verdict": "미구현",
       "evidence": "삭제 API 없음, 정책은 RETIRED로만 대체",
-      "gap": "**설계 상충**: 정책·감사 추가 전용(불변) 원칙. 삭제 대신 폐기/취소 상태로 대체할지 결정 필요"
+      "gap": "**설계 상충**: 정책·감사 추가 전용(불변) 원칙. 삭제 대신 폐기/취소 상태로 대체할지 결정 필요 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P11b"
     },
     "FR-PDA-002-001": {
       "verdict": "부분",
@@ -2545,39 +2566,46 @@
       "gap": "동일 (002-006과 중복 행 — 명세 정리 필요)"
     },
     "FR-QGV-001-001": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "SW 마스터는 데이터셋(artifactId·checksum, `master.controller.ts:62-63`)만",
-      "gap": "빌드 ID·버전·결과·일시 수집"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만)."
     },
     "FR-QGV-001-002": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "—",
-      "gap": "저장·빌드 ID 중복 오류"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만)."
     },
     "FR-QGV-001-003": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "—",
-      "gap": "(명세 상세가 \"산출물 식별\" 문구로 001-005와 중복 — 정리 필요)"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만)."
     },
     "FR-QGV-001-004": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "—",
-      "gap": "패키지 ID 중복 오류"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만)."
     },
     "FR-QGV-001-005": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "IF-13 산출물 키 `kind:flag#sequence`→`ART-…` (`pipeline.service.ts:20`)",
-      "gap": "빌드 ID·패키지 ID·배포 버전·배포 유형(Binary/Policy-only) 기준 식별"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만). 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 빌드 ID·패키지 ID·배포 버전·배포 유형(Binary/Policy-only) 기준 식별)."
     },
     "FR-QGV-001-006": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "IF-13 모의 응답 `stored: true`만",
-      "gap": "저장 위치 연계·위치 없음 오류"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만)."
     },
     "FR-QGV-001-007": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "—",
-      "gap": "SW·패키지·배포 ID 기준 조회"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만)."
     },
     "FR-QGV-002-001": {
       "verdict": "부분",
@@ -2600,24 +2628,28 @@
       "gap": "S/W 산출물 배포 ID·버전 누락 검사"
     },
     "FR-QGV-003-001": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "8종 검증 모두 PASS → GO (`validators.ts:198`)",
-      "gap": "판정 대상이 정책·Feature Version — 산출물 \"배포 가능\" 상태 없음"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — 산출물 단위 '배포 가능' 판정은 두지 않고, 품질 Gate는 정책·Feature Version 단위로 판정한다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 판정 대상이 정책·Feature Version — 산출물 \"배포 가능\" 상태 없음)."
     },
     "FR-QGV-003-002": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "FAIL→BLOCKED, CONDITIONAL→HOLD (`validators.ts:198`), 시험 `policy.spec.ts:165`",
-      "gap": "동일"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — 산출물 단위 '배포 가능' 판정은 두지 않고, 품질 Gate는 정책·Feature Version 단위로 판정한다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 동일)."
     },
     "FR-QGV-003-003": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "validation_run에 결과·사유 저장 (`policy.service.ts:166-185`), Gate 기록·감사 FAILED",
-      "gap": "산출물 단위 실패 Gate·항목·사유"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — 산출물 단위 '배포 가능' 판정은 두지 않고, 품질 Gate는 정책·Feature Version 단위로 판정한다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 산출물 단위 실패 Gate·항목·사유)."
     },
     "FR-QGV-003-004": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "G5 미PASS → 검증 HOLD/BLOCKED → 승인·배포 불가 (`policy.service.ts:192-197`, `validators.ts:168-171`)",
-      "gap": "Deployment Unit 품질 실패 상태를 쓰는 배포·활성화 차단"
+      "gap": "결정 D7(a): SW 전개·SW 롤백·빌드/패키지 산출물은 OTA(IF-05)·CI/CD 몫(FF는 정책 단위 게시본만) — 산출물 단위 '배포 가능' 판정은 두지 않고, 품질 Gate는 정책·Feature Version 단위로 판정한다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: Deployment Unit 품질 실패 상태를 쓰는 배포·활성화 차단)."
     },
     "FR-QGV-003-005": {
       "verdict": "구현",
@@ -2632,7 +2664,7 @@
     "FR-AGW-001-002": {
       "verdict": "부분",
       "evidence": "제어 API는 사람 역할용으로만 존재: `POST /api/policies/:id/deploy`(RELEASE_MANAGER·OPERATOR, routes.ts:126), 긴급 차단 2인 승인(routes.ts:175-180). 외부 시스템(SYSTEM 역할)용 제어 창구 없음",
-      "gap": "외부 시스템이 호출할 제어 동작 범위(예: 체험 제안·수락은 SYSTEM 허용 routes.ts:133-136) 정의. 배포·차단은 승인·직무 분리 게이트를 우회하지 않는 \"요청 접수\" 형태로 한정 필요"
+      "gap": "외부 시스템이 호출할 제어 동작 범위(예: 체험 제안·수락은 SYSTEM 허용 routes.ts:133-136) 정의. 배포·차단은 승인·직무 분리 게이트를 우회하지 않는 \"요청 접수\" 형태로 한정 필요 — 결정 D1(a): 외부 시스템은 '차단 요청 접수'(API 키) → 사람 승인 대기열까지, 배포·차단 직접 실행은 없음 — 묶음 P11a"
     },
     "FR-AGW-001-003": {
       "verdict": "구현",
@@ -2702,12 +2734,12 @@
     "FR-DSYN-001-001": {
       "verdict": "부분",
       "evidence": "`SYNC-IF03-DW` Feature Lifecycle→DW 대사(data-sync/sync.service.ts:29,108-109). 의도적으로 \"원천을 덮어쓰지 않는 대사\"(:1-3)",
-      "gap": "정책 데이터 대상 없음, 실제 전송(OUTBOUND 적재) 없음, 주기 실행 없음(수동 `POST /api/sync/runs`만, scheduler 미사용)"
+      "gap": "정책 데이터 대상 없음, 실제 전송(OUTBOUND 적재) 없음, 주기 실행 없음(수동 `POST /api/sync/runs`만, scheduler 미사용) — 결정 D7(a): 원천을 덮어쓰는 동기화·실전송은 하지 않는다(대사만, FFG-TEL-005) — 남은 것은 대사 대상·주기 실행"
     },
     "FR-DSYN-001-002": {
       "verdict": "부분",
       "evidence": "차량 사양 대사 `SYNC-IF02-VEH`, 공장 생산 차량 `SYNC-IF12-*`(sync.service.ts:27-33,105-116). 시험 p10.spec.ts:101-108",
-      "gap": "차량 Feature 적용 상태(vehicle_feature_status) 외부 동기화 대상 없음, 주기 정의 없음"
+      "gap": "차량 Feature 적용 상태(vehicle_feature_status) 외부 동기화 대상 없음, 주기 정의 없음 — 결정 D7(a): 원천을 덮어쓰는 동기화·실전송은 하지 않는다(대사만, FFG-TEL-005) — 남은 것은 대사 대상·주기 실행"
     },
     "FR-DSYN-001-003": {
       "verdict": "구현",
@@ -2720,9 +2752,10 @@
       "gap": ""
     },
     "FR-SDVI-001-001": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "`POST /api/legacy-sdv/translate`, `GET /api/legacy-sdv/vehicles`(legacy-sdv/legacy-sdv.service.ts:46-61). 쓰기 요청은 행위자 헤더 없으면 401(kernel/actor.ts:44)",
-      "gap": "실시간 IVI·CCS 프로토콜 연동이 아니라 딜러 진단기 코딩 계획·코딩 메시지 변환(FR-SDVI-001-002). 지원 프로토콜 범위는 결정 대기(D7). 외부 시스템 인증은 API 키(X-Api-Key, FR-AGW-001-003)로 가능"
+      "gap": "결정 D7(a): 레거시 실시간 IVI·CCS 제어는 하지 않는다(레거시 F2+ 거부) — 딜러 진단기 코딩 계획 변환만. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 실시간 IVI·CCS 프로토콜 연동이 아니라 딜러 진단기 코딩 계획·코딩 메시지 변환(FR-SDVI-001-002). 지원 프로토콜 범위는 결정 대기(D7). 외부 시스템 인증은 API 키(X-Api-Key, FR-AGW-001-003)로 가능)."
     },
     "FR-SDVI-001-002": {
       "verdict": "구현",
@@ -2730,9 +2763,10 @@
       "gap": ""
     },
     "FR-BIL-001-001": {
-      "verdict": "부분",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "이용 권한은 플랫폼 원장(D01-05 EntitlementService)에서 조회, 과금 시스템은 결제 시에만 호출(billing/billing.controller.ts:29-40)",
-      "gap": "과금 시스템 권한 조회 연계·조회 실패 기록 없음. 권한 원천(플랫폼 vs 과금)을 명세와 합의 필요"
+      "gap": "결정 D7(a): 이용 권한 원천은 플랫폼 원장(D01-05), 과금 시스템은 결제 때만 호출한다. 범위 안 부분은 근거대로 있다(이전 판정 부분 — 남은 공백: 과금 시스템 권한 조회 연계·조회 실패 기록 없음. 권한 원천(플랫폼 vs 과금)을 명세와 합의 필요)."
     },
     "FR-BIL-001-002": {
       "verdict": "구현",
@@ -2752,22 +2786,22 @@
     "FR-GLB-001-001": {
       "verdict": "부분",
       "evidence": "정책 제약에 `country` 문맥(contracts/src/flags/evaluate.ts:60,96), 시장별 규제 Profile `contracts/src/rules/compliance-profile.ts:25-37`, 배포 게이트 시장 승인 검사 `contracts/src/rules/policy-gate.ts:192-194`",
-      "gap": "권역·법규 조건 엔터티와 정책 연계 저장, \"조건으로 연계 정책 조회\" API 없음. 글로벌 출시 관리 컴포넌트가 manifest(D05-01~07)에 없음"
+      "gap": "권역·법규 조건 엔터티와 정책 연계 저장, \"조건으로 연계 정책 조회\" API 없음. 글로벌 출시 관리 컴포넌트가 manifest(D05-01~07)에 없음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-GLB-001-002": {
       "verdict": "미구현",
       "evidence": "브랜드 속성이 데이터 모델에 없음(`VehicleSchema` contracts/src/schemas/policy.ts:81-99, grep brand 0건)",
-      "gap": "브랜드 목록(현대·기아·제네시스) 상수, 정책↔브랜드 연계, 목록 외 브랜드 400"
+      "gap": "브랜드 목록(현대·기아·제네시스) 상수, 정책↔브랜드 연계, 목록 외 브랜드 400 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-GLB-001-003": {
       "verdict": "미구현",
       "evidence": "해당 경로 없음",
-      "gap": "브랜드 식별자 조회·빈 목록 계약"
+      "gap": "브랜드 식별자 조회·빈 목록 계약 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-GLB-001-004": {
       "verdict": "미구현",
       "evidence": "해당 경로 없음",
-      "gap": "Feature Owner·시스템 관리자만 수정(403) 규칙"
+      "gap": "Feature Owner·시스템 관리자만 수정(403) 규칙 — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 TX"
     },
     "FR-FSP-001-001": {
       "verdict": "구현",
@@ -2822,27 +2856,27 @@
     "FR-CST-001-001": {
       "verdict": "미구현",
       "evidence": "규칙은 코드 고정(`contracts/src/rules/precheck.ts` DATA-PRECHECK 16종), 등록 API 없음",
-      "gap": "Rule ID·명칭·대상·조건·Severity·조치를 갖는 규칙 레지스트리(설계 충돌 주의 — 하단 참고)"
+      "gap": "Rule ID·명칭·대상·조건·Severity·조치를 갖는 규칙 레지스트리(설계 충돌 주의 — 하단 참고) — 결정 D3(b) 확정: 판단 임계값만 규칙 프로파일(버전·2인 승인·감사, P1 컴플라이언스 룰 방식), 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 묶음 RP"
     },
     "FR-CST-001-002": {
       "verdict": "부분",
       "evidence": "R01≈요구 연결 FAIL `V:175`; R02≈G5 Evidence(VERIFIED 전이 `contracts/src/rules/lifecycle.ts:26`); R03≈G4 Safe Default·Rollback `V:138`; R05≈G7 `V:175`; R07≈Baseline 체크리스트(`T/d01/registry.spec.ts:138`)",
-      "gap": "R04(L2 Variant Rule), R06(Supplier Warning), R08(API 영향 Info), R09(Owner Blocking 검사), R10(Deprecated CP 생성 차단) 미구현; 'L2' 등급 개념 없음; Severity 3단계 매핑 없음"
+      "gap": "R04(L2 Variant Rule), R06(Supplier Warning), R08(API 영향 Info), R09(Owner Blocking 검사), R10(Deprecated CP 생성 차단) 미구현; 'L2' 등급 개념 없음; Severity 3단계 매핑 없음 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 RP"
     },
     "FR-CST-001-003": {
       "verdict": "부분",
       "evidence": "GET `/api/precheck`가 규칙 정의·조건·결과 반환 `backend/src/domains/d01-policy/topology/topology.service.ts:150`",
-      "gap": "R01~R10 Consistency Rule 목록 자체 조회 아님"
+      "gap": "R01~R10 Consistency Rule 목록 자체 조회 아님 — 결정 D3(b) 확정: 판단 임계값만 규칙 프로파일(버전·2인 승인·감사, P1 컴플라이언스 룰 방식), 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 묶음 RP"
     },
     "FR-CST-001-004": {
       "verdict": "미구현",
       "evidence": "수정 API 없음",
-      "gap": "권한자 수정 + 감사 기록"
+      "gap": "권한자 수정 + 감사 기록 — 결정 D3(b) 확정: 판단 임계값만 규칙 프로파일(버전·2인 승인·감사, P1 컴플라이언스 룰 방식), 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 묶음 RP"
     },
     "FR-CST-001-005": {
       "verdict": "미구현",
       "evidence": "활성/비활성 상태 없음",
-      "gap": "비활성 Rule 검증 제외 로직"
+      "gap": "비활성 Rule 검증 제외 로직 — 결정 D3(b) 확정: 판단 임계값만 규칙 프로파일(버전·2인 승인·감사, P1 컴플라이언스 룰 방식), 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 묶음 RP"
     },
     "FR-SPM-001-001": {
       "verdict": "부분",
@@ -2967,7 +3001,7 @@
     "FR-SCN-001-004": {
       "verdict": "미구현",
       "evidence": "없음",
-      "gap": "관리자 전용 삭제·거부 메시지"
+      "gap": "관리자 전용 삭제·거부 메시지 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P4"
     },
     "FR-SCN-002-001": {
       "verdict": "구현",
@@ -3047,7 +3081,7 @@
     "FR-SVS-002-001": {
       "verdict": "부분",
       "evidence": "이상 건 분류·긴급 차단 권고 `backend/src/domains/d06-qsec/anomaly-response/anomaly.service.ts:134`; 차단 게이트 판정·거부 사유 `/api/gate/preview`; 시험 `T/d06/anomaly.spec.ts:53`, `T/d03/policy-gate.spec.ts`",
-      "gap": "플랫폼 자동 비활성화는 없음(2인 승인 Kill) — 설계 충돌 참고"
+      "gap": "플랫폼 자동 비활성화는 없음(2인 승인 Kill) — 설계 충돌 참고 — 결정 D1(a): 조건 충족 시 '중단 필요' 알림·차단 요청 생성, 미충족 사유 기록까지(자동 비활성화 없음) — 묶음 P11a"
     },
     "FR-SVS-002-002": {
       "verdict": "부분",
@@ -3190,9 +3224,10 @@
       "gap": ""
     },
     "FR-SDM-001-002": {
-      "verdict": "미구현",
+      "verdict": "범위 밖",
+      "detail": "(결정으로 제외 — D7)",
       "evidence": "서명(무결성)만, 페이로드 암호화 없음",
-      "gap": "암호화 정책 정의 후 적용(설계 확인 필요)"
+      "gap": "결정 D7(a): 정책 기밀성(암호화) 요구가 정의되지 않았다 — 서명(무결성)만, 요구가 정해지면 다시 연다."
     },
     "FR-SDM-001-003": {
       "verdict": "부분",
@@ -3222,12 +3257,12 @@
     "FR-SDM-003-001": {
       "verdict": "미구현",
       "evidence": "SHA-256(JCS)+Ed25519 코드 고정 `pki.service.ts:31`",
-      "gap": "기준 등록·조회·수정(설계 충돌 주의)"
+      "gap": "기준 등록·조회·수정(설계 충돌 주의) — 결정 D3(b) 확정: 판단 임계값만 규칙 프로파일(버전·2인 승인·감사, P1 컴플라이언스 룰 방식), 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 묶음 RP. 알고리즘 기준의 등록·수정은 결정으로 제외(조회 전용)"
     },
     "FR-SDM-003-002": {
       "verdict": "미구현",
       "evidence": "거부 코드 표 고정 `contracts/src/rules/anomaly.ts:30`",
-      "gap": "실패 판정 기준 등록·조회·수정"
+      "gap": "실패 판정 기준 등록·조회·수정 — 결정 D3(b) 확정: 판단 임계값만 규칙 프로파일(버전·2인 승인·감사, P1 컴플라이언스 룰 방식), 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 묶음 RP. 실패 판정 임계값만 편집, 거부 코드 표는 조회 전용"
     }
   },
   "defects": [],
@@ -3237,20 +3272,21 @@
       "title": "즉시·자동·외부 직접 제어",
       "spec": "즉시 비활성화, 조건 충족 시 자동 비활성화, 외부 시스템이 제어를 직접 실행",
       "design": "긴급 차단·배포는 사람 역할 + 2인 승인·직무 분리(SOD-08, FFG-PLT-005)",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-POL-001-005",
         "FR-KSW-002-004",
         "FR-SVS-002-001",
         "FR-AGW-001-002"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (a) 2인 승인 긴급 차단 유지 — 자동은 '중단 필요' 알림, 외부 시스템은 '차단 요청 접수'까지(P11a). 즉시·자동 문구는 명세 정정"
     },
     {
       "id": "D2",
       "title": "삭제",
       "spec": "Feature·정책·관계·Variant·조건·규칙·시나리오 삭제",
       "design": "승인 후 불변·새 Version, 대체 시 RETIRED, 기록 보존·ID 재사용 금지(FFG-CODE-020) — \"폐기·미사용 표시\"로 재정의 권장",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-REG-001-013",
         "FR-DEP-001-005",
@@ -3263,55 +3299,59 @@
         "FR-TGT-003-003",
         "FR-PDA-001-007",
         "FR-SCN-001-004"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (b) 승인 전 초안은 삭제(승인 이력·참조 없음, 삭제 사실 감사, ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — F0 공용 규칙 → P10·P11b·P12·P4"
     },
     {
       "id": "D3",
       "title": "판단 규칙·무결성 기준을 화면에서 관리",
       "spec": "정합성 규칙·무결성 검증값·실패 기준 등록·수정·활성화",
       "design": "판단 규칙은 contracts 한 곳 + 골든 시험 고정, 해시·서명 알고리즘·거부 코드는 코드 고정(FFG-SEC-002) — 허용하려면 버전·승인·감사가 붙은 규칙 프로파일",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-CST-001-001",
         "FR-CST-001-004",
         "FR-CST-001-005",
         "FR-SDM-003-001",
         "FR-SDM-003-002"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (b) 판단 임계값만 버전·2인 승인·감사가 붙은 규칙 프로파일(RP), 해시·서명 알고리즘·거부 코드는 코드 고정(알고리즘 등록·수정은 제외)"
     },
     {
       "id": "D4",
       "title": "fail-closed 완화",
       "spec": "미승인 룰은 무시, 예외 승인·임시 우회, 최신성 미충족이면 판단하지 않고 메시지, 중단 기준을 충족해야만 중단",
       "design": "근거 없으면 막음(FFG-LCY-002), 판단 불가는 HOLD → Safe Default, 멈추기(0%)는 언제나 허용",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-CRC-001-017",
         "FR-REG-005-010",
         "FR-EXC-",
         "FR-ROL-002-008",
         "FR-SUP-004-003"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (c) 명세대로 — 예외 승인·임시 우회·미승인 룰 제외 + 2인 승인·만료·자동 원복·감사(GX). 우회 불가 4가지: 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%) 언제나 가능. FR-ROL-002-008은 중단 기준 충족 여부를 기록만, 중단은 항상 허용(미충족 중단은 사유 필수)"
     },
     {
       "id": "D5",
       "title": "개인정보·동적 차량 상태",
       "spec": "userId·remoteAddress 원문 수집, 사용자·계정 타겟팅, 주행·정차·충전 조건",
       "design": "가명 subject·원본 식별자 금지(FFG-OFT-003/004), 동적 차량 상태는 문맥 금지 속성 — 차량 Guard(DC1·DC3)가 처리",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-OPD-001-004",
         "FR-TGT-002-002",
         "FR-SUP-003-002",
         "FR-RTE-005-002"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (a) 가명만·원문 금지 유지, 동적 차량 상태는 차량 Guard — 3건 결정으로 제외, FR-OPD-001-004는 원문 부분만 제외"
     },
     {
       "id": "D6",
       "title": "평가 의미",
       "spec": "정책 우선순위·동순위 충돌 해소, boolean 외 분기값(getVariant), 대상/제외 2분류",
       "design": "제어점당 배포 정책 1건(BD-06)·전략 OR, 차량 flag boolean 전용(FP-VEHICLE-BOOL-1), ALLOW·DENY·HOLD 3분류",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-POL-002-003",
         "FR-CON-001-004",
@@ -3321,14 +3361,15 @@
         "FR-EVT-001-002",
         "FR-TGT-005-",
         "FR-TGT-004-002"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (a) 제어점당 정책 1건·차량 flag boolean·ALLOW/DENY/HOLD 3분류 유지 — 10건 결정으로 제외·FR-TGT-004-002 대응 정의. 정책 간 대상 겹침 탐지(FR-TGT-005-002)는 P12에서 구현"
     },
     {
       "id": "D7",
       "title": "플랫폼 범위 경계",
       "spec": "SW 버전 롤백·빌드 산출물·OTA 차량 상태, 과금 시스템이 권한 원천, 원천 덮어쓰기 동기화, 레거시 실시간 제어, 정책 암호화",
       "design": "SW 전개는 OTA(IF-05) 위임, 권한 원천은 플랫폼 원장(D01-05), 동기화는 대사만(FFG-TEL-005), 레거시 F2+ 거부, 기밀성 요구 미정의",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-RBK-001-003",
         "FR-QGV-001-",
@@ -3338,14 +3379,15 @@
         "FR-DSYN-001-002",
         "FR-SDVI-001-001",
         "FR-SDM-001-002"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (a) 기본 경계 — SW 전개·롤백·빌드 산출물은 OTA·CI/CD 위임, 권한 원천은 플랫폼 원장, 동기화는 대사만, 레거시 F2+ 거부, 암호화는 요구가 정해지면"
     },
     {
       "id": "D8",
       "title": "데이터 모델",
       "spec": "Taxonomy L0~L5, 적용 지역 코드(1~9·A~D·G)·Variant Rule, 브랜드 속성",
       "design": "태그, 시장 구분(UNECE/EU/CN/US…) + Feature 국가·차종·트림, 브랜드 없음",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-CAT-001-",
         "FR-CAT-004-",
@@ -3355,16 +3397,38 @@
         "FR-GLB-001-002",
         "FR-GLB-001-003",
         "FR-GLB-001-004"
-      ]
+      ],
+      "resolution": "2026-11-07 확정 (b) Feature DB 분류 표 L0~L5 확장·노드 배치·브랜드 3종·지역 코드↔시장 대응 표(TX). Variant Rule은 독립 엔티티가 아니라 기존 Variant 조건 + 26580 구성 규칙으로 대응"
     },
     {
       "id": "D9",
       "title": "출시 전 배포",
       "spec": "출시 Gate(G8·G9)를 통과하지 않은 Feature는 활성화하지 않는다",
       "design": "정책 배포는 Feature가 VERIFIED여도 가능 — 배포와 출시(RELEASED)가 분리되어 있다",
-      "status": "결정 대기",
+      "status": "결정됨",
       "requirements": [
         "FR-RDD-001-006"
+      ],
+      "resolution": "2026-11-07 확정 (c) 출시 Gate(G8·G9) 전에는 Shadow(차량 동작 안 바꿈)만 배포, 실제 켜기는 출시 뒤(GX)"
+    },
+    {
+      "id": "D-GAP-1",
+      "title": "역할 정의 관리·소유자 인가",
+      "spec": "시스템 관리자가 역할을 등록·수정·삭제, Feature Owner·시스템 관리자 기준 인가",
+      "design": "역할은 계약 고정 enum(ROLES)·권한은 ROUTES 파생, 업무 절차 IAM 정합성 게이트",
+      "status": "결정됨",
+      "resolution": "2026-11-07 확정 역할 정의는 계약 고정(역할 CRUD 3건 결정으로 제외), SYSTEM_ADMIN 역할 1개·Owner(ownerId) 인가 도우미는 F0, 적용은 P11b·P12·TX",
+      "requirements": [
+        "FR-RBAC-001-001",
+        "FR-RBAC-001-003",
+        "FR-RBAC-001-004",
+        "FR-CRC-001-020",
+        "FR-PDA-001-006",
+        "FR-SUP-001-004",
+        "FR-SUP-002-004",
+        "FR-TGT-003-002",
+        "FR-VAR-001-004",
+        "FR-GLB-001-004"
       ]
     }
   ],
@@ -3457,6 +3521,45 @@
         "FR-QGV-001-005"
       ],
       "detail": "001-003(패키징 결과 수집)의 상세 설명이 001-005(배포 산출물 식별) 문구다"
+    },
+    {
+      "ids": [
+        "FR-POL-001-005",
+        "FR-KSW-002-004"
+      ],
+      "detail": "결정 D1: '즉시 비활성화'를 '2인 승인 긴급 차단 — 승인 뒤 서버 판단 즉시 Safe Default'로 고친다"
+    },
+    {
+      "ids": [
+        "FR-ROL-002-008"
+      ],
+      "detail": "확정 2: '중단 기준을 충족해야만 중단'을 '중단 기준 충족 여부를 기록하고 중단은 언제나 허용(미충족이면 사유 필수)'로 고친다"
+    },
+    {
+      "ids": [
+        "FR-TGT-004-002"
+      ],
+      "detail": "결정 D6: 판정 2분류(대상/제외)를 3분류(ALLOW = 대상, DENY·HOLD = 제외, HOLD는 Safe Default)로 고친다"
+    },
+    {
+      "ids": [
+        "FR-CST-001-002",
+        "FR-DSV-001-002",
+        "FR-PDA-001-004",
+        "FR-KSW-001-002",
+        "FR-KSW-002-003",
+        "FR-KSW-003-001",
+        "FR-REG-005-002",
+        "FR-CRC-001-003"
+      ],
+      "detail": "결정 D8: 명세의 Variant Rule은 독립 엔티티가 아니라 기존 Variant 조건(d02-runtime/variant-conditions) + ISO 26580 구성 규칙으로 읽는다(30-95 §Variant Rule 대응)"
+    },
+    {
+      "ids": [
+        "FR-SDM-003-001",
+        "FR-SDM-003-002"
+      ],
+      "detail": "결정 D3: 무결성 '기준 등록·수정'은 판단 임계값에 한정 — 해시·서명 알고리즘·거부 코드 표는 조회만"
     }
   ]
 }

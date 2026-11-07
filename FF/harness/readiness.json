@@ -741,7 +741,7 @@
         "tools/load/run.ts",
         "harness/perf-budgets.json",
         "backend/test/kernel/query-plans.spec.ts",
-        "../docs/20-architecture/20-92-performance.md"
+        "../docs/20-architecture/20-95-performance.md"
       ],
       "criteria": "주요 API(OFREP·Feature·대시보드·감사/이벤트 커서·차량 채널·게이트·Kill) 부하 시험과 p95 예산, 전체 훑기·N+1 회귀 시험, 동기 SQLite 이벤트 루프 막힘 측정·남은 한계 문서",
       "status": "done",
@@ -760,7 +760,7 @@
         },
         {
           "kind": "match",
-          "path": "../docs/20-architecture/20-92-performance.md",
+          "path": "../docs/20-architecture/20-95-performance.md",
           "pattern": "이벤트 루프"
         }
       ]

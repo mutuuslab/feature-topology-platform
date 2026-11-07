@@ -701,7 +701,7 @@ CREATE TABLE privacy_request (request_id TEXT PRIMARY KEY, status TEXT NOT NULL 
 `,
   },
   {
-    // 부하 시험(출시 준비 RD-P2-01, tools/load) 결과 색인 — 측정 전후는 docs/20-architecture/20-92-performance.md.
+    // 부하 시험(출시 준비 RD-P2-01, tools/load) 결과 색인 — 측정 전후는 docs/20-architecture/20-95-performance.md.
     //  · events_at·audit_at: 컴포넌트 최근 활동(at 범위)이 이벤트·감사 전체를 훑던 것(100만 행에서 요청 하나 6 s 루프 막힘)
     //  · events_component_seq: 컴포넌트별 마지막 이벤트 유형(부질의)
     //  · audit_unhashed: 부팅 때 해시 없는 감사 행 찾기(채우기)가 매번 전체를 훑던 것 — 부분 색인이라 평소엔 비어 있다

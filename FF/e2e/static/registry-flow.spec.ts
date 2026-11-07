@@ -1,4 +1,4 @@
-// 공개 시연 사이트 — Feature Registry 흐름을 브라우저 안 시연 데이터로 끝까지(설계 docs/20-architecture/20-60-browser-simulator.md, handlers/registry).
+// 공개 시연 사이트 — Feature Registry 흐름을 브라우저 안 시연 데이터로 끝까지(설계 docs/20-architecture/20-61-browser-simulator.md, handlers/registry).
 //  ① 제안(Feature 등록) → 안전 분류 확정·HARA(기능안전) → Gate G1~G3(품질) → 정의 승인(구성 승인) → Baseline 요청(작성) → 결정(PLM 기준정보)
 //  ② Release Sign-off(Feature Owner) → 출시(출시 담당) — 알림 종·감사가 같은 상태
 //  ③ Feature DB 변경 요청(작성) → 도메인 검토(구성 승인) → 승인(Feature DB 관리자) + 업무 절차 활동 완료 → 다음 담당 검토함

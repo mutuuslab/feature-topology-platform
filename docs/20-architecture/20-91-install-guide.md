@@ -204,7 +204,7 @@ IdP에 등록할 값:
 | `SIM_MODE` | | `off` | 가상 검증 실행기 — 운영 모드는 off |
 | `FF_EXT_SYNC_SEED` | | `0` | 외부 연계 예시 항목 — 운영 모드는 0 |
 | `GITLAB_WEBHOOK_TOKEN` · `JIRA_WEBHOOK_SECRET` · `CODEBEAMER_WEBHOOK_SECRET` | 연계하면 ✓ 비밀 | 비움 = 그 webhook 모두 401 | 외부 시스템 webhook 설정과 같은 새 값(공개된 모의 값은 거부) |
-| `FF_RETENTION_IDEMPOTENCY_DAYS` · `FF_RETENTION_SPAN_DAYS` · `FF_RETENTION_EVENT_DAYS` | | `7` · `30` · `0` | 운영 보조 저장소 보존 일수(§9.4). 0 = 지우지 않음. 이벤트 이력 일수는 사용자 결정 대기(D-RD-9) |
+| `FF_RETENTION_IDEMPOTENCY_DAYS` · `FF_RETENTION_SPAN_DAYS` · `FF_RETENTION_EVENT_DAYS` | | `7` · `30` · `0` | 운영 보조 저장소 보존 일수(§9.4). 0 = 지우지 않음. 이벤트 이력은 기본 지우지 않음이 확정값(D-RD-9, 2026-11-07) — 고객 정책이 있으면 `FF_RETENTION_EVENT_DAYS`(일)로 켠다 |
 | `FF_RETENTION_SESSION_DAYS` · `FF_RETENTION_NOTIFICATION_DAYS` · `FF_RETENTION_AUDIT_IDENTITY_DAYS` | | `30` · `0` · `0` | 개인정보 보존 기한(§9.4) — 끝난 세션 삭제(만료 뒤 일수)·알림 삭제·감사 사람 행위자 식별 가명 처리. 0 = 하지 않음 |
 | `FF_LAKE_URL` · `FF_LAKE_TOKEN` | 함께, 운영은 https | 비움 = 보내지 않음 | Data Lake 가명 단위 삭제 요청(IF-15 `POST /v1/erasure`, §9.5) — 비우면 차량 삭제 요청은 `NOT_CONNECTED`로 남는다 |
 | `FF_BACKUP_DIR` · `FF_BACKUP_KEEP_DAYS` | | `/var/backups/ff` · `35` | 백업 폴더·보관 일수(§9) |
@@ -336,7 +336,7 @@ curl -s http://127.0.0.1:9101/api/health/ready                       # 5) ready
 | 보안 로그(`security_event`) | 3년 | UN R155 — 하루 한 번 자동 정리(D04-03, 열린 Incident·이상 건에 묶인 행은 남긴다) |
 | 상태 보고·적용 확인(readback) | 730일 | UN ADS GTR 제안 — 같은 자동 정리 |
 | 차량 발신 보고 | 30일 | GDPR·PIPL 목적 달성 후 삭제 — 같은 자동 정리 |
-| 이벤트 이력(`events`) | 기본 지우지 않음(`FF_RETENTION_EVENT_DAYS=0`) | 이벤트 이력 화면·알림·Data Lake 라벨이 읽는다. 일수는 사용자 결정 대기(**D-RD-9**) — 고객 정책이 정해지면 일수로 켠다 |
+| 이벤트 이력(`events`) | 기본 지우지 않음(`FF_RETENTION_EVENT_DAYS=0`) | 이벤트 이력 화면·알림·Data Lake 라벨이 읽는다. 기본 지우지 않음이 확정값(**D-RD-9**, 2026-11-07) — 고객 정책이 정해지면 `FF_RETENTION_EVENT_DAYS`(일)로 켠다 |
 | 멱등 키(재전송 응답) | 7일(`FF_RETENTION_IDEMPOTENCY_DAYS`) | 그 뒤 같은 키는 새 요청으로 처리된다 |
 | 추적 스팬(`otel_span`) | 30일(`FF_RETENTION_SPAN_DAYS`) | IF-11 모의 수집기 표 |
 | 로그인 세션 | 절대 8시간·유휴 60분, 끝난 세션 행은 만료 뒤 30일에 삭제 | `FF_SESSION_TTL_MIN`·`FF_SESSION_IDLE_MIN` · `FF_RETENTION_SESSION_DAYS`(개인정보) |

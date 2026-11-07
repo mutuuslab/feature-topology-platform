@@ -1,4 +1,4 @@
-// 공개 시연 사이트 — 정책 운영 흐름을 브라우저 안 시연 데이터로 끝까지(설계 docs/20-architecture/20-60-browser-simulator.md, api/sim/handlers/policy-ops).
+// 공개 시연 사이트 — 정책 운영 흐름을 브라우저 안 시연 데이터로 끝까지(설계 docs/20-architecture/20-61-browser-simulator.md, api/sim/handlers/policy-ops).
 // (작성) 정책 작성 → 가상검증 → 분야별 검증 8종 GO → (승인) 정책 승인 → (출시) 서버 배포: F3 Feature라 Canary 5% → (운영) 확대 시도는 관측 기간·
 // 열린 이상 징후로 거부 → 이상 징후 확인 → (출시) 수동 롤백 요청(지정 승인대상자) → (운영 리더) 승인 → (출시) 실행: 복구 기준 버전 재게시 → 차량 회신 →
 // 끊긴 차량 다시 제출 → 롤백 완료 → Unleash 대조 화면이 바뀐 배포를 본다 → '시연 데이터 초기화'로 처음 상태. 단계별 화면은 SHOTS 폴더(1366 폭)에.

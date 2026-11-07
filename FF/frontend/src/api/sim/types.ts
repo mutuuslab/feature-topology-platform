@@ -1,4 +1,4 @@
-// 시연 데이터(브라우저 안 쓰기) 공용 형 — 설계: docs/20-architecture/20-60-browser-simulator.md
+// 시연 데이터(브라우저 안 쓰기) 공용 형 — 설계: docs/20-architecture/20-61-browser-simulator.md
 // 정적 공개 사이트에서 쓰기 요청을 서버 대신 이 브라우저 안에서 처리한다. 바뀐 것만 오버레이에 두고 스냅샷 위에 덮어 보인다.
 import type { Role, RouteDef } from '@ff/contracts';
 import type { PlatformEvent } from '../shared-event-source';

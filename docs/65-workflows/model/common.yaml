@@ -182,6 +182,13 @@ roles:
     desc: 단가·계수 표의 새 버전을 만들고 발행한다. 발행해도 이미 승인된 산정 결과는 바뀌지 않는다.
     platform_roles: [COST_BASIS_ADMIN]
     basis: "보고서 어휘 밖. 20-94 IAM COST_BASIS_ADMIN, 데모 계정 approver"
+  - id: R-SYS
+    name: 시스템 관리자
+    en: System Administrator
+    source: iam
+    desc: 퇴사·전보한 계정을 비활성으로 기록하고, 소유자가 없거나 비활성인 기록의 소유자를 담당 역할의 다른 계정으로 옮긴다. 기록 내용은 고치지 않는다.
+    platform_roles: [SYSTEM_ADMIN]
+    basis: "보고서 어휘 밖. D-GAP-1(2026-11-07) IAM SYSTEM_ADMIN — deactivateAccount·reactivateAccount·transferComplianceRuleOwner, 데모 계정 sysadmin"
 # ── 부서(OEM 조직 가정안, 2026-11-04 사용자 결정) ──────────────────
 # 역할 카탈로그 위에 얹는 층이다. 모든 역할은 정확히 한 부서에 속한다(부서 겸직 허용 — 요청자·승인자 분리는 사람 단위로 플랫폼이 강제).
 # workspace: 그 부서가 쓰는 화면 유형. studio(기획팀)·review(심사 결재함)·console(엔지니어링 콘솔)·control(관제실)·portal(검토 포털)
@@ -263,9 +270,9 @@ departments:
     name: IT인프라·보안운영팀
     en: IT Infrastructure & SecOps
     workspace: control
-    roles: [R-PKI]
-    personas: [viewer]
-    desc: HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회).
+    roles: [R-PKI, R-SYS]
+    personas: [sysadmin]
+    desc: HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회). 플랫폼 계정 상태와 소유자가 없는 기록의 소유자 이관을 맡는다.
   - id: DEP-PUR
     name: 구매팀
     en: Procurement

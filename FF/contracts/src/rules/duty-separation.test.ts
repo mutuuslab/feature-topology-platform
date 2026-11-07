@@ -25,7 +25,7 @@ describe('IAM 직무 분리 (FFG-PLT-016)', () => {
     expect(dutiesOf(DEMO_PERSONAS.opslead)).toEqual(['KILL_EXECUTION']);
     expect(dutiesOf(DEMO_PERSONAS.safety2)).toEqual(['RESTORE_APPROVAL']);
     expect(dutiesOf(DEMO_PERSONAS.productowner)).toEqual(['REQUIREMENT_APPROVAL']);
-    expect(Object.keys(DEMO_PERSONAS)).toHaveLength(12);
+    expect(Object.keys(DEMO_PERSONAS)).toHaveLength(13); // + 시스템 관리자 sysadmin(D-GAP-1)
   });
 
   it('FFG-PLT-016 긴급 권한 사후 검토자는 그 명령의 요청자·승인자가 아니다', () => {

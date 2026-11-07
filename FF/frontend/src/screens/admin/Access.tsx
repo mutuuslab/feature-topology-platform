@@ -11,6 +11,7 @@ import { ko } from '../../copy/ko';
 import { configLinks } from '../../copy/ads-config';
 import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, RuleText, SummaryLine, VerdictBadge } from '../../design';
 import { CodeFreeText, ComponentName, when } from '../shared';
+import { AccountsPanel } from './AccountsPanel';
 
 const I = ko.iam;
 const VC = ko.variant;
@@ -127,6 +128,7 @@ export function IamScreen() {
           </AsyncView>
         </Panel>
       </div>
+      <AccountsPanel />
     </div>
   );
 }

@@ -560,13 +560,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "id": "DEP-ITSEC",
    "name": "IT인프라·보안운영팀",
    "en": "IT Infrastructure & SecOps",
-   "desc": "HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회).",
+   "desc": "HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회). 플랫폼 계정 상태와 소유자가 없는 기록의 소유자 이관을 맡는다.",
    "workspace": "control",
    "roles": [
-    "R-PKI"
+    "R-PKI",
+    "R-SYS"
    ],
    "personas": [
-    "viewer"
+    "sysadmin"
    ],
    "screens": {
     "primary": [

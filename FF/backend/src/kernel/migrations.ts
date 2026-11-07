@@ -1324,4 +1324,27 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // 초안 삭제 묘비(F0, 결정 D2 (b)) — 배정 대역 181~은 잠근 191_ads_p5보다 앞이라 새 항목 규칙(잠근 마지막 뒤)에 맞춰 192·193을 쓴다 — 지운 초안의 ID·마지막 모습·사유. 같은 ID·일련번호를 다시 쓰지 않는다(FFG-CODE-020). 추가만
+    name: '192_deletion_tombstone',
+    sql: `
+CREATE TABLE deletion_tombstone (entity TEXT NOT NULL, record_id TEXT NOT NULL, deleted_by TEXT NOT NULL, deleted_at TEXT NOT NULL, reason TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (entity, record_id));
+CREATE TRIGGER deletion_tombstone_no_update BEFORE UPDATE ON deletion_tombstone BEGIN SELECT RAISE(ABORT, 'deletion_tombstone은 추가만 가능'); END;
+CREATE TRIGGER deletion_tombstone_no_delete BEFORE DELETE ON deletion_tombstone BEGIN SELECT RAISE(ABORT, 'deletion_tombstone은 추가만 가능'); END;
+`,
+  },
+  {
+    // 계정 상태·소유자 이관(F0, D-GAP-1·B13) — 시스템 관리자의 비활성·재활성 기록, 소유자가 없거나 비활성인 기록의 소유자 이관. 둘 다 추가만
+    name: '193_account_owner_transfer',
+    sql: `
+CREATE TABLE account_status_change (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('ACTIVE','INACTIVE')), by_actor TEXT NOT NULL, at TEXT NOT NULL, reason TEXT NOT NULL);
+CREATE INDEX account_status_change_account ON account_status_change (account_id, id);
+CREATE TRIGGER account_status_change_no_update BEFORE UPDATE ON account_status_change BEGIN SELECT RAISE(ABORT, 'account_status_change는 추가만 가능'); END;
+CREATE TRIGGER account_status_change_no_delete BEFORE DELETE ON account_status_change BEGIN SELECT RAISE(ABORT, 'account_status_change는 추가만 가능'); END;
+CREATE TABLE owner_transfer (id INTEGER PRIMARY KEY AUTOINCREMENT, entity TEXT NOT NULL, record_id TEXT NOT NULL, from_owner TEXT, from_state TEXT NOT NULL CHECK (from_state IN ('INACTIVE','ABSENT')), to_owner TEXT NOT NULL, by_actor TEXT NOT NULL, at TEXT NOT NULL, reason TEXT NOT NULL);
+CREATE INDEX owner_transfer_record ON owner_transfer (entity, record_id, id);
+CREATE TRIGGER owner_transfer_no_update BEFORE UPDATE ON owner_transfer BEGIN SELECT RAISE(ABORT, 'owner_transfer는 추가만 가능'); END;
+CREATE TRIGGER owner_transfer_no_delete BEFORE DELETE ON owner_transfer BEGIN SELECT RAISE(ABORT, 'owner_transfer는 추가만 가능'); END;
+`,
+  },
 ];

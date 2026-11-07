@@ -82,6 +82,7 @@ export const ROLES = [
   'COST_BASIS_ADMIN', // 원가 기준 관리자 — 계수·단가·환율 표 버전 발행 (D-COST-8)
   'SYSTEM', // 시스템(Registry) 자동 전이
   'VEHICLE', // 차량 (차량 발신 요청 채널 — 사람 역할 아님)
+  'SYSTEM_ADMIN', // 시스템 관리자(D-GAP-1) — 계정 상태·소유자가 없는 기록의 소유자 이관만. 기록 내용 수정·승인 권한은 없다(rules/owner-authz.ts)
 ] as const;
 export const Role = z.enum(ROLES);
 export type Role = z.infer<typeof Role>;
@@ -110,6 +111,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   AUDITOR: '운영·감사 조회자',
   SYSTEM: '시스템',
   VEHICLE: '차량',
+  SYSTEM_ADMIN: '시스템 관리자',
 };
 
 /** ID 형식 (ID_체계_안내) */

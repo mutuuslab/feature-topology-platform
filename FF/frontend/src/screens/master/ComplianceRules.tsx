@@ -32,6 +32,7 @@ import { DEMO_ACCOUNTS } from '../../data/demoAccounts';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, Panel, Segmented, Select, SummaryLine, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 import { personLabel } from '../ops/shared';
+import { OwnerTransferPanel } from './OwnerTransfer';
 
 const ROLES = COMPLIANCE_RULE_ROLES as readonly Role[];
 const INVALIDATE = ['complianceRules', 'complianceRule', 'complianceValidations', 'complianceRulesApplicable'];
@@ -244,6 +245,7 @@ function RuleDrawer({ ruleId, onClose, onEdit }: { ruleId: string; onClose: () =
                 <ErrorNote error={decide.error} />
               </Panel>
             )}
+            <OwnerTransferPanel ruleId={r.ruleId} ownerId={r.ownerId} ownerState={q.data!.ownerState} transfers={q.data!.ownerTransfers} />
             <DataTable
               caption={D.versions}
               rows={q.data!.versions}

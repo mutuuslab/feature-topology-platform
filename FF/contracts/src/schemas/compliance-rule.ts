@@ -196,4 +196,8 @@ export interface ComplianceRuleDetail {
   versions: ComplianceRuleVersion[];
   changes: ComplianceRuleChange[];
   requests: ComplianceApprovalRequest[];
+  /** 소유자 계정 상태(F0) — 없거나 비활성이면 시스템 관리자가 소유자를 이관할 수 있다 */
+  ownerState?: AccountState;
+  /** 소유자 이관 이력(추가만, 오래된 순) */
+  ownerTransfers?: OwnerTransfer[];
 }

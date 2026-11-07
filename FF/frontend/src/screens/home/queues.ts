@@ -108,4 +108,5 @@ export const ROLE_FOCUS: Record<string, QueueKey[]> = {
   opslead: ['kill', 'restore', 'finding', 'modelUse'],
   safety2: ['restore', 'kill', 'gate'],
   productowner: ['product'],
+  sysadmin: [], // 시스템 관리자 — 결재 대기열이 없다(계정 상태·소유자 이관은 플랫폼 인증·권한 화면)
 };

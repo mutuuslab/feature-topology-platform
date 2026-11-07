@@ -21,7 +21,7 @@ test.describe('외부 도구 별도 창 · 담당자별 연계', () => {
       const tab = page.getByTestId('ext-links');
       await expect(tab).toBeVisible();
 
-      const [cb] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: 'CodeBeamer 새 창 열기' }).first().click()]);
+      const [cb] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: /^codeBeamer .*새 창 열기$/ }).first().click()]);
       await expect(cb).toHaveURL(new RegExp(`/external.html\\?system=codebeamer&key=${trace.requirements[0].key}&role=${role}`));
       await expect(cb.getByText('가상 연계 시연', { exact: true })).toBeVisible();
       await expect(cb.getByRole('heading', { name: trace.requirements[0].title, exact: true })).toBeVisible();
@@ -55,7 +55,7 @@ test.describe('외부 도구 별도 창 · 담당자별 연계', () => {
         }
       }
 
-      const [jira] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: 'JIRA 새 창 열기' }).first().click()]);
+      const [jira] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: /^Jira .*새 창 열기$/ }).first().click()]);
       await expect(jira).toHaveURL(new RegExp(`/external.html\\?system=jira&key=${trace.epic.key}&role=${role}`));
       await expect(jira.getByText('가상 연계 시연', { exact: true })).toBeVisible();
       await expect(jira.getByRole('button', { name: '보드', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -77,7 +77,7 @@ test.describe('외부 도구 별도 창 · 담당자별 연계', () => {
   test('작성자의 JIRA 승인 요청은 플랫폼에서 거부되고 별도 창에도 되돌린 상태가 표시된다', async ({ page, context, request }) => {
     await asRole(page, 'author');
     await page.goto('/features/FEAT-00013/0.3.0?tab=ext');
-    const [jira] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: 'JIRA 새 창 열기' }).first().click()]);
+    const [jira] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: /^Jira .*새 창 열기$/ }).first().click()]);
     await jira.getByRole('combobox', { name: '상태', exact: true }).selectOption('Approved');
     await jira.getByRole('button', { name: '상태 변경 요청' }).click();
     await expect(jira.getByRole('status', { name: '플랫폼 수신 결과' })).toContainText('거부·되돌림');
@@ -95,7 +95,7 @@ test.describe('외부 도구 별도 창 · 담당자별 연계', () => {
     await page.goto('/integration/connectors?tab=sync');
     await expect(page.getByRole('link', { name: 'Flag 소스', exact: true })).toHaveAttribute('href', /^https:\/\/github\.com\/mutuuslab\/feature-topology-platform\/blob\/[0-9a-f]{40}\//);
     await expect(page.getByRole('link', { name: /스캔한 커밋/ })).toHaveAttribute('href', /\/commit\/[0-9a-f]{40}$/);
-    const [github] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: 'GitHub PR #9 새 창 열기' }).click()]);
+    const [github] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name: /^GitHub .*PR #9.*새 창 열기$/ }).click()]);
     await expect(github).toHaveURL(PR);
     // Playwright는 생성 관계를 보존한다. 실제 페이지의 opener 접근이 차단됐는지를 본다.
     expect(await github.evaluate(() => window.opener === null)).toBe(true);

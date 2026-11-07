@@ -81,11 +81,11 @@ describe('화면 연결', () => {
 
   it('Feature 상세 외부 도구 — 스택 주소가 있으면 이 Feature 지표 카드, 없으면 카드가 없다', async () => {
     mount('/features/FEAT-00022/1.0.0', <ExternalToolLaunchers featureId="FEAT-00022" version="1.0.0" />);
-    expect(screen.queryByRole('link', { name: 'Grafana 새 창 열기' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^Grafana .*새 창 열기$/ })).toBeNull();
     cleanup();
     vi.stubEnv('VITE_GRAFANA_URL', STACK);
     mount('/features/FEAT-00022/1.0.0', <ExternalToolLaunchers featureId="FEAT-00022" version="1.0.0" />);
-    const card = screen.getByRole('link', { name: 'Grafana 새 창 열기' });
+    const card = screen.getByRole('link', { name: /^Grafana .*새 창 열기$/ });
     expect(card.getAttribute('href')).toContain('/d/ff-feature-health?var-feature=FEAT-00022&var-feature_version=1.0.0');
     expect(card.textContent).toContain('이 Feature 지표');
   });

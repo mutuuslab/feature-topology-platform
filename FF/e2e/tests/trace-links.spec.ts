@@ -11,8 +11,8 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 async function noSeriousAxe(page: Page) {
-  // 머리의 외부 도구 바로가기(codeBeamer·JIRA·GitHub 이름 불일치)는 이 묶음 밖의 기존 부품 — 추적 연결 영역만 본다
-  const r = await new AxeBuilder({ page }).include('.ds-screen').exclude('.external-launcher, a[data-tool]').analyze();
+  // 머리의 외부 도구 바로가기(codeBeamer·JIRA·GitHub)도 함께 본다 — 보이는 글자가 접근 이름에 들어가야 한다(label-content-name-mismatch, 통합 3차에서 고침)
+  const r = await new AxeBuilder({ page }).include('.ds-screen').analyze();
   expect(r.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`)).toEqual([]);
 }
 
@@ -102,7 +102,8 @@ test('Topology: 관계 유형 칩으로 거르고, 새 관계 유형으로 등�
 
   await page.goto('/analysis/impact?feature=FEAT-00145&version=5.4.2&tab=scope');
   const scope = page.locator('[data-ui="impactScope"]');
-  await expect(scope).toContainText('POL-00001');
+  // 정책 번호는 시드(정적 시연 주인공 재배치, 통합 12단계)에 따라 바뀐다 — 이 Feature에 직접 걸린 정책이 있는지만 본다
+  await expect(scope).toContainText(/POL-\d{5} [A-Z]+adas_00145_\w+ · FEAT-00145 · 직접/);
   await expect(scope).toContainText('sw-care-sdist-app-1.2.1.pkg');
   await expect(scope).toContainText('범위 차량');
 });

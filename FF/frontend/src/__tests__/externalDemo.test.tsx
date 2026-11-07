@@ -107,12 +107,12 @@ describe('외부 도구 창 연결', () => {
     localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'approver' }));
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     mount(<ExternalToolLaunchers />, true);
-    const cb = screen.getByRole('link', { name: 'CodeBeamer 새 창 열기' });
+    const cb = screen.getByRole('link', { name: /^codeBeamer .*새 창 열기$/ });
     expect(cb.getAttribute('href')).toBe('/external.html?system=codebeamer&role=approver');
     fireEvent.click(cb);
     expect(open).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledWith(expect.stringContaining('/external.html?system=codebeamer&role=approver'), '_blank', expect.stringContaining('popup=yes,noopener,noreferrer'));
-    expect(screen.getByRole('link', { name: 'GitHub PR #9 새 창 열기' }).getAttribute('href')).toBe(GITHUB_PR_URL);
+    expect(screen.getByRole('link', { name: /^GitHub .*PR #9.*새 창 열기$/ }).getAttribute('href')).toBe(GITHUB_PR_URL);
     expect((await screen.findByRole('link', { name: 'Flag 소스' })).getAttribute('href')).toBe(source.url);
     expect(screen.getByRole('link', { name: /스캔한 커밋/ }).getAttribute('href')).toBe(`${source.repository}/commit/${source.commit}`);
     expect(screen.getAllByText('가상 연계 시연')).toHaveLength(2);

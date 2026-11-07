@@ -142,7 +142,16 @@ describe('외부 도구 공식 로고', () => {
 
   it('바로가기 카드는 codeBeamer·Jira 로고로 도구를 표시한다', () => {
     mount(<ExternalToolLaunchers />, true);
-    expect(within(screen.getByRole('link', { name: 'CodeBeamer 새 창 열기' })).getByRole('img', { name: 'codeBeamer' })).toHaveAttribute('src', '/brand/codebeamer-logo.png');
-    expect(within(screen.getByRole('link', { name: 'JIRA 새 창 열기' })).getByRole('img', { name: 'Jira' })).toHaveAttribute('src', '/brand/jira-logo.png');
+    expect(within(screen.getByRole('link', { name: /^codeBeamer .*새 창 열기$/ })).getByRole('img', { name: 'codeBeamer' })).toHaveAttribute('src', '/brand/codebeamer-logo.png');
+    expect(within(screen.getByRole('link', { name: /^Jira .*새 창 열기$/ })).getByRole('img', { name: 'Jira' })).toHaveAttribute('src', '/brand/jira-logo.png');
+    // 접근 이름 = 보이는 글자(로고·상태·할 일·키) + 낭독용 '새 창 열기' — 따로 붙인 aria-label이 보이는 글자를 빼면 axe label-content-name-mismatch(통합 3차)
+    for (const a of document.querySelectorAll<HTMLAnchorElement>('a.external-launcher, a.external-launcher__github')) {
+      expect(a.getAttribute('aria-label')).toBeNull();
+      const visible = [...a.querySelectorAll('span:not(.ds-sr)')].filter((s) => !s.querySelector('span')).map((s) => s.textContent!.trim()).filter(Boolean);
+      // 보이는 글자가 순서대로 이름 안에 있고, 끝은 낭독용 '새 창 열기'
+      const inOrder = (n: string) => visible.reduce((at, v) => (at < 0 ? at : n.indexOf(v, at) < 0 ? -1 : n.indexOf(v, at) + v.length), 0) >= 0;
+      const name = screen.getByRole('link', { name: (n) => n.endsWith('새 창 열기') && inOrder(n) });
+      expect(name).toBe(a);
+    }
   });
 });

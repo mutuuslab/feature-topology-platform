@@ -174,3 +174,26 @@ export type ApiVersionsView = z.infer<typeof ApiVersionsView>;
 export function apiVersionsAt(now: string, table: ApiVersionDef[] = API_VERSIONS) {
   return table.filter((v) => v.releasedAt <= now.slice(0, 10)).map((v) => ({ ...v, state: apiVersionStatus(v, now, table) })).reverse();
 }
+
+// ───────── OFREP SDK 키(2026-11-07 결정 C8 (b)) ─────────
+// 평가 결과는 Feature 구성을 드러내므로 OFREP 경로는 SDK 키가 필수다. 키는 위 외부 API 키(발급·해시 저장·폐기·만료)를 그대로 쓴다.
+// 데모 설치에는 공개 기본 키를 하나 둔다(예약 ID AK-0000, 데모 인증 방식에서만). 회사 SSO 설치는 보안 담당이 발급한 키만 받는다.
+/** 데모 기본 SDK 키의 예약 ID — 발급 번호(AK-0001~)와 겹치지 않는다 */
+export const DEMO_SDK_KEY_ID = 'AK-0000';
+/** 데모 기본 SDK 키 원문 — 공개 데모용이라 비밀이 아니다. 운영(FF_AUTH=oidc)에는 만들지 않는다 */
+export const DEMO_SDK_KEY = `ffk_${DEMO_SDK_KEY_ID}_DemoSdkKeyPublicDemoOnlyNotASecret000000000`;
+/** SDK 요청에서 키 원문 — `Authorization: Bearer <키>`(OFREP 표준) 또는 `X-Api-Key`. 없거나 다른 방식이면 null */
+export function sdkKeyFrom(h: { authorization?: string | null; apiKey?: string | null }): string | null {
+  const bearer = /^bearer\s+(\S+)\s*$/i.exec((h.authorization ?? '').trim());
+  if (bearer) return bearer[1];
+  const key = (h.apiKey ?? '').trim();
+  return key || null;
+}
+/** 데모 기본 키를 둘지 — 데모 인증 방식이고 FF_OFREP_DEMO_KEY=off가 아닐 때(인증 방식 판정은 kernel/auth/auth-config authModeOf와 같다) */
+export function demoSdkKeyEnabled(env: Record<string, string | undefined>): boolean {
+  if ((env.FF_OFREP_DEMO_KEY ?? '').trim() === 'off') return false;
+  const mode = (env.FF_AUTH ?? '').trim();
+  if (mode === 'oidc') return false;
+  if (mode === 'demo') return true;
+  return env.FF_ENV !== 'production';
+}

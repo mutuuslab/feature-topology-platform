@@ -55,6 +55,8 @@ interface Scenario {
 const pick = <T>(xs: T[], i: number) => xs[(i * 7919) % xs.length];
 // SDK는 VIN 대신 가명을 보낸다 — 서버와 같은 함수(빌드된 백엔드)
 const require = createRequire(import.meta.url);
+/** OFREP SDK 키(결정 C8) — 부하 시험 서버는 데모 인증이라 공개 기본 키 */
+const { DEMO_SDK_KEY } = require(join(FF, 'contracts', 'dist', 'index.js')) as { DEMO_SDK_KEY: string };
 const pseudonymOf = (vin: string): string => require(join(FF, 'backend', 'dist', 'kernel', 'crypto.js')).vehiclePseudonym(vin);
 
 export const SCENARIOS: Scenario[] = [
@@ -84,8 +86,8 @@ export const SCENARIOS: Scenario[] = [
   { id: 'vehicle.inbox', title: '차량 전달함(IF-07 당겨받기)', req: (i, c) => { const vin = pick(c.deliveryVins, i); return { method: 'GET', path: `/vehicle/v1/${vin}/inbox`, headers: { 'x-vehicle-id': vin } }; } },
   { id: 'vehicle.hello', title: '차량 보고(IF-06 HELLO 재연결)', req: (i, c) => { const vin = c.loadVins[(i * 104729) % c.loadVins.length]; return { method: 'POST', path: `/vehicle/v1/${vin}/reports`, headers: { 'x-vehicle-id': vin, 'content-type': 'application/json' }, body: { type: 'HELLO', bootId: `BOOT-${vin}-${i}`, sequence: 1, observedAt: '2026-10-12T01:00:00.000Z', highest: {} } }; } },
   { id: 'vehicle.status', title: '차량 상태 보고 v2 조회', req: (i, c) => ({ method: 'GET', path: `/api/vehicles/${pick(c.loadVins, i)}/status`, headers: OPS }) },
-  { id: 'ofrep.bulk', title: 'OFREP 전체 flag 평가', req: (i, c) => ({ method: 'POST', path: '/ofrep/v1/evaluate/flags', headers: { 'content-type': 'application/json' }, body: { context: { targetingKey: pick(c.loadVins, i) } } }) },
-  { id: 'ofrep.pseudonym', title: 'OFREP 전체 flag 평가(차량 가명 targetingKey)', req: (i, c) => ({ method: 'POST', path: '/ofrep/v1/evaluate/flags', headers: { 'content-type': 'application/json' }, body: { context: { targetingKey: pseudonymOf(pick(c.loadVins, i)) } } }) },
+  { id: 'ofrep.bulk', title: 'OFREP 전체 flag 평가', req: (i, c) => ({ method: 'POST', path: '/ofrep/v1/evaluate/flags', headers: { 'content-type': 'application/json', authorization: `Bearer ${DEMO_SDK_KEY}` }, body: { context: { targetingKey: pick(c.loadVins, i) } } }) },
+  { id: 'ofrep.pseudonym', title: 'OFREP 전체 flag 평가(차량 가명 targetingKey)', req: (i, c) => ({ method: 'POST', path: '/ofrep/v1/evaluate/flags', headers: { 'content-type': 'application/json', authorization: `Bearer ${DEMO_SDK_KEY}` }, body: { context: { targetingKey: pseudonymOf(pick(c.loadVins, i)) } } }) },
   { id: 'gate.preview', title: '게이트 미리보기(kill_command v2)', req: (_, c) => ({ method: 'POST', path: '/api/gate/preview', headers: OPS, body: c.example }) },
   { id: 'kill.issue', title: '긴급 차단 요청 발행(쓰기)', write: true, req: (_, c) => { const t = c.killTargets[c.killNext++ % c.killTargets.length]; return { method: 'POST', path: '/api/kill-requests', headers: OPS, body: { featureId: t.featureId, featureVersion: t.version, vins: [t.vin], reason: '부하 시험 차단 요청', confirm: t.featureId, reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', containmentJustification: '원인 분석 전 봉쇄' } }; } },
 ];

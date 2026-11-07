@@ -7,7 +7,7 @@ import { Clock } from '../../src/kernel/clock';
 import { MetricRegistry } from '../../src/kernel/observability';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { otlpSpanOf } from '../../src/kernel/telemetry-metrics';
-import { bootApp, killV2 } from '../helpers';
+import { bootApp, killV2, SDK_KEY } from '../helpers';
 
 describe('지표 등록부 — 단위', () => {
   it('카탈로그에 없는 이름·종류가 다른 쓰기는 거부한다', () => {
@@ -79,8 +79,8 @@ describe('차량 수신 지표 — 앱 흐름', () => {
     // 위조 상태 보고(서명 불일치) — 거부·서명 invalid
     const st = (await b.http().get('/api/vehicles/ego-01/status').expect(200)).body.features[0].report;
     await b.http().post('/vehicle/v1/ego-01/status').set({ 'X-Vehicle-Id': 'ego-01' }).send({ ...st, state: 'ACTIVE', report_seq: st.report_seq + 1 }).expect(200);
-    await b.http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
-    await b.http().post('/ofrep/v1/evaluate/flags/no_such_flag').send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(404);
+    await b.http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200);
+    await b.http().post('/ofrep/v1/evaluate/flags/no_such_flag').set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(404);
 
     const text = (await b.http().get('/api/health/metrics').expect(200)).text;
     expect(text).toMatch(/ff_vehicle_status_reports_total\{country="KR",vehicle_model="NX4 PE",sw_version="[^"]+",feature="FEAT-00022",via="SIM",result="accepted",code=""\} [1-9]/);

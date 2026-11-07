@@ -4,7 +4,7 @@ Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal' });
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { evaluationSpan } from '@ff/contracts';
 import { OtelExporter } from '../../src/adapters/if-mocks/otel.exporter';
-import { bootApp } from '../helpers';
+import { bootApp, SDK_KEY } from '../helpers';
 
 describe('Feature별 평가 운영 데이터 (D04-03)', () => {
   let b: Awaited<ReturnType<typeof bootApp>>;
@@ -24,8 +24,8 @@ describe('Feature별 평가 운영 데이터 (D04-03)', () => {
   });
 
   it('FR-OPD-001-005~008·FR-OPD-002-001·FR-OPD-003-001 앱 평가(OFREP) — appName·environment를 보내면 앱별로, 활성·분기값 횟수', async () => {
-    for (let i = 0; i < 3; i++) await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').send({ context: { targetingKey: 'ego-01', appName: 'ivi-nav', environment: 'production' } }).expect(200);
-    await http().post('/ofrep/v1/evaluate/flags').send({ context: { targetingKey: 'ego-01' } }).expect(200); // 앱 식별 없이 → 기본 이름
+    for (let i = 0; i < 3; i++) await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').set(SDK_KEY).send({ context: { targetingKey: 'ego-01', appName: 'ivi-nav', environment: 'production' } }).expect(200);
+    await http().post('/ofrep/v1/evaluate/flags').set(SDK_KEY).send({ context: { targetingKey: 'ego-01' } }).expect(200); // 앱 식별 없이 → 기본 이름
     const s = await stats('FEAT-00024');
     expect(s.totals.evaluations).toBe(4);
     expect(s.totals.on + s.totals.off + s.totals.safeDefault + s.totals.errors).toBe(4);
@@ -43,8 +43,8 @@ describe('Feature별 평가 운영 데이터 (D04-03)', () => {
   it('수집기(IF-11)가 꺼져도 평가 횟수는 센다 · 오류 평가는 오류로', async () => {
     process.env.IF_MODE_11 = 'off';
     try {
-      await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').send({ context: { targetingKey: 'ego-01', appName: 'ivi-nav', environment: 'production' } }).expect(200);
-      await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').send({ context: { targetingKey: 'ego-01', latitude: 37.5 } }).expect(400);
+      await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').set(SDK_KEY).send({ context: { targetingKey: 'ego-01', appName: 'ivi-nav', environment: 'production' } }).expect(200);
+      await http().post('/ofrep/v1/evaluate/flags/ivi_00024_guide').set(SDK_KEY).send({ context: { targetingKey: 'ego-01', latitude: 37.5 } }).expect(400);
     } finally {
       delete process.env.IF_MODE_11;
     }

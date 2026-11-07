@@ -12,3 +12,15 @@ npm run flags:scan -- --repo .. --url https://github.com/mutuuslab/feature-topol
 사용자 결정: 업무용 Git 저장소는 가상 시나리오로 구성한다. 이 디렉터리는 가상 차량 앱의 소비 코드를 플랫폼 Git에 보관한 것이며 고객 차량 소스가 아니다. 화면의 예제 커밋은 실제 Git 객체와 실행 시험으로 연결한다.
 
 `infotainment.ts`는 IVI 화면·배너·음성·경로안내4개 키를 독립적으로 적용한다. 거리 제어2개 키와 합쳐 데모6개 Flag 모두에 실제 소스 사용처가 있다.
+
+## OFREP SDK 키
+
+OFREP 평가 경로(`/ofrep/v1/evaluate/*`)는 SDK 키가 필수다. 키가 없거나 틀리거나 폐기·만료되면 401이고, SDK는 기본값(Safe Default)을 쓴다. 키는 플랫폼의 외부 API 키 화면에서 보안 담당이 발급한다(조회 전용 역할이면 충분하다). 데모 설치에는 공개 기본 키(`DEMO_SDK_KEY`, ID `AK-0000`)가 있고, 회사 SSO 설치에는 없다(`FF_OFREP_DEMO_KEY=off`로 데모에서도 끌 수 있다).
+
+```ts
+import { OpenFeature } from '@openfeature/server-sdk';
+import { OFREPProvider } from '@openfeature/ofrep-provider';
+
+const sdkKey = process.env.FF_SDK_KEY!; // 발급받은 키 원문(ffk_AK-…). 저장소·로그에 남기지 않는다
+await OpenFeature.setProviderAndWait('ff', new OFREPProvider({ baseUrl: 'https://ff.example.com', headers: [['Authorization', `Bearer ${sdkKey}`]] }));
+```

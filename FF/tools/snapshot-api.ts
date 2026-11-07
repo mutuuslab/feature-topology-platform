@@ -16,7 +16,7 @@ import { snapshotP3 } from './snapshot-p3.ts';
 import { snapshotP5 } from './snapshot-p5.ts';
 
 const require = createRequire(import.meta.url);
-const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
+const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, DEMO_SDK_KEY, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
 /** 비어 있는 포트 — OS가 고른다. 고정 포트(예전 9199)는 여러 작업 폴더의 e2e:static이 함께 돌면 다른 폴더의 백엔드(다른 커밋·다른 데이터)에서 스냅샷을 받았다 */
 async function freePort(): Promise<number> {
@@ -160,7 +160,7 @@ async function post<T = any>(url: string, headers: Record<string, string>, body:
 
 /** OFREP 평가(POST, 읽기 전용 조회) — 화면처럼 오류 응답(404 FLAG_NOT_FOUND 등)도 본문 그대로 둔다 */
 async function ofrep(path: string, targetingKey: string): Promise<unknown> {
-  const r = await call(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: { targetingKey } }) });
+  const r = await call(path, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${DEMO_SDK_KEY}` }, body: JSON.stringify({ context: { targetingKey } }) }); // SDK 키 필수(결정 C8) — 데모 기본 키
   const body = await r.json();
   if (!r.ok && r.status !== 404) throw new Error(`POST ${path} → ${r.status} ${JSON.stringify(body)}`);
   return body;

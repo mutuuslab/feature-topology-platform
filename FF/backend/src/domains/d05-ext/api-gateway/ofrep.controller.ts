@@ -4,7 +4,8 @@
 // OpenFeature 경계(보고서 11장): F0·F1 flag만 값을 계산한다. F2 이상은 Safe Default + DISABLED(decided_by=vehicle_safety_guard),
 // bulk에서는 아예 빠진다. 금지 문맥 속성은 INVALID_CONTEXT, 모든 평가는 가명 subject로 OTel span(IF-11)에 남는다.
 // /vehicle/v1 차량 채널은 OpenFeature 백엔드가 아니라 차량 Safety Guard 경로라 이 경계를 적용하지 않는다.
-import { ArgumentsHost, Body, Catch, Controller, ExceptionFilter, Headers, HttpCode, HttpException, Injectable, Param, Post, Res, UseFilters } from '@nestjs/common';
+import { ArgumentsHost, Body, Catch, Controller, ExceptionFilter, Headers, HttpCode, HttpException, Injectable, Param, Post, Res, UseFilters, UseGuards } from '@nestjs/common';
+import { OfrepSdkKeyGuard } from './ofrep-sdk-key';
 import { contextViolations, evaluationSpan, ignoredContext, OfrepBody, openFeatureAllowed, SAFETY_GUARD_METADATA, type FClass, type FlagResult, type OtelSpan } from '@ff/contracts';
 import type { Response } from 'express';
 import { createHash } from 'node:crypto';
@@ -158,6 +159,7 @@ class OfrepErrorFilter implements ExceptionFilter {
 @Controller('ofrep/v1/evaluate')
 @UseFilters(OfrepErrorFilter)
 @ReadOnlyEndpoint() // 평가 요청은 상태를 바꾸지 않는다 — 차량 SDK는 행위자 헤더가 없다
+@UseGuards(OfrepSdkKeyGuard) // 대신 SDK 키(Bearer)가 필수다(결정 C8) — 없거나 틀리면 401
 export class OfrepController {
   constructor(private readonly svc: OfrepService) {}
 

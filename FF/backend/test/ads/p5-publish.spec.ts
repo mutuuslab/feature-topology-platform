@@ -25,11 +25,12 @@ afterAll(async () => {
   await app.app.close();
 });
 
-/** 승인된 정책을 바로 만든다(검증·승인 흐름은 다른 시험) — 배포 검사만 본다 */
+/** 승인된 정책을 바로 만든다(검증·승인 흐름은 다른 시험) — 배포 검사만 본다.
+ *  사용 권한 상품은 떼어 낸다: POL-00002의 CAT-00019 구성에는 다른 Feature가 없어 배포 시점 컴플라이언스 룰(ENTITLEMENT_REQUIRED, P1)이 먼저 막는다(통합 17단계) */
 function approvedPolicy(featureId: string, featureVersion: string, flagKey: string): string {
   const repo = app.get(PolicyRepo);
   const base = repo.get('POL-00002')!;
-  const p = { ...base, policyId: repo.nextId(), featureId, featureVersion, flagKey, status: 'APPROVED', deployedAt: null, deployedBy: null, stageBasisPoints: null, stagedAt: null, revision: 1 } as Policy;
+  const p = { ...base, policyId: repo.nextId(), featureId, featureVersion, flagKey, entitlementCatalogId: null, status: 'APPROVED', deployedAt: null, deployedBy: null, stageBasisPoints: null, stagedAt: null, revision: 1 } as Policy;
   p.contentHash = policyHash(p);
   repo.insert(p);
   return p.policyId;

@@ -8,6 +8,7 @@ import { ko } from '../../copy/ko';
 import { ExtRefChip } from '../../design/ext-ref';
 import { AsyncView, ClassBadges, DataTable, IdChip, LifecycleBadge, PageHeader, Segmented, Select, SummaryLine, Toolbar } from '../../design';
 import { homeEntry as HE } from '../../copy/ple';
+import { taxonomyCopy as TX } from '../../copy/taxonomy-levels';
 import { PleNav } from '../ple/PleNav';
 import { MiniGates, scopeOf, Segments } from '../shared';
 import type { FeatureList as FeatureListT } from '../types';
@@ -37,6 +38,8 @@ export default function FeatureList() {
   }, [qParam]);
   const lifecycle = (sp.get('lifecycle') ?? '') as Lifecycle | '';
   const country = sp.get('country') ?? '';
+  // 분류 수준(L0~L5, FR-REG-001-011) — 값이 없는 행은 Feature Master 기준 수준 L2
+  const tLevel = sp.get('tl') ?? '';
   const latestOnly = sp.get('latest') !== '0';
   const fClass = (sp.get('f') ?? '') as FClass | '';
   const withParam = (k: string, v: string) => {
@@ -82,8 +85,9 @@ export default function FeatureList() {
   const base = (all.data?.items ?? [])
     .filter((r) => !latestOnly || r.isLatest !== false)
     .filter((r) => !fClass || cls.get(`${r.featureId}@${r.version}`)?.fClass === fClass)
+    .filter((r) => !tLevel || ((r as { taxonomyLevel?: string }).taxonomyLevel ?? 'L2') === tLevel)
     .filter((r) => !needle || [r.featureId, r.name, r.ownerId, ...(r.tags ?? [])].join(' ').toLowerCase().includes(needle));
-  const filtered = !!(needle || lifecycle || country || fClass);
+  const filtered = !!(needle || lifecycle || country || fClass || tLevel);
   const inCountry = base.filter((r) => !country || r.country === country);
   const rows = inCountry.filter((r) => !lifecycle || r.lifecycle === lifecycle);
   const tally = (items: typeof base, k: 'lifecycle' | 'country') => items.reduce<Record<string, number>>((m, r) => ((m[r[k]] = (m[r[k]] ?? 0) + 1), m), {});
@@ -142,6 +146,14 @@ export default function FeatureList() {
           {countries.map((c) => (
             <option key={c} value={c}>
               {c} ({facets?.country[c] ?? 0})
+            </option>
+          ))}
+        </Select>
+        <Select label={TX.list.level} value={tLevel} onChange={(e) => set('tl', e.target.value)}>
+          <option value="">{ko.page.all}</option>
+          {TX.levels.map((l) => (
+            <option key={l} value={l}>
+              {TX.levelName(l)}
             </option>
           ))}
         </Select>

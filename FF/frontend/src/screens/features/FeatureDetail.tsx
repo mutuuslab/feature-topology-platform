@@ -39,6 +39,7 @@ import { flags as flagCopy } from '../../copy/flags';
 import { evaluations as evaluationsCopy } from '../../copy/records';
 import { featureRefsTab } from '../../copy/propose';
 import { traceCopy } from '../../copy/trace-links';
+import { taxonomyCopy } from '../../copy/taxonomy-levels';
 import { flagCode as flagCodeCopy } from '../../copy/flag-code';
 import { RefWarningList, type RefWarning } from '../refdb/common';
 import { SafetyBadges, SafetyTab } from './SafetyTab';
@@ -60,6 +61,8 @@ const EvaluationsTab = lazy(() => import('./EvaluationsTab'));
 // 운영 지표 탭(TL-UI04·UI18) — Data Lake 지표는 탭을 열 때 따로 읽는다
 const OpsMetricsTab = lazy(() => import('./OpsMetricsTab').then((m) => ({ default: m.OpsMetricsTab })));
 const TraceLinksTab = lazy(() => import('./TraceLinksTab'));
+// 분류 경로 탭(TX) — L0부터 배치 노드까지·배치
+const TaxonomyTab = lazy(() => import('./TaxonomyTab'));
 // Lifecycle은 핵심 메시지 상태 pill과 스테퍼가 보인다 — 속성 표에서 한 번 더 보이지 않는다(3초 규칙 6, UX3-08)
 const ATTR_ORDER = ['featureId', 'name', 'description', 'requirementIds', 'country', 'vehicleModel', 'trim', 'version', 'baselineId', 'ownerId', 'tags', 'asil', 'upgVc', 'functions', 'swIds', 'swVersions', 'ecuPnos', 'controlPoints', 'dependencyIds'] as const;
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines'];
@@ -171,6 +174,7 @@ export default function FeatureDetail() {
                 { key: 'deps', label: T.tabs.deps, count: d.dependencies.outgoing.length + d.dependencies.incoming.length },
                 { key: 'trace', label: T.tabs.trace, count: d.trace.length },
                 { key: 'links', label: traceCopy.tab },
+                { key: 'taxonomy', label: taxonomyCopy.feature.tab },
                 { key: 'ops', label: T.tabs.ops },
                 { key: 'ext', label: extSync.feature.tab },
                 { key: 'baseline', label: T.tabs.baseline },
@@ -201,6 +205,10 @@ export default function FeatureDetail() {
                   <GatesTab id={id} ver={ver} />
                 ) : tab === 'deps' ? (
                   <Deps d={d} />
+                ) : tab === 'taxonomy' ? (
+                  <Suspense fallback={null}>
+                    <TaxonomyTab id={id} />
+                  </Suspense>
                 ) : tab === 'links' ? (
                   <Suspense fallback={null}>
                     <TraceLinksTab id={id} />

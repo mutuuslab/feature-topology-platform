@@ -18,3 +18,9 @@ export * from './rules/relation-types';
 export * from './schemas/trace-link';
 export * from './rules/trace-link';
 export * from './rules/ads-p5';
+// 분류 계층 L0~L5·적용 지역 코드·브랜드(TX, B7 (b)) — 화면은 파일에서 직접 읽는다
+export * from './schemas/taxonomy-tree';
+export * from './rules/taxonomy-tree';
+export * from './rules/region-code';
+export * from './schemas/global-scope';
+export * from './rules/global-scope';

@@ -13,13 +13,15 @@ import { ApprovalSlots, AsyncView, Button, DataTable, DiffView, ErrorNote, Field
 import { BlockedAction, ChangeKindBadge, UnknownMark, VerdictReason, type VerdictTone } from '../../design/ads';
 import { useAppShell } from '../../store';
 import { usePermission } from '../shared';
+import { CompileTab, SiteApprove, SiteRequestAction, type CompileRow, type VerdictLogs } from './P5Panels';
+import { compile as CP } from '../../copy/ads-p5';
 import './ads-config.css';
 
 interface ListResp {
   items: OddProfileListItem[];
   summary: { exceeds: number; undecidable: number; within: number; total: number };
 }
-type SiteRow = OddSite & { status: SiteStatus; reason: string; code: string | null };
+type SiteRow = OddSite & { status: SiteStatus; reason: string; code: string | null; requested?: boolean };
 interface Detail {
   profile: OddProfile;
   feature: { featureId: string; version: string; name: string; lifecycle: string } | null;
@@ -33,6 +35,10 @@ interface Detail {
   configSets: string[];
   base: { profileId: string; version: number; status: string } | null;
   diff: { field: string; before: string; after: string }[];
+  /** ADS-BE09 정책 컴파일 검사 — Flag별 배포 설정 ↔ 승인 상한 */
+  compile?: CompileRow[];
+  /** 이 프로파일 참조로 기록된 차량 판정 */
+  logs?: VerdictLogs;
 }
 
 const INVALIDATE = ['oddProfiles', 'oddProfile', 'audit', 'events'];
@@ -114,8 +120,8 @@ function ProfileDetail({ id }: { id: string }) {
     <Panel title={O.detail(id)} id="odd-detail">
       <AsyncView state={asyncState(q)} error={q.error ? O.error : null} onRetry={() => q.refetch()}>
         {d ? (
-          <Tabs param="detail" tabs={[{ key: 'cond', label: O.tabs.cond }, { key: 'deploy', label: O.tabs.deploy, count: d.deploy.length }, { key: 'sites', label: O.tabs.sites, count: siteCount }]}>
-            {(active) => (active === 'sites' ? <SitesTab rows={d.sites} /> : active === 'deploy' ? <DeployTab rows={d.deploy} /> : <ConditionsTab d={d} />)}
+          <Tabs param="detail" tabs={[{ key: 'cond', label: O.tabs.cond }, { key: 'deploy', label: O.tabs.deploy, count: d.deploy.length }, { key: 'compile', label: CP.tab, count: (d.compile ?? []).filter((c) => c.blockers.length).length }, { key: 'sites', label: O.tabs.sites, count: siteCount }]}>
+            {(active) => (active === 'sites' ? <SitesTab rows={d.sites} profileId={d.profile.profileId} /> : active === 'deploy' ? <DeployTab rows={d.deploy} /> : active === 'compile' ? <CompileTab rows={d.compile ?? []} logs={d.logs} /> : <ConditionsTab d={d} />)}
           </Tabs>
         ) : null}
       </AsyncView>
@@ -225,12 +231,15 @@ function DeployTab({ rows }: { rows: DeployComparison[] }) {
   );
 }
 
-function SitesTab({ rows }: { rows: SiteRow[] }) {
+function SitesTab({ rows, profileId }: { rows: SiteRow[]; profileId: string }) {
   const n = (s: SiteStatus) => rows.filter((r) => r.status === s).length;
   const S = O.sites;
   return (
     <div className="adsc-stack">
-      <SummaryLine label={S.summary} items={(['APPROVED', 'PENDING', 'EXPOSURE_HOLD'] as SiteStatus[]).map((s) => ({ k: SITE_STATUS_LABEL[s], v: n(s) }))} />
+      <div className="adsc-row">
+        <SummaryLine label={S.summary} items={(['APPROVED', 'PENDING', 'EXPOSURE_HOLD'] as SiteStatus[]).map((s) => ({ k: SITE_STATUS_LABEL[s], v: n(s) }))} />
+        <SiteRequestAction profileId={profileId} />
+      </div>
       <DataTable
         caption={S.caption}
         rows={rows}
@@ -242,7 +251,7 @@ function SitesTab({ rows }: { rows: SiteRow[] }) {
           { key: 'm', header: S.map, cell: (r) => <span className="ds-mono">{r.mapVersion}</span> },
           { key: 'i', header: S.infra, cell: (r) => <span className="ds-mono">{r.infraVersion}</span> },
           { key: 's', header: S.status, cell: (r) => <VerdictReason tone={SITE_TONE[r.status]} label={SITE_STATUS_LABEL[r.status]} code={r.code ?? undefined} /> },
-          { key: 'r', header: S.reason, cell: (r) => <span data-site-reason>{r.reason}</span> },
+          { key: 'r', header: S.reason, cell: (r) => (r.requested && r.status === 'PENDING' ? <SiteApprove profileId={profileId} siteId={r.siteId} status={r.status} reason={r.reason} /> : <span data-site-reason>{r.reason}</span>) },
         ]}
       />
     </div>

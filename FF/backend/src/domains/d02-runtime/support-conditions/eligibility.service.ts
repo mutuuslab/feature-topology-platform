@@ -47,6 +47,7 @@ export class EligibilityService {
     return OTA_INSTALL_LINKED || !!this.db.get('SELECT 1 FROM ota_install_record WHERE vin = ? LIMIT 1', vin);
   }
 
+  /** @req FR-SUP-004-003 — 판단 전 형상 보고 최신성 확인, 미충족이면 판단하지 않고 최신성 미충족 */
   decide(vin: string, catalogId: string | undefined) {
     if (!catalogId) throw new DomainError('VALIDATION', '상품(catalogId)을 고르세요.');
     const v = this.fleet.vehicle(vin);

@@ -32,13 +32,18 @@ flowchart LR
   subgraph R_REQ["요구 Owner"]
     FPW_7_A13["A13 출시 차단 해제 결정"]
   end
+  subgraph R_REL["Release Manager"]
+    FPW_7_A14["A14 예외 요청(임시 우회·Gate 예외)"]
+    FPW_7_A09["A09 출시 전이"]
+  end
+  subgraph R_SM["Safety Manager"]
+    FPW_7_A15["A15 예외 승인·만료 원복 확인"]
+    FPW_7_A03["A03 Safety Case·SOTIF 근거 정리"]
+    FPW_7_A08{{"A08 G7 출시·활성화 판정"}}
+  end
   subgraph R_FO["Feature Owner"]
     FPW_7_A02["A02 효과 실험 계획 등록"]
     FPW_7_A12["A12 Release Sign-off(출시 책임 확인)"]
-  end
-  subgraph R_SM["Safety Manager"]
-    FPW_7_A03["A03 Safety Case·SOTIF 근거 정리"]
-    FPW_7_A08{{"A08 G7 출시·활성화 판정"}}
   end
   subgraph R_QA["품질 조직"]
     FPW_7_A04["A04 Safety Case 독립 검토"]
@@ -53,11 +58,10 @@ flowchart LR
   subgraph R_REG["법규 담당"]
     FPW_7_A07["A07 형식승인·사용자 고지 확인"]
   end
-  subgraph R_REL["Release Manager"]
-    FPW_7_A09["A09 출시 전이"]
-  end
   FPW_7_A01 --> FPW_7_A08
   FPW_7_A13 --> FPW_7_A12
+  T_FPW_7_A14(("긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때")) -.-> FPW_7_A14
+  FPW_7_A14 --> FPW_7_A15
   T_FPW_7_A02(("출시 효과를 실험으로 비교해야 할 때")) -.-> FPW_7_A02
   FPW_7_A02 --> FPW_7_A08
   T_FPW_7_A03(("G6 배포 완료")) -.-> FPW_7_A03
@@ -80,6 +84,8 @@ flowchart LR
 |---|---|---|---|---|---|---|
 | FPW.7-A01 | Canary·Shadow 판정 기준 정의 | R 운영 조직 · A 운영 조직 · C Safety Manager, 시험 조직 · I Feature Owner, Release Manager | WP-SAFETY-PROFILE, WP-G6-DECISION | WP-CANARY-PLAN | `/activation/decide`, `/policies/:id` | FFG-TST-010, FFG-LCY-009 |
 | FPW.7-A13 | 출시 차단 해제 결정 | R 요구 Owner · A 요구 Owner · C Safety Manager, Feature Owner · I Release Manager, 통합 조직 | WP-INTEGRATION-REC | WP-FLAG-WAIVER | `decideFlagGateWaiver`, `/flag-code/reconcile` | – |
+| FPW.7-A14 | 예외 요청(임시 우회·Gate 예외) | R Release Manager · A Release Manager · C 운영 조직, Feature Owner · I Safety Manager | WP-CANARY-PLAN | WP-EXCEPTION-RECORD | `createExceptionPolicy`, `/verify/exceptions`, `/policies/:id` | FFG-LCY-002 |
+| FPW.7-A15 | 예외 승인·만료 원복 확인 | R Safety Manager, 운영 조직 · A Safety Manager · C Feature Owner · I Release Manager, 품질 조직 | WP-EXCEPTION-RECORD | WP-EXCEPTION-RECORD | `decideExceptionPolicy`, `revokeExceptionPolicy`, `/verify/exceptions` | FFG-LCY-002 |
 | FPW.7-A02 | 효과 실험 계획 등록 | R Feature Owner · A Feature Owner · C Safety Manager, 운영 조직 · I Release Manager | WP-SAFETY-PROFILE | WP-EXPERIMENT-PLAN | `createExperiment`, `/experiments` | FFG-CLS-006 |
 | FPW.7-A03 | Safety Case·SOTIF 근거 정리 | R Safety Manager · A Safety Manager · C Feature Owner, 시험 조직 · I 품질 조직 | WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA | WP-SAFETY-CASE | `/verify/evidence`, `/verify/compliance`, `/verify/safety-case` | FFG-SOT-004, FFG-ADS-008 |
 | FPW.7-A04 | Safety Case 독립 검토 | R 품질 조직 · A Safety Manager · C 시험 조직 · I Feature Owner, 법규 담당 | WP-SAFETY-CASE | WP-SC-REVIEW | 플랫폼 밖 | FFG-ADS-012 |
@@ -109,6 +115,24 @@ flowchart LR
 
 완료 기준:
 - [ ] 요청자와 결정자가 다른 사람이다
+
+#### FPW.7-A14 예외 요청(임시 우회·Gate 예외)
+- 트리거: 긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때
+1. 긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다
+2. Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다
+3. 서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다
+
+완료 기준:
+- [ ] 적용 기간이 있고 우회 불가 항목이 없다
+
+#### FPW.7-A15 예외 승인·만료 원복 확인
+1. 요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다
+2. 두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다
+3. 만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다
+
+완료 기준:
+- [ ] 요청자와 두 승인자가 모두 다른 사람이다
+- [ ] 만료 일시가 있고 Gate 판정은 PENDING 그대로다
 
 #### FPW.7-A02 효과 실험 계획 등록
 - 트리거: 출시 효과를 실험으로 비교해야 할 때
@@ -223,6 +247,7 @@ flowchart LR
 | WP-PRODUCT-RELEASE | 상품 고객 출시 기록 | 산출 | 고객 출시 승인자(구성 승인자와 다른 사람)와 시각 |
 | WP-ROLLOUT-RECORD | 단계적 확대 기록 | 산출 | Cohort 단계별 적용 시각·관측 결과; 확대·중단 결정과 근거 |
 | WP-FLAG-WAIVER | 출시 차단 해제 결정 기록 | 산출 | 해제 대상 Flag·요청 당시 대사 상태·사유·만료; 요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함) |
+| WP-EXCEPTION-RECORD | 예외 승인 기록 | 산출 | 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사 또는 PENDING Gate·제한 조건·완료 예정일·잔여 리스크; 두 승인자의 승인·지정 만료 일시(반려 사유), 적용한 배포와 이전 상태, 만료·회수 원복 메시지 |
 
 ## 4. 진입·완료 기준
 
@@ -240,3 +265,4 @@ flowchart LR
 - O3 상품 구성이 작성자와 다른 승인자에게 승인되고 고객 출시는 다시 다른 승인자가 승인한다.
 - O4 형식승인·사용자 고지 조건을 확인한 G7 판정과 출시 전이가 남는다.
 - O5 효력이 Canary Cohort부터 관측 기준을 만족할 때만 넓어진다.
+- O6 기한부 예외는 요청자와 다른 두 사람이 승인하고 기록된 제한 범위만 열며 만료되면 이전 정책 상태로 돌아간다.

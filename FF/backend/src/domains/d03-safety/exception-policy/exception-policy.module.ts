@@ -2,12 +2,13 @@
 import { Module } from '@nestjs/common';
 import { D01PolicyModule } from '../../d01-policy/d01-policy.module';
 import { DeliveryModule } from '../../delivery.module';
+import { ExceptionPolicySeeder } from './exception-policy.seed';
 import { ExceptionPolicyController, ExceptionPolicyService, ExceptionRepo, PolicyReleaseGateController } from './exception-policy.service';
 
 @Module({
   imports: [D01PolicyModule, DeliveryModule],
   controllers: [ExceptionPolicyController, PolicyReleaseGateController],
-  providers: [ExceptionRepo, ExceptionPolicyService],
+  providers: [ExceptionRepo, ExceptionPolicyService, ExceptionPolicySeeder],
   exports: [ExceptionPolicyService],
 })
 export class ExceptionPolicyModule {}

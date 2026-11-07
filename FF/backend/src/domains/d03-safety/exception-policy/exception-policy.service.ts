@@ -141,7 +141,10 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     return Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r?.status])) as Partial<Record<GateId, GateStatus>>;
   }
 
-  /** 목록 — active=true면 지금 적용 중인 예외만(없으면 빈 목록, FR-EXC-001-003) */
+  /**
+   * 목록 — active=true면 지금 적용 중인 예외만(없으면 빈 목록)
+   * @req FR-EXC-001-003
+   */
   list(q: { status?: string; featureId?: string; featureVersion?: string; policyId?: string; active?: string } = {}) {
     this.sweep();
     const now = this.now();
@@ -185,7 +188,10 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     return { ...this.view(e, this.now()), history: this.repo.events(id) };
   }
 
-  /** 승인 요청 등록(FR-EXC-001-001) */
+  /**
+   * 승인 요청 등록 — 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(우회 불가 4가지 거부), Gate 예외는 제한 조건·완료 예정일·잔여 리스크
+   * @req FR-EXC-001-001, FR-REG-005-010
+   */
   create(actor: Actor, body: CreateExceptionBody) {
     const target = `${body.featureId}@${body.featureVersion}`;
     const refuse = (code: 'GUARD_FAILED' | 'NOT_FOUND', msg: string, problems?: unknown): never => {
@@ -240,7 +246,10 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     );
   }
 
-  /** 승인·반려(FR-EXC-001-002·002-002) — 두 번째 승인에서 적용(ACTIVE)하고 만료 일시를 정한다 */
+  /**
+   * 승인·반려 — 승인 여부·승인자·일시·승인자 지정 만료 일시(반려는 사유). 두 번째 승인에서 적용(ACTIVE)하고 만료 일시를 정한다
+   * @req FR-EXC-001-002, FR-EXC-002-002
+   */
   decide(actor: Actor, id: string, body: ExceptionDecisionBody) {
     this.sweep();
     const e = this.require(id);
@@ -294,6 +303,7 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
   /**
    * 만료 확인·원복(FR-EXC-002-003·004) — 만료 일시가 지난 적용 중 예외를 닫고 이전 정책 상태로 되돌린다.
    * Gate 예외의 대상 Gate가 모두 PASS가 되면 완료로 닫는다(원복 없이 제한 범위만 푼다). 닫은 수를 돌려준다
+   * @req FR-EXC-002-003, FR-EXC-002-004
    */
   sweep(): number {
     const now = this.now();
@@ -380,6 +390,7 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
   /**
    * 배포 검사 예외 층 — 출시 전 Version은 Shadow만(예외 없으면 거부), 그 밖 검사는 적용 중 임시 우회만 연다.
    * @req FR-RDD-001-006, FR-REG-005-010, FR-EXC-002-001
+   * @rule FFG-LCY-002 — 예외 층은 Gate 판정을 바꾸지 않는다(Gate 기록·결정 기록 그대로, PENDING Gate는 PENDING). 기록된 제한 범위만 연다
    */
   forDeploy(actor: Actor, p: Policy): DeployExceptionGate {
     this.sweep();

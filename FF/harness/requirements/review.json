@@ -333,9 +333,9 @@
       "gap": "Feature별 9 Gate 집계 Go/No-Go 값"
     },
     "FR-REG-005-010": {
-      "verdict": "미구현",
-      "evidence": "강제 통과 경로 의도적으로 없음 (`gate.service.ts:89-91` FFG-LCY-002)",
-      "gap": "**설계와 충돌** — 예외 승인 도입 시 fail-closed 원칙과 조정(제한 배포만 허용 등)"
+      "verdict": "구현",
+      "evidence": "PENDING Gate 예외 — 예외 승인자(2인)·제한 조건(제한 배포·Pilot·Shadow)·완료 예정일·잔여 리스크, Gate 판정은 PENDING 그대로 제한 범위만 연다 `C/rules/exception-policy.ts:242`, `exception-policy.service.ts:195,394`, 단계 상한 `staged-rollout.service.ts:44`; 시험 `exception-policy.spec.ts`:66,93",
+      "gap": "Gate 판정(FFG-LCY-002 fail-closed)은 바꾸지 않는 별도 층"
     },
     "FR-REG-005-011": {
       "verdict": "부분",
@@ -943,9 +943,9 @@
       "gap": "조회 API"
     },
     "FR-ROL-002-008": {
-      "verdict": "부분",
-      "evidence": "멈추기(0%)는 기준과 무관하게 언제나 허용 (`rollout-stage.ts:44`)",
-      "gap": "**설계와 상충** — 명세는 기준 충족 시에만 중단. 안전상 '언제나 중단 가능'이 맞으므로 명세 조정 권고"
+      "verdict": "구현",
+      "evidence": "배포 중단(멈추기 0%) 요청 시 중단 기준(열린 이상 징후·진행 중 차단·사전 등록 중단 기준 초과) 충족 여부를 확인해 감사·응답에 기록, 중단은 언제나 허용(미충족 중단은 사유 필수 칸) `staged-rollout.service.ts:66`, `C/rules/exception-policy.ts:272`; 시험 `exception-policy.spec.ts`:107",
+      "gap": "확정 2 — 명세의 \"기준 충족 시에만 중단\"은 확인·기록으로 해석(멈추기는 언제나)"
     },
     "FR-ROL-002-009": {
       "verdict": "구현",
@@ -1098,39 +1098,39 @@
       "gap": "—"
     },
     "FR-EXC-001-001": {
-      "verdict": "미구현",
-      "evidence": "예외·우회 정책 기능 없음",
-      "gap": "**설계 검토 필요** — fail-closed·강제 통과 금지(FFG-LCY-002)와 조정"
+      "verdict": "구현",
+      "evidence": "요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(정책)·룰 ID 저장, 우회 불가 4가지(서명·무결성·긴급 차단 2인 승인·직무 분리·멈추기) 거부 `exception-policy.service.ts:195`, `C/rules/exception-policy.ts:142`; 시험 `exception-policy.spec.ts`:66,154",
+      "gap": "우회 대상은 배포 검사 단위(컴플라이언스 룰·Flag 코드 관문·ADS 발행 조건·출시 Gate) — 결정 B4 (c)·확정 2"
     },
     "FR-EXC-001-002": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음"
+      "verdict": "구현",
+      "evidence": "승인 여부·승인자·일시·승인자 지정 만료 일시, 반려 사유 저장 — 요청자≠승인자·서로 다른 2인 `exception-policy.service.ts:253`, `C/rules/exception-policy.ts:177`; 시험 `exception-policy.spec.ts`:79,185",
+      "gap": "—"
     },
     "FR-EXC-001-003": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "적용 중 예외 목록(active=true, 없으면 빈 목록) `exception-policy.service.ts:148`; 시험 `exception-policy.spec.ts`:79,115",
       "gap": "—"
     },
     "FR-EXC-002-001": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "적용(두 번째 승인) 시각 + 등록된 적용 기간으로 만료 일시 저장 `C/rules/exception-policy.ts:190`, 배포 적용 기록·제한 범위 `exception-policy.service.ts:416`; 시험 `exception-policy.spec.ts`:79,161",
       "gap": "—"
     },
     "FR-EXC-002-002": {
-      "verdict": "미구현",
-      "evidence": "(체험권 만료 sweep은 권한용으로 별개)",
+      "verdict": "구현",
+      "evidence": "승인자마다 만료 일시 지정(필수·최대 7일), 최종 만료 = 가장 이른 것 `C/rules/exception-policy.ts:177,190`; 시험 `exception-policy.spec.ts`:79",
       "gap": "—"
     },
     "FR-EXC-002-003": {
-      "verdict": "미구현",
-      "evidence": "—",
+      "verdict": "구현",
+      "evidence": "만료 확인 예약 작업(1분)·조회·배포 검사 때마다 확인 `exception-policy.service.ts:122,308`, 만료 일시가 지나면 상태와 무관하게 적용 안 함 `C/rules/exception-policy.ts:196`; 시험 `exception-policy.spec.ts`:115",
       "gap": "—"
     },
     "FR-EXC-002-004": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "만료 시 이전 정책 자동 원복"
+      "verdict": "구현",
+      "evidence": "만료·회수 시 적용 이전 정책 상태로 원복(이전 배포 재게시 또는 멈춤 0%)·원복 메시지·알림(exception.reverted) `exception-policy.service.ts:337,355`, `C/rules/notification.ts:729`; 시험 `exception-policy.spec.ts`:115,173",
+      "gap": "—"
     },
     "FR-CON-001-001": {
       "verdict": "부분",
@@ -1423,9 +1423,9 @@
       "gap": "판단(activation.decide)에 쓴 속성값·기준 시점 스냅샷 미저장(activation.service.ts:29-48)"
     },
     "FR-SUP-004-003": {
-      "verdict": "부분",
-      "evidence": "quality STALE/UNTRUSTED → UNKNOWN·HOLD·Safe Default(VAR:128, EVAL:125) · 시험 evaluate.test.ts:69",
-      "gap": "시각 기준 최신성 임계값 없음(품질 플래그 의존), \"판단 미진행·메시지\" 대신 Safe Default"
+      "verdict": "구현",
+      "evidence": "VIN 지원 판정 전 차량 속성(형상 보고) 최신성 기준(24시간) 확인, 미충족이면 판단하지 않고 '최신성 미충족' 메시지 `eligibility.service.ts:68`, `C/rules/exception-policy.ts:285`; 시험 `config.spec.ts:142`",
+      "gap": "차량 쪽 평가는 Safe Default 그대로(결정). 보고가 없는 차량은 판정이 판단 불가로 낸다"
     },
     "FR-TGT-001-001": {
       "verdict": "부분",
@@ -1770,9 +1770,9 @@
       "gap": "—"
     },
     "FR-CRC-001-017": {
-      "verdict": "부분",
-      "evidence": "레지스트리 룰은 Approved가 아니면 판정에 넣지 않고 참고(INFO)로만 남긴다 `C/rules/compliance-rule.ts:138`(시험 `contracts/src/rules/compliance-rule.test.ts:257`). 시장 Compliance Profile은 미확인이면 F2 이상 활성화·복원을 **차단**한다(`compliance-profile.ts:57-59`)",
-      "gap": "Profile 쪽은 명세(\"미승인은 적용하지 않음\")와 현재 설계(fail-closed)가 충돌 — 결정 필요(D4)"
+      "verdict": "구현",
+      "evidence": "레지스트리 룰은 Approved가 아니면 배포 검증 기준에 넣지 않고 참고(INFO)로만 남긴다 `C/rules/compliance-rule.ts:153`(시험 `contracts/src/rules/compliance-rule.test.ts:257`). 승인 룰 미충족은 2인 승인된 임시 우회(룰 ID 지정)로만 연다 `exception-policy.service.ts:408`; 시험 `exception-policy.spec.ts:138,161`",
+      "gap": "시장 Compliance Profile 미확인 시 F2 이상 활성화·복원 차단(FFG-GEN-003, 긴급 차단·복원 명령 게이트)은 보고서 규칙이라 그대로 — 승인 상태를 가진 룰이 아니다"
     },
     "FR-CRC-001-018": {
       "verdict": "구현",
@@ -2425,9 +2425,9 @@
       "gap": "—"
     },
     "FR-RDD-001-006": {
-      "verdict": "부분",
-      "evidence": "검증 미완·해시 불일치·자기 승인 거부(`deploy-safety.service.ts:15-30`), 차량별 SW 미달 비활성(FFG-VEH-006)",
-      "gap": "정책 배포가 VERIFIED(G4~G7)에서 가능 — 출시 Gate G8·G9(`lifecycle.ts:27`) 미통과여도 활성화됨. 서버 측 \"SW 배포 완료\" 확인 없음"
+      "verdict": "구현",
+      "evidence": "출시 Gate(G8·G9) 미통과 Version은 Shadow만 — 실제 배포 거부(PRE_RELEASE_SHADOW_ONLY), PENDING Gate 예외면 제한 범위만 `C/rules/exception-policy.ts:242`, `policy.service.ts:316`; 차량별 SW 미달 비활성(FFG-VEH-006); 시험 `exception-policy.spec.ts`:56",
+      "gap": "ODD 축소 정책(FFG-SOT-002)은 줄이는 조치라 출시 전에도 배포. 서버 측 Deployment Unit 설치 완료 집계는 OTA(IF-05) 몫"
     },
     "FR-RDD-002-001": {
       "verdict": "부분",

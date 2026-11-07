@@ -68,7 +68,7 @@ import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
-import { CreateExceptionBody, EXCEPTION_APPROVER_ROLES, EXCEPTION_REQUEST_ROLES, ExceptionDecisionBody, ExceptionRevokeBody } from './rules/exception-policy';
+import { CreateExceptionBody, EXCEPTION_APPROVER_ROLES, EXCEPTION_REQUEST_ROLES, ExceptionDecisionBody, ExceptionRevokeBody } from './schemas/exception-policy';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */

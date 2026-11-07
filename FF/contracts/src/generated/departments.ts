@@ -61,6 +61,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/evidence",
      "/config/compat",
      "/deployments",
+     "/verify/exceptions",
      "/verify/compliance",
      "/verify/safety-case",
      "/fleet/live",
@@ -84,7 +85,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 13,
     "A": 15,
-    "C": 20,
+    "C": 22,
     "I": 35
    }
   },
@@ -174,13 +175,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/integration/code-scans",
      "/deployments",
      "/integration/code-repositories",
+     "/verify/exceptions",
+     "/policies/:id",
      "/flag-code/lifecycle",
      "/flag-retirements"
     ],
     "reference": [
      "/master/control-points",
      "/trace/design",
-     "/policies/:id",
      "/arch/topology",
      "/validations",
      "/validations/virtual",
@@ -200,10 +202,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 12,
-    "A": 11,
+    "R": 13,
+    "A": 12,
     "C": 16,
-    "I": 23
+    "I": 24
    }
   },
   {
@@ -272,6 +274,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/analysis/impact",
      "/arch/topology",
      "/arch/components",
+     "/verify/exceptions",
      "/verify/evidence",
      "/verify/compliance",
      "/verify/safety-case",
@@ -318,10 +321,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 17,
-    "A": 17,
+    "R": 18,
+    "A": 18,
     "C": 35,
-    "I": 9
+    "I": 10
    }
   },
   {
@@ -479,6 +482,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/safety-case",
      "/deployments",
      "/integration/connectors",
+     "/verify/exceptions",
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
@@ -499,7 +503,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R": 11,
     "A": 4,
     "C": 4,
-    "I": 22
+    "I": 23
    }
   },
   {
@@ -519,6 +523,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/activation/decide",
      "/policies/:id",
+     "/verify/exceptions",
      "/fleet/live",
      "/features/:id/:ver",
      "/notifications",
@@ -550,9 +555,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 10,
+    "R": 11,
     "A": 8,
-    "C": 7,
+    "C": 8,
     "I": 19
    }
   },

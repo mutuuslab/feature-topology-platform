@@ -27,7 +27,10 @@ export class StagedRolloutService {
     private readonly expansion: PolicyExpansionService,
   ) {}
 
-  /** 배포된 정책의 단계 조정 — 승인 범위(rollout) 안에서만, 해시·승인은 그대로 */
+  /**
+   * 배포된 정책의 단계 조정 — 승인 범위(rollout) 안에서만, 해시·승인은 그대로. 멈추기(0%)는 중단 기준 충족 여부를 기록만 하고 언제나 허용
+   * @req FR-ROL-002-008
+   */
   stage(actor: Actor, policyId: string, body: RolloutStageBody) {
     const p = this.policies.get(policyId);
     if (!p) throw new DomainError('NOT_FOUND', `${policyId}을(를) 찾을 수 없습니다.`);

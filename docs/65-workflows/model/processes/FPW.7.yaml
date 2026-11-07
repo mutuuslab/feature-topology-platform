@@ -14,6 +14,7 @@ process:
     - {id: O3, text_ko: 상품 구성이 작성자와 다른 승인자에게 승인되고 고객 출시는 다시 다른 승인자가 승인한다.}
     - {id: O4, text_ko: 형식승인·사용자 고지 조건을 확인한 G7 판정과 출시 전이가 남는다.}
     - {id: O5, text_ko: 효력이 Canary Cohort부터 관측 기준을 만족할 때만 넓어진다.}
+    - {id: O6, text_ko: 기한부 예외는 요청자와 다른 두 사람이 승인하고 기록된 제한 범위만 열며 만료되면 이전 정책 상태로 돌아간다.}
   rules: [FFG-TST-010, FFG-LCY-009, FFG-CLS-006, FFG-SOT-004, FFG-SOT-005, FFG-ADS-008, FFG-ADS-012,
           FFG-GEN-006, FFG-LCY-010, FFG-LCY-001]
   entry_criteria:
@@ -112,6 +113,13 @@ process:
       content:
         - 해제 대상 Flag·요청 당시 대사 상태·사유·만료
         - 요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함)
+    - key: WP-EXCEPTION-RECORD
+      name: 예외 승인 기록
+      en: Exception Approval Record
+      kind: output
+      content:
+        - 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사 또는 PENDING Gate·제한 조건·완료 예정일·잔여 리스크
+        - 두 승인자의 승인·지정 만료 일시(반려 사유), 적용한 배포와 이전 상태, 만료·회수 원복 메시지
   activities:
     - id: FPW.7-A01
       name: Canary·Shadow 판정 기준 정의
@@ -144,6 +152,38 @@ process:
         - 요청자와 결정자가 다른 사람이다
       platform: {actions: [decideFlagGateWaiver], screens: [/flag-code/reconcile]}
       next: [FPW.7-A12]
+    - id: FPW.7-A14
+      name: 예외 요청(임시 우회·Gate 예외)
+      trigger: 긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때
+      outcomes: [O6]
+      rules: [FFG-LCY-002]
+      raci: {R: [R-REL], A: R-REL, C: [R-OPS, R-FO], I: [R-SM]}
+      inputs: [WP-CANARY-PLAN]
+      outputs: [WP-EXCEPTION-RECORD]
+      steps:
+        - 긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다
+        - Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다
+        - 서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다
+      checks:
+        - 적용 기간이 있고 우회 불가 항목이 없다
+      platform: {actions: [createExceptionPolicy], screens: [/verify/exceptions, /policies/:id]}
+      next: [FPW.7-A15]
+    - id: FPW.7-A15
+      name: 예외 승인·만료 원복 확인
+      outcomes: [O6]
+      rules: [FFG-LCY-002]
+      independent_of: [FPW.7-A14]
+      raci: {R: [R-SM, R-OPS], A: R-SM, C: [R-FO], I: [R-REL, R-QA]}
+      inputs: [WP-EXCEPTION-RECORD]
+      outputs: [WP-EXCEPTION-RECORD]
+      steps:
+        - 요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다
+        - 두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다
+        - 만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다
+      checks:
+        - 요청자와 두 승인자가 모두 다른 사람이다
+        - 만료 일시가 있고 Gate 판정은 PENDING 그대로다
+      platform: {actions: [decideExceptionPolicy, revokeExceptionPolicy], screens: [/verify/exceptions]}
     - id: FPW.7-A02
       name: 효과 실험 계획 등록
       trigger: 출시 효과를 실험으로 비교해야 할 때

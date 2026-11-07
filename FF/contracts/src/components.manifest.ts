@@ -172,7 +172,7 @@ const IMPLEMENTED: Record<string, Impl> = {
   'D06-06': VALIDATOR,
   'D06-07': { ...VALIDATOR, screens: [...VALIDATOR.screens, '/trace/ads', '/verify/safety-case'], tests: [...VALIDATOR.tests, 'backend/test/ads/evidence.spec.ts', 'contracts/src/rules/ads-evidence.test.ts', 'frontend/src/__tests__/screensAdsEvidence.test.tsx'] },
   'D03-01': { ...VALIDATOR, screens: [...VALIDATOR.screens, '/verify/compliance'], tests: [...VALIDATOR.tests, 'backend/test/d03/compliance-rules.spec.ts', 'contracts/src/rules/compliance-rule.test.ts', 'frontend/src/__tests__/complianceRegistry.test.tsx', 'e2e/tests/compliance-rules.spec.ts'] },
-  'D03-02': { screens: ['/policies/:id', '/validations'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL], via: ['validatePolicy', 'decidePolicy'] },
+  'D03-02': { screens: ['/policies/:id', '/validations', '/verify/exceptions'], tests: [BE_POL, ...CT_FLAG, FE_POL, E2E_POL, 'backend/test/d03/exception-policy.spec.ts', 'contracts/src/rules/exception-policy.test.ts', 'frontend/src/__tests__/exceptions.test.tsx', 'e2e/tests/exceptions.spec.ts'], via: ['validatePolicy', 'decidePolicy'] },
   'D04-02': { screens: ['/policies/:id', '/validations', '/validations/virtual', '/verify/evidence'], tests: [BE_MASTER, FE_MASTER, BE_POL, BE_VV, 'contracts/src/flags/evaluate.test.ts', FE_OPS, E2E_POL], via: ['validatePolicy'] },
   // P8b 운영 되먹임·IAM·Variant
   'D06-12': { screens: ['/ops/anomalies'], tests: ['backend/test/d06/anomaly.spec.ts', 'contracts/src/rules/anomaly.test.ts', 'frontend/src/__tests__/screensP8b.test.tsx', 'e2e/tests/p8b.spec.ts'] },

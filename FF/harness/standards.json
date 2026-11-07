@@ -379,10 +379,12 @@
       ],
       "section": "06_lifecycle.md · 6.6 규칙",
       "implemented": [
-        "backend/src/domains/d01-policy/topology/gate.service.ts"
+        "backend/src/domains/d01-policy/topology/gate.service.ts",
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
       ],
       "tested": [
-        "backend/test/d01/gate-decision.spec.ts"
+        "backend/test/d01/gate-decision.spec.ts",
+        "backend/test/d03/exception-policy.spec.ts"
       ]
     },
     {

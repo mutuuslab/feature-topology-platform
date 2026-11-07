@@ -3,17 +3,14 @@
 // 결정(2026-11-07 B4 (c)·확정 2): Gate·검증 판정(FFG-LCY-002 fail-closed)은 그대로 두고, 예외는 그 위의 별도 층이다 — 2인 승인(요청자≠승인자,
 // 두 승인자 서로 다름)·만료 필수(무기한 없음)·만료 시 자동 원복·모든 상태 전이 감사. 우회 불가 4가지: 서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기(0%).
 // 예외는 기록된 제한 범위(제한 배포·Pilot·Shadow)만 연다 — 판정 결과를 PASS로 바꾸지 않는다.
-import { z } from 'zod';
-import { GateId, type GateStatus, type Role } from '../enums';
+import type { GateId, GateStatus, Role } from '../enums';
+import { EXCEPTION_MAX_HOURS, type CreateExceptionBody, type ExceptionCheckId, type ExceptionDecisionBody, type ExceptionKind, type ExceptionRestriction } from '../schemas/exception-policy';
+export * from '../schemas/exception-policy';
 import { CONFIG_REPORT_STALE_MS } from './ads-config';
 import { CANARY_MAX_BP } from './rollout-stage';
 
-export const EXCEPTION_KINDS = ['BYPASS', 'GATE_PENDING'] as const;
-export type ExceptionKind = (typeof EXCEPTION_KINDS)[number];
 export const EXCEPTION_KIND_LABEL: Record<ExceptionKind, string> = { BYPASS: '임시 우회', GATE_PENDING: 'Gate 예외' };
 
-export const EXCEPTION_RESTRICTIONS = ['LIMITED', 'PILOT', 'SHADOW'] as const;
-export type ExceptionRestriction = (typeof EXCEPTION_RESTRICTIONS)[number];
 export const EXCEPTION_RESTRICTION_LABEL: Record<ExceptionRestriction, string> = { LIMITED: '제한 배포', PILOT: 'Pilot', SHADOW: 'Shadow Mode' };
 /** 제한 조건별 차량 효력 상한(bp) — 제한 배포 = Canary 상한(5%), Pilot = 1%(지정 Canary 차량 포함), Shadow = 실제 켜기 없음 */
 export const RESTRICTION_CAP_BP: Record<ExceptionRestriction, number> = { LIMITED: CANARY_MAX_BP, PILOT: 100, SHADOW: 0 };
@@ -33,15 +30,11 @@ export const EXCEPTION_STATUS_LABEL: Record<ExceptionStatus, string> = {
 /** 출시 Gate — 이 둘을 통과하지 않은 Version은 출시 전(Shadow만, FR-RDD-001-006·결정 B8 (c)) */
 export const RELEASE_GATES: GateId[] = ['G8', 'G9'];
 
-/** 적용 기간 상한 — 무기한 예외는 없다(7일) */
-export const EXCEPTION_MAX_HOURS = 7 * 24;
-export const EXCEPTION_REQUEST_ROLES: Role[] = ['RELEASE_MANAGER', 'OPERATOR'];
-export const EXCEPTION_APPROVER_ROLES: Role[] = ['SAFETY_OFFICER', 'OPS_LEAD', 'SECURITY_OFFICER', 'GATE_JUDGE'];
 /** 적용에 필요한 승인 수 — 서로 다른 두 사람, 둘 다 요청자가 아니다 */
 export const EXCEPTION_REQUIRED_APPROVALS = 2;
 
 /** 예외 층이 보는 배포 검사 — bypassable=false는 어떤 예외로도 열지 않는다(우회 불가 4가지) */
-export const EXCEPTION_CHECKS = [
+export const EXCEPTION_CHECKS: readonly { id: ExceptionCheckId; label: string; bypassable: boolean; note: string }[] = [
   { id: 'COMPLIANCE_RULE', label: '배포 시점 컴플라이언스 룰', bypassable: true, note: '지정한 룰 ID만 — 승인되지 않은 룰은 원래 판정에 들어가지 않는다' },
   { id: 'FLAG_CODE', label: 'Flag 코드 연결 출시 관문', bypassable: true, note: '코드 연결 미확인 Flag의 게시' },
   { id: 'ADS_PUBLISH', label: 'ADS 발행 조건', bypassable: true, note: '분류 미등록·승인 조합 없음·승인 상한 밖 설정' },
@@ -50,53 +43,9 @@ export const EXCEPTION_CHECKS = [
   { id: 'KILL_TWO_PERSON', label: '긴급 차단·복원 2인 승인', bypassable: false, note: '차단·복원 명령은 언제나 두 사람이 승인한다' },
   { id: 'SEPARATION_OF_DUTY', label: '직무 분리(요청자≠승인자)', bypassable: false, note: '요청자는 자기 요청을 승인할 수 없다' },
   { id: 'STOP_ALWAYS', label: '멈추기(0%)', bypassable: false, note: '멈추기는 언제나 할 수 있어 예외 대상이 아니다' },
-] as const;
-export type ExceptionCheckId = (typeof EXCEPTION_CHECKS)[number]['id'];
-export const EXCEPTION_CHECK_IDS = EXCEPTION_CHECKS.map((c) => c.id) as [ExceptionCheckId, ...ExceptionCheckId[]];
+];
 export const checkLabel = (id: string) => EXCEPTION_CHECKS.find((c) => c.id === id)?.label ?? id;
 
-const iso = z.string().refine((s) => !Number.isNaN(Date.parse(s)), '일시 형식이 아닙니다');
-
-export const CreateExceptionBody = z
-  .object({
-    kind: z.enum(EXCEPTION_KINDS),
-    featureId: z.string().regex(/^FEAT-\d{5}$/),
-    featureVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
-    /** 임시 우회 대상 배포 정책 */
-    policyId: z.string().regex(/^POL-\d{5}$/).nullable().default(null),
-    /** 우회할 검사(정책) — 임시 우회 */
-    checks: z.array(z.enum(EXCEPTION_CHECK_IDS)).max(8).default([]),
-    /** 우회할 컴플라이언스 룰 ID */
-    ruleIds: z.array(z.string().trim().min(2).max(40)).max(20).default([]),
-    /** PENDING Gate — Gate 예외 */
-    gates: z.array(GateId).max(9).default([]),
-    restriction: z.enum(EXCEPTION_RESTRICTIONS),
-    /** 긴급 사유 */
-    reason: z.string().trim().min(4).max(1000),
-    /** 적용 기간(시간) — 적용 시각부터 */
-    periodHours: z.number().int().min(1).max(EXCEPTION_MAX_HOURS),
-    /** 완료 예정일 — Gate 예외 */
-    dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().default(null),
-    /** 잔여 리스크 — Gate 예외 */
-    residualRisk: z.string().trim().max(1000).nullable().default(null),
-  })
-  .strict();
-export type CreateExceptionBody = z.infer<typeof CreateExceptionBody>;
-
-export const ExceptionDecisionBody = z
-  .object({
-    decision: z.enum(['APPROVE', 'REJECT']),
-    /** 승인 의견 또는 반려 사유 */
-    reason: z.string().trim().min(2).max(1000),
-    /** 승인자가 지정하는 만료 일시 — 승인에는 필수 */
-    expiresAt: iso.optional(),
-  })
-  .strict()
-  .refine((b) => b.decision !== 'APPROVE' || !!b.expiresAt, { message: '승인에는 만료 일시를 지정해야 합니다', path: ['expiresAt'] });
-export type ExceptionDecisionBody = z.infer<typeof ExceptionDecisionBody>;
-
-export const ExceptionRevokeBody = z.object({ reason: z.string().trim().min(2).max(1000) }).strict();
-export type ExceptionRevokeBody = z.infer<typeof ExceptionRevokeBody>;
 
 export interface ExceptionApproval {
   by: string;

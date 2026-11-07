@@ -147,7 +147,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d01-policy/registry/ads-classification.service.ts:95",
      "backend/src/domains/d01-policy/registry/ads-release-guard.ts:15",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:130"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:132"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",
@@ -294,7 +294,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/policy-version.ts:59",
      "frontend/src/screens/policy/PolicyVersions.tsx:35",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:390"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:399"
     ],
     "tests": [
      "contracts/src/rules/policy-version.test.ts",
@@ -330,7 +330,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/lifecycle.ts:176",
      "backend/src/domains/d01-policy/registry/lifecycle.service.ts:128",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:264"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:266"
     ],
     "tests": [
      "backend/test/d01/policy.spec.ts",
@@ -364,7 +364,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d01-policy/topology/gate.service.ts:105",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:288",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:290",
      "contracts/src/rules/lifecycle.ts:160"
     ],
     "tests": [
@@ -437,7 +437,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/rollout-stage.ts:177",
-     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:43"
+     "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts:52"
     ],
     "tests": [
      "backend/test/d01/rollout-stage.spec.ts",
@@ -581,7 +581,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:28",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:306"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:310"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",

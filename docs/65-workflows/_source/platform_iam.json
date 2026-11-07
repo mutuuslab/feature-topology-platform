@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9352/admin/iam",
+  "iam_url": "http://localhost:9551/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-06T20:42:30.916Z",
+  "fetched_at": "2026-11-07T13:21:05.726Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-integ\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-06T20:41:40.986Z",
+  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-ggx\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-07T13:19:48.822Z",
   "ff_git": {
-   "head": "73860c7c45f5725f3404e97de6cfd9a51520522d",
-   "dirty_files": 51
+   "head": "8010fa3ed173f0c4b123fbdf265788e884888c20",
+   "dirty_files": 7
   },
-  "iam_sha256": "0eb12af87fd5f1db090dcf7fb7016a20c3de93cb00644a2ea57eb323994ad941"
+  "iam_sha256": "cdc0050597334117779e4bad48d5ee3726738c605b1c8d07aa0cc3717160c0d8"
  },
  "roles": [
   {
@@ -2015,6 +2015,347 @@
     "RELEASE_MANAGER",
     "SAFETY_OFFICER"
    ]
+  },
+  {
+   "name": "createComplianceRule",
+   "method": "POST",
+   "path": "/api/compliance-rules",
+   "summary": "컴플라이언스 룰 등록(승인 대기, 버전 1.0) — 룰 ID 중복은 409",
+   "component": "D03-01",
+   "roles": [
+    "REGULATORY_OWNER",
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "updateComplianceRule",
+   "method": "PATCH",
+   "path": "/api/compliance-rules/:id",
+   "summary": "컴플라이언스 룰 수정 — 소유자만, Major.Minor 증가, 승인된 룰은 승인 대기로",
+   "component": "D03-01",
+   "roles": [
+    "REGULATORY_OWNER",
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "requestComplianceApproval",
+   "method": "POST",
+   "path": "/api/compliance-rules/:id/approval-requests",
+   "summary": "룰 승인 요청 — 요청자·대상 룰 버전·승인 대상자·요청 일시",
+   "component": "D03-01",
+   "roles": [
+    "REGULATORY_OWNER",
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "decideComplianceRule",
+   "method": "POST",
+   "path": "/api/compliance-rules/:id/decision",
+   "summary": "룰 승인·반려 — 지정 승인 대상자 본인만(작성자 제외)",
+   "component": "D03-01",
+   "roles": [
+    "REGULATORY_OWNER",
+    "SAFETY_OFFICER",
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "issueApiKey",
+   "method": "POST",
+   "path": "/api/api-keys",
+   "summary": "API 키 발급 — 외부 시스템·역할(SYSTEM·AUDITOR)·만료일, 원문은 이 응답 한 번만",
+   "component": "D05-01",
+   "roles": [
+    "SECURITY_OFFICER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "revokeApiKey",
+   "method": "DELETE",
+   "path": "/api/api-keys/:id",
+   "summary": "API 키 삭제(폐기) — 해시를 지워 이후 요청은 401, 기록은 감사용으로 남긴다",
+   "component": "D05-01",
+   "roles": [
+    "SECURITY_OFFICER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "createLegacyLink",
+   "method": "POST",
+   "path": "/api/legacy/links",
+   "summary": "연계 설정 등록 — 같은 시스템 중복 409, 설정에서 데이터 브리지 구성",
+   "component": "D05-03",
+   "roles": [
+    "IMPLEMENTER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "updateLegacyLink",
+   "method": "PATCH",
+   "path": "/api/legacy/links/:id",
+   "summary": "연계 설정 수정(사유) — 없는 설정 404, 브리지 다시 구성",
+   "component": "D05-03",
+   "roles": [
+    "IMPLEMENTER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "deleteLegacyLink",
+   "method": "DELETE",
+   "path": "/api/legacy/links/:id",
+   "summary": "연계 설정 삭제(사유) — 활성 연계는 422",
+   "component": "D05-03",
+   "roles": [
+    "IMPLEMENTER",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "runLegacyBridge",
+   "method": "POST",
+   "path": "/api/legacy/links/:id/run",
+   "summary": "배치·파일 브리지 지금 실행 — 활성 설정만, 해외공장 주문 가져오기·변환(IF-12)",
+   "component": "D05-03",
+   "roles": [
+    "OPERATOR",
+    "IMPLEMENTER",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "createLegacyRule",
+   "method": "POST",
+   "path": "/api/legacy/mappings",
+   "summary": "변환 규칙 등록 — 레거시 코드 → FEAT ID(같은 코드 409)",
+   "component": "D05-03",
+   "roles": [
+    "IMPLEMENTER",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "updateLegacyRule",
+   "method": "PATCH",
+   "path": "/api/legacy/mappings/:code",
+   "summary": "변환 규칙 수정(사유) — 기본 규칙은 등록 규칙으로 덮어쓴다",
+   "component": "D05-03",
+   "roles": [
+    "IMPLEMENTER",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "receiveLegacyMessage",
+   "method": "POST",
+   "path": "/api/legacy-sdv/messages",
+   "summary": "레거시 코딩 메시지 받기 → SDV Feature 상태로 변환(실패는 사유·시각 기록)",
+   "component": "D05-07",
+   "roles": [
+    "OPERATOR",
+    "VARIANT_OWNER",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "sendSettlement",
+   "method": "POST",
+   "path": "/api/settlement/transmissions",
+   "summary": "정산 시스템으로 사용량 보내기(끝난 달, 성공은 달마다 한 번)",
+   "component": "D05-04",
+   "roles": [
+    "OPERATOR",
+    "RELEASE_MANAGER",
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "createTraceLink",
+   "method": "POST",
+   "path": "/api/trace-links",
+   "summary": "추적 연결 등록 — 요구·설계 요소(HW·SW)·인터페이스(API·Signal·DTC·Event)·Test Case(필수 여부)·OTA 패키지, 출처 존재 확인",
+   "component": "D01-02",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER",
+    "GATE_JUDGE",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "unlinkTraceLink",
+   "method": "POST",
+   "path": "/api/trace-links/:id/unlink",
+   "summary": "추적 연결 해제 — 사유, 연결은 해제 이력으로 남는다",
+   "component": "D01-02",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER",
+    "GATE_JUDGE",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "createTestEvidence",
+   "method": "POST",
+   "path": "/api/trace-links/:id/evidence",
+   "summary": "Test Evidence 등록 — 연결된 Test Case에 Evidence 식별자·실행 일시·결과·실행 환경(추가만)",
+   "component": "D01-02",
+   "roles": [
+    "GATE_JUDGE",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "addOddSite",
+   "method": "POST",
+   "path": "/api/odd-profiles/:id/sites",
+   "summary": "ODD 적용 장소 추가 요청(변경 영향 확정 전 승인 대기)",
+   "component": "D02-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "approveOddSite",
+   "method": "POST",
+   "path": "/api/odd-profiles/:id/sites/:siteId/approve",
+   "summary": "ODD 적용 장소 승인(변경 영향 확정 필요)",
+   "component": "D02-01",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "createRecoveryDecision",
+   "method": "POST",
+   "path": "/api/config-sets/recovery-decisions",
+   "summary": "복구 결정(메타데이터·보안 최소 버전 재검증)",
+   "component": "D02-01",
+   "roles": [
+    "OPS_LEAD",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "updateAdsClassification",
+   "method": "PUT",
+   "path": "/api/features/:id/versions/:ver/classification",
+   "summary": "Feature ADS 분류 입력",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "confirmAdsClassification",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/classification/confirm",
+   "summary": "Feature ADS 분류 확정",
+   "component": "D01-01",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "putMarketBaseline",
+   "method": "PUT",
+   "path": "/api/market-baselines/:id/:ver/:market",
+   "summary": "시장 기준선 입력",
+   "component": "D01-01",
+   "roles": [
+    "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "receiveAsBuilt",
+   "method": "POST",
+   "path": "/api/plants/eol/as-built",
+   "summary": "출고 실물 구성 수신(IF-12 공장 모의)",
+   "component": "D05-02",
+   "roles": [
+    "BOM_APPROVER"
+   ]
+  },
+  {
+   "name": "createEolCheck",
+   "method": "POST",
+   "path": "/api/plants/eol/checks",
+   "summary": "품질 보류 결정(생산 품질)",
+   "component": "D05-02",
+   "roles": [
+    "BOM_APPROVER"
+   ]
+  },
+  {
+   "name": "simulateInstall",
+   "method": "POST",
+   "path": "/api/ota/installs/simulate",
+   "summary": "시뮬 차량 설치(사전조건·복구 경로)",
+   "component": "D04-01",
+   "roles": [
+    "OPERATOR",
+    "OPS_LEAD"
+   ]
+  },
+  {
+   "name": "runSupportDrill",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/support-drills",
+   "summary": "지원 종료·서버 교체 연습 실행",
+   "component": "D01-01",
+   "roles": [
+    "RELEASE_MANAGER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "createExceptionPolicy",
+   "method": "POST",
+   "path": "/api/exceptions",
+   "summary": "예외 승인 요청 — 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(우회 불가 4가지 제외)",
+   "component": "D03-02",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "decideExceptionPolicy",
+   "method": "POST",
+   "path": "/api/exceptions/:id/decision",
+   "summary": "예외 승인·반려 — 요청자 제외 서로 다른 두 사람, 승인자 지정 만료 일시",
+   "component": "D03-02",
+   "roles": [
+    "SAFETY_OFFICER",
+    "OPS_LEAD",
+    "SECURITY_OFFICER",
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "revokeExceptionPolicy",
+   "method": "POST",
+   "path": "/api/exceptions/:id/revoke",
+   "summary": "예외 회수 — 이전 정책 상태로 원복",
+   "component": "D03-02",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR",
+    "SAFETY_OFFICER",
+    "OPS_LEAD",
+    "SECURITY_OFFICER",
+    "GATE_JUDGE"
+   ]
   }
  ],
  "sod": [
@@ -2841,6 +3182,31 @@
    "path": "/consults/:id",
    "title": "협의 요청",
    "group": "home"
+  },
+  {
+   "path": "/trace/coverage",
+   "title": "추적 커버리지",
+   "group": "verify"
+  },
+  {
+   "path": "/baselines/eol",
+   "title": "출고 실물 구성 대조",
+   "group": "config"
+  },
+  {
+   "path": "/ops/ota-installs",
+   "title": "OTA 설치 단계",
+   "group": "release"
+  },
+  {
+   "path": "/deployments/campaigns/:id",
+   "title": "전송 캠페인",
+   "group": "release"
+  },
+  {
+   "path": "/verify/exceptions",
+   "title": "예외 승인",
+   "group": "verify"
   }
  ],
  "dist_diff": []

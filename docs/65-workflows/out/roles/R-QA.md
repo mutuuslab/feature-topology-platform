@@ -161,6 +161,7 @@ last_updated: 2026-11-05
 - FPW.5-A05 시험 Evidence 연결·TMS 제출 (통보)
 - FPW.6-A04 서명 패키지 작성·SBOM 결합 (통보)
 - FPW.6-A06 G6 서명 배포 실행 (통보)
+- FPW.7-A15 예외 승인·만료 원복 확인 (통보)
 - FPW.7-A03 Safety Case·SOTIF 근거 정리 (통보)
 - FPW.7-A08 G7 출시·활성화 판정 (통보)
 - FPW.7-A11 Canary 활성화·단계적 확대 (통보)

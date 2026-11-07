@@ -4,41 +4,41 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 292,
-      "부분": 218,
-      "미구현": 113,
+      "구현": 304,
+      "부분": 214,
+      "미구현": 105,
       "범위 밖": 5
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 131,
-        "부분": 57,
-        "미구현": 48,
+        "구현": 140,
+        "부분": 56,
+        "미구현": 40,
         "범위 밖": 3
       },
       {
         "sheet": "02_차량 런타임 실행",
         "leaves": 81,
-        "구현": 17,
-        "부분": 47,
+        "구현": 18,
+        "부분": 46,
         "미구현": 15,
         "범위 밖": 2
       },
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 81,
-        "부분": 23,
+        "구현": 82,
+        "부분": 22,
         "미구현": 5,
         "범위 밖": 0
       },
       {
         "sheet": "04_배포·운영·데이터",
         "leaves": 78,
-        "구현": 22,
-        "부분": 42,
+        "구현": 23,
+        "부분": 41,
         "미구현": 14,
         "범위 밖": 0
       },
@@ -59,7 +59,7 @@
         "범위 밖": 0
       }
     ],
-    "traced": 140,
+    "traced": 152,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 9,
@@ -89,6 +89,17 @@
       ],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
+      ]
+    },
+    "FR-REG-005-010": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/d03/exception-policy.spec.ts",
+        "frontend/src/__tests__/exceptions.test.tsx",
+        "e2e/tests/exceptions.spec.ts"
       ]
     },
     "FR-REG-005-014": {
@@ -287,6 +298,15 @@
         "backend/test/d04/lake-loop.spec.ts"
       ]
     },
+    "FR-ROL-002-008": {
+      "implemented": [
+        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/d03/exception-policy.spec.ts"
+      ]
+    },
     "FR-PVER-002-001": {
       "implemented": [
         "contracts/src/rules/policy-version.ts"
@@ -320,6 +340,54 @@
     "FR-PVER-002-006": {
       "implemented": [
         "contracts/src/rules/policy-version.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-001-001": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts"
+      ]
+    },
+    "FR-EXC-001-002": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts"
+      ]
+    },
+    "FR-EXC-001-003": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-002-001": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "backend/test/d03/exception-policy.spec.ts"
+      ]
+    },
+    "FR-EXC-002-002": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-002-003": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-002-004": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
       ],
       "tested": []
     },
@@ -370,6 +438,15 @@
       ],
       "tested": [
         "backend/test/d01/audit-export.spec.ts"
+      ]
+    },
+    "FR-SUP-004-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/support-conditions/eligibility.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/ads/config.spec.ts"
       ]
     },
     "FR-RTE-001-004": {
@@ -476,6 +553,12 @@
       "tested": []
     },
     "FR-CRC-001-016": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-017": {
       "implemented": [
         "contracts/src/rules/compliance-rule.ts"
       ],
@@ -856,6 +939,18 @@
       ],
       "tested": [
         "contracts/src/rules/notification.test.ts"
+      ]
+    },
+    "FR-RDD-001-006": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/d01/policy.spec.ts",
+        "backend/test/d03/exception-policy.spec.ts",
+        "backend/test/helpers.ts",
+        "frontend/src/__tests__/exceptions.test.tsx"
       ]
     },
     "FR-CICD-001-001": {

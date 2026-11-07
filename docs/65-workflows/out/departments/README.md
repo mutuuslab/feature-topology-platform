@@ -43,14 +43,14 @@ last_updated: 2026-11-05
 |---|---|---|---|---|
 | [상품기획팀](DEP-PDP.md) | Feature Owner, 상품 기획, 상품 Owner | 기획팀 | author, commerce, approver, productowner | 15 |
 | [시스템엔지니어링팀](DEP-SE.md) | 요구 Owner, 아키텍트, 도메인 검토자 | 엔지니어링 콘솔 | approver, integrator | 12 |
-| [SW통합·릴리스팀](DEP-INT.md) | 통합 조직, Release Manager | 엔지니어링 콘솔 | coordinator, integrator | 12 |
+| [SW통합·릴리스팀](DEP-INT.md) | 통합 조직, Release Manager | 엔지니어링 콘솔 | coordinator, integrator | 13 |
 | [PLM·기준정보팀](DEP-PLM.md) | 기준정보 담당, Feature DB 관리자 | 엔지니어링 콘솔 | steward | 2 |
-| [기능안전팀](DEP-FS.md) | Safety Manager | 심사 결재함 | quality, safety2, integrator | 16 |
+| [기능안전팀](DEP-FS.md) | Safety Manager | 심사 결재함 | quality, safety2, integrator | 17 |
 | [차량사이버보안팀](DEP-CS.md) | CSM | 심사 결재함 | integrator | 2 |
 | [법규인증팀](DEP-HOM.md) | 법규 담당 | 심사 결재함 | steward | 5 |
 | [시험·검증팀](DEP-VAL.md) | 시험 조직 | 심사 결재함 | quality | 4 |
 | [품질팀](DEP-QA.md) | 품질 조직 | 심사 결재함 | quality, viewer | 8 |
-| [OTA·서비스운영팀](DEP-OPS.md) | 운영 조직 | 관제실 | operator, opslead | 9 |
+| [OTA·서비스운영팀](DEP-OPS.md) | 운영 조직 | 관제실 | operator, opslead | 10 |
 | [IT인프라·보안운영팀](DEP-ITSEC.md) | PKI 운영 | 관제실 | viewer | 0 (2차 초안만) |
 | [구매팀](DEP-PUR.md) | 구매, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 | 검토 포털 | viewer, approver | 0 (2차 초안만) |
 | [법무팀](DEP-LEG.md) | 법무 | 검토 포털 | viewer | 0 (2차 초안만) |
@@ -63,16 +63,16 @@ last_updated: 2026-11-05
 
 | 부서 | FPW.1 | FPW.2 | FPW.3 | FPW.4 | FPW.5 | FPW.6 | FPW.7 | FPW.8 | FPW.9 | FPW.10* | FPW.11* | FPW.12* | FPW.13* | FPW.14* |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C2 I1 | I4 | R1 A1 I3 | R5 A6 C7 I8 | C1 I7 | R2 A3 C2 I2 | – | – | – | I2 | R1 A1 I4 |
+| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C2 I1 | I4 | R1 A1 I3 | R5 A6 C9 I8 | C1 I7 | R2 A3 C2 I2 | – | – | – | I2 | R1 A1 I4 |
 | 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C4 I2 | R3 A5 C2 I4 | C2 I1 | C1 I1 | R1 A1 | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C3 I2 |
-| SW통합·릴리스팀 | – | I1 | R2 A2 | R1 C1 I3 | R2 A2 C2 I4 | R3 A4 C4 | R1 A1 C1 I5 | C2 | R2 A1 C3 I3 | R1 A1 C2 I3 | C1 I3 | I1 | – | – |
+| SW통합·릴리스팀 | – | I1 | R2 A2 | R1 C1 I3 | R2 A2 C2 I4 | R3 A4 C4 | R2 A2 C1 I6 | C2 | R2 A1 C3 I3 | R1 A1 C2 I3 | C1 I3 | I1 | – | – |
 | PLM·기준정보팀 | R1 I3 | – | C1 I1 | C1 | – | R1 A1 I1 | – | – | – | C1 | – | – | – | R3 A3 I3 |
-| 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I2 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R2 A2 C5 | R3 A4 C6 I1 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 |
+| 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I2 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R3 A3 C5 I1 | R3 A4 C6 I1 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 |
 | 차량사이버보안팀 | – | R1 A1 C2 | – | C2 | – | C2 | – | R1 C4 I1 | – | C3 | R4 A5 C1 | – | R1 C3 | – |
 | 법규인증팀 | R1 A1 C1 | R1 A1 C1 I1 | – | – | – | R1 A1 C1 I1 | R1 A1 C1 I1 | R1 A1 C3 I3 | – | R1 C1 | C1 I1 | R2 A2 C1 | R3 A3 C1 | C1 |
 | 시험·검증팀 | – | C1 I1 | C1 I3 | I3 | R3 A4 C3 | – | C3 | C1 | C3 | R1 C1 | – | – | – | – |
-| 품질팀 | I1 | I1 | R1 | R1 I1 | R1 C1 I3 | R1 I2 | R1 I3 | R2 A1 C1 I4 | R1 A1 | R3 A2 C2 I1 | I1 | I2 | I3 | – |
-| OTA·서비스운영팀 | – | – | – | – | – | C1 I2 | R2 A2 C2 I3 | R7 A6 C1 I4 | I3 | – | C1 I3 | C2 I2 | R1 I2 | – |
+| 품질팀 | I1 | I1 | R1 | R1 I1 | R1 C1 I3 | R1 I2 | R1 I4 | R2 A1 C1 I4 | R1 A1 | R3 A2 C2 I1 | I1 | I2 | I3 | – |
+| OTA·서비스운영팀 | – | – | – | – | – | C1 I2 | R3 A2 C3 I3 | R7 A6 C1 I4 | I3 | – | C1 I3 | C2 I2 | R1 I2 | – |
 | IT인프라·보안운영팀 | – | – | – | – | – | C1 | – | – | – | – | R1 C2 | – | – | – |
 | 구매팀 | – | C1 | – | – | – | – | – | – | – | R2 A3 I2 | C1 | – | – | – |
 | 법무팀 | – | – | – | – | – | – | C1 | C1 | – | C1 | R1 A1 | R1 A1 C2 | C2 | – |

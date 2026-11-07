@@ -204,6 +204,8 @@ last_updated: 2026-11-05
 - FPW.6-A06 G6 서명 배포 실행 (통보)
 - FPW.7-A01 Canary·Shadow 판정 기준 정의 (통보)
 - FPW.7-A13 출시 차단 해제 결정 (협의)
+- FPW.7-A14 예외 요청(임시 우회·Gate 예외) (협의)
+- FPW.7-A15 예외 승인·만료 원복 확인 (협의)
 - FPW.7-A03 Safety Case·SOTIF 근거 정리 (협의)
 - FPW.7-A04 Safety Case 독립 검토 (통보)
 - FPW.7-A05 상품 구성 작성 (협의)

@@ -24,6 +24,7 @@ import { stageGuard } from './expansion-text';
 const T = ko.policy;
 // 확대 판정(Canary 관측 TL-UI02·UI03 + 축별 근거 ADS-UI11, 통합 D-INT-4) — 따로 읽는다(정책 상세 묶음을 늘리지 않게)
 const ExpansionPanel = lazy(() => import('./ExpansionPanel').then((m) => ({ default: m.ExpansionPanel })));
+const ExceptionPanel = lazy(() => import('./ExceptionPanel').then((m) => ({ default: m.ExceptionPanel })));
 const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort', 'policyExpansion', 'canaryOverview'];
 
 interface Policy {
@@ -228,6 +229,7 @@ export function PolicyDetail() {
             {/* 확대 판정(Canary 관측 + 축별 근거, 통합 D-INT-4) — 배포 중 정책에만, 근거가 둘 다 없으면 그리지 않는다 */}
             <Suspense fallback={null}>
               <ExpansionPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
+              <ExceptionPanel policy={p} />
             </Suspense>
 
             <PolicyCrPanel policyId={p.policyId} />

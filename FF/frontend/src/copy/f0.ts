@@ -18,7 +18,7 @@ export const accounts = {
 export const ownerTransfer = {
   panel: '소유자 이관',
   ownerState: '소유자 계정',
-  lead: '소유자 계정이 없거나 비활성입니다. 시스템 관리자가 룰 담당 역할의 사용 중 계정으로 소유자를 옮깁니다. 룰 내용·버전·상태는 그대로입니다.',
+  lead: '소유자 계정이 없거나 비활성입니다. 룰 담당 역할의 사용 중 계정으로 옮깁니다. 내용·버전은 그대로입니다.',
   to: '새 소유자',
   reason: '이관 사유',
   submit: '소유자 이관',

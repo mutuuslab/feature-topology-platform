@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Asil, GATES } from '../enums';
 import { CALS } from '../rules/gate-evidence';
 import { MARKETS } from './wire';
+import type { AccountState, OwnerTransfer } from '../rules/owner-authz';
 
 export const COMPLIANCE_RULE_TYPES = ['LEGAL', 'PRIVACY', 'SAFETY', 'SECURITY'] as const;
 export type ComplianceRuleType = (typeof COMPLIANCE_RULE_TYPES)[number];

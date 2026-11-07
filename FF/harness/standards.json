@@ -198,6 +198,7 @@
         "backend/src/domains/d01-policy/registry/safety-profile.service.ts"
       ],
       "tested": [
+        "contracts/src/rules/draft-deletion.test.ts",
         "backend/test/d01/safety-profile.spec.ts",
         "frontend/src/__tests__/simPolicyOps.test.ts"
       ]

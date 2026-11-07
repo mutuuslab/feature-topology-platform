@@ -109,7 +109,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:112",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:95",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:98",
      "backend/src/domains/d01-policy/registry/ads-classification.service.ts:124"
     ],
     "tests": [
@@ -182,7 +182,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:112",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:95",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:98",
      "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:121"
     ],
     "tests": [
@@ -474,7 +474,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/ads-publish.ts:158",
      "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:105",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:146"
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:151"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",
@@ -509,7 +509,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d06-qsec/pki-kms/pki.service.ts:129",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:149"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:150"
     ],
     "tests": [
      "backend/test/d03/delivery.spec.ts",
@@ -544,8 +544,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:154",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:66",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:155",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:67",
      "contracts/src/rules/policy-gate.ts:161"
     ],
     "tests": [
@@ -687,7 +687,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:234",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:241",
      "contracts/src/rules/status-v2.ts:103",
      "contracts/src/rules/deactivation.ts:133"
     ],
@@ -760,7 +760,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "frontend/src/data/twin/engine.ts:623",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:277"
     ],
     "tests": [
      "frontend/src/__tests__/twinEngine.test.ts"
@@ -795,7 +795,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
      "contracts/src/rules/deactivation.ts:8",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:306"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:313"
     ],
     "tests": [
      "backend/test/d03/trial-expiry-kill.spec.ts",
@@ -868,7 +868,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "미구현",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:270",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:277",
      "frontend/src/data/twin/engine.ts:623"
     ],
     "tests": [],
@@ -1183,7 +1183,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/status-v2.ts:71",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:256",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:263",
      "contracts/src/schemas/wire.ts:165"
     ],
     "tests": [
@@ -1218,7 +1218,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:315",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:322",
      "contracts/src/rules/kill-timeline.ts:33",
      "contracts/src/schemas/wire.ts:142"
     ],
@@ -1293,8 +1293,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:287",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:114",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:294",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:117",
      "contracts/src/rules/kill-timeline.ts:62"
     ],
     "tests": [
@@ -1547,7 +1547,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/status-v2.ts:14",
      "contracts/src/schemas/wire.ts:48",
-     "backend/src/domains/d06-qsec/secure-deploy/publication.repo.ts:72"
+     "backend/src/domains/d06-qsec/secure-deploy/publication.repo.ts:86"
     ],
     "tests": [
      "backend/test/d04/status-v2.spec.ts"
@@ -1580,7 +1580,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "frontend/src/screens/ops/FleetLive.tsx:433",
+     "frontend/src/screens/ops/FleetLive.tsx:445",
      "frontend/src/components/liveMonitor.ts:80",
      "contracts/src/flags/p0.ts:224"
     ],
@@ -1616,7 +1616,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/status-v2.ts:99",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:256",
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:263",
      "frontend/src/data/twin/engine.ts:728"
     ],
     "tests": [
@@ -1739,8 +1739,8 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d04-ops/telemetry-ingest/status-ingest.service.ts:155",
-     "frontend/src/screens/ops/Deployments.tsx:279",
-     "frontend/src/screens/ops/FleetLive.tsx:98"
+     "frontend/src/screens/ops/Deployments.tsx:289",
+     "frontend/src/screens/ops/FleetLive.tsx:101"
     ],
     "tests": [
      "backend/test/d04/status-v2.spec.ts",
@@ -2074,8 +2074,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "부분",
     "evidence": [
-     "frontend/src/screens/ops/Deployments.tsx:283",
-     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:208"
+     "frontend/src/screens/ops/Deployments.tsx:293",
+     "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:213"
     ],
     "tests": [],
     "gap": "게시본 상세에 차량별 상태·사유를 한 표로만 보인다. 미수신과 로컬 거부를 따로 조회하는 목록·필터와 시험이 없다.",
@@ -2220,7 +2220,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d03-safety/kill-switch/trial-expiry.listener.ts:64",
      "contracts/src/flags/evaluate.ts:107",
-     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:306"
+     "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts:313"
     ],
     "tests": [
      "backend/test/d03/trial-expiry-kill.spec.ts",

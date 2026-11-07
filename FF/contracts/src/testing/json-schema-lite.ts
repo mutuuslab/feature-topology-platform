@@ -15,11 +15,16 @@ const KEYWORDS = new Set([
 ]);
 const RFC3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 
-/** $id → 스키마. Lake 스키마 전부 + 부록 D 상태 보고 */
-const registry = new Map<string, Schema>();
-for (const f of readdirSync(LAKE_SCHEMA_DIR).filter((n) => n.endsWith('.schema.json'))) {
-  const s = readJson(join(LAKE_SCHEMA_DIR, f));
-  registry.set(s.$id, s);
+/** $id → 스키마(Lake 스키마 전부) — 처음 쓸 때 읽는다(최상위 실행문을 두지 않는다: tools/bundle-budget.test.ts) */
+let registryCache: Map<string, Schema> | null = null;
+function registry(): Map<string, Schema> {
+  if (registryCache) return registryCache;
+  const m = new Map<string, Schema>();
+  for (const f of readdirSync(LAKE_SCHEMA_DIR).filter((n) => n.endsWith('.schema.json'))) {
+    const s = readJson(join(LAKE_SCHEMA_DIR, f));
+    m.set(s.$id, s);
+  }
+  return (registryCache = m);
 }
 
 const isType = (t: string, v: unknown) =>
@@ -34,7 +39,7 @@ function resolve(ref: string, base: string): { schema: Schema; base: string } {
   const url = new URL(ref, base);
   const frag = url.hash;
   url.hash = '';
-  const doc = registry.get(url.href);
+  const doc = registry().get(url.href);
   if (doc === undefined) throw new Error(`$ref를 찾을 수 없음: ${ref} (기준 ${base})`);
   let node: any = doc;
   for (const part of frag.replace(/^#\/?/, '').split('/').filter(Boolean)) node = node[decodeURIComponent(part)];

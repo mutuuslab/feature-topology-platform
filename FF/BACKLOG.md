@@ -100,7 +100,7 @@
 | ID | 상태 | 내용 | 완료 기준 | 선행 |
 |---|---|---|---|---|
 | TL-M01 | 완료(gap/p9) | contracts: FFV1-MSG 정규 문자열·시험 벡터, `VehicleMessage`·`RelayRecord`·`RelayVerdict` zod — 80-75 JSON Schema와 대조 시험 | contracts 시험(벡터·대조) | — |
-| TL-M02 | 대기 | FFV1-MSG 검증기(`kernel/vehicle-auth.ts`): 가명 → VIN(등록 때 가명 충돌 거부), 요청 키 K_r, 미래 5분·과거 72시간, nonce 창 72시간(같은 본문 = DUPLICATE, 다른 본문 = REQUEST_REPLAY) | 시험: 위조·변조·다른 종류 서명·FFV1-REQ 서명 재사용 거부, 72시간 초과 STALE | TL-M01 |
+| TL-M02 | 완료(gap/p9) | FFV1-MSG 검증기(`kernel/vehicle-auth.ts`): 가명 → VIN(등록 때 가명 충돌 거부), 요청 키 K_r, 미래 5분·과거 72시간, nonce 창 72시간(같은 본문 = DUPLICATE, 다른 본문 = REQUEST_REPLAY) | 시험: 위조·변조·다른 종류 서명·FFV1-REQ 서명 재사용 거부, 72시간 초과 STALE | TL-M01 |
 | TL-M03 | 완료(커밋 전) | **결함 성격**: 같은 상태 보고(같은 report_seq·state_auth)를 다시 받으면 지금은 SEQUENCE/REPLAY 위반 → 이상 징후·보안 이벤트. 중계(최소 한 번)에서는 정상 경우 → `DUPLICATE`로 받고 위반을 만들지 않는다. 값이 다른 같은 번호는 지금처럼 REPLAY | 회귀 시험: 같은 보고 두 번 → 위반 0·보안 이벤트 0, 다른 보고 같은 번호 → REPLAY | — |
 | TL-M04 | 대기 | Lake 중계 소비자(D04-03): `GET /v1/relay/safety` 긴 대기 상시·normal 5초, 커서 FF DB(처리 뒤 이동), 종류별로 기존 처리기(`StatusIngestService.ingest`·전달 확인·`VehicleRequestService`)에 `via=LAKE`, 결과를 `relay.verdict`로 내보냄 | 시험(참조 Lake 대역): 재시작 뒤 이어 받기, 중복·순서 뒤집힘 안전, 처리 실패 시 커서 안 옮김 | TL-M02·M03·C01 |
 | TL-M05 | 대기 | 설정 `FF_VEHICLE_UPLINK`(direct·lake·both), `lake`면 `/vehicle/v1/*` 오르는 창구 403 `UPLINK_VIA_LAKE`, 운영 필수 `FF_LAKE_URL`·토큰 파일(runtime-config·`.env.example`·production-mode 시험) | 시험: 설정 조합·운영 거부 | TL-M04 |

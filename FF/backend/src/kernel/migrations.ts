@@ -1324,4 +1324,12 @@ CREATE TRIGGER ads_support_drill_no_update BEFORE UPDATE ON ads_support_drill BE
 CREATE TRIGGER ads_support_drill_no_delete BEFORE DELETE ON ads_support_drill BEGIN SELECT RAISE(ABORT, 'ads_support_drill은 추가만 가능'); END;
 `,
   },
+  {
+    // P9 TL-M02 — 중계 차량 서명 메시지(FFV1-MSG) nonce 창 72시간(결정 U-15). 같은 nonce·같은 본문 = DUPLICATE, 다른 본문 = REQUEST_REPLAY
+    name: '311_vehicle_message_nonce',
+    sql: `
+CREATE TABLE vehicle_message_nonce (vin TEXT NOT NULL, nonce TEXT NOT NULL, body_sha256 TEXT NOT NULL, kind TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (vin, nonce));
+CREATE INDEX vehicle_message_nonce_at ON vehicle_message_nonce (at);
+`,
+  },
 ];

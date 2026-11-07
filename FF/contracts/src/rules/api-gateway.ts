@@ -21,7 +21,8 @@ export function parseApiKey(raw: string): { keyId: string; secret: string } | nu
   return m ? { keyId: m[1], secret: m[2] } : null;
 }
 /** 목록에 보이는 앞부분 — 원문을 다시 만들 수 없는 길이 */
-export const apiKeyPrefix = (raw: string) => raw.slice(0, raw.lastIndexOf('_') + 5);
+/** 키 ID 뒤 '_'(두 번째)부터 4자 — 비밀(base64url)에도 '_'가 나올 수 있어 마지막 '_' 기준이면 안 된다 */
+export const apiKeyPrefix = (raw: string) => raw.slice(0, raw.indexOf('_', raw.indexOf('_') + 1) + 5);
 
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '날짜는 YYYY-MM-DD');
 export const IssueApiKeyBody = z

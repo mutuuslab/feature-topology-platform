@@ -12,6 +12,9 @@ describe('API 키 (FR-AGW-001-003~005)', () => {
     expect(parseApiKey(` ${KEY} `)?.keyId).toBe('AK-0001');
     for (const bad of ['', 'ffk_AK-1_' + 'a'.repeat(43), `ffk_AK-0001_${'a'.repeat(42)}`, `xfk_AK-0001_${'a'.repeat(43)}`, `ffk_AK-0001_${'a'.repeat(42)}!`]) expect(parseApiKey(bad)).toBeNull();
     expect(apiKeyPrefix(KEY)).toBe('ffk_AK-0001_aaaa');
+    // 비밀(base64url)에 '_'가 섞여도 앞부분은 키 ID 뒤 4자 — 마지막 '_' 기준이면 비밀 대부분이 목록에 드러난다(통합 15단계 결함)
+    expect(apiKeyPrefix(`ffk_AK-0001_dQTmUPF7_LG71${'a'.repeat(23)}`)).toBe('ffk_AK-0001_dQTm');
+    expect(apiKeyPrefix(`ffk_AK-0012_ab_${'c'.repeat(40)}`)).toBe('ffk_AK-0012_ab_c');
   });
 
   it('역할은 외부 시스템·조회 전용만 — 사람 역할을 키로 받지 않는다', () => {

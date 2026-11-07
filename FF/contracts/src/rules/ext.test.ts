@@ -48,6 +48,7 @@ describe('장애·VOC → SOTIF (FFG-SOT-003)', () => {
   it('VOC 범주 추정은 긴 입력에서도 선형 — 거리 반복 10만 자가 100ms 안에 OTHER, 거리·짧음 문장은 그대로 PERFORMANCE', () => {
     const t0 = performance.now();
     expect(classifyVoc('거리'.repeat(50000))).toBe('OTHER');
+    // hygiene-ok: ReDoS 회귀는 경과 시간 자체가 판정 대상(고치기 전 3.7초, 상한 100ms에 30배 여유)
     expect(performance.now() - t0).toBeLessThan(100);
     expect(classifyVoc('차간 거리가 짧아요')).toBe('PERFORMANCE');
     expect(classifyVoc('앞차와의 거리가 너무 길게 유지돼요')).toBe('PERFORMANCE');

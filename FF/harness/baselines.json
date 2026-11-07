@@ -10,7 +10,7 @@
     "note": "FEAT-BDC 데모 ID를 하드코딩한 파일 수 — v0.81 데이터(FEAT-xxxxx)로 이행하며 0까지"
   },
   "implementedComponents": {
-    "value": 42,
+    "value": 43,
     "direction": "min",
     "note": "구현 완료 컴포넌트 수 — 줄어들 수 없다"
   },
@@ -40,22 +40,22 @@
     "note": "시험이 참조하는 보고서 시험 카탈로그(TC-FF) 수 — 늘려 나간다"
   },
   "req.verdict.implemented": {
-    "value": 225,
+    "value": 292,
     "direction": "min",
     "note": "기능명세서 말단 요구사항 중 구현 판정 수 — 줄면 안 된다"
   },
   "req.verdict.missing": {
-    "value": 152,
+    "value": 113,
     "direction": "max",
     "note": "기능명세서 말단 요구사항 중 미구현 판정 수 — 늘면 안 된다"
   },
   "req.traced": {
-    "value": 71,
+    "value": 140,
     "direction": "min",
     "note": "@req 표식으로 코드에 추적된 요구사항 수"
   },
   "req.untracedImplemented": {
-    "value": 155,
+    "value": 154,
     "direction": "max",
     "note": "구현 판정인데 @req 표식이 없는 요구사항 수 — 줄여 나간다"
   },

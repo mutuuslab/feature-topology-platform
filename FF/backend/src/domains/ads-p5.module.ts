@@ -3,10 +3,14 @@ import { Module } from '@nestjs/common';
 import { D01PolicyModule } from './d01-policy/d01-policy.module';
 import { DeliveryModule } from './delivery.module';
 import { AdsPublishController } from './d06-qsec/secure-deploy/ads-publish.controller';
+import { EolController, EolService } from './d05-ext/data-sync/eol.service';
+import { OtaInstallController, OtaInstallService } from '../adapters/ota/ota-install.service';
+import { SupportDrillController, SupportDrillService } from './d01-policy/registry/support-drill.service';
 
 @Module({
   imports: [D01PolicyModule, DeliveryModule],
-  controllers: [AdsPublishController],
-  providers: [],
+  controllers: [AdsPublishController, EolController, OtaInstallController, SupportDrillController],
+  providers: [EolService, OtaInstallService, SupportDrillService],
+  exports: [EolService, OtaInstallService],
 })
 export class AdsP5Module {}

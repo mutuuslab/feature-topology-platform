@@ -39,6 +39,14 @@ export class EligibilityService {
     return r ? !!(JSON.parse(r.doc) as { adsFeature?: boolean }).adsFeature : false;
   }
 
+  private asBuiltEcus(vin: string): string[] | null {
+    const r = this.db.get<{ doc: string }>('SELECT doc FROM as_built_config WHERE vin = ?', vin);
+    return r ? (JSON.parse(r.doc) as { builtEcus: { ecuPno: string }[] }).builtEcus.map((e) => e.ecuPno) : null;
+  }
+  private otaLinked(vin: string): boolean {
+    return OTA_INSTALL_LINKED || !!this.db.get('SELECT 1 FROM ota_install_record WHERE vin = ? LIMIT 1', vin);
+  }
+
   decide(vin: string, catalogId: string | undefined) {
     if (!catalogId) throw new DomainError('VALIDATION', '상품(catalogId)을 고르세요.');
     const v = this.fleet.vehicle(vin);
@@ -59,10 +67,13 @@ export class EligibilityService {
       legalProfile: legal,
       productApproval: approval,
       feature: f ? { featureId: f.featureId, version: f.version, swId: f.swIds?.[0] ?? null, requiredSw: requiredSw(f), ecuPnos: f.ecuPnos ?? [] } : null,
-      asBuiltEcus: null,
+      // ORC-UI08 — 출고 구성 기록(IF-12 VIN 스캔)이 있으면 HW 칸은 그것을 본다(부품 누락을 정책 ON으로 덮지 않는다)
+      asBuiltEcus: this.asBuiltEcus(vin),
       report,
       grants: this.fleet.grants(vin).filter((g) => g.catalogId === catalogId).map((g) => ({ grantId: g.grantId, kind: g.kind, status: g.status, validTo: g.validTo })),
       now,
+      // ADS-OTA01 — 이 차량에 OTA 설치 기록이 있으면 설치 기록 연동(SW만 미충족 → 업데이트 후 가능)
+      otaLinked: this.otaLinked(vin),
     });
     return {
       vin: v.vin,
@@ -74,7 +85,7 @@ export class EligibilityService {
       headline: d.headline,
       reasons: d.reasons,
       states: ELIGIBILITY_STATES,
-      otaLinked: OTA_INSTALL_LINKED,
+      otaLinked: this.otaLinked(vin),
       configSet: f ? this.ads.vehicleVerdict(vin, f.featureId, f.version) : null,
       checkedAt: this.clock.iso(),
       observedAt: report?.reportedAt ?? null,

@@ -111,6 +111,32 @@ describe('Feature 연계 탭', () => {
     expect(within(chain).getByText(/연결된 요구·변경요청·코드가 없습니다/)).toBeTruthy();
     expect(within(chain).queryByText(/모두 연결되어/)).toBeNull();
   });
+
+  // 80-50 A3 — Epic 아래 이슈: 기능 분해 Story(기능 ID·FF 기능 이름), 현장 문제(운영 연결: 인시던트·긴급 차단·후보)
+  it('기능 분해 Story와 현장 문제 — 운영 연결은 인시던트·긴급 차단 링크, JIRA에서 만든 것은 인시던트 후보', async () => {
+    const STORY = (key: string, fn: string, title: string, status: string) => REF({ kind: 'STORY', key, url: `https://jira.ff.example/browse/${key}`, title, status, extra: { functionId: fn } });
+    const BUG = (key: string, title: string, extra: Record<string, unknown>) => REF({ kind: 'DEFECT', key, url: `https://jira.ff.example/browse/${key}`, title, status: 'Open', extra });
+    handler = (url) =>
+      url.startsWith('/api/integrations/sync/features/')
+        ? {
+            body: {
+              featureId: 'FEAT-00022', version: '1.0.0', lifecycle: 'RELEASED', epicStatusExpected: 'Released', requirements: [], missingRequirements: [], epic: null, changeRequests: [], mergeRequests: [], pipelines: [], policies: [], conflicts: [], stale: [],
+              stories: [STORY('FFE-31', 'FUNC-000031', '정차 판정', 'Done'), STORY('FFE-30', 'FUNC-000030', '옛 이름', 'In Progress')],
+              defects: [BUG('FFD-3', '[현장] 감지 거리 짧음', { incidentId: 'INC-00007' }), BUG('FFD-4', '대리점 — 해제 지연', {}), BUG('FFD-1', '긴급 차단 KILL-00002', { killId: 'KILL-00002' })],
+            },
+          }
+        : undefined;
+    mount('viewer', <ExtLinksTab id="FEAT-00022" ver="1.0.0" functions={[{ functionId: 'FUNC-000030', label: '홀드 유지·해제' }, { functionId: 'FUNC-000031', label: '정차 판정' }]} />);
+    const stories = await screen.findByRole('table', { name: '기능 분해 (JIRA Story)' });
+    const rows = within(stories).getAllByRole('row').slice(1);
+    expect(rows.map((r) => within(r).getAllByRole('cell')[1].textContent)).toEqual(['FUNC-000030', 'FUNC-000031']);
+    // 제목 칸은 FF 기능 이름(주인 = FF)
+    expect(within(rows[0]).getByText('홀드 유지·해제')).toBeTruthy();
+    const bugs = screen.getByRole('table', { name: '현장 문제 (JIRA)' });
+    expect(within(bugs).getByRole('link', { name: '인시던트 INC-00007' }).getAttribute('href')).toBe('/ops/incidents');
+    expect(within(bugs).getByRole('link', { name: '긴급 차단 KILL-00002' }).getAttribute('href')).toBe('/ops/kill');
+    expect(within(bugs).getByRole('link', { name: '인시던트 후보 — 운영 판단' })).toBeTruthy();
+  });
 });
 
 describe('변경요청 목록 (JIRA)', () => {

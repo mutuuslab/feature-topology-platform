@@ -175,7 +175,7 @@ export default function FeatureDetail() {
                 ) : tab === 'trace' ? (
                   <Trace d={d} />
                 ) : tab === 'ext' ? (
-                  <ExtLinksTab id={id} ver={ver} />
+                  <ExtLinksTab id={id} ver={ver} functions={d.feature.functions} />
                 ) : tab === 'baseline' ? (
                   <BaselineTab d={d} />
                 ) : (

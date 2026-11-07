@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ExtLink, ExtRef, ExtSystem, LinkEntity, SyncState } from '@ff/contracts';
 import { Clock } from '../../../../kernel/clock';
 import { DB, type Db } from '../../../../kernel/db';
+import type { AlmOp } from './alm-ops';
 
 export type OutboxOp =
   | { op: 'EPIC_MIRROR'; featureId: string; version: string; comment: string | null }
@@ -14,7 +15,8 @@ export type OutboxOp =
   | { op: 'COMMIT_STATUS'; key: string; name: string; state: 'success' | 'failed' | 'pending'; description: string }
   | { op: 'REQ_LINK'; featureId: string; version: string }
   /** 옛 버전별 Epic을 Feature Epic(keep)으로 합침 — 라벨·중복 링크·안내 댓글(80-50 §4.1) */
-  | { op: 'LEGACY_EPIC'; key: string; keep: string };
+  | { op: 'LEGACY_EPIC'; key: string; keep: string }
+  | AlmOp;
 
 export interface OutboxJob {
   jobId: number;

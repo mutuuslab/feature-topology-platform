@@ -7,6 +7,7 @@ import { createHmac } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ExtAdapters } from '../../src/domains/d05-ext/api-gateway/ext-sync/adapters';
 import { ExtSyncRepo } from '../../src/domains/d05-ext/api-gateway/ext-sync/ext-sync.repo';
+import { AlmChildrenService } from '../../src/domains/d05-ext/api-gateway/ext-sync/alm-children.service';
 import { DB } from '../../src/kernel/db';
 import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
 import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
@@ -298,6 +299,98 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
       const made = await epicOf('FEAT-00013', '0.3.0');
       expect(made.key).not.toBe(lonely);
       expect((await mockItem('jira', made.key)).fields.epic.featureId).toBe('FEAT-00013');
+    });
+  });
+
+  describe('Story ↔ 기능 분해 · Bug ↔ 현장 문제 (80-50 A3)', () => {
+    const OPERATOR = actor('usr-operator', 'OPERATOR');
+    const stories = async (id: string, ver: string) => (await trace(id, ver)).stories as any[];
+    const items = async (system: string) => (await http().get(`/api/integrations/mock/${system}/items`).expect(200)).body.items as any[];
+
+    it('초기 상태: Feature 기능마다 Epic 아래 Story(기능 ID 칸), 모든 버전에서 보인다', async () => {
+      const f = (await http().get('/api/features/FEAT-00022/versions/1.0.0').expect(200)).body.feature;
+      expect(f.functions.length).toBeGreaterThan(0);
+      const s = await stories('FEAT-00022', '1.0.0');
+      expect(s.map((x) => x.extra.functionId).sort()).toEqual(f.functions.map((fn: any) => fn.functionId).sort());
+      const epic = await epicOf('FEAT-00022', '1.0.0');
+      const story = await mockItem('jira', s[0].key);
+      expect(story).toMatchObject({ kind: 'STORY', fields: { parentKey: epic.key } });
+    });
+
+    it('FF에서 초안에 기능을 더하면 Story를 만들고, 이름을 바꾸면 Story 제목도 따라간다', async () => {
+      await http().patch('/api/features/FEAT-00013/versions/0.3.0').set(AUTHOR).send({ functions: [{ label: '정차 판정' }] }).expect(200);
+      await drain();
+      const f = (await http().get('/api/features/FEAT-00013/versions/0.3.0').expect(200)).body.feature;
+      const fn = f.functions.find((x: any) => x.label === '정차 판정');
+      let s = (await stories('FEAT-00013', '0.3.0')).find((x) => x.extra.functionId === fn.functionId);
+      expect(s).toMatchObject({ kind: 'STORY', title: '정차 판정', syncState: 'SYNCED' });
+      expect((await mockItem('jira', s.key)).fields.parentKey).toBe((await epicOf('FEAT-00013', '0.3.0')).key);
+      await http().patch('/api/features/FEAT-00013/versions/0.3.0').set(AUTHOR).send({ functions: [{ functionId: fn.functionId, label: '정차 판정 v2' }] }).expect(200);
+      await drain();
+      s = (await stories('FEAT-00013', '0.3.0')).find((x) => x.extra.functionId === fn.functionId);
+      expect((await mockItem('jira', s.key)).title).toBe('정차 판정 v2');
+    });
+
+    it('JIRA에서 PROPOSED Feature의 Epic 아래 Story를 만들면 기능 분해 초안에 더하고 기능 ID를 Story에 적는다', async () => {
+      const epic = await epicOf('FEAT-00013', '0.3.0');
+      const r = (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'STORY', title: '홀드 유지·해제', body: '', externalUser: 'kim.author', parentKey: epic.key }).expect(201)).body;
+      expect(r.result).toMatchObject({ outcome: 'APPLIED', summary: expect.stringMatching(/FUNC-\d{6} 기능 추가/) });
+      const f = (await http().get('/api/features/FEAT-00013/versions/0.3.0').expect(200)).body.feature;
+      const fn = f.functions.find((x: any) => x.label === '홀드 유지·해제');
+      expect(fn.functionId).toMatch(/^FUNC-\d{6}$/);
+      const story = await mockItem('jira', r.item.key);
+      expect(story.fields.child).toMatchObject({ functionId: fn.functionId });
+      expect(story.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringContaining(fn.functionId) });
+      // 한 번만 — 기능이 두 번 생기지 않는다
+      expect(f.functions.filter((x: any) => x.label === '홀드 유지·해제')).toHaveLength(1);
+    });
+
+    it('작업 중 버전이 PROPOSED가 아니거나 매핑 없는 계정이면 Story로 기능을 더하지 않고 댓글', async () => {
+      const epic = await epicOf('FEAT-00004', '4.1.0');
+      const before = (await http().get('/api/features/FEAT-00004/versions/4.1.0').expect(200)).body.feature.functions.length;
+      const r = (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'STORY', title: '새 기능', body: '', externalUser: 'kim.author', parentKey: epic.key }).expect(201)).body;
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('새 Version') });
+      expect((await http().get('/api/features/FEAT-00004/versions/4.1.0').expect(200)).body.feature.functions).toHaveLength(before);
+      expect((await mockItem('jira', r.item.key)).comments.at(-1).text).toContain('기능을 더하지 않았습니다');
+      const p = await epicOf('FEAT-00013', '0.3.0');
+      const u = (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'STORY', title: '모르는 사람', body: '', externalUser: 'stranger', parentKey: p.key }).expect(201)).body;
+      expect(u.result.outcome).toBe('UNMAPPED');
+    });
+
+    it('운영 인시던트(주의 이상) → Feature Epic 아래 현장 문제 Bug, 연계 탭에 운영 연결로 보인다', async () => {
+      const inc = (await http().post('/api/incidents').set(OPERATOR).send({ source: 'FIELD', vin: null, featureId: 'FEAT-00022', category: 'PERFORMANCE', severity: 'WARNING', summary: '감지 거리 짧음 — 현장 보고' }).expect(201)).body;
+      await drain();
+      const t = await trace('FEAT-00022', '1.0.0');
+      const bug = t.defects.find((d: any) => d.extra.incidentId === inc.incidentId);
+      expect(bug).toMatchObject({ kind: 'DEFECT', status: 'Open' });
+      expect(bug.title).toContain('감지 거리 짧음');
+      expect((await mockItem('jira', bug.key)).fields.parentKey).toBe((await epicOf('FEAT-00022', '1.0.0')).key);
+      // 정보성(INFO)은 만들지 않는다
+      await http().post('/api/incidents').set(OPERATOR).send({ source: 'VOC', vin: null, featureId: 'FEAT-00022', category: 'HMI', severity: 'INFO', summary: '문의 — 화면 위치' }).expect(201);
+      await drain();
+      expect((await trace('FEAT-00022', '1.0.0')).defects.filter((d: any) => /화면 위치/.test(d.title))).toHaveLength(0);
+    });
+
+    it('JIRA에서 Epic 아래 만든 Bug는 현장 문제 후보 — 인시던트를 자동으로 만들지 않는다', async () => {
+      const epic = await epicOf('FEAT-00022', '1.0.0');
+      const before = (await http().get('/api/incidents').set(OPERATOR).expect(200)).body.items.length;
+      const r = (await http().post('/api/integrations/mock/jira/items').set(AUTHOR).send({ kind: 'DEFECT', title: '대리점 — 해제 지연', body: '', externalUser: 'choi.quality', parentKey: epic.key }).expect(201)).body;
+      expect(r.result.outcome).toBe('APPLIED');
+      const t = await trace('FEAT-00022', '1.0.0');
+      expect(t.defects.find((d: any) => d.key === r.item.key)).toBeTruthy();
+      expect((await http().get('/api/incidents').set(OPERATOR).expect(200)).body.items.length).toBe(before);
+    });
+
+    it('다른 기능(조치 연결)이 쓰는 공개 함수 — 현장 문제 Bug 만들기, codeBeamer 요구 재검토 요청 댓글', async () => {
+      const alm = app.get(AlmChildrenService);
+      alm.raiseFieldIssue({ featureId: 'FEAT-00022', title: '평가 결과 — 오작동 증가', body: '조치 검토 필요', ref: 'FND-TEST-1' });
+      const t0 = await trace('FEAT-00022', '1.0.0');
+      alm.requestRequirementReview({ featureId: 'FEAT-00022', version: '1.0.0', text: '현장 평가로 감지 거리 요구 재검토 요청' });
+      await drain();
+      const t = await trace('FEAT-00022', '1.0.0');
+      expect(t.defects.find((d: any) => /오작동 증가/.test(d.title))).toBeTruthy();
+      const req = await mockItem('codebeamer', t0.requirements[0].key);
+      expect(req.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringContaining('재검토 요청') });
     });
   });
 

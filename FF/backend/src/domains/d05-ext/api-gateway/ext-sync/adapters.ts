@@ -2,7 +2,7 @@
 // 쓰기는 늘 "기대 개정 번호"를 함께 보낸다: 바깥 값이 그사이 바뀌었으면 덮어쓰지 않고 충돌로 돌려준다(사람이 고름).
 // live는 각 도구의 REST를 쓴다(live-adapters.ts) — GitLab v4, JIRA REST v2, codeBeamer REST v3. 주소·토큰은 환경 변수(GITLAB_URL/GITLAB_TOKEN 등).
 import { Injectable } from '@nestjs/common';
-import { EXT_SYSTEM_IF, type EpicFieldKey, type ExtKind, type ExtSystem } from '@ff/contracts';
+import { CHILD_FIELD_KEYS, EXT_SYSTEM_IF, type ExtKind, type ExtSystem, type JiraFieldKey } from '@ff/contracts';
 import { LiveAdapter } from './live-adapters';
 import { extUrl, GITLAB_PROJECT, MockExtStore, type MockItem } from './mock-ext.store';
 
@@ -26,7 +26,7 @@ export interface WritePatch {
   /** 제목(JIRA summary) — Epic 제목은 FF가 주인(80-50 §4.2) */
   title?: string;
   /** Epic 사용자 필드(FF 키) — 필드 ID로 바꿔 쓴다(epic-fields.ts) */
-  fields?: Partial<Record<EpicFieldKey, unknown>>;
+  fields?: Partial<Record<JiraFieldKey, unknown>>;
   /** 그 밖의 사용자 필드(필드 ID 그대로 — Story의 FF Function ID 등) */
   custom?: Record<string, unknown>;
   /** 라벨 더하기(JIRA 라벨은 빈칸 없이) */
@@ -104,7 +104,9 @@ class MockAdapter implements ExtAdapter {
     if (expectedRevision !== null && view(it).revision !== expectedRevision) return { ok: false, conflict: view(it) };
     const fields: Record<string, unknown> = {
       ...(patch.append ? { [patch.append.field]: [...((it.fields[patch.append.field] as unknown[]) ?? []), patch.append.value] } : {}),
-      ...(patch.fields ? { epic: { ...((it.fields.epic ?? {}) as Record<string, unknown>), ...patch.fields } } : {}),
+      // Epic 칸은 epic, 아래 이슈의 FF 칸(기능 ID 등)은 child
+      ...(patch.fields && it.kind === 'EPIC' ? { epic: { ...((it.fields.epic ?? {}) as Record<string, unknown>), ...patch.fields } } : {}),
+      ...(patch.fields && it.kind !== 'EPIC' ? { child: { ...((it.fields.child ?? {}) as Record<string, unknown>), ...Object.fromEntries(Object.entries(patch.fields).filter(([k]) => (CHILD_FIELD_KEYS as readonly string[]).includes(k))) } } : {}),
       ...(patch.custom ? { custom: { ...((it.fields.custom ?? {}) as Record<string, unknown>), ...patch.custom } } : {}),
       ...(patch.labelsAdd ? { labels: [...new Set([...((it.fields.labels as string[] | undefined) ?? []), ...patch.labelsAdd])] } : {}),
       ...(patch.duplicateOf ? { duplicateOf: patch.duplicateOf } : {}),

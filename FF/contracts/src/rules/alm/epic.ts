@@ -13,7 +13,7 @@ export type EpicFieldKey = (typeof EPIC_FIELD_KEYS)[number];
  */
 export type EpicFieldChange = 'immutable' | 'request' | 'review' | 'readonly';
 export interface EpicFieldRule {
-  key: EpicFieldKey;
+  key: JiraFieldKey;
   /** JIRA 화면의 필드 이름(모의 서버도 같은 이름으로 만든다) */
   name: string;
   /** 화면 안내용 한국어 이름 */
@@ -42,11 +42,24 @@ export const EPIC_FIELDS: readonly EpicFieldRule[] = [
 ];
 export const EPIC_FIELD = Object.fromEntries(EPIC_FIELDS.map((f) => [f.key, f])) as Record<EpicFieldKey, EpicFieldRule>;
 
+/** Epic 아래 이슈의 FF 칸(80-50 §4.1) — Story의 기능 ID, Task의 산출물 종류, Bug의 운영 인시던트. 주인은 FF(읽기 전용) */
+export const CHILD_FIELD_KEYS = ['functionId', 'workProduct', 'incidentId'] as const;
+export type ChildFieldKey = (typeof CHILD_FIELD_KEYS)[number];
+export const CHILD_FIELDS: readonly EpicFieldRule[] = [
+  { key: 'functionId', name: 'FF Function ID', ko: '기능 ID', change: 'readonly', schema: 'string', mockId: 'ffFunctionId' },
+  { key: 'workProduct', name: 'FF Work Product', ko: '산출물 종류', change: 'readonly', schema: 'string', mockId: 'ffWorkProduct' },
+  { key: 'incidentId', name: 'FF Incident', ko: '운영 인시던트', change: 'readonly', schema: 'string', mockId: 'ffIncident' },
+];
+/** JIRA 사용자 칸 전체(Epic + 아래 이슈) */
+export type JiraFieldKey = EpicFieldKey | ChildFieldKey;
+export const JIRA_FIELD_KEYS: readonly JiraFieldKey[] = [...EPIC_FIELD_KEYS, ...CHILD_FIELD_KEYS];
+export const JIRA_FIELD = Object.fromEntries([...EPIC_FIELDS, ...CHILD_FIELDS].map((f) => [f.key, f])) as Record<JiraFieldKey, EpicFieldRule>;
+
 /**
  * Epic 필드 ID 표 — JIRA_FIELDS(JSON, 키 → customfield_xxxxx) > 옛 변수(JIRA_FIELD_COUNTRY 등) > 모의 기본값.
  * live에서 읽기 전용 필드 ID가 없으면 그 필드는 쓰지 않는다(빈 값) — mock 기본값은 live가 아닐 때만.
  */
-export function parseJiraFields(get: (key: string) => string | undefined, live: boolean): { ids: Partial<Record<EpicFieldKey, string>> } | { error: string } {
+export function parseJiraFields(get: (key: string) => string | undefined, live: boolean): { ids: Partial<Record<JiraFieldKey, string>> } | { error: string } {
   const raw = (get('JIRA_FIELDS') ?? '').trim();
   let map: Record<string, unknown> = {};
   if (raw) {
@@ -58,12 +71,12 @@ export function parseJiraFields(get: (key: string) => string | undefined, live: 
       return { error: 'JIRA_FIELDS는 JSON 객체여야 합니다 — 예: {"country":"customfield_10010"}' };
     }
     for (const [k, x] of Object.entries(map)) {
-      if (!(EPIC_FIELD_KEYS as readonly string[]).includes(k)) return { error: `JIRA_FIELDS의 '${k}'는 Epic 필드가 아닙니다 — 쓸 수 있는 키: ${EPIC_FIELD_KEYS.join(', ')}` };
+      if (!(JIRA_FIELD_KEYS as readonly string[]).includes(k)) return { error: `JIRA_FIELDS의 '${k}'는 Epic 필드가 아닙니다 — 쓸 수 있는 키: ${JIRA_FIELD_KEYS.join(', ')}` };
       if (typeof x !== 'string' || !x.trim()) return { error: `JIRA_FIELDS.${k} 값이 비어 있습니다` };
     }
   }
-  const ids: Partial<Record<EpicFieldKey, string>> = {};
-  for (const f of EPIC_FIELDS) {
+  const ids: Partial<Record<JiraFieldKey, string>> = {};
+  for (const f of [...EPIC_FIELDS, ...CHILD_FIELDS]) {
     const id = (typeof map[f.key] === 'string' ? (map[f.key] as string).trim() : '') || (f.legacyEnv ? (get(f.legacyEnv) ?? '').trim() : '') || (live ? '' : f.mockId);
     if (id) ids[f.key] = id;
   }

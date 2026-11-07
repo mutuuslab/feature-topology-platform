@@ -19,7 +19,7 @@ interface MockServer {
 }
 type Deliver = (url: string, headers: Record<string, string>, body: string) => Promise<number>;
 interface JiraMock extends MockServer {
-  state: () => { issues: Record<string, { type: string; status: string; summary: string; comments: { body: string }[]; custom: Record<string, unknown> }> };
+  state: () => { issues: Record<string, { type: string; status: string; summary: string; parent: string | null; comments: { body: string }[]; custom: Record<string, unknown> }> };
 }
 interface CbMock extends MockServer {
   state: () => { items: Record<string, { comments: { comment: string; createdBy: string }[] }> };
@@ -72,7 +72,7 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
       JIRA_FIELD_OWNER: 'customfield_10014',
       JIRA_FIELD_FEATURE_DB: 'customfield_10015',
       // 80-50 A2 — 읽기 전용 칸(Feature ID·작업 중·출시 버전·게이트·산출물·링크)은 JIRA_FIELDS 표로(옛 변수와 함께 써도 된다)
-      JIRA_FIELDS: JSON.stringify({ featureId: 'customfield_10016', workingVersion: 'customfield_10017', releaseVersion: 'customfield_10018', gates: 'customfield_10019', workProducts: 'customfield_10020' }),
+      JIRA_FIELDS: JSON.stringify({ featureId: 'customfield_10016', workingVersion: 'customfield_10017', releaseVersion: 'customfield_10018', gates: 'customfield_10019', workProducts: 'customfield_10020', functionId: 'customfield_10022', workProduct: 'customfield_10023', incidentId: 'customfield_10024' }),
       CODEBEAMER_URL: `${cb.url}/cb`,
       CODEBEAMER_USER: 'ff-sync',
       CODEBEAMER_TOKEN: 'cb-mock-token',
@@ -199,5 +199,32 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
     expect((await issue(epicKey)).status).toBe('Proposed');
     expect((await issue(epicKey)).custom.customfield_10017).toBe(v);
     expect((await trace(v)).epic.key).toBe(epicKey);
+  });
+
+  // 80-50 A3 — Story = 기능 분해: 양쪽에서 시작, 기능 ID는 FF가 매기고 Story 칸에 적는다
+  it('Story ↔ 기능 — FF 초안 기능은 Epic 아래 Story로, JIRA에서 만든 Story는 기능 분해 초안에 더하고 기능 ID를 적는다', async () => {
+    const ver = (await trace('0.2.0')).version;
+    await http().patch(`/api/features/${featureId}/versions/${ver}`).set(AUTHOR).send({ functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }, { label: '정차 판정' }] }).expect(200);
+    await settle();
+    const all = jira.state().issues;
+    const story = Object.values(all).find((i) => i.type === 'Story' && i.summary === '정차 판정')!;
+    expect(story).toMatchObject({ parent: epicKey, custom: { customfield_10022: expect.stringMatching(/^FUNC-\d{6}$/) } });
+    // JIRA에서 작성자가 Story를 만든다(FF 칸 비움)
+    const made = await fetch(`${jira.url}/rest/api/3/issue`, { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Basic ${Buffer.from('kim.author:kim-token').toString('base64')}` }, body: JSON.stringify({ fields: { project: { key: 'FFE' }, issuetype: { name: 'Story' }, summary: '홀드 해제 조건', parent: { key: epicKey } } }) });
+    const sk = ((await made.json()) as { key: string }).key;
+    await settle();
+    const f = (await http().get(`/api/features/${featureId}/versions/${ver}`).expect(200)).body.feature;
+    const fn = f.functions.find((x: any) => x.label === '홀드 해제 조건');
+    expect(fn?.functionId).toMatch(/^FUNC-\d{6}$/);
+    expect(jira.state().issues[sk].custom.customfield_10022).toBe(fn.functionId);
+    expect(jira.state().issues[sk].comments.at(-1)?.body).toContain(fn.functionId);
+  });
+
+  // 80-50 A3 — 현장 문제: 운영 인시던트(주의) → Feature Epic 아래 Bug(FF Incident 칸)
+  it('운영 인시던트 → JIRA Bug(Epic 아래, 인시던트 칸) — 결함 프로젝트', async () => {
+    const inc = (await http().post('/api/incidents').set(actor('usr-operator', 'OPERATOR')).send({ source: 'DEALER', vin: null, featureId, category: 'NO_ACTIVATION', severity: 'CRITICAL', summary: '대리점 보고 — 작동하지 않음' }).expect(201)).body;
+    await settle();
+    const bug = Object.values(jira.state().issues).find((i) => i.type === 'Bug' && i.custom.customfield_10024 === inc.incidentId);
+    expect(bug).toMatchObject({ parent: epicKey, status: 'Open', summary: expect.stringContaining('작동하지 않음') });
   });
 });

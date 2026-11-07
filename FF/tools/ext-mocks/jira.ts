@@ -75,6 +75,10 @@ export const CUSTOM_FIELDS: { id: string; name: string; schema: string }[] = [
   { id: 'customfield_10019', name: 'FF Gates', schema: 'string' },
   { id: 'customfield_10020', name: 'FF Work Products', schema: 'string' },
   { id: 'customfield_10021', name: 'FF Link', schema: 'url' },
+  // Epic 아래 이슈의 FF 칸(80-50 §4.1) — Story 기능 ID·Task 산출물 종류·Bug 운영 인시던트
+  { id: 'customfield_10022', name: 'FF Function ID', schema: 'string' },
+  { id: 'customfield_10023', name: 'FF Work Product', schema: 'string' },
+  { id: 'customfield_10024', name: 'FF Incident', schema: 'string' },
 ];
 const FIELD_BY_NAME = new Map(CUSTOM_FIELDS.map((f) => [f.name.toLowerCase(), f.id]));
 

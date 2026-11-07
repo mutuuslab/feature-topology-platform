@@ -18,7 +18,8 @@ export const EXT_SYSTEM_IF: Record<ExtSystem, 'IF-01' | 'IF-13' | 'IF-14'> = { C
 /** 외부 항목 종류 */
 export const EXT_KINDS = {
   CODEBEAMER: ['REQUIREMENT'],
-  JIRA: ['EPIC', 'CHANGE_REQUEST', 'DEFECT'],
+  // STORY = 기능 분해(FUNC), TASK = 산출물 작성 일(80-50 §4.1, D-ALM-6)
+  JIRA: ['EPIC', 'CHANGE_REQUEST', 'DEFECT', 'STORY', 'TASK'],
   GITLAB: ['MERGE_REQUEST', 'PIPELINE'],
 } as const satisfies Record<ExtSystem, readonly string[]>;
 export type ExtKind = (typeof EXT_KINDS)[ExtSystem][number];
@@ -26,13 +27,15 @@ export const EXT_KIND_LABEL: Record<ExtKind, string> = {
   REQUIREMENT: '요구사항',
   EPIC: 'Epic',
   CHANGE_REQUEST: '변경요청(CR)',
-  DEFECT: '결함',
+  DEFECT: '현장 문제',
+  STORY: 'Story(기능)',
+  TASK: 'Task(산출물)',
   MERGE_REQUEST: 'MR',
   PIPELINE: '파이프라인',
 };
 
 /** 플랫폼 쪽 연결 대상 */
-export const LINK_ENTITIES = ['FEATURE', 'POLICY', 'KILL', 'CHANGE_RECORD'] as const;
+export const LINK_ENTITIES = ['FEATURE', 'POLICY', 'KILL', 'CHANGE_RECORD', 'INCIDENT'] as const;
 export type LinkEntity = (typeof LINK_ENTITIES)[number];
 
 /** 동기 상태 — 맞음·보낼 것 있음·충돌(사람이 고름)·실패(재시도 소진)·거부(외부 요청이 가드에 막혀 되돌림) */
@@ -144,7 +147,7 @@ export const JIRA_CR_STATUS = {
 export type JiraCrState = keyof typeof JIRA_CR_STATUS;
 export const JIRA_CR_STATES = Object.keys(JIRA_CR_STATUS) as JiraCrState[];
 /** JIRA 이슈 유형 이름 — 실제 연결 어댑터·webhook 정규화가 이 이름으로 가른다(프로젝트에 같은 이름의 유형이 있어야 한다) */
-export const JIRA_ISSUE_TYPE = { EPIC: 'Epic', CHANGE_REQUEST: 'Change Request', DEFECT: 'Bug' } as const;
+export const JIRA_ISSUE_TYPE = { EPIC: 'Epic', CHANGE_REQUEST: 'Change Request', DEFECT: 'Bug', STORY: 'Story', TASK: 'Task' } as const;
 
 /**
  * 회사 워크플로 상태 이름 덮어쓰기 — 환경 변수 JIRA_EPIC_STATUS·JIRA_CR_STATUS(JSON, 바꿀 상태만).
@@ -299,10 +302,12 @@ export type MockExtActionBody = z.infer<typeof MockExtActionBody>;
 /** 모의 외부 시스템에 새 항목 만들기(CR·MR·요구) */
 export const MockExtCreateBody = z
   .object({
-    kind: z.enum(['REQUIREMENT', 'EPIC', 'CHANGE_REQUEST', 'DEFECT', 'MERGE_REQUEST']),
+    kind: z.enum(['REQUIREMENT', 'EPIC', 'CHANGE_REQUEST', 'DEFECT', 'MERGE_REQUEST', 'STORY']),
     title: z.string().trim().min(2).max(200),
     body: z.string().trim().max(4000).default(''),
     externalUser: z.string().trim().min(1).max(120),
+    /** STORY·DEFECT: 상위 Epic 키 */
+    parentKey: z.string().regex(/^[A-Z][A-Z0-9]+-\d+$/).optional(),
     /** EPIC: 적용 범위(Feature 자동 등록에 필요) */
     scope: EpicScope.optional(),
   })

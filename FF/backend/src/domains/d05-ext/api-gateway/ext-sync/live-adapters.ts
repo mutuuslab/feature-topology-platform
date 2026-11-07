@@ -6,7 +6,7 @@
 // 인증·주소는 환경 변수(아래 cfg). 토큰은 로그·감사·Evidence에 남기지 않는다. 시간 제한 10초, 실패는 보낼 함이 재시도한다.
 import { FEATURE_TRANSITIONS, JIRA_EPIC_STATUS, lifecycleOfEpicStatus, type ExtKind, type ExtSystem, type Lifecycle } from '@ff/contracts';
 import type { AdapterMode, ExtAdapter, RecentIssue, RemoteItem, WritePatch, WriteResult } from './adapters';
-import { adfText, decodeEpicFields, encodeEpicFields, epicFieldIdList } from './epic-fields';
+import { adfText, decodeChildFields, decodeEpicFields, encodeEpicFields, epicFieldIdList } from './epic-fields';
 
 interface Cfg {
   url: string;
@@ -23,7 +23,7 @@ const jira = (path: string) => `/rest/api/${jiraApiVersion()}${path}`;
 const adf = (text: string) => ({ type: 'doc', version: 1, content: text.split('\n\n').map((p) => ({ type: 'paragraph', content: p ? [{ type: 'text', text: p }] : [] })) });
 const jiraText = (text: string) => (jiraApiVersion() === 3 ? adf(text) : text);
 /** 이슈 유형 이름 ↔ 연계 종류 */
-const JIRA_TYPE: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request' };
+const JIRA_TYPE: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request', STORY: 'Story', TASK: 'Task' };
 const kindOfType = (type: string | undefined): ExtKind => (Object.entries(JIRA_TYPE).find(([, t]) => t === type)?.[0] as ExtKind | undefined) ?? 'CHANGE_REQUEST';
 
 /**
@@ -160,12 +160,12 @@ export class LiveAdapter implements ExtAdapter {
   // ── 만들기(JIRA Epic·결함만 — 요구·MR은 각 도구에서 사람이 만든다) ──
   async create(kind: ExtKind, f: { title: string; body: string; status: string; fields?: Record<string, unknown> }): Promise<RemoteItem> {
     if (this.system !== 'JIRA') throw new Error(`${this.system}에는 플랫폼이 항목을 만들지 않습니다.`);
-    const project = kind === 'EPIC' ? env('JIRA_EPIC_PROJECT') || 'FFE' : kind === 'DEFECT' ? env('JIRA_DEFECT_PROJECT') || 'FFD' : this.cfg().project;
+    const project = kind === 'EPIC' || kind === 'STORY' || kind === 'TASK' ? env('JIRA_EPIC_PROJECT') || 'FFE' : kind === 'DEFECT' ? env('JIRA_DEFECT_PROJECT') || 'FFD' : this.cfg().project;
     const issuetype = JIRA_TYPE[kind] ?? 'Change Request';
     const parentKey = f.fields?.parentKey ? String(f.fields.parentKey) : null;
     // Epic 하위: Cloud는 parent, Data Center는 Epic Link 사용자 필드(JIRA_FIELD_EPIC_LINK)
     const parent = parentKey ? (jiraApiVersion() === 2 && env('JIRA_FIELD_EPIC_LINK') ? { [env('JIRA_FIELD_EPIC_LINK')]: parentKey } : { parent: { key: parentKey } }) : {};
-    const custom = { ...encodeEpicFields((f.fields?.epic ?? {}) as Record<string, unknown>), ...((f.fields?.custom ?? {}) as Record<string, unknown>) };
+    const custom = { ...encodeEpicFields({ ...((f.fields?.epic ?? {}) as Record<string, unknown>), ...((f.fields?.child ?? {}) as Record<string, unknown>) }), ...((f.fields?.custom ?? {}) as Record<string, unknown>) };
     const r = await this.req<{ key: string }>('POST', jira('/issue'), { fields: { project: { key: project }, summary: f.title, description: jiraText(f.body), issuetype: { name: issuetype }, ...parent, ...custom } });
     // 새 이슈는 워크플로 첫 상태로 생긴다 — 이미 그 상태면 전이하지 않는다(자기 자신으로 가는 전이는 보통 없다)
     const made = (await this.read(r.data.key))!;
@@ -296,7 +296,7 @@ function jiraItem(base: string, issue: { key: string; fields: Record<string, any
     title: f.summary ?? '',
     status: f.status?.name ?? '',
     revision: Date.parse(f.updated),
-    fields: { parentKey: f.parent?.key ?? null, description: adfText(f.description), ...(kind === 'EPIC' ? { epic: decodeEpicFields(f) } : {}) },
+    fields: { parentKey: f.parent?.key ?? null, description: adfText(f.description), ...(kind === 'EPIC' ? { epic: decodeEpicFields(f) } : { child: decodeChildFields(f) }) },
   };
 }
 

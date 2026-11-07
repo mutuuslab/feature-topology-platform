@@ -11,6 +11,15 @@ export const alm = {
     running: '대사 중…',
     more: (n: number) => `외 ${n}건`,
   },
+  children: {
+    stories: '기능 분해 (JIRA Story)',
+    fieldIssues: '현장 문제 (JIRA)',
+    col: { key: '키', function: '기능 ID', title: '제목', status: '상태', ops: '운영 연결' },
+    kill: (id: string) => `긴급 차단 ${id}`,
+    incident: (id: string) => `인시던트 ${id}`,
+    candidate: '인시던트 후보 — 운영 판단',
+    latest: (n: number, total: number) => `최근 ${n}건 · 전체 ${total}건`,
+  },
   /** 충돌 칸 이름 — 상태 또는 Epic 필드 */
   conflictField: (field: string) => (field === 'status' ? '상태' : (EPIC_FIELD[field as EpicFieldKey]?.ko ?? field)),
 };

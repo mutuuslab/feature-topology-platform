@@ -92,6 +92,7 @@ JIRA 프로젝트 (JIRA_EPIC_PROJECT)
 - **Task = 산출물 작성 일**: FF가 만든다. 작업 중 버전의 필수 산출물(§5.5) 중 완결되지 않은 종류마다 Task 하나(`[산출물] {종류} — {버전}`), 설명에 누락 목록과 codeBeamer 링크. codeBeamer에서 완결되면 FF가 Task를 Done으로. 사람이 미완결 Task를 Done으로 옮기면 되돌리고 누락 목록을 댓글로.
 - **CR**: 현행 그대로(JIRA 주인, Approved/Rejected → `policyService.decide`).
 - **Bug = 현장 문제**: FF → JIRA는 긴급 차단(현행) + 운영 인시던트 생성 때. JIRA → FF는 Epic 아래 Bug를 Feature 상세 "현장 문제"와 운영 인시던트 후보로 연결(인시던트 자동 생성은 하지 않음 — 운영 판단).
+- **A3 구현(2026-11-07)** `backend/…/ext-sync/alm-children.service.ts`(ExtSyncService.extend로 받기·보내기를 더함): Story는 Feature 기능마다 Epic 아래(사용자 칸 `FF Function ID`), FF에서 기능을 더하거나 이름을 바꾸면 따라가고, JIRA에서 이름을 바꾸면 PROPOSED 초안이면 요청·아니면 되돌림. JIRA에서 만든 Story는 PROPOSED + 작성 권한일 때만 기능을 더하고 FF가 매긴 `FUNC-xxxxxx`를 Story 칸에 적는다. 운영 인시던트는 **주의·긴급만** Bug로(정보성은 빼다 — 2026-11-07 기본값), 칸 `FF Incident`, 연결 `INCIDENT`. 조치 연결(TL-B09)이 부를 공개 함수 `AlmChildrenService.raiseFieldIssue`(현장 문제 Bug)·`requestRequirementReview`(codeBeamer 요구 재검토 댓글). Task는 A4(산출물 완결성이 있어야 만든다).
 
 ### 4.2 Epic 필드와 주인
 
@@ -304,7 +305,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 |---|---|---|
 | A1 | 모의 서버 2개 + 충실도 기록 + `ext:contract` 뼈대 | 모의 서버 단독 시험, FF live 기동 점검 통과 |
 | A2 | JIRA: Epic = Feature 전환·필드 주인 표·v3 어댑터·FF → Epic 필드 쓰기·증분/전체 대사 | 계약 시험(생성 양방향·충돌·유실 대사) — **완료(2026-11-07)** |
-| A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 |
+| A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 — **완료(2026-11-07, Task는 A4로)** |
 | A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 |
 | A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e |
 | A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 — **실서버를 쓰지 않으므로 모의 서버의 앱 흉내 패널(`/_mock/app/epic-form`)까지만**(D-ALM-17) |

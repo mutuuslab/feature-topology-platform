@@ -7,6 +7,7 @@ import { extSync } from '../../copy/ext-sync';
 import { AsyncView, DataTable, ExtRefChip, Icon, Panel } from '../../design';
 import { ExternalToolLaunchers } from '../../external/launchers';
 import { useExternalChanges } from '../../external/useExternalChanges';
+import { FieldIssuesPanel, StoriesPanel } from './AlmPanels';
 
 const X = extSync.feature;
 
@@ -22,6 +23,9 @@ export interface FeatureTrace {
   epic: ExtLink | null;
   changeRequests: ExtLink[];
   defects: ExtLink[];
+  /** 80-50 A3 — 기능 분해 Story·산출물 Task */
+  stories?: ExtLink[];
+  tasks?: ExtLink[];
   mergeRequests: ExtLink[];
   pipelines: ExtLink[];
   policies: { policyId: string; flagKey: string; status: string; changeRequests: string[] }[];
@@ -61,16 +65,13 @@ export function RequirementChips({ id, ver, ids }: { id: string; ver: string; id
 }
 
 const rowKey = (r: ExtLink) => `${r.system}:${r.key}`;
-/** 키 숫자 순서(FFD-2 < FFD-10) */
-const byKeyNumber = (a: ExtLink, b: ExtLink) => Number(a.key.replace(/\D+/g, '')) - Number(b.key.replace(/\D+/g, '')) || a.key.localeCompare(b.key);
 const clip = (text: string, ch = 48) => (
   <span className="ds-clip" title={text} style={{ maxWidth: `${ch}ch` }}>
     {text}
   </span>
 );
-const DEFECT_LIMIT = 10;
 
-export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
+export function ExtLinksTab({ id, ver, functions }: { id: string; ver: string; functions?: { functionId: string; label: string }[] }) {
   useExternalChanges();
   const q = useFeatureTrace(id, ver);
   const t = q.data;
@@ -121,11 +122,8 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
               )}
               {t.changeRequests.length ? <DataTable caption={X.changeRequests} rows={t.changeRequests} rowKey={rowKey} columns={columns} /> : <p className="ds-field__hint">{X.none}</p>}
           </Panel>
-          {!!t.defects.length && (
-            <Panel title={X.defects} id="ext-defects" eyebrow={t.defects.length > DEFECT_LIMIT ? X.latest(DEFECT_LIMIT, t.defects.length) : undefined}>
-              <DataTable caption={X.defects} rows={[...t.defects].sort(byKeyNumber).reverse().slice(0, DEFECT_LIMIT)} rowKey={rowKey} columns={columns} />
-            </Panel>
-          )}
+          <StoriesPanel stories={t.stories ?? []} functions={functions ?? []} />
+          <FieldIssuesPanel defects={t.defects} />
           <Panel title={X.code} id="ext-code">
               {t.mergeRequests.length ? (
                 <DataTable

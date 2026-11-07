@@ -7,7 +7,7 @@ import { parseRefs, type ExtChange, type ExtSystem } from '@ff/contracts';
 import { DomainError } from '../../../../kernel/errors';
 import { modeOf } from './adapters';
 import { extUrl, JIRA_EPIC_FIELDS, JIRA_PROJECTS, JIRA_REF_FIELD, WEBHOOK_SECRET } from './mock-ext.store';
-import { adfText, decodeEpicFields } from './epic-fields';
+import { adfText, decodeChildFields, decodeEpicFields } from './epic-fields';
 
 export const hmac = (system: ExtSystem, raw: string) => `sha256=${createHmac('sha256', WEBHOOK_SECRET[system]()).update(raw).digest('hex')}`;
 
@@ -45,7 +45,7 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
     const issue = obj(b.issue);
     const f = obj(issue.fields);
     const type = str(obj(f.issuetype).name);
-    const kind = type === 'Epic' ? 'EPIC' : type === 'Change Request' ? 'CHANGE_REQUEST' : type === 'Bug' ? 'DEFECT' : null;
+    const kind = type === 'Epic' ? 'EPIC' : type === 'Change Request' ? 'CHANGE_REQUEST' : type === 'Bug' ? 'DEFECT' : type === 'Story' ? 'STORY' : type === 'Task' ? 'TASK' : null;
     if (!kind || !issue.key) return null;
     const statusChange = (obj(b.changelog).items ?? []).find((x: any) => x?.field === 'status');
     const description = adfText(f.description);
@@ -63,7 +63,7 @@ export function normalize(system: ExtSystem, deliveryId: string, body: unknown):
       revision: rev(f.updated),
       externalUser: str(obj(b.user).accountId),
       refs: { ...parseRefs(text, JIRA_PROJECTS.CHANGE_REQUEST()), ...(policy ? { policyId: policy } : {}), ...(obj(f.parent).key ? { epicKey: str(obj(f.parent).key) } : {}) },
-      extra: { created: b.webhookEvent === 'jira:issue_created', description: description.slice(0, 2000), ...(kind === 'EPIC' ? { scope: epicScope(f), epicFields: decodeEpicFields(f) } : {}) },
+      extra: { created: b.webhookEvent === 'jira:issue_created', description: description.slice(0, 2000), ...(kind === 'EPIC' ? { scope: epicScope(f), epicFields: decodeEpicFields(f) } : decodeChildFields(f)) },
     };
   }
   if (system === 'GITLAB') {

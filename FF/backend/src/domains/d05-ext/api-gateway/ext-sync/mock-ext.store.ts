@@ -111,7 +111,8 @@ export class MockExtStore {
     const key =
       f.key ??
       (system === 'JIRA'
-        ? `${JIRA_PROJECTS[kind as 'EPIC' | 'CHANGE_REQUEST' | 'DEFECT']()}-${this.next(`JIRA:${kind}`, 1)}`
+        ? // Story·Task는 Epic 프로젝트 — 같은 번호 순서를 나눠 쓴다(키가 겹치지 않게)
+          `${JIRA_PROJECTS[kind === 'STORY' || kind === 'TASK' ? 'EPIC' : (kind as 'EPIC' | 'CHANGE_REQUEST' | 'DEFECT')]()}-${this.next(`JIRA:${kind === 'STORY' || kind === 'TASK' ? 'EPIC' : kind}`, 1)}`
         : system === 'CODEBEAMER'
           ? `CB-${this.next('CB', 10001)}`
           : kind === 'PIPELINE'
@@ -170,6 +171,7 @@ export class MockExtStore {
             // FF가 쓴 Epic 필드(80-50 §4.2) — 범위·Feature DB·읽기 전용 칸
             ...(it.fields.epic ? encodeEpicFields(it.fields.epic as Record<string, unknown>) : {}),
             // 하위 이슈 사용자 필드(Story의 FF Function ID 등)
+            ...(it.fields.child ? encodeEpicFields(it.fields.child as Record<string, unknown>) : {}),
             ...((it.fields.custom ?? {}) as Record<string, unknown>),
           },
         },
@@ -227,7 +229,7 @@ export class MockExtStore {
 }
 
 /** 모의 JIRA 이슈 유형 이름(실서버 유형 이름과 같다) */
-const JIRA_TYPE_NAME: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request' };
+const JIRA_TYPE_NAME: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request', STORY: 'Story', TASK: 'Task' };
 
 /** 모의 JIRA Epic 본문의 기준 기능 ID — 라벨과(설정 시) 사용자 필드 */
 function epicRefPayload(refIds: unknown): Record<string, unknown> {

@@ -31,7 +31,7 @@ FF를 모의 서버에 붙이기: `IF_MODE_14=live JIRA_URL=http://127.0.0.1:913
 | 시각 | `2026-11-05T01:00:00.000+0000` | 같음(실서버는 사용자 시간대 오프셋 — 모의 서버는 +0000 고정) |
 | 검색 | v3 `search/jql`(GET·POST, `nextPageToken`·`isLast`), v2 `search`(`startAt`·`total`) | 같음 |
 | JQL | AND 절만: `project`·`issuetype`·`key`·`parent`·`status`·`labels`·`updated`/`created`(상대 `-20m`, 절대 `yyyy-MM-dd HH:mm`)·사용자 필드 이름·`cf[n]`, `= != > >= < <= in, not in`, `ORDER BY`. OR·함수(`currentUser()`)·`~`는 400 | 단순화 |
-| 사용자 필드 | `customfield_10010`~`10021`(FF Country·Vehicle Model·Trim·ASIL·Owner Team·Feature DB·Feature ID·Working/Release Version·Gates·Work Products·Link) | 가정 — 실서버는 관리자가 만들고 FF는 `JIRA_FIELDS`·`JIRA_FIELD_*`로 대응 |
+| 사용자 필드 | `customfield_10010`~`10021`(FF Country·Vehicle Model·Trim·ASIL·Owner Team·Feature DB·Feature ID·Working/Release Version·Gates·Work Products·Link), Epic 아래 이슈 `10022` FF Function ID·`10023` FF Work Product·`10024` FF Incident | 가정 — 실서버는 관리자가 만들고 FF는 `JIRA_FIELDS`·`JIRA_FIELD_*`로 대응 |
 | 워크플로 | Epic = FF 수명주기 전이만(`FEATURE_TRANSITIONS`, 상태 이름 `JIRA_EPIC_STATUS`로 바꿈) + 모든 상태 → Proposed(새 Version — Epic이 작업 중 버전을 따른다, 80-50 §4.1. FF 서비스 계정만 쓰고 사람이 쓰면 FF가 되돌림). Story·Task·Bug = To Do → In Progress → Done. Change Request = FF CR 상태 사이 자유 전이 | Epic·Story는 가정(80-50 §4.3), CR은 단순화. 실서버 관리자가 'Proposed로' 전이를 하나 더 만들어야 한다 |
 | 변경 이력 | v3 `GET issue/{key}/changelog`(startAt·maxResults·total·isLast, 오래된 것부터), v2 `GET issue/{key}?expand=changelog`(`changelog.histories`). 항목마다 `author.accountId`·`created`·`items[field,fromString,toString]`. webhook의 `changelog.id`와 같은 id | 같음(필드 일부만). FF 증분 대사가 누가 바꿨는지를 여기서 읽는다(80-50 §4.5) |
 | 전이 ID | 대상 상태 순번 + 11 | 가정 — 실서버 ID는 워크플로마다 다르다(FF는 이름으로 찾는다) |

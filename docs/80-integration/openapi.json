@@ -16673,7 +16673,8 @@
                       "EPIC",
                       "CHANGE_REQUEST",
                       "DEFECT",
-                      "MERGE_REQUEST"
+                      "MERGE_REQUEST",
+                      "STORY"
                     ]
                   },
                   "title": {
@@ -16690,6 +16691,10 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 120
+                  },
+                  "parentKey": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]+-\\d+$"
                   },
                   "scope": {
                     "type": "object",

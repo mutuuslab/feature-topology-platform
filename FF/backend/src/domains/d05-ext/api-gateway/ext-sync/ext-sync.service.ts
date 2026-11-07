@@ -83,7 +83,18 @@ const splitFid = (id: string) => {
   return { featureId, version };
 };
 
-type Outcome = Pick<InboxRow, 'outcome' | 'summary'>;
+export type Outcome = Pick<InboxRow, 'outcome' | 'summary'>;
+/** 80-50 확장(alm-*.service.ts) — 새 연결 종류의 받기·새 보낼 일·이벤트·초기 상태를 이 파일 밖에서 더한다(병합 충돌을 줄이려고) */
+export type KindHandler = (c: ExtChange, prev: ExtRef | null, ref: ExtRef, correlationId: string, actorOverride?: Actor) => Outcome;
+export type OpHandler = (j: OutboxJob) => Promise<'done' | 'failed' | 'conflicts'>;
+export interface ExtSyncExtension {
+  kinds?: Partial<Record<ExtKind, KindHandler>>;
+  ops?: Record<string, OpHandler>;
+  /** 발행 훅(변경과 같은 트랜잭션) — 조회·적재만 */
+  onEvent?: (ev: PlatformEvent) => void;
+  /** 모의 초기 상태(seed 트랜잭션 안) */
+  onSeed?: () => void;
+}
 
 /**
  * JIRA Epic에 기준 기능 ID가 없거나 쓸 수 없을 때 댓글 안내(30-95 §7, 80-50 §4) — Epic 화면의 FF 패널에서 Feature DB 기준 행을 고르게 한다.
@@ -96,6 +107,18 @@ export const EPIC_REF_HINT = 'Epic 화면의 Feature Platform 패널에서 Featu
 export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   private identities: ExtIdentity[] | null = null;
   private draining: Promise<{ done: number; failed: number; conflicts: number }> | null = null;
+  private readonly extensions: ExtSyncExtension[] = [];
+
+  /** 80-50 확장 등록(모듈 초기화 때) */
+  extend(x: ExtSyncExtension) {
+    this.extensions.push(x);
+  }
+  private kindHandler(kind: ExtKind): KindHandler | undefined {
+    return this.extensions.map((x) => x.kinds?.[kind]).find((h) => !!h);
+  }
+  private opHandler(op: string): OpHandler | undefined {
+    return this.extensions.map((x) => x.ops?.[op]).find((h) => !!h);
+  }
 
   constructor(
     @Inject(DB) private readonly db: Db,
@@ -140,11 +163,11 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     }
     return this.identities;
   }
-  private identity(system: ExtSystem, externalId: string): ExtIdentity | null {
+  identity(system: ExtSystem, externalId: string): ExtIdentity | null {
     return this.identityMap().find((i) => i.system === system && i.externalId === externalId) ?? null;
   }
   /** 외부 사람 → 이 작업이 허용하는 역할 중 그 사람이 맡은 것(없으면 null) */
-  private actorFor(id: ExtIdentity, allowed: readonly Role[], correlationId: string): Actor | null {
+  actorFor(id: ExtIdentity, allowed: readonly Role[], correlationId: string): Actor | null {
     const role = allowed.find((r) => id.roles.includes(r));
     return role ? { id: id.actorId, role, correlationId } : null;
   }
@@ -153,7 +176,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   }
 
   // ───────────────────────── 보내기: 이벤트 → 보낼 함 ─────────────────────────
-  private enqueue(system: ExtSystem, op: OutboxOp, idem: string) {
+  enqueue(system: ExtSystem, op: OutboxOp, idem: string) {
     if (modeOf(system) === 'off') return;
     this.repo.enqueue(system, op, idem);
     const key = 'key' in op ? op.key : null;
@@ -165,6 +188,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
 
   /** 발행 훅 — 변경과 같은 트랜잭션. 여기서 던지면 변경이 롤백되므로 조회·적재만 한다 */
   private onEvent(ev: PlatformEvent) {
+    for (const x of this.extensions) x.onEvent?.(ev);
     const p = (ev.payload ?? {}) as Record<string, any>;
     switch (ev.type) {
       case 'feature.created':
@@ -243,6 +267,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     const a = this.adapters.of(j.system);
     try {
       const op = j.job;
+      const ext = this.opHandler(op.op);
+      if (ext) return await ext(j);
       switch (op.op) {
         case 'EPIC_MIRROR': {
           // Epic = Feature(80-50 §4.1) — 작업 중 버전 상태·FF 필드. 버전은 Epic 필드(작업 중·출시 버전)
@@ -397,17 +423,17 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     return this.repo.jobs({ system: 'JIRA', status: 'PENDING', limit: 2000 }).some((j) => j.job.op === 'EPIC_MIRROR' && j.job.featureId === featureId);
   }
 
-  private done(j: OutboxJob): 'done' {
+  done(j: OutboxJob): 'done' {
     this.repo.finish(j, 'DONE');
     return 'done';
   }
-  private skip(j: OutboxJob, why: string): 'done' {
+  skip(j: OutboxJob, why: string): 'done' {
     this.repo.finish(j, 'SKIPPED', why);
     return 'done';
   }
 
   /** 외부에서 읽은 값으로 마지막 관측 값을 갱신 */
-  private observe(it: RemoteItem, syncState: ExtRef['syncState'], extraPatch: Record<string, unknown> = {}) {
+  observe(it: RemoteItem, syncState: ExtRef['syncState'], extraPatch: Record<string, unknown> = {}) {
     const prev = this.repo.item(it.system, it.key);
     const fields = it.fields as Record<string, unknown>;
     this.repo.putItem({
@@ -421,7 +447,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       syncState,
       syncedAt: this.clock.iso(),
       stale: prev?.stale ?? false,
-      extra: { ...(prev?.extra ?? {}), ...pickExtra(fields), ...(fields.epic ? { epicFields: fields.epic } : {}), ...extraPatch },
+      extra: { ...(prev?.extra ?? {}), ...pickExtra(fields), ...(fields.epic ? { epicFields: fields.epic } : {}), ...((fields.child ?? {}) as Record<string, unknown>), ...extraPatch },
     });
   }
 
@@ -480,6 +506,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       return { outcome: 'IGNORED', summary: '플랫폼이 쓴 변경의 알림' };
     }
     const correlationId = `${c.system.toLowerCase()}:${c.deliveryId}`;
+    const ext = this.kindHandler(c.kind);
+    if (ext) return ext(c, prev, ref, correlationId, actorOverride);
     switch (c.kind) {
       case 'REQUIREMENT':
         return this.onRequirement(c, prev, ref, correlationId);
@@ -904,8 +932,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   async mockCreate(system: ExtSystem, body: MockExtCreateBody & { fields?: Record<string, unknown> }) {
     this.needMock(system);
     const kind = body.kind;
-    const status = system === 'JIRA' ? (kind === 'EPIC' ? JIRA_EPIC_STATUS.PROPOSED : JIRA_CR_STATUS.OPEN) : system === 'GITLAB' ? 'opened' : 'Draft';
-    const fields: Record<string, unknown> = { ...(body.fields ?? {}), ...(body.scope ? { scope: body.scope } : {}) };
+    const status = system === 'JIRA' ? (kind === 'EPIC' ? JIRA_EPIC_STATUS.PROPOSED : kind === 'STORY' ? 'To Do' : JIRA_CR_STATUS.OPEN) : system === 'GITLAB' ? 'opened' : 'Draft';
+    const fields: Record<string, unknown> = { ...(body.fields ?? {}), ...(body.scope ? { scope: body.scope } : {}), ...(body.parentKey ? { parentKey: body.parentKey } : {}) };
     if (system === 'GITLAB') {
       fields.sha ??= createHash('sha1').update(`${body.title}:${this.clock.iso()}`).digest('hex');
       const r = parseRefs(`${body.title}\n${body.body}`);
@@ -995,6 +1023,9 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
       epic: of('EPIC').find((l) => l.key === epicKey) ?? null,
       changeRequests: of('CHANGE_REQUEST'),
       defects: of('DEFECT'),
+      // 80-50 A3 — 기능 분해 Story·산출물 Task(Epic 아래)
+      stories: of('STORY'),
+      tasks: of('TASK'),
       mergeRequests: of('MERGE_REQUEST'),
       pipelines: of('PIPELINE'),
       policies: pols,
@@ -1092,13 +1123,14 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
         this.repo.link('JIRA', cr.key, 'POLICY', p.policyId, 'seed');
         this.repo.link('JIRA', cr.key, 'FEATURE', id, 'seed');
       }
+      for (const x of this.extensions) x.onSeed?.();
     });
   }
 }
 
 /** 외부 필드 중 화면에 쓸 것만 */
 function pickExtra(fields: Record<string, unknown>): Record<string, unknown> {
-  const keep = ['reqId', 'sha', 'sourceBranch', 'targetBranch', 'parentKey', 'policyId', 'featureId', 'version', 'mrKey', 'description', 'commitStatuses', 'verifications', 'killId'];
+  const keep = ['reqId', 'sha', 'sourceBranch', 'targetBranch', 'parentKey', 'policyId', 'featureId', 'version', 'mrKey', 'description', 'commitStatuses', 'verifications', 'killId', 'incidentId', 'ref'];
   return Object.fromEntries(Object.entries(fields).filter(([k, v]) => keep.includes(k) && v !== undefined));
 }
 const stripUndefined = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== ''));

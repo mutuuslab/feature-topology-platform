@@ -1,6 +1,6 @@
 // ADS 변경(ADS-BE08·BE16·BE12, ADS-UI09 API) — 변경 종류·승인 경로·릴리스 비교·분류 완결성·시장 기준선·확대 판정 읽기. 시드 data/fixtures/ads/change.json.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { AdsChangeImpactList, ClassificationView, ExpansionView, ReleaseDiffView, UnclassifiedView } from '@ff/contracts';
+import type { AdsChangeImpactList, ClassificationView, ExpansionView, PolicyExpansionView, ReleaseDiffView, UnclassifiedView } from '@ff/contracts';
 import { actor, bootApp } from '../helpers';
 
 const AT = '2026-11-06T01:00:00.000Z';
@@ -110,8 +110,13 @@ describe('Feature 분류·시장 기준선 (ADS-BE16)', () => {
 describe('확대 판정 읽기 (ADS-BE12)', () => {
   it('감시 지표가 기준 시간을 넘기면 확대 보류(지표 지연) — 미확인 차량은 노출량에서 빼고 따로', async () => {
     const pol = (await app.http().get('/api/policies').expect(200)).body.items.find((p: { featureId: string }) => p.featureId === 'FEAT-00022');
-    const v = (await app.http().get(`/api/policies/${pol.policyId}/expansion`).expect(200)).body as ExpansionView;
+    // 축별 근거는 통합 확대 판정(D-INT-4)의 evidence — Canary 관측과 한 응답
+    const view = (await app.http().get(`/api/policies/${pol.policyId}/expansion`).expect(200)).body as PolicyExpansionView;
+    const v = view.evidence as ExpansionView;
     expect(v.result).toMatchObject({ verdict: 'HOLD', reason: 'METRIC_DELAY' });
+    // 가정값 근거는 판정에 보이되 확대를 막지 않는다
+    expect(view.decision.findings.find((f) => f.code === 'METRIC_DELAY')).toMatchObject({ source: 'EVIDENCE', blocking: false, waived: 'ASSUMED', items: ['takeoverRate'] });
+    expect(view.decision.findings.find((f) => f.code === 'INSUFFICIENT')).toBeUndefined();
     expect(v.vehicleActive).toBe(1820);
     expect(v.unconfirmed).toBe(140);
     expect(v.result.combos.find((c) => c.verdict === 'INSUFFICIENT')).toBeTruthy();

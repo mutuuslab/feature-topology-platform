@@ -186,9 +186,20 @@ h3 {
 [data-present='on'] .ds-badge {
   height: 28px;
 }
-/* 데이터 신선도 칩(TL-UI01) — 출처 데이터셋은 고정폭 작은 글자, 상태는 글자로 */
+/* 데이터 신선도 칩(TL-UI01·ADS-UI01, 부품 하나) — 상태 배지 + 마지막 보고·기준 시간·보조 글자. 출처 데이터셋은 작은 글자 */
+.ds-fresh {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-sm);
+}
 .ds-fresh__src {
   font-weight: 500;
+  color: var(--muted);
+}
+.ds-fresh__at,
+.ds-fresh__note {
   color: var(--muted);
 }
 

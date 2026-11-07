@@ -3,7 +3,9 @@
 // EU Canary 집계 23분 지연, care_00022_param DTC 상대위험 1.8.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { judgeExpansion } from '@ff/contracts';
 import { CanaryService } from '../../src/domains/d01-policy/staged-rollout/canary.service';
+import { PolicyExpansionService } from '../../src/domains/d01-policy/staged-rollout/expansion.service';
 import { FeatureHealthService } from '../../src/domains/d04-ops/telemetry-ingest/feature-health.service';
 import { PolicyRepo } from '../../src/domains/d01-policy/policy-repos';
 import { DB, type Db } from '../../src/kernel/db';
@@ -89,9 +91,13 @@ describe('Data Lake 연계 — 모의 Lake(IF-15)·4축 판정·점검 결과·C
     const p = get<PolicyRepo>(PolicyRepo).deployed('care_00022_param')!;
     const eu = get<CanaryService>(CanaryService);
     expect(eu.observe({ ...p, featureId: 'FEAT-00025', featureVersion: '1.0.0' })!.verdict).toBe('HOLD_STALE');
-    expect(eu.stageInput({ ...p, featureId: 'FEAT-00025', featureVersion: '1.0.0' })).toMatchObject({ verdict: 'HOLD_STALE', lagMinutes: 23 });
-    // 등록 전에는 경계 초과로 막지 않는다 → 등록 뒤에는 넓히기 거부(줄이기는 됨)
-    expect(eu.stageInput(p)).toBeNull();
+    // 확대 판정(통합 D-INT-4) — 단계 조정 거부가 읽는 판정. 지연은 언제나 막는다
+    const judge = get<PolicyExpansionService>(PolicyExpansionService);
+    expect(judgeExpansion(judge.sources({ ...p, featureId: 'FEAT-00025', featureVersion: '1.0.0' })).findings).toEqual([expect.objectContaining({ source: 'CANARY', code: 'STALE_DATA', blocking: true, lagMinutes: 23 })]);
+    // 등록 전에는 경계 초과로 막지 않는다(알림) → 등록 뒤에는 넓히기 거부(줄이기는 됨)
+    const d = judgeExpansion(judge.sources(p));
+    expect(d).toMatchObject({ verdict: 'STOP', blocked: false });
+    expect(d.findings.find((f) => f.code === 'ABORT_CRITERIA')).toMatchObject({ blocking: false, waived: 'UNREGISTERED', items: ['dtc_per_1k'] });
   });
 
   it('중단 기준 사전 등록(FR-ROL-002-006) — 등록 뒤 경계를 넘은 정책은 넓힐 수 없다, 줄이기는 언제나', async () => {
@@ -99,12 +105,23 @@ describe('Data Lake 연계 — 모의 Lake(IF-15)·4축 판정·점검 결과·C
     const body = { metrics: [{ metric: 'dtc_per_1k', maxRelativeRisk: 1.5 }], confidence: 0.95, observeHours: 24, maxLagMinutes: 10, reason: '출시 전 사전 등록' };
     await http().put(`/api/policies/${pid}/abort-criteria`).set(OPERATOR).send(body).expect(403);
     await http().put(`/api/policies/${pid}/abort-criteria`).set(RELEASE).send(body).expect(200);
-    const d = (await http().get(`/api/policies/${pid}/canary`).expect(200)).body.item;
+    // Canary 관측은 확대 판정 응답 하나에 담긴다(통합 D-INT-4 — 정책별 Canary 경로는 지웠다)
+    const d = (await http().get(`/api/policies/${pid}/expansion`).expect(200)).body.canary;
     expect(d.criteria).toMatchObject({ registered: true, registeredBy: 'usr-coordinator' });
     await http().post(`/api/policies/${pid}/rollout`).set(OPERATOR).send({ basisPoints: 300, reason: 'Canary로 줄이기' }).expect(200);
     const r = await http().post(`/api/policies/${pid}/rollout`).set(OPERATOR).send({ basisPoints: 2000, reason: '20% 확대' }).expect(422);
     expect(r.body.error.message).toContain('사전 등록한 중단 기준을 넘었습니다');
     expect(r.body.error.details.judgement.blockers.map((b: any) => b.code)).toContain('ABORT_CRITERIA');
+    // 통합 회귀(D-INT-4): 패널이 읽는 확대 판정과 단계 조정 거부가 같은 판정 — 막는 사유가 같고(관측 기간 미달 포함), 축별 근거(가정값)는 알림으로 함께 보인다
+    const view = (await http().get(`/api/policies/${pid}/expansion`).expect(200)).body;
+    expect(view.decision).toMatchObject({ verdict: 'STOP', blocked: true });
+    expect(view.canary).toMatchObject({ verdict: 'ABORT', criteria: { registered: true } });
+    expect(view.evidence.result).toMatchObject({ verdict: 'HOLD', reason: 'METRIC_DELAY' });
+    const asBlocker: Record<string, string> = { METRIC_DELAY: 'STALE_DATA', METRIC_ALERT: 'ABORT_CRITERIA', OPEN_ANOMALY: 'STOP_CRITERIA', ACTIVE_KILL: 'STOP_CRITERIA', INSUFFICIENT: 'INSUFFICIENT_EVIDENCE' };
+    const panel = [...new Set(view.decision.findings.filter((f: any) => f.blocking).map((f: any) => asBlocker[f.code] ?? f.code))].sort();
+    expect(panel).toEqual(r.body.error.details.judgement.blockers.map((x: any) => x.code).filter((c: string) => c !== 'SAME_AS_DEPLOYER').sort());
+    expect(panel).toEqual(['ABORT_CRITERIA', 'OBSERVATION']);
+    expect(view.decision.findings.find((f: any) => f.code === 'METRIC_DELAY')).toMatchObject({ source: 'EVIDENCE', blocking: false, waived: 'ASSUMED' });
     // 통합 회귀(D-INT-3): 사전 등록 중단 기준을 넘은 확대 거부도 '배포 중단 필요'로 알린다 — 열린 이상 징후·진행 중 차단(STOP_CRITERIA)만 보던 것
     const halt = get<Db>(DB).all<{ payload: string }>("SELECT payload FROM events WHERE type = 'rollout.halt-required' AND aggregate = ?", pid).map((e) => JSON.parse(e.payload));
     expect(halt.at(-1)).toMatchObject({ policyId: pid, to: 2000, requestedBy: 'seo.ops' });

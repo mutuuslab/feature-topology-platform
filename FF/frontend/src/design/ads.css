@@ -27,35 +27,6 @@
   color: var(--muted);
 }
 
-/* ── 관측 신선도 ─────────────────────────────── */
-.ads-fresh {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-1) var(--sp-2);
-  font-size: var(--fs-sm);
-}
-.ads-fresh__state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-weight: 700;
-  color: var(--ink-2);
-}
-.ads-fresh[data-freshness='FRESH'] .ads-fresh__state {
-  color: var(--ok);
-}
-.ads-fresh[data-freshness='DELAYED'] .ads-fresh__state {
-  color: var(--warn);
-}
-.ads-fresh[data-freshness='OFFLINE'] .ads-fresh__state {
-  color: var(--danger);
-}
-.ads-fresh__at,
-.ads-fresh__note {
-  color: var(--muted);
-}
-
 /* ── 배타 구간 ─────────────────────────────── */
 .ads-stages {
   margin: 0;

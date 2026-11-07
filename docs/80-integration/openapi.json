@@ -17321,36 +17321,6 @@
         }
       }
     },
-    "/api/policies/{id}/expansion": {
-      "get": {
-        "summary": "확대 판정",
-        "tags": [
-          "D01-08"
-        ],
-        "operationId": "adsPolicyExpansion",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "성공"
-          },
-          "400": {
-            "description": "입력 검증 실패 (오류 봉투)"
-          },
-          "404": {
-            "description": "없음 (오류 봉투)"
-          }
-        }
-      }
-    },
     "/api/incidents": {
       "get": {
         "summary": "현장 장애·VOC 이력",
@@ -22647,14 +22617,23 @@
         }
       }
     },
-    "/api/canary": {
+    "/api/policies/{id}/expansion": {
       "get": {
-        "summary": "Canary 관측 목록",
+        "summary": "확대 판정 — Canary 관측·축별 근거",
         "tags": [
           "D01-08"
         ],
-        "operationId": "canaryOverview",
-        "parameters": [],
+        "operationId": "policyExpansion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "성공"
@@ -22668,23 +22647,14 @@
         }
       }
     },
-    "/api/policies/{id}/canary": {
+    "/api/canary": {
       "get": {
-        "summary": "정책 Canary 관측",
+        "summary": "Canary 관측 목록",
         "tags": [
           "D01-08"
         ],
-        "operationId": "policyCanary",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "operationId": "canaryOverview",
+        "parameters": [],
         "responses": {
           "200": {
             "description": "성공"

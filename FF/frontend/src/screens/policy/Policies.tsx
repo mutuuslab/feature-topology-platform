@@ -2,12 +2,11 @@
 // 단계적 기능 배포(D01-08). PoC ② 정책 준비·검증·승인.
 import { lazy, Suspense, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ControlPointType, effectiveBasisPoints, type CanaryObservation } from '@ff/contracts';
+import { ControlPointType, effectiveBasisPoints, type PolicyExpansionView } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { ExportButtons, PeriodFilter, type Period } from '../governance/AuditTools';
 import { planning as W } from '../../copy/planning';
-import { lake as LK } from '../../copy/lake';
 import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, Toolbar, VerdictBadge, Icon } from '../../design';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
@@ -20,12 +19,12 @@ import { PolicyHistory } from './PolicyHistory';
 import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
 import { ChangeKindChip, reharaAfterRelease, SignAction, useFeatureChange } from '../ads/ChangeImpact';
 import { PolicyDeployPreview } from '../ads/BulkPreviews';
-import { ExpansionPanel } from '../ads/ExpansionPanel';
+import { stageGuard } from './expansion-text';
 
 const T = ko.policy;
-// Canary 관측(TL-UI02) — Data Lake 집계 화면은 따로 읽는다(정책 상세 묶음을 늘리지 않게)
-const CanaryPanel = lazy(() => import('./CanaryPanel').then((m) => ({ default: m.CanaryPanel })));
-const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort', 'policyCanary', 'canaryOverview'];
+// 확대 판정(Canary 관측 TL-UI02·UI03 + 축별 근거 ADS-UI11, 통합 D-INT-4) — 따로 읽는다(정책 상세 묶음을 늘리지 않게)
+const ExpansionPanel = lazy(() => import('./ExpansionPanel').then((m) => ({ default: m.ExpansionPanel })));
+const INVALIDATE = ['listPolicies', 'policyDetail', 'policyRevisions', 'policyChanges', 'validations', 'featureDetail', 'listFeatures', 'audit', 'activationDecide', 'cohort', 'policyExpansion', 'canaryOverview'];
 
 interface Policy {
   policyId: string;
@@ -217,8 +216,10 @@ export function PolicyDetail() {
             />
             <FeatureFlagHighlight id={p.featureId} ver={p.featureVersion} />
             <ErrorNote error={validate.error} />
-            {/* 확대 판정(ADS-UI11) — 배포 중 정책에만, 판정 입력이 없으면 그리지 않는다 */}
-            {p.status === 'DEPLOYED' && <ExpansionPanel policyId={p.policyId} />}
+            {/* 확대 판정(Canary 관측 + 축별 근거, 통합 D-INT-4) — 배포 중 정책에만, 근거가 둘 다 없으면 그리지 않는다 */}
+            <Suspense fallback={null}>
+              <ExpansionPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
+            </Suspense>
 
             <PolicyCrPanel policyId={p.policyId} />
 
@@ -237,10 +238,6 @@ export function PolicyDetail() {
             </Panel>
 
             <VirtualPanel policy={p} />
-
-            <Suspense fallback={null}>
-              <CanaryPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
-            </Suspense>
 
             <UnleashPanel policyId={p.policyId} deployed={p.status === 'DEPLOYED'} />
             <FlagCodeSummary flagKey={p.flagKey} />
@@ -293,12 +290,13 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
   const [reason, setReason] = useState('');
   const [bp, setBp] = useState(policy.stageBasisPoints ?? 10000);
   const m = kind === 'decide' ? decide : kind === 'deploy' ? deploy : stage;
-  // 단계 확대 전 Canary 관측(TL-UI03·B01) — 넓힐 때 지표 지연이면 보류, 등록한 중단 기준을 넘으면 중단(서버와 같은 판정), 기준이 없으면 안내
-  const canary = useApi<{ item: CanaryObservation | null }>('policyCanary', { params: { id: policy.policyId } }, { enabled: kind === 'stage' && policy.status === 'DEPLOYED' });
-  const obs = canary.data?.item ?? null;
+  // 단계 확대 전 확대 판정(통합 D-INT-4) — 서버 단계 조정 거부와 같은 판정: 막는 사유(지표 지연·사전 등록 중단 기준 초과·실측 근거의 동결·경보·지연)면 막고,
+  // 알림(중단 기준 미등록·표본 부족·가정값 근거)은 안내만
+  const exp = useApi<PolicyExpansionView>('policyExpansion', { params: { id: policy.policyId } }, { enabled: kind === 'stage' && policy.status === 'DEPLOYED', retry: false });
   const widen = bp > effectiveBasisPoints(policy);
-  const stageBlock = !widen || !obs ? undefined : obs.verdict === 'HOLD_STALE' ? LK.canary.stage.hold : obs.verdict === 'ABORT' && obs.criteria.registered ? LK.canary.stage.abort : undefined;
-  const stageNote = !widen || !obs ? null : stageBlock ?? (!obs.criteria.registered ? LK.canary.stage.noCriteria : obs.verdict === 'INSUFFICIENT' ? LK.canary.stage.insufficient : LK.canary.stage.ok);
+  const guard = widen ? stageGuard(exp.data, bp) : { note: null };
+  const stageBlock = guard.block;
+  const stageNote = stageBlock ?? guard.note;
   const done = { onSuccess: () => (setReason(''), onClose()) };
   return (
     <Drawer open={!!kind} title={kind === 'decide' ? `${T.approve} / ${T.reject}` : kind === 'deploy' ? T.deploy : T.stage} onClose={onClose}>

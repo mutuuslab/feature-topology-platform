@@ -8,7 +8,8 @@ import { asyncState, useApi } from '../../api/hooks';
 import { ads } from '../../copy/ads';
 import { axesTab, axisWords, convergence as CV, customerTab as CT, fleetAxes as FA, orders as OR, verdictsTab as VT } from '../../copy/ads-state';
 import { AsyncView, DataTable, DiffView, Drawer, IdChip, KeyValue, Panel, Segmented, StatusGlyph, SummaryLine } from '../../design';
-import { AxisStateTable, BlockedAction, CaseTimeline, fmtAt, FreshnessChip, relAgo, SimulatedDataNotice, StageCounts, TableScroll, UnknownMark, VerdictReason, type Segment, type SegTone } from '../../design/ads';
+import { FreshnessChip } from '../../design/freshness';
+import { AxisStateTable, BlockedAction, CaseTimeline, fmtAt, relAgo, SimulatedDataNotice, StageCounts, TableScroll, UnknownMark, VerdictReason, type Segment, type SegTone } from '../../design/ads';
 import './ads-state.css';
 
 const A = ads.axes;

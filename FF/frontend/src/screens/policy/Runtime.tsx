@@ -11,7 +11,8 @@ import { eligibility as E } from '../../copy/ads-config';
 import { ko } from '../../copy/ko';
 import { pickAvailableValue } from '../../data/first-run';
 import { AsyncView, Button, DataTable, PageHeader, Pager, Panel, Select, Tabs, VerdictBadge, type KeyMessageSpec } from '../../design';
-import { FreshnessChip, UnknownMark, VerdictReason, fmtAt, type VerdictTone } from '../../design/ads';
+import { UnknownMark, VerdictReason, fmtAt, type VerdictTone } from '../../design/ads';
+import { FreshnessChip } from '../../design/freshness';
 import { OpenFeaturePanel } from './OpenFeaturePanel';
 import '../ads/ads-config.css';
 

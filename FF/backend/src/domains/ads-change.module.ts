@@ -2,13 +2,12 @@
 import { Module } from '@nestjs/common';
 import { D01PolicyModule } from './d01-policy/d01-policy.module';
 import { AdsClassificationController, AdsClassificationService } from './d01-policy/registry/ads-classification.service';
-import { AdsExpansionController, AdsExpansionService } from './d01-policy/staged-rollout/ads-expansion.service';
 import { AdsChangeImpactController, AdsChangeService, AdsReleaseController } from './d06-qsec/change-impact-validation/ads-change.service';
 
 @Module({
   imports: [D01PolicyModule],
-  controllers: [AdsChangeImpactController, AdsReleaseController, AdsClassificationController, AdsExpansionController],
-  providers: [AdsChangeService, AdsClassificationService, AdsExpansionService],
+  controllers: [AdsChangeImpactController, AdsReleaseController, AdsClassificationController],
+  providers: [AdsChangeService, AdsClassificationService],
   exports: [AdsChangeService, AdsClassificationService],
 })
 export class AdsChangeModule {}

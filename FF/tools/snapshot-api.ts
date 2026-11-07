@@ -430,12 +430,11 @@ async function main() {
   for (const a of anomalies.items as { anomalyId: string }[]) await save('anomalyDetail', { id: a.anomalyId });
   for (const [featureId, featureVersion] of [['FEAT-00015', '1.2.0'], ['FEAT-00028', '1.0.0'], ['FEAT-00001', '2.2.0']])
     for (const reasonCategory of ['SAFETY', 'SECURITY', 'COMMERCIAL']) await save('killPreview', {}, { featureId, featureVersion, reasonCategory });
-  // Data Lake 연계·Closed loop(80-70, TL-UI*) — 모의 Lake 조회·운영 점검(점검 결과마다)·Feature 운영 지표 탭·수집 정책·정책별 Canary
+  // Data Lake 연계·Closed loop(80-70, TL-UI*) — 모의 Lake 조회·운영 점검(점검 결과마다)·Feature 운영 지표 탭·수집 정책(정책별 Canary는 확대 판정 응답에)
   for (const m of ['lakeStatus', 'lakeContracts', 'lakeModels', 'lakeLabels', 'lakeAnomalyEvidence', 'lakeExperiments', 'lakeTrials', 'collectionPolicies', 'canaryOverview']) await save(m);
   const health = await save('featureHealth');
   for (const f of health.findings as { findingId: string }[]) await save('featureHealthFinding', { id: f.findingId });
   for (const id of new Set((all.items as { featureId: string }[]).map((f) => f.featureId))) await save('featureOpsMetrics', { id });
-  for (const p of policies.items as { policyId: string }[]) await save('policyCanary', { id: p.policyId });
   // ADS·UNECE·Orca 화면 — 새 화면·탭이 읽는 응답(질의 키 순서는 화면과 같게, e2e:static이 모든 탭을 연다)
   // 구성: ODD 프로파일·승인 구성 조합·VIN 지원 판정(차량 × 상품)
   const odd = await save('oddProfiles');
@@ -467,8 +466,8 @@ async function main() {
   for (const r of releases.items as { releaseId: string }[]) await save('adsReleaseDiff', { id: r.releaseId });
   await save('adsUnclassified');
   for (const x of all.items as { featureId: string; version: string }[]) await save('adsClassification', { id: x.featureId, ver: x.version });
-  // 확대 판정 — 판정 입력이 있는 배포 정책만(없으면 404, 화면은 패널을 그리지 않는다)
-  for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('adsPolicyExpansion', { id: p.policyId }).catch(() => undefined);
+  // 확대 판정(통합 D-INT-4) — 배포 정책마다 Canary 관측·축별 근거를 한 응답으로(근거가 둘 다 없으면 화면은 패널을 그리지 않는다)
+  for (const p of policies.items as { policyId: string; status: string }[]) if (p.status === 'DEPLOYED') await save('policyExpansion', { id: p.policyId }).catch(() => undefined);
   console.log(`snapshot:api — ${n}개 응답 → frontend/public/api-snapshot/`);
 }
 

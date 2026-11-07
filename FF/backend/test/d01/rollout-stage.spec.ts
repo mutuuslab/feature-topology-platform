@@ -36,12 +36,22 @@ describe('단계적 확대 — F2 이상 Canary·관측·중단 기준 (FFG-LCY-
     await stage(300).expect(200);
     hours(10);
     expect((await stage(5000).expect(422)).body.error.message).toMatch(/관측 기간 10시간 < 24시간/);
+    // 통합 회귀(D-INT-4): 정책 상세 확대 판정도 같은 단계 기준 — 관측 기간 미달이 막는 사유, 단계 기준 기록(지금 범위·관측 시간)
+    const v = (await http().get(`/api/policies/${pid}/expansion`).expect(200)).body;
+    expect(v.decision.findings.find((f: any) => f.source === 'STAGE')).toMatchObject({ code: 'OBSERVATION', verdict: 'HOLD', blocking: true, observedMs: 10 * 3600_000 });
+    expect(v.stage).toMatchObject({ fClass: 'F3', current: 300, applies: true, observedMs: 10 * 3600_000, requiredMs: 86_400_000, openAnomalies: [], activeKills: [] });
   });
 
   it('관측이 지나도 진행 중 차단이 있으면 중단 기준 — 거부, 복원 뒤 확대하면 판정 기록(관측 시간·중단 기준)', async () => {
     hours(15);
     const k = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01'], reason: '단계 확대 중 결함', confirm: 'FEAT-00022' });
-    expect((await stage(5000).expect(422)).body.error.message).toMatch(new RegExp(`차단 ${k.killId}`));
+    const refused = (await stage(5000).expect(422)).body.error;
+    expect(refused.message).toMatch(new RegExp(`차단 ${k.killId}`));
+    // 통합 회귀(D-INT-4): 진행 중 차단은 패널 판정에서도 중단 — 막는 단계 기준 사유가 거부 사유와 같다
+    const v = (await http().get(`/api/policies/${pid}/expansion`).expect(200)).body;
+    expect(v.decision.verdict).toBe('STOP');
+    expect(v.decision.findings.find((f: any) => f.code === 'ACTIVE_KILL')).toMatchObject({ source: 'STAGE', blocking: true, items: [k.killId] });
+    expect(refused.details.judgement.blockers.map((b: any) => b.code)).toContain('STOP_CRITERIA');
     await restoreV2(http, k.killId, '결함 해소', actor('park.safety', 'SAFETY_OFFICER'));
     await stage(5000).expect(200);
     const ev = (await http().get('/api/events?type=rollout.staged').expect(200)).body.items.at(-1).payload;

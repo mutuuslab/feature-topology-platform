@@ -29,6 +29,8 @@ import { FleetRepo, PolicyRepo } from './policy-repos';
 import { BaselineRepo, FeatureRepo, GateRepo, ProductRepo, TopologyRepo } from './repos';
 import { StagedRolloutService } from './staged-rollout/staged-rollout.service';
 import { CanaryController, CanaryService } from './staged-rollout/canary.service';
+import { AdsExpansionService } from './staged-rollout/ads-expansion.service';
+import { PolicyExpansionController, PolicyExpansionService } from './staged-rollout/expansion.service';
 import { TargetingService } from './targeting/targeting.service';
 import { GateService } from './topology/gate.service';
 import { TopologyController } from './topology/topology.controller';
@@ -40,7 +42,7 @@ import { FlagCoverageService } from './flag-code/flag-coverage.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PolicyExpansionController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -54,6 +56,8 @@ import { FlagCoverageService } from './flag-code/flag-coverage.service';
     ActivationService,
     StagedRolloutService,
     CanaryService, // Canary 관측·중단 기준(TL-B01·B02) — Lake 집계(IF-15)로 단계 확대를 보류·중단
+    AdsExpansionService, // 확대 판정의 축별 근거(ADS-BE12)
+    PolicyExpansionService, // 확대 판정 하나(통합 D-INT-4) — 단계 조정 거부와 정책 상세 패널이 같은 판정
     SafetyProfileService,
     ReleaseSignoffService,
     WorkQueueService, // 검토함 대기열(W2)

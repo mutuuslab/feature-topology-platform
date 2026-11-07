@@ -121,7 +121,7 @@ function ModelsTab() {
 }
 
 function DecideDrawer({ model, onClose }: { model: LakeModelRow | null; onClose: () => void }) {
-  const m = useApiMutation('approveLakeModel', ['lakeModels', 'policyCanary', 'canaryOverview', 'lakeTrials']);
+  const m = useApiMutation('approveLakeModel', ['lakeModels', 'policyExpansion', 'canaryOverview', 'lakeTrials']);
   const [reason, setReason] = useState('');
   const go = (decision: 'APPROVE' | 'REJECT') => model && m.mutate({ params: { id: model.modelId }, body: { version: model.version, decision, reason: reason.trim() } }, { onSuccess: () => (setReason(''), onClose()) });
   const short = reason.trim().length < 2;

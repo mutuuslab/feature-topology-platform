@@ -3,7 +3,7 @@
 import { Body, Controller, Get, Inject, Injectable, Param, Put } from '@nestjs/common';
 import {
   AbortCriteriaBody, CANARY_METRICS, DEFAULT_ABORT, effectiveBasisPoints, judgeCanary, modelUsable, type AbortCriteria, type CanaryArmStat, type CanaryObservation,
-  type CanaryOverviewResponse, type CanaryRisk, type Policy, type StageChangeInput,
+  type CanaryOverviewResponse, type CanaryRisk, type Policy,
 } from '@ff/contracts';
 import { abortCriteriaOf, modelUseOf } from '../../../adapters/lake/ff-lake-records';
 import { LakeLink, type LakeCanaryDoc } from '../../../adapters/lake/lake-reader';
@@ -97,22 +97,6 @@ export class CanaryService {
     return { connected: true, asOf: this.clock.iso(), items };
   }
 
-  detail(policyId: string): CanaryObservation | null {
-    const p = this.policies.get(policyId);
-    if (!p) throw new DomainError('NOT_FOUND', `${policyId}을(를) 찾을 수 없습니다.`);
-    return this.observe(p);
-  }
-
-  /** 단계 확대 판정 입력(TL-B01·B02) — 신선도 보류는 언제나, 경계 초과 중단은 중단 기준을 사전 등록한 정책만 */
-  stageInput(p: Policy): StageChangeInput['lake'] {
-    const o = this.observe(p);
-    if (!o) return null;
-    const lagMinutes = o.freshness.lagSeconds == null ? null : Math.round(o.freshness.lagSeconds / 60);
-    if (o.verdict === 'HOLD_STALE') return { verdict: 'HOLD_STALE', lagMinutes, breached: [] };
-    if (o.verdict === 'ABORT' && o.criteria.registered) return { verdict: 'ABORT', lagMinutes, breached: o.breached };
-    return null;
-  }
-
   /** 중단 기준 사전 등록 — 추가만(이전 기준은 감사·표에 남는다) */
   register(actor: Actor, policyId: string, body: AbortCriteriaBody): AbortCriteria {
     const p = this.policies.get(policyId);
@@ -136,11 +120,6 @@ export class CanaryController {
   @Get('canary')
   overview() {
     return this.canary.overview();
-  }
-
-  @Get('policies/:id/canary')
-  detail(@Param('id') id: string) {
-    return { item: this.canary.detail(id) };
   }
 
   @Put('policies/:id/abort-criteria')

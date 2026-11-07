@@ -36,7 +36,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:100",
-     "backend/src/domains/d01-policy/registry/ads-release-guard.ts:15",
+     "backend/src/domains/d01-policy/registry/ads-release-guard.ts:19",
      "backend/src/domains/d01-policy/registry/ads-classification.service.ts:103"
     ],
     "tests": [
@@ -146,7 +146,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "backend/src/domains/d01-policy/registry/ads-classification.service.ts:95",
-     "backend/src/domains/d01-policy/registry/ads-release-guard.ts:15",
+     "backend/src/domains/d01-policy/registry/ads-release-guard.ts:19",
      "backend/src/domains/d01-policy/policy-store/policy.service.ts:130"
     ],
     "tests": [
@@ -183,7 +183,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/ads-publish.ts:112",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:95",
-     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:121"
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:123"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",
@@ -473,7 +473,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:158",
-     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:105",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:107",
      "backend/src/domains/d06-qsec/secure-deploy/secure-deploy.service.ts:146"
     ],
     "tests": [
@@ -901,8 +901,8 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:105",
-     "backend/src/domains/d02-runtime/variant-conditions/ads-config.service.ts:184"
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:107",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-config.service.ts:201"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts"
@@ -1332,7 +1332,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ota-install.ts:72",
-     "backend/src/adapters/ota/ota-install.service.ts:138"
+     "backend/src/adapters/ota/ota-install.service.ts:136"
     ],
     "tests": [
      "backend/test/ads/p5-plant-ota.spec.ts",
@@ -1401,7 +1401,7 @@ export const ADS_TRACE: AdsTraceDoc = {
    "review": {
     "verdict": "구현",
     "evidence": [
-     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:121",
+     "backend/src/domains/d02-runtime/variant-conditions/ads-publish-gate.ts:123",
      "contracts/src/rules/ota-install.ts:203",
      "contracts/src/rules/ads-publish.ts:192"
     ],
@@ -1440,7 +1440,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:169",
-     "backend/src/domains/d02-runtime/variant-conditions/ads-config.service.ts:184"
+     "backend/src/domains/d02-runtime/variant-conditions/ads-config.service.ts:201"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",
@@ -2037,15 +2037,18 @@ export const ADS_TRACE: AdsTraceDoc = {
     "H02"
    ],
    "review": {
-    "verdict": "부분",
+    "verdict": "구현",
     "evidence": [
-     "contracts/src/rules/access.ts:20",
-     "backend/src/domains/d06-qsec/iam/iam.service.ts:20"
+     "contracts/src/rules/role-scope.ts:30",
+     "backend/src/domains/d06-qsec/iam/role-scope.service.ts:105",
+     "contracts/src/rules/access.ts:20"
     ],
     "tests": [
+     "backend/test/d06/role-scope.spec.ts",
+     "contracts/src/rules/role-scope.test.ts",
      "backend/test/d06/iam-variant.spec.ts"
     ],
-    "gap": "역할별 명령 권한은 있지만 환경·시장·Feature 단위 권한 범위 제한이 없고, 분석 전용 역할의 해제·발행 거부 시험이 없다.",
+    "gap": "역할 권한 위에 계정별 시장·Feature·환경 범위를 겹쳐 긴급 차단·해제·정책 배포 대상이 범위 밖이면 SCOPE_DENIED로 거부하고 감사 DENIED를 남긴다. 분석 전용(감사 조회자)의 종료·해제·발행 거부를 시험한다(TC20).",
     "plan": [
      "ADS-UI03",
      "ADS-BE15"
@@ -2706,7 +2709,8 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/test/d03/kill-v2.spec.ts",
      "backend/test/d03/policy-gate.spec.ts",
-     "backend/test/d03/rollback.spec.ts"
+     "backend/test/d03/rollback.spec.ts",
+     "backend/test/d06/role-scope.spec.ts"
     ],
     "plan": [
      "ADS-BE15"

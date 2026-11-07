@@ -720,7 +720,7 @@
       "current": "IF-05 설치 보고(예정 창·예상 소요·운행 제한·설치 보류 사유·실패 원인·복구·정지 유지 증거)를 받아 차량별 설치 단계로 보이고, 운행 제한은 예상 글자로만 낸다.",
       "evidence": [
         "contracts/src/rules/ota-install.ts:59",
-        "backend/src/adapters/ota/ota-install.service.ts:138"
+        "backend/src/adapters/ota/ota-install.service.ts:136"
       ],
       "tests": [
         "backend/test/ads/p5-plant-ota.spec.ts",

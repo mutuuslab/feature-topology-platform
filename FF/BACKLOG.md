@@ -136,7 +136,7 @@
 - 이어서: "다른 세션 내용과 통합해 UI/UX·프론트·백엔드·DB 수정 설계"
 - 원본: 저장소 밖(`C:/project/2026-06-04_Feature_Platform_sources/ads-unece-v3.0/`, sha256 `712e75bc6542…`)
 - 추출본: `harness/ads/catalog.json`
-- 판정: `harness/ads/review.json` — 요건 64 중 구현 19 · 부분 38 · 미구현 4 · 범위 밖 3
+- 판정: `harness/ads/review.json` — 요건 64 중 구현 20 · 부분 37 · 미구현 4 · 범위 밖 3
 - 설계: `harness/ads/design.json`
 - 보고서: `docs/10-requirements/ads-unece-v3/report.html`
 - 반영 순서: 설계 단계 0 → 5. UI/UX가 먼저이고 [결함] 항목 5개는 1단계에서 회귀 시험과 함께 고친다.
@@ -181,16 +181,16 @@
 
 | ID | 상태 | 우선 | 층 | 내용 | 요구(FFP-) | 선행 | 착수 전 확인 |
 |---|---|---|---|---|---|---|---|
-| ADS-BE10 | 완료 — 게시 후보 승인 조합 대조·차량 증명 형상 대조·복구 결정·메타데이터 재검증(강제 범위 ADS Feature, F2+ ADAS는 사유 기록) | P2 | BE | 호환 형상 집합·보안 최소 버전 | F005·F039·F040 | — | 적합성 빈칸 1 |
+| ADS-BE10 | 완료 — 게시 후보 승인 조합 대조·차량 증명 형상 대조·복구 결정·메타데이터 재검증(강제 범위 ADS Feature, F2+ ADAS는 사유 기록) · 조합 등록 = 제안 → 다른 사람 승인(작성자 ≠ 승인자)·보안 최소 버전 표(사이버보안 담당 승인, 조합 등록·승인이 하한으로 읽음) | P2 | BE | 호환 형상 집합·보안 최소 버전 | F005·F039·F040 | — | 적합성 빈칸 1 |
 | ADS-UI04 | 완료 — /config/odd | P1 | UI | 신설 ODD 프로파일 화면 /config/odd | F016·F025·F026 | ADS-BE09 | UX 사양 3 |
 | ADS-UI05 | 완료 — /config/compat | P1 | UI | 신설 호환 형상 화면 /config/compat | F005·F039 | ADS-BE10 | UX 사양 3 · 적합성 빈칸 1 |
 | ADS-UI09 | 완료 — /analysis/impact 승인 경로·릴리스 비교(서버 서명 거부는 ADS-BE06) | P1 | UI | 변경 종류·승인 영향·릴리스 비교 | F002·F007·F008 | ADS-BE06·ADS-BE08·ADS-BE09 | UX 사양 2 · 적합성 빈칸 1 |
-| ADS-UI12 | 완료 — 안전 분류 탭·미분류 목록(거부 규칙 꺼 둠) | P1 | UI | Feature 분류·시장 기준선 보강 | F001·F003·F004 | ADS-BE16 | UX 사양 2 · 적합성 빈칸 2 |
+| ADS-UI12 | 완료 — 안전 분류 탭·미분류 목록(분류 시드로 채운 뒤 출시 전이 거부 규칙 전체 적용) | P1 | UI | Feature 분류·시장 기준선 보강 | F001·F003·F004 | ADS-BE16 | UX 사양 2 · 적합성 빈칸 2 |
 | ADS-BE07 | 대기 | P2 | BE | Feature 단위 epoch — KILL 뒤 과거 정책 게시본 거부 | F015 | — | — |
 | ADS-BE08 | 완료 — 변경 종류 분류·유형별 영향 경로·종결 | P2 | BE | 변경 종류 분류와 유형별 영향 경로 | F002·F007 | ADS-BE10 | 적합성 빈칸 1 |
 | ADS-BE09 | 완료 — 정책 컴파일(배포·미리보기)·ODD 프로파일 참조 build·판정 로그 분리·적용 장소 추가(변경 영향 확정) | P2 | BE | ODD 프로파일 엔티티·의미 검증·승인 상한 컴파일 검사 | F016·F025·F026 | — | — |
 | ADS-BE11 | 완료 — 게시본 build digest·컴파일러 판(서명 payload 밖) | P2 | BE | 결정적 정책 빌드 digest | F013 | — | — |
-| ADS-BE16 | 완료 — 분류 입력·확정·재확정, 시장 기준선 입력, 상태 책임자 이력, 거부 규칙(분류 행 있는 Version·ADS 발행) | P2 | BE | Feature 분류 보강·시장 기준선 | F001·F003·F004 | — | 적합성 빈칸 2 |
+| ADS-BE16 | 완료 — 분류 입력·확정·재확정, 시장 기준선 입력, 상태 책임자 이력, 거부 규칙(모든 Version — 미분류 채운 뒤 전체 적용·ADS 발행) | P2 | BE | Feature 분류 보강·시장 기준선 | F001·F003·F004 | — | 적합성 빈칸 2 |
 | ORC-UI04 | 대기 | P2 | UI | 체험·구독 고지·해지·환불·이용기간 조정 | F062 | ORC-BE01 | UX 사양 1 · 적합성 빈칸 1 |
 | ORC-UI05 | 대기 | P2 | UI | 국가 이동 미리보기 | F003 | ADS-BE16·ORC-BE04·ORC-BE02 | UX 사양 2 · 적합성 빈칸 2 |
 | ORC-UI06 | 대기 | P2 | UI | 소유권 이전·디지털 기능 명세 | F062 | ORC-BE04·ORC-UI08·ORC-UI09 | UX 사양 2 |
@@ -210,7 +210,7 @@
 | ADS-BE12 | 부분 — 확대 판정 규칙·시드 지표 읽기, 텔레메트리 엔진 통합 남음 | P2 | BE | 확대 판정 엔진(텔레메트리 TL-B01·B02와 통합) | F012·F020·F049·F051 | ADS-BE01·ADS-BE10·ADS-BE16 | 적합성 빈칸 1 |
 | ADS-BE13 | 부분 — 사건 보고·기한·정기 집계·대상 확정, 단기 보고 초안 남음 | P2 | BE | 사건 보고·DSSAD 경계 | F050·F052 | ORC-BE03 | — |
 | ADS-BE14 | 부분 — 주장·논거·Evidence·독립 검토 발견, 승격 게이트·종결 남음 | P2 | BE | Safety Case CAE·Evidence manifest·독립 검토 | F010·F053·F055·F056·F032 | — | — |
-| ADS-BE15 | 대기 | P2 | BE | 권한 범위(시장·Feature·환경) | F057 | — | — |
+| ADS-BE15 | 완료 — 계정별 시장·Feature·환경 권한 범위(role_scope, 추가만)·종료·해제·발행 명령 범위 검사(SCOPE_DENIED·감사 DENIED)·분석 전용 거부 시험(TC20) | P2 | BE | 권한 범위(시장·Feature·환경) | F057 | — | — |
 | ADS-BE17 | 완료 — GET /api/campaigns/:id | P2 | BE | 캠페인 ↔ 릴리스 양방향 조회 | F017 | — | — |
 | ADS-BE18 | 부분 — 요구 추적 생성기(ads-trace), 표식·래칫 남음 | P2 | BE | FFP 추적 하네스(@ffp 표식·래칫·표준 개정 영향) | F054·F064 | — | 적합성 빈칸 2 |
 | ORC-UI07 | 대기 | P3 | UI | 법인·플릿 — 권리 주체 분리 | F057 | ORC-BE04·ORC-BE02 | 적합성 빈칸 1 |

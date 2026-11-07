@@ -71,6 +71,7 @@ export * from './rules/population';
 export * from './rules/ext-sync';
 export * from './rules/alm/epic';
 export * from './rules/alm/api';
+export * from './rules/alm/work-products';
 export * from './rules/workflows';
 export * from './schemas/procedure';
 export * from './rules/connections';

@@ -33,7 +33,7 @@ const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
 const INTEGRATOR = actor('usr-integrator', 'IMPLEMENTER');
 
 const SECRET = { JIRA: 'contract-jira-webhook-secret-0001', CB: 'contract-cb-webhook-secret-0001' };
-const LIVE_ENV = ['IF_MODE_14', 'IF_MODE_01', 'JIRA_FIELDS', 'JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_WEBHOOK_SECRET', 'JIRA_EPIC_PROJECT', 'JIRA_CR_PROJECT', 'JIRA_DEFECT_PROJECT', 'JIRA_FIELD_COUNTRY', 'JIRA_FIELD_VEHICLE_MODEL', 'JIRA_FIELD_TRIM', 'JIRA_FIELD_ASIL', 'JIRA_FIELD_OWNER', 'JIRA_FIELD_FEATURE_DB', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN', 'CODEBEAMER_WEBHOOK_SECRET', 'CODEBEAMER_REQ_TRACKER', 'FF_EXT_SYNC_SEED'];
+const LIVE_ENV = ['IF_MODE_14', 'IF_MODE_01', 'JIRA_FIELDS', 'CODEBEAMER_PROJECT', 'JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_WEBHOOK_SECRET', 'JIRA_EPIC_PROJECT', 'JIRA_CR_PROJECT', 'JIRA_DEFECT_PROJECT', 'JIRA_FIELD_COUNTRY', 'JIRA_FIELD_VEHICLE_MODEL', 'JIRA_FIELD_TRIM', 'JIRA_FIELD_ASIL', 'JIRA_FIELD_OWNER', 'JIRA_FIELD_FEATURE_DB', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN', 'CODEBEAMER_WEBHOOK_SECRET', 'CODEBEAMER_REQ_TRACKER', 'FF_EXT_SYNC_SEED'];
 
 describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBeamer', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ff-ext-contract-'));
@@ -78,6 +78,8 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
       CODEBEAMER_TOKEN: 'cb-mock-token',
       CODEBEAMER_WEBHOOK_SECRET: SECRET.CB,
       CODEBEAMER_REQ_TRACKER: String(trackerId('SYS_REQ')),
+      // 80-50 A4 — 산출물 8종 트래커는 프로젝트 트래커 이름으로 찾는다
+      CODEBEAMER_PROJECT: '52',
       // 운영처럼 프로세스 내 예시 항목을 넣지 않는다 — 외부 항목은 모의 서버에만 있다
       FF_EXT_SYNC_SEED: '0',
     });
@@ -226,5 +228,41 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
     await settle();
     const bug = Object.values(jira.state().issues).find((i) => i.type === 'Bug' && i.custom.customfield_10024 === inc.incidentId);
     expect(bug).toMatchObject({ parent: epicKey, status: 'Open', summary: expect.stringContaining('작동하지 않음') });
+  });
+
+  // 80-50 A4 — codeBeamer 산출물: 트래커 이름·스키마로 칸 번호를 찾고 cbQL(FF Feature ID·요구 ID)·items/relations로 모은다
+  it('codeBeamer 산출물 수집(cbQL·관계) → 완결성·누락, 미완결 종류는 JIRA Task(Epic 아래)', async () => {
+    const ver = '0.2.0';
+    const seeded = await fetch(`${cb.url}/_mock/seed`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        items: [
+          { ref: 'sw', tracker: 'SW_REQ', name: '정차 판정 SW 요구', fields: { 'FF Feature ID': featureId }, status: 'Approved' },
+          { ref: 'arch', tracker: 'SYS_ARCH', name: '정차 판정 시스템 아키텍처', fields: { 'FF Feature ID': featureId }, status: 'In Review' },
+          { ref: 'test', tracker: 'TEST_SPEC', name: '정차 판정 시험', fields: { 'FF Feature ID': featureId }, status: 'Approved' },
+        ],
+        relations: [
+          { from: 'sw', to: reqItem, kind: 'association', type: 'derived' },
+          { from: 'arch', to: reqItem, kind: 'association', type: 'allocated' },
+          { from: 'test', to: reqItem, kind: 'association', type: 'verifies' },
+          { from: 'test', to: 'sw', kind: 'association', type: 'verifies' },
+        ],
+      }),
+    });
+    const ids = ((await seeded.json()) as { ids: Record<string, number> }).ids;
+    const v = (await http().post(`/api/alm/features/${featureId}/${ver}/work-products/refresh`).set(INTEGRATOR).send({}).expect(200)).body;
+    expect(v.items.map((i: any) => i.key).sort()).toEqual([`CB-${reqItem}`, `CB-${ids.sw}`, `CB-${ids.arch}`, `CB-${ids.test}`].sort());
+    expect(v.items.find((i: any) => i.key === `CB-${reqItem}`)).toMatchObject({ kind: 'SYS_REQ', approved: true, url: `${cb.url}/cb/issue/${reqItem}` });
+    const row = (k: string) => v.result.kinds.find((x: any) => x.kind === k);
+    expect(row('SYS_REQ')).toMatchObject({ required: true, passed: true });
+    expect(row('SYS_ARCH')).toMatchObject({ approved: 0, passed: false });
+    expect(row('SW_REQ')).toMatchObject({ passed: false });
+    expect(v.result.problems.map((p: any) => p.rule)).toEqual(expect.arrayContaining(['WP-1', 'WP-3']));
+    await settle();
+    const tasks = Object.values(jira.state().issues).filter((i) => i.type === 'Task' && i.parent === epicKey);
+    expect(tasks.map((t) => t.summary)).toEqual(expect.arrayContaining([`[산출물] SYS.3 시스템 아키텍처 — ${ver}`, `[산출물] SWE.2 SW 아키텍처 — ${ver}`]));
+    expect(tasks.find((t) => t.summary.includes('SYS.3'))!.custom.customfield_10023).toBe('SYS_ARCH');
+    expect((await issue(epicKey)).custom.customfield_10020).toMatch(/^산출물 \d+\/\d+ 완결/);
   });
 });

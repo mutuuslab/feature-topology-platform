@@ -229,6 +229,9 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'CODEBEAMER_WEBHOOK_SECRET', what: 'webhook HMAC 비밀값(codeBeamer webhook 설정과 같은 값)', secret: true, required: true },
     { key: 'CODEBEAMER_REQ_TRACKER', what: '요구사항 tracker ID(숫자, 비우면 전체에서 찾음)', required: false },
     { key: 'CODEBEAMER_REQ_ID_FIELD', what: "요구 ID 필드 이름(기본 'Requirement ID')", required: false },
+    { key: 'CODEBEAMER_PROJECT', what: '산출물 8종 트래커가 있는 프로젝트 ID(트래커 이름으로 찾음, 80-50 §5.1)', required: false },
+    { key: 'CODEBEAMER_TRACKERS', what: '산출물 트래커 ID 표(JSON, SYS_REQ·SW_DD 등 → 트래커 ID) — 있으면 이름으로 찾지 않는다', required: false },
+    { key: 'CODEBEAMER_APPROVED_STATUS', what: "'승인'으로 보는 상태 이름(기본 Approved)", required: false },
   ],
 };
 /** live에서 빠진 필수 환경 변수 */

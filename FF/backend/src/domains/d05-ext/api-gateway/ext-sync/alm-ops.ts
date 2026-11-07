@@ -6,4 +6,6 @@ export type AlmOp =
   /** JIRA에서 만든 Story에 FF가 매긴 기능 ID를 적고 안내 댓글 */
   | { op: 'STORY_LINK'; key: string; featureId: string; functionId: string; comment: string }
   /** 현장 문제(운영 인시던트·조치 연결) → Feature Epic 아래 Bug */
-  | { op: 'FIELD_ISSUE'; featureId: string; incidentId: string | null; ref: string | null; title: string; body: string };
+  | { op: 'FIELD_ISSUE'; featureId: string; incidentId: string | null; ref: string | null; title: string; body: string }
+  /** 작업 중 버전의 미완결 산출물마다 Task(완결되면 Done) + Epic '산출물 작성률' 칸(80-50 §4.1·§5.4) */
+  | { op: 'WP_TASKS'; featureId: string };

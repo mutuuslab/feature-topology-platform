@@ -7,7 +7,7 @@ import { extSync } from '../../copy/ext-sync';
 import { AsyncView, DataTable, ExtRefChip, Icon, Panel } from '../../design';
 import { ExternalToolLaunchers } from '../../external/launchers';
 import { useExternalChanges } from '../../external/useExternalChanges';
-import { FieldIssuesPanel, StoriesPanel } from './AlmPanels';
+import { FieldIssuesPanel, StoriesPanel, WorkProductsPanel } from './AlmPanels';
 
 const X = extSync.feature;
 
@@ -114,6 +114,7 @@ export function ExtLinksTab({ id, ver, functions }: { id: string; ver: string; f
           <Panel title={X.requirements} id="ext-req">
             {t.requirements.length ? <DataTable caption={X.requirements} rows={t.requirements} rowKey={rowKey} columns={[{ key: 'id', header: X.col.reqId, cell: (r) => <span className="ds-mono ds-nowrap">{String(r.extra.reqId ?? '')}</span> }, { ...columns[0], header: X.col.cbItem }, ...columns.slice(1)]} /> : <p className="ds-field__hint">{X.none}</p>}
           </Panel>
+          <WorkProductsPanel id={id} ver={ver} />
           <Panel title={X.changeRequests} id="ext-cr" eyebrow={t.epic ? undefined : X.none}>
               {t.epic && (
                 <p>

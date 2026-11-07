@@ -394,6 +394,60 @@ describe('양방향 연계 — GitLab · JIRA · codeBeamer (모의)', () => {
     });
   });
 
+  describe('codeBeamer 산출물 8종·Task = 산출물 작성 일 (80-50 A4)', () => {
+    const wp = async (id: string, ver: string) => (await http().get(`/api/alm/features/${id}/${ver}/work-products`).expect(200)).body;
+    const refresh = (id: string, ver: string) => http().post(`/api/alm/features/${id}/${ver}/work-products/refresh`).set(INTEGRATOR).send({}).expect(200);
+
+    it('출시된 Feature는 필요한 산출물이 모두 승인·추적 완결(100%) — 항목은 codeBeamer 링크로', async () => {
+      const v = await wp('FEAT-00022', '1.0.0');
+      expect(v.result).toMatchObject({ rate: 100, problems: [] });
+      const kinds = v.result.kinds.filter((k: any) => k.required).map((k: any) => k.kind);
+      expect(kinds).toEqual(expect.arrayContaining(['SYS_REQ', 'SYS_ARCH', 'SW_REQ', 'SW_ARCH', 'SW_DD', 'TEST_SPEC']));
+      expect(v.items.length).toBeGreaterThanOrEqual(kinds.length);
+      expect(v.items[0].url).toMatch(/\/cb\/issue\/\d+$/);
+      expect(v.hash).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it('정의 단계 Feature는 미완결 — 빠진 종류마다 Epic 아래 Task, Epic 산출물 칸에 작성률', async () => {
+      const v = await wp('FEAT-00013', '0.3.0');
+      expect(v.result.rate).toBeLessThan(100);
+      const failing = v.result.kinds.filter((k: any) => k.required && !k.passed).map((k: any) => k.kind);
+      expect(failing.length).toBeGreaterThan(0);
+      await drain();
+      const t = await trace('FEAT-00013', '0.3.0');
+      const tasks = t.tasks.filter((x: any) => x.extra.wpVersion === '0.3.0');
+      expect(tasks.map((x: any) => x.extra.workProduct).sort()).toEqual([...failing].sort());
+      expect(tasks[0].title).toMatch(/^\[산출물\] .+ — 0\.3\.0$/);
+      const task = await mockItem('jira', tasks[0].key);
+      expect(task).toMatchObject({ kind: 'TASK', status: 'To Do', fields: { parentKey: t.epic.key } });
+      expect(task.body).toContain('누락');
+      expect((await mockItem('jira', t.epic.key)).fields.epic.workProducts).toMatch(/^산출물 \d+\/\d+ 완결\(\d+%\)$/);
+    });
+
+    it('사람이 미완결 Task를 Done으로 옮기면 되돌리고 누락을 댓글로 — codeBeamer에서 채우면 플랫폼이 Done으로', async () => {
+      const t = await trace('FEAT-00013', '0.3.0');
+      const task = t.tasks.find((x: any) => x.extra.workProduct === 'SYS_ARCH');
+      expect(task).toBeTruthy();
+      const r = (await act('jira', { key: task.key, action: 'TRANSITION', status: 'Done', externalUser: 'kim.author' })).body;
+      expect(r.result).toMatchObject({ outcome: 'REJECTED', summary: expect.stringContaining('미완결') });
+      let it = await mockItem('jira', task.key);
+      expect(it.status).toBe('To Do');
+      expect(it.comments.at(-1).text).toContain('시스템 아키텍처');
+      // codeBeamer에서 시스템 아키텍처(승인)를 시스템 요구에 할당하고 시험 사양이 검증한다
+      const store = app.get(ExtAdapters).store;
+      const v0 = await wp('FEAT-00013', '0.3.0');
+      const sysReq = v0.items.find((x: any) => x.kind === 'SYS_REQ').key;
+      const arch = store.create('CODEBEAMER', 'REQUIREMENT', { title: '시스템 아키텍처 — 시험', status: 'Approved', by: 'lee.engineer', fields: { wpKind: 'SYS_ARCH', ffFeatureId: 'FEAT-00013', relations: [{ to: sysReq, kind: 'allocated' }] } });
+      store.create('CODEBEAMER', 'REQUIREMENT', { title: '시험 사양 — 아키텍처', status: 'Approved', by: 'lee.engineer', fields: { wpKind: 'TEST_SPEC', ffFeatureId: 'FEAT-00013', relations: [{ to: arch.key, kind: 'verifies' }, { to: sysReq, kind: 'verifies' }] } });
+      const v1 = (await refresh('FEAT-00013', '0.3.0')).body;
+      expect(v1.result.kinds.find((k: any) => k.kind === 'SYS_ARCH')).toMatchObject({ passed: true, approved: 1 });
+      await drain();
+      it = await mockItem('jira', task.key);
+      expect(it.status).toBe('Done');
+      expect(it.comments.at(-1)).toMatchObject({ by: 'feature-platform', text: expect.stringContaining('완결 확인') });
+    });
+  });
+
   describe('새 Feature 한 건으로 — 요구 연결·CR ↔ 정책 승인·요구 개정·MR 병합', () => {
     let fid: string;
     let pid: string;

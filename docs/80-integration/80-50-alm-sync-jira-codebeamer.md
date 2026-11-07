@@ -217,6 +217,8 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 
 결과: 종류별 작성률(%) = 규칙을 통과한 종류 / 필요한 종류, 누락 목록(규칙·항목·이유). JIRA Task(§4.1)와 Epic "FF 현황"이 같은 결과를 쓴다.
 
+**A4 구현(2026-11-07)** 규칙 `contracts/src/rules/alm/work-products.ts`(`computeCompleteness`·`requiredKinds`·`cyberRequired`·`WP_GATE_STAGES`), 수집 `backend/…/ext-sync/alm-workproducts.service.ts`. 관계는 아래 → 위(SW_REQ ─derived→ SYS_REQ), 관계 이름이 FF 의미가 아니면 트래커 쌍으로 고르고 거꾸로 걸린 것은 뒤집는다. WP-6은 시험 사양(승인)이 미승인 설계를 검증하는 것도 잡는다. 사이버보안 필수(A-4 기본값, D10) = TARA 기록·ADS·형식승인 R1·R2·연결 도메인 CO(통신)·이름/태그의 원격·OTA·커넥티드. live 수집: `CODEBEAMER_TRACKERS`(JSON) 또는 `CODEBEAMER_PROJECT`의 트래커 이름 → 스키마의 `customField[n]`로 cbQL(`FF Feature ID`, SYS_REQ는 `Requirement ID` IN) → `items/relations`(참조·연관)로 세 단계까지 따라감, 429는 Retry-After만큼 쉬고 세 번. 저장 `alm_item`·`alm_relation`·`alm_wp_result`(근거 해시 sha256). 5분 주기(`FF_ALM_CB_POLL_MS`)·기동 3초 뒤 한 번·화면에서 '다시 읽기'. Task = 작업 중 버전의 필수 미완결 종류마다 `[산출물] {공정} {이름} — {버전}`(칸 `FF Work Product`), 완결되면 FF가 Done, 사람이 미완결을 Done으로 옮기면 되돌림 + 누락 댓글.
+
 ### 5.5 게이트 연결 (D-ALM-13)
 
 | 전이 | 게이트 | 필수(승인 + 해당 규칙 통과) |
@@ -280,7 +282,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | 마이그레이션(번호는 2026-11-07 작업 계획의 ALM 예약 141~149로 바꿈) | 내용 |
 |---|---|
 | **141_alm_reconcile**(A2 구현) | `sync_reconcile_run`. `ext_link.role`은 두지 않았다 — 연결 종류(EPIC·STORY·TASK)와 `extra`(기능 ID·산출물 종류)로 가른다. Epic 단위 이전 기록은 `ext_item.extra.supersededBy` |
-| 085_alm_codebeamer | `alm_item`(system·key·tracker_key·status·revision·fields JSON·observed_at), `alm_relation`(from·to·kind·suspect), `alm_wp_result`(feature_id·version·결과 JSON·해시·computed_at) |
+| **142_alm_workproducts**(A4 구현) | `alm_item`(feature_id·item_key·kind·status·revision·observed_at·doc), `alm_relation`(feature_id·from·to·kind·suspect), `alm_wp_result`(feature_id·version·hash·computed_at·doc) — 한 요구가 여러 Feature에 걸릴 수 있어 Feature별로 둔다 |
 | 086_alm_gate_evidence | 게이트 판정 증거에 완결성 해시·항목 목록, 재판정 요청 표 |
 
 ## 8. 화면
@@ -306,7 +308,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | A1 | 모의 서버 2개 + 충실도 기록 + `ext:contract` 뼈대 | 모의 서버 단독 시험, FF live 기동 점검 통과 |
 | A2 | JIRA: Epic = Feature 전환·필드 주인 표·v3 어댑터·FF → Epic 필드 쓰기·증분/전체 대사 | 계약 시험(생성 양방향·충돌·유실 대사) — **완료(2026-11-07)** |
 | A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 — **완료(2026-11-07, Task는 A4로)** |
-| A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 |
+| A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 — **완료(2026-11-07, + Task = 산출물 작성 일)** |
 | A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e |
 | A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 — **실서버를 쓰지 않으므로 모의 서버의 앱 흉내 패널(`/_mock/app/epic-form`)까지만**(D-ALM-17) |
 | S1 | 데모 seamless 표시(D-ALM-17) | **완료(2026-11-05)** — `connectionPresentation`·`useSeamless`·`shownMode`, 외부 창·연계 화면·Unleash·체험 구매, 시드 본문. 시험: 백엔드 연결·시드, 프론트 연결·외부 창, e2e `demo-seamless.spec.ts` |

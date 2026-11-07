@@ -2,7 +2,7 @@
 // 쓰기는 늘 "기대 개정 번호"를 함께 보낸다: 바깥 값이 그사이 바뀌었으면 덮어쓰지 않고 충돌로 돌려준다(사람이 고름).
 // live는 각 도구의 REST를 쓴다(live-adapters.ts) — GitLab v4, JIRA REST v2, codeBeamer REST v3. 주소·토큰은 환경 변수(GITLAB_URL/GITLAB_TOKEN 등).
 import { Injectable } from '@nestjs/common';
-import { CHILD_FIELD_KEYS, EXT_SYSTEM_IF, type ExtKind, type ExtSystem, type JiraFieldKey } from '@ff/contracts';
+import { CHILD_FIELD_KEYS, EXT_SYSTEM_IF, WP_KINDS, type ExtKind, type ExtSystem, type JiraFieldKey, type WpItem, type WpKind, type WpRelationKind } from '@ff/contracts';
 import { LiveAdapter } from './live-adapters';
 import { extUrl, GITLAB_PROJECT, MockExtStore, type MockItem } from './mock-ext.store';
 
@@ -39,6 +39,13 @@ export interface WritePatch {
 
 export type WriteResult = { ok: true; item: RemoteItem } | { ok: false; conflict: RemoteItem };
 
+/** codeBeamer 산출물(80-50 §5) — 한 Feature의 8종 항목과 관계(아래 → 위). 의심 표시는 FF가 계산한다(REST는 관계별 suspect를 주지 않는다) */
+export interface WpFetch {
+  items: (WpItem & { url: string })[];
+  relations: { from: string; to: string; kind: WpRelationKind }[];
+}
+export const cbApproved = (status: string) => status.trim().toLowerCase() === (process.env.CODEBEAMER_APPROVED_STATUS?.trim() || 'Approved').toLowerCase();
+
 /** 대사(80-50 §4.5) — 최근 바뀐 이슈의 지금 모습과 변경 이력. 서비스가 webhook 본문 모양으로 바꿔 같은 정규화·가드를 태운다 */
 export interface RecentIssue {
   key: string;
@@ -61,6 +68,8 @@ export interface ExtAdapter {
   write(key: string, patch: WritePatch, expectedRevision: number | null): Promise<WriteResult>;
   /** JIRA — 최근 minutes분 안에 바뀐 연계 프로젝트 이슈(증분 대사). 다른 시스템은 빈 목록 */
   recent(minutes: number): Promise<RecentIssue[]>;
+  /** codeBeamer — Feature의 산출물 8종(FF Feature ID 칸·요구 ID로 찾고 관계를 따라간다). 다른 시스템은 빈 결과 */
+  workProducts(q: { featureId: string; requirementIds: string[] }): Promise<WpFetch>;
 }
 
 export const modeOf = (system: ExtSystem, env: Record<string, string | undefined> = process.env): AdapterMode => {
@@ -112,6 +121,19 @@ class MockAdapter implements ExtAdapter {
       ...(patch.duplicateOf ? { duplicateOf: patch.duplicateOf } : {}),
     };
     return { ok: true, item: view(this.store.update(this.system, key, PLATFORM_USER, { status: patch.status, comment: patch.comment, title: patch.title, fields: Object.keys(fields).length ? fields : undefined })) };
+  }
+  async workProducts(q: { featureId: string; requirementIds: string[] }): Promise<WpFetch> {
+    return this.workProductsNow(q);
+  }
+  /** 모의 codeBeamer 산출물 — 동기(게이트 판정 직전 다시 읽기, 80-50 §5.8) */
+  workProductsNow(q: { featureId: string; requirementIds: string[] }): WpFetch {
+    if (this.system !== 'CODEBEAMER') return { items: [], relations: [] };
+    const mine = this.store.all('CODEBEAMER').filter((i) => i.fields.ffFeatureId === q.featureId || (typeof i.fields.reqId === 'string' && q.requirementIds.includes(i.fields.reqId)));
+    const kindOf = (i: MockItem): WpKind => ((WP_KINDS as readonly string[]).includes(String(i.fields.wpKind)) ? (i.fields.wpKind as WpKind) : 'SYS_REQ');
+    return {
+      items: mine.map((i) => ({ key: i.key, kind: kindOf(i), title: i.title, status: i.status, approved: cbApproved(i.status), version: i.revision, ffVersion: (i.fields.ffVersion as string | undefined) ?? null, allocationRationale: (i.fields.allocationRationale as string | undefined) ?? null, obsolete: i.status === 'Obsolete', url: extUrl('CODEBEAMER', 'REQUIREMENT', i.key) })),
+      relations: mine.flatMap((i) => ((i.fields.relations ?? []) as { to: string; kind: WpRelationKind }[]).map((r) => ({ from: i.key, to: r.to, kind: r.kind }))),
+    };
   }
   /** 모의 JIRA — 변경 이력이 없어 마지막 수정자 한 줄로 */
   async recent(minutes: number): Promise<RecentIssue[]> {

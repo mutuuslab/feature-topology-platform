@@ -20,6 +20,19 @@ export const alm = {
     candidate: '인시던트 후보 — 운영 판단',
     latest: (n: number, total: number) => `최근 ${n}건 · 전체 ${total}건`,
   },
+  wp: {
+    title: '산출물 (codeBeamer)',
+    rate: (passed: number, required: number, rate: number) => `필요한 산출물 ${required}종 중 ${passed}종 완결 · 작성률 ${rate}%`,
+    col: { kind: '산출물', process: '공정', need: '필요', items: '항목', approved: '승인', state: '추적 완결', problems: '누락' },
+    need: { yes: '필요', no: '해당 없음' },
+    passed: '완결',
+    failed: (n: number) => `${n}건 누락`,
+    none: '없음',
+    cyber: (why: string) => `사이버보안 요구: ${why}`,
+    problems: '누락·끊긴 추적',
+    refresh: 'codeBeamer 다시 읽기',
+    suspect: (n: number) => `의심 관계 ${n}건 — 위 항목이 승인 뒤 바뀌었습니다`,
+  },
   /** 충돌 칸 이름 — 상태 또는 Epic 필드 */
   conflictField: (field: string) => (field === 'status' ? '상태' : (EPIC_FIELD[field as EpicFieldKey]?.ko ?? field)),
 };

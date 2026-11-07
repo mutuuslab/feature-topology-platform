@@ -927,4 +927,13 @@ CREATE TABLE sync_reconcile_run (run_id INTEGER PRIMARY KEY AUTOINCREMENT, syste
 CREATE INDEX sync_reconcile_run_system ON sync_reconcile_run (system, started_at);
 `,
   },
+  {
+    // 80-50 A4 codeBeamer 산출물 8종(§5) — Feature별 관측 항목·관계(아래 → 위, FF 계산 suspect)·버전별 완결성 결과(근거 해시)
+    name: '142_alm_workproducts',
+    sql: `
+CREATE TABLE alm_item (feature_id TEXT NOT NULL, item_key TEXT NOT NULL, kind TEXT NOT NULL, status TEXT NOT NULL, revision INTEGER NOT NULL, observed_at TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, item_key));
+CREATE TABLE alm_relation (feature_id TEXT NOT NULL, from_key TEXT NOT NULL, to_key TEXT NOT NULL, kind TEXT NOT NULL, suspect INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (feature_id, from_key, to_key, kind));
+CREATE TABLE alm_wp_result (feature_id TEXT NOT NULL, version TEXT NOT NULL, hash TEXT NOT NULL, computed_at TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+`,
+  },
 ];

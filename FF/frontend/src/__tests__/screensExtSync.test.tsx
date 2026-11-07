@@ -139,6 +139,41 @@ describe('Feature 연계 탭', () => {
   });
 });
 
+describe('Feature 연계 탭 — codeBeamer 산출물 (80-50 A4)', () => {
+  const K = (kind: string, o: Record<string, unknown> = {}) => ({ kind, required: true, items: 1, approved: 1, passed: true, problems: 0, ...o });
+  it('작성률·필요한 종류·누락 문장, 해당 없는 종류는 해당 없음 — 다시 읽기는 작성·판정 담당', async () => {
+    handler = (url, init) => {
+      if (url.startsWith('/api/integrations/sync/features/')) return { body: { featureId: 'FEAT-00013', version: '0.3.0', lifecycle: 'PROPOSED', epicStatusExpected: 'Proposed', requirements: [], missingRequirements: [], epic: null, changeRequests: [], defects: [], mergeRequests: [], pipelines: [], policies: [], conflicts: [], stale: [] } };
+      if (url.startsWith('/api/alm/features/FEAT-00013/0.3.0/work-products/refresh') && init?.method === 'POST') return { body: {} };
+      if (url.startsWith('/api/alm/features/FEAT-00013/0.3.0/work-products'))
+        return {
+          body: {
+            featureId: 'FEAT-00013', version: '0.3.0', hash: 'a'.repeat(64), computedAt: '2026-11-07T01:00:00.000Z', cyberWhy: '외부 통신·원격 제어·OTA 관련이 아님', items: [],
+            result: {
+              featureId: 'FEAT-00013', version: '0.3.0', passedKinds: 2, requiredKinds: 7, rate: 29, suspects: 1, basis: '',
+              kinds: [K('SYS_REQ'), K('SYS_ARCH', { items: 0, approved: 0, passed: false, problems: 1 }), K('SW_REQ', { passed: false, problems: 2 }), K('SW_ARCH'), K('SW_DD'), K('SAFETY_REQ'), K('CS_REQ', { required: false, items: 0, approved: 0 }), K('TEST_SPEC')],
+              problems: [{ rule: 'WP-1', kind: 'SYS_ARCH', item: null, why: '시스템 아키텍처 승인 항목 0건' }, { rule: 'WP-3', kind: 'SW_REQ', item: 'CB-1', why: 'CB-1 — SW 아키텍처 할당 없음' }, { rule: 'WP-7', kind: 'SW_REQ', item: 'CB-1', why: 'CB-1 → CB-2 의심' }],
+            },
+          },
+        };
+      return undefined;
+    };
+    mount('author', <ExtLinksTab id="FEAT-00013" ver="0.3.0" />);
+    const table = await screen.findByRole('table', { name: '산출물 (codeBeamer)' });
+    expect(screen.getByText('필요한 산출물 7종 중 2종 완결 · 작성률 29%')).toBeTruthy();
+    expect(screen.getByText(/의심 관계 1건/)).toBeTruthy();
+    const row = (name: string) => within(table).getByText(name).closest('tr')!;
+    expect(within(row('시스템 아키텍처')).getByText('1건 누락')).toBeTruthy();
+    expect(within(row('시스템 아키텍처')).getByText('시스템 아키텍처 승인 항목 0건')).toBeTruthy();
+    expect(within(row('SW 요구')).getByText(/CB-1 — SW 아키텍처 할당 없음 · 외 1건/)).toBeTruthy();
+    expect(within(row('사이버보안 요구')).getByText('해당 없음')).toBeTruthy();
+    // 내부 규칙 번호(WP-1 등)는 화면에 없다
+    expect(table.textContent).not.toMatch(/WP-\d/);
+    fireEvent.click(screen.getByRole('button', { name: 'codeBeamer 다시 읽기' }));
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/alm/features/FEAT-00013/0.3.0/work-products/refresh' && c.method === 'POST')).toBe(true));
+  });
+});
+
 describe('변경요청 목록 (JIRA)', () => {
   it('플랫폼 정책 상태와 어긋난 CR 수가 핵심 메시지, 기대 JIRA 상태를 나란히', async () => {
     handler = (url) =>

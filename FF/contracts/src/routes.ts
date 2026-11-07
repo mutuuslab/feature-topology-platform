@@ -408,6 +408,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'drainExtSync', method: 'POST', path: '/api/integrations/sync/drain', summary: '보낼 함 지금 보내기', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: EmptyBody },
   // 80-50 JIRA·codeBeamer 연계 — 대사(§4.5)
   { name: 'extReconcileRuns', method: 'GET', path: '/api/integrations/sync/reconcile-runs', summary: '주기 대사 실행 기록 — 증분·전체, 훑은 수·반영·충돌·오류', component: 'D05-01' },
+  { name: 'almWorkProducts', method: 'GET', path: '/api/alm/features/:id/:ver/work-products', summary: 'codeBeamer 산출물 8종 — 종류별 필요·승인·추적 완결·누락·의심, 작성률', component: 'D05-01', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
+  { name: 'refreshAlmWorkProducts', method: 'POST', path: '/api/alm/features/:id/:ver/work-products/refresh', summary: 'codeBeamer 산출물 지금 다시 읽기', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER', 'GATE_JUDGE', 'FEATURE_AUTHOR'], body: EmptyBody },
   { name: 'runExtReconcile', method: 'POST', path: '/api/integrations/sync/reconcile', summary: '대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: RunReconcileBody },
   { name: 'policyExtLinks', method: 'GET', path: '/api/policies/:id/ext-links', summary: '정책에 연결된 외부 항목(JIRA CR)', component: 'D05-01', sample: { id: 'POL-00001' } },
   { name: 'linkPolicyChangeRequest', method: 'POST', path: '/api/policies/:id/change-request', summary: '정책 ↔ 근거 JIRA CR 연결', component: 'D05-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: LinkChangeRequestBody },

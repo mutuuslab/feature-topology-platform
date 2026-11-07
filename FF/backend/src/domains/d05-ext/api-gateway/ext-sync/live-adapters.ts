@@ -4,8 +4,8 @@
 //   GitLab REST v4: MR GET /projects/:id/merge_requests/:iid, 댓글 /notes, commit status POST /projects/:id/statuses/:sha. 개정 = updated_at(ms)
 //   codeBeamer REST v3: GET /api/v3/items/:id, 댓글 POST /api/v3/items/:id/comments. 개정 = item.version
 // 인증·주소는 환경 변수(아래 cfg). 토큰은 로그·감사·Evidence에 남기지 않는다. 시간 제한 10초, 실패는 보낼 함이 재시도한다.
-import { FEATURE_TRANSITIONS, JIRA_EPIC_STATUS, lifecycleOfEpicStatus, type ExtKind, type ExtSystem, type Lifecycle } from '@ff/contracts';
-import type { AdapterMode, ExtAdapter, RecentIssue, RemoteItem, WritePatch, WriteResult } from './adapters';
+import { FEATURE_TRANSITIONS, JIRA_EPIC_STATUS, lifecycleOfEpicStatus, relationKindOf, WP_KINDS, WP_RELATIONS, wpKindOfTracker, type ExtKind, type ExtSystem, type Lifecycle, type WpKind, type WpRelationKind } from '@ff/contracts';
+import { cbApproved, type AdapterMode, type ExtAdapter, type RecentIssue, type RemoteItem, type WpFetch, type WritePatch, type WriteResult } from './adapters';
 import { adfText, decodeChildFields, decodeEpicFields, encodeEpicFields, epicFieldIdList } from './epic-fields';
 
 interface Cfg {
@@ -114,7 +114,13 @@ export class LiveAdapter implements ExtAdapter {
     const headers: Record<string, string> = { accept: 'application/json', ...(body !== undefined && !form ? { 'content-type': 'application/json' } : {}) };
     if (this.system === 'GITLAB') headers['private-token'] = c.auth;
     else headers.authorization = c.auth;
-    const res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
+    let res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
+    // 호출 제한(codeBeamer 초당 3·분당 120, JIRA도 429) — Retry-After(초)만큼 쉬고 세 번까지 다시(80-51 §2)
+    for (let n = 0; res.status === 429 && n < 3; n++) {
+      const wait = Math.min(Number(res.headers.get('retry-after') ?? 1) || 1, 5) * 1000;
+      await new Promise((r) => setTimeout(r, wait));
+      res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
+    }
     const text = await res.text();
     const data = (text ? JSON.parse(text) : null) as T;
     if (res.status >= 400 && res.status !== 404) throw new Error(`${this.system} ${method} ${path.split('?')[0]} → ${res.status}`);
@@ -189,9 +195,9 @@ export class LiveAdapter implements ExtAdapter {
       return !!hit;
     };
     if (await step(status)) return;
-    // 바로 가는 전이가 없으면 Epic 수명주기 경로를 따라간다
+    // 바로 가는 전이가 없으면 Epic 수명주기 경로를 따라간다(Story·Task·Bug는 In Progress를 거친다)
     const now = await this.read(key);
-    const path = now ? epicStatusPath(now.status, status) : null;
+    const path = now ? (epicStatusPath(now.status, status) ?? (now.kind === 'EPIC' || now.kind === 'CHANGE_REQUEST' ? null : ['In Progress', status])) : null;
     const fail = (to: string) => new Error(`JIRA ${key}: '${to}'(으)로 가는 워크플로 전이가 없습니다 — JIRA 워크플로와 상태 매핑(JIRA_EPIC_STATUS·JIRA_CR_STATUS)을 맞추세요.`);
     if (!path || path.length < 2) throw fail(status);
     for (const to of path) if (!(await step(to))) throw fail(to);
@@ -232,6 +238,108 @@ export class LiveAdapter implements ExtAdapter {
       }
     }
     return { ok: true, item: (await this.read(key))! };
+  }
+
+  // ── codeBeamer 산출물(80-50 §5.8) ──
+  private trackers: Promise<Map<WpKind, { id: number; props: Map<string, number> }>> | null = null;
+  /** 트래커 8종과 사용자 칸 번호 — CODEBEAMER_TRACKERS(JSON 키 → 트래커 ID) 또는 프로젝트(CODEBEAMER_PROJECT)의 트래커 이름. 한 번 읽어 둔다 */
+  private cbTrackers() {
+    this.trackers ??= (async () => {
+      const out = new Map<WpKind, { id: number; props: Map<string, number> }>();
+      const ids = new Map<WpKind, number>();
+      const raw = env('CODEBEAMER_TRACKERS');
+      if (raw) for (const [k, v] of Object.entries(JSON.parse(raw) as Record<string, number>)) if ((WP_KINDS as readonly string[]).includes(k)) ids.set(k as WpKind, Number(v));
+      if (!ids.size) {
+        const project = env('CODEBEAMER_PROJECT');
+        if (!project) throw new Error('codeBeamer 산출물 트래커를 모릅니다 — CODEBEAMER_TRACKERS 또는 CODEBEAMER_PROJECT를 설정하세요.');
+        const r = await this.req<{ id: number; name: string }[]>('GET', `/api/v3/projects/${encodeURIComponent(project)}/trackers`);
+        for (const t of r.data ?? []) {
+          const k = wpKindOfTracker(t.name);
+          if (k) ids.set(k, t.id);
+        }
+      }
+      for (const [k, id] of ids) {
+        const r = await this.req<{ id: number; name: string; propertyName?: string }[]>('GET', `/api/v3/trackers/${id}/schema`);
+        const props = new Map<string, number>();
+        for (const f of r.data ?? []) {
+          const n = /^customField\[(\d+)\]$/.exec(f.propertyName ?? '')?.[1];
+          if (n) props.set(f.name, Number(n));
+        }
+        out.set(k, { id, props });
+      }
+      return out;
+    })().catch((e) => {
+      this.trackers = null;
+      throw e;
+    });
+    return this.trackers;
+  }
+
+  async workProducts(q: { featureId: string; requirementIds: string[] }): Promise<WpFetch> {
+    if (this.system !== 'CODEBEAMER') return { items: [], relations: [] };
+    const c = this.cfg();
+    const trackers = await this.cbTrackers();
+    const kindOfTracker = new Map([...trackers].map(([k, t]) => [t.id, k]));
+    const quote = (v: string) => `'${v.replace(/'/g, "''")}'`;
+    type CbItem = { id: number; name: string; version: number; tracker: { id: number }; status?: { name?: string }; customFields?: { name: string; value: unknown }[] };
+    const found = new Map<number, CbItem>();
+    const query = async (q2: string) => {
+      for (let page = 1; page < 50; page++) {
+        const r = await this.req<{ items?: CbItem[]; total?: number }>('POST', '/api/v3/items/query', { queryString: q2, page, pageSize: 500 });
+        for (const it of r.data?.items ?? []) found.set(it.id, it);
+        if ((r.data?.items ?? []).length < 500) break;
+      }
+    };
+    for (const [k, t] of trackers) {
+      const ff = t.props.get('FF Feature ID');
+      if (ff !== undefined) await query(`tracker.id = ${t.id} AND '${t.id}.customField[${ff}]' = ${quote(q.featureId)}`);
+      const req = t.props.get('Requirement ID');
+      if (k === 'SYS_REQ' && req !== undefined && q.requirementIds.length) await query(`tracker.id = ${t.id} AND '${t.id}.customField[${req}]' IN (${q.requirementIds.map(quote).join(', ')})`);
+    }
+    // 관계를 따라 FF Feature ID 칸이 없는 아래 항목도(세 단계까지)
+    const relations: WpFetch['relations'] = [];
+    const seenRel = new Set<string>();
+    let frontier = [...found.keys()];
+    for (let depth = 0; depth < 4 && frontier.length; depth++) {
+      const r = await this.req<{ itemId: number; upstreamReferences?: R[]; downstreamReferences?: R[]; outgoingAssociations?: R[]; incomingAssociations?: R[] }[]>('POST', '/api/v3/items/relations', frontier);
+      type R = { id: number; associationType?: { name?: string }; itemRevision: { id: number } };
+      const next: number[] = [];
+      for (const rel of r.data ?? []) {
+        const pairs: [number, number, string | undefined][] = [
+          ...(rel.upstreamReferences ?? []).map((x): [number, number, string | undefined] => [rel.itemId, x.itemRevision.id, undefined]),
+          ...(rel.downstreamReferences ?? []).map((x): [number, number, string | undefined] => [x.itemRevision.id, rel.itemId, undefined]),
+          ...(rel.outgoingAssociations ?? []).map((x): [number, number, string | undefined] => [rel.itemId, x.itemRevision.id, x.associationType?.name]),
+          ...(rel.incomingAssociations ?? []).map((x): [number, number, string | undefined] => [x.itemRevision.id, rel.itemId, x.associationType?.name]),
+        ];
+        for (const [a, b, name] of pairs) {
+          for (const id of [a, b]) if (!found.has(id)) {
+            const it = await this.req<CbItem>('GET', `/api/v3/items/${id}`);
+            if (it.status === 200 && kindOfTracker.has(it.data.tracker?.id)) (found.set(id, it.data), next.push(id));
+          }
+          const ka = kindOfTracker.get(found.get(a)?.tracker.id ?? -1);
+          const kb = kindOfTracker.get(found.get(b)?.tracker.id ?? -1);
+          if (!ka || !kb) continue;
+          // 방향·이름 — 관계 이름이 FF 의미(CODEBEAMER_RELATIONS 기본)면 그대로, 아니면 종류 쌍으로. 거꾸로 걸린 관계는 뒤집는다
+          const forward = relationKindOf(ka, kb);
+          const back = relationKindOf(kb, ka);
+          const [from, to, kind] = forward ? [a, b, forward] : back ? [b, a, back] : [a, b, null];
+          const named = (WP_RELATIONS as readonly string[]).includes(name ?? '') ? (name as WpRelationKind) : null;
+          const k2 = named ?? kind;
+          if (!k2) continue;
+          const id2 = `${from}>${to}>${k2}`;
+          if (!seenRel.has(id2)) (seenRel.add(id2), relations.push({ from: `CB-${from}`, to: `CB-${to}`, kind: k2 }));
+        }
+      }
+      frontier = next;
+    }
+    const cf = (it: CbItem, name: string) => (it.customFields ?? []).find((x) => x.name === name)?.value;
+    return {
+      items: [...found.values()].map((it) => {
+        const status = it.status?.name ?? '';
+        return { key: `CB-${it.id}`, kind: kindOfTracker.get(it.tracker.id)!, title: it.name, status, approved: cbApproved(status), version: Number(it.version), ffVersion: (cf(it, 'FF Version') as string | undefined) || null, allocationRationale: (cf(it, 'Allocation Rationale') as string | undefined) || null, obsolete: status === 'Obsolete', url: `${c.url}/cb/issue/${it.id}`.replace('/cb/cb/', '/cb/') };
+      }),
+      relations,
+    };
   }
 
   /**

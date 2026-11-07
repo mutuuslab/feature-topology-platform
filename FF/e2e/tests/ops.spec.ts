@@ -86,6 +86,7 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
   drawer = page.getByRole('dialog');
   await drawer.getByLabel('사유', { exact: true }).fill('원인 수정 확인');
   await expect(drawer.getByTestId('restore-evidence')).toBeVisible();
+  for (const c of ['차단 사유 해소', '원인 조치 완료']) await drawer.getByRole('checkbox', { name: c }).check(); // 해제 확인 항목(FR-KSW-004-002)
   await drawer.getByRole('button', { name: '복원 요청' }).click();
   await asRole(page, 'quality');
   await page.goto(`/ops/kill?id=${killId}`);

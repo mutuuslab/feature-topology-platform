@@ -123,7 +123,16 @@ interface Kill {
   recallReports?: { market: string; due: string | null; basis: string; note: string | null }[];
   /** 단계적 복원 — 복원한 차량·단계 기록 */
   restoredVins?: string[];
-  restoreStages?: { cohort: string[]; evidenceRef: string | null; publicationId: string; approvedAt: string; approvers: string[] }[];
+  restoreStages?: {
+    cohort: string[];
+    evidenceRef: string | null;
+    publicationId: string;
+    approvedAt: string;
+    approvers: string[];
+    requestedBy?: string;
+    before?: { status: string; blockedVins: string[] };
+    after?: { status: string; blockedVins: string[] };
+  }[];
   /** 상세만 — 승인 대기면 다음 칸 후보, 차단 중이면 복원 전망(직전 차단 승인자 제외) */
   approverCandidates?: { id: string; roles: ApproverRole[] }[];
   restoreOutlook?: { candidates: { id: string; roles: ApproverRole[] }[]; byRole: { role: ApproverRole; ids: string[] }[]; missing: ApproverRole[]; complete: boolean };
@@ -644,6 +653,9 @@ function RestoreStages({ k }: { k: Kill }) {
         { key: 'c', header: C.cohort, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.cohort.map((vin, i) => <span key={vin}>{i > 0 ? ', ' : ''}<span className="ds-nowrap">{vin}</span></span>)}</span> },
         { key: 'e', header: C.evidence, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }} title={s.evidenceRef ?? undefined}>{s.evidenceRef ? evidenceLabel(s.evidenceRef) : '—'}</span> },
         { key: 'p', header: C.pub, cell: (s) => <Link className="ds-mono ds-nowrap" to={`/deployments/${s.publicationId}`}>{s.publicationId}</Link> },
+        { key: 'r', header: CT.restore.stageCol2.by, cell: (s) => (s.requestedBy ? personLabel(s.requestedBy) : '—') },
+        { key: 'b', header: CT.restore.stageCol2.before, cell: (s) => (s.before ? CT.restore.blockState(s.before.status, s.before.blockedVins.length) : '—') },
+        { key: 'a', header: CT.restore.stageCol2.after, cell: (s) => (s.after ? CT.restore.blockState(s.after.status, s.after.blockedVins.length) : '—') },
       ]}
     />
   );
@@ -662,6 +674,9 @@ function RestoreForm({ k }: { k: Kill }) {
   const [reason, setReason] = useState('');
   const [evidence, setEvidence] = useState('');
   const [cohort, setCohort] = useState<string[] | null>(null);
+  const [checks, setChecks] = useState({ resolved: false, causeFixed: false });
+  const [targets, setTargets] = useState<string[]>([]);
+  const candidates = k.restoreOutlook?.candidates ?? [];
   // Evidence — 이 Feature Version의 PASS 판정 근거, G5(검증)를 앞으로
   const options = [...(ev.data?.items ?? [])]
     .filter((e) => e.inputResult === 'PASS')
@@ -670,7 +685,13 @@ function RestoreForm({ k }: { k: Kill }) {
   // 기본 Cohort — Canary 표시 차량이 있으면 그 차량, 없으면 남은 첫 차량(한 대부터 넓힌다)
   const chosen = cohort ?? left.slice(0, 1);
   const toggle = (vin: string) => setCohort(chosen.includes(vin) ? chosen.filter((x) => x !== vin) : [...chosen, vin]);
-  const missing = [!perm.ok && (perm.hint ?? ''), reason.trim().length < 2 && CT.restore.needReason, !picked && CT.restore.needEvidence, !chosen.length && CT.restore.needCohort].filter(Boolean) as string[];
+  const missing = [
+    !perm.ok && (perm.hint ?? ''),
+    reason.trim().length < 2 && CT.restore.needReason,
+    !picked && CT.restore.needEvidence,
+    !chosen.length && CT.restore.needCohort,
+    !(checks.resolved && checks.causeFixed) && CT.restore.needChecks,
+  ].filter(Boolean) as string[];
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-testid="restore-form">
       {!!done.size && <p className="ds-field__hint">{CT.restore.progress(done.size, k.vins.length)}</p>}
@@ -703,6 +724,27 @@ function RestoreForm({ k }: { k: Kill }) {
         ))}
       </fieldset>
       <p className="ds-field__hint">{CT.restore.cohortHint}</p>
+      {!!candidates.length && (
+        <fieldset className="ds-choices" aria-label={CT.restore.targets} data-testid="restore-targets">
+          <legend className="ds-field__label">{CT.restore.targets}</legend>
+          {candidates.map((c) => (
+            <label key={c.id}>
+              <input type="checkbox" checked={targets.includes(c.id)} onChange={() => setTargets(targets.includes(c.id) ? targets.filter((x) => x !== c.id) : [...targets, c.id])} />
+              {personLabel(c.id)}
+            </label>
+          ))}
+        </fieldset>
+      )}
+      {!!candidates.length && <p className="ds-field__hint">{CT.restore.targetsHint}</p>}
+      <fieldset className="ds-choices" aria-label={CT.restore.checks} data-testid="restore-checks">
+        <legend className="ds-field__label">{CT.restore.checks}</legend>
+        {(['resolved', 'causeFixed'] as const).map((c) => (
+          <label key={c}>
+            <input type="checkbox" checked={checks[c]} onChange={() => setChecks({ ...checks, [c]: !checks[c] })} />
+            {CT.restore.check[c]}
+          </label>
+        ))}
+      </fieldset>
       <ErrorNote error={requestRestore.error} />
       <Button
         variant="primary"
@@ -711,7 +753,10 @@ function RestoreForm({ k }: { k: Kill }) {
         title={perm.hint}
         reason={missing.length ? K.needs(missing) : undefined}
         onClick={() =>
-          requestRestore.mutate({ params: { id: k.killId }, body: { reason, evidenceRef: picked, cohort: chosen } }, { onSuccess: () => (setReason(''), setCohort(null)) })
+          requestRestore.mutate(
+            { params: { id: k.killId }, body: { reason, evidenceRef: picked, cohort: chosen, ...checks, ...(targets.length ? { approverTargets: targets } : {}) } },
+            { onSuccess: () => (setReason(''), setCohort(null), setChecks({ resolved: false, causeFixed: false }), setTargets([])) },
+          )
         }
       >
         {K.restoreRequest}

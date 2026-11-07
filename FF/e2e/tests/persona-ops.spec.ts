@@ -133,6 +133,9 @@ test('관제실 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → �
   await expect(rf.getByTestId('restore-evidence')).toBeVisible();
   await expect(rf.getByRole('checkbox', { name: 'ego-01' })).toBeChecked();
   await expect(rf.getByRole('checkbox', { name: 'lead-01' })).not.toBeChecked();
+  // 확인 항목을 체크하지 않으면 요청 버튼이 막혀 있다
+  await expect(rf.getByRole('button', { name: '복원 요청' })).toBeDisabled();
+  for (const c of ['차단 사유 해소', '원인 조치 완료']) await rf.getByRole('checkbox', { name: c }).check(); // 해제 확인 항목(FR-KSW-004-002)
   await rf.getByRole('button', { name: '복원 요청' }).click();
   await expect(drawer).toContainText('재검증');
 
@@ -167,6 +170,7 @@ test('관제실 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → �
   const rf2 = page.getByRole('dialog').getByTestId('restore-form');
   await rf2.getByLabel('사유', { exact: true }).fill('Canary 관측 이상 없음 — 확대');
   await expect(rf2.getByRole('checkbox', { name: 'lead-01' })).toBeChecked();
+  for (const c of ['차단 사유 해소', '원인 조치 완료']) await rf2.getByRole('checkbox', { name: c }).check(); // 해제 확인 항목(FR-KSW-004-002)
   await rf2.getByRole('button', { name: '복원 요청' }).click();
   for (const [role, dept] of [
     ['safety2', 'DEP-FS'],

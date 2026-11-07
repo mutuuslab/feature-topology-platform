@@ -33,6 +33,7 @@ import {
   type TimelineCommand,
   type TimelineReport,
 } from '@ff/contracts';
+import { blockedVins, missingRestoreChecks, RESTORE_CHECK_LABEL } from '../../../../../contracts/src/rules/kill-scope';
 import { registerSimHandler, registerSimReader, registerSimTask, registerSimView, simUnhandled } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
 
@@ -598,9 +599,21 @@ registerSimHandler('requestRestore', async (ctx) => {
       reason: `재검증 Evidence ${evidenceRef} 없음 또는 대상 Feature의 PASS 판정 아님`,
       componentId: 'D03-04',
     });
+  // 해제 확인 항목·지정 승인대상자(서버 restore.service와 같은 규칙, P11a)
+  const missing = missingRestoreChecks(b);
+  if (missing.length) {
+    const names = missing.map((c) => RESTORE_CHECK_LABEL[c]).join('·');
+    ctx.fail('VALIDATION', `해제 요청 전에 확인 항목을 체크하세요: ${names}`, { field: 'checks', missing }, { action: 'RESTORE_REQUEST', target: id, reason: `확인 항목 미체크: ${names}`, componentId: 'D03-04' });
+  }
   const led = await ensureLedger(ctx, k);
   const excluded = excludedOf(k, led);
-  const rr = { requestedBy: ctx.actor.id, requestedAt: ctx.iso(), reason: b.reason, status: 'REQUESTED', approvals: [], gate: null, command: null, rejectedBy: null, rejectReason: null, evidenceRef, cohort: k.vins.filter((v: string) => cohort.includes(v)) };
+  const targets = [...new Set<string>(b.approverTargets ?? [])];
+  if (targets.length) {
+    const can = new Set(restoreOutlook(accounts(), approvalPlan(k.fClass ?? 'F0', 'restore', k.reasonCategory ?? 'SAFETY'), excluded, [], ctx.actor.id).candidates.map((c) => c.id));
+    const invalid = targets.filter((t) => !can.has(t) || t === ctx.actor.id);
+    if (invalid.length) ctx.fail('VALIDATION', `복원을 승인할 수 없는 사람이 승인대상자에 있습니다: ${invalid.join(', ')} — 직전 차단 승인자·요청자는 복원을 승인하지 않습니다.`, { field: 'approverTargets', invalid }, { action: 'RESTORE_REQUEST', target: id, reason: `승인대상자 아님: ${invalid.join(', ')}`, componentId: 'D03-04' });
+  }
+  const rr = { requestedBy: ctx.actor.id, requestedAt: ctx.iso(), reason: b.reason, status: 'REQUESTED', approvals: [], gate: null, command: null, rejectedBy: null, rejectReason: null, evidenceRef, cohort: k.vins.filter((v: string) => cohort.includes(v)), checks: { resolved: true, causeFixed: true }, approverTargets: targets };
   const next = { ...k, restoreRequest: rr };
   ctx.put(KILL, id, next);
   ctx.audit({ action: 'RESTORE_REQUEST', target: id, after: { status: 'REQUESTED', evidenceRef, cohort: rr.cohort.length, remaining: left.size }, reason: b.reason, componentId: 'D03-04' });
@@ -622,6 +635,8 @@ registerSimHandler('approveRestore', async (ctx) => {
   const k = await load(ctx, id);
   const rr = k.restoreRequest;
   if (k.status !== 'ACTIVE' || rr?.status !== 'REQUESTED') ctx.fail('CONFLICT', '복원 승인 대기 중인 요청이 아닙니다.', undefined, { action: 'RESTORE_APPROVE', target: id, reason: '복원 승인 대기 아님', componentId: 'D03-04' });
+  if (rr.approverTargets?.length && !rr.approverTargets.includes(ctx.actor.id))
+    ctx.fail('FORBIDDEN', `이 복원 요청의 승인대상자가 아닙니다 — 지정: ${rr.approverTargets.join(', ')}`, { code: 'NOT_DESIGNATED' }, { action: 'RESTORE_APPROVE', target: id, reason: `지정 승인대상자 아님(${rr.approverTargets.join(', ')})`, componentId: 'D03-04' });
   const plan = approvalPlan(k.fClass, 'restore', k.reasonCategory);
   const led = await ensureLedger(ctx, k);
   const excluded = excludedOf(k, led);
@@ -654,11 +669,17 @@ registerSimHandler('approveRestore', async (ctx) => {
   const at = ctx.iso();
   const restoredVins = [...(k.restoredVins ?? []), ...cohort];
   const all = (k.vins as string[]).every((v) => restoredVins.includes(v));
+  const status = all ? 'RELEASED' : k.status;
+  const before = { status: k.status, blockedVins: blockedVins(k) };
+  const after = { status, blockedVins: blockedVins({ ...k, status, restoredVins }) };
   const done = {
     ...k,
     ...(all ? { status: 'RELEASED', releasedBy: ctx.actor.id, releasedAt: at, releaseReason: rr.reason } : {}),
     restoredVins,
-    restoreStages: [...(k.restoreStages ?? []), { cohort, evidenceRef: rr.evidenceRef ?? null, publicationId: pub.publicationId, approvedAt: at, approvers: approvals.map((x) => x.approverId) }],
+    restoreStages: [
+      ...(k.restoreStages ?? []),
+      { cohort, evidenceRef: rr.evidenceRef ?? null, publicationId: pub.publicationId, approvedAt: at, approvers: approvals.map((x) => x.approverId), featureId: k.featureId, requestedBy: rr.requestedBy, before, after },
+    ],
     restorePublicationId: pub.publicationId,
     restoreRequest: { ...rr, cohort, approvals, status: 'APPROVED', gate: { result: 'PASS', failed: [], at }, command: commandRef(issued) },
   };

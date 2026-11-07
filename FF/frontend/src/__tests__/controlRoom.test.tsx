@@ -185,9 +185,15 @@ describe('복원 요청 폼 — 재검증 Evidence·Canary Cohort(P4-7)', () => 
     expect((within(cohort).getByRole('checkbox', { name: 'ego-01' }) as HTMLInputElement).checked).toBe(true);
     expect((within(cohort).getByRole('checkbox', { name: 'lead-01' }) as HTMLInputElement).checked).toBe(false);
     fireEvent.change(within(f2).getByLabelText('사유'), { target: { value: '원인 수정 완료' } });
+    // 해제 확인 항목(FR-KSW-004-002) — 둘 다 체크하기 전에는 막힌다
+    expect((within(f2).getByRole('button', { name: '복원 요청' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(f2.textContent).toContain('차단 사유 해소·원인 조치 완료를 둘 다 체크하세요');
+    fireEvent.click(within(f2).getByRole('checkbox', { name: '차단 사유 해소' }));
+    expect((within(f2).getByRole('button', { name: '복원 요청' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(within(f2).getByRole('checkbox', { name: '원인 조치 완료' }));
     fireEvent.click(within(f2).getByRole('button', { name: '복원 요청' }));
     await waitFor(() => expect(posted('/api/kill-requests/KILL-00001/restore')).toBeTruthy());
-    expect(JSON.parse(String(posted('/api/kill-requests/KILL-00001/restore')!.init!.body))).toEqual({ reason: '원인 수정 완료', evidenceRef: 'EV-G5', cohort: ['ego-01'] });
+    expect(JSON.parse(String(posted('/api/kill-requests/KILL-00001/restore')!.init!.body))).toEqual({ reason: '원인 수정 완료', evidenceRef: 'EV-G5', cohort: ['ego-01'], resolved: true, causeFixed: true });
   });
 });
 

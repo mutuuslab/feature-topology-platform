@@ -214,6 +214,7 @@ test('KILL-DC2 직접 하기: 요청 → 요청자 승인 거부 → 2인 승인
   await expect(page).toHaveURL(/\/ops\/kill$/);
   let k = await openKill();
   await k.getByTestId('restore-form').getByLabel('사유', { exact: true }).fill('원인 수정 확인');
+  for (const c of ['차단 사유 해소', '원인 조치 완료']) await k.getByTestId('restore-form').getByRole('checkbox', { name: c }).check(); // 해제 확인 항목(FR-KSW-004-002)
   await k.getByRole('button', { name: '복원 요청' }).click();
   await expect(k.locator('[data-tour="kill-restore"] ol.ds-approvals__slots')).toBeVisible();
   await passAndNext(page);

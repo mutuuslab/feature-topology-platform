@@ -56,3 +56,7 @@ export type ClearSuspectBody = z.infer<typeof ClearSuspectBody>;
 /** 재판정 요청 닫기 — 영향 없음(출시 버전처럼 다시 판정할 수 없을 때, 사유 필수) */
 export const CloseRejudgeBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
 export type CloseRejudgeBody = z.infer<typeof CloseRejudgeBody>;
+
+/** JIRA 앱 자격(OAuth2 client credentials, 80-50 §4.7) */
+export const AppTokenBody = z.object({ grant_type: z.literal('client_credentials'), client_id: z.string().min(1).max(200), client_secret: z.string().min(1).max(500) }).strict();
+export type AppTokenBody = z.infer<typeof AppTokenBody>;

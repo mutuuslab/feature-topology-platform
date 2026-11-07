@@ -165,6 +165,7 @@ JIRA에서 전이 → 웹훅 → 매핑된 계정의 FF 전이 요청 → 게이
 
 - 앱 → FF 호출: 앱 전용 자격(OAuth2 client credentials, OTA IF-05와 같은 방식) + 요청마다 JIRA 사용자 계정 → `ext-identities` 매핑으로 권한 판단. 새 FF API: `GET /api/alm/app/refdb/refs`(FF `listRefs` `GET /api/refdb/refs`와 같은 질의 q·domain·component·status·offset·limit), `GET /api/alm/app/reference-values`, `GET /api/alm/app/features/:id/summary`.
 - 실서버 형태: Jira Cloud면 **Forge 앱**(외부 호출 허용 목록에 FF 주소), Data Center면 **P2(플러그인) 또는 Connect**. 환경이 정해지기 전까지는 모의 JIRA 서버가 같은 API를 쓰는 간단한 HTML 패널(`/_mock/app/epic-form`)로 흐름을 시험한다. — §11 확인 A-3.
+- **A6 구현(2026-11-07, 모의 패널까지)** FF 앱 API `backend/…/ext-sync/alm-app.*`: `POST /api/alm/app/token`(client credentials — `FF_ALM_APP_CLIENT_ID`·`FF_ALM_APP_CLIENT_SECRET`, 운영 모드는 비밀값 필수, 토큰 1시간·메모리), `GET /api/alm/app/refdb/refs`(플랫폼 `listRefs`와 같은 검색, 매핑된 JIRA 사용자의 첫 역할 범위), `GET /api/alm/app/reference-values`(사용 중인 판매국·차종·트림), `GET /api/alm/app/features/:id/summary`(작업 중·출시 버전·수명주기·게이트·산출물 작성률·링크). 모두 `X-FF-Jira-User`가 ext-identities에 매핑돼야(없으면 403). 쓰기 API는 없다 — 패널이 Epic 사용자 필드를 쓰면 webhook으로 같은 가드(Feature 자동 등록·필드 주인 규칙)를 탄다. 모의 패널 `tools/ext-mocks/jira-app.ts`. 경로 표 `appToken` 표시(준수 검사가 앱 토큰으로 부른다).
 
 ## 5. codeBeamer
 
@@ -313,7 +314,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 — **완료(2026-11-07, Task는 A4로)** |
 | A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 — **완료(2026-11-07, + Task = 산출물 작성 일)** |
 | A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e — **완료(2026-11-07)** |
-| A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 — **실서버를 쓰지 않으므로 모의 서버의 앱 흉내 패널(`/_mock/app/epic-form`)까지만**(D-ALM-17) |
+| A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 — **실서버를 쓰지 않으므로 모의 서버의 앱 흉내 패널(`/_mock/app/epic-form`)까지만**(D-ALM-17) — **모의 패널·FF 앱 API 완료(2026-11-07)**, Forge·Connect 앱은 실서버 형태 확정 뒤 |
 | S1 | 데모 seamless 표시(D-ALM-17) | **완료(2026-11-05)** — `connectionPresentation`·`useSeamless`·`shownMode`, 외부 창·연계 화면·Unleash·체험 구매, 시드 본문. 시험: 백엔드 연결·시드, 프론트 연결·외부 창, e2e `demo-seamless.spec.ts` |
 
 선행: Feature DB R1·R2(30-95). A1은 R1·R2와 병행 가능. 각 단계 `npm run verify`, UI 변경은 `verify:full`.

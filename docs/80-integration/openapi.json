@@ -16673,6 +16673,190 @@
         }
       }
     },
+    "/api/alm/app/token": {
+      "post": {
+        "summary": "JIRA 앱 자격 — client credentials로 Bearer 토큰(1시간)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppToken",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "client_credentials"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "grant_type",
+                  "client_id",
+                  "client_secret"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/refdb/refs": {
+      "get": {
+        "summary": "JIRA 앱 — Feature DB 검색(플랫폼 검색과 같은 질의, 매핑된 JIRA 사용자의 역할 범위)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppRefs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/reference-values": {
+      "get": {
+        "summary": "JIRA 앱 — 판매국·차종·트림 선택지(사용 중)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppReferenceValues",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/features/{id}/summary": {
+      "get": {
+        "summary": "JIRA 앱 — Epic 보기 패널 현황(작업 중·출시 버전·수명주기·게이트·산출물 작성률·링크)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppFeatureSummary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/integrations/sync/reconcile": {
       "post": {
         "summary": "대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)",

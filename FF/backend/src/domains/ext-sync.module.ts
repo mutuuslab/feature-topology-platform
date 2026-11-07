@@ -14,11 +14,14 @@ import { AlmController } from './d05-ext/api-gateway/ext-sync/alm.controller';
 import { AlmChildrenService } from './d05-ext/api-gateway/ext-sync/alm-children.service';
 import { AlmWorkProductsService } from './d05-ext/api-gateway/ext-sync/alm-workproducts.service';
 import { AlmGateService } from './d05-ext/api-gateway/ext-sync/alm-gate.service';
+import { AlmAppService } from './d05-ext/api-gateway/ext-sync/alm-app.service';
+import { AlmAppController } from './d05-ext/api-gateway/ext-sync/alm-app.controller';
+import { RefdbModule } from './d01-policy/refdb/refdb.module';
 
 @Module({
-  imports: [D01PolicyModule, PolicyModule],
-  controllers: [ExtSyncController, AlmController],
-  providers: [ExtSyncRepo, MockExtStore, ExtAdapters, ExtSyncService, ChangeRecordService, FeatureEpics, AlmReconcileService, AlmChildrenService, AlmWorkProductsService, AlmGateService],
+  imports: [D01PolicyModule, PolicyModule, RefdbModule],
+  controllers: [ExtSyncController, AlmController, AlmAppController],
+  providers: [ExtSyncRepo, MockExtStore, ExtAdapters, ExtSyncService, ChangeRecordService, FeatureEpics, AlmReconcileService, AlmChildrenService, AlmWorkProductsService, AlmGateService, AlmAppService],
   exports: [ExtSyncService, AlmChildrenService, AlmWorkProductsService],
 })
 export class ExtSyncModule {}

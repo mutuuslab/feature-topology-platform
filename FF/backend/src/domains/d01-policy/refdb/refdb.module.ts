@@ -16,6 +16,7 @@ import { RefdbReviewAlertService } from './review-alert.service';
   // 추가 요청(POST /api/refdb/requests)은 등록 담당 컨트롤러(request-add) — 변경 요청 컨트롤러보다 먼저 등록한다
   controllers: [RefdbReadController, RefdbRequestAddController, RefdbChangeController],
   providers: [RefdbRepository, RefdbReadService, RefdbChangeService, RefdbSeed, RefdbRequestAddService, RefdbExportService, RefdbReviewAlertService],
-  exports: [RefdbRepository],
+  // 읽기 서비스 — JIRA 안의 FF 앱(80-50 §4.7)이 같은 검색을 쓴다
+  exports: [RefdbRepository, RefdbReadService],
 })
 export class RefdbModule {}

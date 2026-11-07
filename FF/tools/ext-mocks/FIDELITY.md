@@ -39,7 +39,7 @@ FF를 모의 서버에 붙이기: `IF_MODE_14=live JIRA_URL=http://127.0.0.1:913
 | webhook 본문 | `{timestamp, webhookEvent, issue_event_type_name, user, issue(v2 모양), changelog?, comment?}` | 같음(필드 일부만) |
 | 재전송 | 없음 — 유실은 `/_mock/drop-next-webhook`으로 만들고 FF 대사가 메꾼다 | 같음(실서버도 재전송 보장 없음) |
 | 원격 링크 | `GET issue/{key}/remotelink`는 빈 목록 | 단순화 |
-| Epic 앱 패널 | `/_mock/app/epic-form` | 아직 없음(A6) |
+| Epic 앱 패널 | `/_mock/app/epic-form?as=사용자[&key=]`(생성·편집 "FF Feature": Feature DB 검색 → 대표·포함, 국가·차종·트림, ASIL, 담당 조직 → 저장하면 그 사람으로 Epic 사용자 필드), `/_mock/app/epic-view?as=&feature=`(보기 "FF 현황"), FF 앱 API 프록시 `/_mock/app/api/*`(앱 자격 client credentials → Bearer, 요청마다 `X-FF-Jira-User`, `FF_APP_URL`) — `jira-app.ts` | 가정 — 실서버 형태(Forge·Connect·P2)는 미정(80-50 A-3). 화면·저장 흐름만 흉내 |
 
 ## codeBeamer
 

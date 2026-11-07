@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { FF } from '../lib.ts';
 import { isMain, jiraTime, json, route, serve, store, users, type MockServer, type Req, type Res, type Route } from './http.ts';
+import { appRoutes, type FfFetch } from './jira-app.ts';
 
 const require = createRequire(import.meta.url);
 const C = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../../contracts/src/index');
@@ -201,6 +202,8 @@ export interface JiraMockOptions {
   now?: () => number;
   /** webhook 보내기(시험이 가로챈다). 기본은 fetch */
   deliver?: (url: string, headers: Record<string, string>, body: string) => Promise<number>;
+  /** 앱 흉내 패널이 FF 앱 API를 부르는 길(시험이 가로챈다). 기본은 FF_APP_URL로 fetch */
+  ffFetch?: FfFetch;
 }
 
 export async function startJiraMock(o: JiraMockOptions = {}): Promise<MockServer & { state: () => JiraState; flush: () => Promise<void> }> {
@@ -445,10 +448,28 @@ export async function startJiraMock(o: JiraMockOptions = {}): Promise<MockServer
     })),
   ];
 
+  // JIRA 안의 FF 앱 흉내(80-50 §4.7·A6) — 같은 이슈 저장소·같은 webhook
+  const app = appRoutes({
+    env,
+    route,
+    json,
+    createEpic: (fields, user) => {
+      const i = create(fields, user, 2);
+      save();
+      return { key: i.key };
+    },
+    updateEpic: (key, fields, user) => {
+      update(must(key), fields, user, 2);
+      save();
+    },
+    fieldId: (name) => FIELD_BY_NAME.get(name.toLowerCase())!,
+    ffFetch: o.ffFetch,
+  });
+
   const s = await serve({
     name: 'jira',
     port: o.port ?? Number(env.JIRA_MOCK_PORT ?? 9131),
-    routes: [...api(3), ...api(2), ...mock],
+    routes: [...api(3), ...api(2), ...mock, ...app],
     accounts,
     open: (path) => path.startsWith('/_mock/'),
     error: (status, message) => ERROR(status, message),

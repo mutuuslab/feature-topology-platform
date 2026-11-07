@@ -213,6 +213,8 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'JIRA_FIELDS', what: 'Epic 사용자 필드 ID 표(JSON, 키 → customfield_xxxxx — 80-50 §4.2). 있는 키는 위 JIRA_FIELD_* 대신 쓴다', required: false },
     { key: 'JIRA_API', what: "REST 판 — 비우면 3(Cloud), Data Center는 '2'", required: false },
     { key: 'FF_PUBLIC_URL', what: 'Epic의 FF 링크 칸에 쓸 플랫폼 주소(https://…, 비우면 링크 칸을 쓰지 않음)', required: false },
+    { key: 'FF_ALM_APP_CLIENT_ID', what: "JIRA 안의 FF 앱 client ID(기본 'ff-jira-app')", required: false },
+    { key: 'FF_ALM_APP_CLIENT_SECRET', what: 'JIRA 안의 FF 앱 client 비밀값(운영 모드는 꼭 — 없으면 앱 토큰을 내주지 않음)', secret: true, required: false },
     { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
     { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
   ],

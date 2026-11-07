@@ -54,6 +54,11 @@ describe('42 컴포넌트 런타임 준수', () => {
     const req = http().get(url);
     // 역할 제한 조회는 계약이 허용한 신원으로 호출한다. 무인증·다른 역할 거부는 각 도메인 권한 회귀에서 확인한다.
     if (r.roles?.length) req.set(actor('usr-conformance', r.roles[0]));
+    // JIRA 앱 전용 조회(80-50 A6) — 앱 토큰 + 매핑된 JIRA 사용자. 무인증 거부는 alm-app.spec이 본다
+    if (r.appToken) {
+      const t = await http().post('/api/alm/app/token').send({ grant_type: 'client_credentials', client_id: 'ff-jira-app', client_secret: 'ff-mock-app-secret' }).expect(200);
+      req.set({ authorization: `Bearer ${t.body.access_token}`, 'x-ff-jira-user': 'kim.author' });
+    }
     const res = await req;
     expect(res.status, JSON.stringify(res.body).slice(0, 200)).toBeLessThan(300);
   });

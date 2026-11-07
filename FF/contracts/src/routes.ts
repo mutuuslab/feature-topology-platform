@@ -18,7 +18,7 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { RestorePolicyRevisionBody } from './rules/policy-version';
-import { ClearSuspectBody, CloseRejudgeBody, RunReconcileBody } from './rules/alm/api';
+import { AppTokenBody, ClearSuspectBody, CloseRejudgeBody, RunReconcileBody } from './rules/alm/api';
 import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { FlagSourceManifest } from './schemas/flag-source';
@@ -89,6 +89,8 @@ export interface RouteDef {
   public?: boolean;
   /** 요청 계정마다 결과가 다른 조회(내 알림) — 프론트가 GET에도 행위자 헤더를 붙이고 계정별로 캐시한다 */
   personal?: boolean;
+  /** JIRA 안의 FF 앱 전용(80-50 §4.7) — 사람 행위자 대신 앱 토큰(Bearer) + JIRA 사용자(X-FF-Jira-User). 화면은 부르지 않는다 */
+  appToken?: boolean;
 }
 
 export const ROUTES: RouteDef[] = [
@@ -413,6 +415,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'almRejudge', method: 'GET', path: '/api/alm/rejudge', summary: '산출물 변경 — 게이트 재판정 요청(승인 뒤 바뀐 codeBeamer 항목을 근거로 쓴 게이트)', component: 'D05-01', query: ['status', 'featureId'] },
   { name: 'closeAlmRejudge', method: 'POST', path: '/api/alm/rejudge/:id/close', summary: '재판정 요청 닫기 — 영향 없음(사유 필수, 출시 버전처럼 다시 판정할 수 없을 때)', component: 'D05-01', roles: ['GATE_JUDGE', 'RELEASE_MANAGER', 'SAFETY_OFFICER'], body: CloseRejudgeBody },
   { name: 'clearAlmSuspect', method: 'POST', path: '/api/alm/features/:id/:ver/suspects/clear', summary: '의심 관계 풀기 — 아래 항목에 영향 없음(사유 필수)', component: 'D05-01', roles: ['IMPLEMENTER', 'GATE_JUDGE', 'SAFETY_OFFICER'], body: ClearSuspectBody },
+  // JIRA 안의 FF 앱(80-50 §4.7) — 앱 토큰 + JIRA 사용자 매핑(X-FF-Jira-User)
+  { name: 'almAppToken', method: 'POST', path: '/api/alm/app/token', summary: 'JIRA 앱 자격 — client credentials로 Bearer 토큰(1시간)', component: 'D05-01', body: AppTokenBody, public: true },
+  { name: 'almAppRefs', method: 'GET', path: '/api/alm/app/refdb/refs', summary: 'JIRA 앱 — Feature DB 검색(플랫폼 검색과 같은 질의, 매핑된 JIRA 사용자의 역할 범위)', component: 'D05-01', query: ['q', 'domain', 'component', 'status', 'offset', 'limit'], appToken: true },
+  { name: 'almAppReferenceValues', method: 'GET', path: '/api/alm/app/reference-values', summary: 'JIRA 앱 — 판매국·차종·트림 선택지(사용 중)', component: 'D05-01', appToken: true },
+  { name: 'almAppFeatureSummary', method: 'GET', path: '/api/alm/app/features/:id/summary', summary: 'JIRA 앱 — Epic 보기 패널 현황(작업 중·출시 버전·수명주기·게이트·산출물 작성률·링크)', component: 'D05-01', sample: { id: 'FEAT-00022' }, appToken: true },
   { name: 'runExtReconcile', method: 'POST', path: '/api/integrations/sync/reconcile', summary: '대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: RunReconcileBody },
   { name: 'policyExtLinks', method: 'GET', path: '/api/policies/:id/ext-links', summary: '정책에 연결된 외부 항목(JIRA CR)', component: 'D05-01', sample: { id: 'POL-00001' } },
   { name: 'linkPolicyChangeRequest', method: 'POST', path: '/api/policies/:id/change-request', summary: '정책 ↔ 근거 JIRA CR 연결', component: 'D05-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: LinkChangeRequestBody },

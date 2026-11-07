@@ -53,7 +53,12 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
     const CB = await load('codebeamer.ts');
     trackerId = CB.trackerId;
     const deliver: Deliver = async (_url, headers, body) => (await http().post('/api/webhooks/jira').set(headers).send(body)).status;
-    jira = await J.startJiraMock({ port: 0, env: mockEnv, deliver });
+    // JIRA 안의 FF 앱 흉내 패널(80-50 A6)이 FF 앱 API를 부르는 길 — 같은 플랫폼(supertest)으로
+    const ffFetch = async (path: string, init: { method: string; headers: Record<string, string>; body?: string }) => {
+      const r = init.method === 'POST' ? await http().post(path).set(init.headers).send(init.body ?? '') : await http().get(path).set(init.headers);
+      return { status: r.status, body: r.body };
+    };
+    jira = await J.startJiraMock({ port: 0, env: mockEnv, deliver, ffFetch });
     cb = await CB.startCodebeamerMock({ port: 0, env: mockEnv });
     Object.assign(process.env, {
       IF_MODE_14: 'live',
@@ -311,7 +316,34 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
     expect(comments.some((c) => /승인 뒤 변경\(v1 → v2\).*G2 재판정 요청/.test(c.comment) && c.createdBy === 'ff-sync')).toBe(true);
     expect((await judge('G2')).status).toBe(201);
     const after = (await http().get(`/api/alm/rejudge?featureId=${id}`).expect(200)).body.items;
+    process.env.FF_ALM_WP_GATE = 'warn';
     expect(after[0]).toMatchObject({ status: 'RESOLVED', resolvedBy: 'choi.judge' });
     // HTTP 왕복이 많아(두 모의 서버 + 플랫폼) 전체 시험 부하에서는 기본 20초를 넘는다
   }, 60_000);
+
+  // 80-50 A6 — JIRA 안의 FF 앱 흉내: 패널이 FF 앱 API(앱 토큰 + JIRA 사용자)로 Feature DB·기준 값을 고르고 Epic 사용자 필드를 쓴다 →
+  //   webhook으로 Feature 등록(앱은 FF에 직접 쓰지 않는다) → 보기 패널이 현황을 읽는다
+  it('JIRA 앱 패널 — Feature DB 검색·기준 값 → 저장(Epic 사용자 필드) → Feature 등록 → FF 현황', async () => {
+    const get = async (path: string) => {
+      const r = await fetch(`${jira.url}${path}`);
+      return { status: r.status, body: (await r.json()) as any };
+    };
+    const ref = nextRefId('QM');
+    const refs = await get(`/_mock/app/api/refs?as=kim.author&q=${encodeURIComponent(ref)}&limit=5`);
+    expect(refs.status).toBe(200);
+    expect(refs.body.items.map((x: any) => x.refId)).toContain(ref);
+    const values = await get('/_mock/app/api/reference-values?as=kim.author');
+    expect(values.body.country.map((x: any) => x.code)).toContain('KR');
+    expect((await get('/_mock/app/api/refs?as=stranger&q=x')).status).toBe(403);
+    const saved = await fetch(`${jira.url}/_mock/app/save`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ as: 'kim.author', summary: '계약 시험 앱 패널', description: 'JIRA 앱에서', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'QM', ownerId: 'ADAS상품기획팀', refIds: [ref] }) });
+    expect(saved.status).toBe(201);
+    const key = ((await saved.json()) as { key: string }).key;
+    await settle();
+    const row = (await inbox()).find((r) => r.key === key && r.externalUser === 'kim.author');
+    expect(row).toMatchObject({ outcome: 'APPLIED', summary: expect.stringMatching(/자동 등록\(PROPOSED\)/) });
+    const fid = /→ (FEAT-\d{5})@/.exec(row!.summary)![1];
+    const sum = await get(`/_mock/app/api/features/${fid}/summary?as=kim.author`);
+    expect(sum.body).toMatchObject({ featureId: fid, name: '계약 시험 앱 패널', lifecycle: 'PROPOSED', epicStatus: 'Proposed', workingVersion: '0.1.0' });
+    expect((await issue(key)).custom.customfield_10016).toBe(fid);
+  });
 });

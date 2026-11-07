@@ -114,6 +114,78 @@ describe('JIRA 모의', () => {
   });
 });
 
+describe('JIRA 안의 FF 앱 흉내 (80-50 A6)', () => {
+  const sent: { body: string }[] = [];
+  const ffCalls: { path: string; headers: Record<string, string> }[] = [];
+  let refuse = false;
+  const env = { FF_MOCK_DATA_DIR: join(dir, 'jira-app'), FF_MOCK_FRESH: '1', JIRA_WEBHOOK_SECRET: 'jira-secret', JIRA_EPIC_PROJECT: 'FFE' };
+  const boot = startJiraMock({
+    port: 0,
+    env,
+    now: () => T0,
+    deliver: async (_u, _h, body) => (sent.push({ body }), 202),
+    ffFetch: async (path, init) => {
+      ffCalls.push({ path, headers: init.headers });
+      if (path === '/api/alm/app/token') return refuse ? { status: 401, body: { error: { message: 'no' } } } : { status: 200, body: { access_token: 'tok-1', token_type: 'Bearer', expires_in: 3600 } };
+      if (path.startsWith('/api/alm/app/refdb/refs')) return { status: 200, body: { items: [{ refId: 'CH-BRK-009', nameKo: '오토 홀드' }], total: 1 } };
+      return { status: 404, body: { error: { message: 'none' } } };
+    },
+  });
+  after(async () => (await boot).close());
+  const call = async (method: string, path: string, body?: unknown) => {
+    const s = await boot;
+    const r = await fetch(`${s.url}${path}`, { method, headers: { 'content-type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+    const text = await r.text();
+    return { status: r.status, type: r.headers.get('content-type') ?? '', text, body: r.headers.get('content-type')?.includes('json') && text ? JSON.parse(text) : null };
+  };
+
+  it('Epic 패널 HTML — 기준 기능 검색·범위·ASIL·저장, 보기 패널', async () => {
+    const f = await call('GET', '/_mock/app/epic-form?as=kim.author');
+    assert.equal(f.status, 200);
+    assert.match(f.type, /text\/html/);
+    for (const id of ['id="q"', 'id="country"', 'id="vehicleModel"', 'id="trim"', 'id="asil"', 'id="ownerId"', 'id="save"']) assert.ok(f.text.includes(id), id);
+    assert.ok(f.text.includes('첫 번째가 대표'));
+    assert.match((await call('GET', '/_mock/app/epic-view?as=kim.author&feature=FEAT-00012')).text, /FF 현황/);
+  });
+
+  it('FF 앱 API 프록시 — 앱 토큰(client credentials) 한 번, 요청마다 JIRA 사용자 머리글', async () => {
+    const r = await call('GET', '/_mock/app/api/refs?as=kim.author&q=hold&limit=5');
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.body.items.map((x: { refId: string }) => x.refId), ['CH-BRK-009']);
+    await call('GET', '/_mock/app/api/refs?as=lee.approver&q=hold');
+    assert.equal(ffCalls.filter((c) => c.path === '/api/alm/app/token').length, 1);
+    const reads = ffCalls.filter((c) => c.path.startsWith('/api/alm/app/refdb/refs'));
+    assert.equal(reads[0].path, '/api/alm/app/refdb/refs?q=hold&limit=5');
+    assert.deepEqual([reads[0].headers.authorization, reads[0].headers['x-ff-jira-user'], reads[1].headers['x-ff-jira-user']], ['Bearer tok-1', 'kim.author', 'lee.approver']);
+  });
+
+  it('저장 — 필수 칸·기준 기능이 없으면 앱이 막고, 있으면 그 사람으로 Epic 사용자 필드를 쓴다(webhook)', async () => {
+    assert.equal((await call('POST', '/_mock/app/save', { as: 'kim.author', summary: '오토 홀드', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'B', ownerId: '샤시', refIds: [] })).status, 400);
+    assert.match((await call('POST', '/_mock/app/save', { as: 'kim.author', summary: '오토 홀드', refIds: ['CH-BRK-009'] })).body.message, /빈 칸/);
+    const made = await call('POST', '/_mock/app/save', { as: 'kim.author', summary: '오토 홀드', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', asil: 'B', ownerId: '샤시상품기획팀', refIds: ['CH-BRK-009', 'CH-BRK-006'] });
+    assert.equal(made.status, 201);
+    const s = await boot;
+    await s.flush();
+    const i = s.state().issues[made.body.key];
+    assert.equal(i.type, 'Epic');
+    assert.equal(i.reporter, 'kim.author');
+    assert.deepEqual(i.custom, { customfield_10010: 'KR', customfield_10011: 'NX4 PE', customfield_10012: 'Premium', customfield_10013: { value: 'B' }, customfield_10014: '샤시상품기획팀', customfield_10015: ['CH-BRK-009', 'CH-BRK-006'] });
+    assert.equal(JSON.parse(sent.at(-1)!.body).webhookEvent, 'jira:issue_created');
+  });
+
+  it('FF가 앱 자격을 거부하면 502와 사유', async () => {
+    refuse = true;
+    const s2 = await startJiraMock({ port: 0, env: { ...env, FF_MOCK_DATA_DIR: join(dir, 'jira-app2') }, ffFetch: async () => ({ status: 401, body: {} }) });
+    try {
+      const r = await fetch(`${s2.url}/_mock/app/api/reference-values?as=kim.author`);
+      assert.equal(r.status, 502);
+      assert.match(((await r.json()) as { message: string }).message, /앱 자격/);
+    } finally {
+      await s2.close();
+    }
+  });
+});
+
 describe('codeBeamer 모의', () => {
   let t = T0;
   const sent: { headers: Record<string, string>; body: string }[] = [];

@@ -138,3 +138,17 @@ describe('반려·재작업·즉시 폐기·Retired 관문 (FR-REG-002-010~016, 
     expect(b({ id: 'lee.approver', role: 'FEATURE_APPROVER' }, 'RETIRED')).toEqual(['NO_RULE']);
   });
 });
+
+describe('정책 생애주기 값 대응표 (FR-PVER-003-001)', async () => {
+  const { policySpecStage, POLICY_SPEC_STAGES } = await import('./policy-stage');
+  const p = (status: string, mode: 'ALL' | 'NONE' | 'COHORT' = 'ALL', stageBasisPoints: number | null = null) => ({ status, stageBasisPoints, rollout: { mode, basisPoints: 5000, salt: 's' } }) as any;
+  it('명세 단계값 5개 — 반려는 초안, 검증 완료는 검토, 종료는 단계 밖', () => {
+    expect(POLICY_SPEC_STAGES).toEqual(['Draft', 'Review', 'Approved', 'Deployed', 'Monitored']);
+    expect(['DRAFT', 'REJECTED', 'VALIDATED', 'APPROVED', 'RETIRED'].map((s) => policySpecStage(p(s)))).toEqual(['Draft', 'Draft', 'Review', 'Approved', null]);
+  });
+  it('배포 중 정책 — 전체 범위면 Monitored, 단계 진행 중이면 Deployed', () => {
+    expect(policySpecStage(p('DEPLOYED'))).toBe('Monitored');
+    expect(policySpecStage(p('DEPLOYED', 'ALL', 1000))).toBe('Deployed');
+    expect(policySpecStage(p('DEPLOYED', 'COHORT'))).toBe('Deployed');
+  });
+});

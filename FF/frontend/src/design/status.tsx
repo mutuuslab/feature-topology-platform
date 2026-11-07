@@ -4,11 +4,12 @@ import { LIFECYCLE, type Lifecycle } from '@ff/contracts';
 import { ko } from '../copy/ko';
 import { StatusGlyph } from './icons';
 
-export type GateKind = 'PASS' | 'REVIEW' | 'UNJUDGED' | 'FAIL';
+export type GateKind = 'PASS' | 'REVIEW' | 'UNJUDGED' | 'FAIL' | 'NA';
 
-/** Gate 판정 상태(데이터셋 표기: PASS·검토 중·FAIL, 레코드 없음=미판정) → 표시 종류 */
+/** Gate 판정 상태(데이터셋 표기: PASS·검토 중·FAIL·N/A, 레코드 없음=미판정) → 표시 종류 */
 export function gateKind(status: string | null | undefined): GateKind {
   if (status === 'PASS') return 'PASS';
+  if (status === 'N/A') return 'NA';
   if (status === 'FAIL') return 'FAIL';
   if (status === '검토 중' || status === 'CONDITIONAL') return 'REVIEW';
   return 'UNJUDGED';

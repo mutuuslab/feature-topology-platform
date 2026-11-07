@@ -654,6 +654,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'baselineChangesets', method: 'GET', path: '/api/baselines/changesets', summary: 'BOM Baseline ChangeSet — 확정마다 직전 대비 변경 유형·영역·항목·일시', component: 'D01-01', query: ['featureId'] },
   { name: 'releaseCandidate', method: 'GET', path: '/api/features/:id/versions/:ver/release-candidate', summary: '출시 후보 통합 스냅샷 — 출시 승인 시점 Feature·요구·Variant·정책·Test Evidence, 해시 검증', component: 'D01-01' },
   { name: 'releaseCandidates', method: 'GET', path: '/api/release-candidates', summary: '출시 후보 통합 스냅샷 목록', component: 'D01-01', query: ['featureId'] },
+  { name: 'policyStages', method: 'GET', path: '/api/policy-stages', summary: '정책 생애주기 값(Draft·Review·Approved·Deployed·Monitored) 대응표·단계별 정책', component: 'D01-06', query: ['stage', 'featureId'] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

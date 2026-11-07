@@ -38,6 +38,7 @@ import { GateNaController, GateNaDecisionController, GateNaService } from './top
 import { FeatureRetireRepo, FeatureReviewRepo } from './registry/feature-p10.repo';
 import { FeatureP10Controller, FeatureP10Service, FeatureRetireController } from './registry/feature-p10.service';
 import { ReleaseCandidateController, ReleaseCandidateService } from './registry/release-candidate.service';
+import { PolicyStageController } from './policy-store/policy-stage.controller';
 import { TopologyController } from './topology/topology.controller';
 import { TopologyService } from './topology/topology.service';
 import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/analysis-evidence.service';
@@ -56,7 +57,7 @@ import { TraceSources } from '../../adapters/if-mocks/trace-sources';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController, PolicyExpansionController, TraceLinkController, GateNaController, GateNaDecisionController, FeatureP10Controller, FeatureRetireController, ReleaseCandidateController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController, PolicyExpansionController, TraceLinkController, GateNaController, GateNaDecisionController, FeatureP10Controller, FeatureRetireController, ReleaseCandidateController, PolicyStageController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다

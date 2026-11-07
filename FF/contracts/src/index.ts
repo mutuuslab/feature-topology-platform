@@ -23,3 +23,4 @@ export * from './rules/gate-outcome';
 export * from './rules/gate-checks';
 export * from './rules/feature-retire';
 export * from './rules/baseline-p10';
+export * from './rules/policy-stage';

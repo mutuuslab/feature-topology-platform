@@ -53,6 +53,9 @@ import { useFeatureTrace } from './ExtLinksTab';
 import { useExternalChanges } from '../../external/useExternalChanges';
 import { ChangeKindChip } from '../ads/ChangeImpact';
 import { AdsClassificationPanel } from '../ads/AdsClassification';
+import { BaselineHistory, HistoryTab, IssueInputs, RejectAction, ReleaseCandidatePanel, RetireAction, ReviewRecords } from './LifecyclePanels';
+import { lcGate } from '../../copy/lifecycle-gate';
+import type { IssueItem } from '../../../../contracts/src/rules/feature-retire';
 
 const T = ko.detail;
 // 평가 운영 데이터 탭(B5) — 탭을 열 때만 읽는다
@@ -149,7 +152,11 @@ export default function FeatureDetail() {
                     </Button>
                   ))}
                 {d.transitions.some((t) => t.auto) && <span className="ds-field__hint">{T.autoNote}</span>}
+                {/* 정의 승인 반려·즉시 폐기(P10) — 표 10 전이 밖의 요청·기록 */}
+                <RejectAction featureId={id} version={ver} lifecycle={d.feature.lifecycle} createdBy={d.meta?.createdBy} />
+                <RetireAction featureId={id} version={ver} lifecycle={d.feature.lifecycle} createdBy={d.meta?.createdBy} />
               </div>
+              <ReviewRecords featureId={id} version={ver} />
               {refWarn?.at === `${id}@${ver}` && <RefWarningList warnings={refWarn.items} title={refWarn.title} />}
               {/* 등록 직후 다음 할 일 · 승인 뒤 구현이 비어 검증 완료로 못 가면 새 Version 길(담당자 웨이브 P1-7·P3-8) */}
               {(loc.state as { registered?: boolean } | null)?.registered && d.feature.lifecycle === 'PROPOSED' && <RegisteredGuide f={d.feature} gatesPassed={(['G1', 'G2', 'G3'] as const).every((g) => d.gates[g]?.status === 'PASS')} />}
@@ -174,6 +181,7 @@ export default function FeatureDetail() {
                 { key: 'ops', label: T.tabs.ops },
                 { key: 'ext', label: extSync.feature.tab },
                 { key: 'baseline', label: T.tabs.baseline },
+                { key: 'history', label: lcGate.history.tab },
                 { key: 'audit', label: T.tabs.audit },
               ]}
             >
@@ -214,7 +222,13 @@ export default function FeatureDetail() {
                 ) : tab === 'ext' ? (
                   <ExtLinksTab id={id} ver={ver} />
                 ) : tab === 'baseline' ? (
-                  <BaselineTab d={d} />
+                  <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
+                    <BaselineTab d={d} />
+                    <ReleaseCandidatePanel featureId={id} version={ver} lifecycle={d.feature.lifecycle} />
+                    <BaselineHistory featureId={id} />
+                  </div>
+                ) : tab === 'history' ? (
+                  <HistoryTab featureId={id} />
                 ) : (
                   <AuditTab target={`${id}@${ver}`} />
                 )
@@ -403,8 +417,12 @@ function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifec
   const perm = usePermission(allowed);
   const m = useApiMutation<{ warnings?: RefWarning[] }>('transition', INVALIDATE);
   const [reason, setReason] = useState('');
-  // 역할·사유는 이 화면에서 채우는 조건이므로 그 외의 막힌 사유만 미리 보여 준다
-  const hard = (opt?.blockers ?? []).filter((b) => !['ROLE', 'REASON_REQUIRED', 'SEPARATION_OF_DUTY'].includes(b.code));
+  // 검증 이슈로 되돌릴 때 이슈 항목(P10, FR-REG-002-013)
+  const [issues, setIssues] = useState<IssueItem[]>([{ item: '', detail: '' }]);
+  const rework = d.feature.lifecycle === 'VERIFIED' && to === 'DEVELOPING';
+  const issueList = issues.filter((x) => x.item.trim().length >= 2).map((x) => ({ item: x.item.trim(), detail: x.detail.trim() }));
+  // 역할·사유·이슈 항목은 이 화면에서 채우는 조건이므로 그 외의 막힌 사유만 미리 보여 준다
+  const hard = (opt?.blockers ?? []).filter((b) => !['ROLE', 'REASON_REQUIRED', 'SEPARATION_OF_DUTY', 'ISSUE_REQUIRED'].includes(b.code));
   return (
     <Drawer open={!!to} title={to ? T.transition(to) : ''} onClose={onClose}>
       {opt && (
@@ -412,7 +430,7 @@ function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifec
           style={{ display: 'grid', gap: 'var(--sp-3)' }}
           onSubmit={(e) => {
             e.preventDefault();
-            m.mutate({ params: { id: d.feature.featureId, ver: d.feature.version }, body: { to, reason } }, { onSuccess: (r) => (setReason(''), r?.warnings?.length && onWarnings(r.warnings), onClose()) });
+            m.mutate({ params: { id: d.feature.featureId, ver: d.feature.version }, body: { to, reason, ...(rework ? { issues: issueList } : {}) } }, { onSuccess: (r) => (setReason(''), setIssues([{ item: '', detail: '' }]), r?.warnings?.length && onWarnings(r.warnings), onClose()) });
           }}
         >
           <p style={{ margin: 0 }}>
@@ -436,11 +454,17 @@ function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifec
           {opt.to === 'RELEASED' && (
             <GateRail statuses={Object.fromEntries(GATES.map((g) => [g, d.gates[g]?.status ?? null]))} />
           )}
+          {rework && (
+            <>
+              <p className="ds-field__hint" style={{ margin: 0 }}>{lcGate.rework.hint}</p>
+              <IssueInputs value={issues} onChange={setIssues} />
+            </>
+          )}
           <Field label={ko.page.reason}>
             <textarea className="ds-input" required value={reason} onChange={(e) => setReason(e.target.value)} placeholder={ko.page.reasonPlaceholder} />
           </Field>
           <ErrorNote error={m.error} />
-          <Button type="submit" variant="primary" disabled={!perm.ok || hard.length > 0 || m.isPending} title={perm.hint}>
+          <Button type="submit" variant="primary" disabled={!perm.ok || hard.length > 0 || m.isPending || (rework && !issueList.length)} title={perm.hint}>
             {ko.page.submit}
           </Button>
           {perm.hint && <span className="ds-field__hint">{perm.hint}</span>}

@@ -227,6 +227,8 @@
   --gate-REVIEW: var(--warn);
   --gate-UNJUDGED: var(--faint);
   --gate-FAIL: var(--danger);
+  /* 해당 없음(N/A) — 승인된 제외, 미판정과 다른 실선 표시(P10) */
+  --gate-NA: var(--muted);
   /* 하한 — 노트북(1599px 이하, base 13px)에서 xs가 10.2px·sm이 11.1px로 떨어져 화면 글자의 82%가 10~11px였다(하네스 DS-03·04, 2026-10-23).
      보조 글자는 11px, 표 본문은 12px 아래로 내려가지 않는다 */
   --fs-xs: max(11px, calc(var(--fs-base) * 0.786));

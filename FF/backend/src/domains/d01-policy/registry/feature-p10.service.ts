@@ -9,6 +9,7 @@ import {
   RetireDecisionBody,
   RetireFeatureBody,
   type FeatureRetireRequest,
+  type GateRecordRow,
 } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -140,15 +141,32 @@ export class FeatureP10Service {
     const version = singleQuery(q.version, 'version')?.trim() || undefined;
     const period = periodBounds(singleQuery(q.from, 'from'), singleQuery(q.to, 'to'));
     if (period.error) throw new DomainError('VALIDATION', period.error, { field: 'from' });
-    const rows = this.audit
+    const audited = this.audit
       .list({ targetPrefix: featureId, actorId, from: period.from, to: period.to, result: 'ALLOWED', limit: 1000 })
       .filter((e) => e.target === featureId || e.target.startsWith(`${featureId}@`) || e.target.startsWith(`${featureId}:`))
       .map((e) => {
         const ver = e.target.startsWith(`${featureId}@`) ? e.target.slice(featureId.length + 1).split('#')[0] : null;
         const items = changedItems(e.before, e.after);
-        return { id: e.id, at: e.at, actorId: e.actorId, actorRole: e.actorRole, action: e.action, target: e.target, version: ver, items, reason: e.reason, before: e.before, after: e.after };
-      })
-      .filter((e) => (!version || e.version === version) && (!item || e.items.includes(item) || e.action.includes(item)));
+        return { id: String(e.id), source: 'AUDIT' as const, at: e.at, actorId: e.actorId, actorRole: e.actorRole, action: e.action, target: e.target, version: ver, items, reason: e.reason, before: e.before, after: e.after };
+      });
+    // 이관 기록(감사 도입 전 판정·확정) — Gate 판정 기록·Baseline 확정을 같은 이력에 넣는다(감사에 같은 기록이 있으면 빼고)
+    const seenGates = new Set(audited.map((e) => (e.after as { gateRecordId?: string } | null)?.gateRecordId).filter(Boolean));
+    const seenBaselines = new Set(audited.map((e) => (e.after as { baselineId?: string } | null)?.baselineId).filter(Boolean));
+    const inPeriod = (at: string | null) => !!at && (!period.from || Date.parse(at) >= Date.parse(period.from)) && (!period.to || Date.parse(at) < Date.parse(period.to));
+    const recorded = this.features.versions(featureId).flatMap((v) => [
+      ...this.db
+        .all<{ doc: string }>('SELECT doc FROM gate_record WHERE feature_id = ? AND feature_version = ? ORDER BY judged_at, gate_record_id', featureId, v.version)
+        .map((r) => JSON.parse(r.doc) as GateRecordRow)
+        .filter((g) => !seenGates.has(g.gateRecordId))
+        .map((g) => ({ id: g.gateRecordId, source: 'RECORD' as const, at: g.judgedAt, actorId: g.judgeRole, actorRole: null, action: `GATE_JUDGE ${g.gate}`, target: `${featureId}@${v.version}#${g.gate}`, version: v.version, items: ['status'], reason: `${g.status} — ${g.rationale}`, before: null, after: { gateRecordId: g.gateRecordId, status: g.status, evidenceRef: g.evidenceRef } })),
+      ...this.db
+        .all<{ baseline_id: string; approved_by: string | null; approved_at: string | null }>('SELECT baseline_id, approved_by, approved_at FROM baseline WHERE feature_id = ? AND version = ?', featureId, v.version)
+        .filter((b) => !seenBaselines.has(b.baseline_id) && b.approved_at)
+        .map((b) => ({ id: b.baseline_id, source: 'RECORD' as const, at: b.approved_at!, actorId: b.approved_by ?? 'BOM 승인자', actorRole: null, action: 'BASELINE_APPROVE', target: `${featureId}@${v.version}`, version: v.version, items: ['baselineId'], reason: `Baseline ${b.baseline_id} 확정`, before: null, after: { baselineId: b.baseline_id } })),
+    ]).filter((e) => (!actorId || e.actorId === actorId) && inPeriod(e.at));
+    const rows = [...audited, ...recorded]
+      .filter((e) => (!version || e.version === version) && (!item || e.items.includes(item) || e.action.includes(item)))
+      .sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || b.id.localeCompare(a.id));
     return { featureId, filter: { actorId: actorId ?? null, from: period.from ?? null, to: period.to ?? null, item: item ?? null, version: version ?? null }, items: rows };
   }
 }

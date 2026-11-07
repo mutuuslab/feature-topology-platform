@@ -65,6 +65,7 @@ export type CreateVersionBody = z.infer<typeof CreateVersionBody>;
 export const TransitionBody = z.object({ to: Lifecycle, reason: z.string().trim().max(500).default(''), issues: z.array(IssueItem).max(20).default([]) });
 export type TransitionBody = z.infer<typeof TransitionBody>;
 
+// @req FR-REG-005-011
 /** Gate 판정 등록 — 모든 판정(PASS·CONDITIONAL·FAIL)에 근거 산출물·Evidence Link 1건 이상(FR-REG-005-011, 증거 없는 PASS 금지) */
 export const JudgeGateBody = z
   .object({

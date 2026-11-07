@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import { GATE_META, GATES, GateId, type Asil, type GateStatus, type Role } from '../enums';
 
+// @req FR-REG-005-008 FR-REG-005-009 FR-REG-005-013
 /** 저장 상태 → 명세 상태값(FR-REG-005-008) — '검토 중'(CONDITIONAL)이 명세의 PENDING */
 export const GATE_STATUS_SPEC: Record<GateStatus, 'PASS' | 'PENDING' | 'FAIL' | 'N/A'> = { PASS: 'PASS', '검토 중': 'PENDING', FAIL: 'FAIL', 'N/A': 'N/A' };
 

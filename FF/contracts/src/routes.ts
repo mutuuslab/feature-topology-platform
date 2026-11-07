@@ -18,7 +18,7 @@ import {
   ValidateCompositionBody,
 } from './schemas/api';
 import { RestorePolicyRevisionBody } from './rules/policy-version';
-import { RunReconcileBody } from './rules/alm/api';
+import { ClearSuspectBody, CloseRejudgeBody, RunReconcileBody } from './rules/alm/api';
 import { CreateRollbackPlanBody, CreateRollbackRequestBody, PolicyRollbackBody, ROLLBACK_APPROVER_ROLES, ROLLBACK_REQUEST_ROLES, RollbackDecisionBody, RollbackPreviewBody } from './rules/rollback';
 import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyDecisionBody, PurchaseTrialBody, RolloutStageBody, UpdatePolicyBody } from './schemas/policy';
 import { FlagSourceManifest } from './schemas/flag-source';
@@ -410,6 +410,9 @@ export const ROUTES: RouteDef[] = [
   { name: 'extReconcileRuns', method: 'GET', path: '/api/integrations/sync/reconcile-runs', summary: '주기 대사 실행 기록 — 증분·전체, 훑은 수·반영·충돌·오류', component: 'D05-01' },
   { name: 'almWorkProducts', method: 'GET', path: '/api/alm/features/:id/:ver/work-products', summary: 'codeBeamer 산출물 8종 — 종류별 필요·승인·추적 완결·누락·의심, 작성률', component: 'D05-01', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
   { name: 'refreshAlmWorkProducts', method: 'POST', path: '/api/alm/features/:id/:ver/work-products/refresh', summary: 'codeBeamer 산출물 지금 다시 읽기', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER', 'GATE_JUDGE', 'FEATURE_AUTHOR'], body: EmptyBody },
+  { name: 'almRejudge', method: 'GET', path: '/api/alm/rejudge', summary: '산출물 변경 — 게이트 재판정 요청(승인 뒤 바뀐 codeBeamer 항목을 근거로 쓴 게이트)', component: 'D05-01', query: ['status', 'featureId'] },
+  { name: 'closeAlmRejudge', method: 'POST', path: '/api/alm/rejudge/:id/close', summary: '재판정 요청 닫기 — 영향 없음(사유 필수, 출시 버전처럼 다시 판정할 수 없을 때)', component: 'D05-01', roles: ['GATE_JUDGE', 'RELEASE_MANAGER', 'SAFETY_OFFICER'], body: CloseRejudgeBody },
+  { name: 'clearAlmSuspect', method: 'POST', path: '/api/alm/features/:id/:ver/suspects/clear', summary: '의심 관계 풀기 — 아래 항목에 영향 없음(사유 필수)', component: 'D05-01', roles: ['IMPLEMENTER', 'GATE_JUDGE', 'SAFETY_OFFICER'], body: ClearSuspectBody },
   { name: 'runExtReconcile', method: 'POST', path: '/api/integrations/sync/reconcile', summary: '대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)', component: 'D05-01', roles: ['SYSTEM', 'IMPLEMENTER'], body: RunReconcileBody },
   { name: 'policyExtLinks', method: 'GET', path: '/api/policies/:id/ext-links', summary: '정책에 연결된 외부 항목(JIRA CR)', component: 'D05-01', sample: { id: 'POL-00001' } },
   { name: 'linkPolicyChangeRequest', method: 'POST', path: '/api/policies/:id/change-request', summary: '정책 ↔ 근거 JIRA CR 연결', component: 'D05-01', roles: ['FEATURE_AUTHOR', 'RELEASE_MANAGER'], body: LinkChangeRequestBody },

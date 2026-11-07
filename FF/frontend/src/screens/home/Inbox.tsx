@@ -94,7 +94,9 @@ export function useInbox() {
   const changes = useApi<{ items: RefChangeRow[] }>('listRefChanges', { query: { status: 'REVIEW' } });
   // GitLab·JIRA·codeBeamer 동기화 충돌 — 사람이 플랫폼 값·외부 값 중 골라야 한다
   const sync = useApi<{ items: { conflictId: number; system: string; key: string; field: string; platformValue: string; externalValue: string; createdAt: string }[] }>('extConflicts', { query: { status: 'OPEN' } });
-  const queries = [bl, pol, approved, prod, wq, kills, reviews, changes, sync];
+  // 80-50 A5 — 승인 뒤 바뀐 codeBeamer 산출물을 근거로 쓴 게이트의 재판정 요청
+  const rejudge = useApi<{ items: { rejudgeId: number; featureId: string; version: string; gate: string; itemKey: string; itemTitle: string; fromVersion: number; toVersion: number; createdAt: string; released: boolean }[] }>('almRejudge', { query: { status: 'OPEN' } });
+  const queries = [bl, pol, approved, prod, wq, kills, reviews, changes, sync, rejudge];
   const reportRoles = reportRolesOf(mine);
   const killCheck = (k: KillRow, request: 'deactivate' | 'restore') => {
     const rr = k.restoreRequest;
@@ -146,6 +148,7 @@ export function useInbox() {
         const block = postReviewBlocker(r, me.id);
         return base({ key: `post:${r.killId}`, queue: 'postReview', item: r.killId, detail: `${r.featureId} · ${IX.postReview(personName(r.requestedBy))}`, who: r.requestedBy, due: r.due, mine: POST_REVIEW_ROLES.some(has) && !block, why: block, to: '/audit/oversight#post-reviews-h', featureId: r.featureId });
       }),
+    ...(rejudge.data?.items ?? []).map((r) => base({ key: `rejudge:${r.rejudgeId}`, queue: 'rejudge', item: `${r.featureId} ${r.version} · ${r.gate}`, detail: alm.rejudge.detail(r.itemTitle, r.fromVersion, r.toVersion, r.released), since: r.createdAt, mine: has('GATE_JUDGE') || has('RELEASE_MANAGER') || has('SAFETY_OFFICER'), to: `/features/${r.featureId}/${r.version}?tab=gates`, featureId: r.featureId })),
     ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${alm.conflictField(c.field)}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER') || (c.field === 'asil' && has('SAFETY_OFFICER')), to: '/integration/connectors?tab=sync' })),
   ]);
   const failed = queries.find((q) => q.isError && !optional(q));

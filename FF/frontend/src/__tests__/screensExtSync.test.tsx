@@ -277,6 +277,17 @@ describe('외부 연계 — 양방향 탭', () => {
   });
 });
 
+describe('검토함 — 산출물 변경 재판정 (80-50 A5)', () => {
+  it('승인 뒤 바뀐 산출물의 게이트 재판정 요청은 Gate 판정자의 내 차례, Gate 탭으로 간다 — 출시 버전 표시', async () => {
+    handler = (url) => (url.startsWith('/api/alm/rejudge') ? { body: { items: [{ rejudgeId: 3, featureId: 'FEAT-00022', version: '1.0.0', gate: 'G8', itemKey: 'CB-10017', itemTitle: '감지 거리 요구', fromVersion: 1, toVersion: 2, status: 'OPEN', createdAt: '2026-11-07T01:00:00.000Z', released: true, resolvedBy: null }] } } : undefined);
+    mount('quality', <ApprovalInboxScreen />, '/admin/approval');
+    const table = await screen.findByRole('table', { name: '산출물 변경 — 게이트 재판정' });
+    const row = within(table).getByText('FEAT-00022 1.0.0 · G8').closest('tr')!;
+    expect(within(row).getByText('감지 거리 요구 v1 → v2 · 출시 버전')).toBeTruthy();
+    expect(within(row).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/features/FEAT-00022/1.0.0?tab=gates');
+  });
+});
+
 describe('검토함 — 외부 연계 충돌', () => {
   it('열린 동기화 충돌은 시스템 연계 담당의 내 차례, 외부 연계 화면으로 간다', async () => {
     handler = (url) => (url.startsWith('/api/integrations/sync/conflicts') ? { body: { items: [{ conflictId: 4, system: 'JIRA', key: 'FFE-9', field: 'status', platformValue: 'Deprecated', externalValue: 'Closed', createdAt: '2026-10-18T01:00:00.000Z' }] } } : undefined);

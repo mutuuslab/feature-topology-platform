@@ -56,6 +56,10 @@ export interface WpItem {
   /** HW 전용 SYS_REQ의 면제 사유(Allocation Rationale, WP-2) */
   allocationRationale?: string | null;
   obsolete?: boolean;
+  /** Requirement ID 칸(SYS_REQ) — FF Feature의 요구 ID와 대조(FR-DEP-005-002) */
+  reqId?: string | null;
+  /** codeBeamer가 이 항목에 의심 링크를 표시함(cbQL hasSuspectedLink) — FF 계산과 대조만 */
+  cbSuspected?: boolean;
 }
 export interface WpRelation {
   from: string;

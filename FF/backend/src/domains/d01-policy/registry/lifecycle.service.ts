@@ -26,6 +26,7 @@ import { ReharaRepo } from '../topology/rehara.repo';
 import { TopologyService } from '../topology/topology.service';
 import { FeatureRefLinker, type RefWarning } from './feature-refs';
 import { ReleaseSignoffService } from './release-signoff.service';
+import { GateHooks } from '../../../kernel/gate-hooks';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -55,6 +56,7 @@ export class LifecycleService {
     private readonly rehara: ReharaRepo,
     private readonly refdb: RefdbRepository,
     private readonly refs: FeatureRefLinker,
+    private readonly hooks: GateHooks,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -93,7 +95,7 @@ export class LifecycleService {
       ko: r.ko,
       auto: r.auto,
       roles: r.roles.map((x) => ROLE_LABEL[x]),
-      blockers: evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers,
+      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers, ...this.hooks.transitionBlockers(f, r.to)],
     }));
   }
 
@@ -110,7 +112,10 @@ export class LifecycleService {
   /** 사람이 실행하는 전이 — 기준 행 경고가 있으면 응답에 warnings를 붙인다 */
   transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string): FeatureVersionRow & { warnings?: RefWarning[] } {
     const f = this.require(featureId, version);
-    const { rule, blockers } = evaluateTransition(f, to, this.context(f, { actor, reason }));
+    const evaluated = evaluateTransition(f, to, this.context(f, { actor, reason }));
+    const rule = evaluated.rule;
+    // 다른 도메인이 더한 조건(80-50 A5 — codeBeamer 산출물·재판정 요청)
+    const blockers = [...evaluated.blockers, ...this.hooks.transitionBlockers(f, to)];
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
     const target = `${featureId}@${version}`;
     if (rule?.auto && actor.role !== 'SYSTEM') {
@@ -136,7 +141,7 @@ export class LifecycleService {
     let cur = f;
     for (let i = 0; i < 4; i++) {
       const rule = autoTransition(cur, this.context(cur));
-      if (!rule) break;
+      if (!rule || this.hooks.transitionBlockers(cur, rule.to).length) break;
       cur = this.apply(SYSTEM_ACTOR(correlationId), cur, rule.to, `자동 전이: ${rule.ko}`);
     }
     return cur;

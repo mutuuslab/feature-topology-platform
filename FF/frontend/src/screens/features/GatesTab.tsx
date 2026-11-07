@@ -14,6 +14,7 @@ import { AsyncView, Button, DataTable, ErrorNote, Field, GateBadge, GateRail, Ic
 import { usePermission } from '../shared';
 import { analysisViewOf, AsilDeviationBlock } from './AnalysisPanel';
 import type { GateView } from '../types';
+import { useWpGateCheck } from './AlmPanels';
 
 const T = ko.detail;
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'baselineRequests', 'baselineChecklist', 'baselines', 'analysisEvidence', 'evidenceLedger'];
@@ -56,7 +57,9 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
   const procedure = procedureGatesFor(selected);
   const short = form.rationale.trim().length < 2;
   const noEvidence = form.inputResult === 'PASS' && !form.evidenceRef.trim();
-  const blocked = whyDisabled([!perm.ok, perm.hint], [stage, stage?.reason], [analysisUnavailable, analysisReason], [needs.length > 0, A.gate.needs], [noEvidence, T.evidenceHint], [short, ko.why.reason]);
+  // 80-50 A5 — codeBeamer 필수 산출물(정의 승인·검증·출시 판정)
+  const wpg = useWpGateCheck(id, ver, selected, form.inputResult);
+  const blocked = whyDisabled([!perm.ok, perm.hint], [stage, stage?.reason], [analysisUnavailable, analysisReason], [needs.length > 0, A.gate.needs], [!!wpg.blocked, wpg.blocked], [noEvidence, T.evidenceHint], [short, ko.why.reason]);
   const submitted = selected;
   return (
     <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
@@ -188,6 +191,7 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
                     </ul>
                   </div>
                 )}
+                {wpg.node}
                 <ErrorNote error={mine && judge.error ? { ...judge.error, message: judge.error.message, code: undefined } : null} />
                 {mine && judge.isSuccess && <div className="ds-ok" role="status">{ko.page.saved}</div>}
                 <Button type="submit" variant="primary" disabled={!!blocked || judge.isPending} reason={blocked}>

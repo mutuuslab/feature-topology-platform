@@ -33,7 +33,7 @@ const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
 const INTEGRATOR = actor('usr-integrator', 'IMPLEMENTER');
 
 const SECRET = { JIRA: 'contract-jira-webhook-secret-0001', CB: 'contract-cb-webhook-secret-0001' };
-const LIVE_ENV = ['IF_MODE_14', 'IF_MODE_01', 'JIRA_FIELDS', 'CODEBEAMER_PROJECT', 'JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_WEBHOOK_SECRET', 'JIRA_EPIC_PROJECT', 'JIRA_CR_PROJECT', 'JIRA_DEFECT_PROJECT', 'JIRA_FIELD_COUNTRY', 'JIRA_FIELD_VEHICLE_MODEL', 'JIRA_FIELD_TRIM', 'JIRA_FIELD_ASIL', 'JIRA_FIELD_OWNER', 'JIRA_FIELD_FEATURE_DB', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN', 'CODEBEAMER_WEBHOOK_SECRET', 'CODEBEAMER_REQ_TRACKER', 'FF_EXT_SYNC_SEED'];
+const LIVE_ENV = ['IF_MODE_14', 'IF_MODE_01', 'JIRA_FIELDS', 'CODEBEAMER_PROJECT', 'FF_ALM_WP_GATE', 'JIRA_URL', 'JIRA_USER', 'JIRA_TOKEN', 'JIRA_WEBHOOK_SECRET', 'JIRA_EPIC_PROJECT', 'JIRA_CR_PROJECT', 'JIRA_DEFECT_PROJECT', 'JIRA_FIELD_COUNTRY', 'JIRA_FIELD_VEHICLE_MODEL', 'JIRA_FIELD_TRIM', 'JIRA_FIELD_ASIL', 'JIRA_FIELD_OWNER', 'JIRA_FIELD_FEATURE_DB', 'CODEBEAMER_URL', 'CODEBEAMER_USER', 'CODEBEAMER_TOKEN', 'CODEBEAMER_WEBHOOK_SECRET', 'CODEBEAMER_REQ_TRACKER', 'FF_EXT_SYNC_SEED'];
 
 describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBeamer', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ff-ext-contract-'));
@@ -80,6 +80,8 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
       CODEBEAMER_REQ_TRACKER: String(trackerId('SYS_REQ')),
       // 80-50 A4 — 산출물 8종 트래커는 프로젝트 트래커 이름으로 찾는다
       CODEBEAMER_PROJECT: '52',
+      // 앞 시험들은 게이트 흐름만 본다 — 산출물 게이트(live 기본 enforce)는 마지막 시험에서 켠다
+      FF_ALM_WP_GATE: 'warn',
       // 운영처럼 프로세스 내 예시 항목을 넣지 않는다 — 외부 항목은 모의 서버에만 있다
       FF_EXT_SYNC_SEED: '0',
     });
@@ -265,4 +267,51 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
     expect(tasks.find((t) => t.summary.includes('SYS.3'))!.custom.customfield_10023).toBe('SYS_ARCH');
     expect((await issue(epicKey)).custom.customfield_10020).toMatch(/^산출물 \d+\/\d+ 완결/);
   });
+
+  // 80-50 A5 — live 기본 enforce: 필수 산출물 없으면 G2 PASS 막힘 → codeBeamer에서 채우면 통과(판정 증거) →
+  //   승인 뒤 바뀐 요구는 재판정 요청 + codeBeamer 댓글(multipart), codeBeamer 의심 표시(hasSuspectedLink)와 대조, 다시 판정하면 닫힘
+  it('산출물 게이트(enforce) — 막힘 → 채우면 G2 PASS → 승인 뒤 변경은 재판정 요청·codeBeamer 댓글 → 재판정으로 닫힘', async () => {
+    delete process.env.FF_ALM_WP_GATE;
+    const f = await http().post('/api/features').set(AUTHOR).send(withRef({ name: '계약 시험 산출물 게이트', description: 'A5', requirementIds: ['REQ-CT-0501'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })).expect(201);
+    const id = f.body.featureId;
+    await confirmSafety(http, id, '0.1.0');
+    const judge = (gate: string) => http().post(`/api/features/${id}/versions/0.1.0/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${gate}` });
+    expect((await judge('G1')).status).toBe(201);
+    await http().post(`/api/alm/features/${id}/0.1.0/work-products/refresh`).set(INTEGRATOR).send({}).expect(200);
+    const blocked = await judge('G2');
+    expect(blocked.status).toBe(422);
+    expect(JSON.stringify(blocked.body.error.details)).toContain('시스템 요구 승인 항목 0건');
+    const seeded = await fetch(`${cb.url}/_mock/seed`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        items: [
+          { ref: 'sys', tracker: 'SYS_REQ', name: '게이트 시험 시스템 요구', fields: { 'FF Feature ID': id, 'Requirement ID': 'REQ-CT-0501' }, status: 'Approved' },
+          { ref: 'cs', tracker: 'CS_REQ', name: '정책 위·변조 방지', fields: { 'FF Feature ID': id }, status: 'Approved' },
+          { ref: 'sw', tracker: 'SW_REQ', name: '게이트 시험 SW 요구', fields: { 'FF Feature ID': id }, status: 'Approved' },
+        ],
+        relations: [
+          { from: 'sw', to: 'sys', kind: 'association', type: 'derived' },
+          { from: 'sw', to: 'cs', kind: 'association', type: 'allocated' },
+        ],
+      }),
+    });
+    const ids = ((await seeded.json()) as { ids: Record<string, number> }).ids;
+    await http().post(`/api/alm/features/${id}/0.1.0/work-products/refresh`).set(INTEGRATOR).send({}).expect(200);
+    const g2 = await judge('G2');
+    expect(g2.status).toBe(201);
+    // 승인 뒤 시스템 요구 개정(codeBeamer 화면에서 사람이) — 아래 관계가 codeBeamer에서도 의심 표시
+    await fetch(`${cb.url}/_mock/act`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: ids.sys, as: 'lee.engineer', fields: { Description: '감지 거리 개정' } }) });
+    const v = (await http().post(`/api/alm/features/${id}/0.1.0/work-products/refresh`).set(INTEGRATOR).send({}).expect(200)).body;
+    expect(v.changes[0]).toMatchObject({ itemKey: `CB-${ids.sys}`, fromVersion: 1, toVersion: 2 });
+    expect(v.items.find((i: any) => i.key === `CB-${ids.sw}`)).toMatchObject({ suspect: true, cbSuspected: true });
+    expect(v.rejudge).toEqual([expect.objectContaining({ gate: 'G2', status: 'OPEN', itemKey: `CB-${ids.sys}` })]);
+    await settle();
+    const comments = cb.state().items[String(ids.sys)].comments;
+    expect(comments.some((c) => /승인 뒤 변경\(v1 → v2\).*G2 재판정 요청/.test(c.comment) && c.createdBy === 'ff-sync')).toBe(true);
+    expect((await judge('G2')).status).toBe(201);
+    const after = (await http().get(`/api/alm/rejudge?featureId=${id}`).expect(200)).body.items;
+    expect(after[0]).toMatchObject({ status: 'RESOLVED', resolvedBy: 'choi.judge' });
+    // HTTP 왕복이 많아(두 모의 서버 + 플랫폼) 전체 시험 부하에서는 기본 20초를 넘는다
+  }, 60_000);
 });

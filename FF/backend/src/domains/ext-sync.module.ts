@@ -13,11 +13,12 @@ import { AlmReconcileService } from './d05-ext/api-gateway/ext-sync/alm-reconcil
 import { AlmController } from './d05-ext/api-gateway/ext-sync/alm.controller';
 import { AlmChildrenService } from './d05-ext/api-gateway/ext-sync/alm-children.service';
 import { AlmWorkProductsService } from './d05-ext/api-gateway/ext-sync/alm-workproducts.service';
+import { AlmGateService } from './d05-ext/api-gateway/ext-sync/alm-gate.service';
 
 @Module({
   imports: [D01PolicyModule, PolicyModule],
   controllers: [ExtSyncController, AlmController],
-  providers: [ExtSyncRepo, MockExtStore, ExtAdapters, ExtSyncService, ChangeRecordService, FeatureEpics, AlmReconcileService, AlmChildrenService, AlmWorkProductsService],
+  providers: [ExtSyncRepo, MockExtStore, ExtAdapters, ExtSyncService, ChangeRecordService, FeatureEpics, AlmReconcileService, AlmChildrenService, AlmWorkProductsService, AlmGateService],
   exports: [ExtSyncService, AlmChildrenService, AlmWorkProductsService],
 })
 export class ExtSyncModule {}

@@ -936,4 +936,17 @@ CREATE TABLE alm_relation (feature_id TEXT NOT NULL, from_key TEXT NOT NULL, to_
 CREATE TABLE alm_wp_result (feature_id TEXT NOT NULL, version TEXT NOT NULL, hash TEXT NOT NULL, computed_at TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
 `,
   },
+  {
+    // 80-50 A5 게이트·변경 영향(§5.5·§5.6) — 판정 증거(완결성 해시·항목 version), 승인 뒤 변경 기록, FF 계산 의심 관계, 게이트 재판정 요청
+    name: '143_alm_impact',
+    sql: `
+CREATE TABLE alm_gate_evidence (gate_record_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, gate TEXT NOT NULL, hash TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX alm_gate_evidence_fv ON alm_gate_evidence (feature_id, version, gate);
+CREATE TABLE alm_change (change_id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, item_key TEXT NOT NULL, from_version INTEGER NOT NULL, to_version INTEGER NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX alm_change_feature ON alm_change (feature_id);
+CREATE TABLE alm_suspect (feature_id TEXT NOT NULL, from_key TEXT NOT NULL, to_key TEXT NOT NULL, kind TEXT NOT NULL, from_version INTEGER NOT NULL, since TEXT NOT NULL, cleared_at TEXT, doc TEXT NOT NULL, PRIMARY KEY (feature_id, from_key, to_key, kind));
+CREATE TABLE alm_rejudge (rejudge_id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, version TEXT NOT NULL, gate TEXT NOT NULL, item_key TEXT NOT NULL, to_version INTEGER NOT NULL, status TEXT NOT NULL CHECK (status IN ('OPEN','RESOLVED')), created_at TEXT NOT NULL, doc TEXT NOT NULL, UNIQUE (feature_id, version, gate, item_key, to_version));
+CREATE INDEX alm_rejudge_status ON alm_rejudge (status, feature_id);
+`,
+  },
 ];

@@ -10,6 +10,7 @@ import { ComponentRegistry } from './components';
 import { DB, migrate, type Db } from './db';
 import { applySeed, openDb } from './db-open';
 import { DomainErrorFilter } from './errors';
+import { GateHooks } from './gate-hooks';
 import { EventService } from './event.service';
 import { HousekeepingService } from './housekeeping.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
@@ -30,6 +31,7 @@ import { VehicleAuthService } from './vehicle-auth';
   imports: [DiscoveryModule],
   controllers: [KernelController, AuthController, PrivacyController],
   providers: [
+    GateHooks,
     {
       provide: DB,
       // FF_DB 기본 = 메모리 DB(데모·테스트). 파일 경로를 주면 재시작 후에도 유지된다. 운영 모드는 파일 필수·시드 기본 none(runtime-config).
@@ -79,7 +81,7 @@ import { VehicleAuthService } from './vehicle-auth';
     { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_FILTER, useClass: DomainErrorFilter },
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, GateHooks],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

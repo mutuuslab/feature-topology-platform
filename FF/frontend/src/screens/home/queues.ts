@@ -51,6 +51,7 @@ export const QUEUE_DEPTS: Record<QueueKey, string[]> = {
   deploy: ['DEP-INT', 'DEP-OPS'],
   sync: ['DEP-INT', 'DEP-SE'],
   homologation: ['DEP-HOM'],
+  rejudge: ['DEP-SE', 'DEP-QA', 'DEP-FS'],
 };
 
 export const inDept = (i: Pick<QueueItem, 'queue' | 'gate'>, dept: string | null | undefined) =>
@@ -73,6 +74,7 @@ export const QUEUE_RANK: Record<QueueKey, number> = {
   safety: 7,
   sync: 8,
   homologation: 4,
+  rejudge: 3,
 };
 
 const t = (iso: string | null) => (iso ? Date.parse(iso) : Number.POSITIVE_INFINITY);

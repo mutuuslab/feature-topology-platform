@@ -230,6 +230,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 - 두 곳에서 막는다: (1) 게이트 판정 — 해당 게이트에 PASS를 주려면 위 조건 충족(`gate.service`), (2) 수명주기 전이 — `lifecycle.ts` 전이 조건에 같은 규칙 추가. 판정 증거에 완결성 결과 해시와 codeBeamer 항목·버전 목록을 남긴다.
 - 지금 필수 입력 `requirementIds`는 codeBeamer에서 `FF Feature ID`로 찾은 SYS_REQ 항목 ID로 **자동 채운다**(사람 입력 칸은 남기되 codeBeamer 결과와 다르면 경고).
 - 기존 G2 stale(요구 변경 시 재검토)은 §5.6으로 일반화한다.
+- **A5 구현(2026-11-07)** `contracts WP_GATE_STAGES`(판정 게이트: 정의 승인 G2·검증 G5·출시 G8 — 정의 승인 단계는 FR-REG-005-019에 따라 WP-2도 본다), 커널 `GateHooks`(d01 게이트·전이가 d05를 모르게) + `ext-sync/alm-gate.service.ts`. 정의 승인 전이는 요구 ID가 codeBeamer에 있어야(FR-DEP-005-002). **막는 방식 `FF_ALM_WP_GATE`**: enforce(막음)·warn(화면에 알리기만)·off, 기본은 codeBeamer 실제 연결(IF_MODE_01=live)이면 enforce, 모의면 warn — 데모·시험 흐름(새 Feature의 게이트 판정)이 산출물 없이도 돌아가게(사용자 확인 필요). 판정 직전 다시 읽기는 모의 연결만 즉시(동기 경로), 실제 연결은 5분 주기·화면 '다시 읽기' 결과. 판정 증거 `alm_gate_evidence`(완결성 sha256·항목 version 목록), 산출물 추적 전 PASS 판정은 처음 읽을 때 보충(backfilled). 자동 전이(DEVELOPING→VERIFIED)도 같은 조건.
 
 ### 5.6 변경 영향 (D-ALM-14)
 
@@ -237,6 +238,8 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 2. FF가 보관한 추적 그래프로 **아래 단계 관계를 suspect**로 표시한다 — **FF가 계산**한다(codeBeamer REST는 관계별 suspect를 주지 않는다, `80-51` §4). 대사 때 cbQL `hasSuspectedLink = 'true'`로 codeBeamer 쪽 표시와 항목 단위로 대조하고, 어긋나면 연계 화면에 차이로 보인다. FF suspect는 아래 항목이 다시 승인되거나(새 `version` + Approved) 담당자가 FF에서 '영향 없음' 사유를 남기면 풀린다(codeBeamer의 suspect 해제는 사람이 codeBeamer 화면에서).
 3. 그 산출물을 증거로 쓴 게이트에 **재판정 요청**을 검토함에 올린다(게이트 담당 역할). 재판정 전까지 다음 전이는 막힌다. 이미 RELEASED인 버전이면 재판정 요청 + "출시 버전 산출물 변경" 경고(긴급 차단은 사람 판단).
 4. Feature 상세·Epic "FF 현황"에 "산출물 변경됨"과 영향 목록.
+
+**A5 구현(2026-11-07)** 수집 때 이전 관측과 비교해 승인 항목의 version이 오르면 `alm_change` 기록, 그 항목을 위로 둔 관계를 `alm_suspect`(FF 계산), 그 항목을 근거로 쓴 판정마다 `alm_rejudge`(검토함 '산출물 변경 — 게이트 재판정', 출시 버전이면 표시), codeBeamer 항목에 알림 댓글. 아래 항목이 다시 승인(새 version + 승인)되면 의심이 풀리고, 담당은 '영향 없음' 사유로 풀 수 있다(`POST /api/alm/features/:id/:ver/suspects/clear`). 재판정 요청은 그 게이트를 다시 판정하면 닫히고, 출시 버전처럼 판정할 수 없으면 판정 담당이 사유로 닫는다(`POST /api/alm/rejudge/:id/close`). 열린 요청은 enforce에서 다음 전이를 막는다(`REJUDGE_OPEN`). live는 cbQL `hasSuspectedLink`로 codeBeamer 표시와 대조(`suspectDiff`). 바뀐 필드 이력(`/history`)은 아직 읽지 않는다(version만).
 
 ### 5.7 FF가 codeBeamer에 쓰는 것
 
@@ -283,7 +286,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 |---|---|
 | **141_alm_reconcile**(A2 구현) | `sync_reconcile_run`. `ext_link.role`은 두지 않았다 — 연결 종류(EPIC·STORY·TASK)와 `extra`(기능 ID·산출물 종류)로 가른다. Epic 단위 이전 기록은 `ext_item.extra.supersededBy` |
 | **142_alm_workproducts**(A4 구현) | `alm_item`(feature_id·item_key·kind·status·revision·observed_at·doc), `alm_relation`(feature_id·from·to·kind·suspect), `alm_wp_result`(feature_id·version·hash·computed_at·doc) — 한 요구가 여러 Feature에 걸릴 수 있어 Feature별로 둔다 |
-| 086_alm_gate_evidence | 게이트 판정 증거에 완결성 해시·항목 목록, 재판정 요청 표 |
+| **143_alm_impact**(A5 구현) | `alm_gate_evidence`·`alm_change`·`alm_suspect`·`alm_rejudge` |
 
 ## 8. 화면
 
@@ -309,7 +312,7 @@ TEST_SPEC ──검증──▶ SYS_REQ (SYS.5) · SYS_ARCH (SYS.4) · SW_REQ (S
 | A2 | JIRA: Epic = Feature 전환·필드 주인 표·v3 어댑터·FF → Epic 필드 쓰기·증분/전체 대사 | 계약 시험(생성 양방향·충돌·유실 대사) — **완료(2026-11-07)** |
 | A3 | JIRA: Story ↔ FUNC, Task = 산출물 작성 일, Bug ↔ 현장 문제 | 계약 시험 — **완료(2026-11-07, Task는 A4로)** |
 | A4 | codeBeamer: 트래커 8종·항목·관계 수집, 완결성 규칙, Feature 상세 산출물 표 | 규칙 단위 시험 + 계약 시험 — **완료(2026-11-07, + Task = 산출물 작성 일)** |
-| A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e |
+| A5 | 게이트·전이 연결, 변경 영향(suspect·재판정 요청) | 백엔드·e2e — **완료(2026-11-07)** |
 | A6 | JIRA 앱(실서버 형태 확정 뒤) | 실서버 또는 공식 개발 환경 — **실서버를 쓰지 않으므로 모의 서버의 앱 흉내 패널(`/_mock/app/epic-form`)까지만**(D-ALM-17) |
 | S1 | 데모 seamless 표시(D-ALM-17) | **완료(2026-11-05)** — `connectionPresentation`·`useSeamless`·`shownMode`, 외부 창·연계 화면·Unleash·체험 구매, 시드 본문. 시험: 백엔드 연결·시드, 프론트 연결·외부 창, e2e `demo-seamless.spec.ts` |
 

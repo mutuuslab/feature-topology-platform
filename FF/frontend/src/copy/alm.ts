@@ -33,6 +33,22 @@ export const alm = {
     refresh: 'codeBeamer 다시 읽기',
     suspect: (n: number) => `의심 관계 ${n}건 — 위 항목이 승인 뒤 바뀌었습니다`,
   },
+  rejudge: {
+    detail: (title: string, from: number, to: number, released: boolean) => `${title} v${from} → v${to}${released ? ' · 출시 버전' : ''}`,
+  },
+  gate: {
+    title: 'codeBeamer 필수 산출물',
+    ok: '이 판정에 필요한 산출물이 완결되었습니다',
+    blocked: '필수 산출물이 완결되지 않았습니다',
+    warn: '산출물이 완결되지 않았습니다 — 판정은 막지 않지만 담당자가 확인하세요',
+    rejudge: (n: number) => `승인 뒤 바뀐 산출물로 재판정 요청 ${n}건`,
+    close: '영향 없음으로 닫기',
+    reason: '닫는 사유',
+  },
+  changes: {
+    title: '승인 뒤 바뀐 산출물',
+    line: (key: string, title: string, from: number, to: number, n: number) => `${key} ${title} — v${from} → v${to}, 영향 ${n}건`,
+  },
   /** 충돌 칸 이름 — 상태 또는 Epic 필드 */
   conflictField: (field: string) => (field === 'status' ? '상태' : (EPIC_FIELD[field as EpicFieldKey]?.ko ?? field)),
 };

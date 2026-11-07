@@ -333,10 +333,17 @@ export class LiveAdapter implements ExtAdapter {
       frontier = next;
     }
     const cf = (it: CbItem, name: string) => (it.customFields ?? []).find((x) => x.name === name)?.value;
+    // codeBeamer 쪽 의심 표시(항목 단위 hasSuspectedLink) — FF 계산과 대조만(80-50 §5.6)
+    const suspected = new Set<number>();
+    const tids = [...trackers.values()].map((t) => t.id);
+    if (found.size && tids.length) {
+      const r = await this.req<{ items?: { id: number }[] }>('POST', '/api/v3/items/query', { queryString: `tracker.id IN (${tids.join(', ')}) AND hasSuspectedLink = 'true'`, page: 1, pageSize: 500 });
+      for (const x of r.data?.items ?? []) if (found.has(x.id)) suspected.add(x.id);
+    }
     return {
       items: [...found.values()].map((it) => {
         const status = it.status?.name ?? '';
-        return { key: `CB-${it.id}`, kind: kindOfTracker.get(it.tracker.id)!, title: it.name, status, approved: cbApproved(status), version: Number(it.version), ffVersion: (cf(it, 'FF Version') as string | undefined) || null, allocationRationale: (cf(it, 'Allocation Rationale') as string | undefined) || null, obsolete: status === 'Obsolete', url: `${c.url}/cb/issue/${it.id}`.replace('/cb/cb/', '/cb/') };
+        return { key: `CB-${it.id}`, kind: kindOfTracker.get(it.tracker.id)!, title: it.name, status, approved: cbApproved(status), version: Number(it.version), ffVersion: (cf(it, 'FF Version') as string | undefined) || null, allocationRationale: (cf(it, 'Allocation Rationale') as string | undefined) || null, obsolete: status === 'Obsolete', reqId: (cf(it, 'Requirement ID') as string | undefined) || null, cbSuspected: suspected.has(it.id), url: `${c.url}/cb/issue/${it.id}`.replace('/cb/cb/', '/cb/') };
       }),
       relations,
     };

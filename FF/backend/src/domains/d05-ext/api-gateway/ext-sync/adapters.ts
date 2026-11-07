@@ -131,7 +131,7 @@ class MockAdapter implements ExtAdapter {
     const mine = this.store.all('CODEBEAMER').filter((i) => i.fields.ffFeatureId === q.featureId || (typeof i.fields.reqId === 'string' && q.requirementIds.includes(i.fields.reqId)));
     const kindOf = (i: MockItem): WpKind => ((WP_KINDS as readonly string[]).includes(String(i.fields.wpKind)) ? (i.fields.wpKind as WpKind) : 'SYS_REQ');
     return {
-      items: mine.map((i) => ({ key: i.key, kind: kindOf(i), title: i.title, status: i.status, approved: cbApproved(i.status), version: i.revision, ffVersion: (i.fields.ffVersion as string | undefined) ?? null, allocationRationale: (i.fields.allocationRationale as string | undefined) ?? null, obsolete: i.status === 'Obsolete', url: extUrl('CODEBEAMER', 'REQUIREMENT', i.key) })),
+      items: mine.map((i) => ({ key: i.key, kind: kindOf(i), title: i.title, status: i.status, approved: cbApproved(i.status), version: i.revision, ffVersion: (i.fields.ffVersion as string | undefined) ?? null, allocationRationale: (i.fields.allocationRationale as string | undefined) ?? null, obsolete: i.status === 'Obsolete', reqId: typeof i.fields.reqId === 'string' ? i.fields.reqId : null, url: extUrl('CODEBEAMER', 'REQUIREMENT', i.key) })),
       relations: mine.flatMap((i) => ((i.fields.relations ?? []) as { to: string; kind: WpRelationKind }[]).map((r) => ({ from: i.key, to: r.to, kind: r.kind }))),
     };
   }

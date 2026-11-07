@@ -56,7 +56,7 @@ export const FEATURE_TRANSITIONS: TransitionRule[] = [
 
 export const LIFECYCLE_RANK: Record<Lifecycle, number> = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
-export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED';
+export type BlockerCode = 'NO_RULE' | 'GATE_NOT_PASSED' | 'GATE_UNJUDGED' | 'GATE_UNSIGNED' | 'INPUT_MISSING' | 'DEPENDENCY_UNRESOLVED' | 'POLICY_MISSING' | 'RELEASE_SIGNOFF_MISSING' | 'REHARA_OPEN' | 'ROLE' | 'SEPARATION_OF_DUTY' | 'REASON_REQUIRED' | 'REFDB_LINK_BLOCKED' | 'WORK_PRODUCT' | 'REJUDGE_OPEN';
 
 export interface Blocker {
   code: BlockerCode;

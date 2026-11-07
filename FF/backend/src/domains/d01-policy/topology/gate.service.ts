@@ -30,6 +30,7 @@ import { ReharaRepo } from './rehara.repo';
 import { changeRecordFindings, REHARA_BLOCKED_GATES, REHARA_LABEL, type ChangeRecordBody } from '@ff/contracts';
 import { VirtualRunRepo } from '../../d06-qsec/scenario-validation/virtual-run.repo';
 import { AnalysisEvidenceService } from './analysis-evidence.service';
+import { GateHooks } from '../../../kernel/gate-hooks';
 
 @Injectable()
 @PlatformComponent('D01-02')
@@ -46,6 +47,7 @@ export class GateService {
     private readonly decisions: GateDecisionService,
     private readonly rehara: ReharaRepo,
     private readonly analysis: AnalysisEvidenceService,
+    private readonly hooks: GateHooks,
   ) {}
 
   view(featureId: string, version: string) {
@@ -172,6 +174,12 @@ export class GateService {
     if (evidence.length) {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, evidence.join(' / '), 'D01-02');
       throw new DomainError('GUARD_FAILED', `${body.gate}을(를) PASS로 판정할 근거가 부족합니다.`, { blockers: evidence.map((message) => ({ code: 'ANALYSIS_EVIDENCE', message, ref: body.gate })) });
+    }
+    // 다른 도메인이 더한 조건(80-50 A5 — codeBeamer 필수 산출물)
+    const hooked = this.hooks.gateBlockers(f, body.gate, body.inputResult);
+    if (hooked.length) {
+      this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, hooked.join(' / '), 'D01-02');
+      throw new DomainError('GUARD_FAILED', `${body.gate}을(를) PASS로 판정할 codeBeamer 산출물이 완결되지 않았습니다.`, { blockers: hooked.map((message) => ({ code: 'WORK_PRODUCT', message, ref: body.gate })) });
     }
     const deviation = body.gate === 'G2' && body.inputResult === 'PASS' && body.asilReasonReviewed ? this.analysis.asilDeviation(f) : null;
     return this.db.tx(() => {

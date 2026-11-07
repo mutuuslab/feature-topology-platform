@@ -27,6 +27,8 @@ export const AUDIT_ACTION_KO: Record<string, string> = {
   EXT_CR_LINK: '외부 변경 요청 연결',
   EXT_SYNC_CONFLICT_RESOLVE: '외부 연계 충돌 해결',
   EXT_SYNC_RECONCILE: '외부 연계 대사 실행',
+  ALM_REJUDGE_CLOSE: '산출물 변경 재판정 요청 닫기',
+  ALM_SUSPECT_CLEAR: '산출물 의심 관계 풀기',
   FEATURE_CREATE: 'Feature 등록',
   FEATURE_TRANSITION: 'Feature 단계 전이',
   FEATURE_UPDATE: 'Feature 초안 수정',

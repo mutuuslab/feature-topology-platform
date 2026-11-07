@@ -12,6 +12,7 @@ export const QUEUE_LABEL = {
   gate: 'Gate 판정 대기',
   postReview: '긴급 차단 사후 검토',
   homologation: '형식승인 영향 판단 대기',
+  rejudge: '산출물 변경 — 게이트 재판정',
 } as const;
 export type QueueKey = keyof typeof QUEUE_LABEL;
 
@@ -27,6 +28,7 @@ export const QUEUE_ROLE: Record<QueueKey, string> = {
   gate: 'Gate 판정자·Safety Manager',
   postReview: '독립 검토자(요청자·승인자 제외)',
   homologation: '법규 담당자',
+  rejudge: 'Gate 판정자·출시 담당·Safety Manager',
 };
 
 /** 보고서 승인 역할 → 화면 이름(차단·복원 '내 차례'가 어느 칸인지) */

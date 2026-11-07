@@ -595,7 +595,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'createLegacyLink', method: 'POST', path: '/api/legacy/links', summary: '연계 설정 등록 — 같은 시스템 중복 409, 설정에서 데이터 브리지 구성', component: 'D05-03', roles: LEGACY_LINK_EDITORS, body: CreateLegacyLinkBody },
   { name: 'updateLegacyLink', method: 'PATCH', path: '/api/legacy/links/:id', summary: '연계 설정 수정(사유) — 없는 설정 404, 브리지 다시 구성', component: 'D05-03', roles: LEGACY_LINK_EDITORS, body: UpdateLegacyLinkBody },
   { name: 'deleteLegacyLink', method: 'DELETE', path: '/api/legacy/links/:id', summary: '연계 설정 삭제(사유) — 활성 연계는 422', component: 'D05-03', roles: LEGACY_LINK_EDITORS, body: DeleteLegacyLinkBody },
-  { name: 'runLegacyBridge', method: 'POST', path: '/api/legacy/links/:id/run', summary: '배치·파일 브리지 지금 실행 — 활성 설정만, IF-12 주문 가져오기·변환', component: 'D05-03', roles: LEGACY_BRIDGE_RUNNERS, body: RunLegacyBridgeBody },
+  { name: 'runLegacyBridge', method: 'POST', path: '/api/legacy/links/:id/run', summary: '배치·파일 브리지 지금 실행 — 활성 설정만, 해외공장 주문 가져오기·변환(IF-12)', component: 'D05-03', roles: LEGACY_BRIDGE_RUNNERS, body: RunLegacyBridgeBody },
   { name: 'createLegacyRule', method: 'POST', path: '/api/legacy/mappings', summary: '변환 규칙 등록 — 레거시 코드 → FEAT ID(같은 코드 409)', component: 'D05-03', roles: LEGACY_RULE_EDITORS, body: CreateLegacyRuleBody },
   { name: 'updateLegacyRule', method: 'PATCH', path: '/api/legacy/mappings/:code', summary: '변환 규칙 수정(사유) — 기본 규칙은 등록 규칙으로 덮어쓴다', component: 'D05-03', roles: LEGACY_RULE_EDITORS, body: UpdateLegacyRuleBody },
   // Legacy ↔ SDV 메시지 변환(P2, FR-SDVI-001-002)

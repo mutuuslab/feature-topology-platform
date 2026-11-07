@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { PolicySchema } from './policy';
 import { ApproverRole, DeactClass, FClass, REASON_CATEGORIES } from './safety';
+import { KillScopeFilter } from '../rules/kill-scope';
 
 export const SafeMode = z.enum(['SAFE_DEFAULT', 'SAFE_STOP']);
 export type SafeMode = z.infer<typeof SafeMode>;
@@ -211,11 +212,15 @@ export const KillRequestSchema = z.object({
   releaseReason: z.string().nullable(),
   restorePublicationId: z.string().nullable(),
   anomalyId: z.string().nullable().default(null),
+  /** 요청 때 쓴 차단 대상 범위(P11a) — 이전 행에는 없다 */
+  scope: KillScopeFilter.nullable().optional(),
 });
 export type KillRequest = z.infer<typeof KillRequestSchema>;
 
 export const KillCreateBody = z
   .object({
+    /** 차단 대상 범위(FR-KSW-001-002) — 적용 지역·차종·트림·Variant 조건·SW 버전. vins와 함께 주면 둘 다 맞는 차량 */
+    scope: KillScopeFilter.optional(),
     featureId: z.string().regex(/^FEAT-\d{5}$/),
     featureVersion: z.string().min(1),
     /** 비우면 영향 범위의 모든 차량 */

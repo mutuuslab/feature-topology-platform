@@ -13,6 +13,13 @@ import {
   approverRef,
   authBlock,
   blockedVins,
+  impactGroups,
+  requiredSw,
+  scopeKinds,
+  scopeMatches,
+  variantRow,
+  type KillParties,
+  type KillScopeFilter,
   jcs,
   KillApproveBody,
   KillCreateBody,
@@ -101,7 +108,7 @@ export class KillService {
 
   /** 차단 영향 범위 — 대상 Feature + 이를 REQUIRES하는 Feature(전이), 그 배포 flag, 적용 범위에 드는 차량. 게이트가 보는 등급·24시간 누적도 함께 */
   /** category — 새 요청의 사유 분류. 생략하면 긴급(안전·보안·규제) 요청으로 본다 */
-  preview(featureId: string, featureVersion: string, vins?: string[], category?: ReasonCategory) {
+  preview(featureId: string, featureVersion: string, vins?: string[], category?: ReasonCategory, scope?: KillScopeFilter | null) {
     const f = this.features.get(featureId, featureVersion);
     if (!f) throw new DomainError('NOT_FOUND', `${featureId} ${featureVersion}을(를) 찾을 수 없습니다.`);
     const ids = [featureId];
@@ -122,15 +129,29 @@ export class KillService {
     const inScopeVins = new Set(inScope.map((x) => x.vin));
     const unknown = (vins ?? []).filter((v) => !inScopeVins.has(v));
     const vehicles = inScope;
-    const vehicleVins = new Set(vehicles.map((x) => x.vin));
+    // 차단 대상 범위(FR-KSW-001-002) — 적용 지역·차종·트림·Variant 조건·SW 버전. 비우면 전체
+    const scoped = vehicles.filter((v) => scopeMatches(scope, v));
+    const vehicleVins = new Set(scoped.map((x) => x.vin));
+    // Variant 조건 확인(FR-KSW-002-003) — Variant Rule 대응(결정 D8): Feature의 Variant 조건(국가·차종·트림·UPG-VC)과 요구 SW Version
+    const vf = { ...f, featureId, version: featureVersion, upgVc: f.upgVc ?? [], swIds: f.swIds ?? [], swVersions: f.swVersions ?? [], ecuPnos: f.ecuPnos ?? [] };
+    const row = (v: (typeof vehicles)[number]) => {
+      const r = variantRow(vf, v);
+      return { vin: v.vin, label: v.label, link: v.link, gleo: v.gleo, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim, upgVc: v.upgVc, swVersion: v.swVersion, verdict: r.verdict, reason: r.reason };
+    };
+    const scopedRows = scoped.map(row);
     const snap = this.gate.snapshot(featureId, featureVersion);
     return {
       feature: { featureId, version: featureVersion, name: f.name, lifecycle: f.lifecycle, asil: f.asil },
       featureIds: ids,
       dependents,
       flagKeys: [...new Set(deployed.map((p) => p.flagKey))].sort(),
-      vehicles: vehicles.map((v) => ({ vin: v.vin, label: v.label, link: v.link, gleo: v.gleo })),
+      vehicles: vehicles.map(row),
       unknownVins: unknown,
+      scoped: scopedRows,
+      scopeKinds: scopeKinds(scope),
+      variantRule: { featureId, version: featureVersion, country: f.country, vehicleModel: f.vehicleModel, trim: f.trim, upgVc: vf.upgVc, requiredSw: requiredSw(vf) },
+      // 영향 차량 그룹(FR-KSW-003-001) — 범위 유형이 같은 차량 묶음과 Variant 판정 분포
+      groups: impactGroups(scopedRows),
       // 진행 중 차단 — 대상 차량이 겹칠 때만 새 요청을 막는다. 체험 만료 같은 상업 비활성화(차량 한 대)는 긴급 차단(안전·보안·규제)을 막지 않는다
       // (5년 운영 재생에서 발견: 만료된 체험 한 대의 상업 비활성화가 기능 전체의 안전 Kill을 '이미 차단 중'으로 거부했다)
       activeKill:
@@ -197,10 +218,10 @@ export class KillService {
       this.audit.failed(actor, 'KILL_REQUEST', body.featureId, 'type-to-confirm 불일치', 'D03-03');
       throw new DomainError('VALIDATION', `확인 입력이 차단 대상 Feature ID(${body.featureId})와 다릅니다.`);
     }
-    const pv = this.preview(body.featureId, body.featureVersion, body.vins, body.reasonCategory);
+    const pv = this.preview(body.featureId, body.featureVersion, body.vins, body.reasonCategory, body.scope);
     if (pv.activeKill) throw new DomainError('CONFLICT', `${body.featureId}은(는) 이미 차단 중이거나 승인 대기 중입니다 (${pv.activeKill}).`, { killId: pv.activeKill });
     if (pv.unknownVins.length) throw new DomainError('VALIDATION', `영향 범위 밖의 차량이 있습니다: ${pv.unknownVins.join(', ')}`, { unknownVins: pv.unknownVins });
-    if (!pv.vehicles.length) throw new DomainError('GUARD_FAILED', '차단할 대상 차량이 없습니다.');
+    if (!pv.scoped.length) throw new DomainError('GUARD_FAILED', pv.scopeKinds.length ? '차단 대상 범위에 맞는 차량이 없습니다 — 범위를 다시 고르세요.' : '차단할 대상 차량이 없습니다.');
     const reg = pv.registry;
     if (!reg) throw new DomainError('NOT_FOUND', `${body.featureId} ${body.featureVersion}이(가) Registry에 없습니다.`);
     if (reg.deact_class === 'DC4' || reg.gsr_mandatory) {
@@ -222,7 +243,7 @@ export class KillService {
         featureVersion: body.featureVersion,
         featureIds: pv.featureIds,
         flagKeys: pv.flagKeys,
-        vins: pv.vehicles.map((v) => v.vin),
+        vins: pv.scoped.map((v) => v.vin),
         reason: body.reason,
         status: 'REQUESTED',
         requestedBy: actor.id,
@@ -243,7 +264,8 @@ export class KillService {
         expiresAt: new Date(now.getTime() + APPROVAL_TTL_MS).toISOString(),
         recallCampaignId: body.recallCampaignId ?? null,
         containmentJustification: body.containmentJustification ?? null,
-        ...(safetyKill ? { defectDeterminedAt: body.defectDeterminedAt ?? null, recallReports: recallReportDue(this.countriesOf(pv.vehicles.map((v) => v.vin)), body.defectDeterminedAt ?? null) } : {}),
+        ...(safetyKill ? { defectDeterminedAt: body.defectDeterminedAt ?? null, recallReports: recallReportDue(this.countriesOf(pv.scoped.map((v) => v.vin)), body.defectDeterminedAt ?? null) } : {}),
+        ...(pv.scopeKinds.length ? { scope: body.scope } : {}),
         userNoticeRef: opts.userNoticeRef ?? null,
         gate: null,
         command: null,
@@ -592,7 +614,24 @@ export class KillService {
 
   detail(id: string) {
     const k = this.effective(this.load(id));
-    return { ...this.withProgress(k), ...this.outlook(k) };
+    return { ...this.withProgress(k), ...this.outlook(k), parties: this.parties(k) };
+  }
+
+  /** 관련 담당자(FR-KSW-003-002) — Feature Owner·요청자·승인자·협력사(구현 SW 납품 정보 IF-08 — SW 마스터의 공급사) */
+  parties(k: KillRequest): KillParties {
+    const f = this.features.get(k.featureId, k.featureVersion);
+    const sw = new Set(f?.swIds ?? []);
+    const seen = new Set<string>();
+    const suppliers = this.topology
+      .allSw()
+      .filter((s) => sw.has(s.swId) && !!s.supplier)
+      .map((s) => ({ supplier: s.supplier, swId: s.swId, version: s.version, ecuPno: s.ecuPno || null }))
+      .filter((s) => (seen.has(`${s.supplier}/${s.swId}/${s.version}`) ? false : (seen.add(`${s.supplier}/${s.swId}/${s.version}`), true)));
+    return { owner: f?.ownerId ?? null, requester: k.requestedBy, approvers: (k.approvals ?? []).map((a) => a.approverId), suppliers };
+  }
+
+  partiesOf(id: string) {
+    return this.parties(this.load(id));
   }
 
   /** 승인 후보 계정 — 알림 수신 계정 표(데모 IAM)를 보고서 승인 역할로 */
@@ -680,7 +719,14 @@ export class KillController {
     @Query('reasonCategory') reasonCategory?: ReasonCategory,
     @Query('recallCampaignId') recallCampaignId?: string,
     @Query('containmentJustification') containmentJustification?: string,
+    @Query('countries') countries?: string,
+    @Query('vehicleModels') vehicleModels?: string,
+    @Query('trims') trims?: string,
+    @Query('upgVcs') upgVcs?: string,
+    @Query('swVersions') swVersions?: string,
   ) {
+    const split = (s?: string) => (s ? s.split(',').map((x) => x.trim()).filter(Boolean) : undefined);
+    const scope: KillScopeFilter = Object.fromEntries(Object.entries({ countries: split(countries), vehicleModels: split(vehicleModels), trims: split(trims), upgVcs: split(upgVcs), swVersions: split(swVersions) }).filter(([, v]) => v?.length));
     // 차량 목록은 항상 영향 범위 전체(선택을 바꿔도 다시 고를 수 있게), 사전 점검·범위 밖 판정만 고른 차량으로
     const list = vins
       ? vins
@@ -688,9 +734,9 @@ export class KillController {
           .map((v) => v.trim())
           .filter(Boolean)
       : undefined;
-    const pv = this.kills.preview(featureId, featureVersion);
+    const pv = this.kills.preview(featureId, featureVersion, undefined, undefined, scope);
     const unknownVins = (list ?? []).filter((v) => !pv.vehicles.some((x) => x.vin === v));
-    const picked = list?.length ? pv.vehicles.map((v) => v.vin).filter((v) => list.includes(v)) : pv.vehicles.map((v) => v.vin);
+    const picked = list?.length ? pv.scoped.map((v) => v.vin).filter((v) => list.includes(v)) : pv.scoped.map((v) => v.vin);
     const checks = reasonCategory && picked.length && pv.registry ? this.kills.dryRun(featureId, featureVersion, picked, reasonCategory, { recallCampaignId, containmentJustification }) : [];
     return { ...pv, unknownVins, checks };
   }
@@ -704,6 +750,11 @@ export class KillController {
   @Get(':id')
   detail(@Param('id') id: string) {
     return this.kills.detail(id);
+  }
+
+  @Get(':id/parties')
+  parties(@Param('id') id: string) {
+    return this.kills.partiesOf(id);
   }
 
   @Get(':id/timeline')

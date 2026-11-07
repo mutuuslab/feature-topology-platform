@@ -129,3 +129,43 @@ describe('FR-KSW-004-001·002 해제 요청 정보·확인 항목', () => {
     expect(done.status).toBe('RELEASED');
   });
 });
+
+describe('FR-KSW-001-002·002-003·003-001 차단 대상 범위·Variant 조건·영향 차량 그룹', () => {
+  it('미리보기 — 차량마다 범위 속성·Variant 판정, Feature의 Variant 조건, 범위 유형별 영향 그룹', async () => {
+    const { http } = await boot();
+    const pv = (await http().get('/api/kill-requests/preview?featureId=FEAT-00022&featureVersion=1.0.0').expect(200)).body;
+    expect(pv.variantRule).toMatchObject({ featureId: 'FEAT-00022', country: expect.any(String), vehicleModel: expect.any(String), trim: expect.any(String), upgVc: expect.any(Array) });
+    expect(pv.vehicles[0]).toMatchObject({ vin: expect.any(String), country: expect.any(String), vehicleModel: expect.any(String), swVersion: expect.any(String), upgVc: expect.any(String), verdict: expect.any(String) });
+    const total = pv.groups.reduce((n: number, g: { vins: string[] }) => n + g.vins.length, 0);
+    expect(total).toBe(pv.vehicles.length);
+    // SW 버전 범위 — 그 버전 차량만
+    const sw = pv.vehicles[0].swVersion as string;
+    const want = pv.vehicles.filter((v: { swVersion: string }) => v.swVersion === sw).map((v: { vin: string }) => v.vin);
+    const scoped = (await http().get(`/api/kill-requests/preview?featureId=FEAT-00022&featureVersion=1.0.0&swVersions=${encodeURIComponent(sw)}`).expect(200)).body;
+    expect(scoped.scoped.map((v: { vin: string }) => v.vin)).toEqual(want);
+    expect(scoped.scopeKinds).toEqual(['swVersions']);
+  });
+  it('요청에 범위를 주면 그 범위 차량만 차단 — 범위가 기록되고, 맞는 차량이 없으면 거부', async () => {
+    const { http } = await boot();
+    const pv = (await http().get('/api/kill-requests/preview?featureId=FEAT-00022&featureVersion=1.0.0').expect(200)).body;
+    const sw = pv.vehicles[0].swVersion as string;
+    const want = pv.vehicles.filter((v: { swVersion: string }) => v.swVersion === sw).map((v: { vin: string }) => v.vin);
+    const base = { ...BODY, vins: undefined, reasonCategory: 'SAFETY', containmentJustification: '원인 분석 전 봉쇄' };
+    await http().post('/api/kill-requests').set(KILL_REQUESTER).send({ ...base, scope: { swVersions: ['0.0.0-none'] } }).expect(422);
+    const k = (await http().post('/api/kill-requests').set(KILL_REQUESTER).send({ ...base, scope: { swVersions: [sw] } }).expect(201)).body;
+    expect(k.vins).toEqual(want);
+    expect(k.scope).toEqual({ swVersions: [sw] });
+  });
+});
+
+describe('FR-KSW-003-002 관련 담당자 산출', () => {
+  it('Feature Owner·요청자·승인자·협력사(구현 SW 납품 정보)', async () => {
+    const { http } = await boot();
+    const k = await killV2(http, BODY);
+    const p = (await http().get(`/api/kill-requests/${k.killId}/parties`).expect(200)).body;
+    expect(p).toMatchObject({ owner: expect.any(String), requester: 'usr-ops', approvers: ['usr-safety', 'usr-csm'] });
+    expect(p.suppliers.length).toBeGreaterThan(0);
+    expect(p.suppliers[0]).toMatchObject({ supplier: expect.any(String), swId: expect.any(String), version: expect.any(String) });
+    expect((await http().get(`/api/kill-requests/${k.killId}`).expect(200)).body.parties).toEqual(p);
+  });
+});

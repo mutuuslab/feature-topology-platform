@@ -58,6 +58,8 @@ import {
 import { usePermission, when } from '../shared';
 import { evidenceLabel, nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, type Delivery } from './shared';
 import { KillBulkPreview } from '../ads/BulkPreviews';
+import type { KillScopeFilter } from '../../../../contracts/src/rules/kill-scope';
+import { KillParties, KillScopePanel, scopedRows, type PartiesView, type VariantRuleView } from './KillScopePanel';
 import { adsChange } from '../../copy/ads-change';
 
 const K = ko.kill;
@@ -135,6 +137,7 @@ interface Kill {
   }[];
   /** 상세만 — 승인 대기면 다음 칸 후보, 차단 중이면 복원 전망(직전 차단 승인자 제외) */
   approverCandidates?: { id: string; roles: ApproverRole[] }[];
+  parties?: PartiesView;
   restoreOutlook?: { candidates: { id: string; roles: ApproverRole[] }[]; byRole: { role: ApproverRole; ids: string[] }[]; missing: ApproverRole[]; complete: boolean };
   delivery: Delivery | null;
   restore: Delivery | null;
@@ -162,7 +165,8 @@ interface Preview {
   featureIds: string[];
   dependents: { featureId: string; version: string | null; name: string }[];
   flagKeys: string[];
-  vehicles: { vin: string; label: string; link: string; gleo: boolean }[];
+  vehicles: { vin: string; label: string; link: string; gleo: boolean; country: string; vehicleModel: string; trim: string; upgVc: string; swVersion: string; verdict?: string }[];
+  variantRule?: VariantRuleView | null;
   activeKill: string | null;
   registry: { f_class: FClass; deact_class: DeactClass; gsr_mandatory: boolean; profile?: Record<string, number> } | null;
   window: { hours: number; deactivate: number; cap: number };
@@ -233,6 +237,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const featureId = typedId ?? fallback?.featureId ?? '';
   const featureVersion = typedVer ?? (typedId === null ? fallback?.version : undefined) ?? '';
   const [picked, setPicked] = useState<string[] | null>(null);
+  const [scope, setScope] = useState<KillScopeFilter>({});
   const [category, setCategory] = useState<ReasonCategory>('SAFETY');
   const [code, setCode] = useState('FIELD_FAULT');
   const [recall, setRecall] = useState('');
@@ -259,7 +264,9 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   ); // 차량·사유를 바꿔도 패널이 깜박이지 않게 — 이전 결과를 보이며 다시 판정
   const issue = useApiMutation<Kill>('issueKill', INVALIDATE);
   const p = pv.data;
-  const vins = picked ?? p?.vehicles.map((v) => v.vin) ?? [];
+  // 차단 대상 범위(FR-KSW-001-002) — 고른 범위에 드는 차량만 보이고 기본 선택된다
+  const shown = p ? scopedRows(p.vehicles, scope) : [];
+  const vins = picked ?? shown.map((v) => v.vin);
   const toggle = (vin: string) => setPicked(vins.includes(vin) ? vins.filter((x) => x !== vin) : [...vins, vin]);
   const reg = p?.registry;
   const safetyF2 = category === 'SAFETY' && !!reg && ['F2', 'F3', 'F4'].includes(reg.f_class);
@@ -318,11 +325,12 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                   {K.activeKill}: <Link to={`/ops/kill?id=${p.activeKill}`}>{p.activeKill}</Link>
                 </p>
               )}
+              <KillScopePanel rows={p.vehicles} rule={p.variantRule} scope={scope} onScope={(s) => (setScope(s), setPicked(null))} />
               <fieldset className="ds-choices" aria-label={K.vehicles}>
                 <legend className="ds-field__label">
                   {K.vehicles} ({vins.length}/{p.vehicles.length})
                 </legend>
-                {p.vehicles.map((v) => (
+                {shown.map((v) => (
                   <label key={v.vin} title={v.link === 'OFFLINE' ? K.offline : v.label}>
                     <input type="checkbox" checked={vins.includes(v.vin)} onChange={() => toggle(v.vin)} />
                     <span className="ds-dot" data-on={v.link === 'ONLINE'} aria-hidden="true" />
@@ -407,6 +415,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                 ...(containment.trim() && { containmentJustification: containment.trim() }),
                 ...(safetyF2 && defectAt && { defectDeterminedAt: new Date(defectAt).toISOString() }),
                 ...(anomalyId && { anomalyId }),
+                ...(Object.keys(scope).length && { scope }),
               },
             },
             {
@@ -802,6 +811,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ? personLabel(k.rejectedBy) : undefined }] : []),
             ]}
           />
+          {k.parties && <KillParties p={k.parties} person={personLabel} />}
           {(k.recallCampaignId || k.containmentJustification || !!k.recallReports?.length) && (
             <div data-tour="kill-recall">
               <KeyValue

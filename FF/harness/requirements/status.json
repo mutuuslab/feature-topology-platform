@@ -4,9 +4,9 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 292,
-      "부분": 218,
-      "미구현": 113,
+      "구현": 300,
+      "부분": 212,
+      "미구현": 111,
       "범위 밖": 5
     },
     "sheets": [
@@ -21,9 +21,9 @@
       {
         "sheet": "02_차량 런타임 실행",
         "leaves": 81,
-        "구현": 17,
-        "부분": 47,
-        "미구현": 15,
+        "구현": 24,
+        "부분": 42,
+        "미구현": 13,
         "범위 밖": 2
       },
       {
@@ -53,13 +53,13 @@
       {
         "sheet": "06_품질·보안·운영",
         "leaves": 87,
-        "구현": 19,
-        "부분": 40,
+        "구현": 20,
+        "부분": 39,
         "미구현": 28,
         "범위 밖": 0
       }
     ],
-    "traced": 140,
+    "traced": 148,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 9,
@@ -372,6 +372,21 @@
         "backend/test/d01/audit-export.spec.ts"
       ]
     },
+    "FR-RTE-001-002": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": []
+    },
+    "FR-RTE-001-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-cache.test.ts",
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
     "FR-RTE-001-004": {
       "implemented": [
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
@@ -380,12 +395,73 @@
         "backend/test/requirements/defects.spec.ts"
       ]
     },
+    "FR-RTE-002-004": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-RTE-004-003": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts",
+        "frontend/src/__tests__/vehicleCachePanel.test.tsx"
+      ]
+    },
     "FR-RTE-005-001": {
       "implemented": [
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
       ],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
+      ]
+    },
+    "FR-LPC-001-003": {
+      "implemented": [
+        "contracts/src/rules/policy-cache.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-cache.test.ts",
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-002-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-002-004": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-003-001": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-003-002": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-003-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-cache.test.ts",
+        "backend/test/d02/policy-cache.spec.ts"
       ]
     },
     "FR-CRC-001-001": {
@@ -1055,6 +1131,14 @@
       ],
       "tested": [
         "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-SDM-002-002": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "frontend/src/__tests__/vehicleCachePanel.test.tsx"
       ]
     }
   },

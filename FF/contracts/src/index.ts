@@ -23,3 +23,5 @@ export * from './schemas/vehicle-message';
 export * from './schemas/vehicle-message.vectors';
 // OTA 전달 대사(P9) — OTA 사실 ↔ 차량 결과 불일치 규칙
 export * from './rules/ota-reconcile';
+// 차량 정책 캐시(P9) — 유효 기간·사용 전 확인·손상 대체·Safe Default 위임
+export * from './rules/policy-cache';

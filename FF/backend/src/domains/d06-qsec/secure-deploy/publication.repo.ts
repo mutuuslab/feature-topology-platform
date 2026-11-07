@@ -51,15 +51,29 @@ export class PublicationRepo {
 }
 
 /** 차량 런타임(D02-03)이 차량마다 들고 있는 상태 — 시뮬레이터가 갱신하고, 회신 집계는 bootId를 기준값으로 쓴다 */
+/** 차량 정책 캐시 한 건(P9) — 서명 게시본 payload·서명을 그대로 두어 쓰기 전에 다시 검증한다(payload·signature가 없는 옛 캐시는 확인 없이 쓴다) */
+export interface PolicyCacheEntry {
+  publicationId: string;
+  sequence: number;
+  payloadHash: string;
+  policy: import('@ff/contracts').Policy;
+  validUntil?: string | null;
+  payload?: import('@ff/contracts').PublicationPayload;
+  signature?: import('@ff/contracts').Signature;
+}
+
 export interface VehicleRuntimeState {
   vin: string;
   bootId: string;
   /** 대상별(flag:… / feature:…) 적용한 가장 높은 순번 */
   highest: Record<string, number>;
-  bundles: Record<string, { publicationId: string; sequence: number; payloadHash: string; policy: import('@ff/contracts').Policy }>;
+  bundles: Record<string, PolicyCacheEntry & { /** 직전 정상 캐시(P9 — 현재 캐시가 손상되면 대체) */ previous?: PolicyCacheEntry | null }>;
   kills: Record<string, { killId: string; safeMode: string; publicationId: string }>;
   featureState: Record<string, string>;
-  log: { at: string; publicationId: string; kind: string; result: 'APPLIED' | 'REJECTED'; detail: string }[];
+  /** CACHE_EXCLUDED·SAFE_DEFAULT(P9) — 손상 캐시 제외·Safe Default 위임 기록(사유·Feature·Flag·시각) */
+  log: { at: string; publicationId: string; kind: string; result: 'APPLIED' | 'REJECTED' | 'CACHE_EXCLUDED' | 'SAFE_DEFAULT'; detail: string; featureId?: string; flagKey?: string }[];
+  /** Flag별 마지막 캐시 판정(P9) — 바뀔 때만 기록을 남긴다 */
+  cacheNotes?: Record<string, string>;
   /** v2 Guard(보고서 9.3) — Feature별 마지막으로 받은 vehicle_seq·epoch(순번 창) */
   guard?: Record<string, { lastSeq: number; epoch: number; /** 마지막으로 받아들인 명령(멱등 재시도 판별 — FFP-F019) */ commandId?: string; digest?: string }>;
   /** 시동 안 상태 보고 순번(report_seq 하위 16비트) */

@@ -1514,15 +1514,16 @@
       "gap": "실차 수신기는 범위 밖"
     },
     "FR-RTE-001-002": {
-      "verdict": "부분",
-      "evidence": "순번(재전송) 확인(VRS:106) · 시험 delivery.spec.ts:105",
-      "gap": "POLICY 게시본에 유효 기간 필드 없음(ops.ts:29-43), 수신 시 대상 VIN 확인 없음"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "POLICY 게시본 validUntil(서명 payload), 수신 때 대상 VIN(payload.targets)·순번·유효 기간 확인(`vehicle-runtime.service.ts` receive, receiveProblem) · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "—"
     },
     "FR-RTE-001-003": {
-      "verdict": "부분",
+      "verdict": "구현",
       "detail": "(시뮬)",
-      "evidence": "서명 검증 후 종류별 분기, 불일치 MALFORMED 거부·기록(VRS:104-105,132,98-101)",
-      "gap": "차량 측 스키마 파싱(필드별 검증)·유효 기간 파싱 없음"
+      "evidence": "서명 확인 뒤 필드별 파싱(PublicationPayload)·유효 기간 파싱(validityProblem) — 형식 오류 MALFORMED·이미 만료 EXPIRED 거부, 순번을 쓰지 않음 · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "—"
     },
     "FR-RTE-001-004": {
       "verdict": "구현",
@@ -1548,8 +1549,8 @@
     "FR-RTE-002-004": {
       "verdict": "부분",
       "detail": "(시뮬)",
-      "evidence": "런타임 log: 게시본·종류·APPLIED/REJECTED·상세(VRS:133, publication.repo.ts:62)",
-      "gap": "Flag 평가 결과·정책 버전·기능 실행 결과 기록 없음(평가는 조회 시 계산)"
+      "evidence": "런타임 log: 게시본·종류·APPLIED/REJECTED·상세(VRS:133, publication.repo.ts:62) · 차량 런타임 view 평가마다 쓴 캐시(현재·직전·안전 기본값)·게시본·순번·유효 기간(P9)",
+      "gap": "평가는 조회 시 계산 — 실행 시점마다 영속 기록은 없음"
     },
     "FR-RTE-002-005": {
       "verdict": "부분",
@@ -1588,7 +1589,7 @@
     "FR-RTE-004-003": {
       "verdict": "부분",
       "detail": "(시뮬)",
-      "evidence": "차량 log + status_report v2, 서버 `GET /api/kill-requests/:id/timeline`(ROUTES:178) · 시험 kill-timeline.spec.ts",
+      "evidence": "차량 log + status_report v2, 서버 `GET /api/kill-requests/:id/timeline`(ROUTES:178) · 시험 kill-timeline.spec.ts · 차량 런타임 view의 killHistory(차량 쪽 차단·복원 이력, P9) · 시험 backend/test/d02/policy-cache.spec.ts",
       "gap": "차량 측 차단 이력 조회 API는 시뮬 view로 대체"
     },
     "FR-RTE-005-001": {
@@ -1639,9 +1640,10 @@
       "gap": "—"
     },
     "FR-LPC-001-003": {
-      "verdict": "미구현",
-      "evidence": "POLICY 게시본·캐시에 유효 기간 없음(ops.ts:29-43)",
-      "gap": "정책 유효 기간 필드·만료 식별"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "POLICY 게시본 서명 payload에 validUntil(발행 + FF_POLICY_CACHE_TTL_DAYS, 기본 90일, `secure-deploy.service.ts` create), 차량 캐시가 유효 기간·상태(VALID·EXPIRED)를 보인다(`contracts/src/rules/policy-cache.ts` cacheStatus, `vehicle-runtime/policy-cache.ts`) · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "실차 저장소는 범위 밖"
     },
     "FR-LPC-002-001": {
       "verdict": "부분",
@@ -1655,29 +1657,33 @@
       "gap": "—"
     },
     "FR-LPC-002-003": {
-      "verdict": "미구현",
-      "evidence": "만료 개념 없음(001-003 의존)",
-      "gap": "만료 → Safe Default 위임·기록"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "만료 캐시는 평가하지 않고 Safe Default 위임(chooseCache CACHE_EXPIRED), 차량 기록에 사유·Feature·Flag·시각(noteCache) · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "—"
     },
     "FR-LPC-002-004": {
       "verdict": "부분",
-      "evidence": "묶음 없음 → 호출자 기본값(false)·FLAG_NOT_FOUND(bundle-provider.ts:39), 원격 조회 404 → Safe Default · 시험 vehicle-requests.spec.ts:62",
-      "gap": "위임 사유·Feature ID·일시 기록 없음"
+      "evidence": "묶음 없음 → 호출자 기본값(false)·FLAG_NOT_FOUND(bundle-provider.ts:39), 원격 조회 404 → Safe Default · 시험 vehicle-requests.spec.ts:62 · 차량 쪽 캐시 위임(만료·손상)은 사유·Feature·Flag·시각 기록(P9 noteCache)",
+      "gap": "받은 정책이 아예 없는 Flag의 차량 쪽 위임 기록은 없음(OFREP 호출자 기본값 경로)"
     },
     "FR-LPC-003-001": {
-      "verdict": "부분",
-      "evidence": "서명은 **수신 시점**에만 검증·실패 기록(VRS:104-105) · 시험 delivery.spec.ts:105",
-      "gap": "사용 전(평가 직전) 재검증 없음(VRS:324-336)"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "평가 직전 서명 재검증(entryStatus → PKI verify, 정책 용도 키) — 실패는 SIGNATURE_INVALID로 제외 · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "—"
     },
     "FR-LPC-003-002": {
-      "verdict": "부분",
-      "evidence": "수신 payloadHash 저장(VRS:118), 서버측 구성 대사(ATTESTATION) 불일치 탐지(vehicle-request.service.ts:239-246) · 시험 attestation.spec.ts:33",
-      "gap": "차량이 사용 전 저장 해시와 재계산값 비교하지 않음"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "사용 전 저장 payload 해시 재계산 ↔ 서명 payloadHash 비교(PAYLOAD_TAMPERED → INTEGRITY_MISMATCH) · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "—"
     },
     "FR-LPC-003-003": {
-      "verdict": "부분",
-      "evidence": "검증 실패 게시본은 저장 전 거부 → 이전 정상 캐시 유지(VRS:98-106)",
-      "gap": "저장 후 손상 시 제외·대체 캐시·Safe Default 위임 경로 없음"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "손상 캐시 제외 → 직전 정상 캐시로 평가(previous), 직전도 손상이면 Safe Default 위임, 제외·위임을 차량 기록(CACHE_EXCLUDED·SAFE_DEFAULT) · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`",
+      "gap": "—"
     },
     "FR-SFD-001-001": {
       "verdict": "구현",
@@ -3205,9 +3211,10 @@
       "gap": "실차 런타임은 차량 SW 저장소 몫 — 본 검토는 FF 내장 Fleet 시뮬레이터 기준"
     },
     "FR-SDM-002-002": {
-      "verdict": "부분",
-      "evidence": "적용 안 함·REJECTED 회신 `VR:97-102`, SECURITY 이상 건 `anomaly.service.ts:101`; 시험 `T/d06/anomaly.spec.ts:98`",
-      "gap": "런타임 측 \"무결성 위반 메시지 표시\" 경로 정의"
+      "verdict": "구현",
+      "detail": "(시뮬)",
+      "evidence": "차량 런타임 화면 '차량 정책 캐시' 패널이 무결성 위반 캐시 수를 경고(role=alert)로 표시(`frontend/src/screens/ops/VehicleCachePanel.tsx`), 플랫폼 쪽 REJECTED 회신·SECURITY 이상 건 그대로 · 시험 `backend/test/d02/policy-cache.spec.ts`·`contracts/src/rules/policy-cache.test.ts`·`frontend/src/__tests__/vehicleCachePanel.test.tsx`",
+      "gap": "—"
     },
     "FR-SDM-002-003": {
       "verdict": "구현",

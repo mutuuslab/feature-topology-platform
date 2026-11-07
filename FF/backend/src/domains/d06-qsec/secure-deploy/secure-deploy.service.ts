@@ -1,7 +1,7 @@
 // 보안 배포 관리 (D06-08) — 정책 배포·긴급 차단·복구를 서명된 게시본으로 만들고(PKI D06-10), 파이프라인(D04-01)으로 내보내고,
 // 차량 회신을 P0 aggregate로 집계한다: 대상 전부 readback 일치 → CONFIRMED, 불일치 → DIVERGED, 기한 초과 → PARTIAL/TIMEOUT (BD-12).
 import { Controller, Get, Inject, Injectable, OnApplicationBootstrap, OnModuleInit, Param, Query } from '@nestjs/common';
-import { aggregate, endState, inService, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
+import { aggregate, endState, inService, POLICY_CACHE_TTL_DAYS_DEFAULT, policyValidUntil, PUBLICATION_KEY_PURPOSE, type KillRequest, type Policy, type Publication, type PublicationKind, type ReadbackReport, type SafeMode } from '@ff/contracts';
 
 /** 차량 와이어 v1 호환 — v2 차단(safeMode 없음)도 시뮬레이터·GLEO가 읽는 kill.safeMode를 채운다. 차량 와이어 v2(봉투·DC 단계) 전환은 WP5 */
 const legacyMode = (k: KillRequest): SafeMode => k.safeMode ?? 'SAFE_DEFAULT';
@@ -38,6 +38,9 @@ interface Draft {
   /** 정책 게시 후보(승인 조합·시장 기준선, ADS-BE10·BE16) — build 기록에 남긴다 */
   candidates?: CandidateView | null;
 }
+
+/** 정책 캐시 유효 기간(P9) — FF_POLICY_CACHE_TTL_DAYS, 기본 90일 */
+const POLICY_CACHE_TTL_MS = Number(process.env.FF_POLICY_CACHE_TTL_DAYS ?? POLICY_CACHE_TTL_DAYS_DEFAULT) * 86_400_000;
 
 @Injectable()
 @PlatformComponent('D06-08')
@@ -120,7 +123,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     if (!this.db.inTransaction) throw new Error('게시본은 원 변경과 같은 트랜잭션 안에서 만든다');
     const publicationId = this.repo.nextId();
     const { candidates, ...draft } = d;
-    const payload = { publicationId, kind, sequence: 0, issuedAt: this.clock.iso(), ...draft };
+    const issuedAt = this.clock.iso();
+    // P9 — 정책 게시본에는 캐시 유효 기간(서명 payload 안). 차단·복원은 차량 Guard가 따로 유효 시각(봉투 validity)을 본다
+    const payload = { publicationId, kind, sequence: 0, issuedAt, ...draft, ...(kind === 'POLICY' ? { validUntil: policyValidUntil(issuedAt, POLICY_CACHE_TTL_MS) } : {}) };
     const scopeKey = scopeKeyOf(payload);
     payload.sequence = this.repo.nextSequence(scopeKey);
     const emergency = kind !== 'POLICY';

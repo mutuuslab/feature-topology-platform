@@ -2,11 +2,15 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { loadGuide } from '../testing/fixtures';
-import { KillCommandV2, StatusReportV2, wireErrors } from './wire';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { KillCommandV2, StatusReportV2, StatusReportV2_1, wireErrors } from './wire';
 
 const killSchema = loadGuide('schema/kill_command.v2.schema.json');
 const statusSchema = loadGuide('schema/status_report.v2.schema.json');
 const ex = (name: string) => loadGuide(`schema/examples/${name}`);
+/** 2.1 정본 초안(FF_IMP gleo/schema로 보낼 것, ADS-SIM04) */
+const status21Schema = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'harness', 'wire', 'status_report.v2_1.schema.json'), 'utf8'));
 
 /** zod 래퍼(optional·nullable·pipe)를 벗긴다 — zod 4는 refine이 감싸지 않고 같은 스키마의 검사로 붙는다 */
 function unwrap(t: z.ZodType): z.ZodType {
@@ -36,7 +40,8 @@ function diff(js: any, zt: z.ZodType, path = ''): string[] {
   }
   if (js.enum) {
     const zEnum = t instanceof z.ZodEnum ? [...t.options] : null;
-    if (JSON.stringify(zEnum) !== JSON.stringify(js.enum)) out.push(`${path}: enum 다름`);
+    // null은 zod nullable이 맡는다(unwrap) — enum 값만 비교
+    if (JSON.stringify(zEnum) !== JSON.stringify(js.enum.filter((x: unknown) => x !== null))) out.push(`${path}: enum 다름`);
   }
   if (js.const !== undefined && !(t instanceof z.ZodLiteral && t.value === js.const)) out.push(`${path}: const 다름`);
   if (js.items && t instanceof z.ZodArray) out.push(...diff(js.items, t.element as z.ZodType, `${path}[]`));
@@ -49,6 +54,11 @@ describe('JSON Schema 대조 (FFG-PLT-001)', () => {
   });
   it('status_report v2 — 모든 필드·필수·enum·const·strict가 같다', () => {
     expect(diff(statusSchema, StatusReportV2)).toEqual([]);
+  });
+  it('status_report v2.1(초안) — 모든 필드·필수·enum·const·strict가 같다, 2.0 필드는 그대로 다 있다', () => {
+    expect(diff(status21Schema, StatusReportV2_1)).toEqual([]);
+    for (const k of Object.keys(statusSchema.properties)) expect(status21Schema.properties[k], k).toBeDefined();
+    expect(status21Schema.required).toEqual(expect.arrayContaining(statusSchema.required));
   });
   it('대조기 자체 검증 — 스키마가 바뀌면 차이를 잡는다', () => {
     const changed = structuredClone(killSchema);

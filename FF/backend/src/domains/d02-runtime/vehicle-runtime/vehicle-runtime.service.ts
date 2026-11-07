@@ -11,9 +11,11 @@ import {
   endState,
   evaluateFlag,
   guardCheck,
+  guardRuntimeState,
   jcs,
   PUBLICATION_KEY_PURPOSE,
   reportSeqOf,
+  staleEpoch,
   statusAuthCanonical,
   type EdrState,
   type FlagResult,
@@ -23,6 +25,7 @@ import {
   type Publication,
   type RejectCode,
   type StatusReportV2,
+  type StatusReportV2_1,
   variantRow,
 } from '@ff/contracts';
 import { sha256hex, targetHashOf, vehiclePseudonym } from '../../../kernel/crypto';
@@ -53,6 +56,8 @@ const TIME_SCALE = Number(process.env.FLEET_SIM_TIME_SCALE ?? 1);
 const SIM_IDLE_MS = Number(process.env.FLEET_SIM_IDLE_MS ?? 1500);
 const SIM_CYCLE_MS = Number(process.env.FLEET_SIM_CYCLE_MS ?? 2000);
 const bootNo = (bootId: string) => Number(/-(\d+)$/.exec(bootId)?.[1] ?? 1);
+/** 시뮬레이터 명령 회신의 상태 보고 판 — 기본 2.1(D-ADS-1, 플랫폼은 2.0도 받는다). 2.0으로 되돌리려면 FF_SIM_STATUS_WIRE=2.0 */
+const SIM_STATUS_WIRE = process.env.FF_SIM_STATUS_WIRE === '2.0' ? '2.0' : '2.1';
 
 /**
  * 시뮬레이터 차량 회신 간격(ms) — 대상이 많으면 마지막 회신도 게시본 기한 안에 들도록 줄인다(기한의 80%까지).
@@ -68,6 +73,8 @@ export const scopeKeyOf = (p: Publication['payload']) => (p.kind === 'POLICY' ? 
 @Injectable()
 @PlatformComponent('D02-03')
 export class VehicleRuntimeService {
+  /** 명령(차량·command_id) → 그 명령을 실은 게시본 — 2.1 전달 단계(delivery.subject_id) */
+  private readonly cmdPub = new Map<string, string>();
   constructor(
     private readonly runtime: RuntimeRepo,
     private readonly fleet: FleetRepo,
@@ -152,13 +159,15 @@ export class VehicleRuntimeService {
       return;
     }
     if (p.sequence <= (s.highest[key] ?? 0)) return reject('REPLAY');
+    // ADS-BE07 — 차량이 본 Feature epoch보다 낮은 정책 게시본(차단 전에 만든 과거 게시본)은 차단 상태와 무관하게 거부
+    if (p.kind === 'POLICY' && staleEpoch(p.featureEpochs?.[p.featureId], s.epochs?.[p.featureId])) return reject('STALE_EPOCH');
     s.highest[key] = p.sequence;
     // v2 — 이 차량의 봉투가 있으면 Guard 경로(레거시 v1 차단은 아래 기존 경로)
     if ((p.kind === 'KILL' || p.kind === 'RESTORE') && p.kill) {
       const env = this.envelopes.forVehicle(p.kill.killId, vin, p.kind === 'KILL' ? 'deactivate' : 'restore');
       if (env) {
         this.runtime.save(s);
-        return this.guard(vin, pub.publicationId, pub.kind, env, p.kill.featureIds);
+        return this.guard(vin, pub.publicationId, pub.kind, env, p.kill.featureIds, p.featureEpochs);
       }
     }
     let observed: string;
@@ -166,6 +175,7 @@ export class VehicleRuntimeService {
       s.bundles[p.policy.flagKey] = { publicationId: pub.publicationId, sequence: p.sequence, payloadHash: pub.signature.payloadHash, policy: p.policy };
       observed = p.policy.contentHash;
     } else if (p.kind === 'KILL' && p.kill) {
+      this.seeEpochs(s, p.featureEpochs);
       for (const f of p.kill.featureIds) {
         s.kills[f] = { killId: p.kill.killId, safeMode: p.kill.safeMode, publicationId: pub.publicationId };
         s.featureState[f] = p.kill.safeMode;
@@ -202,8 +212,11 @@ export class VehicleRuntimeService {
    * 봉투 검증(9.3 순서) → 받으면 DC 단계 진행, 거부하면 거부 코드로 보고.
    * @rule FFG-VEH-002, FFG-DEAC-007 — 차량 쪽(시뮬레이터): 백엔드 기원 진위를 Guard가 직접 검증, 안전 Kill은 복원 명령으로만 풀린다
    */
-  guard(vin: string, publicationId: string, kind: string, env: KillCommandV2, featureIds: string[]) {
+  guard(vin: string, publicationId: string, kind: string, env: KillCommandV2, featureIds: string[], featureEpochs?: Record<string, number>) {
     const s = this.runtime.get(vin);
+    this.cmdPub.set(`${vin}|${env.command_id}`, publicationId);
+    // 수신 시각(received_at) — 적용 시각(applied_at)과 따로 둔다
+    s.receivedAt = { ...(s.receivedAt ?? {}), [env.feature.id]: this.clock.iso() };
     const featureId = env.feature.id;
     const va = env.vehicle_auth!;
     // 봉투 자체의 JWS(차량 1대 범위·vehicle_auth 포함) — 요청 유형의 용도 키여야 한다(FFG-SEC-002)
@@ -261,6 +274,9 @@ export class VehicleRuntimeService {
       return this.emit(vin, env, current, { request_result: 'REJECTED', reject_code: code, vehicleSeq: last?.lastSeq ?? 0 });
     }
     s.guard = { ...(s.guard ?? {}), [featureId]: { lastSeq: va.vehicle_seq, epoch: va.key_epoch, commandId: env.command_id, digest } };
+    // 받아들인 명령의 Feature epoch를 차량이 기억하고, 비활성화는 종료 차단(사건 ID 또는 명령 ID)을 건다
+    this.seeEpochs(s, featureEpochs);
+    if (env.request === 'deactivate') s.inhibits = { ...(s.inhibits ?? {}), ...Object.fromEntries(featureIds.map((f) => [f, [env.reason.incident_id ?? env.command_id]])) };
     s.log.push({ at: this.clock.iso(), publicationId, kind, result: 'APPLIED', detail: `${env.request} ${env.feature.deact_class} 수락` });
     this.runtime.save(s);
     if (env.request === 'sync') {
@@ -285,6 +301,7 @@ export class VehicleRuntimeService {
       this.emit(vin, env, 'RESTORE_PENDING', { request_result: 'ACCEPTED', hmi: 'INFO_PENDING' });
       this.scheduler.after(SIM_CYCLE_MS * TIME_SCALE, () => {
         this.setState(vin, featureIds, 'INACTIVE', false, true);
+        this.releaseInhibits(vin, featureIds);
         this.emit(vin, env, 'INACTIVE', { request_result: 'NONE', hmi: 'NONE', weight: 0, edr: 'OFF', source: 'STARTUP' });
       });
       return;
@@ -318,6 +335,22 @@ export class VehicleRuntimeService {
       this.emit(vin, env, 'DEACT_RAMP', { request_result: 'NONE', hmi: 'WARN_TAKEOVER', weight: 500 });
     });
     this.scheduler.after(takeover + ramp, finish);
+  }
+
+  /** 본 Feature epoch 기억 — 낮아지지 않는다 */
+  private seeEpochs(s: VehicleRuntimeState, epochs?: Record<string, number>) {
+    if (!epochs) return;
+    const seen = { ...(s.epochs ?? {}) };
+    for (const [f, e] of Object.entries(epochs)) seen[f] = Math.max(seen[f] ?? 0, e);
+    s.epochs = seen;
+  }
+
+  /** 복원 완료 — 종료 차단을 푼다 */
+  private releaseInhibits(vin: string, featureIds: string[]) {
+    const s = this.runtime.get(vin);
+    if (!s.inhibits) return;
+    for (const f of featureIds) delete s.inhibits[f];
+    this.runtime.save(s);
   }
 
   /** 차량 상태 반영 — 끝 상태면 차량 측 평가도 차단(kills), ACTIVE·복원 완료(released)면 해제 */
@@ -414,8 +447,35 @@ export class VehicleRuntimeService {
       report_seq: reportSeqOf(bootNo(s.bootId), s.reportCounter),
       persistence: 'DURABLE',
     };
-    const state_auth = this.hsm.cmac(vin, epoch, Buffer.from(statusAuthCanonical(report as Record<string, unknown>)));
-    this.status.ingest(vin, { ...report, state_auth }, 'SIM');
+    const body = SIM_STATUS_WIRE === '2.1' ? this.v21(s, env, state, report, o.request_result, o.reject_code) : report;
+    const state_auth = this.hsm.cmac(vin, epoch, Buffer.from(statusAuthCanonical(body as Record<string, unknown>)));
+    this.status.ingest(vin, { ...body, state_auth }, 'SIM');
+  }
+
+  /**
+   * 상태 보고 2.1 블록(ADS-BE01·FFP-F031) — 실제 실행 상태·제어 책임(ADS 기능만)·Feature epoch·종료 차단·전달 단계, 수신 시각 ≠ 적용 시각.
+   * ADS 기능의 비활성화는 경고 중에는 ADS가 운전하고, 인계 뒤(램프·끝 상태)는 운전자(USER)가 운전한다.
+   */
+  private v21(s: VehicleRuntimeState, env: KillCommandV2, state: GuardState, base: Omit<StatusReportV2, 'state_auth'>, result: StatusReportV2['request_result'], rejectCode?: RejectCode): Omit<StatusReportV2_1, 'state_auth'> {
+    const f = env.feature.id;
+    const ads = !!this.gate.registryEntry(f, env.feature.version)?.ads_feature;
+    const done = state === endState(env.reason.category) || (env.request === 'restore' && state === 'INACTIVE') || (env.request === 'activate' && state === 'ACTIVE');
+    const now = this.clock.iso();
+    const kind = env.request === 'deactivate' ? 'KILL' : env.request === 'restore' ? 'RESTORE' : null;
+    const pub = this.cmdPub.get(`${s.vin}|${env.command_id}`);
+    const stage = result === 'REJECTED' ? 'REJECTED' : done ? 'APPLIED' : 'ACCEPTED';
+    return {
+      ...base,
+      schema_version: '2.1',
+      received_at: s.receivedAt?.[f] ?? now,
+      applied_at: done ? now : null,
+      reported_at: now,
+      runtime_state: guardRuntimeState(state),
+      ...(ads ? { ddt_owner: state === 'ACTIVE' || state === 'DEACT_WARNING' || state === 'ACT_PENDING' ? 'ADS' : 'USER' } : {}),
+      feature_epoch: s.epochs?.[f] ?? 0,
+      inhibits: s.inhibits?.[f] ?? [],
+      ...(kind && pub ? { delivery: { subject_kind: kind, subject_id: pub, stage, ...(rejectCode && rejectCode !== 'NONE' ? { reason_code: rejectCode } : {}) } } : {}),
+    } as Omit<StatusReportV2_1, 'state_auth'>;
   }
 
   bootId(vin: string) {

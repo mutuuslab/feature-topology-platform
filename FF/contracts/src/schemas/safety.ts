@@ -89,6 +89,9 @@ export const REJECT_CODES = [
 ] as const;
 export const RejectCode = z.enum(REJECT_CODES);
 export type RejectCode = z.infer<typeof RejectCode>;
+/** 상태 보고 2.1 거부 코드 — 2.0 + STALE_EPOCH(Feature epoch보다 낮은 정책 게시본, ADS-BE07). 2.0 스키마(부록 D)는 그대로 둔다 */
+export const REJECT_CODES_V2_1 = [...REJECT_CODES, 'STALE_EPOCH'] as const;
+export type RejectCodeV2_1 = (typeof REJECT_CODES_V2_1)[number];
 
 export const HMI_STATES = ['NONE', 'INFO_PENDING', 'WARN_TAKEOVER', 'INFO_DISABLED'] as const;
 export const HmiState = z.enum(HMI_STATES);

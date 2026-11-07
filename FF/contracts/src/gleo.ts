@@ -3,11 +3,13 @@
 // policy_push(정책 캐시 알림, 회신 없음)만 GLEO 고유 형식이고, kill_command·status_report는 v2(보고서 v1.1 부록 D) — v1(safe_mode·
 // SAFE_*)은 받지 않는다(FF_IMP 5a1138c와 함께 전환).
 import { z } from 'zod';
-import { KillCommandV2, StatusReportV2, wireErrors } from './schemas/wire';
+import { KillCommandV2, statusReportSchemaOf, wireErrors } from './schemas/wire';
 
 const Scope = z.object({ vehicle_ids: z.array(z.string()) }).passthrough();
 
-export const GleoPolicyPush = z.object({ type: z.literal('policy_push'), feature_id: z.string(), action: z.string(), scope: Scope, issued_at: z.string(), reason: z.string() }).passthrough();
+export const GleoPolicyPush = z
+  .object({ type: z.literal('policy_push'), feature_id: z.string(), action: z.string(), scope: Scope, issued_at: z.string(), reason: z.string(), feature_epoch: z.number().int().min(1).optional() })
+  .passthrough();
 export type GleoPolicyPush = z.infer<typeof GleoPolicyPush>;
 
 export const GLEO_TYPES = ['policy_push', 'kill_command', 'status_report'] as const;
@@ -20,6 +22,7 @@ export function gleoMessageErrors(msg: unknown): string[] {
     return r.success ? [] : r.error.issues.map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`);
   }
   if (t === 'kill_command') return wireErrors(KillCommandV2, msg);
-  if (t === 'status_report') return wireErrors(StatusReportV2, msg);
+  // 상태 보고는 2.0·2.1 동시 수락(D-ADS-1) — FF_IMP 차량은 2.0, 2.1 동기는 ADS-SIM04
+  if (t === 'status_report') return wireErrors(statusReportSchemaOf(msg), msg);
   return [`알 수 없는 GLEO 메시지 type: ${JSON.stringify(t)}`];
 }

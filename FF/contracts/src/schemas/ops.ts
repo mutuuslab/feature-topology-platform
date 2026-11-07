@@ -40,6 +40,8 @@ export const PublicationPayload = z.object({
   /** 차량이 적용 후 되읽어 보고해야 하는 값 — POLICY: 정책 해시, KILL: Safe 상태, RESTORE: ACTIVE */
   desired: z.string(),
   issuedAt: z.string(),
+  /** Feature epoch(ADS-BE07) — Feature마다 긴급 차단 때 하나씩 오른다. 차량은 본 epoch보다 낮은 게시본을 STALE_EPOCH로 거부한다. 0이면 싣지 않는다 */
+  featureEpochs: z.record(z.string(), z.number().int().min(1)).optional(),
 });
 export type PublicationPayload = z.infer<typeof PublicationPayload>;
 

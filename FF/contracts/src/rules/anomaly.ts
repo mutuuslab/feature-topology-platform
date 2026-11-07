@@ -57,6 +57,13 @@ export const STATUS_VIOLATION_SEVERITY: Record<string, AnomalySeverity> = {
   SCHEMA: 'WARNING',
   UNKNOWN_FEATURE: 'WARNING',
   VERSION_MISMATCH: 'WARNING',
+  // 상태 보고 2.1 계약 검사(ADS-BE01) — 입력 이상·ODD 밖 허용은 안전 판정 위반
+  ALLOW_WITH_INVALID_INPUT: 'CRITICAL',
+  ALLOW_OUTSIDE_ODD: 'CRITICAL',
+  COMMERCIAL_INPUT: 'WARNING',
+  REASON_CODE_INCONSISTENT: 'WARNING',
+  MRC_NOT_ALLOWED: 'WARNING',
+  STATE_NOT_IN_PROFILE: 'WARNING',
 };
 
 export function classifyAnomaly(kind: AnomalyKind, signals: AnomalySignal[], ctx: { asil: string | null }): { severity: AnomalySeverity; advice: AnomalyAdvice; reasons: string[] } {

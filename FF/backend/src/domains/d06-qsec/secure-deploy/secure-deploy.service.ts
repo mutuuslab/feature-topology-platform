@@ -22,6 +22,7 @@ import { PublicationRepo } from './publication.repo';
 import { SbomService } from '../vuln-monitor/sbom.service';
 import { OtaJobRepo } from '../../../adapters/ota/ota-job.repo';
 import { AdsPublishGate, type CandidateView } from '../../d02-runtime/variant-conditions/ads-publish-gate';
+import { FeatureEpochRepo } from '../../d03-safety/kill-switch/feature-epoch.repo';
 
 const OTA_TIMEOUT_MS = Number(process.env.PUBLICATION_TIMEOUT_MS ?? 8000);
 const EMERGENCY_TIMEOUT_MS = Number(process.env.KILL_TIMEOUT_MS ?? 5000);
@@ -58,6 +59,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     private readonly sbom: SbomService,
     private readonly otaJobs: OtaJobRepo,
     private readonly adsGate: AdsPublishGate,
+    private readonly epochs: FeatureEpochRepo,
   ) {}
 
   onModuleInit() {
@@ -120,7 +122,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     if (!this.db.inTransaction) throw new Error('게시본은 원 변경과 같은 트랜잭션 안에서 만든다');
     const publicationId = this.repo.nextId();
     const { candidates, ...draft } = d;
-    const payload = { publicationId, kind, sequence: 0, issuedAt: this.clock.iso(), ...draft };
+    // ADS-BE07 — 대상 Feature(차단·복원은 의존 포함)의 지금 epoch. 차단이 없던 Feature면 싣지 않는다
+    const featureEpochs = this.epochs.of(draft.kill?.featureIds ?? [draft.featureId]);
+    const payload = { publicationId, kind, sequence: 0, issuedAt: this.clock.iso(), ...draft, ...(featureEpochs ? { featureEpochs } : {}) };
     const scopeKey = scopeKeyOf(payload);
     payload.sequence = this.repo.nextSequence(scopeKey);
     const emergency = kind !== 'POLICY';

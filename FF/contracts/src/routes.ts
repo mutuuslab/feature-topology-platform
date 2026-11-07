@@ -48,7 +48,7 @@ import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
 import { VehicleReportBody } from './rules/vehicle-requests';
 import { VehicleDeliveryAck } from './rules/vehicle-auth';
 import { OtaEvent, OtaJobActionBody } from './rules/ota';
-import { KillCommandV2, StatusReportV2 } from './schemas/wire';
+import { KillCommandV2, StatusReportBody } from './schemas/wire';
 import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, FieldCaseBody, ImportOrdersBody, RunSyncBody, TranslateLegacyBody } from './rules/ext';
 import { z } from 'zod';
 import { VexStatement } from './rules/sbom';
@@ -295,7 +295,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'vehicleSignedUnleashFlags', method: 'POST', path: '/vehicle/v1/:vin/signed-flags', summary: 'Unleash Edge 평가·FF 경계 검사 후 VIN/TTL 귀속 서명본', component: 'D02-03', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleQueryAll', method: 'POST', path: '/vehicle/v1/:vin/flags', summary: 'IF-10 차량 발신 전체 flag 조회 (OFREP 형식, ETag)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
   { name: 'vehicleQuery', method: 'POST', path: '/vehicle/v1/:vin/flags/:key', summary: 'IF-10 차량 발신 단일 flag 조회 (OFREP 형식)', component: 'D05-01', roles: ['VEHICLE'], body: OfrepBody },
-  { name: 'vehicleStatus', method: 'POST', path: '/vehicle/v1/:vin/status', summary: 'IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로', component: 'D04-03', roles: ['VEHICLE'], body: StatusReportV2 },
+  { name: 'vehicleStatus', method: 'POST', path: '/vehicle/v1/:vin/status', summary: 'IF-06 차량 상태 보고 v2(2.0·2.1) — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 2.1은 판정·전달 단계·제어 책임·MRC를 ADS 상태에 투영, 위반은 이상 징후로', component: 'D04-03', roles: ['VEHICLE'], body: StatusReportBody },
   { name: 'vehicleStatusView', method: 'GET', path: '/api/vehicles/:vin/status', summary: '차량 상태 보고 v2 — 받아들인 최신 상태·최근 수신(위반 포함)', component: 'D04-03', personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
   // 차량 당겨받기 채널(RD-OPS-04) — 서명한 요청(RD-SEC-08 CMAC 또는 mTLS)으로 전달함을 받아 가고 확인한다. docs/80-integration/80-40-vehicle-channel.md
   { name: 'vehicleInbox', method: 'GET', path: '/vehicle/v1/:vin/inbox', summary: 'IF-07 차량 전달함 — 확인하지 않은 서명 게시본(차단·복원은 kill_command v2 봉투 포함), 당겨받기 채널', component: 'D02-03', roles: ['VEHICLE'] },
@@ -637,6 +637,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // 차량 상태 보고 2.1(W — ADS-BE07) — 재연결 대조
+  { name: 'vehicleReconcile', method: 'GET', path: '/api/vehicles/:vin/reconcile', summary: '재연결 대조 — 서버 의도(Feature epoch·종료 차단) vs 차량 보고 2.1 불일치·미확인 기간, 차량 ADS 사건', component: 'D04-03', personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

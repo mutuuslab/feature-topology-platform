@@ -1,9 +1,10 @@
 // 차량 상태 보고 v2 — 수신 검사(보고서 v1.1 13.3.1)와 차량 Guard 검증 순서(9.3)의 순수 규칙.
 // 플랫폼(D04-03)과 차량 시뮬레이터(D02-03)가 같은 판정을 쓴다. 해시·CMAC 계산은 호출자(백엔드)가 하고 결과만 넘긴다.
 import type { GuardState, RejectCode } from '../schemas/safety';
-import { StatusReportV2, wireErrors } from '../schemas/wire';
+import { statusReportSchemaOf, type StatusReport, wireErrors } from '../schemas/wire';
 import { jcs } from './jcs';
 import { reasonAction, type ReasonAction } from './deactivation';
+import { contractViolationV21, profileViolationV21, STALE_EPOCH_ACTION, type FeatureStateProfile } from './status-v2_1';
 
 /** state_auth 대상 — state_auth를 뺀 보고의 JCS(RFC 8785) UTF-8 바이트(ICD 선택). 차량 키 AES-CMAC-128 */
 export function statusAuthCanonical(report: Record<string, unknown>): string {
@@ -29,6 +30,8 @@ export interface StatusCheckContext {
   lastCommand: { request: 'deactivate' | 'restore' | 'activate' | 'sync'; vehicleSeq: number; /** 차량이 이 명령을 받아들였다고 이미 보고했는가(수락된 보고의 vehicle_seq ≥ 발급) */ acknowledged?: boolean } | null;
   /** 3 — 이 보고의 report_seq로 이미 받아들인 보고의 state_auth(없으면 null). 같으면 중계 재전송(중복, TL-M03) */
   acceptedAuthAtSeq?: string | null;
+  /** 4 — 2.1 보고의 기능별 상태 프로필(MRC는 ADS만·허용 실제 실행 상태). 없으면 프로필 검사를 건너뛴다 */
+  profile?: FeatureStateProfile;
 }
 
 export interface StatusCheckResult {
@@ -53,16 +56,21 @@ export function checkStatusReport(report: unknown, ctx: StatusCheckContext): Sta
     violation: { step, code, message },
     action: reasonAction('REJECTED', code === 'AUTH_FAILED' || code === 'REPLAY' ? (code as RejectCode) : 'RESPONSE_INVALID'),
   });
-  const errors = wireErrors(StatusReportV2, report);
-  if (errors.length) return fail('SCHEMA', 'SCHEMA', `상태 보고 v2 스키마 위반: ${errors.slice(0, 3).join('; ')}`);
-  const r = report as StatusReportV2;
+  // 2.0·2.1 동시 수락(D-ADS-1) — schema_version으로 스키마를 고른다
+  const errors = wireErrors(statusReportSchemaOf(report), report);
+  if (errors.length) return fail('SCHEMA', 'SCHEMA', `상태 보고 v${(report as { schema_version?: string })?.schema_version === '2.1' ? '2.1' : '2'} 스키마 위반: ${errors.slice(0, 3).join('; ')}`);
+  const r = report as StatusReport;
+  const c21 = r.schema_version === '2.1' ? contractViolationV21(r) : null;
+  if (c21) return fail('SCHEMA', c21.code, c21.message);
   if (!ctx.authOk) return fail('AUTH', 'AUTH_FAILED', 'state_auth가 차량 키로 검증되지 않습니다 — 위조·변조 보고');
   // TL-M03 — 중계(최소 한 번 전달)는 같은 보고를 다시 보낼 수 있다. 증명까지 같은 보고는 정상 중복이고, 같은 번호의 다른 보고만 REPLAY다
   if (r.report_seq <= ctx.lastReportSeq && ctx.acceptedAuthAtSeq && ctx.acceptedAuthAtSeq === r.state_auth)
-    return { accepted: true, duplicate: true, violation: null, action: reasonAction(r.request_result, r.reject_code ?? 'NONE') };
+    return { accepted: true, duplicate: true, violation: null, action: r.reject_code === 'STALE_EPOCH' ? { ...STALE_EPOCH_ACTION } : reasonAction(r.request_result, r.reject_code ?? 'NONE') };
   if (r.report_seq <= ctx.lastReportSeq) return fail('SEQUENCE', 'REPLAY', `report_seq ${r.report_seq} ≤ 마지막 ${ctx.lastReportSeq} — 재전송`);
   if (ctx.expectedVersion === null) return fail('TARGET', 'UNKNOWN_FEATURE', `${r.feature.id}은(는) 이 차량에 전개되지 않았습니다`);
   if (r.feature.version !== ctx.expectedVersion) return fail('TARGET', 'VERSION_MISMATCH', `보고 Version ${r.feature.version} ≠ 전개 Version ${ctx.expectedVersion}`);
+  const p21 = r.schema_version === '2.1' && ctx.profile ? profileViolationV21(r, ctx.profile) : null;
+  if (p21) return fail('TARGET', p21.code, p21.message);
   const last = ctx.lastCommand;
   if (r.reason.source === 'REMOTE') {
     if (DEACT_STATES.includes(r.state) && last?.request !== 'deactivate') return fail('HISTORY', 'STATE_WITHOUT_COMMAND', `${r.state}을(를) 원격 사유로 보고했지만 이 차량에 비활성화 명령이 없습니다`);
@@ -72,7 +80,8 @@ export function checkStatusReport(report: unknown, ctx: StatusCheckContext): Sta
   // 거부했거나 아직 못 받은 차량(보고 vehicle_seq < 발급)의 ACTIVE는 사실 그대로 — 거부는 거부 코드 조치로, 미적용은 회신 기한 감시로 다룬다
   const tookDeactivation = !!last && (r.vehicle_seq >= last.vehicleSeq || !!last.acknowledged);
   if (r.state === 'ACTIVE' && last?.request === 'deactivate' && tookDeactivation) return fail('HISTORY', 'ACTIVE_WITHOUT_RESTORE', '비활성화 뒤 복원 명령 없이 ACTIVE를 보고했습니다 — 안전 Kill이 풀림');
-  const action = r.persistence === 'FAILED' ? reasonAction('REJECTED', 'NV_WRITE_FAILED') : reasonAction(r.request_result, r.reject_code ?? 'NONE');
+  const action =
+    r.persistence === 'FAILED' ? reasonAction('REJECTED', 'NV_WRITE_FAILED') : r.reject_code === 'STALE_EPOCH' ? { ...STALE_EPOCH_ACTION } : reasonAction(r.request_result, r.reject_code ?? 'NONE');
   return { accepted: true, violation: null, action };
 }
 

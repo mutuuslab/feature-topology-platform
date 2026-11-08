@@ -71,7 +71,7 @@ describe('정적 데모 — Feature DB 검색', () => {
   it('등록 1단계 검색도 같다', async () => {
     mount('author', '/feature/propose', <ProposeScreen />);
     fireEvent.change(await screen.findByLabelText(/^기능 검색/), { target: { value: '오토' } });
-    expect(await screen.findByRole('button', { name: 'CH-BRK-009 대표로' }, { timeout: 3000 })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: 'CH-BRK-009 기본 정보 가져오기' }, { timeout: 3000 })).toBeTruthy();
     expect(screen.getByText(P.searchHintStatic)).toBeTruthy();
     expect(document.querySelector('[data-state="error"]')).toBeNull();
   });

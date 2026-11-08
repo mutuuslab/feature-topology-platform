@@ -33,7 +33,7 @@ export const apiRefs = (refId: string = REF.trafficLight) => ({
 /** 제안 1단계 — 검색해서 대표 기준 행을 고르고 2단계(등록 정보 확인)로 간다 */
 export async function pickPrimaryRef(page: Page, query: string, refId: string) {
   await page.locator('input[name="refSearch"]').fill(query);
-  const choose = page.getByRole('button', { name: `${refId} 대표로` });
+  const choose = page.getByRole('button', { name: `${refId} 기본 정보 가져오기` });
   await expect(choose).toBeVisible();
   await choose.click();
   await expect(page.locator(`[data-ref-chosen="${refId}"][data-role="PRIMARY"]`)).toBeVisible();

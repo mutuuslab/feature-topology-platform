@@ -1,7 +1,7 @@
 // 시연 흐름 — 계정 상태 기록·컴플라이언스 룰 소유자 이관(F0, D-GAP-1·B13). 판정은 서버와 같은 contracts 규칙(ownerTransferBlocker)으로 한다.
 // 병합 때 sim/index.ts HANDLERS 끝에 `() => import('./handlers/f0'),` 한 줄로 연결한다.
 import { AccountStatusBody, COMPLIANCE_RULE_ROLES, DEMO_PERSONAS, ownerTransferBlocker, TransferOwnerBody, type AccountState, type AccountView, type ComplianceRuleDetail, type OwnerTransfer } from '@ff/contracts';
-import { registerSimHandler, registerSimView } from '../engine';
+import { registerSimHandler, registerSimReader, registerSimView } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
 
 const ACC = 'f0Account';
@@ -57,3 +57,15 @@ registerSimHandler(
   { body: TransferOwnerBody },
 );
 registerSimView('complianceRule', { collection: RULE, idKey: 'ruleId', detailParam: 'id' });
+
+// Account records can change after the immutable rule snapshot was captured.
+// Derive the displayed state for the current owner, retaining the full rule and transfer history.
+registerSimReader('complianceRule', async (ctx) => {
+  if (!ctx.list(ACC).length) return undefined;
+  const base = await ctx.snapshot<ComplianceRuleDetail>();
+  const local = ctx.get<ComplianceRuleDetail>(RULE, ctx.req.params.id);
+  const detail = base ? { ...base, ...local } : local;
+  const ownerId = detail?.rule?.ownerId;
+  const account = ownerId ? ctx.get<AccountView>(ACC, ownerId) : undefined;
+  return account ? { ...detail, ownerState: account.state } : undefined;
+});

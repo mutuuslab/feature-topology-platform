@@ -55,6 +55,7 @@ import { ChangeKindChip } from '../ads/ChangeImpact';
 import { AdsClassificationPanel } from '../ads/AdsClassification';
 import { BaselineHistory, HistoryTab, IssueInputs, RejectAction, ReleaseCandidatePanel, RetireAction, ReviewRecords } from './LifecyclePanels';
 import { lcGate } from '../../copy/lifecycle-gate';
+import { errors as demoErrors } from '../../copy/errors';
 import type { IssueItem } from '../../../../contracts/src/rules/feature-retire';
 
 const T = ko.detail;
@@ -144,8 +145,8 @@ export default function FeatureDetail() {
                     <Button
                       key={t.to}
                       variant={t.to === 'DEPRECATED' || t.to === 'RETIRED' ? 'default' : 'primary'}
-                      disabled={!!roleBlocker(t)}
-                      reason={roleBlocker(t)?.code === 'ROLE' ? NT.roleBlocked(t.roles.join('·')) : roleBlocker(t)?.message}
+                      disabled={!!roleBlocker(t) || (STATIC_MODE && t.to === 'DEVELOPING')}
+                      reason={STATIC_MODE && t.to === 'DEVELOPING' ? demoErrors.readOnlyDemo : roleBlocker(t)?.code === 'ROLE' ? NT.roleBlocked(t.roles.join('·')) : roleBlocker(t)?.message}
                       onClick={() => setTransitionTo(t.to)}
                     >
                       {T.transition(t.to)}

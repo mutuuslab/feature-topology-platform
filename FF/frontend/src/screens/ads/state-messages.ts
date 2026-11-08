@@ -49,7 +49,7 @@ export function customerMessage(v: CustomerStateView | undefined): KeySpec {
 
 /** 배포 상세 — 적용 확인 안 된 차량 N대(= 대상 − 적용 확인) */
 export function convergenceMessage(c: ConvergenceView | undefined): KeySpec {
-  if (!c) return { tone: 'neutral', value: '—', text: CV.key(0, 0) };
+  if (!c) return { tone: 'neutral', value: '—', text: CV.unknown };
   if (c.total === 0) return { tone: 'neutral', text: CV.empty };
   if (c.notApplied === 0) return { tone: 'ok', text: CV.keyAll(c.total) };
   return { tone: 'warn', value: c.notApplied, text: CV.key(c.notApplied, c.total) };

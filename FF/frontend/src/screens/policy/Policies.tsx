@@ -17,7 +17,7 @@ import { FlagCodeSummary } from '../flag-code/badge';
 import { PolicyVersions } from './PolicyVersions';
 import { PolicyHistory } from './PolicyHistory';
 import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
-import { ChangeKindChip, reharaAfterRelease, SignAction, useFeatureChange } from '../ads/ChangeImpact';
+import { ChangeKindChip } from '../ads/ChangeImpact';
 import { PolicyDeployPreview } from '../ads/BulkPreviews';
 import { stageGuard } from './expansion-text';
 
@@ -158,9 +158,7 @@ export function PolicyDetail() {
   useEffect(() => {
     if (next) nav(`/policies/${next.policyId}`, { replace: true });
   }, [next, nav]);
-  // 출시 뒤 열린 재-HARA가 있으면 배포 서명 버튼 대신 사유(ADS-UI09) — 서버 거부는 결함 ADS-BE06이 맞춘다
-  const change = useFeatureChange(p?.featureId ?? '', p?.featureVersion ?? '');
-  const signBlocked = !!change && reharaAfterRelease(change) > 0;
+  // D-RD-6: 재-HARA 중에도 승인된 완화 정책은 배포한다. 출시 전이·서명 검사는 각 경로에서 유지한다.
   // 다시 검증할 수 있는 상태(서버 EDITABLE)에서 검증이 없거나 낡았으면 검증이 다음 행동
   const editable = !!p && ['DRAFT', 'VALIDATED', 'REJECTED'].includes(p.status);
   const needsValidation = editable && (!d?.lastRun || !d.hashMatchesValidation);
@@ -207,14 +205,11 @@ export function PolicyDetail() {
                       {T.approve} / {T.reject}
                     </Button>
                   )}
-                  {p.status === 'APPROVED' &&
-                    (signBlocked && change ? (
-                      <SignAction v={change} />
-                    ) : (
-                      <Button variant="primary" disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('deploy')}>
-                        {T.deploy}
-                      </Button>
-                    ))}
+                  {p.status === 'APPROVED' && (
+                    <Button variant="primary" disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('deploy')}>
+                      {T.deploy}
+                    </Button>
+                  )}
                   {p.status === 'DEPLOYED' && (
                     <Button disabled={!releaser.ok} title={releaser.hint} onClick={() => setDrawer('stage')} data-tour="policy-stage">
                       {T.stage}

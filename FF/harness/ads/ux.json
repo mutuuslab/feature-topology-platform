@@ -1213,7 +1213,7 @@
       },
       "primaryAction": {
         "label": "배포 서명",
-        "blockedReason": "출시 뒤 열린 재-HARA 1건이 있어 배포·서명할 수 없습니다 — 기능안전 담당자의 종결이 필요합니다."
+        "blockedReason": "출시 뒤 열린 재-HARA 1건이 있어 출시·출시 책임 서명을 진행할 수 없습니다 — 기능안전 담당자의 종결이 필요합니다. 승인된 정책 배포는 기존 승인·검증·권한 조건을 따릅니다."
       },
       "components": [
         "PageHeader",
@@ -1245,8 +1245,8 @@
         },
         {
           "severity": "major",
-          "issue": "'배포·서명 버튼 대신 사유'가 정책 상세·배포 Drawer·Feature Release Sign-off에 흩어져 각자 다른 문구가 될 위험 — 지금은 비활성 버튼+title 방식이다.",
-          "fix": "BlockedAction 하나와 같은 사유 문구 키를 세 위치가 함께 쓴다.",
+          "issue": "열린 재-HARA의 차단 범위를 '배포·서명'으로 묶으면 정책 상세의 승인된 정책 배포까지 막는 것으로 읽힌다. 출시 전이·Release Sign-off와 정책 배포를 구분해야 한다.",
+          "fix": "차단 사유는 출시 전이·Release Sign-off에만 적용한다. 정책 상세에서는 열린 재-HARA를 알리되 승인된 정책의 서버 배포는 기존 승인·검증·권한에 따라 제공한다.",
           "status": "accepted",
           "resolution": "UX 사양으로 채택 — 구현 완료 조건(design tests \"UX 사양 단언\") · P-12(BlockedAction) 신설"
         },
@@ -1267,7 +1267,7 @@
         }
       ],
       "verdict": "통과",
-      "sha": "cc4fa95f338a"
+      "sha": "5e34933e6edf"
     },
     "ADS-UI10": {
       "screens": [

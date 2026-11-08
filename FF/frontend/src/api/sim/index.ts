@@ -13,6 +13,8 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/policy-ops'),
   () => import('./handlers/business'),
   () => import('./handlers/ext-mock'),
+  () => import('./handlers/p10-readonly'),
+  () => import('./handlers/f0'),
 ];
 setSimHandlerLoader(() => Promise.all(HANDLERS.map((load) => load())));
 

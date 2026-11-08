@@ -272,7 +272,7 @@ test('정적 데모: Feature DB 목록·등록 1단계 검색 AVH', async ({ pag
   await noErrorBox(page, 'Feature DB 검색');
   await page.goto('/feature/propose');
   await page.locator('input[name="refSearch"]').fill('AVH');
-  await expect(page.getByRole('button', { name: 'CH-BRK-009 대표로' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'CH-BRK-009 기본 정보 가져오기' })).toBeVisible();
   await noErrorBox(page, '등록 1단계 검색');
   expect([...missing], `스냅샷에 없는 파일 — tools/snapshot-api.ts에 추가`).toEqual([]);
   expect(errors).toEqual([]);

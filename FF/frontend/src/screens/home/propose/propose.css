@@ -1,0 +1,24 @@
+.propose-role-guide { border-inline-start: 3px solid var(--accent); padding-inline-start: var(--sp-4); }
+.propose-role-guide h3 { margin: 0 0 var(--sp-3); }
+.propose-role-guide dl { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin: 0; }
+.propose-role-guide dt { font-weight: 700; margin-bottom: var(--sp-1); }
+.propose-role-guide dd { color: var(--ink-2); margin: 0; max-width: 62ch; }
+.propose-selection-summary { padding: var(--sp-3); background: var(--accent-soft); color: var(--ink); overflow-wrap: anywhere; }
+.propose-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--sp-2); }
+.propose-section-heading { margin: 0; padding-bottom: var(--sp-2); border-bottom: 1px solid var(--line); }
+.propose-autofill { border-block: 1px solid var(--line); padding-block: var(--sp-3); }
+.propose-autofill > summary { cursor: pointer; font-weight: 650; }
+.propose-autofill[open] > summary { margin-bottom: var(--sp-4); }
+.propose-review { margin: 0; }
+.propose-review > div { display: grid; grid-template-columns: minmax(7rem, 1fr) minmax(0, 3fr); gap: var(--sp-3); padding-block: var(--sp-3); border-bottom: 1px solid var(--line); }
+.propose-review dt { color: var(--muted); }
+.propose-review dd { margin: 0; overflow-wrap: anywhere; }
+.propose-review dd p { margin: var(--sp-1) 0 0; }
+.propose-review ul { margin: 0; padding-inline-start: var(--sp-4); }
+.propose-acknowledge { display: flex; gap: var(--sp-2); align-items: flex-start; }
+.propose-acknowledge input { margin-top: var(--sp-1); flex-shrink: 0; }
+@media (max-width: 700px) {
+  .propose-role-guide dl { grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+  .propose-role-guide { padding-inline-start: var(--sp-3); }
+  .propose-review > div { grid-template-columns: minmax(0, 1fr); gap: var(--sp-1); }
+}

@@ -55,6 +55,45 @@ afterEach(() => {
 
 const NEW = { featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '위험 단계 감속 요청 파라미터 — 감속 시작 거리 조정판', enabled: true, safeDefault: false, entitlementCatalogId: 'CAT-00019', rollout: { mode: 'ALL', basisPoints: 10000, salt: 'FF-COHORT-SALT-1' } };
 
+describe('새 정책 게시본의 차량 수렴 읽기', () => {
+  it('되돌리기 새 게시본도 미수신 → 회신 5/6 → 재제출 → 적용 확인 6/6을 같은 게시본으로 읽는다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    await run('decideRollbackRequest', { params: { id: 'RBR-00005' }, role: 'opslead', body: { decision: 'APPROVE', comment: '앞 판 복구 승인' } });
+    const execution = await run('executeRollbackRequest', { params: { id: 'RBR-00005' }, role: 'operator', body: {} });
+    const id = execution.artifactId;
+    const initial = await run('adsConvergence', { params: { id } });
+    expect(initial).toMatchObject({ publicationId: id, status: 'DISPATCHED', total: 6, notApplied: 6, bins: { APPLIED: 0, NOT_RECEIVED: 6 }, cumulative: { received: 0, accepted: 0 } });
+    await vi.advanceTimersByTimeAsync(8000);
+    const partial = await run('adsConvergence', { params: { id } });
+    expect(partial).toMatchObject({ publicationId: id, total: 6, notApplied: 1, bins: { APPLIED: 5, NOT_RECEIVED: 1 }, cumulative: { received: 5, accepted: 5 } });
+    expect(Object.values(partial.bins).reduce((sum: number, n) => sum + Number(n), 0)).toBe(6);
+    const detail = await run('publicationDetail', { params: { id } });
+    expect(detail.delivery.state).toBe('RETRY_WAIT');
+    await run('otaJobRetry', { params: { jobId: detail.delivery.jobId }, role: 'operator', body: { reason: '통신 복구 차량 재제출' } });
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(await run('adsConvergence', { params: { id } })).toMatchObject({ publicationId: id, status: 'CONFIRMED', total: 6, notApplied: 0, bins: { APPLIED: 6, NOT_RECEIVED: 0 }, cumulative: { received: 6, accepted: 6 } });
+    expect(await run('rollbackExecution', { params: { id: execution.executionId } })).toMatchObject({ status: 'COMPLETED', result: 'SUCCESS' });
+  });
+
+  it('ACK와 거부는 적용 확인으로 세지 않으며, 없는 게시본은 정상 빈 집계로 만들지 않는다', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    await run('decideRollbackRequest', { params: { id: 'RBR-00005' }, role: 'opslead', body: { decision: 'APPROVE', comment: '앞 판 복구 승인' } });
+    const execution = await run('executeRollbackRequest', { params: { id: 'RBR-00005' }, role: 'operator', body: {} });
+    const id = execution.artifactId;
+    const overlay = engine.__overlayForTest()!;
+    const publication = overlay.entities.publication[id] as any;
+    const [ackVin, rejectedVin] = publication.payload.targets;
+    // Inject only report facts to isolate the reader's server-equivalent classification boundary.
+    publication.nodes.find((n: any) => n.nodeId === ackVin).state = 'CONFIRMED';
+    overlay.data.killDelivery[id].readbacks = [
+      { vin: ackVin, publicationId: id, metricType: 'ACK', at: new Date().toISOString() },
+      { vin: rejectedVin, publicationId: id, metricType: 'READBACK', rejectReason: 'POLICY_HASH_MISMATCH', at: new Date().toISOString() },
+    ];
+    expect(await run('adsConvergence', { params: { id } })).toMatchObject({ total: 6, notApplied: 6, bins: { APPLIED: 0, RECEIVED_ONLY: 1, REJECTED: 1, NOT_RECEIVED: 4 } });
+    await expect(run('adsConvergence', { params: { id: 'PUB-99999' } })).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+  });
+});
+
 describe('서버와 같은 판정', () => {
   it('정책 내용 해시는 서버 policyHash와 같다', async () => {
     const { policyHash } = await import('../api/sim/handlers/policy-ops');
@@ -283,6 +322,10 @@ describe('이상 대응·사후 검토·레거시 해제', () => {
     expect((await run('anomalyDetail', { params: { id: 'ANM-00005' } })).status).toBe('MITIGATED');
   });
   it('사후 독립 검토 — 승인자는 검토할 수 없고, 독립 검토는 한 번만', async () => {
+    // Fixture facts are captured at checkedAt. Wall-clock time would legitimately turn PENDING into OVERDUE.
+    // Only this case fixes Date; the existing afterEach restores real timers even when an assertion fails.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(snap('audit_chain').checkedAt));
     await expect(run('recordKillPostReview', { params: { id: 'KILL-00001' }, role: 'quality', body: { summary: '승인 근거 확인' } })).rejects.toMatchObject({ status: 403, code: 'SEPARATION_OF_DUTY' });
     const r = await run('recordKillPostReview', { params: { id: 'KILL-00001' }, role: 'viewer', body: { summary: '긴급 권한 사용 근거·범위 적정' } });
     expect(r).toMatchObject({ status: 'REVIEWED', review: { reviewer: 'usr-viewer', role: 'AUDITOR' } });

@@ -229,7 +229,7 @@ export function DeploymentDetail() {
   // OTA 배포 캠페인 요청(IF-05) — 모의면 캠페인 응답을 실제처럼 보이지 않게, OTA 서버 연동(live)이면 표시 없음(RD-UX-04)
   const ota = useConnectionLabel('ota');
   return (
-    <div className="ds-screen">
+    <div className="ds-screen" data-publication-id={id} data-publication-status={p?.status} data-publication-targets={p?.payload.targets.length}>
       <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && p && (
           <>

@@ -82,6 +82,7 @@ export const customerTab = {
 
 /** 배포 상세 — 수렴 7구간 */
 export const convergence = {
+  unknown: '차량 적용 상태를 확인하지 못했습니다 — 다시 시도해 주세요',
   key: (n: number, total: number) => `적용 확인 안 된 차량 ${n}대 — 대상 ${total}대 중`,
   keyAll: (total: number) => `대상 ${total}대 모두 적용 확인`,
   lead: '게시본이 차량에 닿고 적용됐는지 단계별로 나눠 셉니다.',

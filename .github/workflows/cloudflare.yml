@@ -42,6 +42,17 @@ jobs:
           FF_SHOWCASE=1 FF_SHOWCASE_VEHICLES=480 FF_SYNTHETIC=24000 npm run snapshot:api
           VITE_DATA_MODE=static npm run build -w feature-topology-frontend
           node -e "require('node:fs').writeFileSync('frontend/dist/release.json', JSON.stringify({commit:process.env.GITHUB_SHA,builtAt:new Date().toISOString(),mode:'static'}))"
+      - name: Validate Pages publish artifact
+        working-directory: FF
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tools/snapshot-pack.test.ts
+          node tools/snapshot-pack.ts frontend/dist
+          node tools/snapshot-coverage.ts frontend/dist/api-snapshot
+          node tools/local-leaks.ts frontend/dist
+          node tools/bundle-budget.ts frontend/dist
+          node tools/snapshot-pack.ts --check-file-count frontend/dist
       # wrangler는 정확한 버전으로 고정한다 — 배포 도구가 몰래 바뀌지 않게(출시 준비 RD-SEC-15). 올릴 때 두 곳을 함께 바꾼다.
       - name: Ensure Pages project
         env:

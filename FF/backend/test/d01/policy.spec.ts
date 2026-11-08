@@ -6,7 +6,7 @@ import { FeatureRepo } from '../../src/domains/d01-policy/repos';
 import { DB, type Db } from '../../src/kernel/db';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
-import { actor, bootApp, confirmSafety, signG7, withRef, SDK_KEY } from '../helpers';
+import { actor, bootApp, confirmSafety, releaseVersion, signG7, withRef, SDK_KEY } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -141,6 +141,9 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
 
     it('배포 → OFREP·활성화 판단에 반영 (권한 불필요 정책)', async () => {
       await http().post(`/api/policies/${pid}/deploy`).set(JUDGE).send({ reason: '배포' }).expect(403);
+      // 출시 전(G8·G9 미통과) Version은 Shadow만(FR-RDD-001-006) — 실제 배포는 출시 뒤
+      expect((await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '서버 배포' }).expect(422)).body.error.details.blockers[0].code).toBe('PRE_RELEASE_SHADOW_ONLY');
+      await releaseVersion(http, fid, '0.1.0');
       await http().post(`/api/policies/${pid}/deploy`).set(RELEASE).send({ reason: '서버 배포' }).expect(200);
       const r = await http().post(`/ofrep/v1/evaluate/flags/${spec().flagKey}`).set(SDK_KEY).send({ context: { targetingKey: 'KMH-NX4-0001' } }).expect(200); // 지원 조건(SW ≥ 1.2.1)을 만족하는 차량
       expect(r.body).toMatchObject({ value: true, reason: 'TARGETING_MATCH' });

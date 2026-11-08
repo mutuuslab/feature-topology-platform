@@ -32803,6 +32803,406 @@
           }
         }
       }
+    },
+    "/api/exceptions": {
+      "get": {
+        "summary": "예외 정책 목록 — active=true면 적용 중인 예외만(없으면 빈 목록)",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "exceptionPolicies",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "예외 승인 요청 — 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(우회 불가 4가지 제외)",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "createExceptionPolicy",
+        "description": "허용 역할: Feature 출시 담당자, 운영자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "BYPASS",
+                      "GATE_PENDING"
+                    ]
+                  },
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "featureVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "policyId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^POL-\\d{5}$",
+                    "default": null
+                  },
+                  "checks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "COMPLIANCE_RULE",
+                        "FLAG_CODE",
+                        "ADS_PUBLISH",
+                        "RELEASE_GATE",
+                        "SIGNATURE_INTEGRITY",
+                        "KILL_TWO_PERSON",
+                        "SEPARATION_OF_DUTY",
+                        "STOP_ALWAYS"
+                      ]
+                    },
+                    "maxItems": 8,
+                    "default": []
+                  },
+                  "ruleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 40
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  },
+                  "gates": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "G1",
+                        "G2",
+                        "G3",
+                        "G4",
+                        "G5",
+                        "G6",
+                        "G7",
+                        "G8",
+                        "G9"
+                      ]
+                    },
+                    "maxItems": 9,
+                    "default": []
+                  },
+                  "restriction": {
+                    "type": "string",
+                    "enum": [
+                      "LIMITED",
+                      "PILOT",
+                      "SHADOW"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 1000
+                  },
+                  "periodHours": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 168
+                  },
+                  "dueDate": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "default": null
+                  },
+                  "residualRisk": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 1000,
+                    "default": null
+                  }
+                },
+                "required": [
+                  "kind",
+                  "featureId",
+                  "featureVersion",
+                  "restriction",
+                  "reason",
+                  "periodHours"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/exceptions/{id}": {
+      "get": {
+        "summary": "예외 정책 상세 — 승인·만료·적용·원복과 상태 전이 기록",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "exceptionPolicy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/exceptions/{id}/decision": {
+      "post": {
+        "summary": "예외 승인·반려 — 요청자 제외 서로 다른 두 사람, 승인자 지정 만료 일시",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "decideExceptionPolicy",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영 리더, 사이버보안 담당자(CSM), Gate 판정자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  },
+                  "expiresAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/exceptions/{id}/revoke": {
+      "post": {
+        "summary": "예외 회수 — 이전 정책 상태로 원복",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "revokeExceptionPolicy",
+        "description": "허용 역할: Feature 출시 담당자, 운영자, 기능안전 담당자(FSM), 운영 리더, 사이버보안 담당자(CSM), Gate 판정자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/release-gate": {
+      "get": {
+        "summary": "출시 전 배포 판정 — 출시 전 Version은 Shadow만, Gate 예외 제한 범위",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "policyReleaseGate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
     }
   }
 }

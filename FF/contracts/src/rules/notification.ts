@@ -702,6 +702,51 @@ export const NOTIFICATION_RULES: Record<string, NotificationRule> = {
       };
     },
   },
+  // 예외 정책 승인 요청(GX) → 예외 승인 역할(요청자 제외). 두 번째 승인도 같은 알림으로 다시 묻는다
+  'exception.requested': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      return {
+        category: 'APPROVAL',
+        severity: 'WARNING',
+        title: `예외 승인 요청 — ${p.exceptionId} (${p.kindLabel ?? p.kind})`,
+        fields: [
+          { label: '대상', value: `${featureLabel(ctx, String(p.featureId))} ${p.featureVersion ?? ''}${p.policyId ? ` · 정책 ${p.policyId}` : ''}`.trim() },
+          { label: '우회·예외 대상', value: String(p.scope ?? '-') },
+          { label: '제한 조건', value: String(p.restrictionLabel ?? p.restriction ?? '-') },
+          { label: '긴급 사유', value: String(p.reason ?? '-') },
+          { label: '승인', value: `${Number(p.approvals ?? 0)} / 2` },
+        ],
+        link: `/verify/exceptions?id=${encodeURIComponent(String(p.exceptionId))}`,
+        recipients: roles(['SAFETY_OFFICER', 'OPS_LEAD', 'SECURITY_OFFICER', 'GATE_JUDGE']),
+        exclude: [String(p.requestedBy ?? ''), ...(Array.isArray(p.approvedBy) ? p.approvedBy.map(String) : [])].filter(Boolean),
+        requirementIds: ['FR-EXC-001-001'],
+      };
+    },
+  },
+  // 예외 만료·회수 → 이전 정책 상태로 원복, 원복 메시지(FR-EXC-002-004) — 요청자·승인자·Owner 팀
+  'exception.reverted': {
+    needs: ['feature'],
+    build: (ctx) => {
+      const p = ctx.event.payload;
+      const people = [p.requestedBy, ...(Array.isArray(p.approvedBy) ? p.approvedBy : [])].filter((x): x is string => typeof x === 'string' && !!x);
+      return {
+        category: 'DEPLOY',
+        severity: 'WARNING',
+        title: `예외 ${p.cause === 'REVOKED' ? '회수' : '만료'} — ${p.exceptionId} 이전 정책 상태로 원복`,
+        fields: [
+          { label: '대상', value: `${featureLabel(ctx, String(p.featureId))} ${p.featureVersion ?? ''}`.trim() },
+          { label: '원복 메시지', value: String(p.message ?? '-') },
+          { label: '만료 일시', value: String(p.expiresAt ?? '-') },
+        ],
+        link: `/verify/exceptions?id=${encodeURIComponent(String(p.exceptionId))}`,
+        recipients: [...owner(ctx), ...[...new Set(people)].map((id) => ({ kind: 'user', id }) as Recipient)],
+        exclude: [],
+        requirementIds: ['FR-EXC-002-004'],
+      };
+    },
+  },
 };
 
 /** 보고서 승인 역할 → 업무 이름(알림 문구) */

@@ -5,6 +5,7 @@ import { apiRefs, REF } from './refdb';
 import { recordAnalysisApi, signG7Api } from './analysis';
 import { waiveFlagCodeGate } from './flag-code-gate';
 import { acceptSupplierFixture } from './supplier';
+import { releaseVersionApi } from './release';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -82,6 +83,11 @@ test('정책: 작성 → 8종 검증 GO → 승인 → Feature VERIFIED → 서�
 
   // 새 정책 키는 차량 SW 저장소에 호출이 없다 — 구현 담당 해제 요청·승인자 승인 뒤 배포(20-97 출시 관문)
   await waiveFlagCodeGate(request, flagKey, fid, '0.1.0');
+  // 출시 전(G8·G9 미통과) Version은 Shadow만 — 실제 배포는 출시 뒤(FR-RDD-001-006)
+  const early = await request.post(`${API}/api/policies/${pid}/deploy`, { headers: { 'X-Actor-Id': 'usr-coordinator', 'X-Actor-Role': 'RELEASE_MANAGER' }, data: { reason: '출시 전 배포 시도' } });
+  expect(early.status()).toBe(422);
+  expect((await early.json()).error.details.blockers[0].code).toBe('PRE_RELEASE_SHADOW_ONLY');
+  await releaseVersionApi(request, fid, '0.1.0');
   // 서버 배포 — 출시 담당(협의 이관 계정, RELEASE_MANAGER). 승인자는 출시를 겸하지 않는다(FFG-PLT-016)
   await asRole(page, 'coordinator');
   await page.reload();

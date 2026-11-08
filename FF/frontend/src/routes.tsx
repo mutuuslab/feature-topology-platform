@@ -311,6 +311,8 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/baselines/eol', element: def(() => import('./screens/bom/EolChecks')), title: '출고 실물 구성 대조', group: 'config', parent: '/baselines', components: ['D05-02'], v2: true },
   { path: '/ops/ota-installs', element: def(() => import('./screens/ads/OtaInstalls')), title: 'OTA 설치 단계', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },
   { path: '/deployments/campaigns/:id', element: def(() => import('./screens/ads/Campaign')), title: '전송 캠페인', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },
+  // 예외 승인(GX) — 임시 우회·PENDING Gate 예외 요청·2인 승인·만료 원복, 출시 전 Shadow만
+  { path: '/verify/exceptions', element: def(() => import('./screens/policy/Exceptions').then((m) => ({ default: m.ExceptionsScreen }))), title: '예외 승인', group: 'verify', menu: '/verify/exceptions', components: ['D03-02'], v2: true },
 ];
 
 // Translate display titles only. Paths, group keys, menu bindings and access metadata remain unchanged.

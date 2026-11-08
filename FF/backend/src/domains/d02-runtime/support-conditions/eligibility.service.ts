@@ -3,7 +3,7 @@
 // HW = 출고 구성 기록(ORC-UI08 전에는 없음) 또는 차량 보고 구성, SW = 차량 보고 구성의 기능 앱 SW와 지원 조건 필요 버전.
 // OTA 설치 기록 연동(ADS-OTA01) 전에는 '업데이트 후 가능'을 내지 않고 차량 확인 필요 — 미확인(설치 기록 연동 전). 판단 불가·미확인은 구매 가능으로 세지 않는다.
 import { Controller, Get, Inject, Injectable, Param, Query } from '@nestjs/common';
-import { CONFIG_REPORT_STALE_MS, decideEligibility, ELIGIBILITY_LABEL, ELIGIBILITY_STATES, OTA_INSTALL_LINKED, profileOf, requiredSw } from '@ff/contracts';
+import { attributeFreshness, CONFIG_REPORT_STALE_MS, decideEligibility, ELIGIBILITY_LABEL, ELIGIBILITY_STATES, OTA_INSTALL_LINKED, profileOf, requiredSw } from '@ff/contracts';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { DB, type Db } from '../../../kernel/db';
@@ -47,6 +47,7 @@ export class EligibilityService {
     return OTA_INSTALL_LINKED || !!this.db.get('SELECT 1 FROM ota_install_record WHERE vin = ? LIMIT 1', vin);
   }
 
+  /** @req FR-SUP-004-003 — 판단 전 형상 보고 최신성 확인, 미충족이면 판단하지 않고 최신성 미충족 */
   decide(vin: string, catalogId: string | undefined) {
     if (!catalogId) throw new DomainError('VALIDATION', '상품(catalogId)을 고르세요.');
     const v = this.fleet.vehicle(vin);
@@ -56,6 +57,17 @@ export class EligibilityService {
     const f = this.featureFor(catalogId);
     const now = this.clock.now().getTime();
     const report = this.ads.report(vin);
+    const head = {
+      vin: v.vin,
+      vehicle: { vin: v.vin, label: v.label, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim },
+      catalog: { catalogId, name: product.name, version: product.version, country: product.country, saleType: product.saleType },
+      feature: f ? { featureId: f.featureId, version: f.version, name: f.name } : null,
+    };
+    // FR-SUP-004-003 — 판단 전 차량 속성(형상 보고) 최신성 확인. 기준 시간을 넘긴 보고면 판단하지 않고 '최신성 미충족'을 돌려준다(차량 쪽 Safe Default는 그대로).
+    // 보고가 아예 없는 차량은 지금처럼 판정이 '판단 불가'로 낸다
+    const freshness = report ? attributeFreshness(report.reportedAt, new Date(now).toISOString(), CONFIG_REPORT_STALE_MS) : null;
+    if (freshness && !freshness.met)
+      return { ...head, state: 'VEHICLE_CHECK' as const, label: ELIGIBILITY_LABEL.VEHICLE_CHECK, headline: freshness.message, reasons: [], states: ELIGIBILITY_STATES, judged: false, freshness, otaLinked: this.otaLinked(vin), configSet: null, checkedAt: this.clock.iso(), observedAt: report?.reportedAt ?? null, staleAfterMs: CONFIG_REPORT_STALE_MS };
     // 법적 승인 — 시장 Profile, ADS Feature면 ADS Profile도 확인이어야 한다
     const market = profileOf(v.country);
     const adsProfile = f && this.adsFeature(f.featureId, f.version) ? profileOf('ADS') ?? COMPLIANCE_ADS_FALLBACK : null;
@@ -76,15 +88,14 @@ export class EligibilityService {
       otaLinked: this.otaLinked(vin),
     });
     return {
-      vin: v.vin,
-      vehicle: { vin: v.vin, label: v.label, country: v.country, vehicleModel: v.vehicleModel, trim: v.trim },
-      catalog: { catalogId, name: product.name, version: product.version, country: product.country, saleType: product.saleType },
-      feature: f ? { featureId: f.featureId, version: f.version, name: f.name } : null,
+      ...head,
       state: d.state,
       label: ELIGIBILITY_LABEL[d.state],
       headline: d.headline,
       reasons: d.reasons,
       states: ELIGIBILITY_STATES,
+      judged: true,
+      freshness,
       otaLinked: this.otaLinked(vin),
       configSet: f ? this.ads.vehicleVerdict(vin, f.featureId, f.version) : null,
       checkedAt: this.clock.iso(),

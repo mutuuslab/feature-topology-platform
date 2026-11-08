@@ -69,6 +69,8 @@ export const PolicySchema = PolicySpec.extend({
   deployedAt: z.string().nullable().optional(),
   /** 지금 단계가 시작된 시각 — Canary 관측 기간의 기준 */
   stagedAt: z.string().nullable().optional(),
+  /** 예외(Gate PENDING·임시 우회)로 연 배포의 제한 범위 — 해시 밖 운영 값. 단계는 capBasisPoints를 넘지 못한다(FR-REG-005-010) */
+  exceptionScope: z.object({ exceptionIds: z.array(z.string()), restriction: z.enum(['LIMITED', 'PILOT']), capBasisPoints: z.number().int().min(0).max(10000) }).nullable().optional(),
 });
 export type Policy = z.infer<typeof PolicySchema>;
 

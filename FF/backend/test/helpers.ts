@@ -140,3 +140,15 @@ export function nextRefId(asil = 'QM'): string {
 export const withRef = <T extends { asil?: string }>(body: T, refId = nextRefId(body.asil ?? 'QM')) => ({ ...body, featureRefs: [{ refId, role: 'PRIMARY' as const }] });
 /** OFREP SDK 키(결정 C8) — 데모 인증 방식의 공개 기본 키를 Bearer로 */
 export const SDK_KEY = { Authorization: `Bearer ${DEMO_SDK_KEY}` };
+
+/**
+ * 출시 — G8·G9 PASS → Feature Owner Release Sign-off → RELEASED. 출시 전 Version은 Shadow만이라(FR-RDD-001-006, 결정 B8 (c))
+ * 차량에서 실제로 켜는 배포 시험은 출시한 Version으로 한다
+ */
+export async function releaseVersion(http: () => request.Agent | ReturnType<typeof request>, featureId: string, version: string, who = { judge: actor('choi.judge', 'GATE_JUDGE'), owner: actor('kim.author', 'FEATURE_AUTHOR'), release: actor('han.release', 'RELEASE_MANAGER') }) {
+  const base = `/api/features/${featureId}/versions/${version}`;
+  const h = http as () => ReturnType<typeof request>;
+  for (const gate of ['G8', 'G9']) await h().post(`${base}/gates`).set(who.judge).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
+  await h().post(`${base}/release-signoff`).set(who.owner).send({ reason: '출시 책임 확인' }).expect(201);
+  await h().post(`${base}/transitions`).set(who.release).send({ to: 'RELEASED', reason: '출시' }).expect(200);
+}

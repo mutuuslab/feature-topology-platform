@@ -134,7 +134,11 @@ export interface ApplicableRule {
   reason: string;
 }
 
-/** 적용 대상 룰 — 범위에 드는 룰 전부와 적용 여부·이유(FR-CRC-001-016·018, FR-CRC-002-001~003). 등록 순서대로 */
+/**
+ * 적용 대상 룰 — 범위에 드는 룰 전부와 적용 여부·이유(FR-CRC-001-016·018, FR-CRC-002-001~003). 등록 순서대로.
+ * 승인(Approved)이 아닌 룰은 배포 검증 기준에 넣지 않는다(참고로만)
+ * @req FR-CRC-001-017
+ */
 export function applicableRules(rules: ComplianceRule[], ctx: ComplianceContext, at: string): ApplicableRule[] {
   return rules
     .filter((r) => ruleInScope(r, ctx))

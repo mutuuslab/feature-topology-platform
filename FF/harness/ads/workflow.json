@@ -523,6 +523,14 @@
         {
           "id": "FPW.8-A07",
           "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        },
+        {
+          "id": "FPW.7-A14",
+          "why": "LCY-002(Gate fail-closed) 규칙만 공유 — 예외 요청·승인은 Gate 판정을 바꾸지 않는 별도 층이라 Safety Case 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.7-A15",
+          "why": "LCY-002(Gate fail-closed) 규칙만 공유 — 예외 요청·승인은 Gate 판정을 바꾸지 않는 별도 층이라 Safety Case 판정 문장이 그대로다"
         }
       ],
       "newProcess": null,
@@ -1519,6 +1527,14 @@
         {
           "id": "FPW.8-A07",
           "why": "PLT-016(긴급 권한 사후 검토) 규칙만 공유 — 사후 검토 대상·기한·검토자 조건은 그대로다"
+        },
+        {
+          "id": "FPW.7-A14",
+          "why": "LCY-002(Gate fail-closed) 규칙만 공유 — 예외 요청·승인은 Gate 판정을 바꾸지 않는 별도 층이라 Safety Case 판정 문장이 그대로다"
+        },
+        {
+          "id": "FPW.7-A15",
+          "why": "LCY-002(Gate fail-closed) 규칙만 공유 — 예외 요청·승인은 Gate 판정을 바꾸지 않는 별도 층이라 Safety Case 판정 문장이 그대로다"
         }
       ],
       "newProcess": null,

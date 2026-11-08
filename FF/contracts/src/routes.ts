@@ -1,3 +1,4 @@
+import { CreateExceptionBody, EXCEPTION_APPROVER_ROLES, EXCEPTION_REQUEST_ROLES, ExceptionDecisionBody, ExceptionRevokeBody } from './schemas/exception-policy';
 import { SoftwarePackageBody, SoftwarePackageDecisionBody, SoftwareDownloadCheckBody } from './schemas/software-delivery';
 // API 경로 목록 — 단일 기준. 백엔드 실제 라우트와 다르면 테스트가 실패하고(backend/test/routes.spec.ts),
 // OpenAPI(docs/80-integration/openapi.json)와 프론트 API 클라이언트가 이것에서 만들어진다.
@@ -755,6 +756,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'createPolicyGlobalScope', method: 'POST', path: '/api/policies/:id/global-scope', summary: '정책 브랜드·권역·법규 조건 등록 — 목록 밖 브랜드·지역 코드 400', component: 'D01-01', roles: GLOBAL_SCOPE_AUTHOR_ROLES, body: PolicyGlobalScopeBody },
   { name: 'updatePolicyGlobalScope', method: 'PUT', path: '/api/policies/:id/global-scope', summary: '정책 브랜드·권역·법규 조건 수정 — Feature Owner·시스템 관리자만(그 밖 403)', component: 'D01-01', roles: HUMAN_ROLES, body: PolicyGlobalScopeBody },
   { name: 'otaJobReconcile', method: 'POST', path: '/api/ota/jobs/:jobId/reconcile', summary: 'IF-05 OTA 작업 대사 — webhook이 오지 않은 작업을 OTA 서버 조회로 메운다(끝 상태는 차량 결과만)', component: 'D04-01', roles: ['RELEASE_MANAGER', 'OPS_LEAD', 'OPERATOR'], body: OtaJobActionBody },
+  { name: 'exceptionPolicies', method: 'GET', path: '/api/exceptions', summary: '예외 정책 목록 — active=true면 적용 중인 예외만(없으면 빈 목록)', component: 'D03-02', query: ['status', 'featureId', 'featureVersion', 'policyId', 'active'] },
+  { name: 'exceptionPolicy', method: 'GET', path: '/api/exceptions/:id', summary: '예외 정책 상세 — 승인·만료·적용·원복과 상태 전이 기록', component: 'D03-02' },
+  { name: 'createExceptionPolicy', method: 'POST', path: '/api/exceptions', summary: '예외 승인 요청 — 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(우회 불가 4가지 제외)', component: 'D03-02', roles: [...EXCEPTION_REQUEST_ROLES], body: CreateExceptionBody },
+  { name: 'decideExceptionPolicy', method: 'POST', path: '/api/exceptions/:id/decision', summary: '예외 승인·반려 — 요청자 제외 서로 다른 두 사람, 승인자 지정 만료 일시', component: 'D03-02', roles: [...EXCEPTION_APPROVER_ROLES], body: ExceptionDecisionBody },
+  { name: 'revokeExceptionPolicy', method: 'POST', path: '/api/exceptions/:id/revoke', summary: '예외 회수 — 이전 정책 상태로 원복', component: 'D03-02', roles: [...EXCEPTION_REQUEST_ROLES, ...EXCEPTION_APPROVER_ROLES], body: ExceptionRevokeBody },
+  { name: 'policyReleaseGate', method: 'GET', path: '/api/policies/:id/release-gate', summary: '출시 전 배포 판정 — 출시 전 Version은 Shadow만, Gate 예외 제한 범위', component: 'D03-02' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

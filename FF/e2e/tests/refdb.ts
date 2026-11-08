@@ -44,7 +44,7 @@ export async function pickPrimaryRef(page: Page, query: string, refId: string) {
 
 /** The document editor opens reference selection as a separate dialog. */
 export async function openRefPicker(page: Page) {
-  await page.getByRole('button', { name: '기준 기능 선택', exact: true }).click();
+  await page.getByRole('button', { name: '기준 Feature 선택', exact: true }).click();
   await expect(page.locator('input[name="refSearch"]')).toBeVisible();
 }
 

@@ -139,12 +139,13 @@ export class ExperimentService {
     const control = { n: controlN, events: rate(BASE[e.metric], 3)(controlN) };
     const treatment = { n: treatN, events: rate(BASE[e.metric] + effect, 7)(treatN) };
     const est = effectEstimate(control, treatment, e.minSamples);
-    if (e.type === 'AB') return { days: Math.round(days * 10) / 10, metric: e.metric, metricKo: EXPERIMENT_METRICS[e.metric].ko, ...est, verdict: effectVerdict(e.metric, est), fleet: null };
+    const provenance = { source: 'SIMULATED' as const, sampleCounts: { control: controlN, treatment: treatN } };
+    if (e.type === 'AB') return { days: Math.round(days * 10) / 10, metric: e.metric, metricKo: EXPERIMENT_METRICS[e.metric].ko, ...provenance, ...est, verdict: effectVerdict(e.metric, est), fleet: null };
     // Shadow — 처리군 판단 일치율 + 실제 Fleet 대조
     const fleet = await this.shadowFleet(e);
     const agreement = treatN ? treatment.events / treatN : 0;
     const verdict = treatN < e.minSamples ? 'INSUFFICIENT' : agreement >= 0.99 && fleet.agreement === 1 ? 'CONSISTENT' : 'DIVERGENT';
-    return { days: Math.round(days * 10) / 10, metric: e.metric, metricKo: EXPERIMENT_METRICS[e.metric].ko, ...est, agreement: Math.round(agreement * 10000) / 10000, verdict, fleet };
+    return { days: Math.round(days * 10) / 10, metric: e.metric, metricKo: EXPERIMENT_METRICS[e.metric].ko, ...provenance, ...est, agreement: Math.round(agreement * 10000) / 10000, verdict, fleet };
   }
 
   /** Shadow 대조 — 실험 대상 정책을 배포 가정으로 평가한 값과 지금 그 flag의 배포 정책 값이 차량마다 같은가 */

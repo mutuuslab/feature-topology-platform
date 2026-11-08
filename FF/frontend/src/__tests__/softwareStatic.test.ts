@@ -74,6 +74,13 @@ it('does not acknowledge local uploads without actual IndexedDB byte storage',as
  await expect(run('uploadSoftware','integrator',{blob:new NodeBlob(['actual bytes']),name:'test.mjs',mediaType:'text/javascript',requestKey:'software-file-test'})).rejects.toThrow(/IndexedDB/);
  expect((await run('softwarePackages')).items).toHaveLength(1);
 });
+it('preserves revision, independent-review and author-role boundaries before any byte access',async()=>{
+ await expect(run('reviewSoftwarePackage','coordinator',{revision:1,decision:'REVOKE',reason:'Stale revision'},{id:ID})).rejects.toMatchObject({status:412});
+ set('softwarePackages',{items:[{...packageOf(),status:'DRAFT',createdBy:'usr-coordinator',revision:1}]});engine.__resetSimForTest();
+ await expect(run('reviewSoftwarePackage','coordinator',{revision:1,decision:'APPROVE',reason:'Cannot self approve'},{id:ID})).rejects.toMatchObject({status:403});
+ await expect(run('createSoftwarePackage','viewer',{})).rejects.toMatchObject({status:403});
+ expect(bytesRequests).toBe(0);
+});
 it('restricts audited GET effects to explicitly declared binary download routes',()=>{
  expect(()=>engine.registerSimDownload('softwarePackage',async()=>({ok:true}))).toThrow(/바이너리 GET/);
 });

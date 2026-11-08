@@ -39,7 +39,8 @@ export async function captureSoftwareDemos(options:SoftwareDemoCaptureOptions){
     const text=bytes.toString('utf8');requireValue(text.startsWith(SOFTWARE_DEMO_PREFIX)&&Buffer.from(text).equals(bytes),'demo marker or UTF-8 source mismatch');
     const match=/export const metadata = (\{[\s\S]*?\});\r?\nexport function calculate/.exec(text);requireValue(match,'expected executable demo metadata required');
     const metadata=JSON.parse(match[1]);requireValue(metadata.source==='EXECUTABLE_DEMO'&&metadata.installationPerformed===false&&metadata.featureId===p.featureId&&metadata.featureVersion===p.featureVersion&&metadata.swId===p.swId,'explicit demo/non-installation metadata must match this Feature and SW');
-    pending.push({item:{package:{...p,provenance:'CAPTURED_EXECUTABLE_DEMO'},verdict,asset:`api-snapshot/files/software/${allowed.expectedSha256}.mjs`,expectedSha256:allowed.expectedSha256,sourceCommit:health.commit,capturedAt:new Date().toISOString()},bytes});
+    const history=await (await call(routeUrl('softwareDownloadHistory',{id:allowed.packageId}))).json();requireValue(Array.isArray(history.items),'native download history is required');
+    pending.push({item:{package:{...p,provenance:'CAPTURED_EXECUTABLE_DEMO'},verdict,history,asset:`api-snapshot/files/software/${allowed.expectedSha256}.mjs`,expectedSha256:allowed.expectedSha256,sourceCommit:health.commit,capturedAt:new Date().toISOString()},bytes});
   }
   const index={schema:'ff.software-demo-capture.v1',sourceCommit:health.commit,items:pending.map(p=>p.item)};
   const target=join(options.outDir,SOFTWARE_DEMO_INDEX);requireValue(!existsSync(target),'capture index already exists; use a fresh artifact directory');

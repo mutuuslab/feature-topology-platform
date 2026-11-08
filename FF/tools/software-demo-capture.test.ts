@@ -26,6 +26,7 @@ async function withServer(change:string,fn:(apiUrl:string,f:ReturnType<typeof fi
     if(req.url==='/api/health'){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({status:'ok',mode:'demo',commit:SOURCE}));}
     else if(req.url?.endsWith('/check')){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(f.verdict));}
     else if(req.url?.includes('/download?')){res.setHeader('Content-Type','application/octet-stream');res.setHeader('X-Content-SHA256',f.verdict.package.sha256);res.end(change==='bytes'?Buffer.from('corrupt original'):f.bytes);}
+    else if(req.url?.endsWith('/history')){res.setHeader('Content-Type','application/json');res.end(JSON.stringify({items:[{state:'STREAM_OPENED'}]}));}
     else{res.statusCode=404;res.end();}
   });
   await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));

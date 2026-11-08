@@ -713,6 +713,8 @@ async function main() {
   if (process.env.FF_SOFTWARE_CAPTURE_CONFIG) {
     const config = JSON.parse(readFileSync(resolve(process.env.FF_SOFTWARE_CAPTURE_CONFIG), 'utf8'));
     console.log('software-demo-capture ' + JSON.stringify(await captureSoftwareDemos({ ...config, outDir: OUT })));
+  } else {
+    writeFileSync(join(OUT, 'api-snapshot', 'software-demo-index.json'), JSON.stringify({ schema: 'ff.software-demo-capture.v1', items: [] }));
   }
 
   // 운영 지표 탭 — Prometheus 텍스트(스냅샷을 찍는 동안 받은 요청)를 JSON으로 감싸 둔다. 마지막에 받아야 위 조회가 모두 들어간다

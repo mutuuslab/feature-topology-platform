@@ -10,7 +10,7 @@ import type { SimReadContext, SimWriteContext } from '../types';
 const PACKAGE='softwarePackage',DOWNLOAD='softwareDownload',COMPONENT='D04-01';
 const LOCAL='LOCAL_SIMULATION',CAPTURED='CAPTURED_EXECUTABLE_DEMO';
 type Package=Record<string,any>&{packageId:string;featureId:string;featureVersion:string;swId:string;fileId:string;name:string;bytes:number;sha256:string;mediaType:string;source:string;status:string;revision:number;createdBy:string;createdAt:string;reviewedBy:string|null;reviewedAt:string|null;signature:any;sbom:Record<string,unknown>;provenance?:string;publicKey?:any};
-interface Capture {package:Package;verdict:SoftwareVerdict;asset:string;expectedSha256:string;sourceCommit:string;capturedAt:string}
+interface Capture {package:Package;verdict:SoftwareVerdict;history?:{items:any[]};asset:string;expectedSha256:string;sourceCommit:string;capturedAt:string}
 async function captures():Promise<Capture[]>{
   const response=await fetch(import.meta.env.BASE_URL+'api-snapshot/software-demo-index.json');
   const gate=await gateDenied(response);if(gate)throw gate;
@@ -132,7 +132,7 @@ registerSimDownload('softwareDownload',async ctx=>{
   return blob;
 });
 registerSimReader('softwareDownloadHistory',async ctx=>{
-  const item=await get(ctx,ctx.req.params.id),base=await ctx.snapshot<{items:any[]}>('softwareDownloadHistory',{id:ctx.req.params.id});
+  const item=await get(ctx,ctx.req.params.id),base=await ctx.snapshot<{items:any[]}>('softwareDownloadHistory',{id:ctx.req.params.id})??(await captures()).find(c=>c.package.packageId===ctx.req.params.id)?.history;
   if(item.provenance!==LOCAL&&!base)throw new SimError('INTERNAL','캡처한 native SW 다운로드 이력이 없습니다.');
   return {items:[...ctx.list<any>(DOWNLOAD).filter(d=>d.packageId===ctx.req.params.id),...(base?.items??[])]};
 });

@@ -116,7 +116,7 @@ const simActive = () => {
 let sim: Promise<typeof import('./sim')> | null = null;
 /** 시연 엔진 — 정적 모드의 첫 쓰기(또는 스냅샷에 없는 읽기) 때 불러온다 */
 export const loadSim = () => (sim ??= import('./sim'));
-const WORKFLOW_CASE_READS = new Set(['workflowIdentity', 'workflowAssignableAccounts', 'workflowRoleGrants', 'workflowCases', 'workflowCase', 'workflowCaseSources', 'workflowTransferTargets']);
+const SIMULATED_READS = new Set(['workflowIdentity', 'workflowAssignableAccounts', 'workflowRoleGrants', 'workflowCases', 'workflowCase', 'workflowCaseSources', 'workflowTransferTargets', 'softwarePackages', 'softwarePackage', 'softwareDownloadHistory']);
 
 /** 공개 사이트 접속 게이트 응답 표식 — functions/_middleware.ts GATE_MARK와 같다(시험 staticGate가 맞춰 본다) */
 export const GATE_MARK = 'ff-gate-v1';
@@ -161,8 +161,8 @@ export async function call<T = any>(name: RouteName | string, opts: CallOptions 
 
   if (STATIC_MODE) {
     // 쓰기·바뀐 시연 데이터가 있는 읽기는 시연 엔진으로(첫 화면 묶음에 넣지 않는다)
-    // Workflow captures contain all synthetic cases. Apply the requesting persona before the first write too.
-    if (write || simActive() || WORKFLOW_CASE_READS.has(route.name)) return (await loadSim()).simCall<T>(route, url, opts);
+    // Apply workflow persona scope and software capture provenance before the first browser-local write too.
+    if (write || simActive() || SIMULATED_READS.has(route.name)) return (await loadSim()).simCall<T>(route, url, opts);
     const res = await fetch(import.meta.env.BASE_URL + snapshotFile(url), { signal: opts.signal });
     // 접속 게이트 쿠키 만료 — 시연 엔진으로 넘기지 않는다(넘기면 '스냅샷에 없음' 404로 보인다)
     const gate = await gateDenied(res);

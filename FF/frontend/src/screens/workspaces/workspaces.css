@@ -611,3 +611,21 @@
 .ws-hand a {
   overflow-wrap: anywhere;
 }
+
+@media (max-width: 767px) {
+  .ws-3pane,
+  .ws-board__cols {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+  .ws-3pane > .ws-queue,
+  .ws-decide { grid-column: auto; grid-row: auto; }
+  .ws-3pane > * { min-width: 0; }
+  .ws-target__kv { grid-template-columns: minmax(0, 1fr); }
+  .ws-target__kv dd { overflow-wrap: anywhere; }
+  .ws-target__kv dt:not(:first-child) { margin-top: var(--sp-2); }
+  .ws-card__name,
+  .ws-card__id,
+  .ws-queue__item { overflow-wrap: anywhere; }
+  .ws-tiles a { padding: var(--sp-3); }
+}

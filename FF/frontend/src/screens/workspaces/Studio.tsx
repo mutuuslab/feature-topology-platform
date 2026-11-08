@@ -6,6 +6,7 @@ import type { DepartmentSummary, WorkQueues } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { useApi, asyncState } from '../../api/hooks';
 import { departments as D } from '../../copy/departments';
+import { workspaceStudio as S } from '../../copy/workspace-studio';
 import { homeWork as HW } from '../../copy/inbox';
 import { ko } from '../../copy/ko';
 import { localTime } from '../../data/people';
@@ -20,7 +21,6 @@ const COLUMNS = ['PROPOSED', 'APPROVED', 'DEVELOPING', 'VERIFIED', 'RELEASED'] a
 const PER_COLUMN = 5;
 
 export default function StudioHome({ dept }: { dept: DepartmentSummary }) {
-  const S = D.studio;
   const { role } = useAppShell();
   const me = actorFor(role);
   const q = useApi<FeatureList>('listFeatures', { query: { latestOnly: true } });

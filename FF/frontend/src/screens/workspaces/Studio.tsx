@@ -2,6 +2,7 @@
 // W2: 열마다 그 Lifecycle 하나(정의 승인·개발 분리 — 열 숫자 = '외 N건' 목록 수, P1-1), 역할별 핵심 메시지·내 차례 대기열(P2-5),
 // Release Sign-off 대기 목록(P1-4), 작성자의 '내 Feature'(최근 순 — 새로 만든 [P1]이 바로 보인다, P1-11).
 import { Link } from 'react-router-dom';
+import { workspaceMarker } from './workspaceMarker';
 import type { DepartmentSummary, WorkQueues } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { useApi, asyncState } from '../../api/hooks';
@@ -37,7 +38,7 @@ export default function StudioHome({ dept }: { dept: DepartmentSummary }) {
   // 핵심 메시지 — 내 차례 대기열이 있으면 그것(역할별), 없으면 출시 전 Feature 수
   const message = q.isPending || work.loading ? { tone: 'neutral' as const, value: '—', text: S.key(0).text } : work.total ? { tone: 'warn' as const, value: work.total, text: HW.key(work.labels) } : { tone: 'neutral' as const, ...S.key(active) };
   return (
-    <div className="ds-screen ws ws--studio" data-workspace-home="studio">
+    <div className="ds-screen ws ws--studio" {...workspaceMarker('studio')}>
       <PageHeader
         codes={S.eyebrow}
         title={S.title}

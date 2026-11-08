@@ -4,11 +4,13 @@
 // 급한 순서(긴급 차단·복원의 남은 기한 → 사후 검토 → Gate → 분류) — 기한 배지와 요청 시각·요청자 이름.
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { workspaceMarker } from './workspaceMarker';
+import { workspaceData as W } from '../../copy/workspace-data';
 import type { DepartmentSummary } from '@ff/contracts';
 import { departments as D } from '../../copy/departments';
 import { inbox as IX, QUEUE_LABEL } from '../../copy/inbox';
 import { useApi } from '../../api/hooks';
-import { AsyncView, PageHeader, Panel, Segmented } from '../../design';
+import { AsyncView, Button, PageHeader, Panel, Segmented } from '../../design';
 import type { FeatureList } from '../types';
 import { DueBadge, PersonName, useInbox } from '../home/Inbox';
 import { inDept } from '../home/queues';
@@ -35,12 +37,12 @@ export default function ReviewHome({ dept }: { dept: DepartmentSummary }) {
   const work = useMemo(() => (d && d !== 'fail' ? d.acts.filter((a) => a.part === 'R' || a.part === 'A') : []), [d]);
   const gates = gateActs.length ? gateActs : work;
   return (
-    <div className="ds-screen ws ws--review" data-workspace-home="review">
+    <div className="ds-screen ws ws--review" {...workspaceMarker('review')}>
       <PageHeader
         codes={R.eyebrow}
         title={R.title(dept.name)}
         lead={R.lead}
-        message={inbox.loading ? { tone: 'neutral', value: '—', text: R.key(0).text } : mine.length ? { tone: 'warn', ...R.key(mine.length) } : { tone: 'ok', text: R.clear }}
+        message={inbox.error ? { tone: 'warn', value: W.unknown, text: W.unavailable } : inbox.loading ? { tone: 'neutral', value: W.unknown, text: R.key(0).text } : mine.length ? { tone: 'warn', ...R.key(mine.length) } : { tone: 'ok', text: R.clear }}
       />
       <div className="ws-3pane">
         <section className="ws-queue" aria-labelledby="ws-queue-h">
@@ -49,14 +51,15 @@ export default function ReviewHome({ dept }: { dept: DepartmentSummary }) {
             <Segmented
               label={R.queue}
               options={[
-                { value: 'mine' as const, label: R.queueMine, count: mine.length },
-                { value: 'all' as const, label: IX.queueAllDept, count: ours.length },
+                { value: 'mine' as const, label: R.queueMine, count: inbox.error ? undefined : mine.length },
+                { value: 'all' as const, label: IX.queueAllDept, count: inbox.error ? undefined : ours.length },
               ]}
               value={scope}
               onChange={(v) => setScope(v)}
             />
           </header>
-          <AsyncView state={inbox.state === 'empty' || !rows.length ? (inbox.loading ? 'loading' : 'empty') : inbox.state} onRetry={inbox.retry} empty={{ title: R.clear }} rows={6}>
+          {inbox.error && !!rows.length && <div><p role="alert">{W.incomplete}</p><Button onClick={inbox.retry}>{W.retry}</Button></div>}
+          <AsyncView state={inbox.error ? (rows.length ? 'ready' : inbox.state) : !rows.length ? (inbox.loading ? 'loading' : 'empty') : inbox.state} error={inbox.error} onRetry={inbox.retry} empty={{ title: R.clear }} rows={6}>
             <ul className="ws-queue__list" data-queue-dept={dept.id}>
               {rows.map((r) => (
                 <li key={r.key} data-queue={r.queue}>

@@ -156,7 +156,7 @@
 | 승인자 키(RD-SEC-05) | 로그인(세션 생성) 때 그 주체의 승인 서명 키를 등록(감사 `APPROVER_KEY_ENROLLED`, 이미 있으면 그대로). oidc에서는 승인 중 키 즉석 생성 금지 — 키가 없는 주체(로그인한 적 없는 Bearer 등)의 승인은 403 `APPROVER_KEY_NOT_ENROLLED`. 같은 주체는 역할을 바꿔도 두 번째 승인 칸을 채울 수 없다(DUPLICATE) |
 | JWKS | 캐시 10분, 모르는 kid면 다시 받되 30초에 한 번, 키 64개 상한, 응답 1 MiB·10초 상한. 토큰 12 KiB 상한 |
 | 로그아웃 | `POST /api/auth/logout` → 세션 삭제·쿠키 제거, IdP `end_session_endpoint`가 있으면 그 주소(`post_logout_redirect_uri = FF_PUBLIC_URL/login`)를 돌려준다 |
-| 화면 | `GET /api/auth/config` → `{mode}` · `GET /api/auth/me` → `{authenticated, mode, user:{id,name,email,roles}}` |
+| 화면 | `GET /api/auth/config` → `{mode}` · `GET /api/auth/me` → `{authenticated, mode, user:{id,name,email,roles,department?}}`. 선택적 `department`는 검증된 토큰의 명시 부서 매핑 결과이며 역할을 추가하지 않는다 |
 
 ### 6.2 환경 변수
 
@@ -169,11 +169,20 @@
 | `FF_SESSION_SECRET` | ✓ | 쿠키 서명 비밀 32자 이상(예: `openssl rand -base64 48`) |
 | `OIDC_ROLE_MAP` | ✓ | `IdP그룹=역할,IdP그룹2=역할|역할2` |
 | `OIDC_ROLE_CLAIM` | | 기본 `groups` (Keycloak 영역 역할이면 `realm_access.roles`) |
+| `OIDC_DEPARTMENT_CLAIM` · `OIDC_DEPARTMENT_MAP` | 선택, 함께 설정 | 검증된 토큰의 부서 클레임 → 기존 업무 모델 부서 ID. 예: `org.department`와 `purchasing=DEP-PUR,legal=DEP-LEG`. 실제 조직 이름·구성은 설치 담당자가 확정한다 |
 | `OIDC_AUDIENCE` | | Bearer 접근 토큰의 대상, 기본 client id |
 | `OIDC_SCOPES` | | 기본 `openid profile email` |
 | `FF_SESSION_TTL_MIN` · `FF_SESSION_IDLE_MIN` | | 기본 480 · 60 |
 
 설정이 틀리면 백엔드는 문제를 모두 한 번에 알려 주고 시작하지 않는다(값·비밀은 메시지에 넣지 않는다). `FF_AUTH=oidc`면 운영 모드가 아니어도 검사한다.
+
+#### 6.2.1 팀별 업무 홈의 선택적 신원 연결 (2026-11-08)
+
+부서 매핑은 화면의 업무 맥락이다. `OIDC_ROLE_MAP`이나 승인·직무 분리 규칙을 대체하지 않는다. 로그인은 기존 서명·발급자·대상·기한·nonce 검증을 먼저 완료한 ID 토큰에서만 부서 값을 읽으며, Bearer도 기존 접근 토큰 검증 뒤에 읽는다. 클라이언트 헤더·브라우저에 저장된 데모 부서·역할 이름으로 실제 부서를 추측하지 않는다. 로그인 부서는 nullable `auth_session.department_id`(새 migration `401_oidc_department_context`)를 거쳐 전달한다. 기존 세션은 부서가 비어 있어 공통 홈을 유지하며, 다음 정상 로그인부터 새 매핑을 받는다.
+
+두 설정을 모두 생략하거나 매핑되지 않은 값·서로 다른 복수 부서가 들어오면 부서를 부여하지 않고 공통 대시보드를 연다. 한 설정만 입력하거나 존재하지 않는 모델 부서·같은 외부 값의 모호한 매핑을 설정하면 부팅 검사가 거부한다. 운영 번들에는 데모 부서/역할 전환기와 가짜 로그인 기능을 싣지 않으며, 검증된 부서가 있을 때 공유 업무 홈만 연다. 부서 안의 데이터와 버튼도 실제 부여 역할로 조회·판정한다.
+
+로컬 시험 IdP의 로그인·세션·Bearer·헤더 위조·이전 세션 업그레이드와 UI 공통 홈 fallback을 회귀로 검증한다. 이는 실제 회사 IdP 매핑 확보나 운영 SSO 연동 실증을 완료했다는 뜻이 아니다. 외부 IdP 설정·실계정 발급은 변경하지 않는다. 협의 쓰기처럼 별도 부서 신원 Guard가 있는 업무는 그 서버 조건의 연결·검증 상태를 따로 확인한다.
 
 ### 6.3 IdP 설정 예
 

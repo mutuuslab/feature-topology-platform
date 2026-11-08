@@ -13,7 +13,7 @@ import type { Actor } from '../actor';
 import { AuditService } from '../audit.service';
 import { DB, type Db } from '../db';
 import { DomainError } from '../errors';
-import { authModeOf, claimValues, mapRoles, oidcConfigOf, type AuthMode, type OidcConfig } from './auth-config';
+import { authModeOf, claimValues, knownDepartment, mappedDepartment, mapRoles, oidcConfigOf, type AuthMode, type OidcConfig } from './auth-config';
 import { demoGateConfigOf, demoGateOn, foldAscii, type DemoGateConfig } from './demo-gate';
 import { readCookie, safeEqual, signValue, unsignValue } from './cookies';
 import { JwtError, type JwtClaims } from './jwt';
@@ -31,6 +31,7 @@ export interface AuthUser {
   name: string | null;
   email: string | null;
   roles: Role[];
+  department?: string;
 }
 
 export interface Identity extends AuthUser {
@@ -81,6 +82,7 @@ interface SessionRow {
   name: string | null;
   email: string | null;
   roles: string;
+  department_id: string | null;
   created_at: string;
   expires_at: string;
   last_seen_at: string;
@@ -203,7 +205,9 @@ export class AuthService {
         source = { ...info, ...claims };
       }
     }
-    const user: AuthUser = { id: claims.sub!, name: strClaim(source, 'name') ?? strClaim(source, 'preferred_username'), email: strClaim(source, 'email'), roles: mapRoles(groups, cfg.roleMap) };
+    // Department comes from the verified ID token only, never headers, role names, or unbound userinfo.
+    const department = mappedDepartment(claims, cfg);
+    const user: AuthUser = { id: claims.sub!, name: strClaim(source, 'name') ?? strClaim(source, 'preferred_username'), email: strClaim(source, 'email'), roles: mapRoles(groups, cfg.roleMap), ...(department ? { department } : {}) };
     if (!user.roles.length) {
       this.audit.denied(probeActor(user.id), 'AUTH_LOGIN', user.id, `IdP 그룹이 플랫폼 역할에 매핑되지 않음(그룹 ${groups.length}개, 클레임 ${cfg.roleClaim})`, 'D06-09');
       throw new AuthFailure('NO_ROLE', '회사 계정으로 확인됐지만 이 플랫폼의 역할이 없습니다. 관리자에게 IdP 그룹(역할) 부여를 요청하세요.', 403);
@@ -223,12 +227,13 @@ export class AuthService {
       // 끝난 세션 정리 — 표가 무한히 늘지 않게
       this.db.run('DELETE FROM auth_session WHERE expires_at <= ?', iso(now));
       this.db.run(
-        'INSERT INTO auth_session (id_hash, sub, name, email, roles, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO auth_session (id_hash, sub, name, email, roles, department_id, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         sha256(id),
         user.id,
         user.name,
         user.email,
         JSON.stringify(user.roles),
+        knownDepartment(user.department) ? user.department : null,
         iso(now),
         iso(now + cfg.ttlMin * 60_000),
         iso(now),
@@ -266,7 +271,7 @@ export class AuthService {
     } catch {
       roles = [];
     }
-    return { id: row.sub, name: row.name, email: row.email, roles };
+    return { id: row.sub, name: row.name, email: row.email, roles, ...(knownDepartment(row.department_id) ? { department: row.department_id } : {}) };
   }
 
   /** 요청 쿠키의 세션을 지운다(있으면 주체) — 로그아웃·다시 로그인(세션 고정 방지)에서 */
@@ -326,7 +331,8 @@ export class AuthService {
       throw new DomainError('UNAUTHENTICATED', `접근 토큰을 받을 수 없습니다 (${reason}).`, { reason });
     }
     const roles = mapRoles(claimValues(claims, cfg.roleClaim), cfg.roleMap);
-    return { id: claims.sub!, name: strClaim(claims, 'name') ?? strClaim(claims, 'preferred_username'), email: strClaim(claims, 'email'), roles, via: 'bearer' };
+    const department = mappedDepartment(claims, cfg);
+    return { id: claims.sub!, name: strClaim(claims, 'name') ?? strClaim(claims, 'preferred_username'), email: strClaim(claims, 'email'), roles, ...(department ? { department } : {}), via: 'bearer' };
   }
 
   /** CSRF — 쿠키로 인증한 변경 요청은 Origin이 설치 출처(또는 FF_CORS_ORIGINS)여야 한다 */

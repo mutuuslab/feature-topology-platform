@@ -4,6 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { permMatrix, profileOf, roleLabel, roles } from './data/refdata';
 import { deptNotice } from './copy/departments';
 import { ALL_DEPARTMENTS, departmentById, isDepartment } from './data/departments';
+import { OIDC_AUTH } from './auth-mode';
+import { useSso } from './auth-oidc';
 
 export interface AppState {
   role: string;
@@ -119,7 +121,13 @@ export const useApp = () => useContext(AppCtx);
 export const useAppApi = () => useContext(AppApiCtx);
 
 /** 언어·테마·역할 전용 구독. */
-export const useAppShell = () => useContext(AppShellCtx);
+export const useAppShell = () => {
+  const shell = useContext(AppShellCtx);
+  // The build mode is constant. Production never reads a department chosen by a demo selector/localStorage.
+  const sso = OIDC_AUTH ? useSso() : null;
+  const department = OIDC_AUTH ? (isDepartment(sso?.user?.department) ? sso.user.department : ALL_DEPARTMENTS) : shell.department;
+  return useMemo(() => department === shell.department ? shell : { ...shell, department }, [shell, department]);
+};
 
 // 간편 토스트
 export const useToast = () => {

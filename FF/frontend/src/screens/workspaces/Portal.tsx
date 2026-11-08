@@ -8,6 +8,7 @@ import { consult as C } from '../../copy/consult';
 import { procurementHome as T } from '../../copy/procurement-home';
 import { AsyncView, PageHeader, Panel } from '../../design';
 import { ConsultInbox, SentConsults, type ConsultList } from './Consults';
+import { workspaceMarker } from './workspaceMarker';
 
 const ProcurementWork = lazy(() => import('./ProcurementWork'));
 
@@ -20,7 +21,7 @@ export default function PortalHome({ dept }: { dept: DepartmentSummary }) {
   const done = items.filter((c) => c.status === 'ANSWERED');
   const overdue = q.data?.overdue ?? 0;
   return (
-    <div className="ds-screen ws ws--portal" data-workspace-home="portal">
+    <div className="ds-screen ws ws--portal" {...workspaceMarker('portal')}>
       <PageHeader
         codes={P.eyebrow}
         title={purchasing ? T.title(dept.name) : P.title(dept.name)}

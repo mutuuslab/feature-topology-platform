@@ -12,7 +12,10 @@ import { useWorkflows } from '../../data/workflows';
 import { menuRouteOf } from '../../shell/departmentMenu';
 import { useAppShell } from '../../store';
 import { useInbox } from '../home/Inbox';
-import { ROLE_FOCUS } from '../home/queues';
+import { inDept, ROLE_FOCUS } from '../home/queues';
+import { OIDC_AUTH } from '../../auth-mode';
+import { rolesFor } from '../../api/actor';
+import { workspaceData as W } from '../../copy/workspace-data';
 
 export interface DeptActivity {
   process: WorkflowProcess;
@@ -63,15 +66,18 @@ export function workHref(a: Pick<DeptActivity, 'process' | 'activity'>): string 
   return activityHref(a);
 }
 
-/** 지금 역할이 이 부서에서 맡는 조직 역할(R&R) — 절차 모델 personas ∩ 부서 역할. 모르면 그 계정의 역할 전부 */
+/** Organization duties are the department intersection, never an empty-result fallback to all duties. */
 export function myOrgRoles(d: Pick<DeptDoc, 'doc' | 'full'>, role: string): string[] {
+  if (OIDC_AUTH) {
+    const granted = rolesFor(role);
+    return d.doc.roles.filter((r) => d.full.roles.includes(r.id) && r.platformRoles.some((p) => granted.includes(p as never))).map((r) => r.id);
+  }
   const all = d.doc.personas?.[role] ?? [];
-  const here = all.filter((r) => d.full.roles.includes(r));
-  return here.length ? here : all;
+  return all.filter((r) => d.full.roles.includes(r));
 }
 
 /** 이 활동을 지금 역할이 수행(R)·책임(A)지는가 */
-const doesIt = (a: DeptActivity, org: readonly string[]) => !org.length || a.activity.raci.R.some((r) => org.includes(r)) || org.includes(a.activity.raci.A);
+const doesIt = (a: DeptActivity, org: readonly string[]) => a.activity.raci.R.some((r) => org.includes(r)) || org.includes(a.activity.raci.A);
 
 /** 내 업무 — 이 부서에서 지금 역할이 수행·책임지는 활동. 1차 범위(핵심 생애주기)를 먼저, 끝난 활동은 표시 */
 export function MyWork({ d, limit = 8, dense = false }: { d: DeptDoc | null | 'fail'; limit?: number; dense?: boolean }) {
@@ -81,10 +87,10 @@ export function MyWork({ d, limit = 8, dense = false }: { d: DeptDoc | null | 'f
   const deptMine = ready ? ready.acts.filter((a) => a.part === 'R' || a.part === 'A') : [];
   const org = ready ? myOrgRoles(ready, role) : [];
   const byRole = deptMine.filter((a) => doesIt(a, org));
-  // 역할로 걸러 남는 것이 없으면 부서 몫 전체(빈 목록을 보이지 않는다)
-  const mine = (byRole.length ? byRole : deptMine).sort((a, b) => Number(b.firstScope) - Number(a.firstScope));
+  const mine = byRole.sort((a, b) => Number(b.firstScope) - Number(a.firstScope));
   return (
     <AsyncView state={d === null ? 'loading' : d === 'fail' ? 'error' : mine.length ? 'ready' : 'empty'} empty={{ title: D.home.myWorkEmpty }} rows={4}>
+      <p className="ds-field__hint">{W.modelWork}</p>
       <ol className={`ws-work${dense ? ' ws-work--dense' : ''}`} data-my-work={role}>
         {mine.slice(0, limit).map((a) => (
           <li key={a.activity.id} data-done={progress.isDone(a.activity.id) ? '' : undefined}>
@@ -179,18 +185,20 @@ export const queueHref = (q: QueueKey) => (q === 'refReview' ? '/master/feature-
 
 /** 역할이 먼저 보는 대기열의 내 차례 수 — 홈 핵심 메시지·'내 차례 대기열' 칸 */
 export function useRoleWork() {
-  const { role } = useAppShell();
+  const { role, department } = useAppShell();
   const inbox = useInbox();
   const focus = ROLE_FOCUS[role] ?? [];
-  const counts = focus.map((q) => ({ queue: q, n: inbox.items.filter((i) => i.queue === q && i.mine).length, first: inbox.items.find((i) => i.queue === q && i.mine) ?? null }));
+  const scoped = departmentById(department) ? inbox.items.filter((i) => inDept(i, department)) : inbox.items;
+  const counts = focus.map((q) => ({ queue: q, n: scoped.filter((i) => i.queue === q && i.mine).length, first: scoped.find((i) => i.queue === q && i.mine) ?? null }));
   const total = counts.reduce((s, c) => s + c.n, 0);
-  return { loading: inbox.loading, focus, counts, total, labels: counts.filter((c) => c.n).map((c) => QUEUE_LABEL[c.queue]) };
+  return { loading: inbox.loading, state: inbox.state, error: inbox.error, retry: inbox.retry, focus, counts, total, labels: counts.filter((c) => c.n).map((c) => QUEUE_LABEL[c.queue]) };
 }
 
 /** 역할별 '내 차례 대기열' — 수와 처리하러 가는 링크(한 건이면 그 대상으로 바로). 불러오는 중은 '—'가 아니라 자리표시 */
 export function RoleQueues({ work }: { work: ReturnType<typeof useRoleWork> }) {
   if (!work.focus.length) return null;
   return (
+    <AsyncView state={work.error ? work.state : work.loading ? 'loading' : 'ready'} error={work.error} onRetry={work.retry}>
     <ul className="ws-fdb ws-roleq" aria-label={HW.tiles} data-role-queues>
       {work.counts.map((c) => (
         <li key={c.queue} data-queue={c.queue} data-busy={c.n ? '' : undefined}>
@@ -203,5 +211,6 @@ export function RoleQueues({ work }: { work: ReturnType<typeof useRoleWork> }) {
         </li>
       ))}
     </ul>
+    </AsyncView>
   );
 }

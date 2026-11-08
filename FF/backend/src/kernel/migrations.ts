@@ -1369,4 +1369,9 @@ CREATE TRIGGER release_candidate_baseline_no_update BEFORE UPDATE ON release_can
 CREATE TRIGGER release_candidate_baseline_no_delete BEFORE DELETE ON release_candidate_baseline BEGIN SELECT RAISE(ABORT, 'release_candidate_baseline은 추가만 가능'); END;
 `,
   },
+  {
+    // Optional verified OIDC department context; old sessions remain unassigned/common home.
+    name: '401_oidc_department_context',
+    sql: `ALTER TABLE auth_session ADD COLUMN department_id TEXT;`,
+  },
 ];

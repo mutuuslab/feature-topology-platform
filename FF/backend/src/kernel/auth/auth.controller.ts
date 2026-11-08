@@ -130,6 +130,6 @@ export class AuthController {
     if (this.auth.mode !== 'oidc') return { authenticated: false, mode: 'demo' as const };
     const who = await this.auth.identify(req);
     if (!who) return { authenticated: false, mode: 'oidc' as const };
-    return { authenticated: true, mode: 'oidc' as const, user: { id: who.id, name: who.name, email: who.email, roles: who.roles } };
+    return { authenticated: true, mode: 'oidc' as const, user: { id: who.id, name: who.name, email: who.email, roles: who.roles, ...(who.department ? { department: who.department } : {}) } };
   }
 }

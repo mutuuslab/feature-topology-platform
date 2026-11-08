@@ -88,6 +88,8 @@ function ShellFrame({ children }: { children: ReactNode }) {
   // 부서 보기는 데모 빌드에서만 — 운영 빌드(OIDC)는 부여받은 역할의 전체 보기
   const dept = OIDC_AUTH ? undefined : departmentById(department);
   const workspace = dept?.workspace;
+  // A verified SSO team can use the workspace palette without enabling demo navigation/grid layout.
+  const tokenWorkspace = OIDC_AUTH ? departmentById(department)?.workspace : workspace;
   const { dispatch } = useAppApi();
   const motion = useMotion();
   const current = routeOf(loc.pathname);
@@ -129,15 +131,15 @@ function ShellFrame({ children }: { children: ReactNode }) {
   // 부서 작업공간 — 토큰(design/tokens.css [data-workspace])이 html에서 내려온다. 관제실은 셸 전체를 어두운 관제 톤으로
   useEffect(() => {
     const html = document.documentElement;
-    if (workspace) html.setAttribute('data-workspace', workspace);
+    if (tokenWorkspace) html.setAttribute('data-workspace', tokenWorkspace);
     else html.removeAttribute('data-workspace');
-    if (workspace === 'control') html.setAttribute('data-zone', 'ops');
+    if (tokenWorkspace === 'control') html.setAttribute('data-zone', 'ops');
     else if (html.getAttribute('data-zone') === 'ops') html.removeAttribute('data-zone');
     return () => {
       html.removeAttribute('data-workspace');
       if (html.getAttribute('data-zone') === 'ops') html.removeAttribute('data-zone');
     };
-  }, [workspace]);
+  }, [tokenWorkspace]);
 
   // 시연 모드 — <html data-present="on">, 단축키 P (입력 중에는 무시)
   useEffect(() => {

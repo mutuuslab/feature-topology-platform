@@ -83,8 +83,9 @@ export function ConsultInbox({ items, caption }: { items: ConsultView[]; caption
 export function SentConsults({ deptId, limit = 6 }: { deptId: string; limit?: number }) {
   const q = useApi<ConsultList>('listConsultations', { query: { from: deptId } });
   const items = q.data?.items ?? [];
-  if (!items.length) return null;
   const S = C.sentPanel;
+  if (q.isError) return <Panel title={S.title} id="ws-sent-consults"><AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()} /></Panel>;
+  if (!items.length) return null;
   return (
     <Panel title={S.title} id="ws-sent-consults" eyebrow={q.data ? String(q.data.open ? `${S.waiting} ${q.data.open}` : items.length) : undefined}>
       <p className="ds-field__hint">{S.lead}</p>

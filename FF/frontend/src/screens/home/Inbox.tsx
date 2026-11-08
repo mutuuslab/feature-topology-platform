@@ -7,7 +7,7 @@ import { lazy, Suspense, useMemo, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type CanaryOverviewResponse, type FeatureHealthResponse, type LakeModelRow, type Role, type UnclassifiedView, type WorkQueues } from '@ff/contracts';
 import { adsChange } from '../../copy/ads-change';
-import { actorFor, PLATFORM_ROLES } from '../../api/actor';
+import { actorFor, rolesFor } from '../../api/actor';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { inbox as IX, QUEUE_LABEL, QUEUE_ROLE, SLOT_LABEL } from '../../copy/inbox';
@@ -19,7 +19,6 @@ import { useProcedureSummary } from '../../data/procedureProgress';
 import { localTime, personLabel, personName, remaining } from '../../data/people';
 import { AsyncView, type AsyncState, DataTable, LifecycleBadge, PageHeader, Panel, Segmented, StatusGlyph, type KeyMessageSpec } from '../../design';
 import { useAppShell } from '../../store';
-import { OIDC_AUTH } from '../../auth-mode';
 import { departmentById } from '../../data/departments';
 import { DashboardPage } from './dashboard/Dashboard';
 import { isSafetyKill } from './dashboard/catalog';
@@ -83,7 +82,8 @@ const base = (p: Partial<Item> & Pick<Item, 'key' | 'queue' | 'item' | 'detail' 
 /** 승인할 일 모으기 — 역할에 따라 내 차례 표시 */
 export function useInbox() {
   const { role } = useAppShell();
-  const mine = PLATFORM_ROLES[role] ?? [];
+  const mine = rolesFor(role);
+  const rolesKey = mine.join('|');
   const me = actorFor(role);
   const has = (r: Role) => mine.includes(r);
   const bl = useApi<{ items: { requestId: string; featureId: string; version: string; requestedBy: string; requestedAt: string }[] }>('baselineRequests', { query: { status: BaselineRequestStatus.enum.PENDING } });
@@ -169,7 +169,7 @@ export function useInbox() {
         .map((c) => base({ key: `canary:${c.policyId}`, queue: 'canaryHold', item: `${c.policyId} · ${c.flagKey}`, detail: IL.canary[c.verdict], mine: has('RELEASE_MANAGER') || has('OPERATOR'), to: `/policies/${c.policyId}#canary-h`, featureId: c.featureId })),
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 역할·조회 응답이 같으면 결과도 같다
-  }, [role, bl.data, pol.data, approved.data, prod.data, wq.data, kills.data, reviews.data, changes.data, sync.data, models.data, health.data, canary.data]);
+  }, [role, rolesKey, me.id, bl.data, pol.data, approved.data, prod.data, wq.data, kills.data, reviews.data, changes.data, sync.data, models.data, health.data, canary.data]);
   const failed = queries.find((q) => q.isError && !optional(q));
   // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다
   const state: AsyncState = failed ? asyncState(failed) : queries.some((q) => q.isPending) ? 'loading' : items.length ? 'ready' : 'empty';
@@ -269,13 +269,13 @@ function homeMessage(activeKills: number, mine: number, procMine: number, loaded
   return { tone: 'ok', text: H.key.clear };
 }
 
-// 부서 보기(데모)의 작업공간 홈 — 부서를 고른 사람만 불러온다(첫 화면 번들 밖)
-// 운영 빌드(OIDC)는 부서 보기가 없다 — 지연 import 자체를 없애 묶음이 빠지게
-const WorkspaceHome = OIDC_AUTH ? null : lazy(() => import('../workspaces/WorkspaceHome'));
+// Business homes are shared; useAppShell only exposes a server-verified department in OIDC mode.
+// Demo department/role selectors remain separate and are removed from production.
+const WorkspaceHome = lazy(() => import('../workspaces/WorkspaceHome'));
 
 export function HomeScreen() {
   const { department } = useAppShell();
-  const dept = OIDC_AUTH ? undefined : departmentById(department);
+  const dept = departmentById(department);
   if (dept && WorkspaceHome)
     return (
       <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>

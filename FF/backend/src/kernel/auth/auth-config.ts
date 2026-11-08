@@ -1,7 +1,7 @@
 // 인증 설정 — 출시 준비 RD-SEC-01·RD-SEC-04 (docs/20-architecture/20-90-production-readiness.md "인증(OIDC)").
 // FF_AUTH = demo(운영 모드가 아닐 때 기본 — X-Actor-* 헤더 데모 인증) | oidc(고객사 IdP SSO, BFF 세션 쿠키 + Bearer).
 // 운영 모드(FF_ENV=production)는 oidc만 받는다. 값(비밀)은 문제 메시지에 넣지 않는다.
-import { HUMAN_ROLES, type Role } from '@ff/contracts';
+import { DEPARTMENT_IDS, HUMAN_ROLES, type Role } from '@ff/contracts';
 
 type Env = Record<string, string | undefined>;
 
@@ -26,6 +26,9 @@ export interface OidcConfig {
   roleMap: Map<string, Role[]>;
   /** 역할을 읽을 클레임 — 점으로 중첩 경로(Keycloak realm_access.roles) */
   roleClaim: string;
+  /** Optional UI workspace context. It never grants IAM roles. */
+  departmentClaim?: string;
+  departmentMap?: Map<string, string>;
   /** Bearer 접근 토큰의 대상(aud) — 기본 client id */
   audience: string;
   scopes: string;
@@ -39,6 +42,41 @@ export interface OidcConfig {
 }
 
 const ROLE_SET = new Set<string>(HUMAN_ROLES);
+const DEPARTMENT_SET = new Set<string>(DEPARTMENT_IDS);
+
+export const knownDepartment = (value: unknown): value is string => typeof value === 'string' && DEPARTMENT_SET.has(value);
+
+/** Explicit installer mapping; department names/role names are never guessed. */
+export function parseDepartmentMap(raw: string | undefined, errors: string[] = []): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const part of (raw ?? '').split(',').map((s) => s.trim()).filter(Boolean)) {
+    const i = part.lastIndexOf('=');
+    const external = i > 0 ? part.slice(0, i).trim() : '';
+    const department = i > 0 ? part.slice(i + 1).trim() : '';
+    if (!external || !knownDepartment(department)) {
+      errors.push('OIDC_DEPARTMENT_MAP — IdP부서값=모델부서ID 형식이며 기존 업무 모델의 부서만 사용할 수 있습니다');
+      continue;
+    }
+    if (out.has(external) && out.get(external) !== department) {
+      errors.push('OIDC_DEPARTMENT_MAP — 같은 IdP 부서 값에 서로 다른 부서를 지정할 수 없습니다');
+      continue;
+    }
+    out.set(external, department);
+  }
+  return out;
+}
+
+/** Call only after the existing OIDC verifier accepted the token. Unknown/ambiguous values have no department. */
+export function mappedDepartment(claims: Record<string, unknown>, cfg: Pick<OidcConfig, 'departmentClaim' | 'departmentMap'>): string | undefined {
+  if (!cfg.departmentClaim || !cfg.departmentMap?.size) return undefined;
+  let raw: unknown = claims;
+  if (Object.prototype.hasOwnProperty.call(claims, cfg.departmentClaim)) raw = claims[cfg.departmentClaim];
+  else for (const part of cfg.departmentClaim.split('.')) raw = raw && typeof raw === 'object' ? (raw as Record<string, unknown>)[part] : undefined;
+  // A department name may contain spaces; unlike role groups, scalar values are not split.
+  const values = typeof raw === 'string' ? [raw] : Array.isArray(raw) ? raw.filter((v): v is string => typeof v === 'string') : [];
+  const found = new Set(values.map((v) => cfg.departmentMap!.get(v.trim())).filter(knownDepartment));
+  return found.size === 1 ? [...found][0] : undefined;
+}
 
 /** OIDC_ROLE_MAP `idpGroup=ROLE,idpGroup2=ROLE|ROLE2` — 문제는 errors에 모은다(값 일부만) */
 export function parseRoleMap(raw: string | undefined, errors: string[] = []): Map<string, Role[]> {
@@ -98,6 +136,10 @@ export function authConfigProblems(env: Env = process.env): string[] {
   const map = parseRoleMap(env.OIDC_ROLE_MAP, errs);
   out.push(...errs);
   if (!errs.length && !map.size) out.push('OIDC_ROLE_MAP이 없습니다 — IdP 그룹을 플랫폼 역할에 잇는 표(예: ff-authors=FEATURE_AUTHOR,ff-safety=SAFETY_OFFICER|GATE_JUDGE)');
+  const departmentClaim = env.OIDC_DEPARTMENT_CLAIM?.trim();
+  const departmentMap = env.OIDC_DEPARTMENT_MAP?.trim();
+  if (!!departmentClaim !== !!departmentMap) out.push('OIDC_DEPARTMENT_CLAIM과 OIDC_DEPARTMENT_MAP은 함께 설정해야 합니다 — 모두 미설정이면 공통 홈을 사용합니다');
+  if (departmentMap) parseDepartmentMap(departmentMap, out);
   for (const k of ['FF_SESSION_TTL_MIN', 'FF_SESSION_IDLE_MIN'] as const) {
     if (env[k] !== undefined && !(Number(env[k]) > 0)) out.push(`${k} — 양의 분 단위 숫자여야 합니다`);
   }
@@ -123,6 +165,8 @@ export function oidcConfigOf(env: Env = process.env): OidcConfig {
     sessionSecret: env.FF_SESSION_SECRET ?? '',
     roleMap: parseRoleMap(env.OIDC_ROLE_MAP),
     roleClaim: (env.OIDC_ROLE_CLAIM ?? '').trim() || 'groups',
+    departmentClaim: env.OIDC_DEPARTMENT_CLAIM?.trim() || undefined,
+    departmentMap: parseDepartmentMap(env.OIDC_DEPARTMENT_MAP),
     audience: (env.OIDC_AUDIENCE ?? '').trim() || clientId,
     scopes: (env.OIDC_SCOPES ?? '').trim() || 'openid profile email',
     sessionTtlMin: positive(env.FF_SESSION_TTL_MIN, 480),

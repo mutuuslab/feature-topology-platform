@@ -14,13 +14,15 @@ interface Policy {policyId:string;flagKey:string;featureId:string;featureVersion
 interface Vehicle {vin:string;label:string;country:string;vehicleModel:string;trim:string}
 export default function SoftwareDelivery(){
  useUiLocale();const {role}=useAppShell(),write=usePermission(['IMPLEMENTER','RELEASE_MANAGER']),review=usePermission(['RELEASE_MANAGER']),read=usePermission(['IMPLEMENTER','RELEASE_MANAGER','OPERATOR','AUDITOR']),download=usePermission(['IMPLEMENTER','RELEASE_MANAGER','OPERATOR']);
- const features=useApi<{items:Feature[]}>('listFeatures'),policies=useApi<{items:Policy[]}>('policies'),vehicles=useApi<{items:Vehicle[]}>('vehicles');
+ const features=useApi<{items:Feature[]}>('listFeatures'),policies=useApi<{items:Policy[]}>('listPolicies'),vehicles=useApi<{items:Vehicle[]}>('vehicles');
  const packages=useApi<{items:SoftwarePackageView[]}>('softwarePackages');
  const create=useApiMutation<SoftwarePackageView>('createSoftwarePackage',['softwarePackages']);
  const decision=useApiMutation<SoftwarePackageView>('reviewSoftwarePackage',['softwarePackages','softwarePackage','softwareDownloadHistory']);
  const [featureKey,setFeature]=useState(''),[swId,setSw]=useState(''),[file,setFile]=useState<File|null>(null),[source,setSource]=useState<'UPLOADED_SOFTWARE'|'EXECUTABLE_DEMO'>('UPLOADED_SOFTWARE'),[reason,setReason]=useState(''),[selected,setSelected]=useState(''),[vin,setVin]=useState(''),[flag,setFlag]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null),[verdict,setVerdict]=useState<SoftwareVerdict|null>(null),[verified,setVerified]=useState(false);
  const check=useApiMutation<SoftwareVerdict>('checkSoftwareDownload',[]);
- const f=features.data?.items.find(x=>`${x.featureId}@${x.version}`===featureKey),sw=swId||f?.swIds[0]||'';
+ const selectedFeature=features.data?.items.find(x=>`${x.featureId}@${x.version}`===featureKey);
+ const detail=useApi<{feature:Feature}>('featureDetail',{params:{id:selectedFeature?.featureId??'',ver:selectedFeature?.version??''}},{enabled:!!selectedFeature});
+ const f=detail.data?.feature,sw=swId||f?.swIds?.[0]||'';
  const item=packages.data?.items.find(p=>p.packageId===selected);
  const possible=policies.data?.items.filter(p=>p.status==='DEPLOYED'&&p.featureId===item?.featureId&&p.featureVersion===item?.featureVersion)??[];
  const flagKey=possible.some(p=>p.flagKey===flag)?flag:possible[0]?.flagKey??'';
@@ -36,6 +38,7 @@ export default function SoftwareDelivery(){
    <Panel title={T.register}><div className="ds-stack">
      <AsyncView state={asyncState(features)} error={features.error} onRetry={()=>features.refetch()}/>
      <Field label={T.feature}><select className="ds-input" aria-label={T.feature} value={featureKey} onChange={e=>{setFeature(e.target.value);setSw('');setFile(null);}}><option value="">{T.choose}</option>{features.data?.items.map(f=><option key={`${f.featureId}@${f.version}`} value={`${f.featureId}@${f.version}`}>{f.featureId}@{f.version} · {f.name}</option>)}</select></Field>
+     {!!selectedFeature&&<AsyncView state={asyncState(detail)} error={detail.error} onRetry={()=>detail.refetch()}/>}
      <Field label={T.sw}><select className="ds-input" aria-label={T.sw} value={sw} onChange={e=>{setSw(e.target.value);setFile(null);}} disabled={!f}><option value="">{T.choose}</option>{f?.swIds.map(id=><option key={id}>{id}</option>)}</select></Field>
      <Field label={T.file}><input type="file" aria-label={T.file} disabled={!write.ok||!sw||busy} onChange={e=>{setFile(e.target.files?.[0]??null);setSource('UPLOADED_SOFTWARE');}}/>{file&&<p>{file.name} · {file.size.toLocaleString()} B</p>}</Field>
      <Button onClick={demo} disabled={!write.ok||!sw||busy} reason={write.hint}>{T.demo}</Button><p className="ds-field__hint">{T.demoHint}</p>
@@ -45,7 +48,7 @@ export default function SoftwareDelivery(){
    <Panel title={T.packages}><AsyncView state={asyncState(packages,!packages.data?.items.length)} error={packages.error} onRetry={()=>packages.refetch()} empty={{title:T.noPackages}}>
      <Field label={T.package}><select className="ds-input" aria-label={T.package} value={selected} onChange={e=>{setSelected(e.target.value);setVin('');setFlag('');reset();}}><option value="">{T.choose}</option>{packages.data?.items.map(p=><option value={p.packageId} key={p.packageId}>{p.name} · {p.featureId}@{p.featureVersion} · {T.states[p.status]}</option>)}</select></Field>
    </AsyncView></Panel>
-   {item&&<><Panel title={T.decision}><dl><dt>{T.status}</dt><dd>{T.states[item.status]}</dd><dt>{T.source}</dt><dd>{T.sources[item.source]}</dd><dt>{T.sw}</dt><dd>{item.swId}</dd><dt>{T.bytes}</dt><dd>{item.bytes.toLocaleString()} B</dd><dt>{T.hash}</dt><dd style={{overflowWrap:'anywhere'}}>{item.sha256}</dd><dt>{T.author}</dt><dd>{item.createdBy}</dd><dt>{T.reviewer}</dt><dd>{item.reviewedBy??'—'}</dd></dl>
+   {item&&<><Panel title={T.decision}>{item.provenance&&<p className="ds-callout" data-tone="neutral">{T.provenance[item.provenance]} · {T.staticBoundary}</p>}<dl><dt>{T.status}</dt><dd>{T.states[item.status]}</dd><dt>{T.source}</dt><dd>{T.sources[item.source]}</dd><dt>{T.sw}</dt><dd>{item.swId}</dd><dt>{T.bytes}</dt><dd>{item.bytes.toLocaleString()} B</dd><dt>{T.hash}</dt><dd style={{overflowWrap:'anywhere'}}>{item.sha256}</dd><dt>{T.author}</dt><dd>{item.createdBy}</dd><dt>{T.reviewer}</dt><dd>{item.reviewedBy??'—'}</dd></dl>
      <p>{T.independent}</p><Button disabled={!review.ok||item.createdBy===actorFor(role).id||reason.trim().length<4||decision.isPending||item.status==='REVOKED'} reason={review.hint} onClick={()=>{reset();decision.mutate({params:{id:item.packageId},body:{revision:item.revision,decision:item.status==='DRAFT'?'APPROVE':'REVOKE',reason}});}}>{item.status==='DRAFT'?T.approve:T.revoke}</Button>
      <Field label={T.flag}><select className="ds-input" aria-label={T.flag} value={flagKey} onChange={e=>{setFlag(e.target.value);reset();}}><option value="">{T.choose}</option>{possible.map(p=><option key={p.policyId} value={p.flagKey}>{p.flagKey} · {p.policyId}</option>)}</select></Field>{!possible.length&&<p>{T.noPolicy}</p>}
      <Field label={T.vin}><select className="ds-input" aria-label={T.vin} value={vin} onChange={e=>{setVin(e.target.value);reset();}}><option value="">{T.choose}</option>{fleet.map(v=><option key={v.vin} value={v.vin}>{v.vin} · {v.label}</option>)}</select></Field>

@@ -6,6 +6,7 @@ import { OIDC_AUTH } from '../auth-mode';
 export interface SoftwarePackageView {
   packageId:string;featureId:string;featureVersion:string;swId:string;fileId:string;name:string;bytes:number;sha256:string;mediaType:string;
   source:'UPLOADED_SOFTWARE'|'EXECUTABLE_DEMO';status:'DRAFT'|'APPROVED'|'REVOKED';revision:number;createdBy:string;createdAt:string;reviewedBy:string|null;
+  provenance?:'LOCAL_SIMULATION'|'CAPTURED_EXECUTABLE_DEMO';
 }
 export interface SoftwareVerdict {
   allowed:boolean;blocked:string|null;vin:string;flagKey:string;package:SoftwarePackageView;manifest:unknown;

@@ -17,6 +17,8 @@ export const softwareDelivery=/* @__PURE__ */ localizedCopy('software-delivery.s
   integrityError:'파일 또는 매니페스트의 서명·크기·SHA-256이 일치하지 않습니다.',
   history:'다운로드 요청 이력',historyBoundary:'STREAM_OPENED는 서버가 원문 스트림을 연 사실입니다. 수신 완료는 이 브라우저의 원문 검증 결과로 구분합니다.',
   apiHint:'차량은 사람 역할 헤더 대신 차량 키로 서명한 /vehicle/v1/:vin/software/:id/download 요청을 사용합니다.',
+  provenance:{LOCAL_SIMULATION:'이 브라우저에서 생성한 시연 기록',CAPTURED_EXECUTABLE_DEMO:'공개가 허용된 시험용 SW 원문 사본'},
+  staticBoundary:'정적 시연의 검토·다운로드는 실제 운영 시스템의 승인·설치 이력을 변경하지 않습니다.',
   states:{DRAFT:'검토 전',APPROVED:'승인',REVOKED:'회수'},sources:{UPLOADED_SOFTWARE:'사용자 업로드 SW',EXECUTABLE_DEMO:'실행 가능한 시험용 SW'},
   causes:{PACKAGE_REVOKED:'패키지 승인이 회수되었습니다.',PACKAGE_NOT_APPROVED:'별도 담당자의 SW 검토 승인이 필요합니다.',MANIFEST_SIGNATURE_INVALID:'매니페스트 서명이 유효하지 않습니다.',DEPLOYED_FEATURE_MISMATCH:'배포 Flag의 Feature 버전과 SW 패키지 버전이 다릅니다.',SOFTWARE_COMPONENT_REMOVED:'현재 Feature의 SW 구성품 연결이 변경되었습니다.',PACKAGE_CHANGED:'조건 조회 중 패키지가 변경되었습니다.',POLICY_CHANGED:'조건 조회 중 배포 정책이 변경되었습니다.'},
 });

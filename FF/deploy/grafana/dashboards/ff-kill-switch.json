@@ -210,7 +210,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 0,
         "y": 1
@@ -236,12 +236,13 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "#c9c6bd"
           }
         },
         "overrides": []
@@ -254,10 +255,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
-        "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -270,7 +271,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 4,
         "y": 1
@@ -296,12 +297,13 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "#c9c6bd"
           }
         },
         "overrides": []
@@ -314,23 +316,23 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
-        "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
       "id": 4,
       "type": "stat",
       "title": "아직 반영 안 됨",
-      "description": "끝 상태를 보고하지 않은 차량. 기한이 지나면 FF가 이상 징후(전달)로 올린다.",
+      "description": "끝 상태를 보고하지 않은 차량.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 8,
         "y": 1
@@ -356,15 +358,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 10,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -382,10 +384,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -398,7 +400,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 12,
         "y": 1
@@ -425,15 +427,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.9,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.99,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -451,10 +453,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -467,7 +469,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 16,
         "y": 1
@@ -492,15 +494,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 5,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -518,10 +520,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -534,7 +536,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 20,
         "y": 1
@@ -559,15 +561,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 5,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 20,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -585,10 +587,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -600,7 +602,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 5
       },
       "panels": []
     },
@@ -608,7 +610,7 @@
       "id": 9,
       "type": "timeseries",
       "title": "명령별 반영률 곡선",
-      "description": "걸린 차단마다 시간에 따른 반영률(1 − 미반영/대상). 발령 직후 가파르게 오르다 오프라인 꼬리에서 멈춘다. 평평하게 멈춘 높이가 낮으면 오프라인 차량이 많다.",
+      "description": "걸린 차단마다 시간에 따른 반영률(1 − 미반영/대상).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -617,7 +619,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -641,7 +643,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -649,10 +651,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -666,11 +674,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -683,7 +690,7 @@
       "id": 10,
       "type": "timeseries",
       "title": "명령 → 회신 시간 분위수",
-      "description": "발급부터 차량이 끝 상태를 처음 보고하기까지(등급·요청별 p50·p95·p99). DC2는 인계·램프, DC3는 다음 시동까지 기다린다.",
+      "description": "발급부터 차량이 끝 상태를 처음 보고하기까지(등급·요청별 p50·p95·p99).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -692,7 +699,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -734,7 +741,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -742,21 +749,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -769,7 +781,7 @@
       "id": 11,
       "type": "heatmap",
       "title": "시간-반영 히트맵",
-      "description": "반영 지연 칸별 차량 수의 시간 변화. 발령 시점마다 세로 띠가 생기고, 위로 길게 남는 칸이 지연 차량이다.",
+      "description": "반영 지연 칸별 차량 수의 시간 변화.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -778,7 +790,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 15
       },
       "targets": [
         {
@@ -801,7 +813,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -827,7 +839,7 @@
       "id": 12,
       "type": "bargauge",
       "title": "지연 차량 Top(Feature·등급)",
-      "description": "지금 끝 상태가 아닌 차량이 많은 차단부터. 차량 한 대씩은 FF 차단 상세(차량별 봉투·상태)에서 본다 — Grafana에는 VIN을 싣지 않는다.",
+      "description": "지금 끝 상태가 아닌 차량이 많은 차단부터.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -836,7 +848,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 15
       },
       "targets": [
         {
@@ -860,15 +872,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 10,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -886,8 +898,12 @@
         "overrides": []
       },
       "options": {
-        "displayMode": "gradient",
+        "displayMode": "basic",
         "orientation": "horizontal",
+        "valueMode": "text",
+        "namePlacement": "left",
+        "minVizHeight": 16,
+        "maxVizHeight": 20,
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -911,7 +927,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 25
+        "y": 24
       },
       "targets": [
         {
@@ -943,7 +959,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -951,10 +967,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "fillOpacity": 70,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
             "drawStyle": "bars"
           }
         },
@@ -962,11 +984,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -988,7 +1009,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 25
+        "y": 24
       },
       "targets": [
         {
@@ -1020,7 +1041,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1028,10 +1049,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "fillOpacity": 80,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
             "drawStyle": "bars"
           }
         },
@@ -1039,11 +1066,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1061,7 +1087,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 32
       },
       "panels": []
     },
@@ -1078,7 +1104,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 33
       },
       "targets": [
         {
@@ -1099,7 +1125,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },

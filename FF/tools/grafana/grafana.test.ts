@@ -14,7 +14,7 @@ import { gunzipSync } from 'node:zlib';
 import { parse as parseYaml } from 'yaml';
 import { FF } from '../lib.ts';
 import { decodeFields, fieldBytes, fieldString, fixedDouble } from '../../backend/src/kernel/otlp/otlp-proto.ts';
-import { exposedSeriesNames, HEALTH_INDICATORS, INDICATOR_RULES, TELEMETRY_METRICS } from '../../contracts/src/rules/telemetry-metrics.ts';
+import { ADOPTION_COUNTRY_POINTS, exposedSeriesNames, HEALTH_INDICATORS, INDICATOR_RULES, TELEMETRY_METRICS } from '../../contracts/src/rules/telemetry-metrics.ts';
 import { readCatalog } from './demo-catalog.ts';
 import { activity, canaryStage, generate, windowTimes } from './demo-generator.ts';
 import { alertRules, dashboards, metricNamesIn, publicVariant } from './dashboards.ts';
@@ -250,7 +250,7 @@ test('대시보드: 패널마다 설명·고유 id·24칸 안 배치, 데이터 
     assert.ok((d.annotations as { list: unknown[] }).list.length >= 4, `${d.uid} 주석`);
     assert.ok(s.includes('${ff_url}'), `${d.uid} FF로 가는 링크`);
   }
-  assert.deepEqual([...uids].sort(), ['ff-canary', 'ff-feature-health', 'ff-flag-eval', 'ff-kill-switch', 'ff-ops-overview', 'ff-platform', 'ff-vehicle-telemetry']);
+  assert.deepEqual([...uids].sort(), ['ff-canary', 'ff-feature-adoption', 'ff-feature-health', 'ff-flag-eval', 'ff-kill-switch', 'ff-ops-overview', 'ff-platform', 'ff-vehicle-telemetry']);
   assert.match(JSON.stringify(dashboards().find((d) => d.uid === 'ff-feature-health')), /\$\{ff_url\}\/features\/\$\{__data\.fields\.feature\}/);
 });
 
@@ -283,11 +283,32 @@ test('저장본(deploy/grafana)이 원천(dashboards.ts)과 같다', () => {
   for (const [f, text] of builtFiles()) assert.equal(readFileSync(f, 'utf8').split('\r\n').join('\n'), text, f);
 });
 
+test('적용지도는 실제 국가 대표점 지표·대체표·공개 ON 보기이며 색 채움·gradient 없이 생성한다', () => {
+  const all = dashboards();
+  const d = all.find((d) => d.uid === 'ff-feature-adoption')!;
+  assert.ok(d.panels.some((p) => p.type === 'geomap'));
+  assert.ok(d.panels.some((p) => p.type === 'table'));
+  assert.doesNotMatch(JSON.stringify(all), /"colorMode":"background"|"displayMode":"gradient"|"color":"(?:red|orange|green)"/);
+  const publicMap = publicVariant(d).panels.find((p) => p.type === 'geomap')!;
+  assert.match(String((publicMap.targets as any[])[0].expr), /state="ON"/);
+  const generated = generate(catalog, [Date.parse('2026-11-06T12:00:00Z')]);
+  const metric = generated.platform.find((m) => m.name === 'ff_flag_adoption_vehicles')!;
+  assert.ok(metric && metric.points.length > 0);
+  const totals = new Map<string, number>();
+  for (const point of metric.points as any[]) {
+    const a = point.attributes;
+    assert.deepEqual([Number(a.lat), Number(a.lon)], ADOPTION_COUNTRY_POINTS[a.country]);
+    const key = `${a.flag}/${a.country}`;
+    totals.set(key, (totals.get(key) ?? 0) + point.value);
+  }
+  for (const [key, value] of totals) assert.equal(value, catalog.fleet.filter((c) => c.country === key.split('/')[1]).reduce((n, c) => n + c.vehicles, 0), key);
+});
+
 // 판정 정본은 FF 규칙(INDICATOR_RULES, 통합 D-INT-3) — Grafana는 같은 경계로 관찰·경보만 한다
 test('건강 판정 경계 — 4축 표 칸 색·패널 색 단계·경보 임계값이 FF 판정 규칙 하나에서 나온다', () => {
   const steps = (name: keyof typeof INDICATOR_RULES) => {
     const r = INDICATOR_RULES[name];
-    return r.worse === 'up' ? [[null, 'green'], [r.watch, 'orange'], [r.action, 'red']] : [[null, 'red'], [r.action, 'orange'], [r.watch, 'green']];
+    return r.worse === 'up' ? [[null, '#2fa66c'], [r.watch, '#c99a2b'], [r.action, '#e0453a']] : [[null, '#e0453a'], [r.action, '#c99a2b'], [r.watch, '#2fa66c']];
   };
   const fh = dashboards().find((d) => d.uid === 'ff-feature-health')!;
   const table = fh.panels.find((p) => p.title === 'Feature Version 4축') as any;
@@ -388,7 +409,7 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
     console.log = log;
     await srv.close();
   }
-  assert.equal(state.dashboards.size, 14);
+  assert.equal(state.dashboards.size, dashboards().length * 2);
   for (const [uid, d] of state.dashboards) {
     const s = JSON.stringify(d.dashboard);
     assert.doesNotMatch(s, /\$\{DS_/, `${uid} 자리표시가 남지 않는다`);
@@ -398,9 +419,9 @@ test('provision: 가짜 Grafana API — 데이터 소스를 이름으로 찾고,
     assert.equal(d.overwrite, true);
   }
   assert.match(JSON.stringify(state.dashboards.get('ff-vehicle-telemetry').dashboard), /"uid":"logs1"/);
-  assert.equal(state.publics.size, 7);
+  assert.equal(state.publics.size, dashboards().length);
   assert.ok([...state.publics.keys()].every((k) => k.endsWith('-public')));
-  assert.ok(state.calls.filter((c) => c.startsWith('PATCH')).length === 7, '두 번째 실행은 공개 대시보드를 갱신');
+  assert.equal(state.calls.filter((c) => c.startsWith('PATCH')).length, dashboards().length, '두 번째 실행은 공개 대시보드를 갱신');
   assert.deepEqual([...state.groups.keys()].sort(), ['ff-feature-improvement', 'ff-flag', 'ff-kill', 'ff-platform', 'ff-vehicle']);
   for (const g of state.groups.values()) for (const r of g.rules) assert.equal(r.data[0].datasourceUid, 'prom1');
   assert.equal([...state.groups.values()].reduce((n, g) => n + g.rules.length, 0), 15);

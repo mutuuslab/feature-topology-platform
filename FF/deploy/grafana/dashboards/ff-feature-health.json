@@ -289,7 +289,7 @@
       "id": 2,
       "type": "table",
       "title": "Feature Version 4축",
-      "description": "동작(적용 성공·거부)·문제(DTC·고장·안전 이벤트·열린 이상 징후)·개선(사용률·수동 끄기)·위험(보안·결측). 칸 색은 FF 판정 규칙의 주의(주황)·조치 필요(빨강) 경계 — Feature를 누르면 FF Feature 상세, 오른쪽 링크는 이 대시보드의 해당 Feature로 좁힌다. 판정(정상·주의·조치 필요·판단 불가)은 FF가 한다.",
+      "description": "동작(적용 성공·거부)·문제(DTC·고장·안전 이벤트·열린 이상 징후)·개선(사용률·수동 끄기)·위험(보안·결측).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -322,7 +322,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -348,15 +348,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "red"
+                      "color": "#e0453a"
                     },
                     {
                       "value": 0.92,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 0.97,
-                      "color": "green"
+                      "color": "#2fa66c"
                     }
                   ]
                 }
@@ -364,7 +364,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -386,15 +386,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "green"
+                      "color": "#2fa66c"
                     },
                     {
                       "value": 0.01,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 0.03,
-                      "color": "red"
+                      "color": "#e0453a"
                     }
                   ]
                 }
@@ -402,7 +402,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -424,15 +424,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "green"
+                      "color": "#2fa66c"
                     },
                     {
                       "value": 0.004,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 0.008,
-                      "color": "red"
+                      "color": "#e0453a"
                     }
                   ]
                 }
@@ -440,7 +440,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -462,15 +462,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "green"
+                      "color": "#2fa66c"
                     },
                     {
                       "value": 2,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 5,
-                      "color": "red"
+                      "color": "#e0453a"
                     }
                   ]
                 }
@@ -478,7 +478,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -500,15 +500,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "red"
+                      "color": "#e0453a"
                     },
                     {
                       "value": 0.15,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 0.35,
-                      "color": "green"
+                      "color": "#2fa66c"
                     }
                   ]
                 }
@@ -516,7 +516,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -538,15 +538,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "green"
+                      "color": "#2fa66c"
                     },
                     {
                       "value": 0.12,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 0.3,
-                      "color": "red"
+                      "color": "#e0453a"
                     }
                   ]
                 }
@@ -554,7 +554,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -572,15 +572,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "green"
+                      "color": "#2fa66c"
                     },
                     {
                       "value": 2,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 5,
-                      "color": "red"
+                      "color": "#e0453a"
                     }
                   ]
                 }
@@ -588,7 +588,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -610,15 +610,15 @@
                   "steps": [
                     {
                       "value": null,
-                      "color": "green"
+                      "color": "#2fa66c"
                     },
                     {
                       "value": 0.05,
-                      "color": "orange"
+                      "color": "#c99a2b"
                     },
                     {
                       "value": 0.2,
-                      "color": "red"
+                      "color": "#e0453a"
                     }
                   ]
                 }
@@ -626,7 +626,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background"
+                  "type": "color-text"
                 }
               }
             ]
@@ -684,7 +684,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "활성 차량(Version별)",
-      "description": "Feature가 켜져 있는 차량. 개선 후보: 같은 시장의 비슷한 Feature보다 낮으면 발견성(HMI 노출)이나 기본값 설계를 본다.",
+      "description": "Feature가 켜져 있는 차량.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -715,7 +715,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -723,10 +723,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -740,11 +746,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -757,7 +762,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "사용률(활성/대상)",
-      "description": "IF-15 usage_rate. 개선 후보: 35% 아래가 이어지면 \"사용률 저조\" 경보 — 기능 가치·안내 문구·기본 켜짐 여부를 Feature Owner가 검토한다.",
+      "description": "IF-15 usage_rate.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -788,15 +793,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.15,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.35,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -804,12 +809,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           },
           "links": [
@@ -824,11 +832,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -841,7 +848,7 @@
       "id": 6,
       "type": "timeseries",
       "title": "사용 시간(활성 차량당 분/시간)",
-      "description": "켜진 차량이 실제로 쓰는 시간. 개선 후보: 활성은 높은데 사용 시간이 짧으면 켜 두기만 하고 실제 작동 조건(ODD)에 거의 들지 않는 것.",
+      "description": "켜진 차량이 실제로 쓰는 시간.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -872,7 +879,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -880,10 +887,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -897,11 +910,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -945,7 +957,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -953,10 +965,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -970,11 +988,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -987,7 +1004,7 @@
       "id": 8,
       "type": "timeseries",
       "title": "수동 끄기 비율",
-      "description": "켜짐 대비 운전자가 직접 끈 비율. 개선 후보: 12% 넘으면 \"운전자가 자주 끔\" — 개입 강도·경고음·민감도 파라미터 검토(변경 요청 → 새 Version).",
+      "description": "켜짐 대비 운전자가 직접 끈 비율.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1018,15 +1035,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.12,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.3,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1034,12 +1051,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           },
           "links": [
@@ -1054,11 +1074,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1102,15 +1121,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.06,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.1,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1118,12 +1137,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           },
           "links": [
@@ -1138,11 +1160,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1168,7 +1189,7 @@
       "id": 11,
       "type": "timeseries",
       "title": "폴백 비율(차종별)",
-      "description": "Safe Default로 떨어진 비율을 차종별로. 개선 후보: 한 차종만 높으면 그 차종의 신호·ECU 조합 지원 문제 — 변형 조건(지원 조건) 재검토.",
+      "description": "Safe Default로 떨어진 비율을 차종별로.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1199,15 +1220,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.03,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.06,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1215,12 +1236,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           },
           "links": [
@@ -1235,11 +1259,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1252,7 +1275,7 @@
       "id": 12,
       "type": "timeseries",
       "title": "폴백 사유",
-      "description": "CONTEXT_UNKNOWN(문맥 없음)·ERROR_SAFE_DEFAULT(평가 오류)·NOT_SUPPORTED(미지원 조합)·KILL_SWITCH(긴급 차단). 개선 후보: NOT_SUPPORTED가 많으면 대상 정의(Targeting)가 실제 차량 구성보다 넓다.",
+      "description": "CONTEXT_UNKNOWN(문맥 없음)·ERROR_SAFE_DEFAULT(평가 오류)·NOT_SUPPORTED(미지원 조합)·KILL_SWITCH(긴급 차단).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1283,7 +1306,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1291,10 +1314,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "fillOpacity": 70,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
             "drawStyle": "bars",
             "stacking": {
               "mode": "normal"
@@ -1305,11 +1334,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1322,7 +1350,7 @@
       "id": 13,
       "type": "timeseries",
       "title": "오류율 — 출시 전후(Version 비교)",
-      "description": "활성 1천 대·시간당 오류를 Version별로. 개선 후보: 새 Version이 이전 Version보다 1.5배 이상이면 \"출시 후 오류 증가\" — 결함 등록(JIRA)·롤백 판단.",
+      "description": "활성 1천 대·시간당 오류를 Version별로.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1353,7 +1381,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1361,10 +1389,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -1378,11 +1412,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1395,7 +1428,7 @@
       "id": 14,
       "type": "timeseries",
       "title": "DTC(활성 1천 대·시간당)",
-      "description": "Feature 관련 DTC. 개선 후보: 특정 Version·차종에서만 오르면 그 조합의 HW·SW 통합 문제.",
+      "description": "Feature 관련 DTC.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1426,7 +1459,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1434,10 +1467,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -1451,11 +1490,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1481,7 +1519,7 @@
       "id": 16,
       "type": "bargauge",
       "title": "국가·차종별 활성 비율 차이",
-      "description": "시장·차종의 등록 차량 대비 Feature 활성 차량(24시간 평균). 개선 후보: 같은 Feature가 한 시장만 낮으면 현지화(언어·법규 경고·도로 특성)를 본다.",
+      "description": "시장·차종의 등록 차량 대비 Feature 활성 차량(24시간 평균).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1514,15 +1552,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.1,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.2,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -1533,8 +1571,12 @@
         "overrides": []
       },
       "options": {
-        "displayMode": "gradient",
+        "displayMode": "basic",
         "orientation": "horizontal",
+        "valueMode": "text",
+        "namePlacement": "left",
+        "minVizHeight": 16,
+        "maxVizHeight": 20,
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -1580,7 +1622,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1588,21 +1630,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1615,7 +1662,7 @@
       "id": 18,
       "type": "timeseries",
       "title": "Canary 대 대조군(DTC 상대위험)",
-      "description": "적용군/대조군 DTC 비. 2를 넘으면 Canary 이상 — 확대 중단(FF 정책 단계 확대 HOLD). 자세히는 Canary 단계 배포 대시보드.",
+      "description": "적용군/대조군 DTC 비. 2를 넘으면 Canary 이상 — 확대 중단(FF 정책 단계 확대 HOLD).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1646,15 +1693,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1.5,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 2,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1662,12 +1709,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           }
         },
@@ -1675,11 +1725,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1699,7 +1748,7 @@
       "id": 19,
       "type": "timeseries",
       "title": "데이터 신선도·결측",
-      "description": "Lake 데이터셋 지연과 결측률. 지연이 30분을 넘거나 결측이 5%를 넘으면 위 신호로 판정하지 않는다(판단 불가).",
+      "description": "Lake 데이터셋 지연과 결측률.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1730,15 +1779,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 900,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 1800,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1746,12 +1795,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           }
         },
@@ -1759,11 +1811,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1789,7 +1840,7 @@
       "id": 21,
       "type": "table",
       "title": "개선 후보 경보(최근 7일)",
-      "description": "Grafana 경보가 FF 운영 관찰로 들어간 기록(축·상태). FF에서 Feature 상세 → 운영 지표, 이상 징후(/ops/anomalies)로 이어서 담당(Feature Owner)이 검토한다.",
+      "description": "Grafana 경보가 FF 운영 관찰로 들어간 기록(축·상태).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1822,7 +1873,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },

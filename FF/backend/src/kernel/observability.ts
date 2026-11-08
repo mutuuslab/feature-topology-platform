@@ -71,6 +71,7 @@ type Series = { labels: string[]; value: number; hist?: { buckets: number[]; sum
 export class MetricRegistry {
   private readonly series = new Map<string, Map<string, Series>>();
   private readonly collectors: (() => void)[] = [];
+  private readonly asyncCollectors: (() => Promise<void>)[] = [];
   constructor(private readonly limit = METRIC_SERIES_LIMIT) {}
 
   private def(name: string): TelemetryMetricDef {
@@ -123,6 +124,8 @@ export class MetricRegistry {
   onCollect(fn: () => void) {
     this.collectors.push(fn);
   }
+  onCollectAsync(fn: () => Promise<void>) { this.asyncCollectors.push(fn); }
+  async prepare() { await Promise.allSettled(this.asyncCollectors.map((c) => c())); }
   /** 시험·점검용 — 라벨 일부로 값 합 */
   value(name: string, match: Record<string, string> = {}): number {
     const d = this.def(name);
@@ -216,7 +219,7 @@ export function requestObserver(metrics: Metrics, log: ((line: Record<string, un
 
 /** 지표 창구 — 운영 모드는 토큰 필수(없으면 꺼짐), 그 밖에는 열림 */
 export function metricsEndpoint(metrics: Metrics, env: Env = process.env) {
-  return (req: Request, res: Response) => {
+  return async (req: Request, res: Response) => {
     const token = env.FF_METRICS_TOKEN ?? '';
     // 공개 데모 게이트도 같다 — 공개 비밀번호로 들어온 방문자 누구나 세션을 가지므로 세션만으로 지표를 내주지 않는다(20-99)
     if (isProduction(env) || demoGateOn(env)) {
@@ -226,6 +229,7 @@ export function metricsEndpoint(metrics: Metrics, env: Env = process.env) {
       if (got.length !== want.length || !timingSafeEqual(got, want)) return void res.status(401).json({ error: { code: 'UNAUTHENTICATED', message: '지표 토큰이 맞지 않습니다.' } });
     }
     res.setHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+    await metrics.registry.prepare();
     res.send(metrics.text());
   };
 }

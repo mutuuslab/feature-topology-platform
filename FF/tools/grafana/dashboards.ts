@@ -12,6 +12,14 @@ export const PUBLIC_FOLDER = { uid: 'ff-public', title: 'FF 운영 (공개 시�
 const PROM = { type: 'prometheus', uid: '${DS_PROMETHEUS}' };
 const LOKI = { type: 'loki', uid: '${DS_LOKI}' };
 const TEMPO = { type: 'tempo', uid: '${DS_TEMPO}' };
+const STATE_COLOR: Record<string, string> = { green: '#2fa66c', orange: '#c99a2b', red: '#e0453a', blue: '#4f8fe0', gray: '#5b616c' };
+const color = (name: string) => STATE_COLOR[name] ?? name;
+const concise = (description: string) => {
+  const parts = description.split(/(?<=[.!?。])\s+(?=[가-힣A-Z])/);
+  const action = parts.find((s) => s.startsWith('조치:'));
+  const summary = parts[0].length < 15 ? parts.slice(0, 2).join(' ') : parts[0];
+  return [summary, ...(action && !summary.includes(action) ? [action] : [])].join(' ');
+};
 
 type Json = Record<string, unknown>;
 export interface Dashboard extends Json {
@@ -71,7 +79,7 @@ class Layout {
   }
   add(p: PanelSpec) {
     const w = p.w ?? 12;
-    const h = p.h ?? 8;
+    const h = p.type === 'stat' ? 4 : p.h ?? 8;
     if (this.x + w > 24) this.newline();
     const type = p.type ?? 'timeseries';
     const defaults: Json = {
@@ -81,9 +89,9 @@ class Layout {
       ...(p.max !== undefined && { max: p.max }),
       ...(p.noValue && { noValue: p.noValue }),
       ...(p.mappings && { mappings: p.mappings }),
-      thresholds: { mode: 'absolute', steps: (p.steps ?? [[null, 'green']]).map(([value, color]) => ({ value, color })) },
-      color: { mode: p.steps && ['stat', 'gauge', 'bargauge', 'table'].includes(type) ? 'thresholds' : 'palette-classic' },
-      ...(type === 'timeseries' && { custom: { lineWidth: 2, fillOpacity: 10, showPoints: 'never', spanNulls: true, ...(p.steps && { thresholdsStyle: { mode: 'line+area' } }), ...p.custom } }),
+      thresholds: { mode: 'absolute', steps: (p.steps ?? [[null, 'gray']]).map(([value, c]) => ({ value, color: color(c) })) },
+      color: type === 'stat' && !p.steps ? { mode: 'fixed', fixedColor: '#c9c6bd' } : { mode: p.steps && ['stat', 'gauge', 'bargauge', 'table'].includes(type) ? 'thresholds' : 'palette-classic' },
+      ...(type === 'timeseries' && { custom: { lineWidth: 1.5, fillOpacity: 0, gradientMode: 'none', pointSize: 4, axisBorderShow: false, showPoints: 'never', spanNulls: true, thresholdsStyle: { mode: p.steps ? 'dashed' : 'off' }, ...p.custom } }),
       ...(type !== 'timeseries' && p.custom && { custom: p.custom }),
       ...(p.fieldLinks && { links: p.fieldLinks.map((l) => ({ ...l, targetBlank: true })) }),
     };
@@ -91,12 +99,12 @@ class Layout {
       id: this.id++,
       type,
       title: p.title,
-      description: p.description,
+      description: concise(p.description),
       datasource: p.datasource ?? PROM,
       gridPos: { h, w, x: this.x, y: this.y },
       targets: p.targets.map((t, i) => ({ refId: String.fromCharCode(65 + i), ...t })),
       fieldConfig: { defaults, overrides: p.overrides ?? [] },
-      options: { ...(type === 'stat' && { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, colorMode: 'background', graphMode: 'area', textMode: 'value_and_name', justifyMode: 'center' }), ...(type === 'timeseries' && { legend: { displayMode: 'table', placement: 'bottom', calcs: ['lastNotNull', 'max'] }, tooltip: { mode: 'multi', sort: 'desc' } }), ...(type === 'bargauge' && { displayMode: 'gradient', orientation: 'horizontal', reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, showUnfilled: true }), ...(type === 'gauge' && { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, showThresholdMarkers: true }), ...p.options },
+      options: { ...(type === 'stat' && { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, colorMode: 'value', graphMode: p.steps ? 'area' : 'none', textMode: 'value', justifyMode: 'auto' }), ...(type === 'timeseries' && { legend: { displayMode: 'list', placement: 'bottom', calcs: ['lastNotNull'] }, tooltip: { mode: 'multi', sort: 'desc' } }), ...(type === 'bargauge' && { displayMode: 'basic', orientation: 'horizontal', valueMode: 'text', namePlacement: 'left', minVizHeight: 16, maxVizHeight: 20, reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, showUnfilled: true }), ...(type === 'gauge' && { reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false }, showThresholdMarkers: true }), ...p.options },
       ...(p.links && { links: p.links }),
       ...(p.transformations && { transformations: p.transformations }),
     };
@@ -161,7 +169,7 @@ function dashboard(uid: string, title: string, description: string, tags: string
     templating: { list: [...vars, ffUrlVar()] },
     annotations: { list: ANNOTATIONS },
     links: LINKS(ffPath),
-    panels: layout.panels,
+    panels: layout.panels.map((panel) => JSON.parse(JSON.stringify(panel, (key, value) => (key === 'color' || key === 'fixedColor') && typeof value === 'string' ? color(value) : value))),
   };
 }
 
@@ -172,7 +180,7 @@ function dashboard(uid: string, title: string, description: string, tags: string
  */
 export function ruleSteps(name: LakeIndicatorName): [number | null, string][] {
   const r = INDICATOR_RULES[name];
-  return r.worse === 'up' ? [[null, 'green'], [r.watch, 'orange'], [r.action, 'red']] : [[null, 'red'], [r.action, 'orange'], [r.watch, 'green']];
+  return r.worse === 'up' ? [[null, color('green')], [r.watch, color('orange')], [r.action, color('red')]] : [[null, color('red')], [r.action, color('orange')], [r.watch, color('green')]];
 }
 const pct = (v: number) => `${Math.round(v * 1000) / 10}%`;
 /** 4축 표 칸 — 규칙 경계로 칸 색, 비율은 %, 1천 대당은 소수 둘째 자리 */
@@ -181,7 +189,7 @@ const indicatorCell = (name: LakeIndicatorName): Json => ({
   properties: [
     ...(name.endsWith('_per_1k') ? [{ id: 'decimals', value: 2 }] : name.endsWith('_rate') || name.endsWith('_share') ? [{ id: 'unit', value: 'percentunit' }] : []),
     { id: 'thresholds', value: { mode: 'absolute', steps: ruleSteps(name).map(([value, color]) => ({ value, color })) } },
-    { id: 'custom.cellOptions', value: { type: 'color-background' } },
+    { id: 'custom.cellOptions', value: { type: 'color-text' } },
   ],
 });
 /** 4축 표에 보이는 지표 */
@@ -388,8 +396,24 @@ function featureHealth(): Dashboard {
   ], '/features', 'now-24h');
 }
 
+function featureAdoption(): Dashboard {
+  const L = new Layout();
+  const states = { ON: { color: '#2fa66c', text: '적용', index: 0 }, CANARY: { color: '#4f8fe0', text: '단계 배포', index: 1 }, OFF: { color: '#5b616c', text: '대상 아님', index: 2 }, DISABLED: { color: '#e0453a', text: '긴급 차단', index: 3 }, UNKNOWN: { color: '#c99a2b', text: '미확인', index: 4 } };
+  L.row('국가 대표점 · 차량 위치 아님');
+  L.add({ type: 'geomap', w: 12, h: 9, title: 'Flag 적용 상태 — 국가 대표점', description: '선택한 상태의 등록 차량 수를 국가 대표점에 표시합니다. 조치: 상세 차량은 FF 지도로 이동하세요.', targets: [qi('sum by (country, state, lat, lon) (ff_flag_adoption_vehicles{flag=~"$flag",state=~"$state"})', '')], mappings: [{ type: 'value', options: states }], options: {
+    view: { id: 'zero', lat: 30, lon: 60, zoom: 1.2 }, controls: { showZoom: true, mouseWheelZoom: false },
+    basemap: { type: 'default', config: {}, name: '기본' },
+    layers: [{ type: 'markers', name: '선택한 상태', location: { mode: 'coords', latitude: 'lat', longitude: 'lon' }, config: { style: { size: { field: 'Value', fixed: 6, min: 3, max: 18 }, color: { field: 'state' }, opacity: 0.9, symbol: { mode: 'fixed', fixed: 'img/icons/marker/circle.svg' } }, showLegend: true } }],
+  }, transformations: [{ id: 'convertFieldType', options: { conversions: [{ targetField: 'lat', destinationType: 'number' }, { targetField: 'lon', destinationType: 'number' }], fields: {} } }], fieldLinks: [{ title: 'FF 차량 지도에서 보기', url: '\${ff_url}/fleet/map?lens=activation&country=${__data.fields.country}' }] });
+  L.add({ type: 'table', w: 12, h: 9, title: '국가·상태별 차량 수', description: '같은 집계의 모든 상태를 표로 비교합니다. 각 Flag마다 등록 차량을 한 번씩 셉니다.', targets: [qi('sum by (flag, country, state) (ff_flag_adoption_vehicles{flag=~"$flag"})')], options: { cellHeight: 'sm', showHeader: true }, overrides: [{ matcher: { id: 'byName', options: 'Value' }, properties: [{ id: 'custom.align', value: 'right' }] }] });
+  return dashboard('ff-feature-adoption', 'Feature 적용 지도', '국가 대표점으로 본 등록 차량의 Flag 적용 상태 — 실제 차량 좌표를 수집하거나 노출하지 않습니다.', ['adoption'], L, [
+    variable('flag', 'Flag', 'label_values(ff_flag_adoption_vehicles, flag)', { multi: false, includeAll: false }),
+    { name: 'state', label: '적용 상태', type: 'custom', query: 'ON,CANARY,OFF,DISABLED,UNKNOWN', current: { text: 'ON', value: 'ON' }, options: Object.keys(states).map((value) => ({ text: states[value as keyof typeof states].text, value, selected: value === 'ON' })), multi: false, includeAll: false },
+  ], '/fleet/map?lens=activation');
+}
+
 export function dashboards(): Dashboard[] {
-  return [opsOverview(), vehicleTelemetry(), killSwitch(), canary(), flagEval(), platform(), featureHealth()];
+  return [opsOverview(), vehicleTelemetry(), killSwitch(), canary(), flagEval(), platform(), featureHealth(), featureAdoption()];
 }
 
 /** 공개 시연 대시보드 — 변수·전역 변수를 쓰지 않게 고정 값으로 바꾸고, FF 주소를 넣는다(외부 공유는 변수를 지원하지 않는다) */
@@ -403,6 +427,10 @@ export function publicVariant(d: Dashboard, ffUrl = FF_URL_DEFAULT): Dashboard {
     s = s.replace(new RegExp(`=~\\\\"\\$${name}\\\\"`, 'g'), '=~\\".*\\"').replace(new RegExp(`=~\\\\"\\$\\{${name}\\}\\\\"`, 'g'), '=~\\".*\\"');
   }
   const out = JSON.parse(s) as Dashboard;
+    if (d.uid === 'ff-feature-adoption') {
+      for (const p of out.panels) for (const t of (p.targets as Json[] ?? [])) if (typeof t.expr === 'string') t.expr = t.expr.replace('state=~".*"', 'state="ON"');
+      out.description = `${out.description} 공개판 지도는 적용(ON) 상태의 Flag·차량 조합 수입니다. 전체 상태는 표에서 확인합니다.`;
+    }
   out.uid = `${d.uid}-public`;
   out.title = `${d.title} (공개 시연)`;
   out.templating = { list: [] };

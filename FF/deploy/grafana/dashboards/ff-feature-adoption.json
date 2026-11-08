@@ -1,0 +1,460 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus(Grafana Cloud 지표)",
+      "type": "datasource",
+      "pluginId": "prometheus"
+    },
+    {
+      "name": "DS_LOKI",
+      "label": "Loki(Grafana Cloud 로그)",
+      "type": "datasource",
+      "pluginId": "loki"
+    },
+    {
+      "name": "DS_TEMPO",
+      "label": "Tempo(Grafana Cloud 추적)",
+      "type": "datasource",
+      "pluginId": "tempo"
+    }
+  ],
+  "uid": "ff-feature-adoption",
+  "title": "Feature 적용 지도",
+  "description": "국가 대표점으로 본 등록 차량의 Flag 적용 상태 — 실제 차량 좌표를 수집하거나 노출하지 않습니다.",
+  "tags": [
+    "ff",
+    "adoption"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "flag",
+        "label": "Flag",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(ff_flag_adoption_vehicles, flag)",
+        "query": {
+          "query": "label_values(ff_flag_adoption_vehicles, flag)",
+          "refId": "flag-var"
+        },
+        "refresh": 2,
+        "includeAll": false,
+        "multi": false,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "sort": 1
+      },
+      {
+        "name": "state",
+        "label": "적용 상태",
+        "type": "custom",
+        "query": "ON,CANARY,OFF,DISABLED,UNKNOWN",
+        "current": {
+          "text": "ON",
+          "value": "ON"
+        },
+        "options": [
+          {
+            "text": "적용",
+            "value": "ON",
+            "selected": true
+          },
+          {
+            "text": "단계 배포",
+            "value": "CANARY",
+            "selected": false
+          },
+          {
+            "text": "대상 아님",
+            "value": "OFF",
+            "selected": false
+          },
+          {
+            "text": "긴급 차단",
+            "value": "DISABLED",
+            "selected": false
+          },
+          {
+            "text": "미확인",
+            "value": "UNKNOWN",
+            "selected": false
+          }
+        ],
+        "multi": false,
+        "includeAll": false
+      },
+      {
+        "name": "ff_url",
+        "label": "FF 주소",
+        "type": "constant",
+        "query": "https://feature-topology.pages.dev",
+        "hide": 2,
+        "current": {
+          "text": "https://feature-topology.pages.dev",
+          "value": "https://feature-topology.pages.dev"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "name": "정책 배포·단계 확대",
+        "expr": "sum by (type) (increase(ff_events_total{type=~\"policy.deployed|policy.restored|rollout.staged\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "{{type}}",
+        "textFormat": "정책 배포·복원·단계 확대 — FF 정책 화면에서 확인"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "긴급 차단",
+        "expr": "sum(increase(ff_events_total{type=\"kill.issued\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "긴급 차단 발령",
+        "textFormat": "FF 긴급 차단·복구 화면(/ops/kill)"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "green",
+        "name": "복원",
+        "expr": "sum(increase(ff_events_total{type=\"kill.released\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "차단 해제(복원)",
+        "textFormat": ""
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "name": "기한 초과",
+        "expr": "sum(increase(ff_events_total{type=\"kill.overdue\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "차단 기한 초과",
+        "textFormat": "기한 안에 끝 상태가 아닌 차량이 있다"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": false,
+        "iconColor": "purple",
+        "name": "Grafana 경보 → FF 운영 관찰",
+        "expr": "sum(increase(ff_events_total{type=\"ops.observation.recorded\"}[2m])) > 0",
+        "step": "60s",
+        "titleFormat": "운영 관찰 기록",
+        "textFormat": ""
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "FF 운영 대시보드",
+      "type": "dashboards",
+      "tags": [
+        "ff"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true
+    },
+    {
+      "title": "FF에서 열기",
+      "type": "link",
+      "url": "${ff_url}/fleet/map?lens=activation",
+      "targetBlank": true,
+      "icon": "external link"
+    },
+    {
+      "title": "런북",
+      "type": "link",
+      "url": "https://github.com/mutuuslab/feature-topology-platform/blob/main/docs/80-integration/80-80-grafana-observability.md",
+      "targetBlank": true,
+      "icon": "doc"
+    }
+  ],
+  "panels": [
+    {
+      "type": "row",
+      "title": "국가 대표점 · 차량 위치 아님",
+      "id": 1,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "geomap",
+      "title": "Flag 적용 상태 — 국가 대표점",
+      "description": "선택한 상태의 등록 차량 수를 국가 대표점에 표시합니다. 조치: 상세 차량은 FF 지도로 이동하세요.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (country, state, lat, lon) (ff_flag_adoption_vehicles{flag=~\"$flag\",state=~\"$state\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "ON": {
+                  "color": "#2fa66c",
+                  "text": "적용",
+                  "index": 0
+                },
+                "CANARY": {
+                  "color": "#4f8fe0",
+                  "text": "단계 배포",
+                  "index": 1
+                },
+                "OFF": {
+                  "color": "#5b616c",
+                  "text": "대상 아님",
+                  "index": 2
+                },
+                "DISABLED": {
+                  "color": "#e0453a",
+                  "text": "긴급 차단",
+                  "index": 3
+                },
+                "UNKNOWN": {
+                  "color": "#c99a2b",
+                  "text": "미확인",
+                  "index": 4
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "#5b616c"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "links": [
+            {
+              "title": "FF 차량 지도에서 보기",
+              "url": "${ff_url}/fleet/map?lens=activation&country=${__data.fields.country}",
+              "targetBlank": true
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 30,
+          "lon": 60,
+          "zoom": 1.2
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": false
+        },
+        "basemap": {
+          "type": "default",
+          "config": {},
+          "name": "기본"
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "선택한 상태",
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "config": {
+              "style": {
+                "size": {
+                  "field": "Value",
+                  "fixed": 6,
+                  "min": 3,
+                  "max": 18
+                },
+                "color": {
+                  "field": "state"
+                },
+                "opacity": 0.9,
+                "symbol": {
+                  "mode": "fixed",
+                  "fixed": "img/icons/marker/circle.svg"
+                }
+              },
+              "showLegend": true
+            }
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "lat",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "lon",
+                "destinationType": "number"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "국가·상태별 차량 수",
+      "description": "같은 집계의 모든 상태를 표로 비교합니다.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum by (flag, country, state) (ff_flag_adoption_vehicles{flag=~\"$flag\"})",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "#5b616c"
+              }
+            ]
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.align",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true
+      }
+    }
+  ]
+}

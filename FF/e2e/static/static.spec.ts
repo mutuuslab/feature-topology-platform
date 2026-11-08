@@ -1,3 +1,4 @@
+import { openRefPicker } from '../tests/refdb';
 // 정적 데모 — 모든 메뉴·하위 화면이 스냅샷만으로 열린다: 요청한 /api-snapshot/ 파일은 모두 200·JSON이어야 한다.
 // 빠진 파일은 SPA 대체 응답(index.html)으로 와서 화면이 오류가 된다 — 그 URL을 모아 실패 메시지로 낸다(tools/snapshot-api.ts에 추가할 목록).
 // 탭마다 본문 오류 상자([data-state=error])도 0이어야 한다(하네스 리뷰 H10 — 파일은 있어도 화면이 오류일 수 있다).
@@ -237,6 +238,7 @@ test('정적 데모: Feature DB 쪽·필터·상세와 등록 1단계 패싯', a
   await expect(page.locator('#ref-identity-h')).toBeVisible();
   await openAllTabs(page);
   await page.goto('/feature/propose');
+  await openRefPicker(page);
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
   await page.locator('select[name="refDomain"]').selectOption('Chassis & Vehicle Dynamics');
   await page.locator('select[name="refComponent"]').selectOption('Brake control (ESC/ABS)');
@@ -271,6 +273,7 @@ test('정적 데모: Feature DB 목록·등록 1단계 검색 AVH', async ({ pag
   await expect(page.locator('#main a[href="/master/feature-db/CH-BRK-009"]').first()).toBeVisible();
   await noErrorBox(page, 'Feature DB 검색');
   await page.goto('/feature/propose');
+  await openRefPicker(page);
   await page.locator('input[name="refSearch"]').fill('AVH');
   await expect(page.getByRole('button', { name: 'CH-BRK-009 기본 정보 가져오기' })).toBeVisible();
   await noErrorBox(page, '등록 1단계 검색');

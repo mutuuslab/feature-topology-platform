@@ -7,7 +7,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { propose as P } from '../../frontend/src/copy/propose';
 import { refChangeDetail as D, refChanges as C, refDetail as RD } from '../../frontend/src/copy/refdb';
-import { pickPrimaryRef, REF } from './refdb';
+import { openRefPicker, pickPrimaryRef, submitProposedFeature, REF } from './refdb';
 import { recordAnalysisApi } from './analysis';
 import { settle } from './settle';
 
@@ -77,6 +77,7 @@ test('(a) 검색 AVH → 대표 + 포함 → 2단계 기준값·수정됨 → AS
   page.on('pageerror', (e) => errors.push(e.message));
   const tag = uniq();
   await page.goto('/feature/propose');
+  await openRefPicker(page);
   await page.locator('input[name="refSearch"]').fill('AVH');
   await page.getByRole('button', { name: P.primaryLabel(REF.avh) }).click();
   await page.locator('input[name="refSearch"]').fill('경사로 밀림');
@@ -99,14 +100,14 @@ test('(a) 검색 AVH → 대표 + 포함 → 2단계 기준값·수정됨 → AS
   await page.locator('input[name="ownerId"]').fill('Chassis Control Team');
 
   // 대표 ASIL(B)과 다르게 하면 사유가 필수
-  const submit = page.locator('[data-ui="createFeature"]');
+  const submit = page.locator('[data-ui="reviewFeature"]');
   await expect(submit).toBeEnabled();
   await page.locator('select[name="asil"]').selectOption('C');
   await expect(submit).toBeDisabled();
   await expect(page.getByText(P.asilReasonWhy).first()).toBeVisible();
   await page.locator('textarea[name="asilDeviation"]').fill('원격 해제 경로가 추가되어 상향');
   await expect(submit).toBeEnabled();
-  await submit.click();
+  await submitProposedFeature(page);
 
   await expect(page).toHaveURL(featureUrl);
   const [, id, ver] = page.url().match(featureUrl)!;
@@ -125,8 +126,9 @@ test('(b) 추가 요청 → 요청 중 행을 대표로 등록 → 정의 승인
   const tag = uniq();
   const nameKo = `원격 트렁크 자동 닫힘 ${tag}`;
   await page.goto('/feature/propose');
+  await openRefPicker(page);
   await page.getByRole('button', { name: P.requestNew }).click();
-  const dlg = page.getByRole('dialog');
+  const dlg = page.getByRole('dialog', { name: P.request.title, exact: true });
   await dlg.locator('select[name="domain"]').selectOption('Body & Comfort');
   const component = await dlg.locator('select[name="component"] option').nth(1).getAttribute('value');
   await dlg.locator('select[name="component"]').selectOption(component!);
@@ -152,7 +154,7 @@ test('(b) 추가 요청 → 요청 중 행을 대표로 등록 → 정의 승인
   await page.locator('input[name="trim"]').fill(`E2E ${tag}`);
   await page.locator('input[name="ownerId"]').fill('Body Control Team');
   await page.locator('input[name="requirementIds"]').fill('REQ-E2E-REFDB');
-  await page.locator('[data-ui="createFeature"]').click();
+  await submitProposedFeature(page);
   // 요청 중 행 연결은 등록하되 서버 안내(warnings)를 먼저 보인다
   const warnings = page.getByTestId('propose-warnings');
   await expect(warnings.locator('[data-warning="REF_STATUS"]')).toContainText(refId);
@@ -245,7 +247,7 @@ test('(c) 같은 국가·차종·트림에 같은 대표 기준 행 — 409 안�
   await pickPrimaryRef(page, 'AD-LON-002', 'AD-LON-002');
   await page.locator('input[name="name"]').fill(`ACC 하드웨어 변형 ${uniq()}`);
   await page.locator('input[name="ownerId"]').fill('ADAS기획팀');
-  await page.locator('[data-ui="createFeature"]').click();
+  await submitProposedFeature(page);
   const dup = page.getByTestId('propose-duplicate');
   await expect(dup).toContainText('AD-LON-002');
   await expect(dup).toContainText('FEAT-00145');
@@ -271,10 +273,11 @@ test('(d) 폐기 행은 고를 수 없고(변경 요청 → 발행으로 폐기)
     await api(request, 'post', '/api/refdb/releases', STEWARD, { changeIds: [c.changeId], note: 'e2e 폐기' });
   }
   await page.goto('/feature/propose');
+  await openRefPicker(page);
   await page.locator('input[name="refSearch"]').fill(target);
   const retired = page.getByRole('button', { name: P.primaryLabel(target) });
   await expect(retired).toBeDisabled();
-  await expect(page.getByRole('row').filter({ hasText: target })).toContainText(P.retiredWhy);
+  await expect(page.locator('.propose-result, tr').filter({ hasText: target }).first()).toContainText(P.retiredWhy);
   await expect(page.getByRole('button', { name: P.includeLabel(target) })).toHaveCount(0);
 
   // 폐기 예정(PL-CP-023 LdCom, 대체 행 없음) — 안내를 보이고, '그래도 선택'을 눌러야 고른다
@@ -315,6 +318,7 @@ test('(e) axe WCAG 2.2 AA — Feature DB 목록·상세·변경 요청·제안 1
 
   await asRole(page, 'author');
   await page.goto('/feature/propose');
+  await openRefPicker(page);
   await page.locator('input[name="refSearch"]').fill('AVH');
   await expect(page.getByRole('button', { name: P.primaryLabel(REF.avh) })).toBeVisible();
   await axeClean(page, '제안 1단계');
@@ -322,7 +326,7 @@ test('(e) axe WCAG 2.2 AA — Feature DB 목록·상세·변경 요청·제안 1
   await expect(page.getByRole('dialog')).toBeVisible();
   await axeClean(page, '추가 요청 서랍');
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: P.steps.pick, exact: true })).toBeVisible();
   await page.getByRole('button', { name: P.primaryLabel(REF.avh) }).click();
   await page.locator('[data-ui="refPickNext"]').click();
   await expect(page.locator('input[name="name"]')).toBeVisible();

@@ -47,9 +47,10 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
 
   // 1. 작성 — 기준 기능 고르기 → 등록 정보 → 제안 등록(Control Point 없이 — 정의 승인 뒤 Baseline 대상)
   await as(page, 'author', '/feature/propose');
-  await main(page).getByLabel('기능 검색').fill('AD-PRK-004');
-  await main(page).getByRole('button', { name: 'AD-PRK-004 기본 정보 가져오기' }).click();
-  await main(page).getByRole('button', { name: '다음: 등록 정보 확인' }).click();
+  await main(page).getByRole('button', { name: '기준 기능 선택', exact: true }).click();
+  await page.getByRole('dialog').getByLabel('기능 검색').fill('AD-PRK-004');
+  await page.getByRole('dialog').getByRole('button', { name: 'AD-PRK-004 기본 정보 가져오기' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '다음: 등록 정보 확인' }).click();
   await main(page).getByLabel('이름').fill('서라운드 뷰 주차 안내 · 시연');
   await main(page).getByLabel(/요구사항 ID/).fill('REQ-PARK-0301');
   await main(page).getByLabel('트림').fill('Signature');

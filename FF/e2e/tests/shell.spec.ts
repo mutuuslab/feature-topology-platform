@@ -2,9 +2,9 @@
 import { expect, test } from '@playwright/test';
 import { MENU_ENTRIES } from './menu';
 
-test('메뉴 항목이 40개 이상이고 8그룹을 모두 덮는다', () => {
+test('메뉴 항목이 40개 이상이고 10그룹을 모두 덮는다', () => {
   expect(MENU_ENTRIES.length).toBeGreaterThanOrEqual(40);
-  expect(new Set(MENU_ENTRIES.map((m) => m.group)).size).toBe(8);
+  expect(new Set(MENU_ENTRIES.map((m) => m.group)).size).toBe(10);
 });
 
 for (const m of MENU_ENTRIES) {
@@ -47,8 +47,8 @@ for (const [w, h] of [
     const rail = await page.locator('.sh-rail').boundingBox();
     expect(top!.width).toBeCloseTo(w, -1);
     expect(rail!.y).toBeGreaterThanOrEqual(top!.height - 1);
-    // 레일 8그룹이 화면 안에 다 보인다
-    const last = await page.locator('.sh-rail__btn').nth(7).boundingBox();
+    // 레일 10그룹이 화면 안에 다 보인다
+    const last = await page.locator('.sh-rail__btn').nth(9).boundingBox();
     expect(last!.y + last!.height).toBeLessThanOrEqual(h);
   });
 }
@@ -129,7 +129,7 @@ for (const present of [false, true]) test(`레일 아이콘 실제 이동·로�
   for (const [name, path] of [
     ['Feature 정의', '/feature/propose'], ['구성·Topology', '/arch/topology'], ['기준정보', '/master/upg'],
     ['검증·Gate', '/verify/evidence'], ['상품·출시', '/policies'], ['차량 운영·안전', '/fleet/live'],
-    ['연계·감사·관리', '/integration/connectors'], ['홈', '/'],
+    ['구매·SW 개발비', '/procurement/sw-cost'], ['연계·감사', '/integration/connectors'], ['설정', '/admin/settings'], ['홈', '/'],
   ]) {
     await page.locator('.sh-rail').getByRole('button', { name, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`${path.replaceAll('/', '\\/')}(?:\\?.*)?$`));

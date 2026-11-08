@@ -2,7 +2,7 @@
 // empty 프로젝트(빈 상태 확인)가 끝난 뒤에 돈다 — 같은 DB.
 // readiness: RD-OPS-02
 import { expect, test, type Page } from '@playwright/test';
-import { pickPrimaryRef, REF } from '../tests/refdb';
+import { openRefPicker, pickPrimaryRef, submitProposedFeature, REF } from '../tests/refdb';
 
 async function asRole(page: Page, role: string) {
   await page.addInitScript((r) => {
@@ -24,7 +24,7 @@ test('첫 Feature 등록 — 제안 화면 → 상세 → Feature Registry에 �
   await page.locator('input[name="name"]').fill('첫 기능 — 원격 시동');
   await page.locator('textarea[name="description"]').fill('고객 설치에서 처음 등록하는 기능');
   await page.locator('input[name="ownerId"]').fill('usr-author');
-  await page.locator('[data-ui="createFeature"]').click();
+  await submitProposedFeature(page);
   await expect(page).toHaveURL(/\/features\/FEAT-\d+\/0\.1\.0$/);
   await expect(page.locator('h1').first()).toBeVisible();
   await expect(page.locator('#main')).toContainText('첫 기능 — 원격 시동');

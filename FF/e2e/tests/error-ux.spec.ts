@@ -3,7 +3,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { errorActions } from '../../frontend/src/copy/error-actions';
 import { errors } from '../../frontend/src/copy/errors';
-import { pickPrimaryRef, REF } from './refdb';
+import { openRefPicker, pickPrimaryRef, submitProposedFeature, REF } from './refdb';
 
 const E = { ...errors, ...errorActions };
 
@@ -80,7 +80,7 @@ test.describe('Feature 제안 폼 — 변경 실패', () => {
     await page.route('**/api/features', (r) =>
       r.request().method() === 'POST' ? json(r, 400, envelope('VALIDATION', '요청 본문이 올바르지 않습니다.', [{ path: 'name', message: '이름은 2자 이상 80자 이하입니다.' }, { path: 'ownerId', message: 'Owner를 적으세요.' }])) : r.continue(),
     );
-    await page.locator('[data-ui="createFeature"]').click();
+    await submitProposedFeature(page);
     const name = page.locator('input[name="name"]');
     await expect(name).toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('.ds-field[data-invalid]').filter({ has: name })).toContainText('이름은 2자 이상 80자 이하입니다.');
@@ -93,7 +93,7 @@ test.describe('Feature 제안 폼 — 변경 실패', () => {
     await page.route('**/api/features', (r) =>
       r.request().method() === 'POST' ? json(r, 422, envelope('GUARD_FAILED', '국가·차종·트림이 바뀌면 새 Feature ID로 등록해야 합니다.', { fields: ['country', 'trim'] })) : r.continue(),
     );
-    await page.locator('[data-ui="createFeature"]').click();
+    await submitProposedFeature(page);
     await expect(page.locator('input[name="country"]')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator('input[name="trim"]')).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByRole('alert').first()).toContainText('국가·차종·트림이 바뀌면');
@@ -101,7 +101,7 @@ test.describe('Feature 제안 폼 — 변경 실패', () => {
 
   test('409 충돌 — 다른 사람이 먼저 바꿨다는 안내, 다시 불러와도 입력은 그대로', async ({ page }) => {
     await page.route('**/api/features', (r) => (r.request().method() === 'POST' ? json(r, 409, envelope('CONFLICT', '다른 사용자가 같은 이름으로 먼저 등록했습니다.')) : r.continue()));
-    await page.locator('[data-ui="createFeature"]').click();
+    await submitProposedFeature(page);
     const alert = page.getByRole('alert').filter({ hasText: '다른 사용자가 같은 이름으로 먼저 등록했습니다.' });
     await expect(alert).toContainText(E.conflictHint);
     await alert.getByRole('button', { name: E.reload }).click();
@@ -112,7 +112,7 @@ test.describe('Feature 제안 폼 — 변경 실패', () => {
 
   test('401 저장 중 세션 만료 — 입력이 있으면 로그인으로 바로 옮기지 않고 안내 띠가 묻는다', async ({ page }) => {
     await page.route('**/api/features', (r) => (r.request().method() === 'POST' ? json(r, 401, envelope('UNAUTHENTICATED', '로그인이 필요합니다.')) : r.continue()));
-    await page.locator('[data-ui="createFeature"]').click();
+    await submitProposedFeature(page);
     await expect(page.locator('[data-session-expired]')).toContainText(E.sessionBanner);
     await expect(page).toHaveURL(/\/feature\/propose$/);
     await expect(page.locator('input[name="name"]')).toHaveValue('오류 안내 시험 Feature');
@@ -120,7 +120,7 @@ test.describe('Feature 제안 폼 — 변경 실패', () => {
 
   test('저장 중 연결 끊김 — 사용자 말 안내, 입력은 그대로', async ({ page }) => {
     await page.route('**/api/features', (r) => (r.request().method() === 'POST' ? r.abort('internetdisconnected') : r.continue()));
-    await page.locator('[data-ui="createFeature"]').click();
+    await submitProposedFeature(page);
     await expect(page.getByRole('alert').first()).toContainText(E.network);
     await expect(page.locator('input[name="name"]')).toHaveValue('오류 안내 시험 Feature');
     await noDevWording(page);

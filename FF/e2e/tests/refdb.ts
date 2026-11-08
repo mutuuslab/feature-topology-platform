@@ -32,6 +32,7 @@ export const apiRefs = (refId: string = REF.trafficLight) => ({
 
 /** 제안 1단계 — 검색해서 대표 기준 행을 고르고 2단계(등록 정보 확인)로 간다 */
 export async function pickPrimaryRef(page: Page, query: string, refId: string) {
+  await openRefPicker(page);
   await page.locator('input[name="refSearch"]').fill(query);
   const choose = page.getByRole('button', { name: `${refId} 기본 정보 가져오기` });
   await expect(choose).toBeVisible();
@@ -39,4 +40,19 @@ export async function pickPrimaryRef(page: Page, query: string, refId: string) {
   await expect(page.locator(`[data-ref-chosen="${refId}"][data-role="PRIMARY"]`)).toBeVisible();
   await page.locator('[data-ui="refPickNext"]').click();
   await expect(page.locator('input[name="name"]')).toBeVisible();
+}
+
+/** The document editor opens reference selection as a separate dialog. */
+export async function openRefPicker(page: Page) {
+  await page.getByRole('button', { name: '기준 기능 선택', exact: true }).click();
+  await expect(page.locator('input[name="refSearch"]')).toBeVisible();
+}
+
+/** Acknowledge the actual scope before any create request, including error-path tests. */
+export async function submitProposedFeature(page: Page) {
+  await page.locator('[data-ui="reviewFeature"]').click();
+  const review = page.getByTestId('registration-review');
+  await expect(review.locator('[data-ui="createFeature"]')).toBeDisabled();
+  await review.getByRole('checkbox').check();
+  await review.locator('[data-ui="createFeature"]').click();
 }

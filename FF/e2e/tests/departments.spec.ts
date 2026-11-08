@@ -1,6 +1,6 @@
 // 부서 보기(데모, 2026-11-04) — 부서를 고르면 메뉴·홈·배치·강조색이 화면 유형별로 바뀐다(기획 스튜디오·심사 결재함·
-// 엔지니어링 콘솔·관제실·검토 포털). 전체 보기는 MENU 2.0(8그룹) 그대로다.
-//   ① 화면 유형 표식(html[data-workspace]·홈 data-workspace-home) ② 부서 메뉴만, 8그룹 레일 없음 ③ 핵심 메시지 1개·첫 화면 위쪽·가장 큰 글자
+// 엔지니어링 콘솔·관제실·검토 포털). 전체 보기는 MENU 2.0(10그룹) 그대로다.
+//   ① 화면 유형 표식(html[data-workspace]·홈 data-workspace-home) ② 부서 메뉴만, 10그룹 레일 없음 ③ 핵심 메시지 1개·첫 화면 위쪽·가장 큰 글자
 //   ④ 본문 가로 넘침 없음 ⑤ axe wcag22aa serious·critical 0 (light·dark) ⑥ 유형마다 강조색이 다르다
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
@@ -76,7 +76,7 @@ test('부서 보기 — 화면 유형마다 강조색이 다르다', async ({ pa
   expect(seen.size).toBe(CASES.length);
 });
 
-test('부서 보기 — 상단 바로 부서를 바꾸고, 전체 메뉴 보기로 8그룹에 돌아온다', async ({ page }) => {
+test('부서 보기 — 상단 바로 부서를 바꾸고, 전체 메뉴 보기로 10그룹에 돌아온다', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('/');
   await expect(page.locator('.sh-rail')).toBeVisible();
@@ -85,7 +85,7 @@ test('부서 보기 — 상단 바로 부서를 바꾸고, 전체 메뉴 보기�
   await page.getByRole('navigation', { name: 'OTA·서비스운영팀 메뉴' }).getByRole('link', { name: 'Fleet 실시간 적용 현황' }).click();
   await expect(page).toHaveURL(/\/fleet\/live/);
   await page.getByRole('button', { name: '전체 메뉴 보기' }).click();
-  await expect(page.locator('.sh-rail__btn:not(.sh-rail__toggle)')).toHaveCount(8);
+  await expect(page.locator('.sh-rail__btn:not(.sh-rail__toggle)')).toHaveCount(10);
   expect(await page.evaluate(() => document.documentElement.hasAttribute('data-workspace'))).toBe(false);
 });
 

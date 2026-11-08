@@ -5,7 +5,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { errorActions } from '../../frontend/src/copy/error-actions';
 import { errors } from '../../frontend/src/copy/errors';
-import { pickPrimaryRef, REF } from './refdb';
+import { openRefPicker, pickPrimaryRef, submitProposedFeature, REF } from './refdb';
 
 const E = { ...errors, ...errorActions };
 
@@ -68,7 +68,7 @@ test('Feature 등록 — 기준 기능을 고르고 제안 폼으로 등록하�
   await page.locator('input[name="name"]').fill(name);
   await page.locator('textarea[name="description"]').fill('브라우저 엔진 스모크에서 등록');
   await page.locator('input[name="ownerId"]').fill('usr-author');
-  await page.locator('[data-ui="createFeature"]').click();
+  await submitProposedFeature(page);
   await expect(page).toHaveURL(/\/features\/FEAT-\d+\/0\.1\.0$/);
   await expect(page.locator('#main')).toContainText(name);
 });

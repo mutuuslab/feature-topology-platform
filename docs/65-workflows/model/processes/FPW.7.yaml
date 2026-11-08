@@ -528,3 +528,12 @@ process:
         - work_product: WP-ROLLOUT-RECORD
           outcomes:
             - O5
+    - id: FPW.7.BP14
+      name: 기한부 예외 승인·제한 적용·원복
+      definition_ko: 예외 요청의 대상 검사와 잔여 리스크를 확인하고 요청자와 다른 두 사람이 기간과 제한 범위를 승인한다. 원래 Gate 판정을 보존하면서 승인 범위에만 적용하고 만료·회수 시 이전 정책 상태로 원복한 근거를 기록한다.
+      notes: []
+      activity_ids: [FPW.7-A14, FPW.7-A15]
+      outcomes: [O6]
+      evidence:
+        - work_product: WP-EXCEPTION-RECORD
+          outcomes: [O6]

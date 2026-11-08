@@ -1635,6 +1635,71 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": null
   },
   {
+   "id": "FPW.7-A14",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "예외 요청(임시 우회·Gate 예외)",
+   "trigger": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-REL"
+    ],
+    "A": "R-REL",
+    "C": [
+     "R-OPS",
+     "R-FO"
+    ],
+    "I": [
+     "R-SM"
+    ]
+   },
+   "next": [
+    "FPW.7-A15"
+   ],
+   "screens": [
+    "/verify/exceptions",
+    "/policies/:id"
+   ],
+   "actions": [
+    "createExceptionPolicy"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.7-A15",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "예외 승인·만료 원복 확인",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-SM",
+     "R-OPS"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-FO"
+    ],
+    "I": [
+     "R-REL",
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/verify/exceptions"
+   ],
+   "actions": [
+    "decideExceptionPolicy",
+    "revokeExceptionPolicy"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
    "id": "FPW.7-A02",
    "processId": "FPW.7",
    "processName": "출시·활성화·단계적 확대",

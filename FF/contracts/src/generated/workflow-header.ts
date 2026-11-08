@@ -646,6 +646,24 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": true
     },
     {
+     "id": "FPW.7-A14",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A15",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.7-A02",
      "process": "FPW.7",
      "part": "R",
@@ -1079,6 +1097,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
+     "/verify/exceptions",
      "/verify/compliance",
      "/verify/safety-case",
      "/fleet/live",
@@ -2028,6 +2047,25 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": true
     },
     {
+     "id": "FPW.7-A14",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A15",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.7-A02",
      "process": "FPW.7",
      "part": "I",
@@ -2341,6 +2379,8 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/deployments/campaigns/:id",
      "/integration/code-repositories",
      "/integration/code-repositories/:repoId",
+     "/verify/exceptions",
+     "/policies/:id",
      "/flag-code/lifecycle",
      "/flag-retirements",
      "/precheck",
@@ -2349,7 +2389,6 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
     "reference": [
      "/master/control-points",
      "/trace/design",
-     "/policies/:id",
      "/arch/topology",
      "/validations",
      "/validations/virtual",
@@ -2399,6 +2438,16 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
       "from": "FPW.6-A04",
       "to": "FPW.6-A05",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.7-A14",
+      "to": "FPW.7-A15",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.7-A14",
+      "to": "FPW.7-A15",
+      "department": "DEP-OPS"
      },
      {
       "from": "FPW.7-A09",
@@ -3038,6 +3087,25 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": true
     },
     {
+     "id": "FPW.7-A14",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A15",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.7-A02",
      "process": "FPW.7",
      "part": "C",
@@ -3413,6 +3481,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/analysis/impact",
      "/arch/topology",
      "/arch/components",
+     "/verify/exceptions",
      "/verify/evidence",
      "/verify/compliance",
      "/verify/safety-case",
@@ -3597,6 +3666,11 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
       "from": "FPW.7-A01",
       "to": "FPW.7-A08",
       "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.7-A14",
+      "to": "FPW.7-A15",
+      "department": "DEP-INT"
      },
      {
       "from": "FPW.7-A02",
@@ -4909,6 +4983,15 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": true
     },
     {
+     "id": "FPW.7-A15",
+     "process": "FPW.7",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.7-A03",
      "process": "FPW.7",
      "part": "I",
@@ -5294,6 +5377,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
+     "/verify/exceptions",
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
@@ -5486,6 +5570,24 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "parts": [
       "R",
       "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A14",
+     "process": "FPW.7",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.7-A15",
+     "process": "FPW.7",
+     "part": "R",
+     "parts": [
+      "R"
      ],
      "firstScope": true
     },
@@ -5895,6 +5997,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
     "primary": [
      "/activation/decide",
      "/policies/:id",
+     "/verify/exceptions",
      "/fleet/live",
      "/features/:id/:ver",
      "/notifications",
@@ -5989,6 +6092,11 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      }
     ],
     "in": [
+     {
+      "from": "FPW.7-A14",
+      "to": "FPW.7-A15",
+      "department": "DEP-INT"
+     },
      {
       "from": "FPW.7-A09",
       "to": "FPW.7-A11",

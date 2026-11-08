@@ -38,7 +38,7 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 14 · 책임 13 · 협의 24 · 통보 24 (활동 55개)
+수행 15 · 책임 14 · 협의 24 · 통보 25 (활동 57개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -65,6 +65,8 @@ last_updated: 2026-11-08
 | FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | R·A (Release Manager) · C (통합 조직) | – → 코드 저장소 연결·변경 기록 `WP-REPO-CONNECTION` | `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans` | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
 | FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager, 통합 조직) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
+| FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions`, `/policies/:id` | 1차 |
+| FPW.7-A15 예외 승인·만료 원복 확인 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 예외 승인 기록 `WP-EXCEPTION-RECORD` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
 | FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW` → Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | `/features/:id/:ver` | 1차 |
@@ -116,10 +118,12 @@ last_updated: 2026-11-08
 | 보냄 | FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3-A04 G3 판정·Feature 정의 승인 | 시스템엔지니어링팀 | – | 1차 |
 | 보냄 | FPW.5-A07 Flag 코드 연결 확인 | FPW.5-A04 비활성화·결함 주입 시험 수행 | 시험·검증팀 | – | 1차 |
 | 보냄 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6-A05 OTA Gate 판정 등록 | 품질팀 | 서명 배포 패키지 `WP-SIGNED-PACKAGE` | 1차 |
+| 보냄 | FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7-A15 예외 승인·만료 원복 확인 | 기능안전팀 | 예외 승인 기록 `WP-EXCEPTION-RECORD` | 1차 |
+| 보냄 | FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7-A15 예외 승인·만료 원복 확인 | OTA·서비스운영팀 | 예외 승인 기록 `WP-EXCEPTION-RECORD` | 1차 |
 | 보냄 | FPW.7-A09 출시 전이 | FPW.7-A10 상품 고객 출시 승인 | 상품기획팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |
 | 보냄 | FPW.7-A09 출시 전이 | FPW.7-A11 Canary 활성화·단계적 확대 | OTA·서비스운영팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/deployments`, `/deployments/software`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/flag-code/lifecycle`, `/flag-retirements`, `/precheck`, `/trace/coverage`
-- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/policies/:id`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/supplier/portal`, `/supplier/deliveries`, `/admin/security`, `/integration/openfeature`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`
+- 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/deployments`, `/deployments/software`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/verify/exceptions`, `/policies/:id`, `/flag-code/lifecycle`, `/flag-retirements`, `/precheck`, `/trace/coverage`
+- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/supplier/portal`, `/supplier/deliveries`, `/admin/security`, `/integration/openfeature`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`

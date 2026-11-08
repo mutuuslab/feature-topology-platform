@@ -34,7 +34,7 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 17 · 책임 15 · 협의 8 · 통보 22 (활동 47개)
+수행 18 · 책임 15 · 협의 9 · 통보 22 (활동 49개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -42,6 +42,8 @@ last_updated: 2026-11-08
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | I (운영 조직) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | C (운영 조직) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/deployments/software`, `/integration/connectors` 외 2 | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | R·A (운영 조직) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
+| FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7 출시·활성화·단계적 확대 | C (운영 조직) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions`, `/policies/:id` | 1차 |
+| FPW.7-A15 예외 승인·만료 원복 확인 | FPW.7 출시·활성화·단계적 확대 | R (운영 조직) | 예외 승인 기록 `WP-EXCEPTION-RECORD` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | C (운영 조직) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A07 형식승인·사용자 고지 확인 | FPW.7 출시·활성화·단계적 확대 | I (운영 조직) | 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` | 플랫폼 밖 | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | C (운영 조직) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
@@ -90,6 +92,7 @@ last_updated: 2026-11-08
 
 | 방향 | 보내는 활동 | 받는 활동 | 상대 부서 | 넘기는 산출물 | 범위 |
 |---|---|---|---|---|---|
+| 받음 | FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7-A15 예외 승인·만료 원복 확인 | SW통합·릴리스팀 | 예외 승인 기록 `WP-EXCEPTION-RECORD` | 1차 |
 | 받음 | FPW.7-A09 출시 전이 | FPW.7-A11 Canary 활성화·단계적 확대 | SW통합·릴리스팀 | 출시 전이 기록 `WP-RELEASE-RECORD` | 1차 |
 | 받음 | FPW.8-A03 리콜·봉쇄 근거 연계 | FPW.8-A04 긴급 차단 요청 | 법규인증팀 | 리콜·봉쇄 근거 `WP-RECALL-BASIS` | 1차 |
 | 받음 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8-A06 차단 전달·적용 추적 | 기능안전팀 | 차단 승인 기록 `WP-KILL-DECISION` | 1차 |
@@ -110,5 +113,5 @@ last_updated: 2026-11-08
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/activation/decide`, `/policies/:id`, `/fleet/live`, `/features/:id/:ver`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/deployments`, `/audit`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/admin/settings`, `/events`, `/notifications/rules`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`, `/data/workbench`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`
+- 주 업무 화면: `/activation/decide`, `/policies/:id`, `/verify/exceptions`, `/fleet/live`, `/features/:id/:ver`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/deployments`, `/audit`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/admin/settings`, `/events`, `/notifications/rules`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`, `/data/workbench`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`
 - 참조 화면(협의·통보): `/deployments/software`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/experiments`, `/admin/approval`, `/products/:id/:ver`, `/ops/incident-reports`, `/audit/oversight`, `/quality/feedback`, `/flag-retirements`, `/admin/security`, `/admin/data`, `/verify/compliance`, `/trace/ads`, `/admin/iam`, `/biz/trials`

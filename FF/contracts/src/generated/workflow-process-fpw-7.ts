@@ -30,6 +30,10 @@ export const PROCESS: WorkflowProcess = {
   {
    "id": "O5",
    "text": "효력이 Canary Cohort부터 관측 기준을 만족할 때만 넓어진다."
+  },
+  {
+   "id": "O6",
+   "text": "기한부 예외는 요청자와 다른 두 사람이 승인하고 기록된 제한 범위만 열며 만료되면 이전 정책 상태로 돌아간다."
   }
  ],
  "basePractices": [
@@ -292,6 +296,27 @@ export const PROCESS: WorkflowProcess = {
      ]
     }
    ]
+  },
+  {
+   "id": "FPW.7.BP14",
+   "name": "기한부 예외 승인·제한 적용·원복",
+   "definition": "예외 요청의 대상 검사와 잔여 리스크를 확인하고 요청자와 다른 두 사람이 기간과 제한 범위를 승인한다. 원래 Gate 판정을 보존하면서 승인 범위에만 적용하고 만료·회수 시 이전 정책 상태로 원복한 근거를 기록한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.7-A14",
+    "FPW.7-A15"
+   ],
+   "outcomes": [
+    "O6"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-EXCEPTION-RECORD",
+     "outcomes": [
+      "O6"
+     ]
+    }
+   ]
   }
  ],
  "rules": [
@@ -453,6 +478,17 @@ export const PROCESS: WorkflowProcess = {
     "해제 대상 Flag·요청 당시 대사 상태·사유·만료",
     "요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함)"
    ]
+  },
+  {
+   "key": "WP-EXCEPTION-RECORD",
+   "name": "예외 승인 기록",
+   "en": "Exception Approval Record",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사 또는 PENDING Gate·제한 조건·완료 예정일·잔여 리스크",
+    "두 승인자의 승인·지정 만료 일시(반려 사유), 적용한 배포와 이전 상태, 만료·회수 원복 메시지"
+   ]
   }
  ],
  "activities": [
@@ -574,6 +610,126 @@ export const PROCESS: WorkflowProcess = {
    "next": [
     "FPW.7-A12"
    ]
+  },
+  {
+   "id": "FPW.7-A14",
+   "name": "예외 요청(임시 우회·Gate 예외)",
+   "trigger": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O6"
+   ],
+   "rules": [
+    "FFG-LCY-002"
+   ],
+   "raci": {
+    "R": [
+     "R-REL"
+    ],
+    "A": "R-REL",
+    "C": [
+     "R-OPS",
+     "R-FO"
+    ],
+    "I": [
+     "R-SM"
+    ]
+   },
+   "inputs": [
+    "WP-CANARY-PLAN"
+   ],
+   "outputs": [
+    "WP-EXCEPTION-RECORD"
+   ],
+   "steps": [
+    "긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다",
+    "Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다",
+    "서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다"
+   ],
+   "checks": [
+    "적용 기간이 있고 우회 불가 항목이 없다"
+   ],
+   "platform": {
+    "actions": [
+     "createExceptionPolicy"
+    ],
+    "screens": [
+     "/verify/exceptions",
+     "/policies/:id"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.7-A15"
+   ]
+  },
+  {
+   "id": "FPW.7-A15",
+   "name": "예외 승인·만료 원복 확인",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [
+    "FPW.7-A14"
+   ],
+   "outcomes": [
+    "O6"
+   ],
+   "rules": [
+    "FFG-LCY-002"
+   ],
+   "raci": {
+    "R": [
+     "R-SM",
+     "R-OPS"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-FO"
+    ],
+    "I": [
+     "R-REL",
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-EXCEPTION-RECORD"
+   ],
+   "outputs": [
+    "WP-EXCEPTION-RECORD"
+   ],
+   "steps": [
+    "요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다",
+    "두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다",
+    "만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다"
+   ],
+   "checks": [
+    "요청자와 두 승인자가 모두 다른 사람이다",
+    "만료 일시가 있고 Gate 판정은 PENDING 그대로다"
+   ],
+   "platform": {
+    "actions": [
+     "decideExceptionPolicy",
+     "revokeExceptionPolicy"
+    ],
+    "screens": [
+     "/verify/exceptions"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
   },
   {
    "id": "FPW.7-A02",
@@ -1255,8 +1411,8 @@ export const PROCESS: WorkflowProcess = {
     "h": 98
    },
    {
-    "role": "R-FO",
-    "label": "Feature Owner",
+    "role": "R-REL",
+    "label": "Release Manager",
     "x": 0,
     "y": 196,
     "w": 2206,
@@ -1271,10 +1427,18 @@ export const PROCESS: WorkflowProcess = {
     "h": 98
    },
    {
+    "role": "R-FO",
+    "label": "Feature Owner",
+    "x": 0,
+    "y": 392,
+    "w": 2206,
+    "h": 98
+   },
+   {
     "role": "R-QA",
     "label": "품질 조직",
     "x": 0,
-    "y": 392,
+    "y": 490,
     "w": 2206,
     "h": 98
    },
@@ -1282,7 +1446,7 @@ export const PROCESS: WorkflowProcess = {
     "role": "R-PDA",
     "label": "상품 기획",
     "x": 0,
-    "y": 490,
+    "y": 588,
     "w": 2206,
     "h": 98
    },
@@ -1290,21 +1454,13 @@ export const PROCESS: WorkflowProcess = {
     "role": "R-PO",
     "label": "상품 Owner",
     "x": 0,
-    "y": 588,
+    "y": 686,
     "w": 2206,
     "h": 98
    },
    {
     "role": "R-REG",
     "label": "법규 담당",
-    "x": 0,
-    "y": 686,
-    "w": 2206,
-    "h": 98
-   },
-   {
-    "role": "R-REL",
-    "label": "Release Manager",
     "x": 0,
     "y": 784,
     "w": 2206,
@@ -1340,20 +1496,29 @@ export const PROCESS: WorkflowProcess = {
     "h": 66
    },
    {
-    "id": "FPW.7-A02",
+    "id": "FPW.7-A14",
     "kind": "action",
-    "label": "효과 실험 계획 등록",
-    "x": 478,
+    "label": "예외 요청(임시 우회·Gate 예외)",
+    "x": 198,
     "y": 212,
     "w": 188,
     "h": 66
    },
    {
-    "id": "FPW.7-A12",
+    "id": "FPW.7-A09",
     "kind": "action",
-    "label": "Release Sign-off(출시 책임 확인)",
-    "x": 1318,
+    "label": "출시 전이",
+    "x": 1598,
     "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A15",
+    "kind": "action",
+    "label": "예외 승인·만료 원복 확인",
+    "x": 478,
+    "y": 310,
     "w": 188,
     "h": 66
    },
@@ -1376,11 +1541,29 @@ export const PROCESS: WorkflowProcess = {
     "h": 66
    },
    {
+    "id": "FPW.7-A02",
+    "kind": "action",
+    "label": "효과 실험 계획 등록",
+    "x": 478,
+    "y": 408,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A12",
+    "kind": "action",
+    "label": "Release Sign-off(출시 책임 확인)",
+    "x": 1318,
+    "y": 408,
+    "w": 188,
+    "h": 66
+   },
+   {
     "id": "FPW.7-A04",
     "kind": "action",
     "label": "Safety Case 독립 검토",
     "x": 478,
-    "y": 408,
+    "y": 506,
     "w": 188,
     "h": 66
    },
@@ -1389,7 +1572,7 @@ export const PROCESS: WorkflowProcess = {
     "kind": "action",
     "label": "상품 구성 작성",
     "x": 198,
-    "y": 506,
+    "y": 604,
     "w": 188,
     "h": 66
    },
@@ -1398,7 +1581,7 @@ export const PROCESS: WorkflowProcess = {
     "kind": "action",
     "label": "상품 구성 승인",
     "x": 478,
-    "y": 604,
+    "y": 702,
     "w": 188,
     "h": 66
    },
@@ -1407,7 +1590,7 @@ export const PROCESS: WorkflowProcess = {
     "kind": "action",
     "label": "상품 고객 출시 승인",
     "x": 1878,
-    "y": 604,
+    "y": 702,
     "w": 188,
     "h": 66
    },
@@ -1416,15 +1599,6 @@ export const PROCESS: WorkflowProcess = {
     "kind": "action",
     "label": "형식승인·사용자 고지 확인",
     "x": 478,
-    "y": 702,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A09",
-    "kind": "action",
-    "label": "출시 전이",
-    "x": 1598,
     "y": 800,
     "w": 188,
     "h": 66
@@ -1441,8 +1615,8 @@ export const PROCESS: WorkflowProcess = {
    {
     "id": "FPW.7-S2",
     "kind": "start",
-    "label": "출시 효과를 실험으로 비교해야 할 때",
-    "x": 426,
+    "label": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+    "x": 146,
     "y": 236,
     "w": 18,
     "h": 18
@@ -1450,9 +1624,9 @@ export const PROCESS: WorkflowProcess = {
    {
     "id": "FPW.7-S3",
     "kind": "start",
-    "label": "G6 배포 완료",
-    "x": 146,
-    "y": 334,
+    "label": "출시 효과를 실험으로 비교해야 할 때",
+    "x": 426,
+    "y": 432,
     "w": 18,
     "h": 18
    },
@@ -1461,7 +1635,7 @@ export const PROCESS: WorkflowProcess = {
     "kind": "start",
     "label": "G6 배포 완료",
     "x": 146,
-    "y": 530,
+    "y": 334,
     "w": 18,
     "h": 18
    },
@@ -1469,8 +1643,17 @@ export const PROCESS: WorkflowProcess = {
     "id": "FPW.7-S5",
     "kind": "start",
     "label": "G6 배포 완료",
+    "x": 146,
+    "y": 628,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.7-S6",
+    "kind": "start",
+    "label": "G6 배포 완료",
     "x": 426,
-    "y": 726,
+    "y": 824,
     "w": 18,
     "h": 18
    },
@@ -1478,13 +1661,22 @@ export const PROCESS: WorkflowProcess = {
     "id": "FPW.7-E1",
     "kind": "end",
     "label": "종료",
-    "x": 2080,
-    "y": 628,
+    "x": 680,
+    "y": 334,
     "w": 18,
     "h": 18
    },
    {
     "id": "FPW.7-E2",
+    "kind": "end",
+    "label": "종료",
+    "x": 2080,
+    "y": 726,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.7-E3",
     "kind": "end",
     "label": "종료",
     "x": 2080,
@@ -1511,21 +1703,36 @@ export const PROCESS: WorkflowProcess = {
    },
    {
     "from": "FPW.7-S2",
-    "to": "FPW.7-A02",
+    "to": "FPW.7-A14",
     "kind": "trigger",
     "points": [
      [
-      444,
+      164,
       245
      ],
      [
-      478,
+      198,
       245
      ]
     ]
    },
    {
     "from": "FPW.7-S3",
+    "to": "FPW.7-A02",
+    "kind": "trigger",
+    "points": [
+     [
+      444,
+      441
+     ],
+     [
+      478,
+      441
+     ]
+    ]
+   },
+   {
+    "from": "FPW.7-S4",
     "to": "FPW.7-A03",
     "kind": "trigger",
     "points": [
@@ -1540,32 +1747,32 @@ export const PROCESS: WorkflowProcess = {
     ]
    },
    {
-    "from": "FPW.7-S4",
+    "from": "FPW.7-S5",
     "to": "FPW.7-A05",
     "kind": "trigger",
     "points": [
      [
       164,
-      539
+      637
      ],
      [
       198,
-      539
+      637
      ]
     ]
    },
    {
-    "from": "FPW.7-S5",
+    "from": "FPW.7-S6",
     "to": "FPW.7-A07",
     "kind": "trigger",
     "points": [
      [
       444,
-      735
+      833
      ],
      [
       478,
-      735
+      833
      ]
     ]
    },
@@ -1607,11 +1814,34 @@ export const PROCESS: WorkflowProcess = {
      ],
      [
       1306,
-      245
+      441
      ],
      [
       1318,
+      441
+     ]
+    ]
+   },
+   {
+    "from": "FPW.7-A14",
+    "to": "FPW.7-A15",
+    "kind": "flow",
+    "points": [
+     [
+      386,
       245
+     ],
+     [
+      466,
+      245
+     ],
+     [
+      466,
+      343
+     ],
+     [
+      478,
+      343
      ]
     ]
    },
@@ -1622,11 +1852,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      245
+      441
      ],
      [
       746,
-      245
+      441
      ],
      [
       746,
@@ -1653,11 +1883,11 @@ export const PROCESS: WorkflowProcess = {
      ],
      [
       466,
-      441
+      539
      ],
      [
       478,
-      441
+      539
      ]
     ]
    },
@@ -1668,11 +1898,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      441
+      539
      ],
      [
       746,
-      441
+      539
      ],
      [
       746,
@@ -1691,19 +1921,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       386,
-      539
-     ],
-     [
-      466,
-      539
+      637
      ],
      [
       466,
       637
+     ],
+     [
+      466,
+      735
      ],
      [
       478,
-      637
+      735
      ]
     ]
    },
@@ -1714,11 +1944,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      637
+      735
      ],
      [
       746,
-      637
+      735
      ],
      [
       746,
@@ -1737,11 +1967,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      735
+      833
      ],
      [
       746,
-      735
+      833
      ],
      [
       746,
@@ -1783,19 +2013,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       1506,
-      245
+      441
+     ],
+     [
+      1586,
+      441
      ],
      [
       1586,
       245
-     ],
-     [
-      1586,
-      833
      ],
      [
       1598,
-      833
+      245
      ]
     ]
    },
@@ -1806,19 +2036,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       1786,
-      833
+      245
      ],
      [
       1866,
-      833
+      245
      ],
      [
       1866,
-      637
+      735
      ],
      [
       1878,
-      637
+      735
      ]
     ]
    },
@@ -1829,11 +2059,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       1786,
-      833
+      245
      ],
      [
       1866,
-      833
+      245
      ],
      [
       1866,
@@ -1846,23 +2076,38 @@ export const PROCESS: WorkflowProcess = {
     ]
    },
    {
-    "from": "FPW.7-A10",
+    "from": "FPW.7-A15",
     "to": "FPW.7-E1",
     "kind": "end",
     "points": [
      [
+      666,
+      343
+     ],
+     [
+      680,
+      343
+     ]
+    ]
+   },
+   {
+    "from": "FPW.7-A10",
+    "to": "FPW.7-E2",
+    "kind": "end",
+    "points": [
+     [
       2066,
-      637
+      735
      ],
      [
       2080,
-      637
+      735
      ]
     ]
    },
    {
     "from": "FPW.7-A11",
-    "to": "FPW.7-E2",
+    "to": "FPW.7-E3",
     "kind": "end",
     "points": [
      [
@@ -1879,10 +2124,6 @@ export const PROCESS: WorkflowProcess = {
   "joins": [
    [
     746,
-    245
-   ],
-   [
-    746,
     343
    ],
    [
@@ -1891,7 +2132,11 @@ export const PROCESS: WorkflowProcess = {
    ],
    [
     746,
-    637
+    539
+   ],
+   [
+    746,
+    735
    ]
   ]
  },
@@ -1916,40 +2161,40 @@ export const PROCESS: WorkflowProcess = {
     "h": 98
    },
    {
-    "department": "DEP-PDP",
-    "label": "상품기획팀",
+    "department": "DEP-INT",
+    "label": "SW통합·릴리스팀",
     "x": 0,
     "y": 196,
     "w": 2206,
-    "h": 188
+    "h": 98
    },
    {
     "department": "DEP-FS",
     "label": "기능안전팀",
     "x": 0,
-    "y": 384,
+    "y": 294,
     "w": 2206,
     "h": 98
+   },
+   {
+    "department": "DEP-PDP",
+    "label": "상품기획팀",
+    "x": 0,
+    "y": 392,
+    "w": 2206,
+    "h": 188
    },
    {
     "department": "DEP-QA",
     "label": "품질팀",
-    "x": 0,
-    "y": 482,
-    "w": 2206,
-    "h": 98
-   },
-   {
-    "department": "DEP-HOM",
-    "label": "법규인증팀",
     "x": 0,
     "y": 580,
     "w": 2206,
     "h": 98
    },
    {
-    "department": "DEP-INT",
-    "label": "SW통합·릴리스팀",
+    "department": "DEP-HOM",
+    "label": "법규인증팀",
     "x": 0,
     "y": 678,
     "w": 2206,
@@ -1985,83 +2230,11 @@ export const PROCESS: WorkflowProcess = {
     "h": 66
    },
    {
-    "id": "FPW.7-A02",
+    "id": "FPW.7-A14",
     "kind": "action",
-    "label": "효과 실험 계획 등록",
-    "x": 478,
-    "y": 212,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A05",
-    "kind": "action",
-    "label": "상품 구성 작성",
+    "label": "예외 요청(임시 우회·Gate 예외)",
     "x": 198,
-    "y": 302,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A06",
-    "kind": "action",
-    "label": "상품 구성 승인",
-    "x": 478,
-    "y": 302,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A12",
-    "kind": "action",
-    "label": "Release Sign-off(출시 책임 확인)",
-    "x": 1318,
     "y": 212,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A10",
-    "kind": "action",
-    "label": "상품 고객 출시 승인",
-    "x": 1878,
-    "y": 212,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A03",
-    "kind": "action",
-    "label": "Safety Case·SOTIF 근거 정리",
-    "x": 198,
-    "y": 400,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A08",
-    "kind": "action",
-    "label": "G7 출시·활성화 판정",
-    "x": 758,
-    "y": 400,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A04",
-    "kind": "action",
-    "label": "Safety Case 독립 검토",
-    "x": 478,
-    "y": 498,
-    "w": 188,
-    "h": 66
-   },
-   {
-    "id": "FPW.7-A07",
-    "kind": "action",
-    "label": "형식승인·사용자 고지 확인",
-    "x": 478,
-    "y": 596,
     "w": 188,
     "h": 66
    },
@@ -2070,6 +2243,96 @@ export const PROCESS: WorkflowProcess = {
     "kind": "action",
     "label": "출시 전이",
     "x": 1598,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A15",
+    "kind": "action",
+    "label": "예외 승인·만료 원복 확인",
+    "x": 478,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A03",
+    "kind": "action",
+    "label": "Safety Case·SOTIF 근거 정리",
+    "x": 198,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A08",
+    "kind": "action",
+    "label": "G7 출시·활성화 판정",
+    "x": 758,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A02",
+    "kind": "action",
+    "label": "효과 실험 계획 등록",
+    "x": 478,
+    "y": 408,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A05",
+    "kind": "action",
+    "label": "상품 구성 작성",
+    "x": 198,
+    "y": 498,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A06",
+    "kind": "action",
+    "label": "상품 구성 승인",
+    "x": 478,
+    "y": 498,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A12",
+    "kind": "action",
+    "label": "Release Sign-off(출시 책임 확인)",
+    "x": 1318,
+    "y": 408,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A10",
+    "kind": "action",
+    "label": "상품 고객 출시 승인",
+    "x": 1878,
+    "y": 408,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A04",
+    "kind": "action",
+    "label": "Safety Case 독립 검토",
+    "x": 478,
+    "y": 596,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.7-A07",
+    "kind": "action",
+    "label": "형식승인·사용자 고지 확인",
+    "x": 478,
     "y": 694,
     "w": 188,
     "h": 66
@@ -2086,8 +2349,8 @@ export const PROCESS: WorkflowProcess = {
    {
     "id": "FPW.7-S2",
     "kind": "start",
-    "label": "출시 효과를 실험으로 비교해야 할 때",
-    "x": 426,
+    "label": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+    "x": 146,
     "y": 236,
     "w": 18,
     "h": 18
@@ -2095,9 +2358,9 @@ export const PROCESS: WorkflowProcess = {
    {
     "id": "FPW.7-S3",
     "kind": "start",
-    "label": "G6 배포 완료",
-    "x": 146,
-    "y": 424,
+    "label": "출시 효과를 실험으로 비교해야 할 때",
+    "x": 426,
+    "y": 432,
     "w": 18,
     "h": 18
    },
@@ -2106,7 +2369,7 @@ export const PROCESS: WorkflowProcess = {
     "kind": "start",
     "label": "G6 배포 완료",
     "x": 146,
-    "y": 326,
+    "y": 334,
     "w": 18,
     "h": 18
    },
@@ -2114,8 +2377,17 @@ export const PROCESS: WorkflowProcess = {
     "id": "FPW.7-S5",
     "kind": "start",
     "label": "G6 배포 완료",
+    "x": 146,
+    "y": 522,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.7-S6",
+    "kind": "start",
+    "label": "G6 배포 완료",
     "x": 426,
-    "y": 620,
+    "y": 718,
     "w": 18,
     "h": 18
    },
@@ -2123,13 +2395,22 @@ export const PROCESS: WorkflowProcess = {
     "id": "FPW.7-E1",
     "kind": "end",
     "label": "종료",
-    "x": 2080,
-    "y": 236,
+    "x": 680,
+    "y": 334,
     "w": 18,
     "h": 18
    },
    {
     "id": "FPW.7-E2",
+    "kind": "end",
+    "label": "종료",
+    "x": 2080,
+    "y": 432,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.7-E3",
     "kind": "end",
     "label": "종료",
     "x": 2080,
@@ -2156,61 +2437,76 @@ export const PROCESS: WorkflowProcess = {
    },
    {
     "from": "FPW.7-S2",
-    "to": "FPW.7-A02",
+    "to": "FPW.7-A14",
     "kind": "trigger",
     "points": [
      [
-      444,
+      164,
       245
      ],
      [
-      478,
+      198,
       245
      ]
     ]
    },
    {
     "from": "FPW.7-S3",
-    "to": "FPW.7-A03",
+    "to": "FPW.7-A02",
     "kind": "trigger",
     "points": [
      [
-      164,
-      433
+      444,
+      441
      ],
      [
-      198,
-      433
+      478,
+      441
      ]
     ]
    },
    {
     "from": "FPW.7-S4",
-    "to": "FPW.7-A05",
+    "to": "FPW.7-A03",
     "kind": "trigger",
     "points": [
      [
       164,
-      335
+      343
      ],
      [
       198,
-      335
+      343
      ]
     ]
    },
    {
     "from": "FPW.7-S5",
+    "to": "FPW.7-A05",
+    "kind": "trigger",
+    "points": [
+     [
+      164,
+      531
+     ],
+     [
+      198,
+      531
+     ]
+    ]
+   },
+   {
+    "from": "FPW.7-S6",
     "to": "FPW.7-A07",
     "kind": "trigger",
     "points": [
      [
       444,
-      629
+      727
      ],
      [
       478,
-      629
+      727
      ]
     ]
    },
@@ -2229,11 +2525,11 @@ export const PROCESS: WorkflowProcess = {
      ],
      [
       746,
-      433
+      343
      ],
      [
       758,
-      433
+      343
      ]
     ]
    },
@@ -2252,11 +2548,34 @@ export const PROCESS: WorkflowProcess = {
      ],
      [
       1306,
-      245
+      441
      ],
      [
       1318,
+      441
+     ]
+    ]
+   },
+   {
+    "from": "FPW.7-A14",
+    "to": "FPW.7-A15",
+    "kind": "flow",
+    "points": [
+     [
+      386,
       245
+     ],
+     [
+      466,
+      245
+     ],
+     [
+      466,
+      343
+     ],
+     [
+      478,
+      343
      ]
     ]
    },
@@ -2267,19 +2586,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      245
+      441
      ],
      [
       746,
-      245
+      441
      ],
      [
       746,
-      433
+      343
      ],
      [
       758,
-      433
+      343
      ]
     ]
    },
@@ -2290,19 +2609,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       386,
-      433
+      343
      ],
      [
       466,
-      433
+      343
      ],
      [
       466,
-      531
+      629
      ],
      [
       478,
-      531
+      629
      ]
     ]
    },
@@ -2313,19 +2632,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      531
+      629
      ],
      [
       746,
-      531
+      629
      ],
      [
       746,
-      433
+      343
      ],
      [
       758,
-      433
+      343
      ]
     ]
    },
@@ -2336,11 +2655,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       386,
-      335
+      531
      ],
      [
       478,
-      335
+      531
      ]
     ]
    },
@@ -2351,19 +2670,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      335
+      531
      ],
      [
       746,
-      335
+      531
      ],
      [
       746,
-      433
+      343
      ],
      [
       758,
-      433
+      343
      ]
     ]
    },
@@ -2374,19 +2693,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       666,
-      629
+      727
      ],
      [
       746,
-      629
+      727
      ],
      [
       746,
-      433
+      343
      ],
      [
       758,
-      433
+      343
      ]
     ]
    },
@@ -2397,11 +2716,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       946,
-      433
+      343
      ],
      [
       1026,
-      433
+      343
      ],
      [
       1026,
@@ -2420,19 +2739,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       1506,
-      245
+      441
+     ],
+     [
+      1586,
+      441
      ],
      [
       1586,
       245
-     ],
-     [
-      1586,
-      727
      ],
      [
       1598,
-      727
+      245
      ]
     ]
    },
@@ -2443,19 +2762,19 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       1786,
-      727
-     ],
-     [
-      1866,
-      727
+      245
      ],
      [
       1866,
       245
+     ],
+     [
+      1866,
+      441
      ],
      [
       1878,
-      245
+      441
      ]
     ]
    },
@@ -2466,11 +2785,11 @@ export const PROCESS: WorkflowProcess = {
     "points": [
      [
       1786,
-      727
+      245
      ],
      [
       1866,
-      727
+      245
      ],
      [
       1866,
@@ -2483,23 +2802,38 @@ export const PROCESS: WorkflowProcess = {
     ]
    },
    {
-    "from": "FPW.7-A10",
+    "from": "FPW.7-A15",
     "to": "FPW.7-E1",
     "kind": "end",
     "points": [
      [
+      666,
+      343
+     ],
+     [
+      680,
+      343
+     ]
+    ]
+   },
+   {
+    "from": "FPW.7-A10",
+    "to": "FPW.7-E2",
+    "kind": "end",
+    "points": [
+     [
       2066,
-      245
+      441
      ],
      [
       2080,
-      245
+      441
      ]
     ]
    },
    {
     "from": "FPW.7-A11",
-    "to": "FPW.7-E2",
+    "to": "FPW.7-E3",
     "kind": "end",
     "points": [
      [
@@ -2516,19 +2850,19 @@ export const PROCESS: WorkflowProcess = {
   "joins": [
    [
     746,
-    245
+    343
    ],
    [
     746,
-    335
-   ],
-   [
-    746,
-    433
+    441
    ],
    [
     746,
     531
+   ],
+   [
+    746,
+    629
    ]
   ]
  }

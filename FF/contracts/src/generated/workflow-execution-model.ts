@@ -2199,6 +2199,14 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       "해제 대상 Flag·요청 당시 대사 상태·사유·만료",
       "요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함)"
      ]
+    },
+    {
+     "key": "WP-EXCEPTION-RECORD",
+     "name": "예외 승인 기록",
+     "content": [
+      "요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사 또는 PENDING Gate·제한 조건·완료 예정일·잔여 리스크",
+      "두 승인자의 승인·지정 만료 일시(반려 사유), 적용한 배포와 이전 상태, 만료·회수 원복 메시지"
+     ]
     }
    ],
    "activities": [
@@ -2274,6 +2282,80 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ],
      "checks": [
       "요청자와 결정자가 다른 사람이다"
+     ]
+    },
+    {
+     "id": "FPW.7-A14",
+     "name": "예외 요청(임시 우회·Gate 예외)",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-REL"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-OPS",
+       "R-FO"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-CANARY-PLAN"
+     ],
+     "outputs": [
+      "WP-EXCEPTION-RECORD"
+     ],
+     "next": [
+      "FPW.7-A15"
+     ],
+     "screens": [
+      "/verify/exceptions",
+      "/policies/:id"
+     ],
+     "actions": [
+      "createExceptionPolicy"
+     ],
+     "checks": [
+      "적용 기간이 있고 우회 불가 항목이 없다"
+     ]
+    },
+    {
+     "id": "FPW.7-A15",
+     "name": "예외 승인·만료 원복 확인",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-SM",
+       "R-OPS"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-FO"
+      ],
+      "I": [
+       "R-REL",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-EXCEPTION-RECORD"
+     ],
+     "outputs": [
+      "WP-EXCEPTION-RECORD"
+     ],
+     "next": [],
+     "screens": [
+      "/verify/exceptions"
+     ],
+     "actions": [
+      "decideExceptionPolicy",
+      "revokeExceptionPolicy"
+     ],
+     "checks": [
+      "요청자와 두 승인자가 모두 다른 사람이다",
+      "만료 일시가 있고 Gate 판정은 PENDING 그대로다"
      ]
     },
     {

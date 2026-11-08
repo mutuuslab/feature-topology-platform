@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9580/admin/iam",
+  "iam_url": "http://127.0.0.1:9590/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-08T21:08:55.443Z",
+  "fetched_at": "2026-11-08T22:23:27.335Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\release-20261108-p10\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-08T20:46:54.898Z",
+  "contracts_dist_mtime": "2026-11-08T22:16:55.826Z",
   "ff_git": {
-   "head": "f1919767167b91080bc6f352056a9c994c6c5dba",
-   "dirty_files": 1
+   "head": "6c4ecde1c5cbdd9e12fa87d51f414b53c8dd2319",
+   "dirty_files": 0
   },
-  "iam_sha256": "fb51a205f66e6eb9e377739fe64b1a8b7f8a0a57d52336d619f38afe13bc64db"
+  "iam_sha256": "78c9f3d38cbfc51c5259def3497629c51e9778c30db210549d54b9eb29ced180"
  },
  "roles": [
   {
@@ -2989,6 +2989,57 @@
     "COST_BASIS_ADMIN",
     "SYSTEM_ADMIN"
    ]
+  },
+  {
+   "name": "otaJobReconcile",
+   "method": "POST",
+   "path": "/api/ota/jobs/:jobId/reconcile",
+   "summary": "IF-05 OTA 작업 대사 — webhook이 오지 않은 작업을 OTA 서버 조회로 메운다(끝 상태는 차량 결과만)",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPS_LEAD",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "createExceptionPolicy",
+   "method": "POST",
+   "path": "/api/exceptions",
+   "summary": "예외 승인 요청 — 요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사(우회 불가 4가지 제외)",
+   "component": "D03-02",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "decideExceptionPolicy",
+   "method": "POST",
+   "path": "/api/exceptions/:id/decision",
+   "summary": "예외 승인·반려 — 요청자 제외 서로 다른 두 사람, 승인자 지정 만료 일시",
+   "component": "D03-02",
+   "roles": [
+    "SAFETY_OFFICER",
+    "OPS_LEAD",
+    "SECURITY_OFFICER",
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "revokeExceptionPolicy",
+   "method": "POST",
+   "path": "/api/exceptions/:id/revoke",
+   "summary": "예외 회수 — 이전 정책 상태로 원복",
+   "component": "D03-02",
+   "roles": [
+    "RELEASE_MANAGER",
+    "OPERATOR",
+    "SAFETY_OFFICER",
+    "OPS_LEAD",
+    "SECURITY_OFFICER",
+    "GATE_JUDGE"
+   ]
   }
  ],
  "sod": [
@@ -3863,6 +3914,11 @@
    "path": "/deployments/campaigns/:id",
    "title": "전송 캠페인",
    "group": "release"
+  },
+  {
+   "path": "/verify/exceptions",
+   "title": "예외 승인",
+   "group": "verify"
   }
  ],
  "dist_diff": []

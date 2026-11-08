@@ -40,7 +40,7 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 16 · 책임 18 · 협의 25 · 통보 39 (활동 70개)
+수행 16 · 책임 18 · 협의 27 · 통보 39 (활동 72개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -74,6 +74,8 @@ last_updated: 2026-11-08
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | I (Feature Owner) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/deployments/software`, `/integration/connectors` 외 2 | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Feature Owner) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
 | FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | C (Feature Owner) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
+| FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7 출시·활성화·단계적 확대 | C (Feature Owner) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions`, `/policies/:id` | 1차 |
+| FPW.7-A15 예외 승인·만료 원복 확인 | FPW.7 출시·활성화·단계적 확대 | C (Feature Owner) | 예외 승인 기록 `WP-EXCEPTION-RECORD` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | R·A (Feature Owner) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7 출시·활성화·단계적 확대 | C (Feature Owner) | SOTIF 분석 `WP-SOTIF-ANALYSIS`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, HARA·TARA 결과 `WP-HARA-TARA` → Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | `/verify/evidence`, `/verify/compliance`, `/verify/safety-case` | 1차 |
 | FPW.7-A04 Safety Case 독립 검토 | FPW.7 출시·활성화·단계적 확대 | I (Feature Owner) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 플랫폼 밖 | 1차 |
@@ -143,7 +145,7 @@ last_updated: 2026-11-08
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/master/taxonomy/levels`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/policies/:id`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/bill-of-features`, `/products/configurator`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/flag-retirements`, `/flag-code/lifecycle`, `/master/feature-db/:refId`, `/data/workbench`, `/biz/trials`, `/products`
-- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/config/odd`, `/policies/global-scope`, `/flag-code`, `/flag-code/flags/:flagKey`, `/validations/virtual`, `/flag-code/reconcile`, `/integration/code-scans`, `/verify/evidence`, `/config/compat`, `/deployments`, `/deployments/software`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/verify/compliance`, `/verify/safety-case`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/audit`, `/quality/feedback`, `/trace/ads`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/procurement/sw-cost`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`, `/fleet/vehicles/:vin`
+- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/config/odd`, `/policies/global-scope`, `/flag-code`, `/flag-code/flags/:flagKey`, `/validations/virtual`, `/flag-code/reconcile`, `/integration/code-scans`, `/verify/evidence`, `/config/compat`, `/deployments`, `/deployments/software`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/verify/exceptions`, `/verify/compliance`, `/verify/safety-case`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/audit`, `/quality/feedback`, `/trace/ads`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/procurement/sw-cost`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`, `/fleet/vehicles/:vin`
 
 ## 4. 부서 겸직 직무 분리
 

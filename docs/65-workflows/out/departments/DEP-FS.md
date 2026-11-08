@@ -39,7 +39,7 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 18 · 책임 18 · 협의 38 · 통보 10 (활동 69개)
+수행 19 · 책임 19 · 협의 38 · 통보 11 (활동 71개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -72,6 +72,8 @@ last_updated: 2026-11-08
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | I (Safety Manager) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/deployments/software`, `/integration/connectors` 외 2 | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | C (Safety Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
 | FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | C (Safety Manager) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
+| FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7 출시·활성화·단계적 확대 | I (Safety Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions`, `/policies/:id` | 1차 |
+| FPW.7-A15 예외 승인·만료 원복 확인 | FPW.7 출시·활성화·단계적 확대 | R·A (Safety Manager) | 예외 승인 기록 `WP-EXCEPTION-RECORD` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | C (Safety Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A03 Safety Case·SOTIF 근거 정리 | FPW.7 출시·활성화·단계적 확대 | R·A (Safety Manager) | SOTIF 분석 `WP-SOTIF-ANALYSIS`, G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, HARA·TARA 결과 `WP-HARA-TARA` → Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` | `/verify/evidence`, `/verify/compliance`, `/verify/safety-case` | 1차 |
 | FPW.7-A04 Safety Case 독립 검토 | FPW.7 출시·활성화·단계적 확대 | A (Safety Manager) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 플랫폼 밖 | 1차 |
@@ -124,6 +126,7 @@ last_updated: 2026-11-08
 | 받음 | FPW.2-A03 SOTIF 분석 갱신 | FPW.2-A05 G2 HARA 영향 판정 | 시스템엔지니어링팀 | SOTIF 분석 `WP-SOTIF-ANALYSIS` | 1차 |
 | 받음 | FPW.2-A04 형식승인 영향 1차 판단 | FPW.2-A05 G2 HARA 영향 판정 | 법규인증팀 | 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` | 1차 |
 | 받음 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7-A08 G7 출시·활성화 판정 | OTA·서비스운영팀 | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | 1차 |
+| 받음 | FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7-A15 예외 승인·만료 원복 확인 | SW통합·릴리스팀 | 예외 승인 기록 `WP-EXCEPTION-RECORD` | 1차 |
 | 받음 | FPW.7-A02 효과 실험 계획 등록 | FPW.7-A08 G7 출시·활성화 판정 | 상품기획팀 | 실험 계획 `WP-EXPERIMENT-PLAN` | 1차 |
 | 받음 | FPW.7-A04 Safety Case 독립 검토 | FPW.7-A08 G7 출시·활성화 판정 | 품질팀 | Safety Case 독립 검토 기록 `WP-SC-REVIEW` | 1차 |
 | 받음 | FPW.7-A06 상품 구성 승인 | FPW.7-A08 G7 출시·활성화 판정 | 상품기획팀 | 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL` | 1차 |
@@ -156,7 +159,7 @@ last_updated: 2026-11-08
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/features/:id/:ver`, `/admin/approval`, `/analysis/impact`, `/arch/topology`, `/arch/components`, `/verify/evidence`, `/verify/compliance`, `/verify/safety-case`, `/activation/decide`, `/ops/kill`, `/fleet/live`, `/deployments`, `/ops/rollback`, `/flag-retirements`, `/ops/safety-kpi`, `/trace/ads`
+- 주 업무 화면: `/features/:id/:ver`, `/admin/approval`, `/analysis/impact`, `/arch/topology`, `/arch/components`, `/verify/exceptions`, `/verify/evidence`, `/verify/compliance`, `/verify/safety-case`, `/activation/decide`, `/ops/kill`, `/fleet/live`, `/deployments`, `/ops/rollback`, `/flag-retirements`, `/ops/safety-kpi`, `/trace/ads`
 - 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/master/taxonomy/levels`, `/variant-conditions`, `/features/catalogue`, `/trace/design`, `/change/cr`, `/integration/connectors`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/deployments/software`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/flag-code/reconcile`, `/experiments`, `/notifications`, `/ops/anomalies`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/incident-reports`, `/audit/oversight`, `/audit`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/quality/feedback`, `/supplier/portal`, `/supplier/deliveries`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/data/workbench`, `/products`
 
 ## 4. 부서 겸직 직무 분리

@@ -10,7 +10,7 @@ import { Clock } from '../../src/kernel/clock';
 import { DB, type Db } from '../../src/kernel/db';
 import { GateRepo } from '../../src/domains/d01-policy/repos';
 import { GateDecisionService } from '../../src/domains/d01-policy/topology/gate-decision.service';
-import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety, signG7, withRef } from '../helpers';
 
 Object.assign(process.env, {
   FF_SCHEDULER: 'manual',
@@ -61,6 +61,7 @@ describe('GX 출시·예외 완료의 Gate Decision 신뢰도', () => {
   afterEach(async () => app?.close());
 
   async function judge(gate: string) {
+    if (gate === 'G6') await completeTestSupplierEvidence(app, fid, VERSION);
     await http().post(`${featurePath()}/gates`).set(JUDGE).send({ gate, inputResult: 'PASS', rationale: '회귀 준비 판정', evidenceRef: `EV-GX-TRUST-${gate}` }).expect(201);
   }
 

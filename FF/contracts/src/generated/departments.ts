@@ -69,6 +69,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
+     "/verify/exceptions",
      "/verify/compliance",
      "/verify/safety-case",
      "/fleet/live",
@@ -105,7 +106,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 16,
     "A": 18,
-    "C": 25,
+    "C": 27,
     "I": 39
    }
   },
@@ -210,6 +211,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/deployments/campaigns/:id",
      "/integration/code-repositories",
      "/integration/code-repositories/:repoId",
+     "/verify/exceptions",
+     "/policies/:id",
      "/flag-code/lifecycle",
      "/flag-retirements",
      "/precheck",
@@ -218,7 +221,6 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "reference": [
      "/master/control-points",
      "/trace/design",
-     "/policies/:id",
      "/arch/topology",
      "/validations",
      "/validations/virtual",
@@ -253,10 +255,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 14,
-    "A": 13,
+    "R": 15,
+    "A": 14,
     "C": 24,
-    "I": 24
+    "I": 25
    }
   },
   {
@@ -339,6 +341,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/analysis/impact",
      "/arch/topology",
      "/arch/components",
+     "/verify/exceptions",
      "/verify/evidence",
      "/verify/compliance",
      "/verify/safety-case",
@@ -396,10 +399,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 18,
-    "A": 18,
+    "R": 19,
+    "A": 19,
     "C": 38,
-    "I": 10
+    "I": 11
    }
   },
   {
@@ -577,6 +580,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
+     "/verify/exceptions",
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
@@ -618,7 +622,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "R": 11,
     "A": 4,
     "C": 6,
-    "I": 36
+    "I": 37
    }
   },
   {
@@ -638,6 +642,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/activation/decide",
      "/policies/:id",
+     "/verify/exceptions",
      "/fleet/live",
      "/features/:id/:ver",
      "/notifications",
@@ -689,9 +694,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 17,
+    "R": 18,
     "A": 15,
-    "C": 8,
+    "C": 9,
     "I": 22
    }
   },

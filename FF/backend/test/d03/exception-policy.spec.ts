@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
 import { DB, type Db } from '../../src/kernel/db';
-import { actor, bootApp, confirmSafety, signG7, withRef } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety, signG7, withRef } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -44,7 +44,10 @@ describe('예외 정책 층 (GX)', () => {
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
       await signG7(http, fid, '0.1.0');
-      for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
+      for (const g of ['G4', 'G5', 'G6', 'G7']) {
+        if (g === 'G6') await completeTestSupplierEvidence(app, fid, '0.1.0');
+        await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
+      }
       const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: fid, featureVersion: '0.1.0', controlPoint: 'Flag', flagKey: `care_${fid.slice(5)}_gx`, description: '예외 시험 Flag', safeDefault: false }).expect(201);
       pid = c.body.policyId;
       expect((await http().post(`/api/policies/${pid}/validate`).set(AUTHOR).send({}).expect(200)).body.run.decision).toBe('GO');

@@ -1572,4 +1572,4 @@ CREATE TRIGGER impact_set_no_delete BEFORE DELETE ON impact_set BEGIN SELECT RAI
   },
   BINARY_MIGRATION,
   SOFTWARE_MIGRATION,
-];
+].sort((a, b) => a.name.localeCompare(b.name));

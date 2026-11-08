@@ -58,6 +58,25 @@ describe('마이그레이션 올리기', () => {
     for (const n of names.filter((x) => !(x in LOCK.migrations))) expect(n > last, `${n}은 잠근 마지막(${last}) 뒤에 와야 한다`).toBe(true);
   });
 
+  it('401·402·411을 이미 적용한 DB에 뒤늦게 통합한 낮은 번호 migration을 적용해도 기존 행과 스키마를 보존한다', () => {
+    // These domains were absent from the source767 review server, whose persistent database already has 401/402/411.
+    const addedLater = new Set(['201_wire_v2_1', '231_kill_intake', '232_deactivation_check', '233_termination_inhibit', '234_impact_set', '311_vehicle_message_nonce', '321_exception_policy', '341_ads_config_approval_scope', '431_binary_objects', '441_software_delivery']);
+    const baseline = MIGRATIONS.filter(m => !addedLater.has(m.name));
+    expect(baseline.map(m => m.name)).toEqual(expect.arrayContaining(['401_oidc_department_context', '402_department_dashboards', '411_workflow_cases_artifacts']));
+    const old = new SqliteDb(':memory:');
+    const fresh = new SqliteDb(':memory:');
+    try {
+      migrate(old, baseline);
+      const counts = fill(old);
+      const expected = MIGRATIONS.filter(m => addedLater.has(m.name)).map(m => m.name);
+      expect(expected).toEqual(expect.arrayContaining(['201_wire_v2_1', '311_vehicle_message_nonce', '321_exception_policy', '341_ads_config_approval_scope']));
+      expect(migrate(old, MIGRATIONS)).toEqual(expected);
+      for (const [table, count] of Object.entries(counts)) expect(old.get<{ n: number }>(`SELECT count(*) AS n FROM ${JSON.stringify(table)}`)!.n, table).toBe(count);
+      migrate(fresh, MIGRATIONS);
+      expect(schema(old)).toEqual(schema(fresh));
+    } finally { old.close(); fresh.close(); }
+  });
+
   // 이전 판 지점 — 끝에서 1·3·8·20개 전, 그리고 처음 몇 개만 적용한 아주 오래된 설치
   const cuts = [...new Set([1, 3, 8, 20, MIGRATIONS.length - 3].map((k) => MIGRATIONS.length - k).filter((n) => n > 0 && n < MIGRATIONS.length))];
   for (const at of cuts) {

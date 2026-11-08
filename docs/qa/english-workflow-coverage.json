@@ -2,9 +2,9 @@
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
   "total": 1802,
-  "missing": 340,
-  "translated": 1097,
-  "sourceEnglish": 365,
+  "missing": 0,
+  "translated": 1442,
+  "sourceEnglish": 360,
   "duplicate": [],
   "unknown": [],
   "fingerprints": [
@@ -12,6 +12,12 @@
       "file": "frontend/src/locale/en/workflow-metadata.ts",
       "entries": 217,
       "sourceFingerprint": "faf54d01576333518e0dd4d4acc573f05bc94d227ce0a71b59ad3bfd2fb0a765",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/artifact-names.ts",
+      "entries": 5,
+      "sourceFingerprint": "9fc502be91101a12e84ab211e19eba1b15dff98a16c9ac7edc1e473614cb9af6",
       "status": "MATCH"
     },
     {
@@ -27,9 +33,45 @@
       "status": "MATCH"
     },
     {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-11.ts",
+      "entries": 58,
+      "sourceFingerprint": "234def00a30face1983f32be6349a1a02bb8aa40b4fc056825914aa952fe50d7",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-12.ts",
+      "entries": 82,
+      "sourceFingerprint": "de2cb602f1397ecde905a24a056b1985014e539cf238cb7dc3a972914c6ed0bd",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-13.ts",
+      "entries": 39,
+      "sourceFingerprint": "4e36bbbf48965df4e1fe4efacc05233ae8384497eae7c99fd6ec55f5b0da24c1",
+      "status": "MATCH"
+    },
+    {
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-14.ts",
       "entries": 81,
       "sourceFingerprint": "c474ffb5dea97f673c320581a7dd83c9af0437d57abdc251831503a6e7d00845",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-15.ts",
+      "entries": 66,
+      "sourceFingerprint": "4adeaa49ebb699a36dff5f057a911b2995f77b044d426d3d43fb14dcc3aa1b66",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-16.ts",
+      "entries": 46,
+      "sourceFingerprint": "59726da4bdb66079043949666c95119477d2a3ec792b2d1514f3967bce5ef390",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-17.ts",
+      "entries": 49,
+      "sourceFingerprint": "e5fe6d0d36a50ef554b392d81e27f548bcc0f8658233eacac734fc67e8f75af0",
       "status": "MATCH"
     },
     {
@@ -2872,8 +2914,8 @@
       "key": "FPW.4.WP-FLAG-PR-RESULT.name",
       "source": "Flag 코드 변경 검토·병합 기록",
       "sourceHash": "fa79e757add1005b5cfa09268ddfa3cf9c3e3c89e71cf2537478e024b172f7ad",
-      "status": "SOURCE_ENGLISH",
-      "english": "Flag 코드 변경 검토·병합 기록"
+      "status": "TRANSLATED",
+      "english": "Flag code change review and merge record"
     },
     {
       "key": "FPW.4.WP-FLAG-PR-RESULT.content.0",
@@ -3544,8 +3586,8 @@
       "key": "FPW.5.WP-FLAG-RECON-RESULT.name",
       "source": "Flag 코드 대사·예외 확인 기록",
       "sourceHash": "ad1908beaf3b2e983a2ee62e9cad8a7b90d73d7f2cc179234d635dc6cd047eed",
-      "status": "SOURCE_ENGLISH",
-      "english": "Flag 코드 대사·예외 확인 기록"
+      "status": "TRANSLATED",
+      "english": "Flag code reconciliation and exception record"
     },
     {
       "key": "FPW.5.WP-FLAG-RECON-RESULT.content.0",
@@ -4181,8 +4223,8 @@
       "key": "FPW.6.WP-REPO-CONNECTION.name",
       "source": "코드 저장소 연결·변경 기록",
       "sourceHash": "26c9ca5ec2fbd2f335259afc44ce7a82f56d8489e97344c9124e2ee0d53a8ceb",
-      "status": "SOURCE_ENGLISH",
-      "english": "코드 저장소 연결·변경 기록"
+      "status": "TRANSLATED",
+      "english": "Code repository connection and change record"
     },
     {
       "key": "FPW.6.WP-REPO-CONNECTION.content.0",
@@ -5994,8 +6036,8 @@
       "key": "FPW.8.WP-FLAG-EVAL-INVESTIGATION.name",
       "source": "Flag 평가 이상 조사 기록",
       "sourceHash": "7e67624815b698fb35d76297ee6856b2b46b48589ae8f63ccb548163e828cc01",
-      "status": "SOURCE_ENGLISH",
-      "english": "Flag 평가 이상 조사 기록"
+      "status": "TRANSLATED",
+      "english": "Flag evaluation anomaly investigation record"
     },
     {
       "key": "FPW.8.WP-FLAG-EVAL-INVESTIGATION.content.0",
@@ -7233,8 +7275,8 @@
       "key": "FPW.9.WP-FLAG-REMOVAL-SCAN.name",
       "source": "Flag 제거 검토·스캔 결과",
       "sourceHash": "53871f05f9ac3141e547543008ee5e5c78f986f45b6540f0ffedb360c2b2d228",
-      "status": "SOURCE_ENGLISH",
-      "english": "Flag 제거 검토·스캔 결과"
+      "status": "TRANSLATED",
+      "english": "Flag removal review and scan results"
     },
     {
       "key": "FPW.9.WP-FLAG-REMOVAL-SCAN.content.0",
@@ -8311,71 +8353,71 @@
       "key": "FPW.11.ref",
       "source": "표준 보고서 14장(서명·키·R155), 15장(SBOM·VEX·OSS), 8장 FFG-PLT-005",
       "sourceHash": "66d761ffa61aba3fb3a5f0142fb19b069c25e2f2ae167436bb83e75a1da8b427",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report chapter 14 (signatures, keys, R155), chapter 15 (SBOM, VEX, OSS), chapter 8 FFG-PLT-005"
     },
     {
       "key": "FPW.11.purpose",
       "source": "명령 서명 키를 용도별로 분리해 HSM에서 운영하고, 키 유출과 새 취약점에 대해 영향 Feature·차량을 특정해 보안 사유 차단 또는 업데이트를 결정하며, 그 Evidence를 CSMS와 승인 기관 보고에 쓴다.",
       "sourceHash": "4187db56f5bf515ab4be283f2bea7b1ec91d34b030e75a91c14b2a990d5af955",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operate purpose-separated command-signing keys in HSMs. Identify Features/vehicles affected by leaked keys and new vulnerabilities, decide security blocking or updates, and use the Evidence for CSMS and approval-authority reporting."
     },
     {
       "key": "FPW.11.O1.text",
       "source": "서명 키 계층·용도 분리·HSM 보관·승인 서명 기준 수가 운영된다.",
       "sourceHash": "159622bd45718cdc73ddfe0a59667c02e29f419ca9c8a80413734efceaae013f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Key hierarchy, purpose separation, HSM custody and approval-signature thresholds are operated."
     },
     {
       "key": "FPW.11.O2.text",
       "source": "키 교체와 유출 대응(차량 key epoch 상향)이 기록된다.",
       "sourceHash": "db17738614125d0c7dc3c4ba8f736306b24167641382647f12b235be9ccf50c3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Key rotation and compromise response (onboard key epoch increases) are recorded."
     },
     {
       "key": "FPW.11.O3.text",
       "source": "새 취약점의 영향 Feature·차량이 특정되고 차단 또는 업데이트가 결정된다.",
       "sourceHash": "e7d6c3d1efa0f883b4a1579f9263577c706c5b1351383e8e90cf94ab4afdfabe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Features/vehicles affected by new vulnerabilities are identified and blocking or updates decided."
     },
     {
       "key": "FPW.11.O4.text",
       "source": "사이버보안 Evidence가 CSMS로 관리되고 승인 기관 보고에 쓰인다.",
       "sourceHash": "5e521349659d36b3428cff75615b3c6d613a7389e5d5ba82f9efc24c3725aefc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cybersecurity Evidence is managed through CSMS and used for authority reporting."
     },
     {
       "key": "FPW.11.O5.text",
       "source": "OSS 라이선스·보안 관리 프로그램이 운영된다.",
       "sourceHash": "0812cfff51f24bec680fcd9e190f8a216a88513bde4662a19f7ba36d4d0fce69",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "OSS license and security management programs operate."
     },
     {
       "key": "FPW.11.entry.0",
       "source": "플랫폼 서명 서비스와 HSM·KMS가 구축되어 있다",
       "sourceHash": "3883c41e03195ddeeafa6f12ed4355d2c958fa819fa317029827d9083555bd73",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Platform signing services and HSM/KMS infrastructure are established"
     },
     {
       "key": "FPW.11.exit.0",
       "source": "키 계층과 교체 이력이 최신이다",
       "sourceHash": "eb70f8671b43b9ac9fccfaa3eeef57c452662c5501fa7da988ce03f1e7e07f3a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Key hierarchy and rotation history are current"
     },
     {
       "key": "FPW.11.exit.1",
       "source": "공지된 취약점마다 VEX 판정과 대응 결정이 있다",
       "sourceHash": "65659697497fa26e0992aa6865c7eb406154e5eedfcb9b5bd06c231c8a6b8ae8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every announced vulnerability has a VEX assessment and response decision"
     },
     {
       "key": "FPW.11.WP-KEY-REGISTER.name",
@@ -8388,22 +8430,22 @@
       "key": "FPW.11.WP-KEY-REGISTER.content.0",
       "source": "용도별 키(활성화·차단·복원·정책 서명) 계층과 HSM 보관 위치",
       "sourceHash": "47789978b761879ca4518bf17c17cec283bd8b5263aee37fd6b8f55adc0318be",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Purpose-specific key hierarchy (activation, block, restoration, policy signing) and HSM locations"
     },
     {
       "key": "FPW.11.WP-KEY-REGISTER.content.1",
       "source": "승인 서명 기준 수와 긴급 절차",
       "sourceHash": "ba8c6762a443a7e0b836be8577b14fcc72f0dd1d753b1935e6802bae7a8e0d9c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approval-signature thresholds and emergency procedures"
     },
     {
       "key": "FPW.11.WP-KEY-REGISTER.content.2",
       "source": "교체 주기와 교체 이력",
       "sourceHash": "3fcccf274406e5fbf8976183c5cf99afc73009b47bbc12a19c9d793c2fadb069",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Rotation schedules and history"
     },
     {
       "key": "FPW.11.WP-KEY-INCIDENT.name",
@@ -8416,15 +8458,15 @@
       "key": "FPW.11.WP-KEY-INCIDENT.content.0",
       "source": "유출·오사용 징후, 영향 차량 범위",
       "sourceHash": "ebc099297cd22c42a744f24d6f285cf26e34edef6a71086cff02951f991ccae3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Signs of compromise/misuse and affected vehicle scope"
     },
     {
       "key": "FPW.11.WP-KEY-INCIDENT.content.1",
       "source": "key epoch 상향 시각과 대상 차량",
       "sourceHash": "dbdc0b00b9614c972e260a1f64a878f7ce7d0255944052177d544727a25f0bc8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Key epoch increase time and target vehicles"
     },
     {
       "key": "FPW.11.WP-VEX-DECISION.name",
@@ -8437,15 +8479,15 @@
       "key": "FPW.11.WP-VEX-DECISION.content.0",
       "source": "취약점별 영향 Feature·차량(SBOM 대조)과 VEX 상태",
       "sourceHash": "f41ac9f705841031d7096b37f8274eb2399a3010ec7bdcd1d8a4a4d463fef5cc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Affected Features/vehicles per vulnerability (SBOM comparison) and VEX status"
     },
     {
       "key": "FPW.11.WP-VEX-DECISION.content.1",
       "source": "위험도와 대응(보안 사유 차단·업데이트)·CSMS 대응 기한",
       "sourceHash": "8f5cf853319e0ae36482d4fb0707129e987bb9d217eb9d5cb7103bd10d25c637",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Risk, response (security block/update) and CSMS deadline"
     },
     {
       "key": "FPW.11.WP-CSMS-EVIDENCE.name",
@@ -8458,15 +8500,15 @@
       "key": "FPW.11.WP-CSMS-EVIDENCE.content.0",
       "source": "TARA·보안 요구·시험·모니터링 결과의 Evidence 목록",
       "sourceHash": "c8c243268d24d745590a6bd0598b6b6e7420f7ef4a20f6e629f37d9197f708fa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Evidence list for TARA, security requirements, testing and monitoring"
     },
     {
       "key": "FPW.11.WP-CSMS-EVIDENCE.content.1",
       "source": "승인 기관 보고 내용과 제출 시각",
       "sourceHash": "74f158f7a844f50119a5ce8903523343121d527a4335fc2703c4a4a82e136891",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Authority report content and submission time"
     },
     {
       "key": "FPW.11.WP-OSS-PROGRAM.name",
@@ -8479,15 +8521,15 @@
       "key": "FPW.11.WP-OSS-PROGRAM.content.0",
       "source": "라이선스(ISO/IEC 5230)·보안(ISO/IEC 18974) 프로그램 운영 결과",
       "sourceHash": "4962cd9395f9d18ad05e35493e6d1734e2b5f1468ea505ab9bed96a859c164d4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "License (ISO/IEC 5230) and security (ISO/IEC 18974) program results"
     },
     {
       "key": "FPW.11.WP-OSS-PROGRAM.content.1",
       "source": "구성요소별 라이선스 의무 이행 상태",
       "sourceHash": "05e8d9e29c7b52319c84503006921863618158a0e6b3f89def1390ceddcdad18",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "License obligation fulfillment by component"
     },
     {
       "key": "FPW.11-A01.name",
@@ -8500,29 +8542,29 @@
       "key": "FPW.11-A01.steps.0",
       "source": "활성화·차단·복원·정책 서명 키를 용도별로 나눠 HSM에 보관하고 키 계층을 대장에 적는다",
       "sourceHash": "4f762dfce21fa5dd98fa2c2fb4a87a7a6ce9f88e6f8b25496ef5d10cd4ab6cec",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Separate activation, block, restoration and policy signing keys by purpose, store them in HSMs and record the hierarchy"
     },
     {
       "key": "FPW.11-A01.steps.1",
       "source": "서명 HSM이 승인 서명이 기준 수에 이르기 전에는 명령 키를 쓰지 않도록 정책을 설정한다",
       "sourceHash": "d93fdc9f56b359138ad953da8769a6076908ad847be596b95d263b6be8d23e1c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Configure the signing HSM to prevent command-key use until the approval-signature threshold is reached"
     },
     {
       "key": "FPW.11-A01.steps.2",
       "source": "정기 교체 주기와 긴급 교체 절차를 정해 운영한다",
       "sourceHash": "c79004deaca98ace96169d58244e726e31eff5d32057fca2a55c28ebc3b62b5b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define and operate scheduled and emergency rotation procedures"
     },
     {
       "key": "FPW.11-A01.checks.0",
       "source": "키마다 용도·보관 위치·교체 주기가 대장에 있다",
       "sourceHash": "02a92fbff9e2ef4ead6b7ce0d024171013899ac7d5a4a76cacbce84d9d16a9ed",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every key has purpose, custody location and rotation schedule in the register"
     },
     {
       "key": "FPW.11-A02.name",
@@ -8535,29 +8577,29 @@
       "key": "FPW.11-A02.steps.0",
       "source": "PKI 운영이 HSM에서 교체한 키를 플랫폼에 등록하고 이전 키는 검증 전용으로 남긴다",
       "sourceHash": "1ffb084d051c387c21f81cc6b264626f55bad8f9e365afa5af309842721fd0d2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "PKI operations register HSM-rotated keys in the platform and retain previous keys for verification only"
     },
     {
       "key": "FPW.11-A02.steps.1",
       "source": "교체 결과를 키 대장에 반영한다",
       "sourceHash": "c0cee8d1c4aa4c0e8b48a5117ad9bb2cc5c4736978f79b9708c2d19fdd5c2e11",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Update the key register with rotation results"
     },
     {
       "key": "FPW.11-A02.steps.2",
       "source": "교체 사유와 용도(정책·차단·복원)를 기록하고 Safety Manager에게 결과를 알린다",
       "sourceHash": "efcb1ddf1eda766f2116bef8101a5436dceebd89c9ba9c6e3b0c4eb82b3ddd0b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record rotation reason and purpose (policy, block, restoration) and notify the Safety Manager"
     },
     {
       "key": "FPW.11-A02.checks.0",
       "source": "이전 키가 검증 전용으로 남고 대장이 갱신되었다",
       "sourceHash": "5f3037afd3835a1c9373d7515468b71b8742ef07a73aff5c7389415fe09a1ad6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Previous keys remain verification-only and the register is updated"
     },
     {
       "key": "FPW.11-A03.name",
@@ -8570,36 +8612,36 @@
       "key": "FPW.11-A03.trigger",
       "source": "키 유출·오사용 징후",
       "sourceHash": "429988f0d81f78ac357f26452745c57dfcbadf83c3f76dd2f8db19365d70c95e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Signs of key compromise or misuse"
     },
     {
       "key": "FPW.11-A03.steps.0",
       "source": "유출·오사용 징후의 범위(키 용도·영향 차량)를 확인한다",
       "sourceHash": "0bfba0dd38a093b90bc6579f395f9e744c2e85eda060045ee25c92147375af67",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Determine the compromise/misuse scope (key purpose and affected vehicles)"
     },
     {
       "key": "FPW.11-A03.steps.1",
       "source": "영향 차량의 key epoch를 올려 유출 키로 서명한 명령을 무효로 만든다",
       "sourceHash": "e0866f74bebcda508201aacfb584b4ef793a7995a85cd046aff4ce885e26c27c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Raise affected vehicle key epochs to invalidate commands signed with the compromised key"
     },
     {
       "key": "FPW.11-A03.steps.2",
       "source": "보안 사유 차단이 필요하면 FPW.8 차단 판단으로 Safety Manager에게 요청한다",
       "sourceHash": "72db197cf6668957ae392be79ac85564fd743e50f1691be0c3e3478a8b2a6d3b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If security blocking is needed, request Safety Manager assessment through FPW.8"
     },
     {
       "key": "FPW.11-A03.checks.0",
       "source": "epoch 상향 대상과 시각이 기록되었다",
       "sourceHash": "f19d94c8d8abe185fe73ad78bd088d9df9dd9725ae3204f19d8f56ad47cc384f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Epoch-increase targets and time are recorded"
     },
     {
       "key": "FPW.11-A04.name",
@@ -8612,36 +8654,36 @@
       "key": "FPW.11-A04.trigger",
       "source": "새 취약점 공지",
       "sourceHash": "6ae5299f841e6d6a2ac1804d7318d4d24621b6df50e6290584d527d30bfbe706",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "New vulnerability announcement"
     },
     {
       "key": "FPW.11-A04.steps.0",
       "source": "배포 단위별 SBOM과 대조해 영향 Feature와 차량을 특정하고 VEX 판정을 기록한다",
       "sourceHash": "d0df87ae8778ba755a01dbbf47e6b561c704682234bbf58ec6f84e5cbb810711",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare deployment-unit SBOMs to identify affected Features/vehicles and record VEX decisions"
     },
     {
       "key": "FPW.11-A04.steps.1",
       "source": "위험도에 따라 보안 사유 차단 또는 업데이트를 정하고 CSMS에 대응 기한을 둔다",
       "sourceHash": "a129bdfe0bc4dcbab825502d44af25fd0779c2559a0a9f2e9db8172a3b54a0ab",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Choose security blocking or updates based on risk and set a CSMS response deadline"
     },
     {
       "key": "FPW.11-A04.steps.2",
       "source": "Kill 경로 구성요소의 취약점이면 최우선으로 처리하고 운영 조직과 차단 준비를 맞춘다",
       "sourceHash": "a8199c489ee8c8a10642fe259e317351ab38e88acebde15fa3c6df55e331f85e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Prioritize vulnerabilities in Kill-path components and coordinate block readiness with operations"
     },
     {
       "key": "FPW.11-A04.checks.0",
       "source": "공지된 취약점마다 VEX 판정과 대응 기한이 있다",
       "sourceHash": "756040f7d4d624a9bd54e05c873bc9387c56b45c9bc39d54f6212b3dd395be59",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every announced vulnerability has a VEX decision and response deadline"
     },
     {
       "key": "FPW.11-A06.name",
@@ -8654,36 +8696,36 @@
       "key": "FPW.11-A06.trigger",
       "source": "OSS 구성요소 추가·변경",
       "sourceHash": "ecdf525ad926752a714957d3cdbf7b00431b0fe76970101bc589f112bd3a9290",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "OSS component added or changed"
     },
     {
       "key": "FPW.11-A06.steps.0",
       "source": "추가·변경된 OSS 구성요소의 라이선스 의무를 확인한다",
       "sourceHash": "879e3e67d840323f71e189d957dd0dd07cca63794a898c7e25ec931510310706",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check license obligations for added/changed OSS components"
     },
     {
       "key": "FPW.11-A06.steps.1",
       "source": "라이선스·보안 관리 프로그램 기준에 따라 의무 이행 상태를 기록한다",
       "sourceHash": "798c36d291c74d14bc9fd1d13cf71c79480c6944bab5618ae7f6bf6c6dda6e1d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record fulfillment under license/security management program criteria"
     },
     {
       "key": "FPW.11-A06.steps.2",
       "source": "이행할 수 없는 구성요소는 통합 조직에 교체를 요청한다",
       "sourceHash": "7add5a13a8d2e429cd6d3fdc2e679565ee99d8a385685e4e9388806205582d45",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Ask integration to replace components whose obligations cannot be fulfilled"
     },
     {
       "key": "FPW.11-A06.checks.0",
       "source": "모든 OSS 구성요소의 의무 이행 상태가 기록되었다",
       "sourceHash": "8ef5efc557bf135903b0aa497780e495e510f42e05dca7e4080417e0651faf4d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All OSS components have recorded obligation fulfillment status"
     },
     {
       "key": "FPW.11-A05.name",
@@ -8696,29 +8738,29 @@
       "key": "FPW.11-A05.steps.0",
       "source": "플랫폼·차량 런타임의 TARA·보안 요구·시험·모니터링 결과를 CSMS Evidence로 모은다",
       "sourceHash": "5dc1fe718a283a47ceb2bfe50c480c2fa600b2bde7a942e2f1da87e855dbadff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Collect platform/onboard TARA, security requirements, testing and monitoring results as CSMS Evidence"
     },
     {
       "key": "FPW.11-A05.steps.1",
       "source": "키 사고와 취약점 대응 결과를 Evidence에 연결한다",
       "sourceHash": "bcc349d6621363bb3178159f3b502be7c66df8f234fd171caab979b526add864",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link key incidents and vulnerability responses to Evidence"
     },
     {
       "key": "FPW.11-A05.steps.2",
       "source": "법규 담당과 승인 기관 보고 내용을 확정해 제출한다",
       "sourceHash": "7dd43fde14788823634721985a61d8d5c2daa2afe9630f2c6308a42a21d01f89",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Finalize authority reporting with Regulatory and submit"
     },
     {
       "key": "FPW.11-A05.checks.0",
       "source": "보고 내용의 각 항목이 Evidence ID로 연결되었다",
       "sourceHash": "62f12d38efbef468898feba0dec3ceb240d27bf6e8d87682db95e281bedef9c2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each report item links to an Evidence ID"
     },
     {
       "key": "FPW.11.BP1.name",
@@ -8731,15 +8773,15 @@
       "key": "FPW.11.BP1.definition",
       "source": "명령·정책의 용도별 키 계층과 HSM 보관·사용 조건을 정의한다. 승인 서명과 키 사용의 경계를 확인하고 정기·긴급 교체 및 대장 관리 책임을 정한다.",
       "sourceHash": "596aa90a14f9ebdc954a35b901017a3c7400ec12ae629d859396f318cca2d4a1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define command/policy key hierarchies by purpose and HSM custody/use conditions. Confirm approval-signature and key-use boundaries and assign scheduled/emergency rotation and register ownership."
     },
     {
       "key": "FPW.11.BP1.notes.0",
       "source": "실제 HSM·KMS 운용은 플랫폼 밖 업무다. 시연 서명을 실제 HSM 운용 근거로 취급하지 않는다.",
       "sourceHash": "3b140289ee215088e1e8ea6d0050328462271f19fdb2c9ffa4b014ee6ba40d82",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Actual HSM/KMS operation occurs outside the platform. Demo signatures do not demonstrate actual HSM operation."
     },
     {
       "key": "FPW.11.BP2.name",
@@ -8752,8 +8794,8 @@
       "key": "FPW.11.BP2.definition",
       "source": "외부 키 운영 결과를 플랫폼의 키 용도·상태·검증 이력과 일치시킨다. 교체 사유와 시각을 대장에 반영하고 이전 서명 검증과 신규 사용의 경계를 관계자에게 알린다.",
       "sourceHash": "5117232be03cd747c911b7115737e2db99ae817f2852b78f223793699cac586d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reconcile external key operations with platform key purposes, states and verification history. Update rotation reasons/times and communicate boundaries between verifying previous signatures and new use."
     },
     {
       "key": "FPW.11.BP3.name",
@@ -8766,8 +8808,8 @@
       "key": "FPW.11.BP3.definition",
       "source": "키 유출·오사용의 용도와 영향 차량을 식별하여 사고 대응 범위를 정한다. 필요한 epoch 상향과 통지를 수행하고 추가 안전·보안 차단 판단으로 연결한다.",
       "sourceHash": "a742bb46dc3847447f44eb14bc11f2efffb6de07cf395fe120b1f40cc3b6bc22",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify key compromise/misuse purposes and affected vehicles to define incident response scope. Perform required epoch increases and notifications and link additional safety/security blocking assessment."
     },
     {
       "key": "FPW.11.BP4.name",
@@ -8780,8 +8822,8 @@
       "key": "FPW.11.BP4.definition",
       "source": "취약점을 배포 단위의 SBOM·구성·차량 범위와 대조하여 실제 영향을 판단한다. VEX와 대응 기한을 기록하고 차단·업데이트 등 선택한 조치를 CSMS 운영에 연결한다.",
       "sourceHash": "89381dc6e51fe2cbee4a4e16539a6029ffa1bd4ef6223625ebd6285a2cfd34ea",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare vulnerabilities with deployment SBOM, configuration and vehicle scope to assess actual impact. Record VEX and response deadlines and connect chosen blocking/update actions to CSMS operations."
     },
     {
       "key": "FPW.11.BP5.name",
@@ -8794,8 +8836,8 @@
       "key": "FPW.11.BP5.definition",
       "source": "사용하는 OSS의 라이선스·보안 의무와 변경 영향을 검토한다. 이행 근거와 미충족 사항을 관리하고 수용할 수 없는 구성요소의 대체를 통합 조직에 요청한다.",
       "sourceHash": "809c82e4b0e838db564723191f8044fb5bfd9c16b9da9202333197bfc1296633",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review OSS license/security obligations and change impacts. Manage fulfillment evidence and deficiencies, and request replacement of unacceptable components through integration."
     },
     {
       "key": "FPW.11.BP6.name",
@@ -8808,8 +8850,8 @@
       "key": "FPW.11.BP6.definition",
       "source": "보안 분석·요구·시험·관측·사고 대응 근거를 현재 배포와 연결해 정리한다. 보고 항목과 Evidence의 대응을 확인하고 법규 담당자와 기관 제출 범위를 확정한다.",
       "sourceHash": "39238470202991703782a03f3cc52dfa0b88f71eee1f9d2683e65b98759d46b7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Organize security analysis, requirements, tests, observations and incident responses against current deployments. Check report-to-Evidence mapping and finalize authority submission scope with Regulatory."
     },
     {
       "key": "FPW.11-S1.label",
@@ -8822,22 +8864,22 @@
       "key": "FPW.11-S2.label",
       "source": "키 유출·오사용 징후",
       "sourceHash": "429988f0d81f78ac357f26452745c57dfcbadf83c3f76dd2f8db19365d70c95e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Signs of key compromise or misuse"
     },
     {
       "key": "FPW.11-S3.label",
       "source": "새 취약점 공지",
       "sourceHash": "6ae5299f841e6d6a2ac1804d7318d4d24621b6df50e6290584d527d30bfbe706",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "New vulnerability announcement"
     },
     {
       "key": "FPW.11-S4.label",
       "source": "OSS 구성요소 추가·변경",
       "sourceHash": "ecdf525ad926752a714957d3cdbf7b00431b0fe76970101bc589f112bd3a9290",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "OSS component added or changed"
     },
     {
       "key": "FPW.11-E1.label",
@@ -8871,78 +8913,78 @@
       "key": "FPW.12.ref",
       "source": "표준 보고서 13장(텔레메트리·데이터), 11장 FFG-OFT-003",
       "sourceHash": "7c37837041de7df0afb58f2d94e238c64d2258e1852da6f2678c23a67b4eac79",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report chapter 13 (telemetry/data), chapter 11 FFG-OFT-003"
     },
     {
       "key": "FPW.12.purpose",
       "source": "운행 감시에 쓰는 데이터의 범주·접근·보존을 정하고, 평가 컨텍스트에 개인정보가 들어가지 않게 하며, 시장별 데이터 이전·접근권·보존 의무를 지킨다. 처리 목적과 동의 또는 적법 근거를 검토하고 정보주체 요청의 독립 처리와 감사 연속성을 확인한다.",
       "sourceHash": "5d32292c32af9395ef213426cf97262d5f07ec99cd676d7837360442e261fd0b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define operational-monitoring data categories, access and retention; exclude personal data from evaluation context; comply with market-specific transfer, access and retention obligations. Review purposes and consent or lawful basis, and verify independent data-subject request handling and audit continuity."
     },
     {
       "key": "FPW.12.O1.text",
       "source": "운행 중 감시 지표와 경보 기준이 Safety Case에 맞춰 기록된다.",
       "sourceHash": "c3685108ced432ffc1294be3fcb633e6d5bc478c52317258162083a1b35dc8a9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational metrics and alert criteria are recorded in alignment with the Safety Case."
     },
     {
       "key": "FPW.12.O2.text",
       "source": "Flag 평가 컨텍스트에서 개인정보·위치·주행 상태가 배제된다.",
       "sourceHash": "586c1dda96f92c935495b43cd5cfeec214065648c4875f640d055e3ca4639262",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Personal data, location and driving state are excluded from Flag evaluation context."
     },
     {
       "key": "FPW.12.O3.text",
       "source": "중국 데이터는 현지 처리되고 국외 이전은 심사를 거친다.",
       "sourceHash": "c4db0ecda216bbaad15cdabfb40762d6993db9488540cde8bf1163375e586aea",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "China data is processed locally and cross-border transfers undergo review."
     },
     {
       "key": "FPW.12.O4.text",
       "source": "EU 사용자·제3자 데이터 접근 요청과 OEM 이용 계약 근거가 처리·기록된다.",
       "sourceHash": "eb1995ead2d5c726fef56481b84d482384ffb0c12cc3ed00603deb773ce679ff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "EU user/third-party access requests and OEM data-use contract evidence are processed and recorded."
     },
     {
       "key": "FPW.12.O5.text",
       "source": "범주별 보존 기간이 지난 데이터가 삭제되고 기록된다.",
       "sourceHash": "a4ecabf74c8230aa3dd47695f1d260c18784b1d6dfd9328ca48d85e10d8b7f3e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Data past category-specific retention periods is deleted and recorded."
     },
     {
       "key": "FPW.12.O6.text",
       "source": "개인정보 처리 목적·동의 또는 적법 근거·보존·접근 범위가 검토되고 미확정 사항이 식별된다.",
       "sourceHash": "ed6598bb02575f5f84ad5c805c30d04c7b9d155f39fbdd4468c898e9e2ca5e2d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Processing purpose, consent or lawful basis, retention and access scope are reviewed and unresolved items identified."
     },
     {
       "key": "FPW.12.O7.text",
       "source": "정보주체 내보내기·삭제/가명화 요청과 독립 실행·거절 결과가 감사 연속성을 보존하며 추적된다.",
       "sourceHash": "aa0bfc61632c902a63d361a6821087c2101bbd2b7b4da73150b0749bcc4ef514",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Data-subject export/deletion/pseudonymization requests, independent execution and rejection results are tracked with audit continuity."
     },
     {
       "key": "FPW.12.entry.0",
       "source": "Feature가 운영 데이터 수집 범위에 등록되어 있다",
       "sourceHash": "11c31bc1f800892e3b6f773afc7a5d2986897900cc4fd0d17bf822885030aa83",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature is registered for operational data collection"
     },
     {
       "key": "FPW.12.exit.0",
       "source": "감시 지표·데이터 범주·보존 기간이 정해지고 접근·이전·삭제 기록이 남았다",
       "sourceHash": "982fde2b7b7770da3b058d7528d72ebfac91b9c5007b800f1071d53d65bcbd24",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Monitoring metrics, data categories and retention are defined; access, transfer and deletion records exist"
     },
     {
       "key": "FPW.12.WP-KPI-PLAN.name",
@@ -8955,15 +8997,15 @@
       "key": "FPW.12.WP-KPI-PLAN.content.0",
       "source": "Safety Case 주장과 연결한 운행 감시 지표",
       "sourceHash": "01ba8b98bc3b2ff701e799940ce561d3be8a926dbd985f0dfaad1a38b5f5df6d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational metrics linked to Safety Case claims"
     },
     {
       "key": "FPW.12.WP-KPI-PLAN.content.1",
       "source": "지표별 경보 기준과 데이터 범주",
       "sourceHash": "ad39b1ee57ce46744e517f094fc39defa2970057d2b5b411cbb90bc2c5ef3022",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Alert criteria and data category per metric"
     },
     {
       "key": "FPW.12.WP-CONTEXT-REVIEW.name",
@@ -8976,15 +9018,15 @@
       "key": "FPW.12.WP-CONTEXT-REVIEW.content.0",
       "source": "허용 속성(가명 차량 ID 등)과 금지 속성 목록",
       "sourceHash": "fd21a951f37cc1d11b3567972608ebda2a6e7b059be46bc3dd253390d7914735",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Allowed attributes (such as pseudonymous vehicle ID) and prohibited attributes"
     },
     {
       "key": "FPW.12.WP-CONTEXT-REVIEW.content.1",
       "source": "금지 속성 거부 시험 결과",
       "sourceHash": "37fddf03d6ecc6c4ed7d96755a7fdd689b429ccd634e2c5ca5396612eedb9482",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Prohibited-attribute rejection test results"
     },
     {
       "key": "FPW.12.WP-DATA-TRANSFER.name",
@@ -8997,15 +9039,15 @@
       "key": "FPW.12.WP-DATA-TRANSFER.content.0",
       "source": "중요 데이터 식별 결과와 현지 처리 위치",
       "sourceHash": "bf63db6d6e2772e9f0d30a20630a23aff4b024344af24c4473d715442bdbbc08",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Important-data identification and local processing locations"
     },
     {
       "key": "FPW.12.WP-DATA-TRANSFER.content.1",
       "source": "이전 경로별 심사 방식(안전 평가·표준 계약·인증)",
       "sourceHash": "e431fa2b3562e4961dcee7c0d837a7114610ac46724bc1a4851c2e951801db66",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review mechanism per transfer route (security assessment, standard contract, certification)"
     },
     {
       "key": "FPW.12.WP-DATA-ACCESS.name",
@@ -9018,15 +9060,15 @@
       "key": "FPW.12.WP-DATA-ACCESS.content.0",
       "source": "요청자·대상 차량·제공한 Feature 상태·이력",
       "sourceHash": "1f9ffee689974b29ac67143afea0eb0cbf82c0657dc8fcddd99c79193ab9461f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requester, target vehicles, provided Feature status/history"
     },
     {
       "key": "FPW.12.WP-DATA-ACCESS.content.1",
       "source": "OEM 비개인 데이터 이용 계약 근거 문서 ID",
       "sourceHash": "f29df2615d0d55d6a53b05afc82881d7c161aab752f22020711fa3555dc7e068",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "OEM non-personal data-use contract evidence document ID"
     },
     {
       "key": "FPW.12.WP-RETENTION-LOG.name",
@@ -9039,15 +9081,15 @@
       "key": "FPW.12.WP-RETENTION-LOG.content.0",
       "source": "범주별 삭제 건수와 시각",
       "sourceHash": "bc9242ef9de560b9b39e29c084afdd75728f961181b840f66dca04a5aefb9592",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Deletion count and time by category"
     },
     {
       "key": "FPW.12.WP-RETENTION-LOG.content.1",
       "source": "열린 Incident·이상 건에 연결되어 보류한 데이터",
       "sourceHash": "13b1b795bfbd3ae084e8ea45d34dd7d59106765775f2f8bfd2153283d12a37dd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Data held because it links to open Incidents/anomalies"
     },
     {
       "key": "FPW.12.WP-PRIVACY-REVIEW.name",
@@ -9060,15 +9102,15 @@
       "key": "FPW.12.WP-PRIVACY-REVIEW.content.0",
       "source": "처리 목적·최소 항목·정보주체·동의 또는 적법 근거의 원본 참조",
       "sourceHash": "767d4cec6185f49e624b3d3c97b474fb03d7afc0fb0d3a00499e90ec34bccefc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Original references for purpose, minimum fields, data subjects and consent/lawful basis"
     },
     {
       "key": "FPW.12.WP-PRIVACY-REVIEW.content.1",
       "source": "접근·보존·국외 이전 제한·검토 담당자·미확정 사항",
       "sourceHash": "594ac1f2eed4df46a49f8b46507147a70cbc7faaa9aba64fb55d7297315d63ad",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Access, retention, cross-border restrictions, reviewer and unresolved items"
     },
     {
       "key": "FPW.12.WP-PRIVACY-REQ.name",
@@ -9081,15 +9123,15 @@
       "key": "FPW.12.WP-PRIVACY-REQ.content.0",
       "source": "검증된 요청자·대상 사용자/차량과 요청 종류",
       "sourceHash": "8d6b7ed56eaf9d7f2fdacb00adef5a1f1d5b3628af8de9b695ec57fce5f26e16",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verified requester, target user/vehicle and request type"
     },
     {
       "key": "FPW.12.WP-PRIVACY-REQ.content.1",
       "source": "대상 저장소·미리 집계한 행·요청 사유와 요청자",
       "sourceHash": "bff866c273200498687999a3fb17548fa23631295169325edfb7318cdf7c599f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target stores, pre-counted rows, purpose and requester"
     },
     {
       "key": "FPW.12.WP-PRIVACY-RESULT.name",
@@ -9102,15 +9144,15 @@
       "key": "FPW.12.WP-PRIVACY-RESULT.content.0",
       "source": "요청자와 다른 실행자·근거·처리/거절 시각",
       "sourceHash": "7a45299cde78db9cedbdf7c312a3d153f1fbe0976c4448fa5e24afe3fd82f6fb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Executor distinct from requester, evidence and processing/rejection time"
     },
     {
       "key": "FPW.12.WP-PRIVACY-RESULT.content.1",
       "source": "내보내기 또는 삭제/가명화 결과·Lake 위임 상태·감사 체인 보존",
       "sourceHash": "36b6bb16c7256505f5f831388da2e01c621938d8b880fac88dc6cd79480c3f52",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Export or deletion/pseudonymization result, Lake delegation status and audit-chain preservation"
     },
     {
       "key": "FPW.12-A01.name",
@@ -9123,29 +9165,29 @@
       "key": "FPW.12-A01.steps.0",
       "source": "Safety Case 주장과 연결되는 운행 감시 지표를 고른다",
       "sourceHash": "cad405ab0817fcb6e4cc30321170e9423bec3541668df847d5f25cb650b9f057",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Select operational metrics linked to Safety Case claims"
     },
     {
       "key": "FPW.12-A01.steps.1",
       "source": "지표마다 경보 기준과 데이터 범주(목적별 접근 권한·보존 기간)를 정한다",
       "sourceHash": "e96a658735f3e8ce2d8a9fa4ef9b71794c19339b7eea3a7901c0ba81931084eb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define alert criteria and data category (purpose-specific access/retention) per metric"
     },
     {
       "key": "FPW.12-A01.steps.2",
       "source": "기준을 추가 기록으로 남기고 운영 조직에 감시를 맡긴다",
       "sourceHash": "91e8a1bc5c035de7af8e100be48f616b7c86c1050d2b61347ae3509ca9dbf4fc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retain criteria as additional records and hand monitoring to operations"
     },
     {
       "key": "FPW.12-A01.checks.0",
       "source": "지표마다 경보 기준과 데이터 범주가 있다",
       "sourceHash": "37ce64547121f23ee73aabbb21bf567887f1fee34ec767694742328ede14f977",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every metric has alert criteria and a data category"
     },
     {
       "key": "FPW.12-A03.name",
@@ -9158,36 +9200,36 @@
       "key": "FPW.12-A03.trigger",
       "source": "중국 시장 출시 또는 국외 조회 요청",
       "sourceHash": "3d9325293f349b2b9893952f00177e887134e53878a6e0ea6d6af30884635580",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "China-market release or cross-border query request"
     },
     {
       "key": "FPW.12-A03.steps.0",
       "source": "텔레메트리·OTA 데이터 중 중요 데이터를 식별하고 현지 처리 위치를 정한다",
       "sourceHash": "f943140419bba1e1354bb576ad9c63a3009cff7a08aec84d4966e541a365f598",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify important telemetry/OTA data and specify local processing locations"
     },
     {
       "key": "FPW.12-A03.steps.1",
       "source": "국외 이전(국외 조회 포함) 경로마다 안전 평가·표준 계약·인증 중 하나를 거친다",
       "sourceHash": "6c9ae1c380364b0d20f6df6a926ec829c1049efe1cf0b1422ebe4dce5e9faa6e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review every cross-border transfer route, including overseas queries, through security assessment, standard contract or certification"
     },
     {
       "key": "FPW.12-A03.steps.2",
       "source": "심사 결과를 기록하고 운영 조직에 허용 경로를 알린다",
       "sourceHash": "9e0895267253ba3110935384ede5e8944815f3f4b01cefa31acbcbc76641af67",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record review results and notify operations of permitted routes"
     },
     {
       "key": "FPW.12-A03.checks.0",
       "source": "모든 국외 이전 경로에 심사 방식과 결과가 있다",
       "sourceHash": "8dd39bdb826152c96405c72b6519c9134c11b306e36df749bceade394b9dea54",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every cross-border route has a review mechanism and result"
     },
     {
       "key": "FPW.12-A04.name",
@@ -9200,36 +9242,36 @@
       "key": "FPW.12-A04.trigger",
       "source": "EU 차량 사용자·제3자 데이터 접근 요청",
       "sourceHash": "8a810c1d9911d78089065077ecccc27d2bd8c8a70b34ecfa9de79bf8eea42843",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "EU vehicle user or third-party data-access request"
     },
     {
       "key": "FPW.12-A04.steps.0",
       "source": "요청자와 대상 차량을 확인하고 Feature 상태·이력 데이터를 제공한다",
       "sourceHash": "787391c236093bb262c24e7b18cf971ca013a6f98fbf11c304575b0e4443648e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify requester and target vehicle and provide Feature status/history data"
     },
     {
       "key": "FPW.12-A04.steps.1",
       "source": "제3자 공유 요청이면 사용자 동의와 공유 절차를 확인한다",
       "sourceHash": "5e5e3f42998e1bc152a2a853de908cebe4accda8b87ba60a39fe78a74f6adac8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check user consent and sharing procedures for third-party requests"
     },
     {
       "key": "FPW.12-A04.steps.2",
       "source": "OEM이 비개인 데이터를 쓰는 경우 법무가 검토한 이용 계약 근거 문서 ID를 등록한다",
       "sourceHash": "905151f4cda426719833fe478628d8c4e17affaa42773584a4530bb76d6532cd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For OEM use of non-personal data, register the Legal-reviewed data-use contract document ID"
     },
     {
       "key": "FPW.12-A04.checks.0",
       "source": "요청마다 제공 내용과 계약 근거가 기록되었다",
       "sourceHash": "8cd87bebd3439c848cce8f2a50011040ce2727ad6ece4ef23d706d53cb54e784",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every request records provided content and contractual evidence"
     },
     {
       "key": "FPW.12-A02.name",
@@ -9242,36 +9284,36 @@
       "key": "FPW.12-A02.trigger",
       "source": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
       "sourceHash": "f8b57e2e55ed0aeca6a277a5ea32a30aaf872c0f6c0c0a3428ccd2b51451d11c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Evaluation context changes through policy creation/change"
     },
     {
       "key": "FPW.12-A02.steps.0",
       "source": "정책의 targeting key가 가명 차량 ID인지 확인한다",
       "sourceHash": "dcffcdade17882cfd069690b79f39f1e7fda4799aad22171e3ce9cca8fd5ebf5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm the policy targeting key is a pseudonymous vehicle ID"
     },
     {
       "key": "FPW.12-A02.steps.1",
       "source": "위치·운전자 식별·연락처·차량 동적 상태가 평가 컨텍스트에 들어가지 않는지 검토한다",
       "sourceHash": "e21de425ebef35fe463fd9745692becab42f7176e98a8a2287f551c3147ab800",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review that evaluation context excludes location, driver identity, contact details and dynamic vehicle state"
     },
     {
       "key": "FPW.12-A02.steps.2",
       "source": "금지 속성이 들어오면 평가 전에 거부되는지 시험 결과를 확인한다",
       "sourceHash": "80e36fc472cd1918a022520be82e817a92cae20520d7409fe6cf8651bd798e03",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check test results showing prohibited attributes are rejected before evaluation"
     },
     {
       "key": "FPW.12-A02.checks.0",
       "source": "금지 속성 거부 시험이 통과했다",
       "sourceHash": "819ff9b7c41eadf7bac9b7f72e38453341b2d478048142f8fb328bffcb5204df",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Prohibited-attribute rejection tests pass"
     },
     {
       "key": "FPW.12-A05.name",
@@ -9284,36 +9326,36 @@
       "key": "FPW.12-A05.trigger",
       "source": "정기 보존 기간 점검",
       "sourceHash": "8652cbaf4b7274ff9b49833ac40bb0087adff8f934abcdcb063ecb25e54e864d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled retention review"
     },
     {
       "key": "FPW.12-A05.steps.0",
       "source": "데이터 범주별 보존 기간이 지난 행을 찾는다",
       "sourceHash": "7d2c9b11a6b8c6c6bf34d1bb720ebe0a17d313635ccc03b23aba18bdad101811",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify rows past category-specific retention periods"
     },
     {
       "key": "FPW.12-A05.steps.1",
       "source": "열린 Incident·이상 건에 연결된 데이터는 삭제에서 제외한다",
       "sourceHash": "96160d2dac8ad5da86300f48ec84c9a8131dbc72f73cde03b93eb7c9765b8b2f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Exclude data linked to open Incidents/anomalies from deletion"
     },
     {
       "key": "FPW.12-A05.steps.2",
       "source": "삭제를 실행하고 범주별 삭제 기록을 남긴다",
       "sourceHash": "2c44dcbf7743b190325bd5ed769d5f60d2dc4796583243c6bed66169f6397adf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Execute deletion and record category-specific results"
     },
     {
       "key": "FPW.12-A05.checks.0",
       "source": "삭제 기록에 범주별 건수와 보류 사유가 있다",
       "sourceHash": "6a348c5b1d6662ecbba5f1ad6ae1466bd5934096ee8f9478be38af05bab7f1e4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Deletion records include category counts and hold reasons"
     },
     {
       "key": "FPW.12-A06.name",
@@ -9326,43 +9368,43 @@
       "key": "FPW.12-A06.trigger",
       "source": "새 처리 목적 또는 처리 범위 변경",
       "sourceHash": "f8a3754a52cd258e439210755d719717d13773670985b3650807f55f28ed4219",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "New processing purpose or changed processing scope"
     },
     {
       "key": "FPW.12-A06.steps.0",
       "source": "수집·이용 목적과 최소 데이터 및 정보주체 범위를 식별한다",
       "sourceHash": "e6d96f65faba18042935aa851ae6282ead329c3ca221dac1aeb3eb56af9880a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify collection/use purposes, minimum data and data-subject scope"
     },
     {
       "key": "FPW.12-A06.steps.1",
       "source": "동의 또는 적용 가능한 처리 근거의 원본과 보존·접근·이전 제한을 법무와 검토한다",
       "sourceHash": "3c41cf69121acf3d235148427659a400f8062f86e4a2e9c46be4766ca2dbbd84",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review original consent/applicable-basis evidence and retention, access and transfer restrictions with Legal"
     },
     {
       "key": "FPW.12-A06.steps.2",
       "source": "확정된 범위와 미확정 항목을 보안·운영 담당자에게 인계한다",
       "sourceHash": "1214ca1aa7f6577bd27a2a49192dd8d80b00661a71c94cd20caacf3cb17e1639",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand confirmed scope and unresolved items to Security/Operations"
     },
     {
       "key": "FPW.12-A06.checks.0",
       "source": "화면 조회나 데모 값으로 동의 획득을 대신하지 않는다",
       "sourceHash": "823658c8de4df927315cf9510d743f028d4cbaef6326bd55fe80d95f62dbdd6d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Viewing a screen or demo value does not substitute for obtaining consent"
     },
     {
       "key": "FPW.12-A06.checks.1",
       "source": "적용 시장과 실제 검토 근거를 식별한다",
       "sourceHash": "6eb0beca17ef2cbed56784fb74a4fcc0c6697b77e123debe8d865d8ec77b4640",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify applicable markets and actual review evidence"
     },
     {
       "key": "FPW.12-A07.name",
@@ -9375,36 +9417,36 @@
       "key": "FPW.12-A07.steps.0",
       "source": "요청 주체와 대상 사용자·차량 및 처리 목적을 확인한다",
       "sourceHash": "bab6e013c35eb1b950a53b8898dfa9b450faca5c4d41df6738e17e4acdd9f4ad",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify requester, target user/vehicle and processing purpose"
     },
     {
       "key": "FPW.12-A07.steps.1",
       "source": "개인정보 목록에서 대상 저장소와 예상 행 및 보존 예외를 확인한다",
       "sourceHash": "f9b994a511e141a18d739bc90426af4f0472059ae519aecee9fb808edfed5493",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check target stores, estimated rows and retention exceptions in the personal-data inventory"
     },
     {
       "key": "FPW.12-A07.steps.2",
       "source": "내보내기 또는 삭제·가명화 요청과 사유를 기록하고 독립 실행자에게 인계한다",
       "sourceHash": "61adb34a5725abe46e98f8e7e1fb920257e779b2300b92b5f55b7e8f9be92efc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record the export or deletion/pseudonymization request and reason and hand it to an independent executor"
     },
     {
       "key": "FPW.12-A07.checks.0",
       "source": "대상 식별자와 목적을 무단 확대하지 않는다",
       "sourceHash": "a85e2de4b5300044b52f9dd7a943e7758ce5b10c5f61c7259c7ab66c1c7a8eb9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not expand target identifiers or purposes without authorization"
     },
     {
       "key": "FPW.12-A07.checks.1",
       "source": "요청 접수를 실제 삭제 완료로 표시하지 않는다",
       "sourceHash": "04bf4bdde096dd95523b703275dd71c4731533f8412573e722d11de72252994b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not display request acceptance as completed deletion"
     },
     {
       "key": "FPW.12-A08.name",
@@ -9417,36 +9459,36 @@
       "key": "FPW.12-A08.steps.0",
       "source": "삭제·가명화 실행자는 요청자와 다른 사람인지 확인한다",
       "sourceHash": "9bb266332274aa41be1ab7bc369e4d61fe0eec9e47a7ebae2baa0d718a957548",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm deletion/pseudonymization executor differs from requester"
     },
     {
       "key": "FPW.12-A08.steps.1",
       "source": "보존 예외와 목적을 검토하여 허용된 내보내기·실행 또는 사유 있는 거절을 수행한다",
       "sourceHash": "2ca454a0e649080fd619f186f39a4e444567cb265b0b8d68d277bc49cdbe162e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review retention exceptions and purposes, then perform permitted export/execution or reasoned rejection"
     },
     {
       "key": "FPW.12-A08.steps.2",
       "source": "처리 행·Lake 위임 상태와 감사 체인을 확인하고 미완료 항목을 인계한다",
       "sourceHash": "c9a09adfe0784a1396c8471e6962a84a91862a8ca01989977e507c436b295e8d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check processed rows, Lake delegation status and audit chain and hand off incomplete items"
     },
     {
       "key": "FPW.12-A08.checks.0",
       "source": "삭제·가명화 요청자 자기 실행이 차단된다",
       "sourceHash": "72f8fa127a674bf0bd1249869044196bc2f815aada534a8ec2b402b88f22b1bb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requester self-execution of deletion/pseudonymization is blocked"
     },
     {
       "key": "FPW.12-A08.checks.1",
       "source": "Lake 요청 전송과 외부 삭제 완료를 구분한다",
       "sourceHash": "a49bdf4618d7997707f69d744069d187b578f90f0c6d6099ca23b2ffafbd840d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish Lake request transmission from completed external deletion"
     },
     {
       "key": "FPW.12.BP1.name",
@@ -9459,8 +9501,8 @@
       "key": "FPW.12.BP1.definition",
       "source": "Safety Case와 연결되는 운행 감시 목적과 지표·경보 기준을 정한다. 데이터 범주·접근·보존 조건을 기록하고 운영 담당자가 기준에 따라 감시하도록 인계한다.",
       "sourceHash": "b60290cb4f10a661e92f6b30e82875c2ec254df42aa78dbf05f127423a5f8e95",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define monitoring purposes, metrics and alert criteria linked to the Safety Case. Record data categories, access and retention conditions and hand monitoring to operations against those criteria."
     },
     {
       "key": "FPW.12.BP2.name",
@@ -9473,15 +9515,15 @@
       "key": "FPW.12.BP2.definition",
       "source": "적용 시장의 데이터 범주와 처리·조회·이전 경로를 식별한다. 법무가 정한 심사 방식과 결과를 기록하고 허용되지 않거나 미확정인 경로를 운영 범위에서 구분한다.",
       "sourceHash": "e357e6311e679d9940515a3a5d5290c03d7d91c9af8864578a977b6d5b96e377",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify market-specific data categories and processing/query/transfer routes. Record Legal-defined review mechanisms and results; distinguish disallowed or unresolved routes from permitted operations."
     },
     {
       "key": "FPW.12.BP2.notes.0",
       "source": "이 업무 정의는 특정 법규의 현재 적용 여부나 국외 이전 승인을 대신하지 않는다.",
       "sourceHash": "d19328d0da57464c21f437dd4795f2b555eb385f0759b4374058ef18f630af16",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "This workflow definition does not establish current applicability of a specific law or grant cross-border transfer approval."
     },
     {
       "key": "FPW.12.BP3.name",
@@ -9494,8 +9536,8 @@
       "key": "FPW.12.BP3.definition",
       "source": "요청자의 권한과 대상 차량·제공 범위를 확인하여 데이터 접근 요청을 처리한다. 동의·공유·이용 계약의 근거와 실제 제공 결과를 기록해 요청과 처리를 추적한다.",
       "sourceHash": "e7cc0995defca5824713afbdfb17a29182d6ac1ac8b6fd3853c3c0932b278f8c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify requester authority, vehicle and provision scope when handling access requests. Record consent, sharing/data-use contractual evidence and actual provision results to trace requests and processing."
     },
     {
       "key": "FPW.12.BP4.name",
@@ -9508,8 +9550,8 @@
       "key": "FPW.12.BP4.definition",
       "source": "평가 목적과 컨텍스트 속성을 검토하여 가명 식별과 금지 정보의 경계를 확인한다. 평가 이전의 거부 시험과 검토 근거를 보존하고 부적절한 수집·사용을 보완하도록 한다.",
       "sourceHash": "1c7feac18eee6e194ff736e2634a0e886054e5cc35e73f9c0982aa81c41a658f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review evaluation purposes and context attributes to distinguish pseudonymous identifiers from prohibited information. Retain pre-evaluation rejection tests and review evidence and correct inappropriate collection/use."
     },
     {
       "key": "FPW.12.BP5.name",
@@ -9522,8 +9564,8 @@
       "key": "FPW.12.BP5.definition",
       "source": "데이터 범주별로 정해진 보존·삭제 조건과 조사 보류 사유를 확인한다. 대상과 예외를 구분하여 처리를 수행하고 삭제 건수·보류·책임을 기록한다.",
       "sourceHash": "6eaa713a58697337fdbc147883aaaffa6758624e6b764557ad35cabe70569feb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check category-specific retention/deletion conditions and investigation holds. Distinguish targets and exceptions, perform processing and record deletion counts, holds and accountability."
     },
     {
       "key": "FPW.12.BP6.name",
@@ -9536,8 +9578,8 @@
       "key": "FPW.12.BP6.definition",
       "source": "개인정보의 목적·최소 항목·동의 또는 적법 근거와 보존·접근·이전 제한을 검토하여 실행 담당자에게 인계한다. 이 레퍼런스 정의는 고객 동의 수집이나 법률 적합성 승인을 생성하지 않는다.",
       "sourceHash": "9c50621bf8cec52e93679125095cba2a04109767f554ecf3b15f611e005696e5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review purposes, minimum personal data, consent/lawful basis and retention/access/transfer restrictions and hand them to executors. This reference definition does not collect customer consent or create legal compliance approval."
     },
     {
       "key": "FPW.12.BP7.name",
@@ -9550,8 +9592,8 @@
       "key": "FPW.12.BP7.definition",
       "source": "정보주체 요청의 신원·대상·목적을 확인하고 저장소별 처리 범위를 집계하여 요청을 기록한다. 내보내기·삭제·가명화와 보존 예외를 구분해 실제 실행 또는 거절 판단에 인계한다.",
       "sourceHash": "5148603f842b248470ec5bd8366f37389be19c49106c7b7f36df58a46573d9b0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify data-subject request identity, targets and purpose and aggregate processing scope per store. Distinguish export, deletion, pseudonymization and retention exceptions for execution/rejection decisions."
     },
     {
       "key": "FPW.12.BP8.name",
@@ -9564,15 +9606,15 @@
       "key": "FPW.12.BP8.definition",
       "source": "허용된 내보내기와 삭제·가명화 또는 거절을 근거에 따라 수행하고 결과를 확인한다. 삭제·가명화는 요청자와 다른 보안 담당자가 실행하며 가명화 후 감사 연속성과 외부 Lake 미완료 상태를 보존한다.",
       "sourceHash": "3be332b6f13a6e9c4b8f7a5e62fb6d490bf6a085c288324b88812d936eef12fb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Perform permitted export, deletion/pseudonymization or rejection based on evidence and verify results. A Security person distinct from the requester executes deletion/pseudonymization; preserve audit continuity and incomplete external Lake status."
     },
     {
       "key": "FPW.12.BP8.notes.0",
       "source": "같은 조직 역할의 서로 다른 사람이 요청·실행을 맡는다. 문서의 RACI만으로 사람 분리를 충족했다고 판정하지 않는다.",
       "sourceHash": "ed6e4cb050cc6eacad6c7e0662091667c3a864f5974a593f8fc9bc0ef1d8184d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Different people in the same organizational role request and execute. Documented RACI alone does not prove person-level separation."
     },
     {
       "key": "FPW.12-S1.label",
@@ -9585,36 +9627,36 @@
       "key": "FPW.12-S2.label",
       "source": "중국 시장 출시 또는 국외 조회 요청",
       "sourceHash": "3d9325293f349b2b9893952f00177e887134e53878a6e0ea6d6af30884635580",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "China-market release or cross-border query request"
     },
     {
       "key": "FPW.12-S3.label",
       "source": "EU 차량 사용자·제3자 데이터 접근 요청",
       "sourceHash": "8a810c1d9911d78089065077ecccc27d2bd8c8a70b34ecfa9de79bf8eea42843",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "EU vehicle user or third-party data-access request"
     },
     {
       "key": "FPW.12-S4.label",
       "source": "정책 작성·변경으로 평가 컨텍스트가 바뀔 때",
       "sourceHash": "f8b57e2e55ed0aeca6a277a5ea32a30aaf872c0f6c0c0a3428ccd2b51451d11c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Evaluation context changes through policy creation/change"
     },
     {
       "key": "FPW.12-S5.label",
       "source": "정기 보존 기간 점검",
       "sourceHash": "8652cbaf4b7274ff9b49833ac40bb0087adff8f934abcdcb063ecb25e54e864d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled retention review"
     },
     {
       "key": "FPW.12-S6.label",
       "source": "새 처리 목적 또는 처리 범위 변경",
       "sourceHash": "f8a3754a52cd258e439210755d719717d13773670985b3650807f55f28ed4219",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "New processing purpose or changed processing scope"
     },
     {
       "key": "FPW.12-E1.label",
@@ -9669,57 +9711,57 @@
       "key": "FPW.13.ref",
       "source": "표준 보고서 2장(규정·표준 관리), 3장(ADS 규정), 7.10절(거버넌스)",
       "sourceHash": "23e5581cd097d3f276b31afba1850d20f18948394b3cc5d747548195af9e8562",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report chapter 2 (regulation/standards management), chapter 3 (ADS regulations), section 7.10 (governance)"
     },
     {
       "key": "FPW.13.purpose",
       "source": "프로젝트가 따를 표준 판을 고정하고, 시장별 적용 법규·필수 Evidence·게이트 파라미터를 버전 관리되는 Compliance Profile로 운영하며, 원격 종료 절차를 시스템 설명 문서에 운영 절차와 같은 내용으로 적는다.",
       "sourceHash": "3e004dd32e83151aaf7c16cd231b23cde7137d6fc95c639e06ef6be6d1b2bca8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Pin project standard editions and manage market-specific regulations, required Evidence and Gate parameters in versioned Compliance Profiles. Keep remote termination procedures in the system description aligned with operating procedures."
     },
     {
       "key": "FPW.13.O1.text",
       "source": "ISO 26262·21448·21434의 판이 프로젝트 단위로 고정된다.",
       "sourceHash": "4902356edb96592e51b986b7cd666ca86d8ef5d37c53bca7e16a07d9f04f6a03",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ISO 26262, 21448 and 21434 editions are pinned per project."
     },
     {
       "key": "FPW.13.O2.text",
       "source": "시장별 Compliance Profile이 정의되고 모든 정책·명령이 그 버전을 기록한다.",
       "sourceHash": "72e698f3b06d0d28e2970e0e8372c86d569de83d339db32251ebd04e3748f413",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Market Compliance Profiles are defined and all policies/commands record their Version."
     },
     {
       "key": "FPW.13.O3.text",
       "source": "분기마다 표준·법규 개정이 점검되어 Profile이 갱신된다.",
       "sourceHash": "23b0fc6f124cd26df9c7f4006dc456e67e5dee502112fd61fedef1d64396034d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Quarterly standards/regulatory revision reviews update Profiles."
     },
     {
       "key": "FPW.13.O4.text",
       "source": "원격 종료·복원 절차가 시스템 설명 문서에 운영 절차와 같게 적힌다.",
       "sourceHash": "23a3174ddbeff41d99b93d1b2963460f1ea9f4fba6b402cfd8f0e4ccefcbc3e3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Remote termination/restoration procedures in system descriptions match operating procedures."
     },
     {
       "key": "FPW.13.entry.0",
       "source": "프로젝트의 대상 시장과 차종이 정해졌다",
       "sourceHash": "f5ebe58b8567a08a2ded3081bb42c45ead2f4e1fbfb97890371e7968ecbde0d2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Project target markets and vehicle models are defined"
     },
     {
       "key": "FPW.13.exit.0",
       "source": "표준 판·Compliance Profile·시스템 설명이 최신 버전으로 승인되어 있다",
       "sourceHash": "375ee6af8cc3a4a8a65ab9af4042572db4919eb3d9ba47ee33beb6ec234d1cec",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Current standard editions, Compliance Profiles and system descriptions are approved"
     },
     {
       "key": "FPW.13.WP-REG-SOURCES.name",
@@ -9732,15 +9774,15 @@
       "key": "FPW.13.WP-REG-SOURCES.content.0",
       "source": "시장별 법규 최종 법문과 발효·적용일",
       "sourceHash": "84336b988a742a8a8769bd1943fc15df5f70c3f82ac02b834f814676b1551321",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Final market-specific legal texts and effective/applicability dates"
     },
     {
       "key": "FPW.13.WP-REG-SOURCES.content.1",
       "source": "표준 판과 개정 예고",
       "sourceHash": "eeca378581280f5b871fe6f5a9b8f35760bb36aae2e916370d0616b214a30c7f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standard editions and revision notices"
     },
     {
       "key": "FPW.13.WP-STANDARD-EDITIONS.name",
@@ -9753,15 +9795,15 @@
       "key": "FPW.13.WP-STANDARD-EDITIONS.content.0",
       "source": "ISO 26262·ISO 21448·ISO/SAE 21434의 적용 판",
       "sourceHash": "30125a6f783bb19ba4ae53b5d66042fde36de0ac7e3077abeecc8d7d8f41eca3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Applicable editions of ISO 26262, ISO 21448 and ISO/SAE 21434"
     },
     {
       "key": "FPW.13.WP-STANDARD-EDITIONS.content.1",
       "source": "정식 발행 전 개정 요구를 Gate 판정 기준에서 뺀다는 표시",
       "sourceHash": "4a36528a691d38b678b0d07c88704be5eeb2f78f815671c50a14372d0ed9ceab",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Indication that unpublished revision requirements are excluded from Gate decision criteria"
     },
     {
       "key": "FPW.13.WP-COMPLIANCE-PROFILE.name",
@@ -9774,22 +9816,22 @@
       "key": "FPW.13.WP-COMPLIANCE-PROFILE.content.0",
       "source": "시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터",
       "sourceHash": "5ce0b2be34ea7fe69804e3f8bcc0b1b6dce94ef150df4d791d065e38bb30ba82",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Market-specific regulations, mandatory functions, required Evidence and Gate parameters"
     },
     {
       "key": "FPW.13.WP-COMPLIANCE-PROFILE.content.1",
       "source": "ADS 규정의 국내 도입·발효 상태와 최종 법문 대조 결과",
       "sourceHash": "a64e7da05ef2de5075d27cea4e4e26d1eb64eb871a7c83461d25935c2a3e547b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Domestic adoption/effectiveness of ADS regulations and comparison with final legal text"
     },
     {
       "key": "FPW.13.WP-COMPLIANCE-PROFILE.content.2",
       "source": "Profile 버전과 갱신 이력, '검증 필요' 항목과 해소 기한",
       "sourceHash": "09aa7b0415a4e6884096ab426f6d7735fc49c27b61451e86f7f28a8e15a91610",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Profile Version/update history, items requiring verification and resolution deadlines"
     },
     {
       "key": "FPW.13.WP-SYSTEM-DESCRIPTION.name",
@@ -9802,15 +9844,15 @@
       "key": "FPW.13.WP-SYSTEM-DESCRIPTION.content.0",
       "source": "원격 종료·복원 방법과 발동 사유·승인자·긴급 권한·해제 기준",
       "sourceHash": "47527ba720ff3e9ceb988681af5e42b87a79518eea09c28de58e2beab03a7c73",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Remote termination/restoration methods, triggering reasons, approvers, emergency authority and release criteria"
     },
     {
       "key": "FPW.13.WP-SYSTEM-DESCRIPTION.content.1",
       "source": "시장별 차이와 운영 절차(FPW.8)와의 대응",
       "sourceHash": "bf056dc3609dc8f299d7689d3991ce34aaf529305f5ae60a2899312ac0e7e843",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Market differences and mapping to operating procedures (FPW.8)"
     },
     {
       "key": "FPW.13-A01.name",
@@ -9823,29 +9865,29 @@
       "key": "FPW.13-A01.steps.0",
       "source": "프로젝트가 따를 ISO 26262·ISO 21448·ISO/SAE 21434의 판을 정해 Safety Plan에 적는다",
       "sourceHash": "b50ba70a2dae1d252e4ea351f619eaea66529e94473b46df53f2eb27928e2c81",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Select project ISO 26262, ISO 21448 and ISO/SAE 21434 editions and record them in the Safety Plan"
     },
     {
       "key": "FPW.13-A01.steps.1",
       "source": "정식 발행 전 개정판의 요구는 참고로만 두고 Gate 판정 기준에서 뺀다",
       "sourceHash": "a93e7620aec7fd55c5154af3652474a0778f4cd34003e0868d5c717ff08d3b89",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Treat unpublished revision requirements as reference only and exclude them from Gate criteria"
     },
     {
       "key": "FPW.13-A01.steps.2",
       "source": "고정한 판을 법규 담당과 CSM에게 알려 Profile과 CSMS에 맞춘다",
       "sourceHash": "d32b43c544d845af3244d7661f1004aea39483cdb889519c6a5381a03d0a5ec1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Notify Regulatory and CSM of pinned editions to align Profiles and CSMS"
     },
     {
       "key": "FPW.13-A01.checks.0",
       "source": "Safety Plan에 세 표준의 적용 판이 적혀 있다",
       "sourceHash": "37fcc1e81dec50bf773949ff7e86918c75e7c2d54fa99a5154d755a816cd1c23",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Safety Plan states applicable editions of all three standards"
     },
     {
       "key": "FPW.13-A02.name",
@@ -9858,29 +9900,29 @@
       "key": "FPW.13-A02.steps.0",
       "source": "시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터를 Profile로 정의하고 버전을 붙인다",
       "sourceHash": "6a8c8398013c77221dcba0fc0ff8e091b8dcd9a3ab1f885316c7ed2d080fc5ed",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define and version market-specific regulations, mandatory functions, required Evidence and Gate parameters as Profiles"
     },
     {
       "key": "FPW.13-A02.steps.1",
       "source": "ADS 관련 시장은 UN 규정·GTR의 국내 도입·발효 상태를 따로 적고, 제안문 조항은 최종 법문과 대조한 뒤에만 기준으로 쓴다",
       "sourceHash": "e4b9a50ea44fcc4c1fb9b4cb474144332e4291ada09e1e194acfdd67b634bb3a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For ADS markets, separately record domestic adoption/effectiveness of UN regulations and GTRs; use proposal clauses only after comparison with final legal text"
     },
     {
       "key": "FPW.13-A02.steps.2",
       "source": "정책과 명령이 생성 시점의 Profile 버전을 기록하는지 플랫폼 컴플라이언스 화면에서 확인한다",
       "sourceHash": "6d06f2e01ee636c2a86f7aacf9597ab8d02ae88a98794f2af08514c65def6109",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm policies and commands record the Profile Version at creation in the platform compliance screen"
     },
     {
       "key": "FPW.13-A02.checks.0",
       "source": "대상 시장마다 Profile 버전이 있고 ADS 조항의 대조 결과가 있다",
       "sourceHash": "3cd36e6dbb08e34209a497e490eff1c2168ce511c7f1fc67d86d4f3078c90e44",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every target market has a Profile Version and ADS clause comparison results"
     },
     {
       "key": "FPW.13-A03.name",
@@ -9893,36 +9935,36 @@
       "key": "FPW.13-A03.trigger",
       "source": "분기 정기 점검",
       "sourceHash": "d784b5a9b48bb86380a181a55f67eba7c7b99f9fb64c36d89f9b96db8734a96a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled quarterly review"
     },
     {
       "key": "FPW.13-A03.steps.0",
       "source": "법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다",
       "sourceHash": "a69567d47354d9dcec137f541bf3fbe39bd067e1a5c9d911f22d5932a3ce56ab",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Regulatory, Safety Manager and CSM each review standards/regulatory revisions quarterly within their scope"
     },
     {
       "key": "FPW.13-A03.steps.1",
       "source": "개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다",
       "sourceHash": "b343e20a597ef0e9dcf5a2a59e7c4c19df48ae130ccaf946b435a1817981d0b3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reflect revisions in a new Profile Version and notify Feature Owners of affected Features"
     },
     {
       "key": "FPW.13-A03.steps.2",
       "source": "검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다",
       "sourceHash": "3de7587748e1b07b3608eb760246770aec9b7a007e39c8ea87fcadda7e72d734",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assign owners and deadlines to resolve items requiring verification before market SOP"
     },
     {
       "key": "FPW.13-A03.checks.0",
       "source": "분기 점검 기록과 Profile 새 버전(또는 무변경 확인)이 있다",
       "sourceHash": "129fb003bc978d4b587e6e6c4bb7e3450b722397e252fd9a9009f86ab3ebb3cf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Quarterly review records and a new Profile Version (or no-change confirmation) exist"
     },
     {
       "key": "FPW.13-A04.name",
@@ -9935,29 +9977,29 @@
       "key": "FPW.13-A04.steps.0",
       "source": "원격 종료·복원 방법을 시스템 설명 문서에 적는다",
       "sourceHash": "0a0b013ecc96c727d816330c011130aa9bfda9f52bfacc5bb7e03dfca6025283",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Document remote termination/restoration methods in the system description"
     },
     {
       "key": "FPW.13-A04.steps.1",
       "source": "발동 사유·승인자·긴급 권한·해제 기준·시장별 차이를 운영 절차(FPW.8)와 같은 내용으로 맞춘다",
       "sourceHash": "6b7c8b8de0dcb23f0748c2c54e3cf2463ecdaffad75e91a3c02a7d0ced7e20cc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Align reasons, approvers, emergency authority, release criteria and market differences with FPW.8 operating procedures"
     },
     {
       "key": "FPW.13-A04.steps.2",
       "source": "운영 조직이 드릴 결과로 실제 운영과 문서가 같은지 확인한다",
       "sourceHash": "fd268ad9b16eb87f22eda1f464503d27c20dbc4f45f4b4bf9db49f42edaf0e0c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operations use drill results to confirm actual operation matches documentation"
     },
     {
       "key": "FPW.13-A04.checks.0",
       "source": "시스템 설명과 FPW.8 운영 절차의 승인자·기준이 일치한다",
       "sourceHash": "e22c87cf1d3089ca26b6225d7b22142df401a9d1a76e699253e787b722cb6e58",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "System description and FPW.8 have matching approvers and criteria"
     },
     {
       "key": "FPW.13.BP1.name",
@@ -9970,8 +10012,8 @@
       "key": "FPW.13.BP1.definition",
       "source": "프로젝트가 적용할 표준의 판과 적용 범위를 결정하여 Safety Plan에 고정한다. 참고 초안과 승인된 판정 기준을 구분하고 법규·보안 담당자가 같은 기준을 사용하도록 공유한다.",
       "sourceHash": "2172c7ae48394713d80b029dda65063f47452d6c587c6e3c3f70606843ecd709",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Determine project standard editions and applicability and pin them in the Safety Plan. Distinguish reference drafts from approved decision criteria and share a common baseline with Regulatory and Security."
     },
     {
       "key": "FPW.13.BP2.name",
@@ -9984,8 +10026,8 @@
       "key": "FPW.13.BP2.definition",
       "source": "시장별 적용 규정·의무 기능·필수 근거·판정 파라미터를 버전 있는 Profile로 정의한다. 발효·국내 도입·최종 법문 확인 결과를 기록하고 생성된 정책·명령의 기준 판과 연결한다.",
       "sourceHash": "ec7dbaec2769a7dcfb3484e3d373995fddfff661a0a48336f5ea3e2dba96f786",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define versioned Profiles containing market regulations, mandatory functions, required evidence and decision parameters. Record effectiveness, domestic adoption and final-text verification and link them to generated policies/commands."
     },
     {
       "key": "FPW.13.BP3.name",
@@ -9998,8 +10040,8 @@
       "key": "FPW.13.BP3.definition",
       "source": "정기적으로 표준·법규 변화를 확인하여 현재 Profile과의 차이를 평가한다. 변경 또는 무변경의 근거를 남기고 영향 기능·담당·해소 기한을 후속 검토에 인계한다.",
       "sourceHash": "58f8f56a7c4762fda4071cedc4f6a8d1a30a624ee4921f5498a8af117793d1e9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Periodically check standards/regulatory changes and assess differences from current Profiles. Record change/no-change evidence and hand affected Features, owners and deadlines to follow-up review."
     },
     {
       "key": "FPW.13.BP4.name",
@@ -10012,8 +10054,8 @@
       "key": "FPW.13.BP4.definition",
       "source": "원격 종료·복원의 사유·승인·해제·시장별 운영 방법을 시스템 설명으로 정리한다. 실제 운영 절차와 드릴 결과를 대조하여 문서와 운용의 불일치를 해소한다.",
       "sourceHash": "723265dae1b23a1d8007a50ef7754721fefbdcaaabeae604705dc8c116330a1c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Document remote termination/restoration reasons, approvals, release criteria and market operation methods. Compare actual procedures and drills to resolve documentation/operation mismatches."
     },
     {
       "key": "FPW.13-S1.label",
@@ -10026,8 +10068,8 @@
       "key": "FPW.13-S2.label",
       "source": "분기 정기 점검",
       "sourceHash": "d784b5a9b48bb86380a181a55f67eba7c7b99f9fb64c36d89f9b96db8734a96a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled quarterly review"
     },
     {
       "key": "FPW.13-E1.label",
@@ -10782,71 +10824,71 @@
       "key": "FPW.15.ref",
       "source": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
       "sourceHash": "f7d2cce4273edd1529fe6a95a85ec0e9711e1663aed971641b1bd6f484da181e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Workflow reference requirements (WF-REFERENCE-REQUIREMENTS) and current platform contracts/screens; draft pending organizational review"
     },
     {
       "key": "FPW.15.purpose",
       "source": "Feature·기준 행·적용 범위를 산정 근거로 고정하고 공수·계수·단가의 출처와 검토 책임을 분리하여 재현 가능한 SW 개발비를 산정하며, 승인 결과를 보존한 채 실적을 다음 원가 기준 개정에 반영한다.",
       "sourceHash": "79c45a8c193f619a3e6fe2c125cfb0a1a2efdcb3c70861e4b2dde1dce0ea67ff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Pin Features, baseline rows and scope as estimation evidence. Separate effort, factor and rate sources from review responsibility for reproducible SW cost estimates. Preserve approvals and feed actuals into subsequent cost-basis revisions."
     },
     {
       "key": "FPW.15.O1.text",
       "source": "산정 대상과 Feature·기준 행 버전, 제외 범위 및 가정이 식별된다.",
       "sourceHash": "98b24e6229a2dc9d269e135aab29c047fe509c9ec128fe3229c84b453b38f577",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Estimation targets, Feature/baseline-row Versions, exclusions and assumptions are identified."
     },
     {
       "key": "FPW.15.O2.text",
       "source": "공수·MBD 작업·계수·단가 버전과 계산 오류가 검토되어 산정 결과가 재현된다.",
       "sourceHash": "49a7ed39c2d5ee268ac40ca6266e60a77a01e7119fbacdcde14fc66344c4be1c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Effort, MBD work, factor/rate Versions and calculation errors are reviewed for reproducibility."
     },
     {
       "key": "FPW.15.O3.text",
       "source": "작성자와 다른 승인자가 검토한 제출·승인·반려 이력이 남고 승인 스냅샷이 보존된다.",
       "sourceHash": "64f5726a35915a8aab1804ae556739afb06700b4a702b799d8c4bbedc50b6d81",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Submission/approval/rejection history from an approver distinct from the author is retained with approval snapshots."
     },
     {
       "key": "FPW.15.O4.text",
       "source": "금액 열람 권한을 지켜 승인 결과가 공유되며 실적 오차가 다음 기준 개정의 근거가 된다.",
       "sourceHash": "d3691f5113c810f3413169a273ad5bbf0c87f7847fe106cf1656170f65ab8d74",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approved results are shared under amount-view permissions; actual deviations support subsequent basis revisions."
     },
     {
       "key": "FPW.15.entry.0",
       "source": "산정 대상 Feature 또는 Feature DB 기준 행과 담당자가 식별되어 있다",
       "sourceHash": "ae81da43e09d2494d40017212ad9646f7427df641b3620569889cf78fb51a546",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Features or Feature DB baseline rows and responsible persons are identified"
     },
     {
       "key": "FPW.15.entry.1",
       "source": "산정 역할과 금액 열람 권한이 기존 IAM에 부여되어 있다",
       "sourceHash": "ca16bc5ef79488d728662e4ba25cc1f4398b123cd052974d936f3cc5074d6041",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Estimation roles and amount-view permissions are granted in existing IAM"
     },
     {
       "key": "FPW.15.exit.0",
       "source": "승인 또는 반려 결과와 계산 기준 버전이 추적된다",
       "sourceHash": "217a0dd4056825206faa8674b9b6454d0c33c884b1b44d7ef9ac2727d35a4f7d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approval/rejection results and calculation-basis Versions are traceable"
     },
     {
       "key": "FPW.15.exit.1",
       "source": "승인된 과거 금액을 덮어쓰지 않고 실적과 새 기준 버전이 분리된다",
       "sourceHash": "57e5d38098d000d637c5644471f64b548f8be1951b95bfc24c33c1b8f03a1241",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Actuals and new basis Versions remain separate without overwriting previously approved amounts"
     },
     {
       "key": "FPW.15.WP-COST-SCOPE.name",
@@ -10859,15 +10901,15 @@
       "key": "FPW.15.WP-COST-SCOPE.content.0",
       "source": "대상 Feature/버전·기준 행·작성자",
       "sourceHash": "b17e925a851fc744acbb8f8e512d9e6b3960e3630020c22f48345e576cd09ae6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Feature/Version, baseline row and author"
     },
     {
       "key": "FPW.15.WP-COST-SCOPE.content.1",
       "source": "차량/시장·포함/제외·가정과 과제 설정",
       "sourceHash": "0cba9a8836ca1bac79e239a7f8854251bdaa78f0c32a40e1596cafa3fdf2b0c9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Vehicles/markets, inclusions/exclusions, assumptions and project settings"
     },
     {
       "key": "FPW.15.WP-COST-BASIS.name",
@@ -10880,15 +10922,15 @@
       "key": "FPW.15.WP-COST-BASIS.content.0",
       "source": "단가·계수·통화·근거 출처와 버전",
       "sourceHash": "3f9df83a7704cce52d3d03d151849d721901c82fc4e94557b09a9593c899eb83",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Rates, factors, currency, sources and Versions"
     },
     {
       "key": "FPW.15.WP-COST-BASIS.content.1",
       "source": "초안과 발행자·사유·적용 시점",
       "sourceHash": "041302c37e19fdb6847581cf1707406e4c362ecbd6d3faee0fe8e548f00ae8fe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Draft, publisher, reason and effective time"
     },
     {
       "key": "FPW.15.WP-COST-CALC.name",
@@ -10901,15 +10943,15 @@
       "key": "FPW.15.WP-COST-CALC.content.0",
       "source": "줄별 규모·공수·MBD 입력과 근거",
       "sourceHash": "e9b3df72de94bc32740255aa18d4749e215196747ac94151217f08ae5a4ff040",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Per-row size, effort, MBD inputs and evidence"
     },
     {
       "key": "FPW.15.WP-COST-CALC.content.1",
       "source": "계산 오류·합계·적용 기준 버전",
       "sourceHash": "8b1970f2e8e9f7547bee45aa2fb0cfcf9dbad4712f2e6c37a0308d0781742c29",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Calculation errors, totals and applied basis Version"
     },
     {
       "key": "FPW.15.WP-COST-REVIEW.name",
@@ -10922,15 +10964,15 @@
       "key": "FPW.15.WP-COST-REVIEW.content.0",
       "source": "검토 체크·제출·승인/반려 사유와 사람·시각",
       "sourceHash": "fc572b77eec2d9e7528bc502cbda531d31b087db021768f30df259174ce228b9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review checks, submission, approval/rejection reasons, people and times"
     },
     {
       "key": "FPW.15.WP-COST-REVIEW.content.1",
       "source": "승인 스냅샷과 개정 관계",
       "sourceHash": "347b680c7c98aaed8242c90944f77f9ec10f2113087c32d9997cacbf37900178",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approval snapshot and revision relationship"
     },
     {
       "key": "FPW.15.WP-COST-SHARE.name",
@@ -10943,15 +10985,15 @@
       "key": "FPW.15.WP-COST-SHARE.content.0",
       "source": "열람/내보내기 대상·권한·버전",
       "sourceHash": "48c29cf708c7e67f19af186981b0aa18696f5ac0f87937c893be49a0b0db805b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Viewing/export targets, permissions and Version"
     },
     {
       "key": "FPW.15.WP-COST-SHARE.content.1",
       "source": "내보내기 감사 기록과 공유 제한",
       "sourceHash": "7570f42f35a45a4021aceb8e287657a18ceb9c2f5dde69d08f89e1f263306b45",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Export audit and sharing restrictions"
     },
     {
       "key": "FPW.15.WP-COST-ACTUAL.name",
@@ -10964,15 +11006,15 @@
       "key": "FPW.15.WP-COST-ACTUAL.content.0",
       "source": "승인 뒤 실적 공수·출처·편차",
       "sourceHash": "3d0e1f1faeeca6f6d56234e9503c3ee2da33b4d227cc429eb4f0822c940407cb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Post-approval actual effort, sources and deviation"
     },
     {
       "key": "FPW.15.WP-COST-ACTUAL.content.1",
       "source": "교정 제안과 다음 기준 개정의 채택/보류 근거",
       "sourceHash": "0082ff5d3e31e782e857565e89156824e8e7d6bef1ab77a58ad6c94081457986",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Calibration proposals and adoption/hold evidence for the next revision"
     },
     {
       "key": "FPW.15-A01.name",
@@ -10985,29 +11027,29 @@
       "key": "FPW.15-A01.steps.0",
       "source": "대상 Feature와 기준 행의 버전을 확인한다",
       "sourceHash": "ff56f440db1d1ff5592e9abdbe5b75718af965f2bb17313b2826ceeaf58084b0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check target Feature and baseline-row Versions"
     },
     {
       "key": "FPW.15-A01.steps.1",
       "source": "차량·시장 범위와 포함·제외 및 가정을 적어 과제를 만든다",
       "sourceHash": "598a820bbab882d665f70f9950b530d8490e73a896ce28678a51815bbc208429",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Create the project with vehicle/market scope, inclusions/exclusions and assumptions"
     },
     {
       "key": "FPW.15-A01.steps.2",
       "source": "작성 책임자와 산정에 사용할 기준 버전을 확인한다",
       "sourceHash": "e88e063f66a653054b0e303fd2bbf7f5f636453c18e79b83477087f0083f8700",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm the author and estimation-basis Version"
     },
     {
       "key": "FPW.15-A01.checks.0",
       "source": "대상과 가정이 과제 설정에 남는다",
       "sourceHash": "27e12781476ec0107b79b4571bc306b6488b93fbaa838c721a3f9f9929015c89",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Project settings retain targets and assumptions"
     },
     {
       "key": "FPW.15-A02.name",
@@ -11020,43 +11062,43 @@
       "key": "FPW.15-A02.trigger",
       "source": "원가 기준 개정 필요",
       "sourceHash": "828fb0d2961db4bdc382070f6d44f8938bae1fcd4a56ae7d08727a061823aa95",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cost-basis revision needed"
     },
     {
       "key": "FPW.15-A02.steps.0",
       "source": "현행 단가·계수와 출처 및 통화를 확인한다",
       "sourceHash": "d02c195e36a3707a53e872d28b256a582b25b5b3a4badbd8292154a6d007c2af",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check current rates, factors, sources and currency"
     },
     {
       "key": "FPW.15-A02.steps.1",
       "source": "변경 항목을 새 기준 초안으로 작성한다",
       "sourceHash": "b83b3328bf15f9142f8bf41eb536dfea4adb62222b6d3e7feb3ae02af003c51b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Prepare changed items as a new basis draft"
     },
     {
       "key": "FPW.15-A02.steps.2",
       "source": "사유를 적어 새 기준 버전을 발행하고 적용 대상을 알린다",
       "sourceHash": "784b170adcee63aa1f0779056fc4cbe6d6db22cd7fb2538c0e3cabe1daf5e0b8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Publish a new basis Version with a reason and notify applicable targets"
     },
     {
       "key": "FPW.15-A02.checks.0",
       "source": "과거 승인 산정은 발행 전 스냅샷을 유지한다",
       "sourceHash": "65feeee9342323a19bc1a05d77b0a07f6fa6b0dcdbd4765df0245176d3213a13",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Previously approved estimates retain their pre-publication snapshots"
     },
     {
       "key": "FPW.15-A02.checks.1",
       "source": "기준 버전과 변경 사유가 남는다",
       "sourceHash": "20664fdedd1073ae62e52b0de367b8caaa3042551e1b9ae04848078b885bb4ee",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Basis Version and change reason are recorded"
     },
     {
       "key": "FPW.15-A03.name",
@@ -11069,36 +11111,36 @@
       "key": "FPW.15-A03.steps.0",
       "source": "과제에 대상 Feature를 담고 입력 행과 중복을 확인한다",
       "sourceHash": "88dee2d57723437a16713c192077b3634d555bc7d27b432506eca25f68f6037e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Add target Features to the project and check input rows and duplicates"
     },
     {
       "key": "FPW.15-A03.steps.1",
       "source": "규모·복잡도·재사용과 MBD 작업별 공수 근거를 입력한다",
       "sourceHash": "78dd5a819e7c7a34e14b03a34b9b94547836e8d9bc028c2c87d43ab60ae8f0f2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Enter size, complexity, reuse and effort evidence for each MBD activity"
     },
     {
       "key": "FPW.15-A03.steps.2",
       "source": "오류와 합계를 계산해 기준 버전 및 제외 항목을 재확인한다",
       "sourceHash": "330ab1de20523d50d4d8c76ebde97bc45c0c2ec012c82d0a6be45a1e73c00149",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Calculate errors/totals and recheck basis Version and exclusions"
     },
     {
       "key": "FPW.15-A03.checks.0",
       "source": "필수 입력 오류가 해소되거나 보류 사유가 남는다",
       "sourceHash": "1f4a20086845ed6491d3bf3af2212917ae77f74577fba29c9a5638551f54a041",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Required-input errors are resolved or hold reasons recorded"
     },
     {
       "key": "FPW.15-A03.checks.1",
       "source": "줄별 입력과 계산 기준을 재현할 수 있다",
       "sourceHash": "08d94d67fb08a960a67443881bb110c7a304da5771435ec50d4920371397bdfc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Per-row inputs and calculation basis are reproducible"
     },
     {
       "key": "FPW.15-A04.name",
@@ -11111,29 +11153,29 @@
       "key": "FPW.15-A04.steps.0",
       "source": "범위·기준 버전·계산 오류와 검토 체크를 확인한다",
       "sourceHash": "35c15609feb48b6d94455700aa1e8b3d856f27c3eea53cadf63927aed15e9529",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check scope, basis Version, calculation errors and review checks"
     },
     {
       "key": "FPW.15-A04.steps.1",
       "source": "불확실한 가정과 제외 항목을 검토 설명에 남긴다",
       "sourceHash": "2f09a43c3efc6033109b85ae29eb5c9d7bca894c6cb38641ccaaa67f68d88e4c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Document uncertain assumptions and exclusions in review notes"
     },
     {
       "key": "FPW.15-A04.steps.2",
       "source": "제출 전이를 요청하고 제출 상태와 시각을 확인한다",
       "sourceHash": "971b9265e62631128061065b29ce35e9a57d3fb9bca1c992b9e4884c02b37cb2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Request submission and verify submitted state and time"
     },
     {
       "key": "FPW.15-A04.checks.0",
       "source": "제출과 미해결 항목이 기록된다",
       "sourceHash": "370fdb04ca49e6db49c1fb34ed9b518bdd2dec7e3ed844f677b734e0957c57ec",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Submission and unresolved items are recorded"
     },
     {
       "key": "FPW.15-A05.name",
@@ -11146,36 +11188,36 @@
       "key": "FPW.15-A05.steps.0",
       "source": "작성자와 자신이 다른 사람인지 확인한다",
       "sourceHash": "278d6f080e81998518bb2855217179d64c9938f6c9582cd0b1de846faa412bb8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm you are distinct from the author"
     },
     {
       "key": "FPW.15-A05.steps.1",
       "source": "범위·공수·단가와 검토 체크를 근거로 승인 또는 반려를 판단한다",
       "sourceHash": "223d2c8bf6837456e4e0a9503fe4e7c3d90d9c9fa51a51744213aa7c15cab34a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decide approval/rejection from scope, effort, rates and review checks"
     },
     {
       "key": "FPW.15-A05.steps.2",
       "source": "사유를 남겨 전이하고 승인 스냅샷 또는 보완 요청을 확인한다",
       "sourceHash": "8f929eee8172bd9d9d7051dba57073995776f957b8ac2944377a9b6449370d51",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transition with a reason and check the approval snapshot or correction request"
     },
     {
       "key": "FPW.15-A05.checks.0",
       "source": "자기 작성 과제의 승인이 차단된다",
       "sourceHash": "eada3f653eeef0e0a822d965b3c5ce4a90619353dc126f673f6381881fc747ea",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approval of your own authored project is blocked"
     },
     {
       "key": "FPW.15-A05.checks.1",
       "source": "판정자·사유와 승인 스냅샷이 추적된다",
       "sourceHash": "f1804e014665dbb2507efb3036fa744fb8d30fba9057a0350cd6e4fe60a70f07",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision maker, reason and approval snapshot are traceable"
     },
     {
       "key": "FPW.15-A06.name",
@@ -11188,36 +11230,36 @@
       "key": "FPW.15-A06.steps.0",
       "source": "자신의 금액 열람 권한과 공유 목적을 확인한다",
       "sourceHash": "59dbda4a4d386fc6d671c9f82b26be384906851fe2d91149de1270fff85a2d15",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check your amount-view permission and sharing purpose"
     },
     {
       "key": "FPW.15-A06.steps.1",
       "source": "승인 버전과 금액·가정을 조회하고 필요하면 허용된 내보내기를 사용한다",
       "sourceHash": "006c29e38cf45a24037f1f14156d4b7c5dae4d77444c36b40a7c85e6911ed1dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "View approved Version, amounts and assumptions; use permitted export when needed"
     },
     {
       "key": "FPW.15-A06.steps.2",
       "source": "내보내기 감사와 전달 범위를 확인하고 승인 원본을 보존한다",
       "sourceHash": "d6ec2f67fb7d846feaf59a310275617cb664dd55ce9ce0f42604fe6786d058cd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check export audit and recipient scope and preserve the approved original"
     },
     {
       "key": "FPW.15-A06.checks.0",
       "source": "조회가 작성·승인 권한으로 확대되지 않는다",
       "sourceHash": "6cd9f27b0d99be35d231304991fa2ecbb3a22889d7037b3329a2ed6bd16caaad",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Viewing does not grant authorship or approval permissions"
     },
     {
       "key": "FPW.15-A06.checks.1",
       "source": "공유한 버전과 대상이 식별된다",
       "sourceHash": "aed3d3f98504515690809b48395ef5b5eb46081312d5d21c087849139a4551a7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Shared Version and recipients are identified"
     },
     {
       "key": "FPW.15-A07.name",
@@ -11230,43 +11272,43 @@
       "key": "FPW.15-A07.trigger",
       "source": "승인 뒤 실적 확보",
       "sourceHash": "93fefafb8355b97ac474414243e6ddf0b11fa3e9c535e97cfc80a198282edaf9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Actuals available after approval"
     },
     {
       "key": "FPW.15-A07.steps.0",
       "source": "승인된 기준 버전과 실적 공수의 수집 범위를 확인한다",
       "sourceHash": "5c304bd4cd4920bfa2c8702c8339128d05c6fa09992bccfa951e7f8bddb5fc75",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check approved basis Version and actual-effort collection scope"
     },
     {
       "key": "FPW.15-A07.steps.1",
       "source": "실적과 출처를 기록하고 산정 오차 및 교정 제안을 검토한다",
       "sourceHash": "4360adb222b5ddb16e7a1597dcae1538e6dc2ca3c50a02ec87f5ad97b27cb9e7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record actuals and sources and review estimation deviation and calibration proposals"
     },
     {
       "key": "FPW.15-A07.steps.2",
       "source": "다음 기준 개정에 반영할 항목과 보류 사유를 기준 관리자에게 전달한다",
       "sourceHash": "521854d69e164fc90bf665a493cc53693dd74ddbfc037b739d859ffdc3f0867a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Give basis administrators revision candidates and hold reasons"
     },
     {
       "key": "FPW.15-A07.checks.0",
       "source": "실적 입력이 승인 금액을 소급 변경하지 않는다",
       "sourceHash": "647140f89e7b980e9f3b9c8170d3169026159299d8745dbcd72dc9eac2978bc6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Actuals do not retroactively change approved amounts"
     },
     {
       "key": "FPW.15-A07.checks.1",
       "source": "교정 제안은 기준 개정 전 자동 적용되지 않는다",
       "sourceHash": "952c917ba9080e53167f9e24bc1e48a534aaf3ccf91ab70d13e98d4952175dc7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Calibration proposals are not automatically applied before basis revision"
     },
     {
       "key": "FPW.15.BP1.name",
@@ -11279,8 +11321,8 @@
       "key": "FPW.15.BP1.definition",
       "source": "산정 과제의 목적·범위·책임을 정하고 산정 대상 Feature와 기준 행을 특정 버전으로 식별한다. 구입 계약 확정이나 Feature 출시 승인과 구분한다.",
       "sourceHash": "38c156a0c7feae74a0d056bb0fc5b8352b8136c661932b0cda9de5882ce7063a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define estimation purpose, scope and accountability and identify target Features/baseline rows by specific Version. Distinguish estimation from purchase-contract confirmation or Feature release approval."
     },
     {
       "key": "FPW.15.BP2.name",
@@ -11293,8 +11335,8 @@
       "key": "FPW.15.BP2.definition",
       "source": "단가와 계수의 출처·적용 조건을 관리하고 개정된 값을 번호가 있는 새 기준으로 발행한다. 발행이 과거 승인 과제의 금액을 바꾸지 않도록 승인 스냅샷과 분리한다.",
       "sourceHash": "32fe6df6385e892b31bc4ffb009593750757239a7c0e8d949332010fca7b6853",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manage rate/factor sources and applicability and publish revised values as new numbered bases. Separate publication from approval snapshots so previous approved amounts remain unchanged."
     },
     {
       "key": "FPW.15.BP3.name",
@@ -11307,8 +11349,8 @@
       "key": "FPW.15.BP3.definition",
       "source": "Feature별 규모·공수·재사용과 MBD 작업을 출처에 따라 입력하고 계산 오류·합계를 검토한다. 자동 채운 값도 추정 가정으로 확인하며 산정 금액을 사업 승인으로 취급하지 않는다.",
       "sourceHash": "58a6886bc7e5669f0d4f65cf99b2481a8f47210f7c90abb6e1e6a4ab84c51d42",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Enter Feature size, effort, reuse and MBD work from sources and review calculation errors/totals. Confirm automatic values as estimation assumptions; do not treat estimates as business approval."
     },
     {
       "key": "FPW.15.BP4.name",
@@ -11321,8 +11363,8 @@
       "key": "FPW.15.BP4.definition",
       "source": "재현 가능한 산정 입력과 검토 체크를 갖춰 독립 승인자에게 제출한다. 제출 응답만으로 승인되었다고 표시하지 않고 과제의 실제 상태와 보완 요구를 확인한다.",
       "sourceHash": "dac300312cb536c3e8b6c2fe1a34b0ed9ccfe89f826abc93f89e8aae7fa90d14",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Submit reproducible estimation inputs and review checks to an independent approver. Submission responses alone do not establish approval; check actual project state and correction requests."
     },
     {
       "key": "FPW.15.BP5.name",
@@ -11335,8 +11377,8 @@
       "key": "FPW.15.BP5.definition",
       "source": "작성자와 다른 승인자가 산정 근거와 불확실성을 검토해 승인 또는 반려한다. 승인 뒤 입력 변경은 개정 절차로 분리하고 같은 과제의 승인 증거를 덮어쓰지 않는다.",
       "sourceHash": "65e2f7fd03c0c5075e6c30582dd89ec2479bac3dad6f85f3136c86bdc78ca1da",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "An approver distinct from the author reviews estimation evidence and uncertainty to approve or reject. Handle subsequent input changes as revisions without overwriting existing approval evidence."
     },
     {
       "key": "FPW.15.BP6.name",
@@ -11349,8 +11391,8 @@
       "key": "FPW.15.BP6.definition",
       "source": "금액 열람 권한을 가진 사람이 승인 결과와 가정을 조회하고 허용된 범위로 공유한다. 열람자는 산정 입력이나 승인 상태를 바꾸지 않으며 내보내기 감사와 전달 제한을 확인한다.",
       "sourceHash": "80d06fb3df4201856cb6f1ad89400c8e7ecff1881adf534fd597bd11b4672952",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "People with amount-view permission view approved results/assumptions and share within permitted scope. Viewers do not alter estimates or approval state and check export audits and recipient restrictions."
     },
     {
       "key": "FPW.15.BP7.name",
@@ -11363,8 +11405,8 @@
       "key": "FPW.15.BP7.definition",
       "source": "승인 이후 실적을 별도 기록하여 추정 오차를 분석하고 단가·계수 개정의 근거를 제시한다. 제안의 수용은 새 기준 발행에서 결정하며 과거 승인 결과와 구분한다.",
       "sourceHash": "1df242612649935c714cfd71b165cd66403a80e9e857a37b20f1ae95560ee9de",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record post-approval actuals separately, analyze estimation errors and propose rate/factor revisions. Decide adoption through new basis publication, separately from past approvals."
     },
     {
       "key": "FPW.15-S1.label",
@@ -11377,15 +11419,15 @@
       "key": "FPW.15-S2.label",
       "source": "원가 기준 개정 필요",
       "sourceHash": "828fb0d2961db4bdc382070f6d44f8938bae1fcd4a56ae7d08727a061823aa95",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cost-basis revision needed"
     },
     {
       "key": "FPW.15-S3.label",
       "source": "승인 뒤 실적 확보",
       "sourceHash": "93fefafb8355b97ac474414243e6ddf0b11fa3e9c535e97cfc80a198282edaf9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Actuals available after approval"
     },
     {
       "key": "FPW.15-E1.label",
@@ -11419,57 +11461,57 @@
       "key": "FPW.16.ref",
       "source": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
       "sourceHash": "f7d2cce4273edd1529fe6a95a85ec0e9711e1663aed971641b1bd6f484da181e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Workflow reference requirements (WF-REFERENCE-REQUIREMENTS) and current platform contracts/screens; draft pending organizational review"
     },
     {
       "key": "FPW.16.purpose",
       "source": "업무 수행자의 접근 상태와 기록 소유권을 통제하고 플랫폼 운영·복구 근거를 보존하여 담당자 변경 또는 서비스 장애 중에도 권한 범위를 넘지 않는 업무 연속성을 유지한다.",
       "sourceHash": "27cf4d327616669de9c6bf0ae6f793807955d9405924f8020a08b8c2f7e40819",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Control worker access states and record ownership and preserve platform operation/recovery evidence. Maintain continuity through staff changes and service incidents without exceeding permission scope."
     },
     {
       "key": "FPW.16.O1.text",
       "source": "계정 상태 변경의 근거·책임자와 영향 업무가 식별되고 계정 상태가 확인된다.",
       "sourceHash": "c205ebd02737cc269ba3c74027c86030aaaaafcf8c7b9bb34205641d11e58897",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Account-state change evidence, responsible persons and affected work are identified and states verified."
     },
     {
       "key": "FPW.16.O2.text",
       "source": "소유자가 없거나 비활성인 기록만 적격 담당자에게 이관되고 내용·버전·상태는 유지된다.",
       "sourceHash": "73c8491ce9d43f2194330210353f8c9566a1e55a55015841cdaf098dd5e2f2ad",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Only unowned or inactive-owner records transfer to eligible people; content, Version and state remain intact."
     },
     {
       "key": "FPW.16.O3.text",
       "source": "운영 설정·관측·백업 및 복구 점검 근거와 미해결 장애가 인계된다.",
       "sourceHash": "9f3317859e3bbf0943b1f28af83e766f699bf05a518b2bf922ce487e50bd4417",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational settings, observations, backup/recovery evidence and unresolved incidents are handed over."
     },
     {
       "key": "FPW.16.entry.0",
       "source": "기존 IAM·외부 IdP의 책임 경계와 운영 담당자가 식별되어 있다",
       "sourceHash": "e027788524e339fe85dd239f0a51f5c997d663e85fb76b1e7c77a5192c47e859",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Existing IAM/external IdP boundaries and operations owners are identified"
     },
     {
       "key": "FPW.16.exit.0",
       "source": "접근 변경·이관 사유와 변경 결과가 남는다",
       "sourceHash": "a22424fc8de3002af2ccc8924daf781a0919a42217be0e6a1776a0e4fe3353c0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Access-change/handover reasons and results are retained"
     },
     {
       "key": "FPW.16.exit.1",
       "source": "운영 점검과 복구 증거를 실제 실행 여부와 구분하여 인계한다",
       "sourceHash": "149b2a1ce9e1798c86ffae4917d574456ae0de0576bcdd12e907190a52fd8675",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational/recovery evidence is handed over with actual execution clearly distinguished"
     },
     {
       "key": "FPW.16.WP-ACCESS-CHANGE.name",
@@ -11482,15 +11524,15 @@
       "key": "FPW.16.WP-ACCESS-CHANGE.content.0",
       "source": "입퇴사·전보 근거·대상 계정·변경 사유",
       "sourceHash": "1e491b22eaf2c4a4f307f49902c3106e80ea65b1b2cab3b2fa7190de70ab6a35",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Joiner/leaver/transfer evidence, target account and reason"
     },
     {
       "key": "FPW.16.WP-ACCESS-CHANGE.content.1",
       "source": "비활성/재활성 결과·실행자·시각·미확인 상태",
       "sourceHash": "e2e6c30b827b00f665ddc1d69b9e441c016a8aee38de0170556946132a983c6d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Deactivation/reactivation result, actor, time and unverified state"
     },
     {
       "key": "FPW.16.WP-OWNER-HANDOVER.name",
@@ -11503,15 +11545,15 @@
       "key": "FPW.16.WP-OWNER-HANDOVER.content.0",
       "source": "부재/비활성 원소유자·새 적격 소유자·대상 기록",
       "sourceHash": "821756f79ad38121ce166f33ac6513c68a731c4afd8839d8bf5785cc40bd50d1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Absent/inactive original owner, new eligible owner and target record"
     },
     {
       "key": "FPW.16.WP-OWNER-HANDOVER.content.1",
       "source": "이관 사유·전후 소유자·내용/버전/상태 보존 확인",
       "sourceHash": "f0cf5e446b68002cb7cced66674ae82b9a8a7ebed581157203e297fe70e66012",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reason, before/after owners and content/Version/state preservation check"
     },
     {
       "key": "FPW.16.WP-PLATFORM-OPS.name",
@@ -11524,15 +11566,15 @@
       "key": "FPW.16.WP-PLATFORM-OPS.content.0",
       "source": "서버 운영 설정의 변경 승인 근거·연결 상태",
       "sourceHash": "094046866b131ec55d037a54f26fdacb17306e2b73605043fc46143cde8cc4b8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Server-setting change approval evidence and connection states"
     },
     {
       "key": "FPW.16.WP-PLATFORM-OPS.content.1",
       "source": "관측 지표·장애·담당자와 외부 운영 증거",
       "sourceHash": "6469614e110c38d294caf42a8f165e5000f5ea47ced0ff4e38605d1d0c41f72e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Metrics, incidents, owners and external operational evidence"
     },
     {
       "key": "FPW.16.WP-RECOVERY-DRILL.name",
@@ -11545,15 +11587,15 @@
       "key": "FPW.16.WP-RECOVERY-DRILL.content.0",
       "source": "백업 범위·식별자·보관 정책과 복구 절차",
       "sourceHash": "02033d086c2dc474df3c684434ac65fb86330970c97fc9ed195c2ce3950a9a5f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Backup scope, identifiers, retention policy and recovery procedure"
     },
     {
       "key": "FPW.16.WP-RECOVERY-DRILL.content.1",
       "source": "격리된 복구 실행 시각·정합성·복구 시간·미해결 항목",
       "sourceHash": "6e9077ba2fadacbe285fc30450cbbfe3e0c8acf708c313cefaa4566c59884e26",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Isolated recovery execution time, consistency, recovery duration and unresolved items"
     },
     {
       "key": "FPW.16-A01.name",
@@ -11566,36 +11608,36 @@
       "key": "FPW.16-A01.steps.0",
       "source": "입퇴사·전보 근거와 대상 계정 및 영향 업무를 확인한다",
       "sourceHash": "744c66e0b350138f92a0544f8a908c038820ea09f2289d6c13ce540379a4f8cd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check joiner/leaver/transfer evidence, target account and affected work"
     },
     {
       "key": "FPW.16-A01.steps.1",
       "source": "자기 계정을 제외하고 사유를 적어 비활성 또는 재활성 처리를 수행한다",
       "sourceHash": "16662b2339bb6771c1234856bf934067541a1040ac2767cbea078fa37f057bc0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Exclude your own account and deactivate/reactivate with a reason"
     },
     {
       "key": "FPW.16-A01.steps.2",
       "source": "응답 상태와 감사 이력을 확인하고 권한 변경이 필요한 사항은 외부 IdP 담당자에게 인계한다",
       "sourceHash": "85c2a1c090710c1ad0f2b373e9847828ccd89d5746ef19fb13a01afed0448e3d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check response and audit history and hand required permission changes to the external IdP owner"
     },
     {
       "key": "FPW.16-A01.checks.0",
       "source": "미확인 또는 실패 응답을 변경 완료로 기록하지 않는다",
       "sourceHash": "64b186ce5549b8e75e656e0ca3aa7c5773178fc02b6cbf03ec97b62c854e053a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not record unverified or failed responses as completed changes"
     },
     {
       "key": "FPW.16-A01.checks.1",
       "source": "계정 상태 기록이 역할 부여 권한으로 확대되지 않는다",
       "sourceHash": "48928d816e0a87943c8da418badd2c5737d549e36802faabb9e87afb1b9bc9c8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Account-state control does not grant role-assignment authority"
     },
     {
       "key": "FPW.16-A02.name",
@@ -11608,36 +11650,36 @@
       "key": "FPW.16-A02.steps.0",
       "source": "원소유자가 없거나 비활성인 기록과 미결 업무를 확인한다",
       "sourceHash": "8ad4eb1d6148d327364365be9e599c6e7c5c55ee647417921d2fc5631586ed09",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify records and pending work with absent/inactive owners"
     },
     {
       "key": "FPW.16-A02.steps.1",
       "source": "기록 담당 역할을 가진 새 계정을 지정하고 이관 사유를 적는다",
       "sourceHash": "37472031cbcd5605af028f1d92d585d63aa439182516a2cccaa2b98eeb0802c6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assign a new account with the responsible role and record the handover reason"
     },
     {
       "key": "FPW.16-A02.steps.2",
       "source": "소유자 이관 뒤 기록 내용·버전·상태와 감사 흔적이 보존됐는지 확인한다",
       "sourceHash": "241e76b2446fd305be3925a4e25b92baffc09f042b6e83fad3daf8b3c30ab090",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "After transfer, verify content, Version, state and audit traces are preserved"
     },
     {
       "key": "FPW.16-A02.checks.0",
       "source": "활성 소유자의 기록이나 부적격 새 소유자 이관이 차단된다",
       "sourceHash": "5516ad9f6e7e87b6d3c880f2b732ef935f74f8c564245630930664ac29806983",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transfers from active owners or to ineligible owners are blocked"
     },
     {
       "key": "FPW.16-A02.checks.1",
       "source": "기록 본문을 고치지 않고 소유권만 변경한다",
       "sourceHash": "ccd1ba693722aadd6e76bdc2b097d27c461dddf970fc5aab0fdff05c695b2e37",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Change ownership only, without editing record content"
     },
     {
       "key": "FPW.16-A03.name",
@@ -11650,43 +11692,43 @@
       "key": "FPW.16-A03.trigger",
       "source": "정기 점검 또는 장애",
       "sourceHash": "4430110c8c07d191c8ef564818b84673507fa2ffed933f388b755b30a110b5af",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled inspection or incident"
     },
     {
       "key": "FPW.16-A03.steps.0",
       "source": "현재 운영 모드와 연결 대상 및 설정 변경 근거를 확인한다",
       "sourceHash": "53e2fe825352113c660d4247d272cb3a8b3f6f2457a89d1dd9c3b642eff74607",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check current operating mode, connection targets and setting-change evidence"
     },
     {
       "key": "FPW.16-A03.steps.1",
       "source": "설정·상태 화면과 운영 환경의 관측 자료로 연결·오류·보존 상태를 점검한다",
       "sourceHash": "c2c4969a254447b04e61c001cf8ce6141a0948d922afa40f4300b8feeef62236",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Use settings/status screens and operational observations to check connections, errors and retention"
     },
     {
       "key": "FPW.16-A03.steps.2",
       "source": "비밀 값을 본문에 옮기지 않고 장애와 담당자 및 후속 조치를 기록한다",
       "sourceHash": "f715106e4206cec26a5816a3d3681114d82242ef2662d56240043f9bfc34f0cb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record incidents, owners and follow-up without copying secret values into the body"
     },
     {
       "key": "FPW.16-A03.checks.0",
       "source": "개발 PC 설정을 원격 운영 확인 근거로 쓰지 않는다",
       "sourceHash": "4d3df2794aa3c5b8b1b00dbf4ec818825d2e1196278f245be83df028df951fb9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Developer-PC settings are not proof of remote operations"
     },
     {
       "key": "FPW.16-A03.checks.1",
       "source": "관측 실패와 미확인 연결은 정상 완료와 구분한다",
       "sourceHash": "2ad651fb7c682ce48f9e8b0fc76e18b4f466bd63e6f6d37f02c09bf350e30b9b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish failed observations and unverified connections from healthy completion"
     },
     {
       "key": "FPW.16-A04.name",
@@ -11699,43 +11741,43 @@
       "key": "FPW.16-A04.trigger",
       "source": "복구 훈련 또는 사고 복구",
       "sourceHash": "4ee7bc3d1e1c0ccca2e33be9efbbec6b3dd57a2d8aba5541becf65ae3e050f91",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Recovery drill or incident recovery"
     },
     {
       "key": "FPW.16-A04.steps.0",
       "source": "운영 환경의 백업 범위·보관 정책과 복구 책임자를 확인한다",
       "sourceHash": "f93426c474d699961ad8c4ea9ff23df8822828f5d92269a5c49547ab32c65e10",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm production backup scope, retention policy and recovery owner"
     },
     {
       "key": "FPW.16-A04.steps.1",
       "source": "승인된 격리 환경에서 복구 절차를 실행하고 데이터 및 감사 연속성을 대조한다",
       "sourceHash": "767038645e3856579ab8d2e9559ed087ccdf6c9075d861f2fb2f69ac61e73fcf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Execute recovery in an approved isolated environment and compare data/audit continuity"
     },
     {
       "key": "FPW.16-A04.steps.2",
       "source": "실측 시간·검증 결과·미실행 항목을 구분해 기록하고 개선을 인계한다",
       "sourceHash": "e185868a1724af1d1bc5bf2d01e2e91670114f91a3ee6fb9d4b5adb2140c9e51",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish measured duration, validation results and unexecuted items, then hand over improvements"
     },
     {
       "key": "FPW.16-A04.checks.0",
       "source": "계획서 존재만으로 복구 성공을 판정하지 않는다",
       "sourceHash": "eeeac75b782e5cdd478afcfe3ac3329e3aed2153db317182f75b21c6caec3fa5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A plan alone does not establish successful recovery"
     },
     {
       "key": "FPW.16-A04.checks.1",
       "source": "실제 실행 환경과 증거 위치가 기록된다",
       "sourceHash": "a4409d7672c5144cda7d99537fa9b2aee92ccbeb7e9724f96bab5f02149c19cf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Actual execution environment and evidence location are recorded"
     },
     {
       "key": "FPW.16.BP1.name",
@@ -11748,15 +11790,15 @@
       "key": "FPW.16.BP1.definition",
       "source": "근거가 있는 계정의 비활성·재활성을 기록하고 실제 응답 및 감사 이력을 확인한다. 이 활동은 계정 상태 통제이며 임의 역할 부여나 모든 업무 데이터 편집을 허용하지 않는다.",
       "sourceHash": "0579c22e8914e39ec6e2624980ca093f4b05f3846e60057585c3f63aaabfbd77",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record justified account deactivation/reactivation and verify actual responses and audits. This controls account state; it does not permit arbitrary role assignment or editing all business data."
     },
     {
       "key": "FPW.16.BP1.notes.0",
       "source": "정적 미리보기의 로컬 모의 처리와 실제 IdP·서버 상태 변경은 별도 검증 대상이다.",
       "sourceHash": "475e344036abec49f446ec9e24aab181317ef34733b0b42343413ff8b12f84ab",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Static-preview local simulation and actual IdP/server changes require separate verification."
     },
     {
       "key": "FPW.16.BP2.name",
@@ -11769,8 +11811,8 @@
       "key": "FPW.16.BP2.definition",
       "source": "소유자가 없거나 비활성인 컴플라이언스 룰의 책임을 적격한 담당 계정에 인계한다. 이관과 내용 변경을 분리하고 원소유자 상태·새 소유자의 담당 역할·사유를 확인한다.",
       "sourceHash": "87aab2a3cb1ce9cd846081aa32f261f868d2a7b6f305bcf7e58f2318eb151c0f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transfer unowned or inactive-owner compliance rules to eligible accounts. Separate ownership transfer from content changes and check original-owner state, new-owner role and reason."
     },
     {
       "key": "FPW.16.BP3.name",
@@ -11783,8 +11825,8 @@
       "key": "FPW.16.BP3.definition",
       "source": "설정·이벤트·관측 자료를 사용하여 플랫폼의 연결과 서비스 상태를 점검하고 장애 대응을 인계한다. 서버 설정 변경은 승인된 운영 환경의 절차로 수행하며 브라우저 조회 권한을 서버 관리자 권한으로 간주하지 않는다.",
       "sourceHash": "e14433ada853b3d5c1eef65d5a190b951ba3b909ed51bfaa27d313d83a853d53",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Inspect platform connectivity and service health using settings, events and observations and hand over incident response. Change server settings through approved operating procedures; browser read access does not grant server administration."
     },
     {
       "key": "FPW.16.BP4.name",
@@ -11797,15 +11839,15 @@
       "key": "FPW.16.BP4.definition",
       "source": "서비스·데이터·감사 기록의 복구 가능성을 격리된 실행으로 점검하고 결과와 미해결 위험을 보존한다. 플랫폼 화면은 근거를 참조하는 곳이며 외부 인프라 백업이나 재해 복구를 자동 실행한 것으로 표시하지 않는다.",
       "sourceHash": "9e579755b98fc3aa9bca84fbb41340976830c6848b03093e09d6265ba633825f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Test service, data and audit recoverability through isolated execution and retain results and unresolved risks. Platform screens reference evidence and must not imply automatic external infrastructure backup or disaster recovery."
     },
     {
       "key": "FPW.16.BP4.notes.0",
       "source": "백업·복원은 승인된 서버/DB 운영 절차에서 수행한다. 이 업무 모델을 등록해도 백업이 생성되거나 복구 승인이 발생하지 않는다.",
       "sourceHash": "ddaf07d0cde81ad83cb4cd5303d536702e04e46062ec29b2d43a23f1970be44c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Backup/restoration follows approved server/DB procedures. Registering this workflow model creates neither backups nor recovery approval."
     },
     {
       "key": "FPW.16-S1.label",
@@ -11818,15 +11860,15 @@
       "key": "FPW.16-S2.label",
       "source": "정기 점검 또는 장애",
       "sourceHash": "4430110c8c07d191c8ef564818b84673507fa2ffed933f388b755b30a110b5af",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled inspection or incident"
     },
     {
       "key": "FPW.16-S3.label",
       "source": "복구 훈련 또는 사고 복구",
       "sourceHash": "4ee7bc3d1e1c0ccca2e33be9efbbec6b3dd57a2d8aba5541becf65ae3e050f91",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Recovery drill or incident recovery"
     },
     {
       "key": "FPW.16-E1.label",
@@ -11860,50 +11902,50 @@
       "key": "FPW.17.ref",
       "source": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
       "sourceHash": "f7d2cce4273edd1529fe6a95a85ec0e9711e1663aed971641b1bd6f484da181e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Workflow reference requirements (WF-REFERENCE-REQUIREMENTS) and current platform contracts/screens; draft pending organizational review"
     },
     {
       "key": "FPW.17.purpose",
       "source": "차량·시장 기준 값과 SW 구조·공유 자산의 출처 및 영향 관계를 관리하고 사전 점검과 외부 연계 대사를 통해 일관된 식별자와 버전으로 후속 업무에 인계한다.",
       "sourceHash": "7eccc58b219df0df4f9a39b27f7b98b223201eec15ea7a0fc01db469e8a60a10",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manage vehicle/market reference values, SW structures and shared-asset sources/impacts. Use preflight checks and integration reconciliation to hand consistent identifiers and Versions to subsequent work."
     },
     {
       "key": "FPW.17.O1.text",
       "source": "차종·시장·사양 기준 값의 유효 범위와 사용 중지 영향이 식별된다.",
       "sourceHash": "814fcfd939d75128dcfbb391dad37c6be88039de25e9801f6353903ebc5fb82e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Vehicle, market and specification validity scopes and deactivation impacts are identified."
     },
     {
       "key": "FPW.17.O2.text",
       "source": "ECU·SW·Function·Feature·공유 자산 및 EO 변경의 추적 관계가 검토된다.",
       "sourceHash": "43682570804527e261a5bfef30e063a10605e55fe4dec8ebfe29c5169771d5cc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ECU, SW, Function, Feature, shared-asset and EO change trace relationships are reviewed."
     },
     {
       "key": "FPW.17.O3.text",
       "source": "사전 점검 오류와 외부 연계 충돌이 원소유자 규칙에 따라 처리되고 대사 근거가 보존된다.",
       "sourceHash": "3546be3d5f9492d6fb865e5076b4aa73fbf9130151b3ce7d677a90c7905f02fd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Preflight errors and integration conflicts follow source-owner rules and retain reconciliation evidence."
     },
     {
       "key": "FPW.17.entry.0",
       "source": "외부 원천 시스템과 데이터 소유자 및 식별자 체계가 식별되어 있다",
       "sourceHash": "e7d04c7c1af9596fdef5932c7890711208f0c9fdf58156a3943e69ecf511ddda",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "External source systems, data owners and identifier schemes are identified"
     },
     {
       "key": "FPW.17.exit.0",
       "source": "적용 기준과 미해결 품질 항목이 후속 등록·설계·출고 업무에 인계된다",
       "sourceHash": "244d9515ff67765a5c66bc66178189233c7c181555c2a93db790efe89409c13b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Applicable references and unresolved quality items are handed to registration, design and delivery"
     },
     {
       "key": "FPW.17.WP-MASTER-VALUES.name",
@@ -11916,15 +11958,15 @@
       "key": "FPW.17.WP-MASTER-VALUES.content.0",
       "source": "판매국·지역·차종·트림 코드와 상위 관계",
       "sourceHash": "a2a225048ad60f67a9b275d804ef7a5097a0d9fa1456afbea1bf8d7d9f4c0b50",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Sales-country, region, vehicle-model and trim codes and parent relationships"
     },
     {
       "key": "FPW.17.WP-MASTER-VALUES.content.1",
       "source": "등록/사용 중지 사유·영향 기록과 새 선택지 제외",
       "sourceHash": "e83bd80979f4588c51959e55bf20fe24563f99b5f2680a760ce90a1db022f054",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Registration/deactivation reasons, impact records and exclusion from new selections"
     },
     {
       "key": "FPW.17.WP-ASSET-TRACE.name",
@@ -11937,15 +11979,15 @@
       "key": "FPW.17.WP-ASSET-TRACE.content.0",
       "source": "ECU·SW·Function·Feature·제어점·UPG 연결",
       "sourceHash": "123d9dc73280fc4ee5840512ee9e6306d50279aef471bf2943e08dd4398991db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ECU, SW, Function, Feature, control-point and UPG links"
     },
     {
       "key": "FPW.17.WP-ASSET-TRACE.content.1",
       "source": "공유 자산 영향 범위·EO 변경 근거·누락 관계",
       "sourceHash": "e81e8d0fe3536487515e03d36d865c2b3325a6ae81bf3b1f3edec038f94055eb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Shared-asset impact scope, EO change evidence and missing relationships"
     },
     {
       "key": "FPW.17.WP-DATA-QUALITY.name",
@@ -11958,15 +12000,15 @@
       "key": "FPW.17.WP-DATA-QUALITY.content.0",
       "source": "점검 범위·오류·경고와 원천 소유자",
       "sourceHash": "bb8e91bc31f5e6dddaaf2f16e51a95d4ccc50684d68c105bd982ed09156613e7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check scope, errors, warnings and source owner"
     },
     {
       "key": "FPW.17.WP-DATA-QUALITY.content.1",
       "source": "수정 또는 예외 사유·재점검 결과",
       "sourceHash": "ce004acbba1bd2eb67bd34b4bff12aaf359f11369e1d6f49396c8f214ca86b37",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Correction/exception reasons and recheck results"
     },
     {
       "key": "FPW.17.WP-INTEGRATION-RECON.name",
@@ -11979,15 +12021,15 @@
       "key": "FPW.17.WP-INTEGRATION-RECON.content.0",
       "source": "연계 시스템·주소 참조·변환 규칙 버전",
       "sourceHash": "f523358d447f76a7f884272e9171020c9850d795ac5750e8e9a29eae8b0abd39",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Integrated system, endpoint reference and transformation-rule Version"
     },
     {
       "key": "FPW.17.WP-INTEGRATION-RECON.content.1",
       "source": "보낸/받은 함·충돌·거부·재시도 결과와 원천 책임",
       "sourceHash": "f20f1eee943874eaca69a130a0b004117799988c8e66fecb53ab8de7d5ea5725",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Outbox/inbox, conflicts, rejections, retries and source accountability"
     },
     {
       "key": "FPW.17-A01.name",
@@ -12000,36 +12042,36 @@
       "key": "FPW.17-A01.steps.0",
       "source": "원천 코드와 상위 판매국·차종 및 중복 여부를 확인한다",
       "sourceHash": "4b5fbd9e908c404007a27488b622e3291fe29d3adea81f571a69e8159077307a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check source codes, parent sales-country/vehicle-model and duplicates"
     },
     {
       "key": "FPW.17-A01.steps.1",
       "source": "근거에 따라 기준 값을 등록하거나 사용 중지한다",
       "sourceHash": "a9fecff5007c64f289a37424eee82d92a52af711e630ad6b665e8f6e18913d17",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Register or deactivate reference values based on evidence"
     },
     {
       "key": "FPW.17-A01.steps.2",
       "source": "사용 중지의 기존 기록 보존과 신규 선택지 제외를 확인한다",
       "sourceHash": "c19ba794a482a2513d4205c01fbf32e81fb5b83e4e6ab9c9425311df0d5d9232",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm deactivation preserves existing records and excludes new selections"
     },
     {
       "key": "FPW.17-A01.checks.0",
       "source": "하위 기준 값이 올바른 상위 코드에 연결된다",
       "sourceHash": "03d20b4ca93ed7ca8cc41612db7bb6ae1873312dca3a2d39975c5f35fa5954a4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Child values link to correct parent codes"
     },
     {
       "key": "FPW.17-A01.checks.1",
       "source": "기존 차량·Feature 이력을 소급 삭제하지 않는다",
       "sourceHash": "ee152f31448a3d764bf2a7b68187c5c63f6587723c53a4bfa15d58adeed0b418",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not retroactively delete vehicle/Feature history"
     },
     {
       "key": "FPW.17-A02.name",
@@ -12042,36 +12084,36 @@
       "key": "FPW.17-A02.steps.0",
       "source": "ECU·SW·Function·Feature와 UPG 및 제어점 연결을 조회한다",
       "sourceHash": "e00b042fd59ee1416c283aaafaf5767aa4c0b2f4cf2badb519765161b3f3d7d9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "View ECU, SW, Function, Feature, UPG and control-point links"
     },
     {
       "key": "FPW.17-A02.steps.1",
       "source": "공유 자산을 사용하는 Feature와 EO 변경의 영향 범위를 대조한다",
       "sourceHash": "85643acaeffbec0ce7a9ea27957ab5477ed1d822e3959e97bd16b69dec3033a5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare shared-asset consumers and EO change impacts"
     },
     {
       "key": "FPW.17-A02.steps.2",
       "source": "누락·불일치와 설계 또는 원천 시스템의 변경 요청을 기록한다",
       "sourceHash": "a9131acd9e7ce4afd5d80aed87a0755bfde6244d115cb0e86a820a9dc0746d9a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record gaps, mismatches and design/source-system change requests"
     },
     {
       "key": "FPW.17-A02.checks.0",
       "source": "공유 자산 한 곳의 변경이 영향을 주는 Feature를 식별한다",
       "sourceHash": "7b37fab429659822ce066ef8fc95291d5128bc92058576449967fc5fe760157f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify Features affected by changes to one shared asset"
     },
     {
       "key": "FPW.17-A02.checks.1",
       "source": "조회 결과를 원천 구조의 변경 완료로 간주하지 않는다",
       "sourceHash": "e9458f56c3da274ea4add738729d7b481bb0688e2e190e1593e7a7ec165a3e53",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Viewing results does not establish completed source-structure changes"
     },
     {
       "key": "FPW.17-A03.name",
@@ -12084,36 +12126,36 @@
       "key": "FPW.17-A03.steps.0",
       "source": "등록·설계·출고에 사용할 데이터 범위를 식별한다",
       "sourceHash": "dc3dd9be7b9b45b260f37c2ab9d0b198d03f2db042ba393dc8549afc76e25095",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify data scope for registration, design and delivery"
     },
     {
       "key": "FPW.17-A03.steps.1",
       "source": "사전 점검과 추적 커버리지에서 오류·누락·경고를 확인한다",
       "sourceHash": "863adfa6dda1ebaca86642e9b14f4065b56fd33fff4773b8ef7da4875115fb08",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Inspect errors, gaps and warnings in preflight and trace coverage"
     },
     {
       "key": "FPW.17-A03.steps.2",
       "source": "원천 담당자에게 수정을 요청하고 재점검 결과 또는 승인된 보류 근거를 남긴다",
       "sourceHash": "80170164b74464a4cb17093aec698847fb3fa3a014bc2c609fcd43d1862da4fa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Ask source owners to correct data and retain rechecks or approved hold evidence"
     },
     {
       "key": "FPW.17-A03.checks.0",
       "source": "점검 범위와 미해결 오류의 담당자가 있다",
       "sourceHash": "eb4483ae01371ade025231fa27904becfc2bcf55e79e084b6a1f587698d8587e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check scope and unresolved errors have owners"
     },
     {
       "key": "FPW.17-A03.checks.1",
       "source": "커버리지 비율만으로 설계 일관성이나 안전 승인을 대신하지 않는다",
       "sourceHash": "d1adf589583d3886d39dcf50c3aff8a88f46bb22e5fa8fc8b31d281e20f8bcad",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Coverage percentages do not substitute for design consistency or safety approval"
     },
     {
       "key": "FPW.17-A04.name",
@@ -12126,43 +12168,43 @@
       "key": "FPW.17-A04.trigger",
       "source": "연계 실패·충돌 또는 정기 대사",
       "sourceHash": "b3800ac4934368e9a003e9d55caf3c9997ccfe2e40858e50deef9092aeffbca5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Integration failure/conflict or scheduled reconciliation"
     },
     {
       "key": "FPW.17-A04.steps.0",
       "source": "원천 소유자 규칙과 외부 요구·변경·배포 식별자 연결을 확인한다",
       "sourceHash": "d8bae3a8daa651d0102be939c3ab2bebea042fa746bdf38ed3c264c3a82e6578",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check source-owner rules and external requirement/change/deployment identifier links"
     },
     {
       "key": "FPW.17-A04.steps.1",
       "source": "보낸 함·받은 함·충돌과 거부 원인을 대조한다",
       "sourceHash": "341431a5205ec4c8059f56b9df352ac8f15136889248f0a298cc65df36890196",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare outbox, inbox, conflicts and rejection causes"
     },
     {
       "key": "FPW.17-A04.steps.2",
       "source": "허용된 재전송 또는 충돌 처리를 실행하고 실제 반영 결과를 확인한다",
       "sourceHash": "646f767bce13ea126ab8ef33f9b360eb726243f5d0cffe539c8c9795abcbb237",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Perform permitted redelivery/conflict handling and verify actual application"
     },
     {
       "key": "FPW.17-A04.checks.0",
       "source": "외부 상태를 플랫폼 Guard를 우회하여 덮어쓰지 않는다",
       "sourceHash": "979cb427a6c4f9efe4f54426a5dce061bb164d02644aa6b881bdb7cfcf2e9a78",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not overwrite external states by bypassing platform Guards"
     },
     {
       "key": "FPW.17-A04.checks.1",
       "source": "재전송 요청과 외부 반영 완료를 구분한다",
       "sourceHash": "d520cdca1a23a3cfcdbb8b9c3d13f6fe1251c1b0b1bfe6764008c267ec3bd34c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish redelivery requests from completed external application"
     },
     {
       "key": "FPW.17-A05.name",
@@ -12175,43 +12217,43 @@
       "key": "FPW.17-A05.trigger",
       "source": "공장 인수·Legacy 연계",
       "sourceHash": "7ece77d2abaaa958b07bdf31304b37c80145e15995bd950c6a872b186254e30d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Factory intake or Legacy integration"
     },
     {
       "key": "FPW.17-A05.steps.0",
       "source": "대상 공장·차량과 옵션 코드 및 변환 규칙을 확인한다",
       "sourceHash": "ecc3103e427cd9751cf78b7c10a1cb977900c93b52e366fecfe490393708e2df",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check target factory/vehicles, option codes and transformation rules"
     },
     {
       "key": "FPW.17-A05.steps.1",
       "source": "허용된 동기화·주문 가져오기 또는 코딩 변환을 수행한다",
       "sourceHash": "4c33ae9f8cab5bd7654fbedf5ac07b3137f2787794f67acccb062501d576f465",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Perform permitted synchronization, order import or coding transformation"
     },
     {
       "key": "FPW.17-A05.steps.2",
       "source": "출고 구성·수신 상태와 실패 사유를 대조해 현장 담당자에게 인계한다",
       "sourceHash": "8686d8cc4e6bffc11b4c39960a91f712a1788fc9dd04600d79ebfb12d7ff5670",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare delivery configurations, receipt state and failure reasons and hand over to field staff"
     },
     {
       "key": "FPW.17-A05.checks.0",
       "source": "Legacy 경로가 F2 이상 제한을 우회하지 않는다",
       "sourceHash": "aae9cc7c2670a43bda454e81f5f79f7510c517b622d84b45a855222a30ea2775",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Legacy paths do not bypass F2-or-higher restrictions"
     },
     {
       "key": "FPW.17-A05.checks.1",
       "source": "변환 계획과 실차 적용 결과를 구분한다",
       "sourceHash": "3061a0a1abd5a108114dd22a314dc89e51640845534799a09e7cab5430fb2fd1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish transformation plans from actual onboard application"
     },
     {
       "key": "FPW.17.BP1.name",
@@ -12224,8 +12266,8 @@
       "key": "FPW.17.BP1.definition",
       "source": "판매국·지역·차종·트림의 식별자와 상위 관계를 관리하고 신규 사용 가능 여부를 통제한다. 사용 중지와 기존 기록 삭제를 분리하여 과거 추적을 보존한다.",
       "sourceHash": "23d53a2d69358ee7822f3c60d107aad986497ac7fd8f779af32e320b3a5b4b82",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manage sales-country, region, vehicle-model and trim identifiers/parents and control availability for new use. Distinguish deactivation from deleting existing records to preserve historical traceability."
     },
     {
       "key": "FPW.17.BP2.name",
@@ -12238,8 +12280,8 @@
       "key": "FPW.17.BP2.definition",
       "source": "SW 구조·사양·제어점과 공유 자산의 생산자 및 소비 Feature를 대조하여 변경 영향을 식별한다. 플랫폼 조회와 외부 PLM·ALM 원천 수정의 책임을 구분한다.",
       "sourceHash": "bbb9bd5386acb0d26d8598d11d52e5c263a46011f367584ba5b4f2df33b08994",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare SW structures, specifications, control points, shared-asset producers and consuming Features to identify change impact. Separate platform viewing from external PLM/ALM source-editing responsibility."
     },
     {
       "key": "FPW.17.BP3.name",
@@ -12252,8 +12294,8 @@
       "key": "FPW.17.BP3.definition",
       "source": "데이터 사전 점검과 추적 커버리지에서 후속 업무를 막는 오류를 식별하고 원소유자에게 인계한다. 링크 존재 여부와 의미 일관성을 구분하여 점검 결과를 기록한다.",
       "sourceHash": "5b5614cced2085036e2006c6f155b4c3ab45243baedb4e28a1a5ecb18f360fc7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify blocking errors through preflight and trace coverage and hand them to source owners. Distinguish link existence from semantic consistency in check results."
     },
     {
       "key": "FPW.17.BP4.name",
@@ -12266,8 +12308,8 @@
       "key": "FPW.17.BP4.definition",
       "source": "ALM·JIRA·GitLab 등 연계의 대기·실패·충돌을 원소유자 규칙으로 조정하고 양측 결과를 대사한다. 외부 반영 요청과 실제 반영 완료를 별도 증거로 확인한다.",
       "sourceHash": "ec9446cf89f1605b7017e084893c51dfb10e7e8e9c5e8babc049afe4d6fc8cdc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reconcile ALM, JIRA, GitLab and other integration queues, failures and conflicts under source-owner rules. Verify requests and actual external application through separate evidence."
     },
     {
       "key": "FPW.17.BP5.name",
@@ -12280,8 +12322,8 @@
       "key": "FPW.17.BP5.definition",
       "source": "공장·Legacy 시스템의 주문·사양·코딩과 SDV 기준을 대사하고 원천 식별자와 변환 결과를 보존한다. 단순 변환 계획이나 전송 성공을 차량 적용 완료로 보고하지 않는다.",
       "sourceHash": "fb52de4277a92481f02b59405249e5ef60faedf8514e0cd8af20a70ee43ea30a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reconcile factory/Legacy orders, specifications and coding with SDV references and preserve source identifiers and transformations. Do not report plans or successful transmission as completed onboard application."
     },
     {
       "key": "FPW.17-S1.label",
@@ -12294,15 +12336,15 @@
       "key": "FPW.17-S2.label",
       "source": "연계 실패·충돌 또는 정기 대사",
       "sourceHash": "b3800ac4934368e9a003e9d55caf3c9997ccfe2e40858e50deef9092aeffbca5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Integration failure/conflict or scheduled reconciliation"
     },
     {
       "key": "FPW.17-S3.label",
       "source": "공장 인수·Legacy 연계",
       "sourceHash": "7ece77d2abaaa958b07bdf31304b37c80145e15995bd950c6a872b186254e30d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Factory intake or Legacy integration"
     },
     {
       "key": "FPW.17-E1.label",

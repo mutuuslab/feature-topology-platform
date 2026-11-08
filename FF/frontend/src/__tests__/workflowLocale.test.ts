@@ -31,7 +31,23 @@ it('uses English workflow display names while preserving source topology, RACI, 
   }
   english.roles.forEach((role,i) => expect({ ...role,name:WORKFLOWS.roles[i].name,desc:WORKFLOWS.roles[i].desc }).toEqual(WORKFLOWS.roles[i]));
   english.departments.forEach((department,i) => expect({ ...department,name:WORKFLOWS.departments[i].name,desc:WORKFLOWS.departments[i].desc }).toEqual(WORKFLOWS.departments[i]));
-  expect(untranslatedCopyPaths().some(path => path.startsWith('workflow-metadata.'))).toBe(true);
+  const visibleText = [
+    english.note, english.referenceModel?.title, english.referenceModel?.scope,
+    ...english.roles.flatMap(role => [role.name,role.desc]),
+    ...english.departments.flatMap(department => [department.name,department.desc]),
+    english.departmentScope.note, ...english.departmentScope.demoNotes,
+    ...english.departmentSod.map(rule => rule.note),
+    ...english.processes.flatMap(process => [process.name,process.group,process.ref,process.purpose,
+      ...process.entry,...process.exit,...process.outcomes.map(outcome => outcome.text),
+      ...process.workProducts.flatMap(product => [product.name,...product.content]),
+      ...process.activities.flatMap(activity => [activity.name,activity.trigger,...activity.steps,...activity.checks]),
+      ...(process.basePractices?.flatMap(practice => [practice.name,practice.definition,...practice.notes]) ?? []),
+      ...process.layout.lanes.map(lane => lane.label),...process.layout.nodes.map(node => node.label),
+      ...process.departmentLayout.lanes.map(lane => lane.label),...process.departmentLayout.nodes.map(node => node.label),
+    ]),
+  ];
+  expect(visibleText.filter(value => value && /[가-힣]/.test(value))).toEqual([]);
+  expect(untranslatedCopyPaths().filter(path => path.startsWith('workflow-metadata.'))).toEqual([]);
   expect(JSON.stringify(WORKFLOWS)).toBe(snapshot);
   await changeUiLanguage('ko');
   expect(displayWorkflows(WORKFLOWS)).toEqual(korean);

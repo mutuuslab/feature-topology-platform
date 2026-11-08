@@ -89,9 +89,16 @@ const loaders = {
   'workspace-studio': () => import('./en/workspace-studio'),
 };
 const workflowParts: Array<() => Promise<{ default: Record<string, string> }>> = [
+  () => import('./en/workflow-metadata-parts/artifact-names'),
   () => import('./en/workflow-metadata-parts/fpw-1'),
   () => import('./en/workflow-metadata-parts/fpw-10'),
+  () => import('./en/workflow-metadata-parts/fpw-11'),
+  () => import('./en/workflow-metadata-parts/fpw-12'),
+  () => import('./en/workflow-metadata-parts/fpw-13'),
   () => import('./en/workflow-metadata-parts/fpw-14'),
+  () => import('./en/workflow-metadata-parts/fpw-15'),
+  () => import('./en/workflow-metadata-parts/fpw-16'),
+  () => import('./en/workflow-metadata-parts/fpw-17'),
   () => import('./en/workflow-metadata-parts/fpw-2'),
   () => import('./en/workflow-metadata-parts/fpw-3'),
   () => import('./en/workflow-metadata-parts/fpw-4'),

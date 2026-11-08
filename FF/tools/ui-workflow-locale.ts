@@ -23,7 +23,7 @@ for (const statement of catalogue.statements) if (ts.isExportAssignment(statemen
 }
 }
 const entries = new Map<string, { key: string; source: string; sourceHash: string; status: 'TRANSLATED' | 'SOURCE_ENGLISH' | 'MISSING'; english: string | null }>();
-const add = (key: string, source: string, provided?: string) => entries.set(key, { key, source, sourceHash: createHash('sha256').update(source).digest('hex'), status: english.has(key) ? 'TRANSLATED' : provided || !/[가-힣]/.test(source) ? 'SOURCE_ENGLISH' : 'MISSING', english: english.get(key) ?? provided ?? (!/[가-힣]/.test(source) ? source : null) });
+const add = (key: string, source: string, provided?: string) => entries.set(key, { key, source, sourceHash: createHash('sha256').update(source).digest('hex'), status: english.has(key) ? 'TRANSLATED' : (provided && !/[가-힣]/.test(provided)) || !/[가-힣]/.test(source) ? 'SOURCE_ENGLISH' : 'MISSING', english: english.get(key) ?? provided ?? (!/[가-힣]/.test(source) ? source : null) });
 add('note', doc.note);
 if (doc.referenceModel) { add('referenceModel.title', doc.referenceModel.title); add('referenceModel.scope', doc.referenceModel.scope); }
 for (const role of doc.roles) { add(`${role.id}.name`, role.name, role.en); add(`${role.id}.desc`, role.desc); }

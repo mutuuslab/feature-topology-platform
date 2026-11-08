@@ -74,6 +74,7 @@ export const NOTIFICATION_RULE_SPECS: NotificationRuleSpec[] = [
   { event: 'compliance.rule.approval-requested', name: '컴플라이언스 룰 승인 요청', category: 'APPROVAL', recipients: ['NAMED_APPROVERS'], excludes: '요청자 본인', requirementIds: ['FR-CRC-001-014'] },
   { event: 'exception.requested', name: '예외 승인 요청', category: 'APPROVAL', recipients: ['SAFETY_OFFICER', 'OPS_LEAD', 'SECURITY_OFFICER', 'GATE_JUDGE'], excludes: '요청자·이미 승인한 사람', requirementIds: ['FR-EXC-001-001'] },
   { event: 'exception.reverted', name: '예외 만료·회수 원복', category: 'DEPLOY', recipients: ['OWNER_TEAM', 'REQUESTER', 'NAMED_APPROVERS'], requirementIds: ['FR-EXC-002-004'] },
+  { event: 'kill.intake-received', name: '중단 필요·차단 요청 접수', category: 'SAFETY', recipients: ['OWNER_TEAM', 'OPERATOR', 'SAFETY_OFFICER'], requirementIds: ['FR-SVS-002-001', 'FR-AGW-001-002'] },
 ];
 
 /** 수신자 표시 이름 — 규칙 토큰·역할 */

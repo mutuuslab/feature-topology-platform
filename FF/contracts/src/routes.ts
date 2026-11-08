@@ -1,3 +1,4 @@
+import { ImpactConfirmBody, ImpactReevaluateBody, KillIntakeBody, KillIntakeDismissBody, RescindBody } from './rules/kill-intake';
 import { PutRoleScopeBody } from './schemas/role-scope';
 import { ApproveConfigSetBody, ApproveSecurityMinBody, ProposeSecurityMinBody } from './schemas/ads-config';
 import { CreateExceptionBody, EXCEPTION_APPROVER_ROLES, EXCEPTION_REQUEST_ROLES, ExceptionDecisionBody, ExceptionRevokeBody } from './schemas/exception-policy';
@@ -359,7 +360,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'gatePreview', method: 'POST', path: '/api/gate/preview', summary: '정책 게이트 미리보기 — kill_command v2 판정(스키마·규칙), 원장 변경 없음. 스키마 오류도 SCHEMA_FAIL 결과로 돌려준다', component: 'D03-02', roles: ['OPERATOR', 'SAFETY_OFFICER', 'SECURITY_OFFICER', 'OPS_LEAD'], body: KillCommandV2 },
   { name: 'gateSnapshot', method: 'GET', path: '/api/gate/features/:id/versions/:ver', summary: '게이트가 보는 Feature Version — Registry 항목(D.6)·명령 원장·다음 순번·24시간 누적', component: 'D03-02', sample: { id: 'FEAT-00022', ver: '1.0.0' } },
   { name: 'killRequests', method: 'GET', path: '/api/kill-requests', summary: '긴급 차단 요청 목록 (회신 집계 포함)', component: 'D03-03', query: ['status'] },
-  { name: 'killPreview', method: 'GET', path: '/api/kill-requests/preview', summary: '차단 영향 범위 미리보기 (의존 Feature·flag·차량)', component: 'D03-03', query: ['featureId', 'featureVersion', 'vins'], sample: { featureId: 'FEAT-00022', featureVersion: '1.0.0' } },
+  { name: 'killPreview', method: 'GET', path: '/api/kill-requests/preview', summary: '차단 영향 범위 미리보기 (의존 Feature·flag·차량, 범위 유형 — 적용 지역·차종·트림·Variant 조건·SW 버전, Variant 판정·영향 그룹)', component: 'D03-03', query: ['featureId', 'featureVersion', 'vins', 'reasonCategory', 'countries', 'vehicleModels', 'trims', 'upgVcs', 'swVersions'], sample: { featureId: 'FEAT-00022', featureVersion: '1.0.0' } },
   { name: 'killDetail', method: 'GET', path: '/api/kill-requests/:id', summary: '차단 요청 상세 (차단·복구 회신)', component: 'D03-03' },
   { name: 'issueKill', method: 'POST', path: '/api/kill-requests', summary: '긴급 차단 요청 (type-to-confirm·사유 분류) — 2인 승인 뒤 게이트·서명·차량별 봉투', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillCreateBody },
   { name: 'approveKill', method: 'POST', path: '/api/kill-requests/:id/approvals', summary: '긴급 차단 승인 — 개인 서명, 두 번째 승인이면 게이트 판정 후 발행', component: 'D03-03', roles: KILL_APPROVER_ROLES, body: KillApproveBody },
@@ -771,6 +772,18 @@ export const ROUTES: RouteDef[] = [
   { name: 'roleScopes', method: 'GET', path: '/api/iam/scopes', summary: '권한 범위 — 계정별 시장·Feature·환경(종료·해제·발행 명령에 적용)', component: 'D06-09' },
   { name: 'putRoleScope', method: 'PUT', path: '/api/iam/scopes/:accountId', summary: '권한 범위 지정(추가만 이력)', component: 'D06-09', roles: ['SECURITY_OFFICER'], body: PutRoleScopeBody },
   { name: 'vehicleReconcile', method: 'GET', path: '/api/vehicles/:vin/reconcile', summary: '재연결 대조 — 서버 의도(Feature epoch·종료 차단) vs 차량 보고 2.1 불일치·미확인 기간, 차량 ADS 사건', component: 'D04-03', personal: true, dataCategory: 'SAFETY_OPERATION', roles: [...DATA_CATEGORY_ACCESS.SAFETY_OPERATION] },
+  { name: 'killParties', method: 'GET', path: '/api/kill-requests/:id/parties', summary: '차단 관련 담당자 — Feature Owner·요청자·승인자·협력사(구현 SW 납품 정보)', component: 'D03-03' },
+  { name: 'extKillIntake', method: 'POST', path: '/api/ext/v1/kill-intake', summary: '외부 시스템 차단 요청 접수(API 키) — 실행하지 않고 사람의 차단 요청·2인 승인 대기열로. 접수 ID·상태를 돌려준다', component: 'D03-03', roles: ['SYSTEM'], body: KillIntakeBody },
+  { name: 'extKillIntakeStatus', method: 'GET', path: '/api/ext/v1/kill-intake/:id', summary: '차단 요청 접수 상태 — 옮긴 차단 ID·상태·승인 수(외부 시스템 결과 조회)', component: 'D03-03', roles: ['SYSTEM', 'AUDITOR'] },
+  { name: 'killIntakes', method: 'GET', path: '/api/kill-intake', summary: '차단 요청 접수 목록 — 외부 시스템·이상 징후 조건 충족(중단 필요), 검토 대기·옮김·닫음', component: 'D03-03', query: ['status'] },
+  { name: 'dismissKillIntake', method: 'POST', path: '/api/kill-intake/:id/dismiss', summary: '차단 요청 접수 닫기(사유)', component: 'D03-03', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: KillIntakeDismissBody },
+  { name: 'deactivationChecks', method: 'GET', path: '/api/deactivation-checks', summary: '비활성화 조건 확인 기록 — 이상 건마다 조건 넷·미충족 사유·접수', component: 'D03-03', query: ['anomalyId', 'featureId'] },
+  { name: 'terminationInhibits', method: 'GET', path: '/api/termination/inhibits', summary: '사건별 종료 차단 집합 — 사건 → Feature → 차량 수·설정·해제 시각, 차량별 남은 사건', component: 'D03-03', query: ['featureId', 'incidentId'] },
+  { name: 'rescindKill', method: 'POST', path: '/api/kill-requests/:id/rescind', summary: '사건 범위 선택 해제 — 이 차단의 사건만(다른 사건 409), 복원 요청·2인 승인 그대로, 다른 사건 차단이 남는 차량', component: 'D03-04', roles: ['OPERATOR', 'SAFETY_OFFICER'], body: RescindBody },
+  { name: 'impactSet', method: 'GET', path: '/api/incidents/:id/impact-set', summary: '영향 차량 산정 — 후보·구성 미확인·통신 미수신 3분류, 고정 스냅샷·재평가 이력·확정 영향군·식별 정확도', component: 'D03-03' },
+  { name: 'reevaluateImpactSet', method: 'POST', path: '/api/incidents/:id/impact-set/reevaluate', summary: '영향 차량 재평가 — 구성 기준 시각, 새 스냅샷(이전 불변)', component: 'D03-03', roles: ['SAFETY_OFFICER', 'OPS_LEAD', 'OPERATOR'], body: ImpactReevaluateBody },
+  { name: 'confirmImpactSet', method: 'POST', path: '/api/incidents/:id/impact-set/confirm', summary: '확정 영향군 저장 — 분석 근거 필수, 후보 산정 복사 거부', component: 'D03-03', roles: ['SAFETY_OFFICER', 'OPS_LEAD'], body: ImpactConfirmBody },
+  { name: 'killBlockedScope', method: 'GET', path: '/api/kill-requests/blocked-scope', summary: '현재 차단 상태인 범위 — Feature에 걸린 차단별 남은 차량(부분 복원 차량 제외), 해제 대상 선택', component: 'D03-04', query: ['featureId'], requiredQuery: ['featureId'], sample: { featureId: 'FEAT-00022' } },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

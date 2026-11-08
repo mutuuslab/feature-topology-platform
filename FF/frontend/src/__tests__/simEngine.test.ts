@@ -278,8 +278,10 @@ describe('대표 흐름 — 긴급 차단 → 2인 승인 → 회신 → 재전�
     expect((await run('notifications', { query: { limit: 6 }, role: 'operator' })).items[0]).toMatchObject({ eventType: 'kill.issued', category: 'SAFETY' });
 
     // 복원 — 차단 해제(desired INACTIVE, 활성화 아님). 재검증 Evidence는 이 Feature의 PASS만
-    await expect(run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치', evidenceRef: 'EV-FAIL', cohort: VINS } , role: 'operator' })).rejects.toMatchObject({ status: 400 });
-    const rr = await run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치·재검증 완료', evidenceRef: 'EV-PASS-G5', cohort: VINS }, role: 'operator' });
+    // 해제 확인 항목을 체크하지 않으면 요청을 만들지 않는다(서버와 같은 규칙, FR-KSW-004-002)
+    await expect(run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치', evidenceRef: 'EV-PASS-G5', cohort: VINS, resolved: true }, role: 'operator' })).rejects.toMatchObject({ status: 400 });
+    await expect(run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치', evidenceRef: 'EV-FAIL', cohort: VINS, resolved: true, causeFixed: true } , role: 'operator' })).rejects.toMatchObject({ status: 400 });
+    const rr = await run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치·재검증 완료', evidenceRef: 'EV-PASS-G5', cohort: VINS, resolved: true, causeFixed: true }, role: 'operator' });
     expect(rr.restoreRequest).toMatchObject({ status: 'REQUESTED', cohort: VINS });
     expect(rr.restoreOutlook.complete).toBe(true);
     // 직전 차단 승인자는 복원을 승인할 수 없다(SOD)
@@ -326,7 +328,7 @@ describe('Feature Flag 탭 — 진행 중 긴급 차단', () => {
     expect((await flags()).kill).toEqual({ killId: 'KILL-00008', confirmed: 0, denominator: 4 });
     await vi.advanceTimersByTimeAsync(9300);
     expect((await flags()).kill).toEqual({ killId: 'KILL-00008', confirmed: 3, denominator: 4 });
-    await run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치·재검증 완료', evidenceRef: 'EV-PASS-G5', cohort: VINS }, role: 'operator' });
+    await run('requestRestore', { params: { id: 'KILL-00008' }, body: { reason: '원인 조치·재검증 완료', evidenceRef: 'EV-PASS-G5', cohort: VINS, resolved: true, causeFixed: true }, role: 'operator' });
     await run('approveRestore', { params: { id: 'KILL-00008' }, body: {}, role: 'safety2' });
     await run('approveRestore', { params: { id: 'KILL-00008' }, body: {}, role: 'opslead' });
     expect((await flags()).kill).toBeNull();

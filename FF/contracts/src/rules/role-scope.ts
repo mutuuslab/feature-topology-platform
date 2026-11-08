@@ -17,7 +17,7 @@ export interface RoleScope {
 }
 
 /** 범위를 보는 명령 — 종료(긴급 차단)·해제(복원·레거시 해제)·발행(정책 배포). 이름은 contracts ROUTES */
-export const SCOPED_COMMANDS = ['issueKill', 'approveKill', 'rejectKill', 'requestRestore', 'approveRestore', 'rejectRestore', 'releaseKill', 'deployPolicy'] as const;
+export const SCOPED_COMMANDS = ['issueKill', 'approveKill', 'rejectKill', 'requestRestore', 'approveRestore', 'rejectRestore', 'releaseKill', 'rescindKill', 'deployPolicy'] as const;
 export type ScopedCommand = (typeof SCOPED_COMMANDS)[number];
 
 export interface ScopeTarget {

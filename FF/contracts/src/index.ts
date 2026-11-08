@@ -49,3 +49,7 @@ export * from './rules/ads-config-approval';
 export * from './rules/role-scope';
 
 export * from './schemas/role-scope';
+
+export * from './rules/kill-scope';
+
+export * from './rules/kill-intake';

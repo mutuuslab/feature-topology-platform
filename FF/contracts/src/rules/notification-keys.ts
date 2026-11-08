@@ -84,6 +84,7 @@ export const NOTIFICATION_EVENT_TYPES: readonly string[] = [
   'compliance.rule.approval-requested',
   'exception.requested',
   'exception.reverted',
+  'kill.intake-received',
 ];
 
 // ─── 읽음 처리 — API 경로 표(routes.ts)가 규칙표 없이 읽는다(첫 화면 예산) ───

@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { PolicySchema } from './policy';
 import { ApproverRole, DeactClass, FClass, REASON_CATEGORIES } from './safety';
+import { KillScopeFilter } from '../rules/kill-scope';
 
 export const SafeMode = z.enum(['SAFE_DEFAULT', 'SAFE_STOP']);
 export type SafeMode = z.infer<typeof SafeMode>;
@@ -133,6 +134,10 @@ export const RestoreRequest = z.object({
   evidenceRef: z.string().nullable().optional(),
   /** 이번 단계에 복원할 차량(Canary Cohort, FPW.8-A10) — 차단 차량의 부분집합. 이전 행은 차단 차량 전체 */
   cohort: z.array(z.string()).optional(),
+  /** 해제 확인 항목(FR-KSW-004-001·002) — 차단 사유 해소·원인 조치 완료. 이전 행에는 없다 */
+  checks: z.object({ resolved: z.boolean(), causeFixed: z.boolean() }).optional(),
+  /** 지정 승인대상자(FR-KSW-004-001) — 비우면 복원 승인 후보 누구나. 지정하면 그 사람만 승인 칸을 채운다 */
+  approverTargets: z.array(z.string()).optional(),
 });
 export type RestoreRequest = z.infer<typeof RestoreRequest>;
 
@@ -142,12 +147,29 @@ export const RestoreRequestBody = z
     reason: z.string().trim().min(2).max(500),
     evidenceRef: z.string().trim().min(3).max(512),
     cohort: z.array(z.string().min(1)).min(1).max(500),
+    /** 해제 확인 항목 — 둘 다 체크해야 요청을 만든다(FR-KSW-004-002, 서버가 빠진 항목을 알려 준다) */
+    resolved: z.boolean().optional(),
+    causeFixed: z.boolean().optional(),
+    /** 지정 승인대상자 — 복원 승인 후보(직전 차단 승인자 제외)에서 고른다 */
+    approverTargets: z.array(z.string().min(1).max(100)).max(6).optional(),
   })
   .strict();
 export type RestoreRequestBody = z.infer<typeof RestoreRequestBody>;
 
 /** 단계적 복원 기록 — 단계마다 Cohort·Evidence·복구 게시본 */
-export const RestoreStage = z.object({ cohort: z.array(z.string()), evidenceRef: z.string().nullable(), publicationId: z.string(), approvedAt: z.string(), approvers: z.array(z.string()) });
+const BlockState = z.object({ status: z.string(), blockedVins: z.array(z.string()) });
+/** 해제 기록(FR-KSW-004-007) — Feature·해제 범위·요청자·승인자·일시·변경 전/후 상태. 이전 행에는 뒤 칸들이 없다 */
+export const RestoreStage = z.object({
+  cohort: z.array(z.string()),
+  evidenceRef: z.string().nullable(),
+  publicationId: z.string(),
+  approvedAt: z.string(),
+  approvers: z.array(z.string()),
+  featureId: z.string().optional(),
+  requestedBy: z.string().optional(),
+  before: BlockState.optional(),
+  after: BlockState.optional(),
+});
 export type RestoreStage = z.infer<typeof RestoreStage>;
 
 export const KillRequestSchema = z.object({
@@ -194,11 +216,19 @@ export const KillRequestSchema = z.object({
   releaseReason: z.string().nullable(),
   restorePublicationId: z.string().nullable(),
   anomalyId: z.string().nullable().default(null),
+  /** 차단 요청 접수에서 옮긴 요청(P11a) */
+  intakeId: z.string().nullable().optional(),
+  /** 종료 사건(ADS-BE02) — 차단 집합·선택 해제의 단위. 이전 행에는 없다(차단 ID가 사건) */
+  incidentId: z.string().nullable().optional(),
+  /** 요청 때 쓴 차단 대상 범위(P11a) — 이전 행에는 없다 */
+  scope: KillScopeFilter.nullable().optional(),
 });
 export type KillRequest = z.infer<typeof KillRequestSchema>;
 
 export const KillCreateBody = z
   .object({
+    /** 차단 대상 범위(FR-KSW-001-002) — 적용 지역·차종·트림·Variant 조건·SW 버전. vins와 함께 주면 둘 다 맞는 차량 */
+    scope: KillScopeFilter.optional(),
     featureId: z.string().regex(/^FEAT-\d{5}$/),
     featureVersion: z.string().min(1),
     /** 비우면 영향 범위의 모든 차량 */
@@ -221,6 +251,16 @@ export const KillCreateBody = z
     anomalyId: z
       .string()
       .regex(/^ANM-\d{5}$/)
+      .optional(),
+    /** 차단 요청 접수(외부 시스템·이상 징후 조건 충족)에서 옮긴 요청 — 접수는 '차단 요청으로 옮김'이 된다(P11a) */
+    intakeId: z
+      .string()
+      .regex(/^KIN-\d{5}$/)
+      .optional(),
+    /** 종료 사건 ID(ADS-BE02) — 현장 장애(INC-)·이상 건(ANM-)·리콜 등. 비우면 이상 건, 그것도 없으면 이 차단 자체가 사건 */
+    incidentId: z
+      .string()
+      .regex(/^[A-Z][A-Z0-9]{1,9}-[A-Z0-9-]{3,40}$/)
       .optional(),
   })
   .strict();

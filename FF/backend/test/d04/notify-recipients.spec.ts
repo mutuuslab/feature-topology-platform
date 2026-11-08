@@ -210,6 +210,8 @@ describe('수신자 지정 알림 보강·오류 이력 (D04-04)', () => {
       const p = repo.all().find((x) => x.status === 'DEPLOYED' && x.flagKey === 'care_00022_signal')!;
       repo.update({ ...p, status: 'APPROVED' });
       const db = b.get<Db>(DB);
+      // 앞 시험의 긴급 차단(FEAT-00022)이 걸려 있으면 차단 중 활성화 거부(FR-KSW-002-006)가 먼저 막는다 — 이 시험은 서명 실패만 본다
+      db.run("UPDATE kill_request SET status = 'RELEASED' WHERE feature_id = 'FEAT-00022' AND status = 'ACTIVE'");
       db.run("UPDATE pki_key SET not_after = '2026-01-01T00:00:00.000Z' WHERE purpose = 'policy' AND status = 'ACTIVE'");
       const r = await http().post(`/api/policies/${p.policyId}/deploy`).set(OPERATOR).send({ reason: '서명 실패 시험' }).expect(422);
       expect(r.body.error.message).toContain('만료되었습니다');

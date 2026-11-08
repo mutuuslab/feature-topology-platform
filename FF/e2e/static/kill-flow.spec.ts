@@ -151,6 +151,7 @@ test('정적 시연: 긴급 차단 → 2인 승인 → 차량 회신 → 재전�
   // 7. 복원 요청(차단 해제 — 기능 활성화가 아니다): 재검증 Evidence·Canary 1대
   const form = page.getByTestId('restore-form');
   await form.getByLabel('사유', { exact: true }).fill('원인 수정·재검증 PASS — 1대부터 복원');
+  for (const c of ['차단 사유 해소', '원인 조치 완료']) await form.getByRole('checkbox', { name: c }).check(); // 해제 확인 항목(FR-KSW-004-002)
   await form.getByRole('button', { name: '복원 요청' }).click();
   await expect(page.getByTestId('restore-form')).toHaveCount(0); // 요청 뒤에는 복원 승인 칸
   await expect(page.getByRole('dialog').locator('[data-tour="kill-restore"]').getByRole('button', { name: '승인 — 개인 서명' })).toBeVisible();

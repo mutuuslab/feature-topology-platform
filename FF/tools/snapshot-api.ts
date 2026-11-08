@@ -1,3 +1,4 @@
+import { snapshotP11a } from './snapshot-p11a.ts';
 // npm run snapshot:api — 정적 데모(Cloudflare, VITE_DATA_MODE=static)용 GET 응답 스냅샷.
 // 빌드된 백엔드를 보조 포트에 띄워(메모리 DB·v0.81 시드) v2 화면이 실제로 보내는 요청 모양 그대로 받아 둔다.
 // 요청 URL·파일 이름 규칙은 @ff/contracts의 routeUrl·snapshotFile 하나를 프론트와 공유한다.
@@ -501,6 +502,7 @@ async function main() {
   for (const kind of ['POLICY', 'KILL', 'RESTORE']) await save('publications', {}, { kind });
   for (const p of pubs.items) await save('publicationDetail', { id: p.publicationId });
   const kills = await save('killRequests');
+  await snapshotP11a(save, { kills: kills.items });
   // 롤백(D03-04) — 배포 목록·배포별 상세·이력(실행 기록 상세는 아래 '상세 서랍')
   const rbDeps = await save('rollbackDeployments');
   for (const d of rbDeps.items) if (d.deploymentId) await save('rollbackDeployment', { deploymentId: d.deploymentId });

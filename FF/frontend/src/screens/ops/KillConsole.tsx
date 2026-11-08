@@ -59,6 +59,10 @@ import {
 import { usePermission, when } from '../shared';
 import { evidenceLabel, nodeReasonLabel, nodeStateLabel, personLabel, Progress, PubStatus, type Delivery } from './shared';
 import { KillBulkPreview } from '../ads/BulkPreviews';
+import type { KillScopeFilter } from '../../../../contracts/src/rules/kill-scope';
+import { KillParties, KillScopePanel, scopedRows, type PartiesView, type VariantRuleView } from './KillScopePanel';
+import { ImpactSetPanel, IncidentInhibits, IntakeQueue, RestoreThreeState, TerminationOutcome } from './KillIncidentPanels';
+import { killScope as KS } from '../../copy/kill-scope';
 import { adsChange } from '../../copy/ads-change';
 
 const K = ko.kill;
@@ -103,6 +107,8 @@ interface Kill {
   expiresAt?: string;
   gate?: { result: string; failed: string[] } | null;
   command?: CommandRef | null;
+  incidentId?: string | null;
+  intakeId?: string | null;
   rejectedBy?: string | null;
   rejectReason?: string | null;
   restoreRequest?: {
@@ -124,9 +130,19 @@ interface Kill {
   recallReports?: { market: string; due: string | null; basis: string; note: string | null }[];
   /** 단계적 복원 — 복원한 차량·단계 기록 */
   restoredVins?: string[];
-  restoreStages?: { cohort: string[]; evidenceRef: string | null; publicationId: string; approvedAt: string; approvers: string[] }[];
+  restoreStages?: {
+    cohort: string[];
+    evidenceRef: string | null;
+    publicationId: string;
+    approvedAt: string;
+    approvers: string[];
+    requestedBy?: string;
+    before?: { status: string; blockedVins: string[] };
+    after?: { status: string; blockedVins: string[] };
+  }[];
   /** 상세만 — 승인 대기면 다음 칸 후보, 차단 중이면 복원 전망(직전 차단 승인자 제외) */
   approverCandidates?: { id: string; roles: ApproverRole[] }[];
+  parties?: PartiesView;
   restoreOutlook?: { candidates: { id: string; roles: ApproverRole[] }[]; byRole: { role: ApproverRole; ids: string[] }[]; missing: ApproverRole[]; complete: boolean };
   delivery: Delivery | null;
   restore: Delivery | null;
@@ -154,7 +170,8 @@ interface Preview {
   featureIds: string[];
   dependents: { featureId: string; version: string | null; name: string }[];
   flagKeys: string[];
-  vehicles: { vin: string; label: string; link: string; gleo: boolean }[];
+  vehicles: { vin: string; label: string; link: string; gleo: boolean; country: string; vehicleModel: string; trim: string; upgVc: string; swVersion: string; verdict?: string }[];
+  variantRule?: VariantRuleView | null;
   activeKill: string | null;
   registry: { f_class: FClass; deact_class: DeactClass; gsr_mandatory: boolean; profile?: Record<string, number> } | null;
   window: { hours: number; deactivate: number; cap: number };
@@ -218,6 +235,8 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   // 이상 징후 대응(/ops/anomalies)에서 넘어오면 대상 Feature·이상 건을 채워 둔다
   const [sp] = useSearchParams();
   const anomalyId = sp.get('anomaly');
+  // 차단 요청 접수(외부 시스템·중단 필요)에서 옮기는 요청 — 요청을 만들면 접수는 '옮김'이 된다
+  const intakeId = sp.get('intake');
   // 사용자가 적기 전에는 예시 Feature(있으면)·첫 Feature — 없는 데모 ID를 미리 채우지 않는다(출시 준비 RD-OPS-02)
   const [typedId, setFeatureId] = useState<string | null>(sp.get('featureId'));
   const [typedVer, setVersion] = useState<string | null>(sp.get('featureId') ? (sp.get('version') ?? '1.0.0') : null);
@@ -225,6 +244,7 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   const featureId = typedId ?? fallback?.featureId ?? '';
   const featureVersion = typedVer ?? (typedId === null ? fallback?.version : undefined) ?? '';
   const [picked, setPicked] = useState<string[] | null>(null);
+  const [scope, setScope] = useState<KillScopeFilter>({});
   const [category, setCategory] = useState<ReasonCategory>('SAFETY');
   const [code, setCode] = useState('FIELD_FAULT');
   const [recall, setRecall] = useState('');
@@ -251,7 +271,9 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
   ); // 차량·사유를 바꿔도 패널이 깜박이지 않게 — 이전 결과를 보이며 다시 판정
   const issue = useApiMutation<Kill>('issueKill', INVALIDATE);
   const p = pv.data;
-  const vins = picked ?? p?.vehicles.map((v) => v.vin) ?? [];
+  // 차단 대상 범위(FR-KSW-001-002) — 고른 범위에 드는 차량만 보이고 기본 선택된다
+  const shown = p ? scopedRows(p.vehicles, scope) : [];
+  const vins = picked ?? shown.map((v) => v.vin);
   const toggle = (vin: string) => setPicked(vins.includes(vin) ? vins.filter((x) => x !== vin) : [...vins, vin]);
   const reg = p?.registry;
   const safetyF2 = category === 'SAFETY' && !!reg && ['F2', 'F3', 'F4'].includes(reg.f_class);
@@ -310,11 +332,12 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                   {K.activeKill}: <Link to={`/ops/kill?id=${p.activeKill}`}>{p.activeKill}</Link>
                 </p>
               )}
+              <KillScopePanel rows={p.vehicles} rule={p.variantRule} scope={scope} onScope={(s) => (setScope(s), setPicked(null))} />
               <fieldset className="ds-choices" aria-label={K.vehicles}>
                 <legend className="ds-field__label">
                   {K.vehicles} ({vins.length}/{p.vehicles.length})
                 </legend>
-                {p.vehicles.map((v) => (
+                {shown.map((v) => (
                   <label key={v.vin} title={v.link === 'OFFLINE' ? K.offline : v.label}>
                     <input type="checkbox" checked={vins.includes(v.vin)} onChange={() => toggle(v.vin)} />
                     <span className="ds-dot" data-on={v.link === 'ONLINE'} aria-hidden="true" />
@@ -330,6 +353,11 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
         {anomalyId && (
           <p className="ds-field__hint" role="status">
             {K.fromAnomaly}: <Link to={`/ops/anomalies?id=${anomalyId}`}>{anomalyId}</Link>
+          </p>
+        )}
+        {intakeId && (
+          <p className="ds-field__hint" role="status" data-testid="kill-from-intake">
+            {KS.intake.from(intakeId)}
           </p>
         )}
         <div className="ds-form-grid">
@@ -399,6 +427,8 @@ function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
                 ...(containment.trim() && { containmentJustification: containment.trim() }),
                 ...(safetyF2 && defectAt && { defectDeterminedAt: new Date(defectAt).toISOString() }),
                 ...(anomalyId && { anomalyId }),
+                ...(intakeId && { intakeId }),
+                ...(Object.keys(scope).length && { scope }),
               },
             },
             {
@@ -645,6 +675,9 @@ function RestoreStages({ k }: { k: Kill }) {
         { key: 'c', header: C.cohort, cell: (s) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{s.cohort.map((vin, i) => <span key={vin}>{i > 0 ? ', ' : ''}<span className="ds-nowrap">{vin}</span></span>)}</span> },
         { key: 'e', header: C.evidence, cell: (s) => <span style={{ fontSize: 'var(--fs-xs)' }} title={s.evidenceRef ?? undefined}>{s.evidenceRef ? evidenceLabel(s.evidenceRef) : '—'}</span> },
         { key: 'p', header: C.pub, cell: (s) => <Link className="ds-mono ds-nowrap" to={`/deployments/${s.publicationId}`}>{s.publicationId}</Link> },
+        { key: 'r', header: CT.restore.stageCol2.by, cell: (s) => (s.requestedBy ? personLabel(s.requestedBy) : '—') },
+        { key: 'b', header: CT.restore.stageCol2.before, cell: (s) => (s.before ? CT.restore.blockState(s.before.status, s.before.blockedVins.length) : '—') },
+        { key: 'a', header: CT.restore.stageCol2.after, cell: (s) => (s.after ? CT.restore.blockState(s.after.status, s.after.blockedVins.length) : '—') },
       ]}
     />
   );
@@ -663,6 +696,9 @@ function RestoreForm({ k }: { k: Kill }) {
   const [reason, setReason] = useState('');
   const [evidence, setEvidence] = useState('');
   const [cohort, setCohort] = useState<string[] | null>(null);
+  const [checks, setChecks] = useState({ resolved: false, causeFixed: false });
+  const [targets, setTargets] = useState<string[]>([]);
+  const candidates = k.restoreOutlook?.candidates ?? [];
   // Evidence — 이 Feature Version의 PASS 판정 근거, G5(검증)를 앞으로
   const options = [...(ev.data?.items ?? [])]
     .filter((e) => e.inputResult === 'PASS')
@@ -671,7 +707,13 @@ function RestoreForm({ k }: { k: Kill }) {
   // 기본 Cohort — Canary 표시 차량이 있으면 그 차량, 없으면 남은 첫 차량(한 대부터 넓힌다)
   const chosen = cohort ?? left.slice(0, 1);
   const toggle = (vin: string) => setCohort(chosen.includes(vin) ? chosen.filter((x) => x !== vin) : [...chosen, vin]);
-  const missing = [!perm.ok && (perm.hint ?? ''), reason.trim().length < 2 && CT.restore.needReason, !picked && CT.restore.needEvidence, !chosen.length && CT.restore.needCohort].filter(Boolean) as string[];
+  const missing = [
+    !perm.ok && (perm.hint ?? ''),
+    reason.trim().length < 2 && CT.restore.needReason,
+    !picked && CT.restore.needEvidence,
+    !chosen.length && CT.restore.needCohort,
+    !(checks.resolved && checks.causeFixed) && CT.restore.needChecks,
+  ].filter(Boolean) as string[];
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }} data-testid="restore-form">
       {!!done.size && <p className="ds-field__hint">{CT.restore.progress(done.size, k.vins.length)}</p>}
@@ -704,6 +746,27 @@ function RestoreForm({ k }: { k: Kill }) {
         ))}
       </fieldset>
       <p className="ds-field__hint">{CT.restore.cohortHint}</p>
+      {!!candidates.length && (
+        <fieldset className="ds-choices" aria-label={CT.restore.targets} data-testid="restore-targets">
+          <legend className="ds-field__label">{CT.restore.targets}</legend>
+          {candidates.map((c) => (
+            <label key={c.id}>
+              <input type="checkbox" checked={targets.includes(c.id)} onChange={() => setTargets(targets.includes(c.id) ? targets.filter((x) => x !== c.id) : [...targets, c.id])} />
+              {personLabel(c.id)}
+            </label>
+          ))}
+        </fieldset>
+      )}
+      {!!candidates.length && <p className="ds-field__hint">{CT.restore.targetsHint}</p>}
+      <fieldset className="ds-choices" aria-label={CT.restore.checks} data-testid="restore-checks">
+        <legend className="ds-field__label">{CT.restore.checks}</legend>
+        {(['resolved', 'causeFixed'] as const).map((c) => (
+          <label key={c}>
+            <input type="checkbox" checked={checks[c]} onChange={() => setChecks({ ...checks, [c]: !checks[c] })} />
+            {CT.restore.check[c]}
+          </label>
+        ))}
+      </fieldset>
       <ErrorNote error={requestRestore.error} />
       <Button
         variant="primary"
@@ -712,7 +775,10 @@ function RestoreForm({ k }: { k: Kill }) {
         title={perm.hint}
         reason={missing.length ? K.needs(missing) : undefined}
         onClick={() =>
-          requestRestore.mutate({ params: { id: k.killId }, body: { reason, evidenceRef: picked, cohort: chosen } }, { onSuccess: () => (setReason(''), setCohort(null)) })
+          requestRestore.mutate(
+            { params: { id: k.killId }, body: { reason, evidenceRef: picked, cohort: chosen, ...checks, ...(targets.length ? { approverTargets: targets } : {}) } },
+            { onSuccess: () => (setReason(''), setCohort(null), setChecks({ resolved: false, causeFixed: false }), setTargets([])) },
+          )
         }
       >
         {K.restoreRequest}
@@ -758,6 +824,11 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
               ...(k.rejectReason ? [{ k: K.reject, v: k.rejectReason, note: k.rejectedBy ? personLabel(k.rejectedBy) : undefined }] : []),
             ]}
           />
+          {v2 && k.command && <TerminationOutcome killId={k.killId} deadlinePassed={k.delivery?.status === 'TIMEOUT'} />}
+          {k.parties && <KillParties p={k.parties} person={personLabel} />}
+          {v2 && k.command && <IncidentInhibits featureId={k.featureId} incidentId={k.incidentId ?? k.killId} vins={k.vins} />}
+          {v2 && k.command && <ImpactSetPanel incidentId={k.incidentId ?? k.killId} />}
+          {v2 && !!k.restoreStages?.length && <RestoreThreeState verified={k.restore?.status === 'CONFIRMED'} released={k.status === 'RELEASED'} activatable={k.status === 'RELEASED'} />}
           {(k.recallCampaignId || k.containmentJustification || !!k.recallReports?.length) && (
             <div data-tour="kill-recall">
               <KeyValue
@@ -947,6 +1018,7 @@ export function KillConsole() {
       >
         <NewKill onDone={(k) => (setComposing(false), setOpen(k.killId))} />
       </Drawer>
+      <IntakeQueue />
       <Panel title={K.list} id="kills" tour="kill-approve">
         <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
           <DataTable

@@ -583,7 +583,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
     const stage = vins.filter((v) => !keep.includes(v));
     if (!evidence || !stage.length) return `${k.killId} ACTIVE(완료 ${done()}/${vins.length}대, 복원 근거 없음)`;
     const restore = this.svc(RestoreService);
-    restore.request(operator, k.killId, RestoreRequestBody.parse({ reason: '원인 조치·재검증 근거 확인 — 복원 요청', evidenceRef: evidence.evidenceRef, cohort: stage }));
+    restore.request(operator, k.killId, RestoreRequestBody.parse({ reason: '원인 조치·재검증 근거 확인 — 복원 요청', evidenceRef: evidence.evidenceRef, cohort: stage, resolved: true, causeFixed: true }));
     restore.approve(who('safety2', 'SAFETY_OFFICER', `restore-${featureId}`), k.killId, KillApproveBody.parse({ comment: '재검증 근거 확인 — 복원 승인(차단 승인자와 다른 FSM)' }));
     const after = restore.approve(who('opslead', 'OPS_LEAD', `restore-${featureId}`), k.killId, KillApproveBody.parse({ comment: '운영 영향 확인 — 복원 승인' }));
     const pub = after.restoreStages?.at(-1)?.publicationId;
@@ -779,7 +779,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
     const next = await this.heroPolicy(ver, '고속도로 주행 보조 2 — 차로 변경 시작 지연 단축 보정(코호트 50% 승인, Canary부터 재배포)', { deploy: false });
     out.push(`${next.policyId} ${this.svc(PolicyRepo).get(next.policyId)?.status}`);
     // ⑥ 복원 요청 — 4.1.1 재검증 근거(G3 PASS)로 적용군 Canary 1대부터(Safety Manager·운영 리더 승인 대기)
-    const r = this.svc(RestoreService).request(operator, k.killId, RestoreRequestBody.parse({ reason: `${ver} 재검증 PASS — 적용군 Canary 1대부터 복원`, evidenceRef: evidence('G5'), cohort: targets.slice(0, 1) }));
+    const r = this.svc(RestoreService).request(operator, k.killId, RestoreRequestBody.parse({ reason: `${ver} 재검증 PASS — 적용군 Canary 1대부터 복원`, evidenceRef: evidence('G5'), cohort: targets.slice(0, 1), resolved: true, causeFixed: true }));
     out.push(`복원 요청 ${(r as { restoreRequest?: { status?: string } | null }).restoreRequest?.status ?? '-'}`);
     return out.join(', ');
   }

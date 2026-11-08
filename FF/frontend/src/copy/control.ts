@@ -55,6 +55,15 @@ export const control = /* @__PURE__ */ localizedCopy('control.control', {
     stages: '단계적 복원 기록',
     stageCol: { no: '단계', cohort: '차량', evidence: 'Evidence', pub: '복구 게시본', at: '승인 시각' },
     requested: (evidence: string, n: number) => `재검증 ${evidence} · 이번 단계 ${n}대`,
+    // 해제 요청 정보(P11a) — 확인 항목 2개는 둘 다 체크해야 요청이 만들어진다
+    checks: '해제 확인 항목',
+    check: { resolved: '차단 사유 해소', causeFixed: '원인 조치 완료' } as Record<string, string>,
+    needChecks: '차단 사유 해소·원인 조치 완료를 둘 다 체크하세요',
+    targets: '승인대상자 지정(선택)',
+    targetsHint: '고르지 않으면 복원 승인 후보 누구나 승인합니다. 고르면 그 사람만 승인 칸을 채웁니다',
+    blockedNow: (n: number, total: number) => `지금 차단 중 ${n}대 / 차단 ${total}대`,
+    stageCol2: { before: '변경 전', after: '변경 후', by: '요청자' },
+    blockState: (status: string, n: number) => `${status === 'RELEASED' ? '해제' : '차단 중'} · 남은 ${n}대`,
   },
   // 차단 상세 서랍 맨 위 — 회신 요약(반영 n/대상 m · 미수신 · 재전송). 미수신은 회신 없음(NO_REPORT) 차량, 재전송은 전달 작업 다시 보내기 횟수
   // 데이터셋 Evidence 번호(SAMPLE-EV-000190-TEST-RESULT)는 이관 원본 ID — 화면은 문서 이름과 번호, 원래 ID는 툴팁

@@ -1,0 +1,22 @@
+import { localizedCopy } from '../locale/runtime';
+export const softwareDelivery=/* @__PURE__ */ localizedCopy('software-delivery.softwareDelivery',{
+  title:'SW 패키지 및 다운로드',lead:'Feature 버전·SW 구성품과 실제 파일을 연결하고, 차량별 Flag 판정을 통과한 원문만 내려받습니다.',
+  guide:'진행 방법',steps:['1. Feature 버전과 SW 구성품을 선택합니다.','2. 실제 SW 파일을 업로드합니다. SHA-256은 자동 계산합니다.','3. 등록자와 다른 출시 담당자가 원문·구성품을 검토하고 승인합니다.','4. 대상 차량과 배포 Flag를 선택해 현재 조건을 확인합니다.','5. 파일을 내려받고 브라우저에서 서명·크기·SHA-256을 다시 검증합니다.'],
+  boundary:'다운로드는 SW 설치·활성화·실차 적용 완료를 의미하지 않습니다. 이 화면은 원문 파일 전달을 검증하며, 설치 사실은 별도 OTA·차량 형상 보고로 확인합니다.',
+  register:'SW 파일 등록',feature:'기준 Feature 버전',sw:'SW 구성품',file:'SW 원문 파일',choose:'선택하세요',reason:'작성·검토 근거',
+  reasonHint:'이 버전·구성품에 사용하는 파일인지, 검토할 내용과 출처를 작성하세요.',upload:'원문 업로드 및 등록',uploading:'원문과 해시를 확인하고 있습니다…',demo:'실행 가능한 시험용 SW 만들기',
+  demoHint:'시험용 JavaScript 파일을 생성합니다. 실제 회사 SW나 인증된 ECU 이미지가 아니며, 설치 이력으로 등록하지 않습니다.',
+  packages:'등록된 SW 패키지',noPackages:'등록된 SW가 없습니다. 실제 파일을 올리거나 시험용 SW로 전달 흐름을 확인하세요.',
+  package:'SW 패키지',status:'검토 상태',source:'파일 출처',bytes:'파일 크기',hash:'원문 SHA-256',author:'등록자',reviewer:'검토자',
+  approve:'독립 검토 및 승인',revoke:'SW 승인 회수',independent:'등록자 자신은 승인할 수 없습니다. 다른 출시 담당자로 검토하세요.',
+  vin:'대상 차량',flag:'배포된 Flag',check:'현재 다운로드 조건 확인',download:'실제 SW 다운로드',checking:'조건을 확인하고 있습니다…',downloading:'파일 다운로드·무결성 검증 중…',
+  allowed:'현재 다운로드 가능',blocked:'다운로드 차단',noPolicy:'이 Feature 버전에 배포된 Flag가 없습니다.',
+  decision:'실제 판정 결과',policy:'적용 정책',signature:'매니페스트 서명',publicKey:'서명 키',keyExpiry:'서명 키 만료',
+  fresh:'다운로드 요청 때 조건을 다시 평가합니다. 조회 이후 차단·권리·배포 버전·패키지가 바뀌면 다운로드가 거부될 수 있습니다.',
+  verified:'실제 파일의 서명·크기·SHA-256 검증 완료',downloadError:'파일 전달 또는 무결성 검증에 실패했습니다.',
+  integrityError:'파일 또는 매니페스트의 서명·크기·SHA-256이 일치하지 않습니다.',
+  history:'다운로드 요청 이력',historyBoundary:'STREAM_OPENED는 서버가 원문 스트림을 연 사실입니다. 수신 완료는 이 브라우저의 원문 검증 결과로 구분합니다.',
+  apiHint:'차량은 사람 역할 헤더 대신 차량 키로 서명한 /vehicle/v1/:vin/software/:id/download 요청을 사용합니다.',
+  states:{DRAFT:'검토 전',APPROVED:'승인',REVOKED:'회수'},sources:{UPLOADED_SOFTWARE:'사용자 업로드 SW',EXECUTABLE_DEMO:'실행 가능한 시험용 SW'},
+  causes:{PACKAGE_REVOKED:'패키지 승인이 회수되었습니다.',PACKAGE_NOT_APPROVED:'별도 담당자의 SW 검토 승인이 필요합니다.',MANIFEST_SIGNATURE_INVALID:'매니페스트 서명이 유효하지 않습니다.',DEPLOYED_FEATURE_MISMATCH:'배포 Flag의 Feature 버전과 SW 패키지 버전이 다릅니다.',SOFTWARE_COMPONENT_REMOVED:'현재 Feature의 SW 구성품 연결이 변경되었습니다.',PACKAGE_CHANGED:'조건 조회 중 패키지가 변경되었습니다.',POLICY_CHANGED:'조건 조회 중 배포 정책이 변경되었습니다.'},
+});

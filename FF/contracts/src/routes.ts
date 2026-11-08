@@ -1,3 +1,4 @@
+import { SoftwarePackageBody, SoftwarePackageDecisionBody, SoftwareDownloadCheckBody } from './schemas/software-delivery';
 // API 경로 목록 — 단일 기준. 백엔드 실제 라우트와 다르면 테스트가 실패하고(backend/test/routes.spec.ts),
 // OpenAPI(docs/80-integration/openapi.json)와 프론트 API 클라이언트가 이것에서 만들어진다.
 import type { ZodTypeAny } from 'zod';
@@ -118,6 +119,8 @@ export interface RouteDef {
   sample?: Record<string, string>;
   /** 끝나지 않는 스트림(SSE) — 준수 검사는 상태·Content-Type만 본다 */
   stream?: boolean;
+  /** JSON이 아닌 실제 바이너리 요청/응답. 업로드 본문은 스트림으로 검증한다. */
+  binary?: 'upload' | 'download';
   /** 텔레메트리 읽기 경로의 13.1 범주 — roles는 DATA_CATEGORY_ACCESS와 같다(FFG-TEL-001) */
   dataCategory?: DataCategory;
   /** 상태를 바꾸지 않는 공개 POST(OFREP 평가) — 역할 없음 */
@@ -129,6 +132,16 @@ export interface RouteDef {
 }
 
 export const ROUTES: RouteDef[] = [
+  { name:'softwarePackages',method:'GET',path:'/api/software/packages',summary:'SW 패키지·실제 바이트·독립 검토·서명 현황',component:'D04-01' },
+  { name:'softwarePackage',method:'GET',path:'/api/software/packages/:id',summary:'SW 패키지 상세',component:'D04-01' },
+  { name:'uploadSoftware',binary:'upload',method:'POST',path:'/api/software/uploads',summary:'SW 실제 원문 스트림 업로드',component:'D04-01',roles:['IMPLEMENTER','RELEASE_MANAGER'] },
+  { name:'createSoftwarePackage',method:'POST',path:'/api/software/packages',summary:'Feature 버전·SW 구성품·실제 SHA-256 연결',component:'D04-01',roles:['IMPLEMENTER','RELEASE_MANAGER'],body:SoftwarePackageBody },
+  { name:'reviewSoftwarePackage',method:'POST',path:'/api/software/packages/:id/review',summary:'등록자와 다른 출시 담당자의 SW 승인·회수',component:'D04-01',roles:['RELEASE_MANAGER'],body:SoftwarePackageDecisionBody },
+  { name:'checkSoftwareDownload',method:'POST',path:'/api/software/packages/:id/check',summary:'실제 배포 Flag·차량·권한·지원·해시 판정',component:'D04-01',roles:['IMPLEMENTER','RELEASE_MANAGER','OPERATOR','AUDITOR'],body:SoftwareDownloadCheckBody },
+  { name:'softwareDownload',method:'GET',path:'/api/software/packages/:id/download',summary:'조건 재평가 후 실제 SW 원문 스트리밍',component:'D04-01',roles:['IMPLEMENTER','RELEASE_MANAGER','OPERATOR'],query:['vin','flagKey'],requiredQuery:['vin','flagKey'],binary:'download' },
+  { name:'softwareDownloadHistory',method:'GET',path:'/api/software/packages/:id/history',summary:'SW 실제 스트림 요청 감사 기록',component:'D04-01' },
+  { name:'vehicleSoftwareDownload',method:'GET',path:'/vehicle/v1/:vin/software/:id/download',summary:'서명된 차량 신원과 Flag 판정에 따른 SW 다운로드',component:'D04-01',roles:['VEHICLE'],query:['flagKey'],requiredQuery:['flagKey'],binary:'download' },
+  { name:'vehicleSoftwareManifest',method:'GET',path:'/vehicle/v1/:vin/software/:id/manifest',summary:'서명된 차량 요청의 SW·SBOM 매니페스트와 서명',component:'D04-01',roles:['VEHICLE'],query:['flagKey'],requiredQuery:['flagKey'] },
   // 커널
   { name: 'health', method: 'GET', path: '/api/health', summary: '상태 점검', component: 'KERNEL' },
   { name: 'healthLive', method: 'GET', path: '/api/health/live', summary: '생존 점검(프로세스 응답)', component: 'KERNEL' },
@@ -173,7 +186,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'workflowCase', method: 'GET', path: '/api/workflow/cases/:id', summary: '업무 건 활동·산출물 버전·인계·변경 이력', component: 'D04-04', personal: true },
   { name: 'workflowCaseSources', method: 'GET', path: '/api/workflow/cases/:id/sources', summary: '업무 대상의 실제 정본 기록·버전·현재 내용 해시 조회 — 외부 파일·승인 검증 아님', component: 'D04-04', personal: true },
   { name: 'workflowTransferTargets', method: 'GET', path: '/api/workflow/cases/:id/transfer-targets', summary: '동일 대상·산출물 관계의 수신 업무 건', component: 'D04-04', personal: true },
-  { name: 'uploadWorkflowFile', method: 'POST', path: '/api/workflow/cases/:id/activities/:activityId/uploads', summary: '실제 바이너리 바이트 업로드 — JSON 본문 아님', component: 'D04-04', roles: HUMAN_ROLES },
+  { name: 'uploadWorkflowFile', binary: 'upload', method: 'POST', path: '/api/workflow/cases/:id/activities/:activityId/uploads', summary: '실제 바이너리 바이트 업로드 — JSON 본문 아님', component: 'D04-04', roles: HUMAN_ROLES },
   { name: 'workflowFile', method: 'GET', path: '/api/workflow/cases/:id/files/:fileId', summary: '활동·수신 인계 권한 확인 후 실제 첨부 다운로드', component: 'D04-04', personal: true },
   { name: 'offerCrossCaseWorkflow', method: 'POST', path: '/api/workflow/cases/:id/transfers', summary: '검토된 산출물을 다른 업무 건으로 인계', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowCrossCaseOfferBody },
   { name: 'receiveCrossCaseWorkflow', method: 'POST', path: '/api/workflow/cases/:id/transfers/:handoffId/receive', summary: '수신 담당자의 양쪽 버전 인수·반송', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowCrossCaseReceiveBody },

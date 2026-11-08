@@ -91,6 +91,7 @@
     "411_workflow_cases_artifacts": "c432d7ce93c8e9f93658ef8ab21bb9ef21247ae12b20c1cb5bbd5f990bafc5d1",
     "211_supplier_package": "2046173c031385e15b11ba63b15b6e56fd109e004723bd5d626625d615fcac48",
     "261_taxonomy_global_scope": "a35e53375d0dc9f6cf22d1356e81693be8999a5cfabd093140e6836d870a83e3",
-    "431_binary_objects": "bf5f836c6cb146df7032ff55946f06aca915ce7f9bfdf00a94b6fa1b0efe5b6c"
+    "431_binary_objects": "bf5f836c6cb146df7032ff55946f06aca915ce7f9bfdf00a94b6fa1b0efe5b6c",
+    "441_software_delivery": "ec6cc13e5a86f4c6826c336a1df8e1bdedb82347c146b177b682e6a5f7228221"
   }
 }

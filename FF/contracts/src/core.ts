@@ -129,3 +129,4 @@ export * from './schemas/workflow-execution';
 export * from './rules/workflow-execution';
 export * from './rules/workflow-transfer';
 export * from './schemas/workflow-source';
+export * from './schemas/software-delivery';

@@ -1,3 +1,4 @@
+import { SOFTWARE_MIGRATION } from './migrations-software';
 // 스키마 마이그레이션 — 이름 순 적용, 적용된 것은 다시 실행하지 않는다. 기존 항목은 수정하지 말고 새 항목을 추가한다.
 // 도메인 레코드는 "키 열 + doc(JSON)" 형태로 저장한다: 키·조회 조건은 열로, 본문은 contracts zod 스키마로 파싱.
 // pg — PostgreSQL 방언 번역(pg-dialect.ts)이 감당하지 못하는 항목만 PG용 SQL을 따로 둔다(20-92 §4.3). 잠금(migrations.lock.json)은 sql만 해시한다.
@@ -1465,4 +1466,5 @@ CREATE TRIGGER workflow_role_grant_no_delete BEFORE DELETE ON workflow_role_gran
 `,
   },
   BINARY_MIGRATION,
+  SOFTWARE_MIGRATION,
 ];

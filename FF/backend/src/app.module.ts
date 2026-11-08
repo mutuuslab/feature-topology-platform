@@ -1,3 +1,4 @@
+import { SoftwareDeliveryModule } from './software/software-delivery.module';
 import { Module } from '@nestjs/common';
 import { D01PolicyModule } from './domains/d01-policy/d01-policy.module';
 import { FlagCodeModule } from './domains/d01-policy/flag-code/flag-code.module';
@@ -30,7 +31,7 @@ import { ExtGatewayModule } from './domains/ext-gateway.module';
 
 // 도메인 모듈(d01-policy … d06-qsec)은 단계별로 추가한다 — PROGRESS.md 참고.
 @Module({
-  imports: [KernelModule, D01PolicyModule, FlagCodeModule, RefdbModule, CostModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, LakeLoopModule, D04OpsModule, D05ExtModule, ExtModule, ExtSyncModule, ProcedureModule, DashboardModule, ConsultModule, UnleashLiveModule, AdsConfigModule, AdsEvidenceModule, AdsStateModule, AdsChangeModule, ExtGatewayModule, AdsP5Module, TaxonomyModule],
+  imports: [KernelModule, D01PolicyModule, FlagCodeModule, RefdbModule, CostModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, LakeLoopModule, D04OpsModule, D05ExtModule, ExtModule, ExtSyncModule, ProcedureModule, DashboardModule, ConsultModule, UnleashLiveModule, AdsConfigModule, AdsEvidenceModule, AdsStateModule, AdsChangeModule, ExtGatewayModule, AdsP5Module, TaxonomyModule, SoftwareDeliveryModule],
   // 데모 활동 시드 — 루트 공급자라 도메인 모듈의 부팅 훅 뒤에 돈다(demo-activity.seeder.ts)
   providers: [DemoActivitySeeder, ShowcaseScenariosSeeder, ShowcaseFillSeeder],
 })

@@ -21,11 +21,11 @@ for (const r of c.ROUTES) {
     description: r.roles?.length ? `허용 역할: ${r.roles.map((x) => c.ROLE_LABEL[x]).join(', ')} (헤더 X-Actor-Id, X-Actor-Role)` : undefined,
     parameters: [
       ...params.map((name) => ({ name, in: 'path', required: true, schema: { type: 'string' } })),
-      ...(r.query ?? []).map((name) => ({ name, in: 'query', required: false, schema: { type: 'string' } })),
+      ...(r.query ?? []).map((name) => ({ name, in: 'query', required: r.requiredQuery?.includes(name)??false, schema: { type: 'string' } })),
     ],
-    request: r.body ? { body: { content: { 'application/json': { schema: r.body } } } } : undefined,
+    request: r.binary==='upload'?{body:{required:true,content:{'application/octet-stream':{schema:{type:'string',format:'binary'}}}}}:r.body ? { body: { content: { 'application/json': { schema: r.body } } } } : undefined,
     responses: {
-      200: { description: '성공' },
+      200: { description: '성공',...(r.binary==='download'?{content:{'application/octet-stream':{schema:{type:'string',format:'binary'}}}}:{}) },
       ...(r.method !== 'GET' && { 201: { description: '생성' }, 403: { description: '역할·직무 분리 위반 (오류 봉투)' }, 422: { description: '전이·체크리스트 조건 미충족 (오류 봉투)' } }),
       400: { description: '입력 검증 실패 (오류 봉투)' },
       404: { description: '없음 (오류 봉투)' },

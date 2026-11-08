@@ -227,6 +227,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/ops/policy', element: legacyTo('/policies'), title: '정책 단계 보드 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/ops/runtime', element: legacyTo('/policies'), title: '정책 평가 시뮬레이터 (이전 주소)', group: 'release', parent: '/policies' },
   { path: '/flag-retirements', element: named(() => import('./screens/policy/Retirements'), 'RetirementsScreen'), title: 'Flag Retirement', group: 'release', menu: '/flag-retirements', components: ['D01-01'], v2: true },
+  { path: '/deployments/software', element: def(() => import('./screens/ops/SoftwareDelivery')), title: 'SW 패키지 및 다운로드', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },
   { path: '/deployments', element: named(deployScreens, 'DeploymentList'), title: '서명 배포·차량 회신', group: 'release', menu: '/deployments', components: ['D06-08', 'D06-10', 'D04-01', 'D04-03'], v2: true },
   { path: '/deployments/:id', element: named(deployScreens, 'DeploymentDetail'), title: '게시본 상세', group: 'release', parent: '/deployments', components: ['D06-08', 'D04-03'], v2: true },
   { path: '/ops/campaign', element: legacyTo('/deployments'), title: '출시 캠페인 (이전 주소)', group: 'release', parent: '/deployments' },

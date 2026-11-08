@@ -1,3 +1,4 @@
+import { softwareDelivery as SW } from '../../copy/software-delivery';
 // /deployments · /deployments/:id — 서명 배포·차량 회신 (D06-08 보안 배포 · D06-10 PKI · D04-01 IF-05/13 · D04-03 IF-06 회신 · IF-05 OTA 서버 전달)
 import { lazy, Suspense, useState } from 'react';
 import type { ConvergenceView } from '@ff/contracts';
@@ -94,7 +95,7 @@ export function DeploymentList() {
   const now = Date.now();
   return (
     <div className="ds-screen">
-      <PageHeader codes="D06-08 · SECURE DEPLOY" title={D.title} lead={D.lead} message={deploymentMessage(q.data?.items)} />
+      <PageHeader codes="D06-08 · SECURE DEPLOY" title={D.title} lead={D.lead} message={deploymentMessage(q.data?.items)} actions={<Link to="/deployments/software">{SW.title} →</Link>} />
       {paused && (
         <p className="ds-stale" role="status" data-testid="replies-paused">
           {CT.pub.paused}

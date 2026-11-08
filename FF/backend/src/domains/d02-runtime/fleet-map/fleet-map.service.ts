@@ -206,7 +206,7 @@ export class FleetMapService {
     let item: FleetMapVehicle;
     let runtime: Pick<RuntimeRow, 'featureState' | 'flags' | 'last' | 'quality' | 'gleo'> | null = null;
     if (this.fleet.vehicle(vin) && this.fleet.vehicle(vin)!.fleet !== 'SAMPLE') {
-      const rt = await this.runtime.fleetStatus();
+      const rt = await this.runtime.fleetStatus('FLEET', vin);
       const r = rt.items.find((x) => x.vin === vin)!;
       item = this.demoVehicle(r, profiles, today, {}, true);
       runtime = { featureState: r.featureState, flags: r.flags, last: r.last, quality: r.quality, gleo: r.gleo };

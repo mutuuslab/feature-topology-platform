@@ -5,6 +5,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditService } from '../../src/kernel/audit.service';
 import { Clock } from '../../src/kernel/clock';
 import { FleetRepo } from '../../src/domains/d01-policy/policy-repos';
+import { VehicleRuntimeService } from '../../src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service';
+import { EntitlementService } from '../../src/domains/d01-policy/entitlement/entitlement.service';
 import { actor, bootApp } from '../helpers';
 
 const OPERATOR = actor('seo.ops', 'OPERATOR');
@@ -92,6 +94,17 @@ describe('전세계 차량 지도 (D02-03)', () => {
     expect(Array.isArray(r.grants)).toBe(true);
     expect(mapAudits('seo.ops').filter((x) => x.target === '/api/fleet/map/vehicles/ego-01')).toHaveLength(before + 2);
     await http().get('/api/fleet/map/vehicles/NOPE-0001').set(OPERATOR).expect(404);
+  });
+
+  it('한 대 상세 최적화는 권리·오프라인·위치 공유 미동의 경계를 유지한다', async () => {
+    const all = (await app.get(VehicleRuntimeService).fleetStatus()).items;
+    for (const vin of ['ego-01', 'KMH-NX4-0001', 'KMH-NX4-0003']) {
+      const row = all.find(v => v.vin === vin)!;
+      const detail = (await http().get(`/api/fleet/map/vehicles/${vin}`).set(OPERATOR).expect(200)).body;
+      expect(detail.runtime).toEqual({ featureState: row.featureState, flags: row.flags, last: row.last, quality: row.quality, gleo: row.gleo });
+      expect(detail.grants).toEqual(app.get(EntitlementService).grants(vin));
+      if (vin === 'KMH-NX4-0003') expect(detail.vehicle.position.precision).toBe('REGION');
+    }
   });
 
   it('합성 모집단 — 정지 위치·구독 상태만(런타임 없음), 상품 필터', async () => {

@@ -450,12 +450,13 @@ export class VehicleRuntimeService {
 
   /** Fleet 실시간 적용 현황 — 차량마다 적용 게시본·Feature 상태·차량 측 값과 서버 판단(어긋남 표시) */
   /** fleet: FLEET = 등록 차량(운영 PRODUCTION·시연 DEMO — 5년 운영 수신 표본 제외, 화면·지도는 표본을 성향·가중치로 따로 본다), ALL = 표본 포함 */
-  async fleetStatus(fleet: 'FLEET' | 'ALL' = 'FLEET') {
+  async fleetStatus(fleet: 'FLEET' | 'ALL' = 'FLEET', onlyVin?: string) {
     // flag마다 마지막으로 내보낸 정책 게시본의 대상 — 대상인데 꾸러미가 없는 flag만 '미수신'(pending), 대상이 아닌 flag는 해당 없음
     const targeted = new Map<string, Set<string>>();
     for (const p of this.publications.list({ kind: 'POLICY', status: 'DISPATCHED' })) if (p.payload.flagKey && !targeted.has(p.payload.flagKey)) targeted.set(p.payload.flagKey, new Set(p.payload.targets));
     const items = [];
     for (const v of this.fleet.vehicles()) {
+      if (onlyVin !== undefined && v.vin !== onlyVin) continue;
       if (fleet === 'FLEET' && v.fleet === 'SAMPLE') continue;
       const { runtime: s, evaluations } = await this.view(v.vin);
       items.push({

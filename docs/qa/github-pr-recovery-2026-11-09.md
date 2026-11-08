@@ -42,4 +42,6 @@ API 응답 유실/일시 오류는 성공을 추측하지 않는다. 다시 GET�
 
 후속 실제 실행: 프런트2파일31시험 PASS(신규10·기존18+메뉴별 POST연결3), backend2파일30시험 PASS(복구21+기존hardening9). contracts 빌드·frontend noEmit·backend build PASS. 첫 UI 시험의7실패는 로딩 때 교체된 예전 disabled DOM node를 잡은 시험 오류였으며 재렌더된 버튼을 다시 조회하도록 수정했다. 실제 브라우저 확인은 이 UI checkpoint 뒤 별도 기록한다.
 
+첫 프로덕션 Chromium 실행에서 API 응답 유실 후 native OPEN 재조회 자체는 성공했지만 coverage 갱신이 재개 버튼을 제거하면서 확인 문구가 같이 사라졌다. 검증된 성공은 전역 상태 토스트에도 남겨 화면 상태가 바뀐 뒤 확인할 수 있게 보완했다. 보완 후 수동 재개10시험 PASS. native 알림 SSE는 지속 연결이므로 브라우저의 networkidle만 기다리면 끝나지 않는다. 제한된 idle 확인 뒤 실제 PR 요청/상태 DOM을 기다리는 방식으로 검증한다.
+
 계약 대조: [GitHub 정확한 ref 조회](https://docs.github.com/en/rest/git/refs#get-a-reference), [open PR head/base 필터](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests), [커밋 비교](https://docs.github.com/en/rest/commits/commits#compare-two-commits). 이 검증은 기존 데모의 실제 HTTP 실행이며 회사 운영 GitHub 검증·전체 플랫폼 하네스·Publish 완료 판정이 아니다.

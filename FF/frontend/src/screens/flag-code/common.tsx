@@ -9,7 +9,7 @@ import { useApiMutation } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
 import { Button, Drawer, ErrorNote, Field, Select } from '../../design';
 import { personLabel } from '../../data/people';
-import { useAppShell } from '../../store';
+import { useAppShell, useToast } from '../../store';
 import { usePermission, when } from '../shared';
 import { commitUrl, FLAG_CODE_INVALIDATE, listOf, shortPath, usePullRequests } from './data';
 import './flag-code.css';
@@ -219,6 +219,7 @@ export function CreatePrButton({ row, repos }: { row: FlagCoverageRow; repos: Fl
 /** Resume the recorded request, never a new one-key request inferred from a coverage row. */
 export function ResumePrButton({ prId, repos }: { prId: string; repos: FlagRepository[] }) {
   const perm = usePermission(['IMPLEMENTER']);
+  const toast = useToast();
   const qc = useQueryClient();
   const q = usePullRequests();
   const pr = listOf<FlagPullRequest>(q.data).find((p) => p.prId === prId);
@@ -245,7 +246,7 @@ export function ResumePrButton({ prId, repos }: { prId: string; repos: FlagRepos
       const current = listOf<FlagPullRequest>(result.data).find((p) => p.prId === prId);
       const same = current?.repoId === pr.repoId && current.featureId === pr.featureId && current.version === pr.version && current.kind === pr.kind && current.branch === pr.branch && JSON.stringify(current.flagKeys) === JSON.stringify(pr.flagKeys);
       if (result.isSuccess && same && current?.state === 'OPEN' && current.number && current.url) {
-        setRecovered(true); setDone(A.resumeRecovered);
+        setRecovered(true); setDone(A.resumeRecovered); toast(A.resumeRecovered);
         await Promise.all(FLAG_CODE_INVALIDATE.filter((name) => name !== 'flagPullRequests').map((name) => qc.invalidateQueries({ queryKey: [name] })));
       }
       else setDone(A.resumeUnconfirmed);
@@ -259,7 +260,11 @@ export function ResumePrButton({ prId, repos }: { prId: string; repos: FlagRepos
       if (!pr) return;
       setDone(null); setRecovered(false); m.reset();
       m.mutate({ body: removal ? { flagKey: pr.flagKeys[0], repoId: pr.repoId, retirementId: pr.retirementId } : { featureId: pr.featureId, version: pr.version, repoId: pr.repoId, flagKeys: pr.flagKeys } }, {
-        onSuccess: (result) => setDone(result?.state === 'OPEN' ? A.resumeDone : result?.state === 'FAILED' ? A.createPrFailed(result.failure ?? '') : A.resumeUnconfirmed),
+        onSuccess: (result) => {
+          const text = result?.state === 'OPEN' ? A.resumeDone : result?.state === 'FAILED' ? A.createPrFailed(result.failure ?? '') : A.resumeUnconfirmed;
+          setDone(text);
+          if (result?.state === 'OPEN') toast(text);
+        },
         onError: (error) => { void readBack(error); },
       });
     }}>{A.resumePr}</Button>

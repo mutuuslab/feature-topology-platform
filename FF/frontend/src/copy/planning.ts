@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // 담당자 웨이브 W4(2026-11-05) 문구 — 등록·구현 연결·상품 구성·고객 출시·체험 제안·정책 승인.
 // 내부 코드(규칙·업무 절차·오류 코드)는 쓰지 않는다. 문장은 '…합니다/하세요'.
 
-export const planning = {
+export const planning = /* @__PURE__ */ localizedCopy('planning.planning', {
   impl: {
     title: '구현 연결',
     lead: '기능 이름을 적고 SW는 기준정보에서 고릅니다. 제어기 P/N은 SW를 따릅니다. 검증 완료에 필요합니다.',
@@ -75,4 +76,4 @@ export const planning = {
     linkHint: '구현 연결은 제안 상태 Feature의 "초안 수정 → 구현 연결"에서 이 목록의 SW·Version을 골라 넣습니다. 승인된 Version은 새 Version에서 넣습니다.',
     toProposed: '제안 상태 Feature 보기',
   },
-};
+});

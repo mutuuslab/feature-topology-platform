@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // GitLab MR 시연 창 문구 — 지연 로드되는 외부 앱에만 들어간다.
-export const externalGitlab = {
+export const externalGitlab = /* @__PURE__ */ localizedCopy('external-gitlab.externalGitlab', {
   name: 'GitLab',
   project: 'vehicle / feature-sw',
   notice: '이 창은 시연용 GitLab입니다. MR·파이프라인은 공유 모의 원장에서 읽고, 플랫폼 연계 원장의 Feature 연결로 이어 줍니다.',
@@ -39,4 +40,4 @@ export const externalGitlab = {
   activity: '활동',
   activityUpdated: (revision: number) => `MR을 개정 r${revision}로 갱신했습니다`,
   open: 'GitLab 창에서 보기',
-} as const;
+} as const);

@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // /admin/security 부품 (P11) — 차량 키 epoch 상향(FFG-SEC-002), 보안 이벤트 IdsM(D06-12, FFG-SEC-007), SBOM 본문 CycloneDX 1.6(D06-11)
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -5,7 +6,7 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DangerConfirm, DataTable, Drawer, ErrorNote, Field, KeyValue, Panel } from '../../design';
 import { usePermission, when } from '../shared';
 
-const P = ko.p11.security;
+const P = p11Copy.security;
 
 /** 차량 키 epoch 상향 — 키 유출 대응, type-to-confirm. 사유를 적어야 확정된다 */
 export function EpochBump() {

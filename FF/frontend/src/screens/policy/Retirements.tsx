@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // /flag-retirements — Flag Retirement 6단계 (D01-01, 보고서 6.5 · FFG-LCY-011). 서버가 순서·완료 조건·직무 분리(요청자 승인 불가)를 다시 검사한다.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -8,7 +9,7 @@ import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageH
 import { OpsEvidence } from '../ops/OpsEvidence';
 import { usePermission, when } from '../shared';
 
-const T = ko.p11.retire;
+const T = p11Copy.retire;
 const INVALIDATE = ['flagRetirements', 'audit', 'events'];
 
 type StepKey = (typeof RETIREMENT_STEPS)[number]['key'];

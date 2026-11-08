@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // Topology 관계 그래프(도메인 레인·카드 노드·직교 간선) 화면 문구 — 선택 관계 설명 문구는 topology-motion.ts
-export const topologyGraph = {
+export const topologyGraph = /* @__PURE__ */ localizedCopy('topology-graph.topologyGraph', {
   region: 'Feature 관계 그래프',
   view: '보기',
   views: { graph: '그래프', table: '표' },
@@ -83,4 +84,4 @@ export const topologyGraph = {
   table: { features: 'Feature 목록', relations: '관계 목록' },
   col: { id: 'Feature', name: '이름', domain: '도메인', asil: 'ASIL', lifecycle: 'Lifecycle', flags: 'Flag', gates: 'Gate', out: '필요', in: '의존됨', rel: '관계', type: '유형', source: '원천', target: '대상', verdict: '판정', note: '표시' },
   select: '선택',
-};
+});

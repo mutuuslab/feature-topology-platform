@@ -1,6 +1,7 @@
+import { localizedCopy } from '../locale/runtime';
 // Feature 제안 2단계 등록(기준 기능 고르기 → 등록 정보 확인)과 Feature 상세 '기준 행' 탭 문구 — 설계 docs/30-data-model/30-95 §6.1·§6.3·§6.4·§5.2.
 // 상태 이름·안내(활성·검토 필요·폐기 예정·폐기·요청 중)는 contracts REF_STATUS_POLICY가 원천이다(등록 화면·승인 전이가 같은 표).
-export const propose = {
+export const propose = /* @__PURE__ */ localizedCopy('propose.propose', {
   title: 'Feature 등록',
   lead: '기존 기능에서 기본 정보를 가져온 뒤, 적용 대상과 안전 수준을 확인해 새 Feature 초안을 등록합니다.',
   key: {
@@ -177,10 +178,10 @@ export const propose = {
     confirm: '확인하고 등록',
     reasonWhy: '사유를 2자 이상 입력하세요',
   },
-};
+});
 
 /** Feature 상세 '기준 행' 탭 */
-export const featureRefsTab = {
+export const featureRefsTab = /* @__PURE__ */ localizedCopy('propose.featureRefsTab', {
   tab: '기준 행',
   caption: '연결된 기준 행',
   col: { role: '연결', refId: '기준 행 ID', name: '기능명', status: '상태', refVersion: '연결 버전', change: '바뀐 버전' },
@@ -211,10 +212,10 @@ export const featureRefsTab = {
   warnSignoff: '서명했습니다 — 기준 행 안내를 확인하세요',
   warnVersion: '새 Version을 만들었습니다 — 기준 행 안내를 확인하세요',
   retiredWarn: (ids: string) => `폐기 예정·폐기 기준 행이 연결되어 있습니다(${ids}) — 출시는 막지 않습니다. 다음 Version에서 대체 행으로 다시 연결하세요`,
-};
+});
 
 /** 기준 행 고르기·추가 요청 보강(W5, P1-8·P5-8) */
-export const proposeRefMore = {
+export const proposeRefMore = /* @__PURE__ */ localizedCopy('propose.proposeRefMore', {
   // 빈 결과는 한 문장(제목 + 다음 행동) — '표시할 항목이 없습니다'와 두 번 말하지 않는다
   noResultTitle: '맞는 기준 행이 없습니다',
   noResultBody: '검색어를 바꾸거나 Feature DB에 추가를 요청하세요',
@@ -227,4 +228,4 @@ export const proposeRefMore = {
     lifecycleOptions: ['Commodity', 'Differentiating', 'Innovation'],
     hint: '모르면 비워 두세요 — 관리자가 발행 전에 채웁니다',
   },
-};
+});

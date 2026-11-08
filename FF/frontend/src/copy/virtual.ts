@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 가상검증 문구는 해당 화면을 열 때만 불러온다. 공용 첫 화면에는 포함하지 않는다.
-export const virtualCopy = {
+export const virtualCopy = /* @__PURE__ */ localizedCopy('virtual.virtualCopy', {
     key: { g5: (m: string) => `최근 차량 내 감지 실행 — FTTI 여유 ${m}`, none: '차량 내 감지 실행 기록이 아직 없습니다', off: '검증 서버 미연결 — 실행할 수 없습니다' },
     title: 'CARLA 가상검증',
     lead: '정책을 실차 전에 CARLA 가상 차량에서 재현해 G5 근거를 만듭니다.',
@@ -85,4 +86,4 @@ export const virtualCopy = {
     // 빈 설치 — 가상검증 시나리오는 검증 키트 Feature(예시 데이터)에 묶여 있다(출시 준비 RD-OPS-02)
     noKitTitle: '가상검증 시나리오가 연결된 Feature가 아직 없습니다',
     noKitBody: '가상검증 키트의 Feature가 등록되면 시나리오·조합 판정·실행을 여기서 봅니다. 실행기 상태와 지난 실행 기록은 위·아래에서 그대로 볼 수 있습니다.',
-  } as const;
+  } as const);

@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 개인정보(데이터·규제 기록 → 개인정보 탭, RD-P2-05)와 고객 기준 값(차종·판매국 기준 값 화면, RD-OPS-03) 문구
-export const privacy = {
+export const privacy = /* @__PURE__ */ localizedCopy('privacy.privacy', {
   tab: '개인정보',
   inventory: '개인정보 목록',
   inventoryLead: '플랫폼이 담는 개인정보를 저장소·칸 단위로, 처리 방법과 보존 기한을 함께 보입니다.',
@@ -52,9 +53,9 @@ export const privacy = {
   confirmWord: '실행',
   result: (deleted: number, pseudonymised: number, retained: number) => `삭제 ${deleted} · 가명 ${pseudonymised} · 보존 ${retained}`,
   lake: { SENT: 'Data Lake 삭제 요청 보냄', NOT_CONNECTED: 'Data Lake 연결 전(보내지 않음)', FAILED: 'Data Lake 요청 실패', NOT_APPLICABLE: '' } as Record<string, string>,
-};
+});
 
-export const reference = {
+export const reference = /* @__PURE__ */ localizedCopy('privacy.reference', {
   title: '차종·판매국 기준 값',
   lead: '판매국·지역·차종·트림을 이 설치에 등록합니다. 데모 값은 시드일 뿐입니다.',
   key: '등록된 기준 값',
@@ -74,4 +75,4 @@ export const reference = {
   retireReason: '사유',
   retireSubmit: '사용 중지',
   vehicleNote: '운영 차량은 Fleet 연계가 등록하고, 판매국·차종·트림은 여기 등록된 값만 받습니다.',
-};
+});

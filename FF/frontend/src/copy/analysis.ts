@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 분석 근거·Gate 판정 폼·Evidence 원장 문구(담당자 웨이브 W3 — P3-1·3·4·9·10). 화면은 analysis로 직접 가져온다.
-export const analysis = {
+export const analysis = /* @__PURE__ */ localizedCopy('analysis.analysis', {
   title: '분석 근거',
   lead: 'Version마다 HARA·TARA·SOTIF·형식승인 판단을 담당자가 서명해 남깁니다.',
   kind: { HARA: 'HARA(위험 분석)', TARA: 'TARA(위협 분석)', SOTIF: 'SOTIF(의도된 기능 안전)', HOMOLOGATION: '형식승인 영향 판단' } as Record<string, string>,
@@ -67,4 +68,4 @@ export const analysis = {
     refPlaceholder: 'Evidence Ref 일부',
     judgedAt: '판정 시각',
   },
-};
+});

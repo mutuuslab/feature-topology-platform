@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // GitLab · JIRA · codeBeamer 양방향 연계 화면 문구 — ko.ts와 분리. 도구 이름은 고유명사 그대로 쓴다.
 import type { ExtKind, ExtSystem, SyncState } from '@ff/contracts';
 
-export const extSync = {
+export const extSync = /* @__PURE__ */ localizedCopy('ext-sync.extSync', {
   system: { CODEBEAMER: 'codeBeamer', JIRA: 'JIRA', GITLAB: 'GitLab' } satisfies Record<ExtSystem, string>,
   kind: { REQUIREMENT: '요구사항', EPIC: 'Epic', CHANGE_REQUEST: '변경요청', DEFECT: '현장 문제', STORY: 'Story', TASK: 'Task', MERGE_REQUEST: 'MR', PIPELINE: '파이프라인' } satisfies Record<ExtKind, string>,
   state: { SYNCED: '맞음', PENDING: '보내는 중', CONFLICT: '충돌', FAILED: '보내기 실패', REJECTED: '외부 변경 거부됨' } satisfies Record<SyncState, string>,
@@ -105,4 +106,4 @@ export const extSync = {
     epicBody: '설명',
     epicCreate: 'Epic 만들기',
   },
-} as const;
+} as const);

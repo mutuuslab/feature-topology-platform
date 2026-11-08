@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // Registration-only guidance stays with the lazy document screen.
-export const proposeGuide = {
+export const proposeGuide = /* @__PURE__ */ localizedCopy('propose-guide.proposeGuide', {
   startTitle: 'Feature DB 기준을 먼저 선택하세요',
   startBody: '위의 ‘기준 Feature 선택’에서 Feature DB의 기준 행 1개를 선택하고 적용하면 작성 화면이 열립니다. 이름·설명과 기준 정보를 가져온 뒤 이번 Feature에 맞게 보완하세요.',
   startMissing: '맞는 기준이 없으면 기준 행 추가를 요청하세요. 기존 기준의 수정이 필요하면 Feature DB에서 변경을 요청할 수 있습니다.',
@@ -35,4 +36,4 @@ export const proposeGuide = {
     { title: '완료 조건', text: '검증 방법과 확인 가능한 결과를 적고, 아직 정하지 않은 기준은 미확정으로 남깁니다.' },
     { title: '범위와 제약', text: '대상 차종·시장, 제외하는 기능과 안전·보안·법규 검토가 필요한 부분을 적습니다.' },
   ],
-};
+});

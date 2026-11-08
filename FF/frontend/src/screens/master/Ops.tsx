@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../copy/master';
 // 운영·관리 v2 화면 (P10-C4) — /ops/telemetry 운영 데이터·이벤트, /supplier/portal 협력사 이관, /admin/security 보안·인증서,
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
 import { lazy, Suspense, useMemo, useState } from 'react';
@@ -25,7 +26,7 @@ import { EpochBump, SbomDrawer, SecurityEventsPanel } from './Security';
 import { KeyStatus } from '../ops/Deployments';
 import { personLabel } from '../ops/shared';
 
-const M = ko.master;
+const M = masterCopy;
 const fref = (s: string) => {
   const [id, ver] = s.split('@');
   return <IdChip key={s} id={id} version={ver} to={`/features/${id}/${ver}`} copy={false} />;
@@ -122,7 +123,7 @@ function StatusTab() {
             rowKey={(r) => `${r.featureId}:${r.reportSeq}:${r.at}`}
             columns={[
               { key: 'a', header: M.telemetry.rbCol.at, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{t19(r.at)}</span> },
-              { key: 'f', header: ko.master.common.feature, cell: (r) => <span className="ds-mono">{r.featureId}</span> },
+              { key: 'f', header: masterCopy.common.feature, cell: (r) => <span className="ds-mono">{r.featureId}</span> },
               { key: 's', header: M.telemetry.rbCol.observed, cell: (r) => <span className="ds-mono">{`${r.state} #${r.reportSeq}`}</span> },
               { key: 'ok', header: M.telemetry.rbCol.reason, cell: (r) => (r.accepted ? <Done ok /> : <span title={r.violation?.message}><VerdictBadge value="FAIL" /> <span className="ds-mono">{r.violation?.code}</span></span>) },
             ]}

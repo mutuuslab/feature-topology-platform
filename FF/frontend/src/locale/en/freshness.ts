@@ -1,0 +1,14 @@
+export default {
+  'freshness.now': 'Just ingested',
+  'freshness.lag': (t: string) => `${t} behind`,
+  'freshness.hold': 'Judgment on hold',
+  'freshness.unknown': 'No ingestion record',
+  'freshness.minutes': (n: number) => `${n} min`,
+  'freshness.hours': (n: number) => `${n} hr`,
+  'freshness.days': (n: number) => `${n} day${n === 1 ? '' : 's'}`,
+  'freshness.asOf': (t: string) => `As of ${t}`,
+  'freshness.hint': (dataset: string, asOf: string, sla: string) => `Source: ${dataset} · ${asOf} · Freshness requirement: ${sla}`,
+  'freshness.holdReason': (sla: string) => `The freshness requirement (${sla}) has been exceeded. Judgments based on this metric are on hold.`,
+  'freshness.gallery.title': 'Data freshness indicator',
+  'freshness.gallery.hint': 'Telemetry source, reference time and lag; judgment is held when the freshness limit is exceeded',
+};

@@ -1,6 +1,7 @@
+import { localizedCopy } from '../locale/runtime';
 // 모의 연계 표시 문구(출시 준비 RD-UX-04) — design ConnectionBadge·외부 연결 상태 패널·체험 구매·게시본 연계 호출.
 // 실제 시스템에 연결되면(서버 /api/system/connections가 live) 표시가 사라진다.
-export const connections = {
+export const connections = /* @__PURE__ */ localizedCopy('connections.connections', {
   label: { mock: '모의(연결 전)', disconnected: '연결 안 됨' } as Record<string, string>,
   hint: {
     mock: (system: string) => `${system}에 아직 연결되지 않았습니다. 여기 보이는 결과는 시험용 모의 응답이며 실제로 처리되지 않습니다.`,
@@ -15,4 +16,4 @@ export const connections = {
     live: '연결됨',
   },
   billing: { blocked: '과금 시스템이 연결되지 않아 구매를 처리할 수 없습니다' },
-};
+});

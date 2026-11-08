@@ -1,6 +1,7 @@
+import { localizedCopy } from '../locale/runtime';
 // 외부 API 키·명세·버전, Legacy 연계 설정·변환 규칙·메시지 변환, 사용량 정산 전송 화면 문구(묶음 P2).
 
-export const apiKeys = {
+export const apiKeys = /* @__PURE__ */ localizedCopy('ext-gateway.apiKeys', {
   tab: 'API 키',
   lead: '외부 시스템이 쓰는 API 키입니다. 키 원문은 발급할 때 한 번만 보입니다.',
   key: (active: number, all: number) => `사용 중인 키 ${active}개 · 전체 ${all}개`,
@@ -33,9 +34,9 @@ export const apiKeys = {
     reason: '삭제 이유',
     confirm: '삭제',
   },
-};
+});
 
-export const apiSpec = {
+export const apiSpec = /* @__PURE__ */ localizedCopy('ext-gateway.apiSpec', {
   tab: 'API 명세·버전',
   lead: '실행 중인 서버의 API 명세와 버전별 지원 일정입니다.',
   spec: 'API 명세(OpenAPI)',
@@ -50,9 +51,9 @@ export const apiSpec = {
   policyRows: { compat: '호환', notice: '예고 기간', deprecated: '폐기 예고 버전', retired: '지원 종료 버전' },
   compat: { ADDITIVE_ONLY: '한 버전 안에서는 추가만 — 지우거나 뜻을 바꾸면 새 버전' } as Record<string, string>,
   days: (n: number) => `최소 ${n}일`,
-};
+});
 
-export const legacyLinks = {
+export const legacyLinks = /* @__PURE__ */ localizedCopy('ext-gateway.legacyLinks', {
   title: '연계 설정',
   lead: '기존 운영 시스템마다 연결과 데이터 브리지를 정합니다.',
   create: '연계 등록',
@@ -92,9 +93,9 @@ export const legacyLinks = {
   removeTitle: (system: string) => `${system} 연계 삭제`,
   removeBody: '중지한 연계만 지울 수 있습니다. 활성 연계는 먼저 중지하세요.',
   removeReason: '삭제 이유',
-};
+});
 
-export const legacyRules = {
+export const legacyRules = /* @__PURE__ */ localizedCopy('ext-gateway.legacyRules', {
   add: '규칙 등록',
   edit: '수정',
   col: { source: '출처', version: '판' },
@@ -112,9 +113,9 @@ export const legacyRules = {
     save: '저장',
   },
   fromUnresolved: (code: string) => `${code} 규칙 등록`,
-};
+});
 
-export const legacyMessages = {
+export const legacyMessages = /* @__PURE__ */ localizedCopy('ext-gateway.legacyMessages', {
   title: '메시지 변환 기록',
   lead: 'Legacy와 SDV 메시지를 서로 바꾼 기록입니다. 실패는 사유와 시각을 남깁니다.',
   key: (failed: number) => `변환 실패 ${failed}건`,
@@ -134,9 +135,9 @@ export const legacyMessages = {
     submit: '변환',
   },
   features: (s: string) => s,
-};
+});
 
-export const settlement = {
+export const settlement = /* @__PURE__ */ localizedCopy('ext-gateway.settlement', {
   tab: '정산 전송',
   lead: '끝난 달의 Feature 사용량을 정산 시스템으로 보냅니다.',
   period: '정산 기간',
@@ -157,4 +158,4 @@ export const settlement = {
   states: { SENT: '보냄', FAILED: '실패' } as Record<string, string>,
   triggers: { MANUAL: '수동', SCHEDULE: '주기' } as Record<string, string>,
   attempt: (n: number) => `${n}번째`,
-};
+});

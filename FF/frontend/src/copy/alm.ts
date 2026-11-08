@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // JIRA·codeBeamer 연계(80-50) 화면 문구 — 대사 실행 기록·Epic 필드 이름·산출물·재판정. 내부 코드는 쓰지 않는다.
 import { RECONCILE_KIND_LABEL } from '@ff/contracts';
 import { almInbox } from './alm-inbox';
 
-export const alm = {
+export const alm = /* @__PURE__ */ localizedCopy('alm.alm', {
   reconcile: {
     title: '주기 대사',
     lead: '놓친 변경을 15분마다, 모든 Epic을 하루 한 번 다시 맞춥니다. 받은 변경은 같은 확인을 거칩니다.',
@@ -52,4 +53,4 @@ export const alm = {
   },
   /** 충돌 칸 이름 — 상태 또는 Epic 필드 */
   conflictField: almInbox.conflictField,
-};
+});

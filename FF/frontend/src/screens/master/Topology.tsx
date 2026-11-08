@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../copy/master';
 // /arch/topology — Topology·의존관계 검증 (D01-02, v2, P10-C4). 관계 그래프(도메인 레인·카드 노드·직교 간선, topology/), 관계 표·판정, 관계 등록·판정.
 // 그래프는 전체 Feature·관계를 한 화면에 두고, 고른 Feature(주소 feature)와 관계(주소 relation)를 강조한다.
 import { useState } from 'react';
@@ -12,7 +13,7 @@ import { topologyGraph } from '../../copy/topology-graph';
 import { traceCopy } from '../../copy/trace-links';
 import type { FeatureRow, FlagRow, PrecheckRule } from './topology/model';
 
-const T = ko.master.topology;
+const T = masterCopy.topology;
 
 interface Dep {
   dependencyId: string;

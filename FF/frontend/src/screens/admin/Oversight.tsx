@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // /audit/oversight — 감독 기록: 직무 분리 감사·긴급 권한 사후 검토(D06-09, FFG-PLT-016) · 변경 기록(D04-01, FFG-CODE-030) · 재-HARA 요청(D06-05, FFG-LCY-006)
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { personName } from '../../data/people';
 import { AsyncView, Button, DataTable, ErrorNote, Field, KeyValue, PageHeader, Panel, Tabs, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 
-const T = ko.p11.oversight;
+const T = p11Copy.oversight;
 const mono = (s: string | number | null | undefined) => <span className="ds-mono ds-nowrap">{s ?? '—'}</span>;
 
 export function OversightScreen() {

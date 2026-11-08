@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // Lifecycle·Gate 보강 화면 문구 — 최종 Go/No-Go·자동 검사·해당 없음(N/A)·반려·재작업·즉시 폐기·변경 이력·Baseline 비교·출시 후보 통합 스냅샷. ko.ts와 분리.
 import type { ChangeArea, ChangeType } from '../../../contracts/src/rules/baseline-p10';
 
-export const lcGate = {
+export const lcGate = /* @__PURE__ */ localizedCopy('lifecycle-gate.lcGate', {
   goNoGo: {
     title: '최종 판정',
     GO: 'Go — 필수 Gate 모두 PASS',
@@ -111,4 +112,4 @@ export const lcGate = {
     gates: (n: number) => `Gate 기록 ${n}건`,
     tests: (n: number, ev: number) => `Test Case ${n}건 · Evidence ${ev}건`,
   },
-};
+});

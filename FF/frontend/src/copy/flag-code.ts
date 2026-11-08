@@ -1,9 +1,10 @@
+import { localizedCopy } from '../locale/runtime';
 // Flag 코드 연결·대사·통제 화면 문구(20-97 §7) — 상태 라벨은 계약의 FLAG_COVERAGE_LABEL을 쓰고, 나머지는 여기 둔다.
 import { EVAL_SOURCE_LABEL, type FlagCoverageSeverity, type FlagLane, type FlagLaneState, type FlagRepoMode, type FlagScanStatus } from '@ff/contracts';
 
 const n = (x: number) => x.toLocaleString('ko-KR');
 
-export const flagCode = {
+export const flagCode = /* @__PURE__ */ localizedCopy('flag-code.flagCode', {
   nav: { label: 'Flag 코드 연결 화면', coverage: '현황', reconcile: '대사판', lifecycle: '수명 관리' },
   severity: { BLOCKER: '출시 차단', WARNING: '조치 필요', INFO: '진행 중', OK: '정상' } satisfies Record<FlagCoverageSeverity, string>,
   lane: { REGISTRY: '등록', CODE: '코드', UNLEASH: 'Unleash', DEPLOY: '배포', REPORT: '회신' } satisfies Record<FlagLane, string>,
@@ -409,4 +410,4 @@ export const flagCode = {
   transition: {
     toReconcile: 'Flag 코드 연결 어긋남 대사판에서 확인 →',
   },
-};
+});

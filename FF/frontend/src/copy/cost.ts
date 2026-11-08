@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // SW 개발비 산정 화면 문구(상품·출시 메뉴) — 설계 docs/20-architecture/20-94 §9. 금액은 구매 담당 역할만 본다(서버가 뺀다).
 import type { CostCheckStatus, CostProjectStatus } from '@ff/contracts';
 
-export const swCost = {
+export const swCost = /* @__PURE__ */ localizedCopy('cost.swCost', {
   title: 'SW 개발비 산정',
   lead: 'Feature를 담아 공수와 개발비를 계산합니다. 금액은 구매 담당 역할만 봅니다.',
   keyFull: '백만원 · 승인된 과제의 총개발비 합계',
@@ -17,12 +18,12 @@ export const swCost = {
   stale: '새 계수 표 있음',
   empty: '산정 과제가 없습니다',
   create: { title: '새 산정 과제', name: '과제 이름', target: '대상 제어기·차종', targetHint: '예: BCM / 신규 차종 1종, 사양 변형 2종', submit: '만들기' },
-};
+});
 
-export const COST_STATUS_LABEL: Record<CostProjectStatus, string> = { DRAFT: '작성 중', SUBMITTED: '승인 대기', APPROVED: '승인됨' };
+export const COST_STATUS_LABEL: Record<CostProjectStatus, string> = /* @__PURE__ */ localizedCopy('cost.COST_STATUS_LABEL', { DRAFT: '작성 중', SUBMITTED: '승인 대기', APPROVED: '승인됨' });
 export const COST_STATUS_TONE: Record<CostProjectStatus, 'neutral' | 'warn' | 'ok'> = { DRAFT: 'neutral', SUBMITTED: 'warn', APPROVED: 'ok' };
 
-export const costDetail = {
+export const costDetail = /* @__PURE__ */ localizedCopy('cost.costDetail', {
   back: '과제 목록',
   keyFull: '백만원 · 총개발비(목표 신뢰수준, VAT 별도)',
   keyMm: 'M/M · 총 공수(Feature + 공통 인력)',
@@ -42,9 +43,9 @@ export const costDetail = {
     confirm: '확인',
     sod: '자기가 만든 과제는 승인·반려할 수 없습니다',
   },
-};
+});
 
-export const costSettings = {
+export const costSettings = /* @__PURE__ */ localizedCopy('cost.costSettings', {
   info: '과제 정보',
   name: '과제 이름',
   target: '대상 제어기·차종',
@@ -78,9 +79,9 @@ export const costSettings = {
   useLatest: '최신 계수 표로 맞추기',
   basis: (v: string, r: string | null) => `계수 표 ${v} · Feature DB ${r ?? '—'}`,
   readOnly: '작성 중인 과제의 작성자만 고칠 수 있습니다',
-};
+});
 
-export const costLines = {
+export const costLines = /* @__PURE__ */ localizedCopy('cost.costLines', {
   add: 'Feature 담기',
   addTitle: 'Feature 담기',
   search: 'Feature 이름·ID',
@@ -119,9 +120,9 @@ export const costLines = {
   mbdAdd: '작업 행 추가',
   mbdRemove: '행 지우기',
   mbdSave: 'MBD 저장',
-};
+});
 
-export const costResult = {
+export const costResult = /* @__PURE__ */ localizedCopy('cost.costResult', {
   totals: '원가 구성',
   rows: {
     eFeat: 'Feature 기대 공수(M/M)',
@@ -150,9 +151,9 @@ export const costResult = {
   pathRows: { tshirt: 'T-shirt', mbd: 'MBD 복잡도', direct: '직접 입력' },
   mmOnly: '공수',
   error: '계산하지 못했습니다',
-};
+});
 
-export const costReview = {
+export const costReview = /* @__PURE__ */ localizedCopy('cost.costReview', {
   rate: '완료율',
   openLabel: '보완 필요',
   uncheckedLabel: '미확인',
@@ -163,20 +164,20 @@ export const costReview = {
   cols: { no: 'No', category: '분류', item: '점검 항목', method: '확인 방법', status: '상태', memo: '메모' },
   memo: '메모',
   locked: '승인된 과제는 개정한 뒤 바꿉니다',
-};
+});
 
-export const COST_CHECK_LABEL: Record<CostCheckStatus, string> = { 미확인: '미확인', 확인: '확인', '보완 필요': '보완 필요', '해당 없음': '해당 없음' };
+export const COST_CHECK_LABEL: Record<CostCheckStatus, string> = /* @__PURE__ */ localizedCopy('cost.COST_CHECK_LABEL', { 미확인: '미확인', 확인: '확인', '보완 필요': '보완 필요', '해당 없음': '해당 없음' });
 
-export const costHistory = {
+export const costHistory = /* @__PURE__ */ localizedCopy('cost.costHistory', {
   approvals: '승인 기록',
   cols: { rev: '판', by: '승인자', at: '승인 시각', reason: '사유', basis: '계수 표', sha: '결과 해시' },
   none: '승인 기록이 없습니다.',
   lastReason: '마지막 전이 사유',
   audit: '감사 이력에서 보기',
   created: '작성',
-};
+});
 
-export const costBasis = {
+export const costBasis = /* @__PURE__ */ localizedCopy('cost.costBasis', {
   title: '계수·단가 표',
   lead: '산정에 쓰는 단가·계수의 버전입니다. 발행해도 승인된 과제는 바뀌지 않습니다.',
   key: '개 버전 · 최신 발행',
@@ -203,9 +204,9 @@ export const costBasis = {
   publishReason: '발행 사유',
   diff: (a: string, b: string) => `${b} → ${a} 바뀐 값`,
   noDiff: '앞 버전과 같은 값입니다',
-};
+});
 
-export const costCalib = {
+export const costCalib = /* @__PURE__ */ localizedCopy('cost.costCalib', {
   title: (v: string) => `포인트당 € 교정 제안 · ${v}`,
   applied: '지금 적용(€/포인트)', suggestion: '제안값(€/포인트)', samples: '교정 표본',
   hint: '벤치마크 금액을 포인트와 ASIL 계수로 나눈 값의 기하평균입니다. 제안 채택은 새 계수 표 초안을 만든 뒤 발행할 때만 적용됩니다.',
@@ -214,12 +215,12 @@ export const costCalib = {
   mreMissing: '실적 없는 기준 행', approvedProjects: '전체 승인 과제', missingHint: '0이거나 없는 실적은 오차 평균에서 제외합니다.',
   kind: { single: '단일', bundle: '번들' } as Record<string, string>,
   cols: { component: '컴포넌트', n: '건수', mre: 'MRE', project: '과제', ref: '기준 행', e: '기대 공수(M/M)', actual: '실적(M/M)', kind: '종류', sample: '표본', eur: '벤치마크', pts: '포인트×ASIL', perPt: '€/포인트' },
-};
+});
 
-export const costActual = {
+export const costActual = /* @__PURE__ */ localizedCopy('cost.costActual', {
   enter: '실적 입력',
   col: '기준 행 실적(M/M)', title: (refId: string) => `${refId} 실적 공수`, field: '실적 공수(M/M)',
   hint: '같은 기준 행을 참조하는 줄들의 실적 합계입니다. 승인 결과는 그대로 두고 기록하며, 개정하면 첫 줄 입력으로 옮깁니다. 후속 기록을 지우면 승인 당시 실적을 다시 표시합니다.',
   save: '저장', clear: '승인 후 기록 지우기', mre: '실적 대비 오차(MRE)', mreAvg: '평균 MRE', mreRows: '실적 있는 기준 행',
   expected: '기대 공수(M/M)', ref: '기준 행',
-};
+});

@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // P10 화면 문구 — A/B 및 Shadow 테스트, 장애·VOC, 데이터 동기화, Legacy 연계·Legacy-SDV, 현장 지원 포털, 외부 연계 현황. 화면이 직접 가져와 해당 화면을 열 때 읽는다.
-export const p10 = {
+export const p10 = /* @__PURE__ */ localizedCopy('p10.p10', {
   experiment: {
     key: { running: '진행 중인 실험', none: '진행 중인 실험이 없습니다' },
     title: 'A/B 및 Shadow 테스트',
@@ -164,4 +165,4 @@ export const p10 = {
     scopeLink: 'OpenFeature 범위 보기',
     pseudonym: (p: string) => `targetingKey(차량 가명) ${p}`,
   },
-} as const;
+} as const);

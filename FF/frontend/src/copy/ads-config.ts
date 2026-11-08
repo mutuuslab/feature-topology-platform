@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // ADS 구성 화면 문구 — ODD 프로파일(/config/odd, ADS-UI04)·승인 구성 조합(/config/compat, ADS-UI05)·VIN 지원 판정(/activation/decide, ORC-UI02).
 // 문장은 harness/ads/ux.json 확정안 그대로(숫자만 데이터). 상태 용어는 copy/ads.ts, 판정·조건 글자는 contracts rules/ads-config.ts 표.
 
-export const odd = {
+export const odd = /* @__PURE__ */ localizedCopy('ads-config.odd', {
   title: 'ODD 프로파일',
   lead: 'Feature별 운행 조건(ODD)과 승인 상한을 배포 설정과 대조합니다.',
   key: {
@@ -65,9 +66,9 @@ export const odd = {
   },
   empty: { title: 'ODD 프로파일이 없습니다', body: "ADS Feature는 승인된 프로파일 없이 배포 설정을 대조할 수 없습니다. '프로파일 초안 만들기'" },
   error: 'ODD 프로파일을 불러오지 못했습니다 — 대조 결과를 보이지 않습니다. 다시 시도',
-};
+});
 
-export const compat = {
+export const compat = /* @__PURE__ */ localizedCopy('ads-config.compat', {
   title: '승인 구성 조합',
   lead: '승인된 HW·SW·모델·보정 조합과 차량이 보고한 형상을 대조합니다.',
   key: {
@@ -120,9 +121,9 @@ export const compat = {
   },
   empty: { title: '등록된 승인 조합이 없습니다', body: "조합이 없으면 모든 차량이 '대조 불가'로 남습니다. '조합 등록'" },
   error: '승인 조합을 불러오지 못했습니다 — 대조 결과를 보이지 않습니다. 다시 시도',
-};
+});
 
-export const eligibility = {
+export const eligibility = /* @__PURE__ */ localizedCopy('ads-config.eligibility', {
   lead: 'VIN과 상품으로 이 차량에서 쓸 수 있는지 네 가지로 판정합니다.',
   tabs: { eligibility: '지원 판정', policy: '정책 평가' },
   product: '상품',
@@ -143,7 +144,7 @@ export const eligibility = {
   policyKey: '정책 ON(의도) — 차량 실행은 차량이 판단',
   policyKeyOff: '정책 OFF(의도) — 차량 실행은 차량이 판단',
   policyCode: '판정 코드',
-};
+});
 
 /** 부모 화면(/variant-conditions) 머리 meta 링크 */
-export const configLinks = { odd: 'ODD 프로파일', compat: '승인 구성 조합' };
+export const configLinks = /* @__PURE__ */ localizedCopy('ads-config.configLinks', { odd: 'ODD 프로파일', compat: '승인 구성 조합' });

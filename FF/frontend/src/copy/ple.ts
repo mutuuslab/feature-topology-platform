@@ -1,17 +1,18 @@
+import { localizedCopy } from '../locale/runtime';
 // ISO/IEC 26580 정합 화면 문구(docs/20-architecture/20-60) — Feature 등록 단계·자동 채움·변이 프로필·카탈로그·Bill-of-Features·제품 구성기·공유 자산.
 // 화면에는 업무 이름을 쓴다 — 표준 번호는 화면 머리 코드(codes)와 안내 한 줄에만.
 
 /** 등록 진행 단계(백엔드 REGISTRATION_STAGES와 같은 순서) */
-export const regSteps = {
+export const regSteps = /* @__PURE__ */ localizedCopy('ple.regSteps', {
   label: '등록 진행 단계',
   stages: ['작성 기준 선택', '등록 정보 작성', '초안 등록', '내용 검토', '정의 승인'] as const,
   hint: ['기본값을 가져올 기능 1개', '설명·담당·적용 대상 확인', 'PROPOSED 0.1.0으로 저장', 'G1~G3·안전 분류 확인', 'Feature 승인자가 판단'] as const,
   no: (n: number) => `${n}`,
   current: '지금 단계',
   done: '끝남',
-};
+});
 
-export const autofill = {
+export const autofill = /* @__PURE__ */ localizedCopy('ple.autofill', {
   // ① 이름·설명으로 찾기
   intentTitle: '이름·설명으로 찾기',
   intentLabel: '만들 기능을 한 줄로 적으세요',
@@ -59,10 +60,10 @@ export const autofill = {
   dupTitle: '중복·유사 확인',
   dupKind: { SAME_SCOPE: '같은 범위 같은 기능', OTHER_SCOPE: '다른 범위 같은 기능', SIMILAR_NAME: '비슷한 이름' } as Record<string, string>,
   dupNone: '확인함 — 같은 범위에서 같은 기준 행·비슷한 이름을 쓴 Feature 0건',
-};
+});
 
 /** 26580 Feature 프로필(변이 프로필) */
-export const profile = {
+export const profile = /* @__PURE__ */ localizedCopy('ple.profile', {
   title: 'Feature 프로필 (ISO/IEC 26580)',
   lead: '제품 라인에서 이 기능의 자리와 바뀌는 방식 — 기준 행에서 제안, 고칠 수 있습니다.',
   role: '카탈로그 위치',
@@ -80,10 +81,10 @@ export const profile = {
   vpsHint: '공유 자산의 어느 부분이 선택에 따라 바뀌는가 — 제어점에서 만듭니다',
   vpKind: { FLAG: 'Flag', PARAMETER: '보정 값', SIGNAL: '신호', DTC: '고장 코드', SW_COMPONENT: 'SW 컴포넌트', POLICY: '정책' } as Record<string, string>,
   parentWhy: '하위 feature는 상위 feature 기준 행을 적으세요',
-};
+});
 
 /** 등록 현황(/master/define)·홈 진입점 */
-export const registrations = {
+export const registrations = /* @__PURE__ */ localizedCopy('ple.registrations', {
   title: '진행 중인 등록',
   newFeature: '새 Feature 등록',
   hint: '정의 승인 전 Feature — 등록 단계·G1~G3·승인 전에 채울 칸',
@@ -99,18 +100,18 @@ export const registrations = {
   beforeAutofill: '자동 채움 도입 전 등록',
   more: (n: number) => `외 ${n}건`,
   open: '모두 보기',
-};
+});
 
 /** 26580 하위 메뉴 */
-export const pleNav = {
+export const pleNav = /* @__PURE__ */ localizedCopy('ple.pleNav', {
   label: '제품 라인 (ISO/IEC 26580)',
   catalogue: 'Feature 카탈로그',
   bof: 'Bill-of-Features',
   configurator: '제품 구성기',
   assets: '공유 자산 추적',
-};
+});
 
-export const catalogue = {
+export const catalogue = /* @__PURE__ */ localizedCopy('ple.catalogue', {
   title: 'Feature 카탈로그',
   lead: '제품 라인 전체의 feature — 주요·하위 feature, 실현한 Feature, 기준 행 제약.',
   key: (primary: number, sub: number) => `주요 feature ${primary}개 · 하위 feature ${sub}개`,
@@ -123,9 +124,9 @@ export const catalogue = {
   sub: '하위',
   expandAll: '모두 펼치기',
   collapseAll: '모두 접기',
-};
+});
 
-export const bof = {
+export const bof = /* @__PURE__ */ localizedCopy('ple.bof', {
   title: 'Bill-of-Features',
   lead: '상품마다 고른 feature와 제약 판정 — 카탈로그 제약을 어기면 구성 승인이 막힙니다.',
   key: (fail: number) => (fail ? `카탈로그·구성 위반이 있는 상품 ${fail}개` : '모든 상품이 제약을 지킵니다'),
@@ -148,9 +149,9 @@ export const bof = {
   pass: '통과',
   fail: '위반',
   openConfigurator: '제품 구성기로',
-};
+});
 
-export const configurator = {
+export const configurator = /* @__PURE__ */ localizedCopy('ple.configurator', {
   title: '제품 구성기',
   lead: '상품을 고르면 SW·제어기·Flag 켬/끔·정책 결과를 미리 봅니다(저장 없음).',
   key: (on: number, off: number) => `켜는 Flag ${on}개 · 끄는 Flag ${off}개`,
@@ -165,9 +166,9 @@ export const configurator = {
   policies: '정책',
   vps: '변이점 행사 결과',
   vpCol: { feature: 'Feature', vp: '변이점', asset: '자산', resolved: '결과' },
-};
+});
 
-export const assets = {
+export const assets = /* @__PURE__ */ localizedCopy('ple.assets', {
   title: '공유 자산 추적',
   lead: '자산마다 쓰는 Feature와 상품 — 같이 쓰는 자산은 바꿀 때 영향이 넓습니다.',
   key: (shared: number) => `여러 Feature가 같이 쓰는 자산 ${shared}개`,
@@ -175,12 +176,12 @@ export const assets = {
   all: '전체',
   col: { kind: '종류', asset: '자산', features: 'Feature', products: '상품' },
   more: (n: number) => `외 ${n}`,
-};
+});
 
 /** 홈·작업공간 진입점 */
-export const homeEntry = {
+export const homeEntry = /* @__PURE__ */ localizedCopy('ple.homeEntry', {
   register: '새 Feature 등록',
   inProgress: (n: number) => `등록 진행 중 ${n}건`,
   registrationsTitle: '등록 진행 중',
   registrationsHint: '내가 등록한 Feature부터 — 정의 승인까지 남은 단계',
-};
+});

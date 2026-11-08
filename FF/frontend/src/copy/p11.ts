@@ -1,6 +1,7 @@
+import { localizedCopy } from '../locale/runtime';
 // P11 화면 문구 — API만 있던 기능의 화면: Flag Retirement, 데이터·규제 기록(SUMS·Data Act·보존), 감독 기록(직무 분리·사후 검토·변경 기록·재-HARA),
-// 긴급 차단 종료·복원 시간 기록, 보안 이벤트·SBOM 본문·차량 키 epoch, Release Sign-off(출시 책임 확인). ko.p11로 쓴다.
-export const p11 = {
+// 긴급 차단·복원, 보안·SBOM·차량 키 epoch, Release Sign-off 문구. 각 지연 화면에서 직접 불러 쓴다.
+export const p11 = /* @__PURE__ */ localizedCopy('p11.p11', {
   signoff: {
     title: 'Release Sign-off',
     none: 'Feature Owner의 Release Sign-off(출시 책임 확인)가 아직 없습니다 — 출시 전에 서명합니다',
@@ -196,4 +197,4 @@ export const p11 = {
     deps: (out: number, inc: number) => `의존 ${out} · 피의존 ${inc}`,
     open: '상세 열기',
   },
-} as const;
+} as const);

@@ -1,9 +1,10 @@
+import { localizedCopy } from '../locale/runtime';
 // 컴플라이언스 룰 레지스트리 화면 문구(/verify/compliance?tab=registry) — 등록·승인·버전·만료와 배포 검증 결과.
 // 룰 유형·상태·검증 기준 이름은 계약(rules/compliance-rule.ts) 표를 그대로 쓴다.
 
 const n = (x: number) => x.toLocaleString('ko-KR');
 
-export const complianceRules = {
+export const complianceRules = /* @__PURE__ */ localizedCopy('compliance-rules.complianceRules', {
   tab: '룰 레지스트리',
   key: { waiting: '승인을 기다리는 룰', ok: '모든 룰 결정됨' },
   kpi: { total: '등록 룰', approved: '승인', waiting: '승인 대기', rejected: '반려', retired: '만료' },
@@ -111,4 +112,4 @@ export const complianceRules = {
     applied: '적용',
     notApplied: '적용 안 함',
   },
-};
+});

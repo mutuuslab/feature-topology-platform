@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../../copy/master';
 // 운영·바로 가기 가젯 본문 — 운영 요약(통계 표)·걸린 긴급 차단·업무 절차 지도·바로 가기·플랫폼 소개. 필요할 때만 읽는 묶음.
 // 업무 절차 지도 본문은 ProcedureMap(다른 작업이 맡는 파일)을 그대로 가져온다 — 가젯 id·종류는 'procedures'.
 import type { ReactNode } from 'react';
@@ -24,7 +25,7 @@ import { GadgetState, JiraTable, KeyLink, Status } from './parts';
 
 const Bd = dashboard.board.body;
 const F = dashboard.board.fields;
-const H = ko.master.home;
+const H = masterCopy.home;
 
 
 type Stat = { k: string; v: number | null; to?: string; badge?: ReactNode; title?: string };
@@ -141,7 +142,7 @@ function Procedures({ role }: GadgetBodyProps) {
 
 function Links() {
   const links: [string, string][] = [
-    ['/admin/approval', ko.master.inbox.title],
+    ['/admin/approval', masterCopy.inbox.title],
     ['/features', 'Feature Registry'],
     ['/fleet/live', ko.fleet.title],
     ['/ops/kill', ko.kill.title],

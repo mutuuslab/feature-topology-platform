@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // 기능명세서 공백 보강 화면 문구 — 수신자 규칙·직접 보내기(B1), 감사·이력 내보내기·기간·변경 전후 값·정책 운영 현황(B4),
 // Feature 평가 운영 데이터(B5), 연계·과금·서명·파이프라인 오류 이력(B6).
 
-export const notifyRules = {
+export const notifyRules = /* @__PURE__ */ localizedCopy('records.notifyRules', {
   eyebrow: 'D04-04 · 수신자 규칙',
   title: '알림 수신자 규칙',
   lead: '일이 생길 때 누가 알림을 받는지 정합니다. 기본 수신자는 규칙이 정하고, 사람·역할·팀을 더할 수 있습니다.',
@@ -42,9 +43,9 @@ export const notifyRules = {
     needRecipient: '받는 대상을 하나 이상 고르세요.',
     needText: '제목과 내용을 두 글자 이상 쓰세요.',
   },
-};
+});
 
-export const auditGaps = {
+export const auditGaps = /* @__PURE__ */ localizedCopy('records.auditGaps', {
   period: '기간',
   periodHint: '날짜는 한국 시간 기준(시작일 0시 ~ 끝일 24시)',
   from: '시작일',
@@ -68,9 +69,9 @@ export const auditGaps = {
     col: { policy: '정책', views: '조회', updates: '수정', approvals: '승인·반려', deploys: '배포·단계', last: '마지막 행위', lastAt: '마지막 일시' },
     key: (n: number) => `정책 ${n}개의 운영 기록`,
   },
-};
+});
 
-export const evaluations = {
+export const evaluations = /* @__PURE__ */ localizedCopy('records.evaluations', {
   tab: '평가 운영',
   title: '평가 운영 데이터',
   lead: '이 Feature의 flag가 앱·차량 SDK·Unleash Edge에서 평가된 횟수를 일 단위로 셉니다.',
@@ -91,9 +92,9 @@ export const evaluations = {
   noFlag: '평가 집계는 배포 정책 flag 기준입니다 — 이 Feature의 정책을 배포하면 일별 평가가 여기 쌓입니다.',
   quiet: (n: number) => `최근 ${n}일 평가 0회`,
   share: (on: number, total: number) => (total ? `활성 비율 ${Math.round((on / total) * 1000) / 10}%` : '활성 비율 —'),
-};
+});
 
-export const integrationErrors = {
+export const integrationErrors = /* @__PURE__ */ localizedCopy('records.integrationErrors', {
   tab: '오류 이력',
   lead: '연계·과금·정책 서명·파이프라인 실패를 유형·시점·대상·내용으로 남깁니다. 기록은 지울 수 없고 담당자에게 알림이 갑니다.',
   system: '시스템',
@@ -101,4 +102,4 @@ export const integrationErrors = {
   col: { at: '발생 시점', system: '시스템', type: '오류 유형', target: '대상', message: '오류 내용', actor: '행위자' },
   key: (n: number) => `오류 ${n}건`,
   rules: '알림 받는 사람 보기',
-};
+});

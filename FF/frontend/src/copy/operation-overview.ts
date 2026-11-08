@@ -1,4 +1,5 @@
-export const operationOverview = {
+import { localizedCopy } from '../locale/runtime';
+export const operationOverview = /* @__PURE__ */ localizedCopy('operation-overview.operationOverview', {
   title: '차량 정책 수신 현황',
   loading: '차량 정책 수신 데이터 조회 중',
   lead: '차량에 보관된 정책과 마지막 회신을 조회한 상태입니다. 서버 배포와 차량 수신을 구분해 봅니다.',
@@ -102,4 +103,4 @@ export const operationOverview = {
     live: (n: number) => `차량 회신 ${n}건 도착`, liveKill: (n: number) => `긴급 차단 회신 ${n}대 도착`,
     basis: '점 하나가 차량 한 대입니다(국가 단위로 모아 배치, 실제 위치 아님). 상태 뜻은 차량 지도 활성 보기와 같고, 단계는 앞 단계를 지난 차량만 셉니다. 실제 사용은 최근 평가 기록 표본에서 그 Flag를 평가한 차량입니다. 되감기는 차량이 상태를 회신한 시각 기준입니다.',
   },
-};
+});

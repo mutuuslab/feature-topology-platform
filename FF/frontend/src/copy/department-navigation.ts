@@ -1,4 +1,5 @@
-export const departmentNavigation = {
+import { localizedCopy } from '../locale/runtime';
+export const departmentNavigation = /* @__PURE__ */ localizedCopy('department-navigation.departmentNavigation', {
   dashboards: '대시보드', departmentBoard: '부서 공통 대시보드', roleBoard: '역할 기본 대시보드', work: '업무 건·산출물',
   categories: {
     feature: 'Feature 기획·정의', configuration: '구성·의존 관계', master: '기준정보 관리',
@@ -9,4 +10,4 @@ export const departmentNavigation = {
     trace: '요구·설계 추적', privacy: '개인정보 처리·보호', security: '키·인증서·보안 관리',
     production: '현장·출하 업무', data: '운영 데이터 수집',
   },
-} as const;
+} as const);

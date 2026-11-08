@@ -6,6 +6,8 @@ import { deptNotice } from './copy/departments';
 import { ALL_DEPARTMENTS, departmentById, isDepartment } from './data/departments';
 import { OIDC_AUTH } from './auth-mode';
 import { useSso } from './auth-oidc';
+import { changeUiLanguage } from './locale/runtime';
+import { useUiLocale } from './locale/react';
 
 export interface AppState {
   role: string;
@@ -89,20 +91,26 @@ const AppApiCtx = createContext<ApiCtx>({ dispatch: () => {}, can: () => false }
 const AppShellCtx = createContext<ShellCtx>({ role: initial.role, department: initial.department, navMode: 'function', lang: initial.lang, theme: initial.theme });
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, undefined, load);
+  const [state, baseDispatch] = useReducer(reducer, undefined, load);
+  const locale = useUiLocale();
+  const dispatch = useCallback<Dispatch<Action>>((action) => {
+    if (action.t === 'LANG') void changeUiLanguage(action.lang);
+    baseDispatch(action);
+  }, []);
+  useEffect(() => { if (locale.requested !== state.lang) void changeUiLanguage(state.lang); }, [state.lang]);
 
   // 영속(토스트 제외) + 테마·언어 DOM 반영
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify({ role: state.role, department: state.department, allRole: state.allRole ?? null, theme: state.theme, lang: state.lang })); } catch {}
     document.documentElement.setAttribute('data-theme', state.theme);
-    document.documentElement.lang = state.lang;
-  }, [state.role, state.department, state.allRole, state.theme, state.lang]);
+    document.documentElement.lang = locale.language;
+  }, [state.role, state.department, state.allRole, state.theme, state.lang, locale.language]);
 
   const can = useCallback((verb: string) => (permMatrix[state.role] || []).includes(verb), [state.role]);
   const api = useMemo<ApiCtx>(() => ({ dispatch, can }), [can]);
   const shell = useMemo<ShellCtx>(
-    () => ({ role: state.role, department: state.department, navMode: 'function', lang: state.lang, theme: state.theme }),
-    [state.role, state.department, state.lang, state.theme],
+    () => ({ role: state.role, department: state.department, navMode: 'function', lang: locale.language, theme: state.theme }),
+    [state.role, state.department, state.theme, locale.language, locale.revision],
   );
   const app = useMemo<Ctx>(() => ({ state, dispatch, can }), [state, can]);
 

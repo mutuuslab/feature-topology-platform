@@ -1,15 +1,16 @@
+import { localizedCopy } from '../locale/runtime';
 // 관제(긴급 차단·복원·배포 회신·보안 키) 문구 — 담당자 웨이브 W1(P3-2·P4-1~P4-10). 공용 ko.ts와 섞지 않고 이 파일에 모은다.
 import type { ApproverRole } from '@ff/contracts';
 
 /** 보고서 승인 역할 → 업무 이름 */
-export const APPROVER_ROLE: Record<ApproverRole, string> = {
+export const APPROVER_ROLE: Record<ApproverRole, string> = /* @__PURE__ */ localizedCopy('control.APPROVER_ROLE', {
   FSM: '기능안전(Safety Manager)',
   CSM: '사이버보안',
   OPS_LEAD: '운영 리더',
   PRODUCT_OWNER: '상품 Owner',
   QA: '품질',
   REGULATORY: '법규',
-};
+});
 
 /** 부서 보기 → 그 부서에서 승인할 때 기본 서명 역할(P3-2 — 같은 사람이 여러 승인 역할을 가질 때) */
 export const DEPT_SIGN_ROLE: Record<string, ApproverRole> = {
@@ -22,7 +23,7 @@ export const DEPT_SIGN_ROLE: Record<string, ApproverRole> = {
   'DEP-PDP': 'PRODUCT_OWNER',
 };
 
-export const control = {
+export const control = /* @__PURE__ */ localizedCopy('control.control', {
   approval: {
     signAs: '서명 역할',
     signAsHint: '이 승인 칸에 기록될 역할입니다 — 같은 사람이 두 역할을 가져도 한 칸만 채웁니다',
@@ -115,4 +116,4 @@ export const control = {
     outOfScope: (vin: string, featureId: string) => `${vin}은(는) ${featureId}의 적용 범위(국가·차종·트림) 차량이 아닙니다 — 이 차량에 없는 기능일 수 있습니다. 그래도 접수할 수 있습니다`,
     unknownVehicle: (vin: string) => `${vin}은(는) 등록된 차량이 아닙니다 — VIN을 확인하세요`,
   },
-};
+});

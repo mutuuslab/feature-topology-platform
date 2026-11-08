@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // 검토함·작업공간 홈·다음 차례 문구(담당자 E2E W2 — P2-3·P3-6·P1-4·P2-5·P1-6·P1-11·P1-13·P4-9). ko.master.inbox의 대기열에 새 대기열을 더한다.
 import { master } from './master';
 
 /** 대기열 이름 — 앞의 7개는 ko.master.inbox.queues 그대로 */
-export const QUEUE_LABEL = {
+export const QUEUE_LABEL = /* @__PURE__ */ localizedCopy('inbox.QUEUE_LABEL', {
   ...master.inbox.queues,
   definition: '정의 승인 대기',
   refReview: 'Feature DB 검토 대기',
@@ -17,11 +18,11 @@ export const QUEUE_LABEL = {
   finding: '운영 점검 조치 필요',
   canaryHold: '확대 보류(Canary 관측)',
   rejudge: '산출물 변경 — 게이트 재판정',
-} as const;
+} as const);
 export type QueueKey = keyof typeof QUEUE_LABEL;
 
 /** 대기열을 처리하는 사람(패널 머리) — 차단은 보고서 승인 역할 전부(FSM·CSM·운영 리더·상품 Owner·품질·법규) */
-export const QUEUE_ROLE: Record<QueueKey, string> = {
+export const QUEUE_ROLE: Record<QueueKey, string> = /* @__PURE__ */ localizedCopy('inbox.QUEUE_ROLE', {
   ...master.inbox.roles,
   kill: '차단 승인자 2인 — F2 이상 안전·보안은 Safety Manager(FSM)·사이버보안(CSM), 그 밖은 운영 리더·상품 Owner·품질·법규도',
   definition: 'Feature 승인자(작성자 제외)',
@@ -36,12 +37,12 @@ export const QUEUE_ROLE: Record<QueueKey, string> = {
   finding: '점검 결과 담당 역할',
   canaryHold: '출시 담당·운영자',
   rejudge: 'Gate 판정자·출시 담당·Safety Manager',
-};
+});
 
 /** 보고서 승인 역할 → 화면 이름(차단·복원 '내 차례'가 어느 칸인지) */
-export const SLOT_LABEL: Record<string, string> = { FSM: 'Safety Manager(FSM)', CSM: '사이버보안(CSM)', OPS_LEAD: '운영 리더', PRODUCT_OWNER: '상품 Owner', QA: '품질', REGULATORY: '법규' };
+export const SLOT_LABEL: Record<string, string> = /* @__PURE__ */ localizedCopy('inbox.SLOT_LABEL', { FSM: 'Safety Manager(FSM)', CSM: '사이버보안(CSM)', OPS_LEAD: '운영 리더', PRODUCT_OWNER: '상품 Owner', QA: '품질', REGULATORY: '법규' });
 
-export const inbox = {
+export const inbox = /* @__PURE__ */ localizedCopy('inbox.inbox', {
   /** 내 차례 칸 — 행동 자격(판정 결과 PASS·승인됨과 다른 색·말) */
   reviewable: '검토 가능',
   slot: (label: string) => `${label} 칸으로 승인`,
@@ -62,10 +63,10 @@ export const inbox = {
   /** 결재함 — 부서 대기열 */
   deptScope: (dept: string) => `${dept} 대기열`,
   queueAllDept: '부서 전체',
-} as const;
+} as const);
 
 /** 작업공간 홈 — 역할별 핵심 메시지·내 업무 */
-export const homeWork = {
+export const homeWork = /* @__PURE__ */ localizedCopy('inbox.homeWork', {
   key: (labels: string[]) => `내 차례 — ${labels.join(' · ')}`,
   tiles: '내 차례 대기열',
   tileGo: '처리하러 가기',
@@ -80,13 +81,13 @@ export const homeWork = {
   signoffGo: '서명하러 가기',
   stale: '다시 서명',
   handoffGo: (name: string) => `${name} 화면 열기`,
-};
+});
 
 // 부서 전환 알림(deptNotice)은 copy/departments.ts — 앱 상태(store)가 첫 화면에서 쓰는데 이 파일 전체(업무함 문구)를 끌어오지 않게
 export { deptNotice } from './departments';
 
 /** Feature 상세 '다음 차례' 카드(P1-6) */
-export const nextTurn = {
+export const nextTurn = /* @__PURE__ */ localizedCopy('inbox.nextTurn', {
   title: '다음 차례',
   mine: '내가 할 일',
   canDo: (what: string) => `지금 ${what}할 수 있습니다`,
@@ -98,7 +99,7 @@ export const nextTurn = {
   done: '마지막 단계입니다 — 남은 전이가 없습니다',
   loading: '전이 조건을 불러오는 중',
   roleBlocked: (roles: string) => `권한이 없습니다 — ${roles}만 할 수 있습니다`,
-};
+});
 
 /** Release Sign-off 서랍 — 서명 전에 볼 근거(P1-5) */
-export const signoffEvidence = { gates: 'G8·G9 판정', safety: 'Safety Case(안전 분류)', evidence: 'Evidence 원장' };
+export const signoffEvidence = /* @__PURE__ */ localizedCopy('inbox.signoffEvidence', { gates: 'G8·G9 판정', safety: 'Safety Case(안전 분류)', evidence: 'Evidence 원장' });

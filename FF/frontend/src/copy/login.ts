@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // 로그인 화면 문구 — 데모 빌드는 아이디·비밀번호(데모 고정값, auth-demo.ts), 운영 빌드(VITE_AUTH=oidc)는 회사 계정 SSO 버튼(sso).
 // 자격 증명(ID·비밀번호)은 화면에 안내하지 않는다(사용자 지시 2026-11-06) — 운영자 문서·README에만 둔다.
 
-export const login = {
+export const login = /* @__PURE__ */ localizedCopy('login.login', {
   eyebrow: 'Feature Platform · FF',
   title: '차를 판매한 뒤에도,\n기능에 대한 약속은 계속된다',
   lead: 'Feature 등록부터 Gate 판정, 출시와 운영까지 — 업무 절차가 플랫폼의 흐름을 만듭니다.',
@@ -40,4 +41,4 @@ export const login = {
     body: '자율주행 Feature의 활성화 정책과 원격 비활성화, 정책 Rollback 및 OTA 복구 연계를 하나의 운영 흐름으로 연결하도록 설계했습니다. 차량의 운행 가능 조건과 안전 전환 절차를 연계해, UN GTR No.26과 UN R156의 관련 요구사항 대응을 지원합니다.',
     chips: ['ODD 기반 활성화 정책', '원격 종료 및 재활성화 차단', '정책 Rollback', 'OTA 복구 연계'],
   },
-};
+});

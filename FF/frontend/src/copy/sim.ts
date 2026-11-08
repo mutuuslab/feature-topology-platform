@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // 공개 시연 사이트 — 이 브라우저에서 바꾼 시연 데이터를 처음 상태로 되돌리는 메뉴(20-60). '가짜·시뮬레이션' 같은 말은 쓰지 않는다
-export const sim = {
+export const sim = /* @__PURE__ */ localizedCopy('sim.sim', {
   reset: '시연 데이터 초기화',
   resetTitle: '시연 데이터를 처음 상태로 되돌릴까요?',
   resetBody: '이 브라우저에서 진행한 요청·승인·차단·알림 읽음이 모두 지워지고, 공개 사이트를 처음 열었을 때의 상태로 돌아갑니다. 다른 방문자의 화면에는 영향이 없습니다.',
   resetAction: '처음 상태로 되돌리기',
   resetDone: '시연 데이터를 처음 상태로 되돌렸습니다.',
-};
+});

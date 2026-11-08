@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../copy/master';
 // /trace/design 요구·안전 추적 · /verify/evidence 품질 기준·Evidence · /change/cr 변경요청 (v2, P10-C4)
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -11,7 +12,7 @@ import { safetyCase as adsSafetyCase, traceAds as adsTrace } from '../../copy/ad
 import { traceCopy } from '../../copy/trace-links';
 import { AsyncView, DataTable, ExtRefChip, GateBadge, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Select, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
 
-const M = ko.master;
+const M = masterCopy;
 
 interface Trace {
   feature: { featureId: string; version: string; name: string; lifecycle: string; asil: string; scope: string };

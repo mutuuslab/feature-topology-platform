@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // Release Sign-off(출시 책임 확인) — 보고서 6.1 G7 승인자 Feature Owner의 개인 서명(사용자 결정 2026-10-18).
 // VERIFIED에서 G8·G9 PASS 뒤 Feature Owner(FEATURE_AUTHOR)가 서명해야 출시 전이가 열린다. 서명은 지금의 G8·G9 판정에 묶인다.
 import { lazy, Suspense, useState } from 'react';
@@ -15,7 +16,7 @@ import { signoffEvidence as SE } from '../../copy/inbox';
 // 운영 점검 근거 — 서명 창을 열 때만 읽는다(Feature 상세 묶음을 늘리지 않게)
 const OpsEvidence = lazy(() => import('../ops/OpsEvidence').then((m) => ({ default: m.OpsEvidence })));
 
-const S = ko.p11.signoff;
+const S = p11Copy.signoff;
 const INVALIDATE = ['releaseSignoff', 'featureDetail', 'audit'];
 
 export function ReleaseSignoffBar({ id, ver, gatesPassed }: { id: string; ver: string; gatesPassed: boolean }) {

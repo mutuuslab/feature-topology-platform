@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // /admin/data — 데이터·규제 기록: SUMS(D06-08, 명령별 RXSWIN·형식승인 영향·사용자 고지) · EU Data Act 접근 요청(D05-01, FFG-TEL-006) · 보존·삭제(D04-03, 13.7)
 //   · 개인정보(출시 준비 RD-P2-05) — 목록·보존 기한·정보주체 내보내기·삭제/가명 처리 요청(요청자와 다른 보안 담당자가 실행)
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { usePermission, useReadPermission, when } from '../shared';
 import { lake as LK } from '../../copy/lake';
 import { LakeData } from './LakeData';
 
-const T = ko.p11.data;
+const T = p11Copy.data;
 const mono = (s: string | number | null | undefined) => <span className="ds-mono ds-nowrap">{s ?? '—'}</span>;
 
 export function DataGovernanceScreen() {

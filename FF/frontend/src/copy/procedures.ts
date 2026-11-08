@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // 업무 절차 화면 문구 — ko.ts와 분리(docs/65-workflows 모델이 원천, 활동·단계 문장은 모델 그대로 보인다).
 import { procedureDisplay } from './procedure-display';
 import { procedurePanel } from './procedure-panel';
-export const procedures = {
+export const procedures = /* @__PURE__ */ localizedCopy('procedures.procedures', {
   title: '업무 절차',
   lead: '담당자별로 누가 언제 무엇을 하는지 — 표준 보고서 v1.1의 역할·Gate 기준 절차입니다.',
   loading: procedurePanel.loading,
@@ -124,4 +125,4 @@ export const procedures = {
     undone: '완료를 취소했습니다.',
     close: '닫기',
   },
-};
+});

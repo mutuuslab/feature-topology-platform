@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // SW개발비 및 정보보안·협의 요청 문구(W5, 담당자 개선 P5-1·P5-12) — 포털 부서(구매·법무·개인정보보호) 사람이 읽는다.
 // 쓰지 않는 낱말(3초 규칙·P5-12): Gate·SLA·OTA·Inputs·Outputs·레인·R/A/C/I 글자·절차 활동 코드. 업무 이름과 한 줄 설명으로 말한다.
 import type { ConsultOpinion, ConsultTargetKind } from '@ff/contracts';
 
-export const consult = {
+export const consult = /* @__PURE__ */ localizedCopy('consult.consult', {
   portal: {
     eyebrow: '검토 의견',
     title: (dept: string) => `${dept} SW개발비 및 정보보안`,
@@ -58,4 +59,4 @@ export const consult = {
     waiting: '의견 대기',
     more: (n: number) => `외 ${n}건`,
   },
-};
+});

@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // OTA 서버 전달(IF-05, 채널 ota) 문구 — 게시본 상세의 'OTA 전달' 패널. 규격 docs/80-integration/80-45-ota-server-if05.md
-export const ota = {
+export const ota = /* @__PURE__ */ localizedCopy('ota.ota', {
   title: 'OTA 전달',
   codes: 'IF-05 · OTA 서버',
   state: {
@@ -36,4 +37,4 @@ export const ota = {
   retryBody: '같은 작업 ID(멱등 키)로 다시 보냅니다 — OTA 서버가 이미 받았다면 같은 작업을 돌려주므로 차량에 두 번 가지 않습니다.',
   cancel: '작업 취소',
   cancelBody: '아직 전달하지 않은 차량만 취소합니다. 이미 적용한 차량은 복원·이전 상태 복구로 되돌리세요.',
-};
+});

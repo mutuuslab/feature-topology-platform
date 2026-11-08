@@ -1,4 +1,5 @@
-export const dashboardDepartment = {
+import { localizedCopy } from '../locale/runtime';
+export const dashboardDepartment = /* @__PURE__ */ localizedCopy('dashboard-department.dashboardDepartment', {
   region: '부서와 개인 대시보드',
   title: '업무에 맞는 대시보드',
   department: '부서 공통판',
@@ -20,4 +21,4 @@ export const dashboardDepartment = {
   invalid: '해당 부서의 공통판을 선택하세요.',
   conflict: '다른 곳에서 기본판이 바뀌었습니다. 다시 불러온 뒤 저장하세요.',
   retry: '다시 불러오기',
-};
+});

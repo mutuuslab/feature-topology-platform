@@ -1,5 +1,6 @@
-// 기준정보·추적 화면 문구 (P10-C4 — 레거시 기준정보 화면의 v2). ko.master로 쓴다.
-export const master = {
+import { localizedCopy } from '../locale/runtime';
+// 기준정보·추적 화면 문구. 각 지연 화면에서 직접 불러 초기 공통 묶음에 넣지 않는다.
+export const master = /* @__PURE__ */ localizedCopy('master.master', {
   common: {
     search: '검색',
     any: '전체',
@@ -206,4 +207,4 @@ export const master = {
     gatePass: (n: number) => `${n}/9`,
     newProposal: '새 Feature 등록',
   },
-} as const;
+} as const);

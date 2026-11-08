@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../copy/master';
 // 기준정보 (v2, P10-C4) — /master/upg UPG·UPG-VC, /master/artifacts SW·Artifact(+ECU), /master/structure SW 구조,
 // /master/control-points 제어점, /master/taxonomy Taxonomy. 원천은 v0.81 데이터셋(백엔드 /api/master/*).
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { planning as W } from '../../copy/planning';
 import { AsyncView, DataTable, IdChip, LifecycleBadge, PageHeader, Panel, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { Segments } from '../shared';
 
-const M = ko.master;
+const M = masterCopy;
 const fref = (s: string) => {
   const [id, ver] = s.split('@');
   return <IdChip key={s} id={id} version={ver} to={`/features/${id}/${ver}`} copy={false} />;

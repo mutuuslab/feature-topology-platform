@@ -1,10 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // 화면 문구 카탈로그 — 재디자인 화면(design/·shell/·screens/)은 문구를 여기서만 가져온다(lint:copy).
 // 표기 원칙: 한글 라벨 + 영문 기술용어·ID(Feature, Baseline, Gate, Kill, Safe Default …), 문장은 '…합니다/하세요'.
-import { p11 } from './p11';
-import { master } from './master';
 import type { Lifecycle } from '@ff/contracts';
 
-export const ko = {
+export const ko = /* @__PURE__ */ localizedCopy('ko.ko', {
   app: {
     name: 'Feature Flag Platform',
     tagline: 'Feature Flag 거버넌스 · 운영',
@@ -31,6 +30,8 @@ export const ko = {
     motion: '실시간 모션',
     notifications: '알림',
     language: '언어',
+    languageLoading: '영문 문구를 불러오는 중입니다…',
+    languageError: '영문 문구를 불러오지 못했습니다. 언어 버튼으로 다시 시도하세요.',
     collapse: '메뉴 접기',
     expand: '메뉴 펼치기',
     opsZone: '운영 영역',
@@ -1156,8 +1157,6 @@ export const ko = {
     clause: '근거 조항',
     clauseOpen: (id: string) => `${id} 원문 요약 보기`,
   },
-  p11,
-  master,
-} as const;
+} as const);
 
 export type Copy = typeof ko;

@@ -1,4 +1,5 @@
-export const procurementHome = {
+import { localizedCopy } from '../locale/runtime';
+export const procurementHome = /* @__PURE__ */ localizedCopy('procurement-home.procurementHome', {
   title: (dept: string) => `${dept} SW개발비 및 정보보안`,
   lead: '개발비 산정과 제출 건을 확인하고, 협력사 납품 내역과 다른 부서의 의견 요청으로 이어갑니다.',
   message: '산정·승인은 과제별 근거와 작성자·승인자 분리를 확인한 뒤 처리합니다.',
@@ -33,4 +34,4 @@ export const procurementHome = {
   badData: '조회 응답을 확인할 수 없습니다. 원천 데이터를 다시 불러오세요.',
   retry: '다시 불러오기',
   more: (n: number) => `다른 ${n}건은 전체 목록에서 확인하세요.`,
-};
+});

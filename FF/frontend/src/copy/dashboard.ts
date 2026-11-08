@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 내 대시보드 문구 — Jira 대시보드식 가젯 판(머리·편집·가젯 디렉터리·가젯 구성·가젯 본문)과 소개 히어로.
-export const dashboard = {
+export const dashboard = /* @__PURE__ */ localizedCopy('dashboard.dashboard', {
   // 소개 가젯(브랜드 히어로) — 기본 판에는 없고 가젯 디렉터리에서 고른다
   label: '플랫폼 소개',
   eyebrow: 'GOVERNANCE LIVE',
@@ -224,4 +225,4 @@ export const dashboard = {
       more: (n: number) => `외 ${n}건`,
     },
   },
-};
+});

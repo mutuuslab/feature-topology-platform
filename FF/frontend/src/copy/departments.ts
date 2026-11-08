@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // 부서 보기 문구 — 부서 전환(상단 바·로그인), 부서 메뉴, 작업공간 5유형(shell/workspaces).
 // 부서는 OEM 조직 가정안이다(docs/65-workflows model/common.yaml departments). 데모 빌드에서만 쓴다.
 import type { Workspace } from '@ff/contracts';
 
-export const departments = {
+export const departments = /* @__PURE__ */ localizedCopy('departments.departments', {
   all: '전체 보기',
   allHint: '모든 메뉴(8그룹)를 보여 줍니다',
   switcher: '담당 부서',
@@ -144,7 +145,7 @@ export const departments = {
     rnrDoc: '부서 R&R 문서',
     rnrHint: '부서별 수행·책임·협의·통보 업무와 다른 부서와의 인계',
   },
-};
+});
 
 /** 조사 '으로/로' — 받침 있으면 '으로'(ㄹ 받침은 '로'), 없거나 한글이 아니면 '로'. 예: 품질팀으로 · 법무로 · 배포 및 모니터링로 */
 export function roParticle(word: string): '으로' | '로' {
@@ -155,7 +156,7 @@ export function roParticle(word: string): '으로' | '로' {
 }
 
 /** 부서 전환 — 역할이 바뀌면 알린다(P4-9) */
-export const deptNotice = {
+export const deptNotice = /* @__PURE__ */ localizedCopy('departments.deptNotice', {
   changed: (from: string, to: string) => `역할이 ${from} → ${to}(으)로 바뀌었습니다`,
   restored: (to: string) => `전체 보기 — 원래 역할 ${to}(으)로 돌아왔습니다`,
-};
+});

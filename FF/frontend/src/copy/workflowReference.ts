@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 업무 정의 화면 문구. 실제 업무 문장은 canonical YAML에서 생성한다.
-export const workflowReference = {
+export const workflowReference = /* @__PURE__ */ localizedCopy('workflowReference.workflowReference', {
   tab: '업무 레퍼런스 모델',
   lead: '부서별 책임부터 목적·성과·수행 정의와 입력·출력 근거까지 연결해 읽습니다.',
   draft: '조직 검토 전 정의 초안',
@@ -50,4 +51,4 @@ export const workflowReference = {
   stats: (p: number, b: number, d: number) => `${p}개 프로세스 · ${b}개 수행 정의 · ${d}개 부서`,
   counts: (b: number, a: number) => `수행 정의 ${b}개 · 연결 활동 ${a}개`,
   linked: (yes: boolean) => yes ? '연결됨' : '연결 없음',
-} as const;
+} as const);

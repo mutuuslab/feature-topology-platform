@@ -1,6 +1,7 @@
+import { localizedCopy } from '../locale/runtime';
 // 오류 안내 문구(출시 준비 RD-UX-01) — 무엇이 일어났는지 + 다음 행동. 포트·서버 프로그램 이름은 쓰지 않는다.
 // 첫 화면 묶음(예산 310 KiB)에 들어가므로 짧게 — 다음 행동 문구는 copy/error-actions.ts(필요할 때만 읽음).
-export const errors = {
+export const errors = /* @__PURE__ */ localizedCopy('errors.errors', {
   network: '서버에 연결할 수 없습니다. 인터넷 연결을 확인한 뒤 다시 시도하세요.',
   authTitle: '다시 로그인해야 합니다',
   auth: '로그인 세션이 끝났습니다. 다시 로그인하세요.',
@@ -19,4 +20,4 @@ export const errors = {
   notInSnapshot: '데모에 없는 데이터입니다.',
   // 오류 상자의 문의용 코드 앞 — 화면 읽기용(문장과 코드를 나눈다)
   codeLabel: '오류 코드',
-};
+});

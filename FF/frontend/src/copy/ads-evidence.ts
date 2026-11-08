@@ -1,3 +1,4 @@
+import { localizedCopy } from '../locale/runtime';
 // ADS 증거 화면 문구 — ADS 사건 보고(ADS-UI07)·Safety Case 근거 지도(ADS-UI08)·요구 추적(ADS-UI10). 확정안(harness/ads/ux.json) 문장 그대로.
 // 상태 용어(판단 불가·미확인·미판정)는 copy/ads.ts terms를 쓴다 — 여기에는 이 화면들의 낱말만.
 
@@ -6,7 +7,7 @@ const md = (iso: string) => {
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;
 };
 
-export const incidentReports = {
+export const incidentReports = /* @__PURE__ */ localizedCopy('ads-evidence.incidentReports', {
   title: 'ADS 사건 보고(규제)',
   detailTitle: 'ADS 사건 상세',
   lead: 'ADS 사건의 인지 시각·보고 기한과 근거 기록을 한곳에서 봅니다.',
@@ -133,9 +134,9 @@ export const incidentReports = {
     excluded: (c: number, u: number) => `보고 대상 후보 ${c}건 · 판단 불가 ${u}건은 비율에 넣지 않습니다(확정 전)`,
   },
   parentLink: 'ADS 사건 보고(규제)',
-} as const;
+} as const);
 
-export const safetyCase = {
+export const safetyCase = /* @__PURE__ */ localizedCopy('ads-evidence.safetyCase', {
   title: 'Safety Case 근거 지도',
   lead: '주장·논거·Evidence의 연결과 독립 검토 발견사항을 봅니다.',
   owner: '원본 Safety Case는 안전 조직 소유 — 이 화면은 주장과 Evidence의 연결만 봅니다',
@@ -216,9 +217,9 @@ export const safetyCase = {
   empty: '이 Feature에 등록된 주장이 없습니다 — 안전 조직이 주장을 등록하면 Evidence 연결 상태가 보입니다.',
   error: '근거 지도를 불러오지 못했습니다',
   parentLink: 'Safety Case 근거 지도',
-} as const;
+} as const);
 
-export const traceAds = {
+export const traceAds = /* @__PURE__ */ localizedCopy('ads-evidence.traceAds', {
   title: 'ADS·UNECE 요구 추적',
   lead: 'ADS·UNECE 요구별 구현 판정과 근거, 인수시험 상태를 봅니다.',
   notCert: '플랫폼 구현 현황 — 차량 인증 상태가 아닙니다',
@@ -279,4 +280,4 @@ export const traceAds = {
   empty: '카탈로그가 비었습니다 — 요구 카탈로그 생성 단계를 먼저 실행해야 합니다.',
   error: '요구 카탈로그를 불러오지 못했습니다',
   parentLink: 'ADS·UNECE 요구 추적',
-} as const;
+} as const);

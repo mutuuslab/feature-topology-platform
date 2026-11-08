@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // Global button/loading recovery copy stays small; full activity copy loads with the panel.
-export const procedurePanel = {
+export const procedurePanel = /* @__PURE__ */ localizedCopy('procedure-panel.procedurePanel', {
   button: '이 화면의 업무 절차',
   title: '이 화면의 업무 절차',
   loading: '업무 절차를 불러오는 중입니다.',
@@ -12,6 +13,6 @@ export const procedurePanel = {
   context: (screen: string) => `${screen} 화면과 연결된 업무입니다.`,
   count: (n: number) => `이 화면의 관련 활동 ${n}개`,
   noMapping: '업무 연결이 등록되지 않은 화면입니다. 전체 업무 절차에서 관련 업무를 찾아보세요.',
-} as const;
+} as const);
 
 export { procedureDisplay as workflowDisplay } from './procedure-display';

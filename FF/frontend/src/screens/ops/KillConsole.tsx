@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // /ops/kill — 긴급 기능 차단(Kill Switch)·복구 (D03-03 · D03-04, PoC ⑥). 보고서 v1.1 7~9장: 긴급 상황에도 사전 2인 승인을 생략하지 않는다.
 // 요청(영향 범위·사유 분류·게이트 사전 점검·24시간 누적) → 서로 다른 2인 개인 서명 승인 → 게이트 최종 판정 → 서명·차량별 봉투 → 긴급 채널 → 차량 회신.
 // 복원도 요청(재검증 Evidence·Canary Cohort, 단계적) → 차단 승인자와 다른 2인 승인. 승인 가능 여부·서명 역할·복원 전망은 서버와 같은 contracts 규칙으로 미리 보인다.
@@ -550,7 +551,7 @@ interface TimelineRow {
 
 /** 종료·복원 시간 기록 — 차량마다 다섯 시각, 신뢰 못 하는 시각은 흐리게 (FFG-ADS-007·TEL-004·TEL-010) */
 function KillTimeline({ id }: { id: string }) {
-  const P = ko.p11.kill;
+  const P = p11Copy.kill;
   const q = useApi<{ items: TimelineRow[] }>('killTimeline', { params: { id } });
   const rows = q.data?.items ?? [];
   const pt = (p: TimePt | null | undefined) =>
@@ -607,7 +608,7 @@ function PostReview({ id }: { id: string }) {
   if (!row) return null;
   return (
     <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-2)', minWidth: 0 }}>
-      <h3 className="ds-eyebrow ds-eyebrow--ko">{ko.p11.kill.postReview}</h3>
+      <h3 className="ds-eyebrow ds-eyebrow--ko">{p11Copy.kill.postReview}</h3>
       <PostReviewForm killId={id} row={row} />
     </section>
   );

@@ -1,4 +1,5 @@
-export const workbench = {
+import { localizedCopy } from '../locale/runtime';
+export const workbench = /* @__PURE__ */ localizedCopy('workbench.workbench', {
   title: '데이터 분석실',
   lead: '출처를 고르고 조회 조건으로 행을 비교한 뒤 원본 업무로 이동합니다.',
   sources: '데이터 출처', fields: '표시 필드', detail: '선택 행 상세', filters: '조회 조건', summary: '조건 요약',
@@ -29,4 +30,4 @@ export const workbench = {
   staticPartial: '정적 시연에 저장된 조회 범위입니다. 전체 원장은 서버가 있는 설치에서 이어서 불러올 수 있습니다.',
   mixedReleases: '페이지별 기준 행 발행본이 다릅니다. 원장을 새로 읽어 조회 시점을 맞추세요.',
   storageNote: '저장 조회는 서버 공유 기능이 아닙니다. 계정별 브라우저 저장소에 조건만 보관합니다.',
-};
+});

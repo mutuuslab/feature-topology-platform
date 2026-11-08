@@ -1,4 +1,5 @@
-export const workflowExecution = {
+import { localizedCopy } from '../locale/runtime';
+export const workflowExecution = /* @__PURE__ */ localizedCopy('workflow-execution.workflowExecution', {
   title: '업무 건·산출물', lead: '대상별로 업무를 열고 산출물을 작성한 뒤, 독립 검토와 다음 담당자의 인수까지 기록합니다.',
   boundary: '이곳의 수락은 업무 산출물 검토 기록입니다. 안전·Gate·정책·출시 승인은 각 원천 업무 화면에서 별도로 처리합니다.',
   cases: '업무 건', newCase: '업무 건 만들기', noCases: '조회할 업무 건이 없습니다',
@@ -20,4 +21,4 @@ export const workflowExecution = {
   sourceRecords:'업무 대상의 정본 기록', sourceDeclared:'원천 미확보', sourceResolved:'정본 기록 조회됨', sourceRefresh:'정본 다시 조회', sourceAttach:'조회한 기록을 근거 파일에 추가', sourceNoRecords:'연결할 정본 기록을 찾지 못했습니다. 원천 기능에서 실제 대상을 먼저 작성하세요.', sourceRecordHint:'현재 저장된 레코드의 JSON을 근거 파일로 보존합니다. 원천 업무 승인과 외부 파일 무결성 검증은 각 원천 기능에서 확인하세요.', sourceUnavailable:'아직 연결되지 않은 원천', modelFailure:'업무 모델을 불러오지 못했습니다.', modelLoading:'업무 모델을 불러오는 중입니다.',
   sourceLoading:'정본 기록을 불러오는 중입니다.',sourceFailure:'정본 조회 실패 — 펼쳐서 다시 시도하세요.',sourceCount:(n:number)=>`${n}개 기록 · 펼쳐서 확인`,
   actions:{WORKFLOW_CASE_CREATE:'업무 건 작성',WORKFLOW_ARTIFACT_CREATE:'산출물 새 버전',WORKFLOW_ACTIVITY_SUBMIT:'검토 요청',WORKFLOW_ACTIVITY_REVIEW:'독립 검토',WORKFLOW_HANDOFF_OFFER:'인계 요청',WORKFLOW_HANDOFF_RECEIVE:'인수·반송'} as Record<string,string>,
-};
+});

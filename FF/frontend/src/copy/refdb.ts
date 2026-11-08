@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // Feature DB 화면 문구 — 기준 행 목록·상세·변경 요청·발행(설계 docs/30-data-model/30-95 §4·§5.2·§8·§10).
 // 상태 이름과 정책 안내(활성·검토 필요 …)는 contracts REF_STATUS_POLICY가 원천이다 — 여기서 되풀이하지 않는다.
 import type { RefChangeKind, RefChangeStatus, RefReviewOpinion } from '@ff/contracts';
 
-export const featureDb = {
+export const featureDb = /* @__PURE__ */ localizedCopy('refdb.featureDb', {
   title: 'Feature DB',
   lead: '기능 정의·규모·근거의 기준 행입니다. Feature 등록 때 골라 이름·ASIL·분류를 채웁니다.',
   key: '기준 행',
@@ -35,10 +36,10 @@ export const featureDb = {
   col: { refId: 'ID', name: '기능명', component: '컴포넌트', asil: '대표 ASIL', tshirt: 'T-shirt', status: '상태' },
   empty: '조건에 맞는 기준 행이 없습니다',
   tabs: { refs: '기준 행', sources: '출처' },
-};
+});
 
 /** 출처와 정기 점검(§8.5) — Feature DB 목록의 '출처' 탭 */
-export const refSources = {
+export const refSources = /* @__PURE__ */ localizedCopy('refdb.refSources', {
   caption: 'Feature DB 출처',
   empty: '등록된 출처가 없습니다',
   dueSome: (n: number) => `정기 점검 기한이 지난 출처 ${n}개 — 확인한 뒤 점검 기록을 남기세요`,
@@ -61,9 +62,9 @@ export const refSources = {
     next: '다음 점검일은 확인일보다 뒤여야 합니다',
     note: '점검 메모를 2자 이상 입력하세요',
   },
-};
+});
 
-export const refDetail = {
+export const refDetail = /* @__PURE__ */ localizedCopy('refdb.refDetail', {
   title: 'Feature DB 기준 행',
   key: '이 행을 연결한 Feature 버전',
   back: 'Feature DB 목록',
@@ -169,13 +170,13 @@ export const refDetail = {
     costWarn: '사용 + 경고',
     costNo: '새 줄 불가',
   },
-};
+});
 
-export const KIND_LABEL: Record<RefChangeKind, string> = { ADD: '추가', MODIFY: '수정', DEPRECATE: '폐기 예정', RETIRE: '폐기' };
-export const CHANGE_STATUS_LABEL: Record<RefChangeStatus, string> = { DRAFT: '작성', REVIEW: '검토 중', APPROVED: '발행 대기', REJECTED: '반려', PUBLISHED: '발행됨' };
-export const OPINION_LABEL: Record<RefReviewOpinion, string> = { AGREE: '동의', REVISE: '보완', OPPOSE: '반대' };
+export const KIND_LABEL: Record<RefChangeKind, string> = /* @__PURE__ */ localizedCopy('refdb.KIND_LABEL', { ADD: '추가', MODIFY: '수정', DEPRECATE: '폐기 예정', RETIRE: '폐기' });
+export const CHANGE_STATUS_LABEL: Record<RefChangeStatus, string> = /* @__PURE__ */ localizedCopy('refdb.CHANGE_STATUS_LABEL', { DRAFT: '작성', REVIEW: '검토 중', APPROVED: '발행 대기', REJECTED: '반려', PUBLISHED: '발행됨' });
+export const OPINION_LABEL: Record<RefReviewOpinion, string> = /* @__PURE__ */ localizedCopy('refdb.OPINION_LABEL', { AGREE: '동의', REVISE: '보완', OPPOSE: '반대' });
 
-export const refChangeForm = {
+export const refChangeForm = /* @__PURE__ */ localizedCopy('refdb.refChangeForm', {
   title: (refId: string) => `변경 요청 · ${refId}`,
   kind: '요청 종류',
   edits: '바꿀 값',
@@ -197,9 +198,9 @@ export const refChangeForm = {
   blocking: '승인 막힘',
   advisory: '보완 필요',
   passed: '통과',
-};
+});
 
-export const refChanges = {
+export const refChanges = /* @__PURE__ */ localizedCopy('refdb.refChanges', {
   title: 'Feature DB 변경 요청',
   lead: '기준 행 변경은 도메인 검토와 관리자 승인 뒤 버전 발행으로 반영됩니다.',
   key: '처리 중인 변경 요청',
@@ -220,9 +221,9 @@ export const refChanges = {
   exportRelease: '내보낼 버전',
   export: '엑셀 내보내기',
   exportNone: '발행 버전이 없습니다',
-};
+});
 
-export const refChangeDetail = {
+export const refChangeDetail = /* @__PURE__ */ localizedCopy('refdb.refChangeDetail', {
   title: (kind: string, refId: string) => `${kind} 요청 · ${refId}`,
   key: '검토 의견',
   back: '변경 요청 목록',
@@ -257,12 +258,12 @@ export const refChangeDetail = {
     reviewed: '이미 검토 의견을 남겼습니다',
   },
   notFound: '변경 요청을 찾을 수 없습니다',
-};
+});
 
 // ── 운영·감사 보강(W5, 담당자 개선 P5-3~P5-9·P5-11) ─────────────────────
 
 /** 품질 지표 한 줄 — Feature DB 목록 머리·콘솔 홈·기준 행 상세(P5-7·P5-8) */
-export const refQualityCopy = {
+export const refQualityCopy = /* @__PURE__ */ localizedCopy('refdb.refQualityCopy', {
   moreStats: '품질·발행 통계 자세히',
   title: 'Feature DB 품질',
   open: 'Feature DB 열기',
@@ -277,21 +278,21 @@ export const refQualityCopy = {
     attr: (missing: boolean) => (missing ? '분류 속성 미입력 — SW 계층·수명주기·기술 영역' : '분류 속성 입력됨'),
     grade: (g: string | null) => (g ? `규모 근거 ${g}` : '규모 근거 등급 없음'),
   },
-};
+});
 
 /** 승인됨 · 다음 발행 대기(P5-3) */
-export const refAwaiting = {
+export const refAwaiting = /* @__PURE__ */ localizedCopy('refdb.refAwaiting', {
   pill: '승인됨 · 다음 발행 대기',
   change: (id: string) => `추가 요청 ${id}`,
-};
+});
 
 /** 벤치마크 패널 — 값이 없을 때 이유(P5-9) */
-export const refBenchmark = {
+export const refBenchmark = /* @__PURE__ */ localizedCopy('refdb.refBenchmark', {
   none: '이 행에는 공개 벤치마크(Kearney 평균 업체 개발비)가 없습니다 — 공개 자료가 있는 행은 일부뿐입니다. 산정은 T-shirt 등급 포인트로 합니다.',
-};
+});
 
 /** 발행 미리 보기(P5-4) */
-export const refPublish = {
+export const refPublish = /* @__PURE__ */ localizedCopy('refdb.refPublish', {
   title: '버전 발행',
   next: (v: string) => `다음 버전 ${v}`,
   approved: '반영할 승인 요청',
@@ -307,13 +308,13 @@ export const refPublish = {
   memoWhy: '발행 메모를 2자 이상 입력하세요',
   button: (v: string, n: number) => `${v} 발행 (${n}건)`,
   none: '발행할 승인된 변경 요청이 없습니다',
-};
+});
 
 /** 발행 버전 표 열(P5-4 — 1366에서도 발행자·메모가 보인다) */
-export const refReleaseCols = { note: '메모' };
+export const refReleaseCols = /* @__PURE__ */ localizedCopy('refdb.refReleaseCols', { note: '메모' });
 
 /** 변경 요청 상세 감사 이력(P5-6) */
-export const refChangeAudit = {
+export const refChangeAudit = /* @__PURE__ */ localizedCopy('refdb.refChangeAudit', {
   title: '감사 이력',
   none: '이 요청의 감사 기록이 없습니다',
   stage: { REQUEST: '요청', REVIEW: '검토', DECIDE: '결정', PUBLISH: '발행' } as Record<string, string>,
@@ -322,10 +323,10 @@ export const refChangeAudit = {
   publishedAt: '발행 시각',
   releaseNote: '발행 메모',
   toAudit: '감사 화면에서 보기',
-};
+});
 
 /** 출처 점검 보강(P5-5) */
-export const refSourceReview = {
+export const refSourceReview = /* @__PURE__ */ localizedCopy('refdb.refSourceReview', {
   noNext: (n: number) => `다음 점검일이 없는 출처 ${n}개 — 기한 알림이 걸리지 않습니다. 점검을 기록해 다음 점검일을 정하세요`,
   noNextTag: '점검일 없음',
   result: '점검 결과',
@@ -335,4 +336,4 @@ export const refSourceReview = {
   makeChange: '영향 행 변경 요청 만들기',
   sourceFilter: (id: string) => `출처 ${id}를 쓰는 행 — 행을 열어 변경 요청을 만드세요`,
   clearSource: '출처 조건 지우기',
-};
+});

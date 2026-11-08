@@ -1,4 +1,5 @@
-export const topologyMotion = {
+import { localizedCopy } from '../locale/runtime';
+export const topologyMotion = /* @__PURE__ */ localizedCopy('topology-motion.topologyMotion', {
   title: '선택 관계 설명',
   select: '설명할 관계',
   source: '원천 기능',
@@ -33,4 +34,4 @@ export const topologyMotion = {
   relation: (id: string) => `관계 ${id}`,
   edge: (id: string, type: string, verdict: string) => `${id} ${type} ${verdict} 설명 선택`,
   diagram: (source: string, type: string, target: string) => `${source} ${type === 'REQUIRES' ? '의존 대상' : type === 'EXCLUDES' ? '상호 배제' : type} ${target}`,
-};
+});

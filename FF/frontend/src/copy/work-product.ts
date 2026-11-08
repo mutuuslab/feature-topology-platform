@@ -1,4 +1,5 @@
-export const workProduct = {
+import { localizedCopy } from '../locale/runtime';
+export const workProduct = /* @__PURE__ */ localizedCopy('work-product.workProduct', {
   definition: '문서 정의',
   definitionHint: '업무 절차에서 정한 문서 내용입니다. 실제 작성·완료 기록은 아래에서 구분해 확인합니다.',
   content: '필수 내용',
@@ -16,4 +17,4 @@ export const workProduct = {
   unsigned: '서명 없음',
   open: (name: string) => `${name} 내용 열기`,
   responsibility: (performer: string, accountable: string) => `작성·수행: ${performer} / 책임: ${accountable}`,
-};
+});

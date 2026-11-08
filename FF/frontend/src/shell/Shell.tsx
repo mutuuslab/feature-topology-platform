@@ -30,6 +30,7 @@ import { FeaturePeek } from './FeaturePeek';
 import { learnStore, useExplain, useLearn } from './learn';
 import { NotificationBell } from './NotificationBell';
 import { useProcedureSummary } from '../data/procedureProgress';
+import { useUiLocale } from '../locale/react';
 import './shell.css';
 
 // 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
@@ -86,6 +87,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const page = usePageTitle();
   const loc = useLocation();
   const { role, department, theme, lang } = useAppShell();
+  const uiLocale = useUiLocale();
   // 부서 보기는 데모 빌드에서만 — 운영 빌드(OIDC)는 부여받은 역할의 전체 보기
   const dept = OIDC_AUTH ? undefined : departmentById(department);
   const workspace = dept?.workspace;
@@ -222,9 +224,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
           <Button variant="ghost" icon={motion.running ? 'pause' : 'play'} aria-pressed={motion.running} aria-label={ko.shell.motion} title={ko.shell.motion} onClick={() => motion.setLive(!motion.live)} />
           <Button variant="ghost" icon={theme === 'light' ? 'moon' : 'sun'} aria-label={ko.shell.theme} title={ko.shell.theme} onClick={() => dispatch({ t: 'THEME', theme: theme === 'light' ? 'dark' : 'light' })} />
-          <Button variant="ghost" className="sh-lang" aria-label={ko.shell.language} title={ko.shell.language} onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>
+          <Button variant="ghost" className="sh-lang" aria-label={ko.shell.language} title={ko.shell.language} disabled={uiLocale.loading} aria-busy={uiLocale.loading} onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>
             {lang.toUpperCase()}
           </Button>
+          {uiLocale.loading && <span role="status">{ko.shell.languageLoading}</span>}
+          {uiLocale.error && <span role="alert">{ko.shell.languageError}</span>}
           {STATIC_MODE && <Button variant="ghost" icon="reset" aria-label={SIM.reset} title={SIM.reset} onClick={() => setResetOpen(true)} data-testid="demo-reset-open" />}
           <Button
             variant="ghost"

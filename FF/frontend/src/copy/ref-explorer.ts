@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // Feature DB 목록 탐색판 — 왼쪽 분류·출처 트리, 오른쪽 다중 선택 필터, 위 요약 수치
 import type { RefExploreAxis } from '@ff/contracts';
 
-export const refExplorer = {
+export const refExplorer = /* @__PURE__ */ localizedCopy('ref-explorer.refExplorer', {
   title: 'Feature DB 기준 행 탐색',
   treeTaxonomy: '분류 — 도메인 › 컴포넌트',
   treeSources: '근거 출처',
@@ -30,4 +31,4 @@ export const refExplorer = {
     share: (n: number, of: number) => (of ? `${((n / of) * 100).toFixed(1)}%` : '—'),
   },
   loading: '전체 기준 행 확인 중',
-};
+});

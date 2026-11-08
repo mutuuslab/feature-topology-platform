@@ -1,16 +1,17 @@
+import { localizedCopy } from '../locale/runtime';
 // ADS 상태 화면 문구 — 6축(차량 화면)·판정·고객에게 보이는 상태·배포 상세 수렴·Fleet 축별 분포·주문 추적(설계 harness/ads/ux.json ADS-UI01·UI06·ORC-UI01·UI03).
 // 상태 용어는 copy/ads.ts(바꾸지 않고 쓰기만), 이 파일은 화면 낱말·핵심 메시지 문장만. '모름'은 판단 불가·미확인 두 낱말만.
 
-export const vehicleTabs = {
+export const vehicleTabs = /* @__PURE__ */ localizedCopy('ads-state.vehicleTabs', {
   state: '상태(6축)',
   verdicts: '판정',
   customer: '고객에게 보이는 상태',
   records: '정책 게시본·수신 기록',
   requests: '차량 발신 요청',
-} as const;
+} as const);
 
 /** 차량 화면 '상태(6축)' 탭 */
-export const axesTab = {
+export const axesTab = /* @__PURE__ */ localizedCopy('ads-state.axesTab', {
   key: {
     unconfirmed: (n: number, rel: string) => `현재 상태 미확인 기능 ${n}개 — 마지막 차량 보고 ${rel}`,
     noReport: '보고 이력 없음',
@@ -30,10 +31,10 @@ export const axesTab = {
   simulated: '가상 데이터',
   ddtOwner: (o: string) => `제어 책임 ${o}`,
   lastStage: (stage: string, reason: string, rel: string) => `마지막 보고: ${stage}${reason ? ` · ${reason}` : ''} · ${rel}`,
-} as const;
+} as const);
 
 /** 차량 화면 '판정' 탭 */
-export const verdictsTab = {
+export const verdictsTab = /* @__PURE__ */ localizedCopy('ads-state.verdictsTab', {
   key: {
     verdict: (action: string, verdict: string, reason: string, rel: string) => `${action} ${verdict}${reason ? ` — ${reason}` : ''}, 차량 보고 ${rel}`,
     stale: (action: string, rel: string) => `${action} 판정 미확인 — 마지막 보고 ${rel}`,
@@ -51,10 +52,10 @@ export const verdictsTab = {
   empty: { title: '이 차량이 보고한 판정이 없습니다', body: '판정은 차량이 행위를 시도하거나 주기 보고할 때 생깁니다.' },
   error: '판정을 불러오지 못했습니다 — 지난 판정을 현재처럼 보이지 않습니다.',
   history: '판정 이력 열기',
-} as const;
+} as const);
 
 /** 차량 화면 '고객에게 보이는 상태' 탭(고객 앱 화면이 아닌 미리보기) */
-export const customerTab = {
+export const customerTab = /* @__PURE__ */ localizedCopy('ads-state.customerTab', {
   key: (line: string) => `고객 화면: ${line}`,
   lead: '고객 앱이 받을 상태를 미리 봅니다 — 고객 앱 화면이 아닙니다.',
   preview: '미리보기',
@@ -78,10 +79,10 @@ export const customerTab = {
     raw: '고객 상태 원문(API 응답) 보기',
   },
   empty: { title: '고객에게 보일 기능이 없습니다', body: '권한이나 배포가 생기면 고객 상태가 보입니다.' },
-} as const;
+} as const);
 
 /** 배포 상세 — 수렴 7구간 */
-export const convergence = {
+export const convergence = /* @__PURE__ */ localizedCopy('ads-state.convergence', {
   unknown: '차량 적용 상태를 확인하지 못했습니다 — 다시 시도해 주세요',
   key: (n: number, total: number) => `적용 확인 안 된 차량 ${n}대 — 대상 ${total}대 중`,
   keyAll: (total: number) => `대상 ${total}대 모두 적용 확인`,
@@ -98,10 +99,10 @@ export const convergence = {
   basis: (min: number) => `수신 뒤 기준 시간 ${min}분 안 결과 보고가 없으면 미확인`,
   stage: { RECEIVED: '수신', ACCEPTED: '수락', DEFERRED: '전달 보류', APPLIED: '적용', REJECTED: '거부' } as Record<string, string>,
   empty: '대상 차량 0대 — 회신을 셀 대상이 없습니다',
-} as const;
+} as const);
 
 /** Fleet 실시간 — Feature 선택 + 축별 분포, 기존 행렬은 '정책 값 대조' 탭 */
-export const fleetAxes = {
+export const fleetAxes = /* @__PURE__ */ localizedCopy('ads-state.fleetAxes', {
   tabs: { axes: '6축 분포', match: '정책 값 대조' },
   key: (n: number, name: string, min: number) => `실제 상태 미확인 차량 ${n}대 — ${name}, 기준 ${min}분 넘음`,
   keyNone: '축별 상태를 볼 Feature가 없습니다',
@@ -114,10 +115,10 @@ export const fleetAxes = {
   none: '없음',
   noPublication: '게시본 없음',
   ads: 'ADS',
-} as const;
+} as const);
 
 /** 주문 추적('/entitlements' 탭) */
-export const orders = {
+export const orders = /* @__PURE__ */ localizedCopy('ads-state.orders', {
   tab: '주문 추적',
   key: (n: number, hours: number) => `기한 넘긴 사용 준비 미확인 주문 ${n}건 — 결제 후 ${hours}시간(가정값) 기준`,
   lead: '주문부터 차량의 사용 준비 확인까지 단계와 경과 시간을 봅니다.',
@@ -152,11 +153,11 @@ export const orders = {
   error: '주문 추적을 불러오지 못했습니다',
   noPerm: '환불·재전송 기록은 운영자 역할이 할 수 있습니다.',
   open: '단계 기록 열기',
-} as const;
+} as const);
 
 /** 축 값 표기 보조 */
-export const axisWords = {
+export const axisWords = /* @__PURE__ */ localizedCopy('ads-state.axisWords', {
   delivery: { PUBLISHED: '발행' } as Record<string, string>,
-} as const;
+} as const);
 
 export const adsState = { vehicleTabs, axesTab, verdictsTab, customerTab, convergence, fleetAxes, orders, axisWords } as const;

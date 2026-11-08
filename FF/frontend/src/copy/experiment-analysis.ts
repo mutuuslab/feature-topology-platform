@@ -1,4 +1,5 @@
-export const experimentAnalysis = {
+import { localizedCopy } from '../locale/runtime';
+export const experimentAnalysis = /* @__PURE__ */ localizedCopy('experiment-analysis.experimentAnalysis', {
   methods: '테스트 방법과 확인할 근거',
   ab: 'A/B 비교',
   abBody: '대조군과 처리군의 같은 지표를 비교합니다. 표본 수·효과의 방향·신뢰구간을 함께 확인하고 채택 여부를 결정합니다.',
@@ -27,4 +28,4 @@ export const experimentAnalysis = {
   divergence: '불일치',
   evidence: '관측 표본 수',
   sampleMinimum: (n: number) => `각 군 최소 ${n.toLocaleString()}개`,
-};
+});

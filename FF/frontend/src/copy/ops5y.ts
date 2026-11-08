@@ -1,8 +1,9 @@
+import { localizedCopy } from '../locale/runtime';
 // 5년 운영 규모 화면 문구 — 대상 차량은 모집단 모델(가정값)과 가중 표본으로 보인다(contracts/src/rules/population.ts).
 // ko.ts와 따로 둔다: 규모 표기·가정 안내만 모았다.
 import { formatCount, formatExact } from '../design/format';
 
-export const ops5y = {
+export const ops5y = /* @__PURE__ */ localizedCopy('ops5y.ops5y', {
   fleetMap: {
     sourceAll: '시연 + 대상 차량(가중 표본)',
     represented: (n: number) => `대표 ${formatCount(n)}대`,
@@ -20,4 +21,4 @@ export const ops5y = {
     monthly: '4주 합계',
     periods: { 26: '26주', 52: '1년', 260: '5년' } as Record<number, string>,
   },
-} as const;
+} as const);

@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
+import { autofillFromRef } from '@ff/contracts';
 import { ApprovalInboxScreen, DefineScreen, HomeScreen, ProposeScreen } from '../screens/home/Inbox';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
@@ -145,11 +146,13 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     handler = (url, init) =>
       url === '/api/features' && init?.method === 'POST'
         ? { status: 201, body: { featureId: 'FEAT-00500', version: '0.1.0' } }
+        : url.startsWith('/api/ple/autofill/')
+          ? { body: autofillFromRef(REF, { features: [], refsById: new Map([[REF.refId, REF]]) }) }
         : url.startsWith('/api/refdb/refs')
           ? { body: { items: [REF], total: 1 } }
           : undefined;
     mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);
-    fireEvent.click(await screen.findByRole('button', { name: '기준 기능 선택', exact: true }));
+    fireEvent.click(await screen.findByRole('button', { name: '기준 Feature 선택', exact: true }));
     fireEvent.click(await screen.findByRole('button', { name: 'BC-SEAT-010 기본 정보 가져오기' }));
     fireEvent.click(screen.getByRole('button', { name: '다음: 등록 정보 확인' }));
     const submit = screen.getByRole('button', { name: '다음: 등록 전 확인' });
@@ -158,6 +161,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     fireEvent.change(screen.getByLabelText(/^설명/), { target: { value: '원격으로 좌석 열선을 켠다' } });
     fireEvent.change(screen.getByLabelText(/^담당/), { target: { value: 'Body Platform Team' } });
     fireEvent.change(screen.getByLabelText(/^요구사항 ID/), { target: { value: 'REQ-1, REQ-2' } });
+    for (const [name, value] of [['국가', 'KR'], ['차종', 'NX4 PE'], ['트림', 'Premium']]) fireEvent.change(screen.getByLabelText(new RegExp(`^${name}`)), { target: { value } });
     await registerDraft();
     expect(await screen.findByText('detail-page')).toBeTruthy();
     const post = calls.find((c) => c.method === 'POST')!;

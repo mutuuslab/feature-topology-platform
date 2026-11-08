@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 export const PRD_BODY_LIMIT = 2000;
-export const PRD_SECTIONS = ['[배경과 문제]', '[기대 동작]', '[완료 조건]', '[범위와 제약]'];
+export const PRD_SECTIONS = /* @__PURE__ */ localizedCopy('propose-prd.PRD_SECTIONS', ['[배경과 문제]', '[기대 동작]', '[완료 조건]', '[범위와 제약]']);
 export const PRD_TEMPLATE = `${PRD_SECTIONS.join('\n\n')}\n`;
-export const proposePrd = {
+export const proposePrd = /* @__PURE__ */ localizedCopy('propose-prd.proposePrd', {
   key: 'Feature DB의 기준을 선택하고 적용하면 작성을 시작합니다',
   lead: 'Feature DB의 기준을 먼저 선택한 뒤, 가져온 정보와 적용 대상을 확인해 초안으로 등록합니다.',
   document: 'Feature 문서',
@@ -28,4 +29,4 @@ export const proposePrd = {
   bodyHint: '문서 전체가 기능 설명으로 저장됩니다. 최대 2,000자입니다.',
   bodyCount: (length: number) => `${length.toLocaleString('ko-KR')} / 2,000자`,
   bodyTooLong: '기능 설명은 2,000자 이내로 작성하세요',
-};
+});

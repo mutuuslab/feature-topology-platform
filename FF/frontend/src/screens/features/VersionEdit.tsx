@@ -1,3 +1,4 @@
+import { p11 as p11Copy } from '../../copy/p11';
 // 새 Version·초안 수정 (P11) — Feature(D01-01)·상품(D01-03)·정책(D01-06). 불변 규칙(출시 뒤 수정 409 → 새 Version)은 서버가 다시 검사한다.
 import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -10,7 +11,7 @@ import { BaselinePicker, CompositionView, useLiveComposition } from '../products
 import { planning as W } from '../../copy/planning';
 import { ImplLinksEditor, implBody, implComplete, implRowsOf, missingImplText, type ImplRow } from './ImplLinks';
 
-const E = ko.p11.edit;
+const E = p11Copy.edit;
 const list = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);
 const BUMPS = ['minor', 'patch', 'major'] as const;
 

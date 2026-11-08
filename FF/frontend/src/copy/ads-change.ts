@@ -1,3 +1,4 @@
+import { localizedCopy } from '../locale/runtime';
 // ADS 변경 화면 문구 — 변경 종류·승인 경로·릴리스 비교(ADS-UI09), Feature 분류·시장 기준선(ADS-UI12), 일괄 명령 미리보기(ADS-UI03), 확대 판정(ADS-UI11).
 // 상태 용어는 copy/ads.ts(바꾸지 않는다). '모름'은 판단 불가·미확인 두 낱말만, '차단'·'보류'는 단독으로 쓰지 않는다.
 
@@ -12,7 +13,7 @@ const pathLong = {
   SAFETY_CASE: 'Safety Case 갱신 — 현재 형상 근거 다시 묶기(그 전에는 기능안전 담당자 확인 기록)',
 } as const;
 
-export const adsChange = {
+export const adsChange = /* @__PURE__ */ localizedCopy('ads-change.adsChange', {
   tabs: { paths: '승인 경로', release: '릴리스 비교', scope: '영향 범위' },
   lead: {
     paths: '변경 종류별로 필요한 승인 경로와 남은 항목을 봅니다.',
@@ -218,4 +219,4 @@ export const adsChange = {
     guardClear: '막는 사유 0건 — 다음 단계로 넓힐 수 있습니다',
     assumedNote: '축별 근거는 가정값입니다 — 실측이 연동되면 같은 판정이 단계 확대를 막습니다.',
   },
-} as const;
+} as const);

@@ -1,4 +1,5 @@
-export const observability = {
+import { localizedCopy } from '../locale/runtime';
+export const observability = /* @__PURE__ */ localizedCopy('observability.observability', {
   title: '지표·추적·이벤트',
   lakeTab: 'Data Lake 출처 지표',
   lead: '차량 회신과 서버 처리 기록을 함께 확인합니다. 지표는 서버 시작 이후 누적이며 시간 분포는 조회된 기록의 범위입니다.',
@@ -19,9 +20,9 @@ export const observability = {
   event: '이벤트', target: '대상', component: '처리 영역',
   tabs: { metrics: 'Metrics', traces: 'Traces', logs: 'Events', readbacks: '차량 회신' },
   grafana: 'Grafana에서 보기', grafanaTitle: 'Grafana 차량 텔레메트리 수신 대시보드(새 창)', grafanaEmbed: 'Grafana 차량 텔레메트리 수신',
-};
+});
 
-export const readbackFlow = {
+export const readbackFlow = /* @__PURE__ */ localizedCopy('observability.readbackFlow', {
   title: '차량으로부터 수신', controls: '수신 흐름 제어',
   replayHint: '조회된 최근 24개 회신을 순환 재생합니다. 수신 시각과 결과는 원본 기록 그대로입니다.',
   liveHint: '5초마다 서버를 확인합니다. 새 회신이 확인될 때 수신 경로가 움직입니다.',
@@ -34,4 +35,4 @@ export const readbackFlow = {
   timeline: '회신 재생 타임라인', select: (n: number, vin: string, at: string, state: string) => `${n}번 회신 · ${vin} · ${at} · ${state}`, timelineHint: '구간을 누르면 해당 회신에서 멈춥니다.',
   legendOn: '녹색 · ON', legendOff: '청색 · OFF / 기타', legendRejected: '적색 · 거부',
   recent: '수신 기록 흐름', shown: (n: number) => `${n}건 표시`, source: '서버에서 조회한 회신만 표시합니다. 상세에서 게시본과 원본 기록을 확인하세요.',
-};
+});

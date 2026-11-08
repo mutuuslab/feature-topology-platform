@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../../copy/master';
 // Topology 관계 그래프 작업대 — 도메인 레인 그래프(GraphStage)·도구 막대(찾기·영향 분석·경로·흐름)·필터·선택 정보·표 보기.
 // 선택(Feature·관계)은 주소(feature·relation)에 둔다 — 상세 화면·핵심 메시지 행동·이전 주소(/topology/:id)가 같은 상태를 연다.
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react';
@@ -14,7 +15,7 @@ import { layoutGraph } from './layout';
 import { applyFilters, buildModel, collapseDomains, DOMAIN_NAME, findPath, impactOf, LANE_ORDER, neighborhood, NO_FILTERS, type DepRow, type FeatureRow, type Filters, type FlagRow, type PrecheckRule, type TEdge, type TModel, type TNode } from './model';
 import './topology.css';
 
-const T = ko.master.topology;
+const T = masterCopy.topology;
 type Mode = 'none' | 'impact' | 'path';
 
 function useReducedMotion() {

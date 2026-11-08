@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 업무 절차 흐름도 문구 — 절차 흐름도·내 업무 흐름·전체업무흐름. 흐름도 화면이 열릴 때만 불러온다(첫 화면 번들에 넣지 않는다).
-export const procedureFlow = {
+export const procedureFlow = /* @__PURE__ */ localizedCopy('procedureFlow.procedureFlow', {
   views: {
     label: '보기 방식',
     diagram: '흐름도',
@@ -192,4 +193,4 @@ export const procedureFlow = {
     title: '업무 절차 흐름도',
     hint: '스윔레인 흐름도·내 업무 흐름·전체업무흐름 — 배치는 자체 알고리즘(열 = 위상 순위, 직교 경로)입니다.',
   },
-};
+});

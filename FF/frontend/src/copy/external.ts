@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 외부 창 진입 문구. 가상 도구의 계정·작업 문구는 지연 로드되는 앱에만 둔다.
-export const externalLaunch = {
+export const externalLaunch = /* @__PURE__ */ localizedCopy('external.externalLaunch', {
   title: '외부 도구에서 이어서 작업',
   demo: '가상 연계 시연',
   real: '실제 저장소',
@@ -12,4 +13,4 @@ export const externalLaunch = {
   source: 'Flag 소스',
   commit: '스캔한 커밋',
   unavailable: '가상 연계 화면은 데모 설치에서만 사용할 수 있습니다.',
-};
+});

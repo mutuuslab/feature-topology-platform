@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // ADS 구성 마감 화면 문구 — 정책 컴파일 검사·적용 장소 추가(ODD 프로파일), 복구 결정·발행 후보(승인 구성 조합), 분류 입력·확정·시장 기준선,
 // 출고 실물 구성 대조(/baselines/eol), OTA 설치 단계(/ops/ota-installs), 캠페인 역조회, 지원 종료 연습. 숫자·식별자만 데이터.
 
-export const compile = {
+export const compile = /* @__PURE__ */ localizedCopy('ads-p5.compile', {
   tab: '정책 컴파일 검사',
   caption: 'Flag별 배포 설정 ↔ 승인 상한 — 넘거나 판단할 수 없으면 정책을 빌드하지 않습니다',
   flag: 'Flag',
@@ -12,9 +13,9 @@ export const compile = {
   noProfile: '승인 프로파일 없음',
   logs: (a: number, d: number, u: number) => `이 프로파일로 기록된 차량 판정 — 허용 ${a} · 거부 ${d} · 판단 불가 ${u}`,
   logsNote: '다른 ODD 버전의 판정은 섞지 않습니다(프로파일 참조별 집계).',
-};
+});
 
-export const site = {
+export const site = /* @__PURE__ */ localizedCopy('ads-p5.site', {
   add: '적용 장소 추가 요청',
   addTitle: '적용 장소 추가 — 변경 영향 확정 전에는 승인 대기',
   name: '장소 이름',
@@ -31,9 +32,9 @@ export const site = {
   readOnly: '읽기 전용 화면 — 장소 추가·승인은 운영 서버에서 합니다.',
   envelopeNote: '장소를 추가해도 승인 상한(Envelope)은 바뀌지 않습니다.',
   kinds: { PARKING: '주차장', ZONE: '구역', ROAD_SECTION: '도로 구간' } as Record<string, string>,
-};
+});
 
-export const recovery = {
+export const recovery = /* @__PURE__ */ localizedCopy('ads-p5.recovery', {
   tab: '복구 결정',
   caption: '차량별 복구 결정 — 경로·근거·형상 참조',
   vin: '차량',
@@ -52,9 +53,9 @@ export const recovery = {
   readOnly: '읽기 전용 화면 — 복구 결정은 운영 서버에서 합니다.',
   paths: { RESTORE_PREVIOUS: '승인 조합으로 복구', APPLY_FIX: '수정본 적용', SAFE_STATE: '정지 유지', SERVICE: '정비 입고' } as Record<string, string>,
   count: (n: number) => `복구 결정 ${n}건`,
-};
+});
 
-export const publish = {
+export const publish = /* @__PURE__ */ localizedCopy('ads-p5.publish', {
   tab: '발행 후보',
   caption: '배포 정책별 게시 대상 — 승인 조합·시장 기준선 밖 차량과 사유',
   policy: '정책',
@@ -65,9 +66,9 @@ export const publish = {
   enforced: 'ADS Feature — 게시 대상에서 제외',
   preview: 'ADAS — 대상 유지, 사유만 기록',
   unverified: (n: number) => `조합 미검증 Feature ${n}건(F0·F1 — 기존 Variant 규칙으로 허용)`,
-};
+});
 
-export const cls = {
+export const cls = /* @__PURE__ */ localizedCopy('ads-p5.cls', {
   ruleOn: '출시 전이 거부 규칙이 켜져 있습니다 — 미분류·상태 책임자 미지정이면 출시·중단·폐기 전이를 막습니다.',
   edit: '분류 입력',
   editTitle: 'ADS 분류 입력 — 확정 뒤 값을 바꾸면 다시 확정해야 합니다',
@@ -89,9 +90,9 @@ export const cls = {
   ownerOf: (state: string) => `${state} 책임자`,
   noPermission: '분류 입력은 Feature 작성자, 확정은 기능안전 담당자 역할이 할 수 있습니다.',
   readOnly: '읽기 전용 화면 — 분류 입력·확정은 운영 서버에서 합니다.',
-};
+});
 
-export const baselineEdit = {
+export const baselineEdit = /* @__PURE__ */ localizedCopy('ads-p5.baselineEdit', {
   add: '시장 기준선 입력',
   title: '시장 기준선 입력 — 승인 ODD는 같은 Version의 승인 프로파일만',
   market: '시장',
@@ -106,9 +107,9 @@ export const baselineEdit = {
   types: { TYPE_APPROVAL: '형식승인', SELF_CERT: '자기인증' } as Record<string, string>,
   statuses: { APPROVED: '승인', PENDING: '승인 대기', UNKNOWN: '판단 불가' } as Record<string, string>,
   noPermission: '시장 기준선 입력은 법규 담당 역할이 할 수 있습니다.',
-};
+});
 
-export const drill = {
+export const drill = /* @__PURE__ */ localizedCopy('ads-p5.drill', {
   title: '지원 종료·서버 교체 연습',
   lead: '서버를 새로 띄운 것처럼 차량 상태를 다시 계산해 기준선·차단·키 갱신·미승인 ON을 확인합니다.',
   run: '연습 실행',
@@ -126,9 +127,9 @@ export const drill = {
   count: (n: number) => `연습 기록 ${n}건`,
   zero: "연습 기록 0건 — '연습 실행'으로 시작합니다.",
   noPermission: '연습 실행은 Feature 출시 담당자·기능안전 담당자 역할이 할 수 있습니다.',
-};
+});
 
-export const eol = {
+export const eol = /* @__PURE__ */ localizedCopy('ads-p5.eol', {
   title: '출고 실물 구성 대조',
   lead: '주문 사양과 출고 차량의 실물 구성(VIN 스캔)을 대조합니다.',
   key: (n: number) => `품질 보류 차량 ${n}대 — 주문 사양과 실물 구성 불일치`,
@@ -166,9 +167,9 @@ export const eol = {
   acceptance: '인도 때 확인',
   accepted: (a: number, t: number, p: number) => `인수 완료 ${a}/${t} — 인도 후 확인 대기 ${p}건은 수에 넣지 않음`,
   recheckValue: { PASS: '일치', FAIL: '불일치' } as Record<string, string>,
-};
+});
 
-export const install = {
+export const install = /* @__PURE__ */ localizedCopy('ads-p5.install', {
   title: 'OTA 설치 단계',
   lead: 'OTA가 보고한 설치 단계를 차량별로 순서대로 봅니다.',
   key: (n: number, m: number) => `설치 확인 ${n}대 — 실패·복구 필요 ${m}대`,
@@ -194,9 +195,9 @@ export const install = {
   history: '설치 보고 기록',
   axisValue: { NOT_INSTALLED: '미설치', INSTALLING: '설치 중', COMPATIBLE: '호환', PARTIAL_FAILURE: '부분 실패', RECOVERY_NEEDED: '복구 필요' } as Record<string, string>,
   ok: '활성 적격',
-};
+});
 
-export const campaign = {
+export const campaign = /* @__PURE__ */ localizedCopy('ads-p5.campaign', {
   title: (id: string) => `전송 캠페인 ${id}`,
   lead: '전송 캠페인으로 정책 게시본과 정책 릴리스를 찾습니다.',
   key: (p: number, r: number) => `게시본 ${p}건 · 정책 릴리스 ${r}건`,
@@ -212,4 +213,4 @@ export const campaign = {
   status: '상태',
   error: '캠페인을 불러오지 못했습니다 — 다시 시도',
   find: '캠페인으로 찾기',
-};
+});

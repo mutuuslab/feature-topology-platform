@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 개발비 산정 목록 탐색판 — 왼쪽 분류·계수 표 트리, 오른쪽 다중 선택 필터, 위 요약 수치(과제에 담은 Feature·Feature DB 기준 행에서 모은 값)
-export const costExplorer = {
+export const costExplorer = /* @__PURE__ */ localizedCopy('cost-explorer.costExplorer', {
   title: '산정 과제 탐색',
   tree: '분류·계수 표',
   treeTaxonomy: '담은 기능 분류 — 도메인 › 컴포넌트',
@@ -19,4 +20,4 @@ export const costExplorer = {
     featuresHint: '과제마다 센 수의 합',
     stale: '새 계수 표 있음',
   },
-};
+});

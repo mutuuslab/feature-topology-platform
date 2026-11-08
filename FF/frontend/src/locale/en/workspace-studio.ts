@@ -1,0 +1,17 @@
+export default {
+  'workspaceStudio.eyebrow': 'Product planning · Feature ownership',
+  'workspaceStudio.title': 'Planning team',
+  'workspaceStudio.lead': 'Propose Features, track each lifecycle stage and confirm release responsibilities.',
+  'workspaceStudio.key': (n: number) => ({ value: n, text: 'Features before release' }),
+  'workspaceStudio.propose': 'Register a new Feature',
+  'workspaceStudio.products': 'Product configuration',
+  'workspaceStudio.board': 'Feature board',
+  'workspaceStudio.boardLead': 'Latest Version at each lifecycle stage',
+  'workspaceStudio.column.PROPOSED': 'Proposed',
+  'workspaceStudio.column.APPROVED': 'Definition approved',
+  'workspaceStudio.column.VERIFIED': 'Verified',
+  'workspaceStudio.column.RELEASED': 'Released',
+  'workspaceStudio.column.DEPRECATED': 'Deprecated',
+  'workspaceStudio.more': (n: number) => `${n} more`,
+  'workspaceStudio.productCount': (n: number) => `${n} products`,
+};

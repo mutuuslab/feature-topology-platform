@@ -1,4 +1,5 @@
-export const catalogExperience = {
+import { localizedCopy } from '../locale/runtime';
+export const catalogExperience = /* @__PURE__ */ localizedCopy('catalog-experience.catalogExperience', {
   browse: '상품 둘러보기', table: '데이터 표', view: '상품 보기 방식', filters: '상품 필터', search: '상품명·Catalog·담당 검색',
   country: '시장', sale: '판매 유형', lifecycle: '상품 단계', all: '전체',
   count: (shown: number, total: number) => `${total}개 중 ${shown}개 상품`,
@@ -29,4 +30,4 @@ export const catalogExperience = {
   next: '다음 업무', configRole: '상품 구성 승인 담당', releaseRole: '고객 출시 승인 담당', productRole: '상품 담당', noNext: '현재 제공된 다음 전이가 없습니다.',
   eligibility: '출시 조건', eligible: '충족', blocked: '보완 필요', configured: '구성 검증',
   theme: { parking: '주차·저속 보조', road: '주행 보조', energy: '에너지·편의', connected: '연결·접근', climate: '공조·열 관리', bundle: 'Feature 구성' },
-};
+});

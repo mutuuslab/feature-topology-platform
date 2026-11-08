@@ -1,4 +1,5 @@
-export const flags = {
+import { localizedCopy } from '../locale/runtime';
+export const flags = /* @__PURE__ */ localizedCopy('flags.flags', {
   title: 'Feature Flag', tab: 'Feature Flag', sources: 'Git 소스 연결', import: 'Git 스캔 가져오기',
   lead: 'Git·정책·Unleash 평가·차량 배포·차량 수신을 각각 확인합니다.',
   sourceLead: '커밋에 저장된 SDK 호출 위치입니다. 가져온 스캔은 개발 담당자가 제출한 기록이며, 코드 승인 여부는 외부 연계에서 확인합니다.',
@@ -23,4 +24,4 @@ export const flags = {
   evidence: '소스 파일 해시', commit: '커밋', malformed: 'Flag 연결 응답을 확인할 수 없습니다. 다시 조회하세요.',
   status: { DRAFT: '정책 작성 중', VALIDATED: '승인 대기', APPROVED: '배포 대기', DEPLOYED: '정책 배포 중', REJECTED: '정책 반려', RETIRED: '정책 종료' } as Record<string, string>,
   publication: { SIGNED: '서명 완료', DISPATCHED: '전달 중', CONFIRMED: '회신 일치', PARTIAL: '일부 회신', DIVERGED: '회신 불일치', TIMEOUT: '회신 기한 초과' } as Record<string, string>,
-};
+});

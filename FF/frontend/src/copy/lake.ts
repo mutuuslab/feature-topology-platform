@@ -1,10 +1,11 @@
+import { localizedCopy } from '../locale/runtime';
 // Data Lake 연계·Closed loop 화면 문구(80-70, BACKLOG TL-UI02~18). 모델 점수는 "권고", 판단 보류는 규칙만.
 // 본문에 연계 번호·컴포넌트 코드를 쓰지 않는다(3초 규칙 ⑦) — 출처는 데이터셋 이름으로.
 
 const pct = (x: number | null | undefined, d = 1) => (x == null ? '—' : `${(x * 100).toFixed(d)}%`);
 const num = (x: number | null | undefined, d = 2) => (x == null ? '—' : x.toLocaleString('ko-KR', { maximumFractionDigits: d }));
 
-export const lake = {
+export const lake = /* @__PURE__ */ localizedCopy('lake.lake', {
   pct,
   num,
   /** 활성 차량 — 만 대 단위 */
@@ -268,4 +269,4 @@ export const lake = {
     integration: 'Data Lake 지연 데이터셋',
     findings: '운영 점검 조치 필요',
   },
-};
+});

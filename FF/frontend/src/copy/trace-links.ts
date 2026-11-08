@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // Feature 추적 연결(요구·설계 요소·인터페이스·Test Case·OTA 패키지)·추적 커버리지·관계 유형 화면 문구 — ko.ts와 분리.
 import type { TraceKind } from '../../../contracts/src/schemas/trace-link';
 
-export const traceCopy = {
+export const traceCopy = /* @__PURE__ */ localizedCopy('trace-links.traceCopy', {
   tab: '추적 연결',
   kind: { REQUIREMENT: '요구사항', ARCHITECTURE: '아키텍처', INTERFACE: '인터페이스', TEST_CASE: '검증(Test Case)', OTA: 'OTA 패키지' } satisfies Record<TraceKind, string>,
   kindShort: { REQUIREMENT: '요구', ARCHITECTURE: '설계 요소', INTERFACE: '인터페이스', TEST_CASE: 'Test Case', OTA: 'OTA' } satisfies Record<TraceKind, string>,
@@ -133,4 +134,4 @@ export const traceCopy = {
     indirect: '의존 경유',
     vehicleTotal: (n: number) => `범위 차량 ${n}대`,
   },
-};
+});

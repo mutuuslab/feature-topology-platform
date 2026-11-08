@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // 감사 화면 보강 문구(W5, 담당자 개선 P5-6·P5-10) — 행위 한글 이름(원 코드값은 툴팁)·앞부분 검색·행위 필터·전후 값·체인 검증 카드.
 // 행위 이름 표는 서버 감사 행위(@AuditAction·audit.record) 이름이다. 표에 없으면 원 코드값을 그대로 보인다.
 
-export const AUDIT_ACTION_KO: Record<string, string> = {
+export const AUDIT_ACTION_KO: Record<string, string> = /* @__PURE__ */ localizedCopy('audit.AUDIT_ACTION_KO', {
   ANALYSIS_HARA: 'HARA 판단 기록',
   AUDIT_EXPORT: '감사 이력 내보내기',
   NOTIFICATION_RULE_UPDATE: '알림 수신자 규칙 바꾸기',
@@ -132,7 +133,7 @@ export const AUDIT_ACTION_KO: Record<string, string> = {
   VIRTUAL_VALIDATION: '가상 검증',
   VOC_IMPORT: '고객 의견 가져오기',
   VSOC_ALERT: '보안 관제 경보',
-};
+});
 
 /** 행위 한글 이름 — 'FEATURE_TRANSITION PROPOSED→APPROVED'처럼 뒤에 붙은 말은 그대로 둔다. 표에 없으면 null */
 export function auditActionKo(action: string): string | null {
@@ -142,7 +143,7 @@ export function auditActionKo(action: string): string | null {
 }
 
 /** 전후 값 칸의 키 — 화면은 업무 말, 원래 키는 툴팁(차단 시연 검토 2026-11-06: featureIds·vins·kid가 그대로 보였다). 표에 없으면 키 그대로 */
-export const AUDIT_KEY_KO: Record<string, string> = {
+export const AUDIT_KEY_KO: Record<string, string> = /* @__PURE__ */ localizedCopy('audit.AUDIT_KEY_KO', {
   featureId: 'Feature',
   featureIds: '함께 차단한 Feature',
   featureVersion: 'Version',
@@ -157,9 +158,9 @@ export const AUDIT_KEY_KO: Record<string, string> = {
   cohort: '복원 차량',
   evidenceRef: '재검증 Evidence',
   restoredVins: '복원한 차량',
-};
+});
 
-export const auditPlus = {
+export const auditPlus = /* @__PURE__ */ localizedCopy('audit.auditPlus', {
   searchLabel: '대상 (앞부분)',
   searchPlaceholder: 'CR-2026 · FEAT-00022 · BC-ACC-023',
   actionLabel: '행위',
@@ -186,4 +187,4 @@ export const auditPlus = {
   /** 헤드라인 — 체인 판정이 먼저, 실패 기록 수는 상태 표시로(다른 업무의 실패가 앞서지 않게, P5-10) */
   keyOk: (n: number) => `해시 체인 정상 — ${n}건 검증, 위변조 없음`,
   failedPill: (n: number) => `실패 기록 ${n}건`,
-};
+});

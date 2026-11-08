@@ -1,3 +1,4 @@
+import { master as masterCopy } from '../../copy/master';
 // v2 (P10-C4) — / 내 대시보드 · /admin/approval 검토함 · /feature/propose Feature 제안 · /master/define Feature 등록.
 // 검토함은 승인할 일을 모아 "내 차례인가"를 보이고 실제 승인은 각 화면에서 한다. 차단·복원의 내 차례 판정은 서버와 같은 contracts approvalCheck
 // (요청자·이미 승인한 사람·FSM 칸·복원은 차단 승인자 제외 — FFG-PLT-005·DEAC-008).
@@ -25,7 +26,7 @@ import { DashboardPage } from './dashboard/Dashboard';
 import { isSafetyKill } from './dashboard/catalog';
 import { byUrgency, QUEUE_ORDER, type QueueItem } from './queues';
 
-const I = ko.master.inbox;
+const I = masterCopy.inbox;
 
 type Item = QueueItem;
 
@@ -264,7 +265,7 @@ export function ApprovalInboxScreen() {
 
 /** 핵심 메시지 — 걸린 긴급 차단이 가장 먼저, 없으면 내 차례인 검토 */
 function homeMessage(activeKills: number, mine: number, procMine: number, loaded: boolean): KeyMessageSpec {
-  const H = ko.master.home;
+  const H = masterCopy.home;
   // 데이터가 오기 전에는 판정하지 않는다 — 빈 목록을 '없음'으로 읽으면 거짓 안심
   if (!loaded) return { tone: 'neutral', value: '—', text: H.key.inbox };
   if (activeKills) return { tone: 'danger', value: activeKills, text: H.key.kills, action: <Link to="/ops/kill">{H.key.open}</Link> };
@@ -322,7 +323,7 @@ const AdsClassCellLazy = lazy(() => import('../ads/AdsClassification').then((m) 
 const AdsGapSummaryLazy = lazy(() => import('../ads/AdsClassification').then((m) => ({ default: m.GapSummary })));
 
 export function DefineScreen() {
-  const D = ko.master.define;
+  const D = masterCopy.define;
   const q = useApi<{ items: { featureId: string; version: string; name: string; lifecycle: string; ownerId: string; gates?: Record<string, string> }[] }>('listFeatures', { query: { latestOnly: true } });
   const rows = (q.data?.items ?? []).filter((f) => f.lifecycle !== 'RELEASED' && f.lifecycle !== 'RETIRED' && f.lifecycle !== 'DEPRECATED');
   // 미분류 Feature — 출시 전이 거부 규칙을 켜기 전 점검(규칙은 켜지 않는다)

@@ -590,7 +590,7 @@ export async function simCall<T>(route: RouteDef, url: string, opts: CallOptions
   const req: SimRequest = { name: route.name, route, url, params: opts.params ?? {}, query: queryOf(url), body: opts.body };
   const actor = simActor(route, opts);
   try {
-    return (route.method === 'GET' && !downloadHandlers.has(route.name) ? await readRoute(o, req, actor) : await write(o, req, actor)) as T;
+    return (route.method === 'GET' && !downloadHandlers.has(route.name) ? await serial(() => readRoute(o, req, actor)) : await write(o, req, actor)) as T;
   } catch (e) {
     if (e instanceof SimError) throw asApiError(e);
     throw e;

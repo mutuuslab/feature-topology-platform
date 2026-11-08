@@ -1,3 +1,4 @@
+import { scheduleOtaObservation } from '../p9';
 // 시연 흐름 — 정책 운영(D01-06 정책·D06-04 검증·D01-08 단계 배포·D03-04 롤백·D06-12 이상 대응·D06-09 사후 검토·D06-03 가상검증·IF-04 Unleash).
 // 서버 policy.service·staged-rollout·rollback.service·anomaly.service·post-review·virtual-validation·unleash-sync와 같은 순서·규칙(contracts 순수 규칙):
 //  작성(DRAFT) → 분야별 검증 8종(runValidators → deploySafety) → 승인(publishCheck — 작성자≠승인자·해시·GO) → 배포(이전 배포본 RETIRED,
@@ -342,6 +343,7 @@ async function publishPolicy(ctx: SimWriteContext, policy: any) {
       vehicles: targets.map((vin) => ({ vin, outcome: 'DELIVERING', detail: null, at: now })),
     },
   };
+  scheduleOtaObservation(ctx, id);
   ctx.emit('publication.signed', id, { publicationId: id, kind: 'POLICY', keyId: POLICY_KID, payloadHash, targets: targets.length }, { componentId: 'D06-08' });
   ctx.emit('publication.dispatched', id, { publicationId: id, kind: 'POLICY', campaignId, channel: 'OTA', unreachable: [...offline].filter((v) => targets.includes(v)), ackOnly: [] }, { componentId: 'D04-01' });
   if (done) ctx.emit('publication.closed', id, { publicationId: id, kind: 'POLICY', status: 'CONFIRMED', confirmed: 0, denominator: 0, killId: null }, { componentId: 'D06-08' });

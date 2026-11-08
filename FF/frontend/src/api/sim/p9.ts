@@ -1,30 +1,51 @@
-// 시연 흐름(P9) — OTA 전달 대사(POST /api/ota/jobs/:jobId/reconcile). 서버 adapters/ota/ota-reconcile.service.ts와 같은 규칙:
-// 접수(SUBMITTED) 뒤 전달 통보가 오지 않은 작업을 OTA 서버 조회로 맞춘다 — 아직 기록하지 않은 차량만 채우고, 끝 결과(DELIVERED 등)는 되돌리지 않는다.
-// 적용 확인(회신 집계)은 바꾸지 않는다. 병합 때 index.ts HANDLERS 끝에 `() => import('./p9'),` 한 줄로 연결한다.
-import { OtaJobActionBody } from '@ff/contracts';
-import { registerSimHandler, simUnhandled } from './engine';
+// OTA server observations in the browser are explicitly LOCAL_SIMULATION.
+// Reconciliation consumes a separately recorded observation; invoking it never invents a delivery receipt.
+import { isOtaVehicleOutcome, OtaJobActionBody, OTA_STICKY_OUTCOMES, OTA_SERVER_JOB_STATES } from '@ff/contracts';
+import { registerSimHandler, registerSimTask } from './engine';
+import type { SimWriteContext } from './types';
 
-registerSimHandler(
-  'otaJobReconcile',
-  (ctx) => {
-    const jobId = ctx.req.params.jobId;
-    const all = ctx.state<Record<string, any>>('killDelivery', () => ({}));
-    const publicationId = Object.keys(all).find((id) => all[id].job?.jobId === jobId);
-    if (!publicationId) return simUnhandled(ctx);
-    const job = all[publicationId].job;
-    const before = job.state;
-    let filled = 0;
-    // 시연 OTA 서버는 전송 중인 차량을 모두 넘겼다고 답한다(조회 결과)
-    job.vehicles = job.vehicles.map((v: any) => {
-      if (v.outcome !== 'DELIVERING') return v;
-      filled++;
-      return { ...v, outcome: 'DELIVERED', detail: 'OTA 작업 조회로 대사', at: ctx.iso() };
-    });
-    job.counts = job.vehicles.reduce((m: Record<string, number>, v: any) => ((m[v.outcome] = (m[v.outcome] ?? 0) + 1), m), {});
-    if (job.state === 'SUBMITTED' && job.vehicles.every((v: any) => v.outcome !== 'DELIVERING')) Object.assign(job, { state: 'COMPLETED', serverState: 'COMPLETED' });
-    ctx.audit({ action: 'OTA_JOB_RECONCILE', target: jobId, before: { state: before }, after: { state: job.state, filled }, reason: ctx.req.body.reason, componentId: 'D04-01' });
-    ctx.emit('ota.job.reconciled', jobId, { jobId, publicationId, filled, state: job.state, serverState: job.serverState }, { componentId: 'D04-01' });
-    return { jobId, filled, state: job.state, serverState: job.serverState };
-  },
-  { body: OtaJobActionBody },
-);
+export function scheduleOtaObservation(ctx: SimWriteContext, publicationId: string) {
+  const store = ctx.state<Record<string, any>>('killDelivery', () => ({}))[publicationId];
+  if (!store?.job) return;
+  ctx.later(250, 'ota.server-observation', { publicationId, jobId: store.job.jobId, attempt: store.job.attempts, offline: [...(store.offline ?? [])] });
+}
+
+registerSimTask('ota.server-observation', (ctx, args) => {
+  const store = ctx.state<Record<string, any>>('killDelivery', () => ({}))[String(args.publicationId)];
+  if (!store?.job || store.job.jobId !== args.jobId || store.job.attempts !== args.attempt) return;
+  const offline = new Set(args.offline as string[]);
+  // An independent simulated OTA response. It does not update FF delivery or vehicle application results.
+  store.otaServerObservation = {
+    source: 'LOCAL_SIMULATION', jobId: args.jobId, attempt: args.attempt, observedAt: ctx.iso(), state: 'COMPLETED',
+    vehicles: store.job.vehicles.map((v: { vin: string }) => ({ vin: v.vin, outcome: offline.has(v.vin) ? 'NO_RESPONSE' : 'DELIVERED', at: ctx.iso() })),
+  };
+});
+
+registerSimHandler('otaJobReconcile', (ctx) => {
+  const jobId = ctx.req.params.jobId;
+  const all = ctx.state<Record<string, any>>('killDelivery', () => ({}));
+  const publicationId = Object.keys(all).find(id => all[id].job?.jobId === jobId);
+  if (!publicationId) ctx.fail('GUARD_FAILED', '이 브라우저의 OTA 작업 원천이 없습니다. 실제 OTA 작업은 연결된 서버에서 조회해 주세요.');
+  const store = all[publicationId!], job = store.job, source = store.otaServerObservation;
+  if (!source || source.source !== 'LOCAL_SIMULATION' || source.jobId !== jobId || source.attempt !== job.attempts || !Number.isFinite(Date.parse(source.observedAt)) || !Array.isArray(source.vehicles) || !OTA_SERVER_JOB_STATES.includes(source.state))
+    ctx.fail('GUARD_FAILED', '대사할 OTA 서버 관측이 없습니다. 전달 완료로 추정하지 않습니다.');
+  const before = job.state;
+  const facts = new Map<string, { outcome: string; at: string }>();
+  for (const v of source.vehicles) if (typeof v.vin === 'string' && isOtaVehicleOutcome(v.outcome) && Number.isFinite(Date.parse(v.at))) facts.set(v.vin, v);
+  let filled = 0;
+  job.vehicles = job.vehicles.map((v: { vin: string; outcome: string }) => {
+    const fact = facts.get(v.vin);
+    if (!fact || fact.outcome === v.outcome || OTA_STICKY_OUTCOMES.includes(v.outcome as any) || (v.outcome !== 'DELIVERING' && fact.outcome === 'DELIVERING')) return v;
+    filled++;
+    return { ...v, outcome: fact.outcome, at: fact.at, detail: 'LOCAL_SIMULATION: OTA 관측 대사' };
+  });
+  job.counts = job.vehicles.reduce((m: Record<string, number>, v: { outcome: string }) => ((m[v.outcome] = (m[v.outcome] ?? 0) + 1), m), {});
+  const closed = ['COMPLETED', 'CANCELLED', 'EXPIRED'].includes(job.state);
+  if (!closed && ['COMPLETED', 'CANCELLED', 'EXPIRED', 'FAILED'].includes(source.state)) job.state = source.state;
+  job.serverState = source.state;
+  if (job.state === 'SUBMITTED' && job.vehicles.every((v: { outcome: string }) => v.outcome !== 'DELIVERING')) job.state = 'COMPLETED';
+  const result = { jobId, filled, state: job.state, serverState: job.serverState, source: source.source, observedAt: source.observedAt };
+  ctx.audit({ action: 'OTA_JOB_RECONCILE', target: jobId, before: { state: before }, after: result, reason: ctx.req.body.reason, componentId: 'D04-01' });
+  ctx.emit('ota.job.reconciled', jobId, { ...result, publicationId }, { componentId: 'D04-01' });
+  return result;
+}, { body: OtaJobActionBody });

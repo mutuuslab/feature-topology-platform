@@ -1,3 +1,4 @@
+import { scheduleOtaObservation } from '../p9';
 // 시연 흐름 — 긴급 차단(D03-03)·복원(D03-04). 서버 kill.service·restore.service와 같은 순서·규칙(contracts 순수 규칙)으로:
 // 요청(type-to-confirm·영향 범위·DC4 거부·F2 이상 안전 봉쇄 근거) → 2인 승인(approvalCheck — 요청자 제외·서로 다른 2인·FSM·CSM)
 // → 정책 게이트 최종 판정(gateVerdict — 같은 규칙표) → 명령 원장 +1 → 서명(시연 키)·차량별 봉투 → 긴급 채널 게시본
@@ -430,6 +431,7 @@ async function publish(ctx: SimWriteContext, k: any, kind: 'KILL' | 'RESTORE', v
       vehicles: vins.map((vin) => ({ vin, outcome: 'DELIVERING', detail: null, at: now })),
     },
   };
+  scheduleOtaObservation(ctx, id);
   ctx.emit('publication.signed', id, { publicationId: id, kind, keyId: DEMO_KID.publication, payloadHash, targets: vins.length }, { componentId: 'D06-08' });
   ctx.emit('publication.dispatched', id, { publicationId: id, kind, campaignId, channel: 'EMERGENCY', unreachable: [...offline].filter((v) => vins.includes(v)), ackOnly: [] }, { componentId: 'D04-01' });
   // 회신 — 통신되는 차량이 몇 초에 걸쳐 묶음으로
@@ -836,6 +838,7 @@ registerSimHandler('otaJobRetry', (ctx) => {
   store.calls.push({ ifId: 'IF-05', key: publicationId, at: ctx.iso(), request: { channel: ota ? 'OTA' : 'CCS', priority: ota ? 'NORMAL' : 'EMERGENCY', targets: pending.length, retry: job.attempts, reason: ctx.req.body.reason }, response: { campaignId: ctx.get(PUB, publicationId!)?.campaignId, accepted: true } });
   ctx.audit({ action: 'OTA_JOB_RETRY', target: jobId, after: { publicationId, vehicles: pending.length, attempts: job.attempts }, reason: ctx.req.body.reason, componentId: 'D04-01' });
   ctx.emit('publication.dispatched', publicationId!, { publicationId, kind: ctx.get(PUB, publicationId!)?.kind, retry: job.attempts, unreachable: [], ackOnly: [] }, { componentId: 'D04-01' });
+  scheduleOtaObservation(ctx, publicationId!);
   const size = Math.max(1, Math.ceil(pending.length / 3));
   for (let i = 0; i * size < pending.length; i++) ctx.later(REPLY_FIRST_MS + i * REPLY_STEP_MS, 'kill.readback', { publicationId, vins: pending.slice(i * size, (i + 1) * size) });
   return job;

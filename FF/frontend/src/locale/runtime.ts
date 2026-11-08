@@ -11,6 +11,7 @@ const listeners = new Set<() => void>();
 const missing = new Set<string>();
 const cache = new WeakMap<object, Map<string, object>>();
 export const localeSnapshot = () => current;
+export const uiLocaleTag = () => current.language === 'en' ? 'en-US' : 'ko-KR';
 export const subscribeLocale = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
 function publish(next: Omit<LocaleState, 'revision'>) {
   current = { ...next, revision: current.revision + 1 };
@@ -67,6 +68,14 @@ export function localizedCopy<T extends object>(path: string, original: T): T {
   return proxy;
 }
 export const untranslatedCopyPaths = () => [...missing].sort();
+/** Only callers holding declared UI metadata may use this; business records are never passed here. */
+export function staticUiText(module: string, key: string, source: string): string {
+  if (current.language !== 'en') return source;
+  const value = english[module]?.[key];
+  if (typeof value === 'string') return value;
+  if (/[가-힣]/.test(source)) missing.add(`${module}.${key}`);
+  return source;
+}
 
 export function __resetLocaleForTest() {
   request += 1; english = {}; loading = null; missing.clear();

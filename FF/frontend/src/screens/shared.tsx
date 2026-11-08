@@ -9,6 +9,7 @@ import { useAppShell } from '../store';
 import { useWorkflows } from '../data/workflows';
 import { workflowLabels } from '../data/workflowLabels';
 import { procedureDisplay as PROC } from '../copy/procedure-display';
+import { localTime } from '../data/people';
 
 /** G1~G9 판정을 점 9개로 — 표 안에서 쓰는 축약형 */
 export function MiniGates({ gates }: { gates: Record<string, string | null | undefined> }) {
@@ -48,11 +49,7 @@ export function Segments({ items, sep = ' · ' }: { items: string[]; sep?: strin
 
 /** ISO 시각 → 'YYYY-MM-DD HH:MM' (KST 그대로 표기) */
 export function when(iso: string | null | undefined): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const k = new Date(d.getTime() + 9 * 3600_000).toISOString();
-  return `${k.slice(0, 10)} ${k.slice(11, 16)}`;
+  return localTime(iso);
 }
 
 /** 현재 역할로 이 작업을 할 수 있는지와 안내 문구 — 정적 공개 사이트도 같은 역할 규칙(쓰기는 브라우저 안 시연 데이터가 처리, 20-60) */

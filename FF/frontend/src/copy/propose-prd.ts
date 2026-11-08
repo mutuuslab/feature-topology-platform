@@ -1,7 +1,25 @@
 import { localizedCopy } from '../locale/runtime';
 export const PRD_BODY_LIMIT = 2000;
 export const PRD_SECTIONS = /* @__PURE__ */ localizedCopy('propose-prd.PRD_SECTIONS', ['[배경과 문제]', '[기대 동작]', '[완료 조건]', '[범위와 제약]']);
-export const PRD_TEMPLATE = `${PRD_SECTIONS.join('\n\n')}\n`;
+const observedOutlines = new Map<string, string[]>();
+export function prdTemplate() {
+  const headings = [...PRD_SECTIONS];
+  const template = `${headings.join('\n\n')}\n`;
+  observedOutlines.set(template.trim(), headings);
+  return template;
+}
+/** Captured default for existing callers; the editor reads the current-language template. */
+export const PRD_TEMPLATE = prdTemplate();
+export function hasPrdOutline(description: string) {
+  prdTemplate();
+  return [...observedOutlines.values()].some((headings) => headings.every((heading) => description.includes(heading)));
+}
+export function isPrdTemplate(description: string) {
+  prdTemplate();
+  if (observedOutlines.has(description.trim())) return true;
+  const lines = description.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return lines.length >= 4 && lines.every((line) => /^\[[^\]\r\n]+\]$/.test(line));
+}
 export const proposePrd = /* @__PURE__ */ localizedCopy('propose-prd.proposePrd', {
   key: 'Feature DB의 기준을 선택하고 적용하면 작성을 시작합니다',
   lead: 'Feature DB의 기준을 먼저 선택한 뒤, 가져온 정보와 적용 대상을 확인해 초안으로 등록합니다.',

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Field } from '../../../design';
 import { propose as P } from '../../../copy/propose';
-import { PRD_BODY_LIMIT, PRD_SECTIONS, PRD_TEMPLATE, proposePrd as D } from '../../../copy/propose-prd';
+import { PRD_BODY_LIMIT, hasPrdOutline, prdTemplate, proposePrd as D } from '../../../copy/propose-prd';
 import { proposeGuide as G } from '../../../copy/propose-guide';
 import './prd.css';
 
@@ -10,8 +10,9 @@ export function PrdEditor({ name, description, onName, onDescription, nameError,
   nameError?: string; descriptionError?: string; nameMark?: ReactNode; descriptionMark?: ReactNode;
 }) {
   const [preview, setPreview] = useState(false);
-  const appended = description.trim() ? `${description}\n\n${PRD_TEMPLATE}` : PRD_TEMPLATE;
-  const hasOutline = PRD_SECTIONS.every((heading) => description.includes(heading));
+  const template = prdTemplate();
+  const appended = description.trim() ? `${description}\n\n${template}` : template;
+  const hasOutline = hasPrdOutline(description);
   const templateReason = hasOutline ? D.templateExists : appended.length > PRD_BODY_LIMIT ? D.templateLimit : undefined;
   return <article className="propose-document">
     <header className="propose-document__head"><h2>{D.document}</h2><span className="ds-tag">{D.draft}</span></header>

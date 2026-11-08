@@ -9,6 +9,9 @@ import { departmentNavigation as N } from '../copy/department-navigation';
 import { Icon } from '../design';
 import { routeOf, ROUTES } from '../routes';
 import { departmentMenu, departmentMenuGroups, type DeptMenuItem } from './departmentMenu';
+import { departmentLabel } from '../data/departments';
+import { useAppShell } from '../store';
+import { procedurePanel } from '../copy/procedure-panel';
 import './department-navigation.css';
 
 const horizontal = (w: string) => w === 'portal';
@@ -30,7 +33,9 @@ function isActive(path: string, item: DeptMenuItem): boolean {
 
 export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSummary; procCount: number; onAll: () => void }) {
   const loc = useLocation();
-  const menu = useMemo(() => departmentMenu(dept), [dept]);
+  const { lang } = useAppShell();
+  const name = departmentLabel(dept, lang);
+  const menu = useMemo(() => departmentMenu(dept), [dept, lang]);
   const rnr = loc.pathname === '/procedures/roles' && new URLSearchParams(loc.search).get('view') === 'dept';
   const work = loc.pathname === '/procedures/work';
   const dashboard = loc.pathname === '/' ? new URLSearchParams(loc.search).get('dashboard') : null;
@@ -62,10 +67,10 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
     </section>;
   });
   return (
-    <nav className="sh-dnav" aria-label={D.nav.label(dept.name)} data-dept-nav={dept.id} data-dept-marker={DEPT_VIEW_MARKER} data-zone={dept.workspace === 'console' ? 'ops' : undefined}>
+    <nav className="sh-dnav" aria-label={D.nav.label(name)} data-dept-nav={dept.id} data-dept-marker={DEPT_VIEW_MARKER} data-zone={dept.workspace === 'console' ? 'ops' : undefined}>
       <div className="sh-dnav__head">
         <p className="sh-dnav__eyebrow">{D.workspace[dept.workspace]}</p>
-        <p className="sh-dnav__name">{dept.name}</p>
+        <p className="sh-dnav__name">{name}</p>
         {!flat && <p className="sh-dnav__counts">{D.counts(dept.counts.R, dept.counts.A, dept.counts.C)}</p>}
       </div>
       <ul className="sh-dnav__list sh-dnav__list--fixed">
@@ -76,7 +81,7 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
           </NavLink>
         </li>
         <li>
-          <NavLink to="/procedures" className={() => (!rnr && !work && loc.pathname.startsWith('/procedures') ? 'active' : '')} aria-label={procCount ? `${D.nav.procedures} — 내 차례 ${procCount}건` : undefined}>
+          <NavLink to="/procedures" className={() => (!rnr && !work && loc.pathname.startsWith('/procedures') ? 'active' : '')} aria-label={procCount ? procedurePanel.turnCount(D.nav.procedures, procCount) : undefined}>
             <Icon name="layers" size={16} />
             {D.nav.procedures}
             {procCount > 0 && (

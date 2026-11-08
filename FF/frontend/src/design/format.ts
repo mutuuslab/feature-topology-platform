@@ -1,8 +1,11 @@
 // 큰 수 표기 — 5년 운영 규모(수백만~수천만 대)를 만·억 단위로. 1만 미만은 그대로 쉼표.
 // 화면에는 짧은 값(formatCount)을, 정확한 값은 title·표(formatExact)로 함께 준다.
-export const formatExact = (n: number) => Math.round(n).toLocaleString('ko-KR');
+import { localeSnapshot, uiLocaleTag } from '../locale/runtime';
+export const formatExact = (n: number) => Math.round(n).toLocaleString(uiLocaleTag());
+let englishCompact: Intl.NumberFormat | undefined;
 
 export function formatCount(n: number): string {
+  if (localeSnapshot().language === 'en') return (englishCompact ??= new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 })).format(n);
   const a = Math.abs(n);
   const sign = n < 0 ? '-' : '';
   if (a < 10_000) return formatExact(n);
@@ -13,5 +16,5 @@ export function formatCount(n: number): string {
 /** 소수 자리를 반올림하되 끝의 .0은 뗀다 — 12.0만 → 12만 */
 const trim = (x: number, digits: number) => {
   const r = Number(x.toFixed(digits));
-  return r.toLocaleString('ko-KR', { maximumFractionDigits: digits });
+  return r.toLocaleString(uiLocaleTag(), { maximumFractionDigits: digits });
 };

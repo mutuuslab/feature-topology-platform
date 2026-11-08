@@ -2,6 +2,8 @@
 // 금액은 서버가 산정 역할에만 준다(view FULL) — 응답에 금액 필드가 없으면 그리지 않는다.
 import type { CostActualRow, CostCheckStatus, CostEstimate, CostLineInputs, CostMreRow, CostProjectStatus, CostSettingsInput, RefStatus } from '@ff/contracts';
 import { Link } from 'react-router-dom';
+import { uiLocaleTag } from '../../locale/runtime';
+import { formatters } from '../../copy/formatters';
 import { actorFor } from '../../api/actor';
 import { pathOf, toApiError, type ApiError } from '../../api/client';
 import { OIDC_AUTH } from '../../auth-mode';
@@ -118,7 +120,7 @@ export function CostStatusBadge({ status }: { status: CostProjectStatus }) {
   return <VerdictBadge value={v[COST_STATUS_TONE[status]]} label={COST_STATUS_LABEL[status]} />;
 }
 
-const nf = (digits: number) => new Intl.NumberFormat('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+const nf = (digits: number) => new Intl.NumberFormat(uiLocaleTag(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 /** 공수 — M/M 소수 둘째 자리 */
 export const mm = (x: number | null | undefined) => (x == null || !Number.isFinite(x) ? '—' : nf(2).format(x));
@@ -128,14 +130,14 @@ export const pct = (x: number | null | undefined) => (x == null || !Number.isFin
 /** 금액(원 → 과제 통화). 원화는 원 단위, 다른 통화는 환율로 나눠 통화 코드와 함께 */
 export function money(krw: number | null | undefined, currency = 'KRW', fx: number | null | undefined = 1): string {
   if (krw == null || !Number.isFinite(krw)) return '—';
-  if (currency === 'KRW' || !fx) return `${nf(0).format(krw)}원`;
+  if (currency === 'KRW' || !fx) return formatters.won(nf(0).format(krw));
   return `${currency} ${nf(0).format(krw / fx)}`;
 }
 
 /** 핵심 메시지 큰 숫자 — 원화는 백만원, 다른 통화는 천 단위 */
 export function moneyKey(krw: number, currency = 'KRW', fx: number | null | undefined = 1): { value: string; unit: string } {
-  if (currency === 'KRW' || !fx) return { value: nf(1).format(krw / 1e6), unit: '백만원' };
-  return { value: nf(1).format(krw / fx / 1e3), unit: `천 ${currency}` };
+  if (currency === 'KRW' || !fx) return { value: nf(1).format(krw / 1e6), unit: formatters.millionWon };
+  return { value: nf(1).format(krw / fx / 1e3), unit: formatters.thousandCurrency(currency) };
 }
 
 /** 엑셀 내보내기 받기 — call()은 JSON만 읽으므로 직접 받는다. 경고는 머리글(X-Cost-Export-Warnings) */

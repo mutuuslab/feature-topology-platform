@@ -4,9 +4,11 @@ import { useEffect } from 'react';
 import { personasFor } from '../api/actor';
 import { useSso } from '../auth-oidc';
 import { ko } from '../copy/ko';
-import { roleLabel } from '../data/refdata';
+import { displayRoleLabel } from '../data/refdata';
+import { useUiLocale } from '../locale/react';
 
 export function SsoRoleSwitcher({ role, onChange }: { role: string; onChange: (r: string, quiet?: boolean) => void }) {
+  useUiLocale();
   const { user } = useSso();
   const options = personasFor(user?.roles ?? []);
   const name = user?.name ?? user?.email ?? user?.id ?? '';
@@ -20,7 +22,7 @@ export function SsoRoleSwitcher({ role, onChange }: { role: string; onChange: (r
       <span className="sh-user__name" data-sso-name>{name}</span>
       <select aria-label={ko.shell.role} value={off ? options[0] : role} onChange={(e) => onChange(e.target.value)}>
         {options.map((r) => (
-          <option key={r} value={r}>{roleLabel(r)}</option>
+          <option key={r} value={r}>{displayRoleLabel(r)}</option>
         ))}
       </select>
     </div>

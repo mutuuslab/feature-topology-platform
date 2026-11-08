@@ -6,6 +6,7 @@ import { DEMO_EXTRAS } from './auth-mode';
 import { legacyTo } from './screens/legacyRedirect';
 import { SPEC_MENU_ITEM } from './data/specMenu';
 import { screenOfRoute } from './data/uiLinks';
+import { staticUiText } from './locale/runtime';
 import type { IconName } from './design';
 
 export type GroupKey = 'home' | 'feature' | 'config' | 'master' | 'procurement' | 'verify' | 'release' | 'ops' | 'admin' | 'settings';
@@ -17,21 +18,22 @@ export interface MenuGroup {
   icon: IconName;
   /** 레일용 짧은 라벨 */
   short: string;
+  shortEn?: string;
   /** 어두운 배포 및 모니터링 톤 영역 */
   zone?: 'ops';
 }
 
 export const GROUPS: MenuGroup[] = [
-  { key: 'home', ko: '홈', short: '홈', en: 'Home', icon: 'home' },
-  { key: 'feature', ko: 'Feature 정의', short: '정의', en: 'Feature Definition', icon: 'feature' },
-  { key: 'config', ko: '구성·Topology', short: '구성', en: 'Configuration & Topology', icon: 'topology' },
-  { key: 'master', ko: '기준정보', short: '기준', en: 'Master Data', icon: 'master' },
-  { key: 'procurement', ko: '구매·SW 개발비', short: '개발비', en: 'Procurement & SW Cost', icon: 'calculator' },
-  { key: 'verify', ko: '검증·Gate', short: '검증', en: 'Verification & Gates', icon: 'gate' },
-  { key: 'release', ko: '상품·출시', short: '출시', en: 'Products & Release', icon: 'release' },
-  { key: 'ops', ko: '차량 운영·안전', short: '운영', en: 'Vehicle Ops & Safety', icon: 'ops', zone: 'ops' },
-  { key: 'admin', ko: '연계·감사', short: '연계', en: 'Integration & Audit', icon: 'link' },
-  { key: 'settings', ko: '설정', short: '설정', en: 'Settings', icon: 'settings' },
+  { key: 'home', ko: '홈', short: '홈', shortEn: 'Home', en: 'Home', icon: 'home' },
+  { key: 'feature', ko: 'Feature 정의', short: '정의', shortEn: 'Define', en: 'Feature Definition', icon: 'feature' },
+  { key: 'config', ko: '구성·Topology', short: '구성', shortEn: 'Config', en: 'Configuration & Topology', icon: 'topology' },
+  { key: 'master', ko: '기준정보', short: '기준', shortEn: 'Master', en: 'Master Data', icon: 'master' },
+  { key: 'procurement', ko: '구매·SW 개발비', short: '개발비', shortEn: 'Cost', en: 'Procurement & SW Cost', icon: 'calculator' },
+  { key: 'verify', ko: '검증·Gate', short: '검증', shortEn: 'Verify', en: 'Verification & Gates', icon: 'gate' },
+  { key: 'release', ko: '상품·출시', short: '출시', shortEn: 'Release', en: 'Products & Release', icon: 'release' },
+  { key: 'ops', ko: '차량 운영·안전', short: '운영', shortEn: 'Ops', en: 'Vehicle Ops & Safety', icon: 'ops', zone: 'ops' },
+  { key: 'admin', ko: '연계·감사', short: '연계', shortEn: 'Audit', en: 'Integration & Audit', icon: 'link' },
+  { key: 'settings', ko: '설정', short: '설정', shortEn: 'Settings', en: 'Settings', icon: 'settings' },
 ];
 
 type Page = LazyExoticComponent<ComponentType<any>> | ComponentType<any>;
@@ -306,6 +308,11 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/deployments/campaigns/:id', element: def(() => import('./screens/ads/Campaign')), title: '전송 캠페인', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },
 ];
 
+// Translate display titles only. Paths, group keys, menu bindings and access metadata remain unchanged.
+for (const route of ALL_ROUTES) {
+  const source = route.title;
+  Object.defineProperty(route, 'title', { enumerable: true, configurable: true, get: () => staticUiText('route-titles', route.path, source) });
+}
 export const routesFor = (desktop: boolean): AppRoute[] => (desktop ? ALL_ROUTES.filter((r) => !DESKTOP_EXCLUDED.has(r.path) && !(r.parent && DESKTOP_EXCLUDED.has(r.parent))) : ALL_ROUTES);
 export const ROUTES: AppRoute[] = routesFor(DESKTOP_BUILD);
 /** 이 빌드에 실린 화면인가 — 업무 절차의 화면 링크·부서 메뉴가 배포본에서 뺀 화면을 가리키지 않게 한다. */

@@ -2,8 +2,11 @@
 // 이름(부서·역할)으로, 시각은 모든 화면에서 같은 한국 시각(KST, YYYY-MM-DD HH:mm)으로 쓴다(서명 UTC ↔ 감사 KST가 어긋나던 결함).
 // 데모 계정은 SPEC_ROLES(이름)·DEMO_PERSONAS(역할)·부서 모델(소속)에서 읽는다. 운영(SSO) 계정 ID는 그대로 둔다(usr-가 아니다).
 import { DEMO_PERSONAS, ROLE_LABEL } from '@ff/contracts';
-import { DEPARTMENTS } from './departments';
+import { DEPARTMENTS, departmentLabel } from './departments';
 import { SPEC_ROLES } from './specNav';
+import { localeSnapshot } from '../locale/runtime';
+import { formatters as F } from '../copy/formatters';
+import { displayRoleLabel } from './refdata';
 
 export interface Person {
   id: string;
@@ -17,22 +20,22 @@ export interface Person {
 const DEMO = 'usr-';
 
 /** 계정 키(usr-author → author)의 부서 — 그 계정이 기본인 부서가 먼저 */
-const deptOf = (key: string) => (DEPARTMENTS.departments.find((d) => d.personas[0] === key) ?? DEPARTMENTS.departments.find((d) => d.personas.includes(key)))?.name ?? null;
+const deptOf = (key: string) => { const department = DEPARTMENTS.departments.find((d) => d.personas[0] === key) ?? DEPARTMENTS.departments.find((d) => d.personas.includes(key)); return department ? departmentLabel(department, localeSnapshot().language) : null; };
 
 export function personOf(id: string | null | undefined): Person {
   const raw = (id ?? '').trim();
   if (!raw) return { id: '', name: '—', org: '', known: false };
-  if (raw === 'system' || raw.startsWith('system:') || raw === 'SYSTEM') return { id: raw, name: '시스템(자동)', org: '', known: true };
+  if (raw === 'system' || raw.startsWith('system:') || raw === 'SYSTEM') return { id: raw, name: F.system, org: '', known: true };
   if (!raw.startsWith(DEMO)) return { id: raw, name: raw, org: '', known: false };
   const key = raw.slice(DEMO.length);
   const spec = SPEC_ROLES.find((r) => r.id === raw || r.key === key);
   const roles = DEMO_PERSONAS[key] ?? [];
-  const roleText = spec?.label ?? (roles.length ? roles.map((r) => ROLE_LABEL[r]).join('·') : null);
+  const roleText = spec ? displayRoleLabel(spec.key) : roles.length ? roles.map((r) => localeSnapshot().language === 'en' ? displayRoleLabel(r) : ROLE_LABEL[r]).join('·') : null;
   const dept = deptOf(key);
   const org = [dept, roleText].filter(Boolean).join(' · ');
   if (spec) return { id: raw, name: spec.name, org, known: true };
   // 데모 계정 표에 이름이 없는 usr- 계정 — 맡은 역할 이름으로(내부 ID를 보이지 않는다)
-  return { id: raw, name: roleText ? `${roleText} 담당` : '담당자', org, known: false };
+  return { id: raw, name: roleText ? F.roleHolder(roleText) : F.unknownPerson, org, known: false };
 }
 
 /** 표 칸·문장에 넣는 이름 — '김민영' */
@@ -50,7 +53,8 @@ export function localTime(iso: string | null | undefined): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   const k = new Date(d.getTime() + 9 * 3600_000).toISOString();
-  return `${k.slice(0, 10)} ${k.slice(11, 16)}`;
+  const value = `${k.slice(0, 10)} ${k.slice(11, 16)}`;
+  return localeSnapshot().language === 'en' ? `${value} KST` : value;
 }
 
 const ISO = /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})\b/g;
@@ -68,6 +72,6 @@ export function remaining(dueIso: string | null | undefined, now = Date.now()): 
   const m = Math.max(1, Math.round(Math.abs(ms) / 60_000));
   const h = Math.floor(m / 60);
   const d = Math.floor(h / 24);
-  const text = d >= 2 ? `${d}일` : h ? `${h}시간${m % 60 ? ` ${m % 60}분` : ''}` : `${m}분`;
+  const text = d >= 2 ? F.days(d) : h ? F.hours(h, m % 60) : F.minutes(m);
   return { overdue: ms < 0, text, ms };
 }

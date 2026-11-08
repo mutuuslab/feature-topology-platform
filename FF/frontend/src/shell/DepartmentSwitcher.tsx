@@ -3,12 +3,14 @@
 // 전체 보기에서는 지금까지처럼 12개 데모 계정을 모두 고를 수 있다(DemoRoleSwitcher). 운영 빌드(OIDC)는 이 선택기를 싣지 않는다.
 import { WORKSPACES, type DepartmentSummary, type WorkflowDoc } from '@ff/contracts';
 import { departments as D } from '../copy/departments';
-import { ALL_DEPARTMENTS, DEPARTMENTS, departmentById } from '../data/departments';
+import { ALL_DEPARTMENTS, DEPARTMENTS, departmentById, departmentLabel } from '../data/departments';
+import { useAppShell } from '../store';
 import { profileOf, roleLabel } from '../data/refdata';
 import { useWorkflows } from '../data/workflows';
 import { DEMO_ROLES_MARKER, DemoRoleSwitcher } from './DemoRoleSwitcher';
 
 export function DepartmentSelect({ value, onChange, id, label = D.switcher }: { value: string; onChange: (dept: string) => void; id?: string; label?: string }) {
+  const { lang } = useAppShell();
   return (
     <select id={id} aria-label={label} className="sh-dept__select" value={value} onChange={(e) => onChange(e.target.value)} data-dept-select>
       <option value={ALL_DEPARTMENTS}>{D.all}</option>
@@ -18,7 +20,7 @@ export function DepartmentSelect({ value, onChange, id, label = D.switcher }: { 
             .filter((d) => d.workspace === w)
             .map((d) => (
               <option key={d.id} value={d.id}>
-                {d.name}
+                {departmentLabel(d, lang)}
               </option>
             ))}
         </optgroup>
@@ -31,20 +33,21 @@ export function DepartmentSelect({ value, onChange, id, label = D.switcher }: { 
  * 부서 안 역할 이름 — 부서 R&R(조직 역할) 이름으로(예: 상품기획팀의 approver는 '상품 Owner', 시스템엔지니어링팀의 approver는 '요구 Owner·도메인 검토자').
  * 업무 절차 모델을 아직 못 읽었으면 데모 계정 이름(P2-10·P1-11)
  */
-export function personaRnR(doc: WorkflowDoc | null | 'fail', d: DepartmentSummary, persona: string): string {
+export function personaRnR(doc: WorkflowDoc | null | 'fail', d: DepartmentSummary, persona: string, language = 'ko'): string {
   if (!doc || doc === 'fail') return roleLabel(persona);
   const org = (doc.personas?.[persona] ?? []).filter((r) => d.roles.includes(r));
-  const names = org.map((r) => doc.roles.find((x) => x.id === r)?.name).filter(Boolean);
+  const names = org.map((r) => { const role = doc.roles.find((x) => x.id === r); return role ? language === 'en' ? role.en : role.name : undefined; }).filter(Boolean);
   return names.length ? names.join('·') : roleLabel(persona);
 }
 
 function PersonaSelect({ d, role, onRole }: { d: DepartmentSummary; role: string; onRole: (role: string) => void }) {
   const doc = useWorkflows();
+  const { lang } = useAppShell();
   return (
     <select aria-label={D.persona} value={role} onChange={(e) => onRole(e.target.value)}>
       {d.personas.map((p) => (
         <option key={p} value={p}>
-          {`${personaRnR(doc, d, p)} · ${profileOf(p).name}`}
+          {`${personaRnR(doc, d, p, lang)} · ${profileOf(p).name}`}
         </option>
       ))}
     </select>
@@ -53,7 +56,8 @@ function PersonaSelect({ d, role, onRole }: { d: DepartmentSummary; role: string
 
 function PersonaName({ d, role }: { d: DepartmentSummary; role: string }) {
   const doc = useWorkflows();
-  return <span className="sh-user__role">{personaRnR(doc, d, role)}</span>;
+  const { lang } = useAppShell();
+  return <span className="sh-user__role">{personaRnR(doc, d, role, lang)}</span>;
 }
 
 export function DepartmentSwitcher({

@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AppProvider, useAppApi, useAppShell } from '../store';
 import { proposeGuide } from '../copy/propose-guide';
+import { hasPrdOutline, isPrdTemplate, prdTemplate } from '../copy/propose-prd';
 import { changeUiLanguage, localeSnapshot, localizedCopy, __resetLocaleForTest, untranslatedCopyPaths } from '../locale/runtime';
 import * as catalogues from '../locale/english-catalogues';
+import { useUiLocale } from '../locale/react';
+import { ROUTES, rolesOf, routeOf } from '../routes';
+import { DepartmentSelect } from '../shell/DepartmentSwitcher';
+import { DEPARTMENTS } from '../data/departments';
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); __resetLocaleForTest(); });
 
@@ -38,6 +43,30 @@ describe('reactive UI language catalogues', () => {
     expect(loader).toHaveBeenCalledTimes(2);
     expect(proposeGuide.title).toBe('Writing guide and automatic fields');
   });
+  it('the same language-button target retries after a failed stored preference', async () => {
+    const original = catalogues.loadEnglishCatalogues;
+    vi.spyOn(catalogues, 'loadEnglishCatalogues').mockRejectedValueOnce(new Error('offline')).mockImplementationOnce(original);
+    function Switcher() {
+      const { lang } = useAppShell(); const { dispatch } = useAppApi(); const locale = useUiLocale();
+      return <><p>{proposeGuide.title}</p>{locale.error && <p>load-error</p>}<button disabled={locale.loading} onClick={() => dispatch({ t: 'LANG', lang: lang === 'ko' ? 'en' : 'ko' })}>switch</button></>;
+    }
+    render(<AppProvider><Switcher /></AppProvider>);
+    fireEvent.click(screen.getByText('switch')); await screen.findByText('load-error');
+    fireEvent.click(screen.getByText('switch')); await screen.findByText('Writing guide and automatic fields');
+  });
+  it('new outlines follow the selected language while existing outlines and template-only validation survive switching', async () => {
+    const korean = prdTemplate();
+    expect(korean).toContain('[배경과 문제]');
+    await changeUiLanguage('en');
+    const english = prdTemplate();
+    expect(english).toContain('[Background and problem]');
+    expect(hasPrdOutline(korean)).toBe(true);
+    expect(isPrdTemplate(english)).toBe(true);
+    await changeUiLanguage('ko');
+    expect(hasPrdOutline(english)).toBe(true);
+    expect(isPrdTemplate(english)).toBe(true);
+    expect(isPrdTemplate(english + '\nActual expected behavior')).toBe(false);
+  });
   it('a cancelled language request cannot overwrite the newer selection', async () => {
     let finish!: (value: Record<string, Record<string, unknown>>) => void;
     vi.spyOn(catalogues, 'loadEnglishCatalogues').mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
@@ -54,5 +83,26 @@ describe('reactive UI language catalogues', () => {
     expect(source.code).toBe('SAFETY_OFFICER');
     expect(untranslatedCopyPaths()).toContain('test.sample.missing');
     expect({ name: 'Feature DB 기준을 먼저 선택하세요' }.name).toBe('Feature DB 기준을 먼저 선택하세요');
+  });
+  it('translates all static route captions while preserving paths, menu structure and access roles', async () => {
+    const identity = () => ROUTES.map((route) => ({ path: route.path, menu: route.menu, parent: route.parent, group: route.group, roles: rolesOf(route) }));
+    const before = identity();
+    await changeUiLanguage('en');
+    expect(ROUTES.filter((route) => /[가-힣]/.test(route.title)).map((route) => route.path)).toEqual([]);
+    expect(routeOf('/feature/propose')?.title).toBe('Register a Feature');
+    expect(identity()).toEqual(before);
+    await changeUiLanguage('ko');
+    expect(routeOf('/feature/propose')?.title).toBe('Feature 등록');
+  });
+  it('updates department display names without changing selection or source RACI', async () => {
+    const onChange = vi.fn();
+    const before = JSON.stringify(DEPARTMENTS);
+    render(<AppProvider><DepartmentSelect value="DEP-ITSEC" onChange={onChange} /></AppProvider>);
+    const select = document.querySelector('[data-dept-select]');
+    await act(async () => { await changeUiLanguage('en'); });
+    expect(screen.getByRole('option', { name: 'Feature Control Center', exact: true })).toBeTruthy();
+    expect(select).toHaveValue('DEP-ITSEC');
+    expect(onChange).not.toHaveBeenCalled();
+    expect(JSON.stringify(DEPARTMENTS)).toBe(before);
   });
 });

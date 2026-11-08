@@ -261,8 +261,8 @@ function ShellFrame({ children }: { children: ReactNode }) {
             aria-pressed={g.key === group}
             aria-expanded={narrow && !present ? g.key === group && panelOpen : undefined}
             aria-controls={narrow && !present ? 'sh-group-panel' : undefined}
-            title={g.ko}
-            aria-label={g.ko}
+            title={lang === 'en' ? g.en : g.ko}
+            aria-label={lang === 'en' ? g.en : g.ko}
             onClick={() => {
               // 모바일은 그룹을 먼저 펼치고 사용자가 실제 하위 메뉴를 고른다.
               // 바로 화면도 옮기면 route-change 효과가 새로 연 드로어를 즉시 닫는다.
@@ -281,7 +281,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
             }}
           >
             <Icon name={g.icon} size={20} />
-            <span aria-hidden>{g.short}</span>
+            <span aria-hidden>{lang === 'en' ? g.shortEn ?? g.en : g.short}</span>
           </button>
         ))}
         <button type="button" className="sh-rail__btn sh-rail__toggle" aria-label={panelOpen ? ko.shell.collapse : ko.shell.expand} title={panelOpen ? ko.shell.collapse : ko.shell.expand} onClick={() => setPanelOpen(!panelOpen)}>
@@ -289,14 +289,14 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
-      <aside id="sh-group-panel" className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
+      <aside id="sh-group-panel" className="sh-panel" aria-label={lang === 'en' ? GROUPS.find((g) => g.key === group)!.en : GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
         {/* 좁은 화면 드로어에서만 보인다 — 레일 토글까지 내려가지 않아도 닫을 수 있게 */}
         <button type="button" className="sh-panel__close" aria-label={ko.action.close} title={ko.action.close} onClick={() => setPanelOpen(false)}>
           <Icon name="close" size={18} />
         </button>
         <div className="sh-panel__head">
           {/* 위치는 한 번만(3초 테스트 UX3-10) — 메뉴 제목이 H1과 같으면 H1이 말한다. 이름은 aside aria-label에 남는다 */}
-          {GROUPS.find((g) => g.key === group)!.ko !== page?.title && <h2>{GROUPS.find((g) => g.key === group)!.ko}</h2>}
+          {(lang === 'en' ? GROUPS.find((g) => g.key === group)!.en : GROUPS.find((g) => g.key === group)!.ko) !== page?.title && <h2>{lang === 'en' ? GROUPS.find((g) => g.key === group)!.en : GROUPS.find((g) => g.key === group)!.ko}</h2>}
           {GROUPS.find((g) => g.key === group)?.zone === 'ops' && <p className="sh-panel__area">{ko.shell.opsArea}</p>}
           {/* 메뉴를 거르는 스위치는 메뉴 머리에 — 상단 막대 조작을 줄인다(3초 테스트) */}
           <button type="button" role="switch" className="sh-switch" aria-checked={myRole} title={ko.shell.myRole} onClick={() => setMyRole(!myRole)}>
@@ -310,7 +310,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
               <NavLink
                 to={r.menu!}
                 end={r.menu === '/'}
-                aria-label={r.menu === '/procedures' && procCount ? `${r.title} — 내 차례 ${procCount}건` : undefined}
+                aria-label={r.menu === '/procedures' && procCount ? procedurePanel.turnCount(r.title, procCount) : undefined}
                 className={() => (current && (current.path === r.path || isUnder(current.path, r.path)) ? 'active' : '')}
               >
                 {r.title}

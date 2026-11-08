@@ -8,7 +8,7 @@ import { actorFor, canAct } from '../../../api/actor';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
-import { PRD_BODY_LIMIT, PRD_TEMPLATE, proposePrd as D } from '../../../copy/propose-prd';
+import { PRD_BODY_LIMIT, isPrdTemplate, proposePrd as D } from '../../../copy/propose-prd';
 import { proposeGuide as G } from '../../../copy/propose-guide';
 import { personLabel } from '../../../data/people';
 import { planning as W } from '../../../copy/planning';
@@ -193,7 +193,7 @@ export default function ProposeScreen() {
     [!f.country.trim() || !f.vehicleModel.trim() || !f.trim.trim(), P.scopeWhy],
     [!f.name.trim() || !f.description.trim() || !f.ownerId.trim(), P.requiredWhy],
     [f.description.length > PRD_BODY_LIMIT, D.bodyTooLong],
-    [f.description.trim() === PRD_TEMPLATE.trim(), D.templateFill],
+    [isPrdTemplate(f.description), D.templateFill],
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
     [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
   );

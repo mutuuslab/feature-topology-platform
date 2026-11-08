@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 79,
-  "requiredLeaves": 8876,
+  "moduleCount": 80,
+  "requiredLeaves": 8894,
   "modules": [
     {
       "module": "ads-change",
@@ -85,6 +85,48 @@
           "kind": "text",
           "text": "승인 경로 종결은 기능안전 담당자(FSM)·사이버보안 담당자(CSM) 역할이 할 수 있습니다.",
           "sourceHash": "2d9365f4c9afccae399519c0c3d9b60aaf125fde54743c5d0f49e4db189255bf"
+        },
+        {
+          "path": "ads-change.adsChange.path.REHARA",
+          "kind": "text",
+          "text": "재-HARA",
+          "sourceHash": "ec796ab07a82d8891237d267fb943f78d68c98707340cff257995a3e5c15fb36"
+        },
+        {
+          "path": "ads-change.adsChange.path.R156",
+          "kind": "text",
+          "text": "R156 영향 평가",
+          "sourceHash": "1d46d039ea35828f661e542cb7dba0b94901aba629c7ae323df66e25e437fb72"
+        },
+        {
+          "path": "ads-change.adsChange.path.SAFETY_CASE",
+          "kind": "text",
+          "text": "Safety Case 갱신",
+          "sourceHash": "afc70a563e8ccd95facc8dab8107315e1e7a59adba684fc9d5b21cdbcc0309f4"
+        },
+        {
+          "path": "ads-change.adsChange.pathLong.REHARA",
+          "kind": "text",
+          "text": "재-HARA — 위험원 분석·위험 평가를 다시 한다",
+          "sourceHash": "191b5b0ef73c1cd7b5396c58eb835c5794966201f723f127baa2a5b88d03e360"
+        },
+        {
+          "path": "ads-change.adsChange.pathLong.R156",
+          "kind": "text",
+          "text": "R156 영향 평가 — UN R156(SW 업데이트) 형식승인에 주는 영향",
+          "sourceHash": "7a6e78a2713a92b8a7ca7bcc304d6e7a2b1dc9c9471d2542ca18c2c66590f1c7"
+        },
+        {
+          "path": "ads-change.adsChange.pathLong.SUMS",
+          "kind": "text",
+          "text": "SUMS — SW 업데이트 관리 체계 기록",
+          "sourceHash": "5e1e25c786d08ec9eff02322f1ff29051c64a509fd7926222d400578ee6bb9fb"
+        },
+        {
+          "path": "ads-change.adsChange.pathLong.SAFETY_CASE",
+          "kind": "text",
+          "text": "Safety Case 갱신 — 현재 형상 근거 다시 묶기(그 전에는 기능안전 담당자 확인 기록)",
+          "sourceHash": "ec666e4ed97b4f45827f36739ef93908cbffbe32d61b5ed4c021aa1b0449d477"
         },
         {
           "path": "ads-change.adsChange.pathStatus.OPEN",
@@ -2218,6 +2260,12 @@
           "kind": "text",
           "text": "정책·형상·ODD·판정·전환 이력과 보고 대상 확정 기록을 봅니다.",
           "sourceHash": "22c0350d53edb19310a4881f1e1c1cbf2b5c2abeac44a200439f3aab90671a3b"
+        },
+        {
+          "path": "ads-evidence.incidentReports.md",
+          "kind": "function",
+          "text": "(iso: string) => {\r\n  const d = new Date(Date.parse(iso) + 9 * 3600_000);\r\n  return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일`;\r\n}",
+          "sourceHash": "97357ab79ef1b956a52a94bade8e345db36113159df6551c87314b1099ea4db8"
         },
         {
           "path": "ads-evidence.incidentReports.key.due",
@@ -21874,6 +21922,69 @@
       ],
       "connectedExports": [
         "flags"
+      ]
+    },
+    {
+      "module": "formatters",
+      "file": "FF/frontend/src/copy/formatters.ts",
+      "leaves": [
+        {
+          "path": "formatters.formatters.system",
+          "kind": "text",
+          "text": "시스템(자동)",
+          "sourceHash": "75ad2f4399e93eee13f15ed167a84452989090629b77f9b5ea8b29c526f932d6"
+        },
+        {
+          "path": "formatters.formatters.unknownPerson",
+          "kind": "text",
+          "text": "담당자",
+          "sourceHash": "c9cacdac4264cd8d65fcfe64cd7438fcedd19f2619e8f6c02a97f03676d4ec7e"
+        },
+        {
+          "path": "formatters.formatters.roleHolder",
+          "kind": "function",
+          "text": "(role: string) => `${role} 담당`",
+          "sourceHash": "11552d385d81dc124760febdb8a6f425ac97169cd9a36755ffb956ba94508e87"
+        },
+        {
+          "path": "formatters.formatters.days",
+          "kind": "function",
+          "text": "(n: number) => `${n}일`",
+          "sourceHash": "a84032dcfffcea21594b067f031b4c898a8a73712de03fcb535ac6905975e43c"
+        },
+        {
+          "path": "formatters.formatters.hours",
+          "kind": "function",
+          "text": "(h: number, m: number) => `${h}시간${m ? ` ${m}분` : ''}`",
+          "sourceHash": "ed99292d21db66d4d28295006fec5ac596b3b44de2b0411b3659e0b5cebab4b5"
+        },
+        {
+          "path": "formatters.formatters.minutes",
+          "kind": "function",
+          "text": "(n: number) => `${n}분`",
+          "sourceHash": "3d1583b02112d104524d54f3785d6313e1258ea4314f26c8ea4cb7cd1362c807"
+        },
+        {
+          "path": "formatters.formatters.won",
+          "kind": "function",
+          "text": "(amount: string) => `${amount}원`",
+          "sourceHash": "ce5da8738cd66c1baad1fdaadf5da35fe06249147d52ffedba907aaf855deb7c"
+        },
+        {
+          "path": "formatters.formatters.millionWon",
+          "kind": "text",
+          "text": "백만원",
+          "sourceHash": "47aa613bef5902ee9dca586699db245393975a7447df49a767fc67f575e33a3e"
+        },
+        {
+          "path": "formatters.formatters.thousandCurrency",
+          "kind": "function",
+          "text": "(currency: string) => `천 ${currency}`",
+          "sourceHash": "0aad506462e74475a74d61019c9d03eca124641695a4f6afb29d055d061114a6"
+        }
+      ],
+      "connectedExports": [
+        "formatters"
       ]
     },
     {
@@ -43019,6 +43130,12 @@
           "kind": "function",
           "text": "(n: number) => `이 화면의 관련 활동 ${n}개`",
           "sourceHash": "3c738af173d6ac47264166dd98a20595b59284d76083e7a5618073f35606062a"
+        },
+        {
+          "path": "procedure-panel.procedurePanel.turnCount",
+          "kind": "function",
+          "text": "(title: string, n: number) => `${title} — 내 차례 ${n}건`",
+          "sourceHash": "1d7efced17b0070a390ab01d9c567ff062a7b7729c17f9d86bbfee415efab396"
         },
         {
           "path": "procedure-panel.procedurePanel.noMapping",

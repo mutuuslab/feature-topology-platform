@@ -12,6 +12,7 @@ export const procedurePanel = /* @__PURE__ */ localizedCopy('procedure-panel.pro
   retry: '다시 불러오기',
   context: (screen: string) => `${screen} 화면과 연결된 업무입니다.`,
   count: (n: number) => `이 화면의 관련 활동 ${n}개`,
+  turnCount: (title: string, n: number) => `${title} — 내 차례 ${n}건`,
   noMapping: '업무 연결이 등록되지 않은 화면입니다. 전체 업무 절차에서 관련 업무를 찾아보세요.',
 } as const);
 

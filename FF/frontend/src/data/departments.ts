@@ -7,6 +7,8 @@ export { DEPARTMENTS };
 
 /** 전체 보기 — 부서 모드가 아니다(MENU 2.0 8그룹) */
 export const ALL_DEPARTMENTS = 'ALL';
+/** Display metadata only; department identity and RACI remain the source IDs. */
+export const departmentLabel = (department: Pick<DepartmentSummary, 'id' | 'name' | 'en'>, language = 'ko') => language === 'en' ? department.id === 'DEP-ITSEC' ? 'Feature Control Center' : department.en : department.name;
 
 export const departmentById = (id: string): DepartmentSummary | undefined => DEPARTMENTS.departments.find((d) => d.id === id);
 

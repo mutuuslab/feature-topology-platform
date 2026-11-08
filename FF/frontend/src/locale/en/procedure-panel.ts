@@ -10,5 +10,6 @@ export default {
   'procedurePanel.retry': 'Reload',
   'procedurePanel.context': (screen: string) => `Work linked to the ${screen} screen.`,
   'procedurePanel.count': (n: number) => `${n} related activities for this screen`,
+  'procedurePanel.turnCount': (title: string, n: number) => `${title} — ${n} awaiting your action`,
   'procedurePanel.noMapping': 'No work mapping is registered for this screen. Find related work in all workflows.',
 };

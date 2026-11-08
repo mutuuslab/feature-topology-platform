@@ -1,5 +1,6 @@
 import { DEMO_ACCOUNTS as SPEC_ROLES } from './demoAccounts';
-import { localeSnapshot, staticUiText } from '../locale/runtime';
+import { localeSnapshot, localizedCopy, staticUiText } from '../locale/runtime';
+import { ROLE_LABEL, type Role } from '@ff/contracts';
 
 // 추가 참조 시드 (전 화면 구현용). 프로토타입 데이터.
 
@@ -26,6 +27,9 @@ export const roleLabel = (role: string) => {
 };
 /** Display only: roleKeyOf and permission parsing continue to use the original role keys and labels. */
 export const displayRoleLabel = (role: string, language = localeSnapshot().language) => language === 'en' ? staticUiText('role-labels', role, roleLabel(role)) : roleLabel(role);
+/** Declared permission captions only; authorization continues to receive canonical Role values. */
+export const permissionRoleLabel = (role: Role) => staticUiText('role-labels', role, ROLE_LABEL[role]);
+export const permissionRoleLabels = /* @__PURE__ */ localizedCopy('role-labels', ROLE_LABEL);
 export const roleName = (role: string) => SPEC_ROLES.find(x => x.key === role)?.name || '게스트';
 export const roleMeta = (role: string) => SPEC_ROLES.find(x => x.key === role);
 /** 역할 키 또는 표시 라벨(예: '차량 운영') → 기준 역할 키. 매칭 실패 시 최소 권한(viewer). */

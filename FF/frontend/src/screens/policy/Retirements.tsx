@@ -1,8 +1,9 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 import { p11 as p11Copy } from '../../copy/p11';
 // /flag-retirements — Flag Retirement 6단계 (D01-01, 보고서 6.5 · FFG-LCY-011). 서버가 순서·완료 조건·직무 분리(요청자 승인 불가)를 다시 검사한다.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { RETIREMENT_STEPS, ROLE_LABEL, type Role } from '@ff/contracts';
+import { RETIREMENT_STEPS, type Role } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Select, VerdictBadge } from '../../design';

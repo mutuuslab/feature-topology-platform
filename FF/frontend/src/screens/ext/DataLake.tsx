@@ -1,9 +1,10 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 import { uiLocaleTag } from '../../locale/runtime';
 // /integration/datalake — Data Lake 연계(TL-UI10, 80-70 6장 10). 외부 시스템 화면: Lake가 주인인 데이터 계약·모델을 FF가 읽어 보이고,
 // FF가 주인인 것(모델 사용 승인 — 2인·직무 분리, 라벨 보내기)을 다룬다. 핵심 메시지: "데이터 계약 N건 지연" 또는 "모두 기준 안".
 import { FreshnessChip } from '../../design/freshness';
 import { useState } from 'react';
-import { MODEL_USE_REQUIRED, ROLE_LABEL, type DataContractRow, type LabelFeedResponse, type LakeModelRow, type LakeStatusResponse, type Role } from '@ff/contracts';
+import { MODEL_USE_REQUIRED, type DataContractRow, type LabelFeedResponse, type LakeModelRow, type LakeStatusResponse, type Role } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { useConnectionLabel } from '../../api/connections';
 import { connections as CN } from '../../copy/connections';

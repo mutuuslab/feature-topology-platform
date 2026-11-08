@@ -1,6 +1,7 @@
 // v2 화면 공용 조각 — 작은 Gate 점열, 범위 표기, 시각 표기, 역할 안내.
 import type { CSSProperties, ReactNode } from 'react';
-import { COMPONENTS, GATES, INTERFACES, ROLE_LABEL, ROLES, type Role } from '@ff/contracts';
+import { COMPONENTS, GATES, INTERFACES, ROLES, type Role } from '@ff/contracts';
+import { permissionRoleLabel } from '../data/refdata';
 import { canAct } from '../api/actor';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
@@ -56,7 +57,7 @@ export function when(iso: string | null | undefined): string {
 export function usePermission(allowed: readonly Role[]) {
   const { role } = useAppShell();
   const ok = canAct(role, allowed);
-  const hint = ok ? undefined : ko.page.noPermission(allowed.map((r) => ROLE_LABEL[r]).join(' · '));
+  const hint = ok ? undefined : ko.page.noPermission(allowed.map(permissionRoleLabel).join(' · '));
   return { ok, hint, role };
 }
 
@@ -67,7 +68,7 @@ export const canRead = (role: string, allowed: readonly Role[]) => STATIC_MODE |
 export function useReadPermission(allowed: readonly Role[]) {
   const { role } = useAppShell();
   const ok = canRead(role, allowed);
-  return { ok, hint: ok ? undefined : ko.page.noPermission(allowed.map((r) => ROLE_LABEL[r]).join(' · ')), role };
+  return { ok, hint: ok ? undefined : ko.page.noPermission(allowed.map(permissionRoleLabel).join(' · ')), role };
 }
 
 /** 예외만 강조(UX3-02) — 충족이면 작은 표시(툴팁에 원문), 미충족만 배지 */
@@ -118,7 +119,7 @@ export function CodeFreeText({ text }: { text: string }) {
 }
 
 /** 역할 enum(FEATURE_AUTHOR) → 한글 라벨, 모르는 값은 그대로 — 대문자 enum을 본문에 노출하지 않는다(UX3-02) */
-export const roleText = (role: string | null | undefined) => (role && (ROLES as readonly string[]).includes(role) ? ROLE_LABEL[role as Role] : (role ?? '—'));
+export const roleText = (role: string | null | undefined) => (role && (ROLES as readonly string[]).includes(role) ? permissionRoleLabel(role as Role) : (role ?? '—'));
 
 /** 컴포넌트 여러 개 — 이름을 ' · '로 잇는다(줄바꿈은 구분자에서) */
 export function ComponentList({ ids }: { ids: readonly string[] }) {

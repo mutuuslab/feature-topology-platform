@@ -1,5 +1,7 @@
 // Static route captions only; URI patterns and permission metadata are unchanged.
 export default {
+  '/master/taxonomy/levels': 'Classification hierarchy',
+  '/policies/global-scope': 'Policies by brand and region',
   '/': 'My dashboard', '/procedures/work': 'Work cases and artifacts', '/admin/approval': 'Standard review',
   '/learn': 'Standards walkthroughs', '/learn/:id': 'Walkthrough scenario', '/procedures': 'Full workflow',
   '/procedures/roles': 'Role workflows', '/procedures/:id': 'Workflow details', '/arch/components': '42-component architecture',

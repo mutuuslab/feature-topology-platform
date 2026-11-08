@@ -1,8 +1,9 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 import { p11 as p11Copy } from '../../copy/p11';
 // /audit/oversight — 감독 기록: 직무 분리 감사·긴급 권한 사후 검토(D06-09, FFG-PLT-016) · 변경 기록(D04-01, FFG-CODE-030) · 재-HARA 요청(D06-05, FFG-LCY-006)
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { postReviewBlocker, REHARA_LABEL, ROLE_LABEL, type Role } from '@ff/contracts';
+import { postReviewBlocker, REHARA_LABEL, type Role } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';

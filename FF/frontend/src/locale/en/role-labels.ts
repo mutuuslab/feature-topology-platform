@@ -1,5 +1,8 @@
 // Display labels only. The role keys and parser remain unchanged.
 export default {
+  VARIANT_OWNER: 'Vehicle specification and Variant owner', BOM_APPROVER: 'BOM approver', PRODUCT_AUTHOR: 'Product author', PRODUCT_APPROVER: 'Product approver',
+  DOMAIN_REVIEWER: 'Domain reviewer', COST_ESTIMATOR: 'SW development cost estimator', COST_APPROVER: 'SW development cost approver',
+  COST_VIEWER: 'SW development cost viewer', COST_BASIS_ADMIN: 'Cost basis administrator', VEHICLE: 'Vehicle',
   author: 'Feature design', approver: 'Configuration approval', quality: 'Quality review', operator: 'Vehicle operations',
   steward: 'PLM master data', commerce: 'Product entitlements', integrator: 'System integration', coordinator: 'Consultation and development handoff',
   viewer: 'Read-only', opslead: 'Operations lead', safety2: 'Functional safety', productowner: 'Customer release approval', sysadmin: 'System administrator',

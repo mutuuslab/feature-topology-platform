@@ -1,7 +1,8 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../data/refdata';
 // 기능안전 부품 — 국제표준 대응방안 보고서 v1.1의 분류(5장)·비활성화(7장)·승인·원장(8장)·결과 코드(9장)를 화면마다 같은 모양으로 보여 준다.
 // 색만으로 구분하지 않는다: 등급은 모양 글리프 + 텍스트, 판정은 StatusGlyph. 빨강은 위반(FAIL)에만 쓰고 막힘·대기는 warn.
 import type { CSSProperties, ReactNode } from 'react';
-import { reasonAction, reportRule, ROLE_LABEL, ROLES, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
+import { reasonAction, reportRule, ROLES, type DeactClass, type DeactStage, type FClass, type FlagType, type RegClass, type RejectCode, type RequestResult } from '@ff/contracts';
 import { useReportCatalog } from './rule-catalog';
 import { ko } from '../copy/ko';
 import { Icon, StatusGlyph } from './icons';

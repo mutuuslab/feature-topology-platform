@@ -1,9 +1,10 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 // 변경 영향 — 승인 경로(ADS-UI09·BE08)와 릴리스 비교. /analysis/impact의 '승인 경로'·'릴리스 비교' 탭, 정책·Feature Version의 변경 종류 배지·링크·배포 서명 막힘 사유.
 // 변경 종류는 서버가 diff 사실로 산출한다(contracts classifyChange). 판단 불가는 정책 변경으로 가볍게 두지 않고 따로 센다.
 // 출시 뒤 열린 재-HARA가 배포·서명을 실제로 막는 서버 거부는 결함 ADS-BE06(다른 작업) — 화면은 읽은 데이터로 사유만 보인다.
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ROLE_LABEL, type AdsChangeImpactList, type AdsChangeImpactView, type AdsImpactPath, type AdsImpactPathItem, type DiffDirection, type OddAxisValue, type ReleaseDiffRow, type ReleaseDiffView, type ReleaseListItem } from '@ff/contracts';
+import { type AdsChangeImpactList, type AdsChangeImpactView, type AdsImpactPath, type AdsImpactPathItem, type DiffDirection, type OddAxisValue, type ReleaseDiffRow, type ReleaseDiffView, type ReleaseListItem } from '@ff/contracts';
 import { ADS_IMPACT_PATHS, PATH_CLOSER } from '../../../../contracts/src/rules/ads-change';
 import { rolesFor } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';

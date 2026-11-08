@@ -1,3 +1,4 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../../data/refdata';
 // Jira(Atlassian) 대시보드 — 머리(이름·바꾸기·별·편집·더 보기·새로 고침), 보기 모드와 편집 모드, 가젯 인스턴스·구성.
 //  · 보기 모드: 손잡이 없는 깨끗한 카드. 제목 줄 ⋯ 메뉴로 새로 고침·최소화·최대화·구성·삭제
 //  · 편집 모드: '편집 중' 띠(완료) · 레이아웃 썸네일 · 열마다 점선 놓을 자리 · 오른쪽 가젯 디렉터리
@@ -8,7 +9,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiQuery } from '../../../api/hooks';
-import { ROLE_LABEL } from '@ff/contracts';
+
 import { dashboard } from '../../../copy/dashboard';
 import { loadWorkflows } from '../../../data/workflows';
 import { ErrorNote, PageHeader, type KeyMessageSpec } from '../../../design';

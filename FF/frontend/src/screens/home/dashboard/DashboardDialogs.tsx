@@ -1,8 +1,9 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../../data/refdata';
 // 대시보드 창 — 새로 만들기·사본·이름 바꾸기·공유(역할)·삭제·기본 레이아웃으로. Jira처럼 가운데 모달.
 // 초점은 창 안에 가두고(Tab 순환), Escape로 닫으며, 닫으면 연 단추로 돌아간다. 필요할 때만 읽는 묶음.
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { HUMAN_ROLES, ROLE_LABEL, type Role } from '@ff/contracts';
+import { HUMAN_ROLES, type Role } from '@ff/contracts';
 import { ApiError } from '../../../api/client';
 import { dashboard } from '../../../copy/dashboard';
 import { ErrorNote } from '../../../design';

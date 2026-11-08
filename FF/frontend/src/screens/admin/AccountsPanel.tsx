@@ -1,7 +1,8 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 // 계정 상태 패널(D06-09, 시스템 관리자) — /admin/iam. 목록은 누구나 보고, 비활성·재활성 기록은 시스템 관리자만(사유 필수, 자기 계정 제외).
 // 상태 판정은 서버(kernel/account-directory, contracts accountStateOf).
 import { useState } from 'react';
-import { ROLE_LABEL, SYSTEM_ADMIN_ROLES, type AccountView } from '@ff/contracts';
+import { SYSTEM_ADMIN_ROLES, type AccountView } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { actorFor } from '../../api/actor';
 import { accounts as A } from '../../copy/f0';

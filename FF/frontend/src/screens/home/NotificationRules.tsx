@@ -1,19 +1,9 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 // /notifications/rules 알림 수신자 규칙(D04-04, 기능명세서 B1) — 이벤트별 기본 수신자(규칙, 끌 수 없음)와 추가 수신자(사람·역할·팀),
 // 알림 직접 보내기. 기본 수신자·제외 규칙은 contracts NOTIFICATION_RULE_SPECS, 추가 수신자는 운영 리더·출시 담당이 사유와 함께 바꾼다(감사).
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  HUMAN_ROLES,
-  NOTIFICATION_ACCOUNTS,
-  NOTIFICATION_CATEGORY_LABEL,
-  NOTIFICATION_RULE_EDITORS,
-  NOTIFICATION_SENDERS,
-  recipientTokenLabel,
-  ROLE_LABEL,
-  type NotificationRuleView,
-  type Recipient,
-  type Role,
-} from '@ff/contracts';
+import { HUMAN_ROLES, NOTIFICATION_ACCOUNTS, NOTIFICATION_CATEGORY_LABEL, NOTIFICATION_RULE_EDITORS, NOTIFICATION_SENDERS, recipientTokenLabel, type NotificationRuleView, type Recipient, type Role } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { notifyRules as R } from '../../copy/records';
 import { ko } from '../../copy/ko';

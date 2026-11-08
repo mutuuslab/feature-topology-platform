@@ -1,3 +1,4 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 import { uiLocaleTag } from '../../locale/runtime';
 // /ops/feature-health — Feature 운영 점검(Closed loop 허브, TL-UI16) · /ops/feature-health/:findingId — 점검 결과 상세(TL-UI17).
 // 운영 중인 Feature 버전 × 4축(동작·문제·개선·위험) 판정과 점검 결과. 판단 불가는 정상과 나눠 보인다(80-70 9.1).
@@ -5,10 +6,7 @@ import { uiLocaleTag } from '../../locale/runtime';
 import { FreshnessChip } from '../../design/freshness';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import {
-  FINDING_ACTIONS, FINDING_FLOW, HEALTH_AXES, ROLE_LABEL, findingOpen, judgeIndicator,
-  type FeatureHealthResponse, type FeatureHealthRow, type FindingActionKind, type FindingStatus, type HealthFinding, type HealthState, type Role,
-} from '@ff/contracts';
+import { FINDING_ACTIONS, FINDING_FLOW, HEALTH_AXES, findingOpen, judgeIndicator, type FeatureHealthResponse, type FeatureHealthRow, type FindingActionKind, type FindingStatus, type HealthFinding, type HealthState, type Role } from '@ff/contracts';
 import { PLATFORM_ROLES } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { lake as L } from '../../copy/lake';

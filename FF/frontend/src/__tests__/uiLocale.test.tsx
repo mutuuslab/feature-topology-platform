@@ -7,7 +7,9 @@ import { hasPrdOutline, isPrdTemplate, prdTemplate } from '../copy/propose-prd';
 import { changeUiLanguage, localeSnapshot, localizedCopy, __resetLocaleForTest, untranslatedCopyPaths } from '../locale/runtime';
 import * as catalogues from '../locale/english-catalogues';
 import { useUiLocale } from '../locale/react';
-import { ROUTES, rolesOf, routeOf } from '../routes';
+import { ROUTES, rolesOf, routeOf, trailOf } from '../routes';
+import { permissionRoleLabel } from '../data/refdata';
+import { ROLE_LABEL, ROLES } from '@ff/contracts';
 import { DepartmentSelect } from '../shell/DepartmentSwitcher';
 import { DEPARTMENTS } from '../data/departments';
 import { procedures } from '../copy/procedures';
@@ -114,12 +116,18 @@ describe('reactive UI language catalogues', () => {
   it('translates all static route captions while preserving paths, menu structure and access roles', async () => {
     const identity = () => ROUTES.map((route) => ({ path: route.path, menu: route.menu, parent: route.parent, group: route.group, roles: rolesOf(route) }));
     const before = identity();
+    const canonicalRoles = JSON.stringify(ROLE_LABEL);
     await changeUiLanguage('en');
     expect(ROUTES.filter((route) => /[가-힣]/.test(route.title)).map((route) => route.path)).toEqual([]);
     expect(routeOf('/feature/propose')?.title).toBe('Register a Feature');
+    expect(trailOf('/policies/global-scope')[0].title).toBe('Products & Release');
+    expect(ROLES.map(permissionRoleLabel).filter(label => /[가-힣]/.test(label))).toEqual([]);
+    expect(permissionRoleLabel('COST_ESTIMATOR')).toBe('SW development cost estimator');
+    expect(JSON.stringify(ROLE_LABEL)).toBe(canonicalRoles);
     expect(identity()).toEqual(before);
     await changeUiLanguage('ko');
     expect(routeOf('/feature/propose')?.title).toBe('Feature 등록');
+    expect(permissionRoleLabel('COST_ESTIMATOR')).toBe('SW 개발비 산정 작성자');
   });
   it('updates department display names without changing selection or source RACI', async () => {
     const onChange = vi.fn();

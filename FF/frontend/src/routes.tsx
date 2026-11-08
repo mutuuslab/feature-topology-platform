@@ -6,7 +6,7 @@ import { DEMO_EXTRAS } from './auth-mode';
 import { legacyTo } from './screens/legacyRedirect';
 import { SPEC_MENU_ITEM } from './data/specMenu';
 import { screenOfRoute } from './data/uiLinks';
-import { staticUiText } from './locale/runtime';
+import { localeSnapshot, staticUiText } from './locale/runtime';
 import type { IconName } from './design';
 
 export type GroupKey = 'home' | 'feature' | 'config' | 'master' | 'procurement' | 'verify' | 'release' | 'ops' | 'admin' | 'settings';
@@ -359,5 +359,5 @@ export function trailOf(pathname: string): { title: string; to?: string }[] {
     p = p.parent ? ROUTES.find((r) => r.path === p!.parent) : undefined;
   }
   const g = GROUPS.find((x) => x.key === cur.group)!;
-  return [{ title: g.ko }, ...chain.map((r, i) => ({ title: r.title, to: i < chain.length - 1 ? (r.menu ?? (r.path.includes(':') ? undefined : r.path)) : undefined }))];
+  return [{ title: localeSnapshot().language === 'en' ? g.en : g.ko }, ...chain.map((r, i) => ({ title: r.title, to: i < chain.length - 1 ? (r.menu ?? (r.path.includes(':') ? undefined : r.path)) : undefined }))];
 }

@@ -1,8 +1,9 @@
+import { permissionRoleLabels as ROLE_LABEL } from '../../data/refdata';
 // /admin/iam — 플랫폼 인증·권한 (D06-09): 역할 × 변경 권한(ROUTES 파생)·직무 분리·최근 거부 시도.
 // /variant-conditions — Variant·지원 조건 (D02-01·D02-02): Feature Version × Fleet 매트릭스.
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { REPORT_APPROVER_ROLES, ROLE_LABEL, type ApproverRole } from '@ff/contracts';
+import { REPORT_APPROVER_ROLES, type ApproverRole } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { PLATFORM_ROLES } from '../../api/actor';
 import { useDefaultFeature } from '../../data/first-run';

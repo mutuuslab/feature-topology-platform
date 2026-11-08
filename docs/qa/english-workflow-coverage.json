@@ -1,12 +1,26 @@
 {
   "schema": 1,
-  "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged.",
+  "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
   "total": 1782,
-  "missing": 1250,
-  "translated": 170,
+  "missing": 1142,
+  "translated": 278,
   "sourceEnglish": 362,
   "duplicate": [],
   "unknown": [],
+  "fingerprints": [
+    {
+      "file": "frontend/src/locale/en/workflow-metadata.ts",
+      "entries": 216,
+      "sourceFingerprint": "978e5c5fbc69369cf93ceeb20281eb66b804ad2f19188386fa47fe299dfe215d",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-2.ts",
+      "entries": 62,
+      "sourceFingerprint": "14744bd64634dae50886e358c803fbff6f8e5402278f9fa4bbea1e0b868bed03",
+      "status": "MATCH"
+    }
+  ],
   "entries": [
     {
       "key": "note",
@@ -40,8 +54,8 @@
       "key": "R-FO.desc",
       "source": "Feature의 대상·분류·출시 판단을 책임진다. Feature와 정책 초안을 작성한다.",
       "sourceHash": "1c231042b1c9401bef71ed2042f002db2b2049ad49799084393e26ecb659c150",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Owns decisions about Feature scope, classification and release. Prepares Feature and policy drafts."
     },
     {
       "key": "R-REQ.name",
@@ -54,8 +68,8 @@
       "key": "R-REQ.desc",
       "source": "안전요구를 확정하고 Feature 정의(G1~G3 묶음)를 승인한다.",
       "sourceHash": "be87b6d27eb22a4f21dabf23d517de7aafe8fbd3d78a69c561567eefec7c5053",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirms safety requirements and approves the Feature definition (the G1–G3 group)."
     },
     {
       "key": "R-SM.name",
@@ -68,8 +82,8 @@
       "key": "R-SM.desc",
       "source": "안전 분류·HARA·Safety Case를 책임지고 F2 이상 Kill·복원을 승인한다.",
       "sourceHash": "1f30b249a5addb4ba8fc6838cada1ba71d072267c1f754c69fda6aa7f4e07290",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Owns safety classification, HARA and the Safety Case, and approves Kill and restoration for F2 and higher."
     },
     {
       "key": "R-CSM.name",
@@ -82,8 +96,8 @@
       "key": "R-CSM.desc",
       "source": "TARA·보안 Incident·취약점 대응과 보안 사유 Kill을 책임진다.",
       "sourceHash": "bd17013d876b45cef5307db716a274dac0f7f49c457d799d8817abc24974014d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Owns TARA, security incidents, vulnerability response and security-related Kill."
     },
     {
       "key": "R-REG.name",
@@ -96,8 +110,8 @@
       "key": "R-REG.desc",
       "source": "형식승인 영향 판단·Compliance Profile·리콜 연계를 책임진다.",
       "sourceHash": "14bcf57f1d78bbf05111563bb2779743f632a4adad9166ae7d7b9d5cf3e1a67a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Owns type-approval impact assessment, Compliance Profiles and recall coordination."
     },
     {
       "key": "R-TST.name",
@@ -110,8 +124,8 @@
       "key": "R-TST.desc",
       "source": "시험 명세·실행·Evidence 제출과 독립 V&V를 수행한다.",
       "sourceHash": "a4ca19d04b5db680ad64e2f13ec42921f1c50260b5948eb044c075da89b34f1b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Specifies and executes tests, submits Evidence and performs independent V&V."
     },
     {
       "key": "R-QA.name",
@@ -124,8 +138,8 @@
       "key": "R-QA.desc",
       "source": "독립 검토·Gate 판정 확인·감사·품질 피드백을 수행한다.",
       "sourceHash": "7626eaafe28c31689b90eb0ca729170b3fd8fea168a407b79e28a10c47ce5816",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Performs independent reviews, checks Gate decisions and carries out audits and quality feedback."
     },
     {
       "key": "R-OPS.name",
@@ -138,8 +152,8 @@
       "key": "R-OPS.desc",
       "source": "운행 감시·이상 징후 대응·긴급 차단 요청·드릴을 수행한다. 운영 리더는 차단·복원 승인에 참여한다.",
       "sourceHash": "2905aa07943f052fe7e300bd120d9a28e0350e7cbe1ab48c6f1cf63df6fed9cb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Monitors operations, responds to anomalies, requests emergency kills and performs drills. The operations lead participates in Kill and restoration approvals."
     },
     {
       "key": "R-ARC.name",
@@ -152,8 +166,8 @@
       "key": "R-ARC.desc",
       "source": "안전 설계·정책·Control Point·차량 내 감시 구조를 설계한다.",
       "sourceHash": "dc29a39b15f7463410b23b42a6c938e935c53f2543af9034e4851e9c685e5afb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Designs safety architecture, policies, Control Points and in-vehicle monitoring structures."
     },
     {
       "key": "R-INT.name",
@@ -166,8 +180,8 @@
       "key": "R-INT.desc",
       "source": "차량 SW·협력사 컴포넌트 통합과 변경 기록, EOL 프로비저닝을 수행한다.",
       "sourceHash": "8469ad45a629fb0634dae2eccd47b08e3df0a692c4989785af1e2f617c737012",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Integrates vehicle SW and supplier components, maintains change records and performs EOL provisioning."
     },
     {
       "key": "R-REL.name",
@@ -180,8 +194,8 @@
       "key": "R-REL.desc",
       "source": "서명 배포·Lifecycle 출시 전이를 수행하고, 단계적 확대는 운영 조직과 협의한다.",
       "sourceHash": "90daf83a35784e4bf3685a86fee485e55006cf6d50c5c13ce183ad8418d1a836",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Performs signed deployment and the Lifecycle release transition; coordinates staged expansion with Operations."
     },
     {
       "key": "R-PUR.name",
@@ -194,8 +208,8 @@
       "key": "R-PUR.desc",
       "source": "협력사 선정·DIA/CIA 계약·공급망 원산지 관리를 수행한다.",
       "sourceHash": "b6a11c57d2a049123c44a32cc76680b80d229575cfabab2c322fdbbf696eace5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Selects suppliers, concludes DIA/CIA contracts and manages supply-chain origins."
     },
     {
       "key": "R-LEG.name",
@@ -208,8 +222,8 @@
       "key": "R-LEG.desc",
       "source": "소비자법·데이터 이전·OSS 라이선스 검토를 수행한다.",
       "sourceHash": "f19b7e016e14995a5d8525205aacbf9adcaaaf0aded5be24181e3f40cf3ef78b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reviews consumer law, data transfers and OSS licenses."
     },
     {
       "key": "R-PKI.name",
@@ -222,8 +236,8 @@
       "key": "R-PKI.desc",
       "source": "서명 키·인증서 수명주기와 HSM 정책을 운영한다.",
       "sourceHash": "7150b8f7e610a24c26302ea88e5b7d4f68d4e8c43c3741743ef0d942a5378331",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operates signing-key and certificate lifecycles and HSM policies."
     },
     {
       "key": "R-DPO.name",
@@ -250,8 +264,8 @@
       "key": "R-PLM.desc",
       "source": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다.",
       "sourceHash": "57052336088868c24882513cc849fb078b00516f0a60394554c547e67c7b403a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manages vehicle specifications, Variants and BOM Baselines, and approves confirmation."
     },
     {
       "key": "R-PDA.name",
@@ -264,8 +278,8 @@
       "key": "R-PDA.desc",
       "source": "Feature Catalog 상품 구성과 체험 제안을 작성한다.",
       "sourceHash": "cd09217fb44262b04dca4fae4b8c83a7a36c02e9152c15661121864f7a5fe47b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Prepares Feature Catalog product compositions and trial offers."
     },
     {
       "key": "R-PO.name",
@@ -278,8 +292,8 @@
       "key": "R-PO.desc",
       "source": "상품 구성과 고객 출시를 승인한다.",
       "sourceHash": "9580bff01c64b34652610489be44cf2ad2a892fdd0275ea68af63752e58f7f68",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approves product composition and customer release."
     },
     {
       "key": "R-RDA.name",
@@ -292,8 +306,8 @@
       "key": "R-RDA.desc",
       "source": "Feature DB 기준 행 변경 요청을 최종 승인하고 버전을 발행하며, 분류·출처와 정기 점검 일정을 관리한다.",
       "sourceHash": "7fff924e0fb23f301d56505bc5faa1d58c7d97a07abaa81c2b08f5c05ab2b630",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Finally approves Feature DB reference-row change requests, publishes versions, and manages classifications, sources and scheduled checks."
     },
     {
       "key": "R-DRV.name",
@@ -306,8 +320,8 @@
       "key": "R-DRV.desc",
       "source": "담당 도메인 기준 행의 변경 요청에 동의·보완·반대 의견을 준다.",
       "sourceHash": "f2dd744e396e36a9eb0093e56b5f8fba373cb3c40b4a8cc20019ab8c25c22afe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Provides agreement, revision requests or objections on reference-row changes in the assigned domain."
     },
     {
       "key": "R-CE.name",
@@ -320,8 +334,8 @@
       "key": "R-CE.desc",
       "source": "Feature를 담아 SW 개발비 산정 과제를 만들고 줄 입력·과제 설정을 채워 승인을 요청한다.",
       "sourceHash": "0eb572182d045b836c08100a0826b8c8d73d9ffad889476f52bde8a186988dbb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Creates SW development-cost estimation projects containing Features, completes line inputs and project settings, and requests approval."
     },
     {
       "key": "R-CA.name",
@@ -334,8 +348,8 @@
       "key": "R-CA.desc",
       "source": "제출된 산정 과제를 검토해 승인하거나 반려한다. 자기가 만든 과제는 승인하지 않는다(SOD-16).",
       "sourceHash": "04cc1d05b24928559a3664510ffd0518d88e9d78a4d2d024faeafa4298c1d673",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reviews submitted estimation projects and approves or rejects them. Cannot approve a project they created (SOD-16)."
     },
     {
       "key": "R-CV.name",
@@ -348,8 +362,8 @@
       "key": "R-CV.desc",
       "source": "산정 과제의 금액·단가를 포함한 결과를 열람한다.",
       "sourceHash": "8fcb21f351b7c29a9c1006de4903ab2bd0c8862aa868fef6814beaae857d3c11",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Views estimation results, including amounts and unit rates."
     },
     {
       "key": "R-CBA.name",
@@ -362,8 +376,8 @@
       "key": "R-CBA.desc",
       "source": "단가·계수 표의 새 버전을 만들고 발행한다. 발행해도 이미 승인된 산정 결과는 바뀌지 않는다.",
       "sourceHash": "5a002e838c1488bba513645d12a7554592ab8f034971f56a7d048fc4e3bf5354",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Creates and publishes new versions of unit-rate and coefficient tables. Publication does not change already approved estimates."
     },
     {
       "key": "R-SYS.name",
@@ -376,8 +390,8 @@
       "key": "R-SYS.desc",
       "source": "퇴사·전보한 계정을 비활성으로 기록하고, 소유자가 없거나 비활성인 기록의 소유자를 담당 역할의 다른 계정으로 옮긴다. 기록 내용은 고치지 않는다.",
       "sourceHash": "0e91746c3a2d243022136211a9751b2708d38f41765b306e5b5758bea2e4b9a1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Records departed or transferred accounts as inactive and reassigns records with missing or inactive owners to another account in the responsible role. Does not edit record content."
     },
     {
       "key": "DEP-PDP.name",
@@ -390,8 +404,8 @@
       "key": "DEP-PDP.desc",
       "source": "Feature를 소유하고 대상·분류·출시를 판단한다. 상품 구성과 체험 제안을 만들고 고객 출시를 승인한다.",
       "sourceHash": "ffc8a6baecfdea35ca70a4ea23d52d26e8b220bdc2f8f34b00cc5e2769156d35",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Owns Features and decides their scope, classification and release. Prepares product compositions and trial offers and approves customer release."
     },
     {
       "key": "DEP-SE.name",
@@ -404,8 +418,8 @@
       "key": "DEP-SE.desc",
       "source": "안전요구를 확정하고 Feature 정의를 승인한다. Control Point·안전 설계의 적합성을 책임지고, 담당 도메인의 Feature DB 변경 요청을 검토한다.",
       "sourceHash": "cc6400838f1abc30cc84bfe7983aa993637c74b2b665f6abc195c028b421377e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirms safety requirements and approves Feature definitions. Owns Control Point and safety-design suitability and reviews Feature DB changes in the assigned domain."
     },
     {
       "key": "DEP-INT.name",
@@ -418,8 +432,8 @@
       "key": "DEP-INT.desc",
       "source": "통합 빌드와 Baseline·출시 묶음을 관리하고 출시 전이를 실행한다.",
       "sourceHash": "ec6cc898fec44a8bc345f8b8ce7e765c3b3411f3fb666915ce530d26a002febf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manages integration builds, Baselines and release packages, and executes release transitions."
     },
     {
       "key": "DEP-PLM.name",
@@ -432,8 +446,8 @@
       "key": "DEP-PLM.desc",
       "source": "차량 사양·Variant·BOM 기준선을 관리하고 확정을 승인한다. Feature DB 기준 행 변경을 승인하고 버전을 발행한다.",
       "sourceHash": "aba729f9ee885bb386759098c68bd44c871e12c5dfecf8ccb2c336e550c38f67",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manages vehicle specifications, Variants and BOM Baselines and approves confirmation. Approves Feature DB reference-row changes and publishes versions."
     },
     {
       "key": "DEP-FS.name",
@@ -446,8 +460,8 @@
       "key": "DEP-FS.desc",
       "source": "안전 분류·HARA·Safety Case를 책임지고 Gate 판정과 긴급 차단·복원 승인을 한다.",
       "sourceHash": "2edb6543afe18e2094348409584dff462d99027b3a130a5035cf065ecf20d0b7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Owns safety classification, HARA and the Safety Case; performs Gate decisions and emergency-kill and restoration approvals."
     },
     {
       "key": "DEP-CS.name",
@@ -460,8 +474,8 @@
       "key": "DEP-CS.desc",
       "source": "TARA·보안 검토를 하고 긴급 차단 2인 승인과 키 교체 기록을 맡는다.",
       "sourceHash": "a478a06a4fa9eda0fd944691d2e70d01a4ddeed3c3446e6a926288b986dc4ee0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Performs TARA and security reviews, participates in two-person emergency-kill approvals and maintains key-rotation records."
     },
     {
       "key": "DEP-HOM.name",
@@ -474,8 +488,8 @@
       "key": "DEP-HOM.desc",
       "source": "시장별 법규·형식승인·사용자 고지를 확인하고 Compliance Profile과 긴급 권한 사후 검토를 맡는다.",
       "sourceHash": "9435a516a1f7a5ca6a20478b1def8ef9223da9e65b9a1300474da149ea37b945",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Checks market-specific regulations, type approval and user notices; owns Compliance Profiles and post-use reviews of emergency privileges."
     },
     {
       "key": "DEP-VAL.name",
@@ -488,8 +502,8 @@
       "key": "DEP-VAL.desc",
       "source": "독립 V&V를 계획·실행하고 검증 Gate를 판정한다.",
       "sourceHash": "b2d88d73953b842d5815b8ce138f4d19b1a12301ce4ba40a5faba75527376340",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Plans and executes independent V&V and records verification Gate decisions."
     },
     {
       "key": "DEP-QA.name",
@@ -502,8 +516,8 @@
       "key": "DEP-QA.desc",
       "source": "독립 검토자로서 설계·Safety Case를 검토하고 Evidence와 감사 이력을 확인한다.",
       "sourceHash": "a06f37091992c16bf1f93268b9ce2f997f9d77e152634a626c7110ee0dfda296",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Independently reviews designs and Safety Cases and checks Evidence and audit history."
     },
     {
       "key": "DEP-OPS.name",
@@ -516,8 +530,8 @@
       "key": "DEP-OPS.desc",
       "source": "차량 운행을 관제하고 이상 징후에 대응하며 긴급 차단·복원을 요청하고 단계적 확대를 실행한다.",
       "sourceHash": "ae1418c7b3f0585e954a5136463c1646ce4f80e4b454ad930cb8a5bfe369ca38",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Monitors vehicle operation, responds to anomalies, requests emergency kill and restoration, and executes staged expansion."
     },
     {
       "key": "DEP-ITSEC.name",
@@ -530,8 +544,8 @@
       "key": "DEP-ITSEC.desc",
       "source": "HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회). 플랫폼 계정 상태와 소유자가 없는 기록의 소유자 이관을 맡는다.",
       "sourceHash": "1dcdda929c0f584811b36adb830e935a86b574ab0099c408c5bca763bd8402f7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Creates, rotates and retires signing keys in HSM/KMS (work performed outside the platform; the platform provides lookup). Manages platform account states and reassignment of records without an active owner."
     },
     {
       "key": "DEP-PUR.name",
@@ -544,8 +558,8 @@
       "key": "DEP-PUR.desc",
       "source": "협력사 계약·납품 조건을 관리하고 Feature별 SW 개발비를 산정·승인하며 단가·계수 표를 관리한다.",
       "sourceHash": "a1bfd67354c421e205b25b8a288d0096d8671a4e4d746b24acc68c3bde6d9e42",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manages supplier contracts and delivery conditions, estimates and approves SW development costs by Feature, and maintains unit-rate and coefficient tables."
     },
     {
       "key": "DEP-LEG.name",
@@ -558,8 +572,8 @@
       "key": "DEP-LEG.desc",
       "source": "데이터 이용·고객 고지·계약 근거를 검토하고 의견을 준다.",
       "sourceHash": "7ff5496e9c3cb46eb62d562292a2923a6c676b4ba72cd6520d0caa07581e9a86",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reviews and comments on data-use, customer-notice and contractual bases."
     },
     {
       "key": "DEP-DPO.name",
@@ -579,64 +593,64 @@
       "key": "departmentScope.note",
       "source": "핵심 생애주기(FPW.1~9)의 기존 검토 범위를 보존한다. 지원 업무(FPW.10~18)를 포함한 레퍼런스 정의는 조직 검토 전 초안이며 실제 수행·승인은 별도 근거로 확인한다.",
       "sourceHash": "58de3736fe760e5bf0cffe813e59d5b63179754e7eaa300fa0da098624f199e5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Preserves the existing review scope of the core lifecycle (FPW.1–9). Reference definitions including support work (FPW.10–18) are drafts pending organizational review; actual execution and approvals require separate evidence."
     },
     {
       "key": "departmentScope.demoNotes.0",
       "source": "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(배포 및 모니터링)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05).",
       "sourceHash": "efd7bb82704114eca221773309ead20986839694bf65c941bd3dd3ad5e13bc92",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The two emergency-kill approvers are Functional Safety and Vehicle Cybersecurity (user decision, 2026-11-04). Platform permissions also permit an operations lead (OPS_LEAD). The demo account opslead (Deployment and monitoring) performs that role (12 accounts, no overlapping appointments, as of 2026-11-05)."
     },
     {
       "key": "departmentScope.demoNotes.1",
       "source": "복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 표준 검토함)+opslead 또는 다른 CSM이 맡는다(2026-11-05).",
       "sourceHash": "3b6ee83141dd545e75e7c75fedd5ec985a78612ab6cb1c6b878281b21bce733d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Restoration requires two approvers who differ from the preceding kill approvers (SOD-09). In the demo, if quality (FSM) and integrator (CSM) approve the kill, safety2 (second FSM, Standard review) and opslead or another CSM approve restoration (2026-11-05)."
     },
     {
       "key": "departmentScope.demoNotes.2",
       "source": "고객 출시 승인(FPW.7-A10)은 구성 승인자와 다른 사람이다(SOD-04). 데모 계정 productowner(기획팀, PRODUCT_APPROVER)가 출시를 승인하고 approver는 구성 승인만 한다(2026-11-05).",
       "sourceHash": "ec591b13236d8f2f8a530024f9c3a0b6d661870aa828259f3b9061528d729c8e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Customer release approval (FPW.7-A10) requires a different person from composition approval (SOD-04). Demo account productowner (Product Planning, PRODUCT_APPROVER) approves release, while approver approves composition only (2026-11-05)."
     },
     {
       "key": "departmentScope.demoNotes.3",
       "source": "Feature DB 관리자(REFDB_ADMIN)는 데모 계정 steward 한 명, 도메인 검토자(DOMAIN_REVIEWER)는 approver 한 명뿐이다(2026-11-04). 요청자 ≠ 검토자 ≠ 승인자를 사람 단위로 강제하므로 데모에서 steward가 낸 변경·추가 요청은 승인할 사람이 없고, approver가 낸 요청은 검토할 사람이 없다 — 데모 흐름은 다른 계정(author 등)이 요청한다.",
       "sourceHash": "be7536f0bd2eb61a451266870aec61917767287b96ff0e827a510c92bc574b78",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The demo has one Feature DB administrator (REFDB_ADMIN), steward, and one domain reviewer (DOMAIN_REVIEWER), approver (2026-11-04). Person-level requester ≠ reviewer ≠ approver rules mean no one can approve a steward-authored request or review an approver-authored request. Another account, such as author, submits requests in the demo flow."
     },
     {
       "key": "departmentSod.0.note",
       "source": "상품 작성자는 자기 상품을 승인하지 않는다",
       "sourceHash": "98202631281df75e0a20e0b6360fccac3f524f5f6f86026dbfe7af047ff2b3d5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Product authors do not approve their own product"
     },
     {
       "key": "departmentSod.1.note",
       "source": "구성 승인자와 고객 출시 승인자는 다른 사람이다",
       "sourceHash": "f66859cdbc6d66bb23b0313986bf2e6827919f6438e9b55476b60237c29747ea",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Composition and customer-release approvers are different people"
     },
     {
       "key": "departmentSod.2.note",
       "source": "정책 작성자는 자기 정책을 승인하지 않는다",
       "sourceHash": "c57aeb022b249b1fa3183ae98668d432e4a5a050f5032d18431f2f1c27b0af9d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Policy authors do not approve their own policy"
     },
     {
       "key": "departmentSod.3.note",
       "source": "복원 승인자는 직전 차단 승인자와 다른 사람이다",
       "sourceHash": "165f3d68365676ec234c5b0687d36011a846cdd54e2244b2ce5486043688b92a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Restoration approvers differ from the preceding kill approvers"
     },
     {
       "key": "FPW.1.name",
@@ -1433,78 +1447,78 @@
       "key": "FPW.2.ref",
       "source": "표준 보고서 6.1절 G2·6.4절 재-HARA 조건, 3장(ADS), 14장(HARA·TARA·SOTIF)",
       "sourceHash": "4136222d420db4807af3ed91c0009ab0179f1870b8306e23fc274556b7392aa5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standard report 6.1 G2 and 6.4 re-HARA triggers, Chapter 3 (ADS), Chapter 14 (HARA, TARA and SOTIF)"
     },
     {
       "key": "FPW.2.purpose",
       "source": "등록·분류된 Feature Version이나 그 변경이 차량 위험에 어떤 영향을 주는지 HARA·TARA·SOTIF로 분석하고, Topology의 위험 전파 범위와 형식승인 영향을 확정해 안전요구 작성(G3)의 입력을 만든다.",
       "sourceHash": "39da75735681cd4bb061106e5e53cc017a50cedb457bf59743df58ebc758d04b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Analyze the vehicle-hazard impacts of a registered and classified Feature Version or its changes through HARA, TARA and SOTIF. Confirm Topology hazard-propagation scope and type-approval impact to provide inputs for safety requirements (G3)."
     },
     {
       "key": "FPW.2.O1.text",
       "source": "재-HARA가 필요한 변경이 자동 검출되어 Safety Manager에게 요청된다.",
       "sourceHash": "371996c52a4e89a3b6462f43842f1de2348e6853f59a5bc797c5885f4ca17441",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Changes requiring re-HARA are automatically detected and requested from the Safety Manager."
     },
     {
       "key": "FPW.2.O2.text",
       "source": "같은 Item 정의 위에서 HARA와 TARA가 수행되고 서로 교차 검토된다.",
       "sourceHash": "f2eb7a0a2c146ba6525e440692e9a1a835c854d7884915ae70cbe87edb49691f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "HARA and TARA use the same Item definition and undergo cross-review."
     },
     {
       "key": "FPW.2.O3.text",
       "source": "거동을 바꾸는 Version의 SOTIF 분석(성능 한계·트리거 조건)이 갱신된다.",
       "sourceHash": "9a3eed959e70bbc8472919434e6cc6b9124fe51db1003f1e6b6ba42f8bb0c89c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "SOTIF analysis of performance limits and triggering conditions is updated for behavior-changing Versions."
     },
     {
       "key": "FPW.2.O4.text",
       "source": "형식승인 영향 1차 판단과 G2 판정이 기록된다.",
       "sourceHash": "49ba914788ec8567e6254632219e4e21ef55ec395f0c85abed5f6b2822f694cc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The initial type-approval impact assessment and G2 decision are recorded."
     },
     {
       "key": "FPW.2.entry.0",
       "source": "G1 판정이 PASS 또는 기한이 있는 CONDITIONAL PASS다",
       "sourceHash": "09070f45136c47d55aeedcedcf5b27fd4b1bc814008b0026c827303b85e71049",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G1 is PASS or CONDITIONAL PASS with a deadline"
     },
     {
       "key": "FPW.2.entry.1",
       "source": "Feature Version의 대상 차량 사양과 의존 관계가 Topology에 등록되어 있다",
       "sourceHash": "52cb55c653fcdeee2f61ded94769d5d04adddce39e86b3a2f6dd034fab036d0d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Version’s target vehicle specifications and dependencies are registered in Topology"
     },
     {
       "key": "FPW.2.exit.0",
       "source": "HARA·TARA 결과와 교차 검토 기록이 Feature Version에 연결되었다",
       "sourceHash": "05cd92feb63087012c24d4045bc4b64a51eb4ce5517c0ba9b43416258f631fe1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "HARA and TARA results and cross-review records are linked to the Feature Version"
     },
     {
       "key": "FPW.2.exit.1",
       "source": "SOTIF 분석이 이 Version 기준으로 갱신되었다",
       "sourceHash": "14735c3faafbed8f33473da4b25654744da333704bc76de2e72e48de7021d714",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "SOTIF analysis is updated for this Version"
     },
     {
       "key": "FPW.2.exit.2",
       "source": "G2 Decision Record가 Safety Manager 서명으로 남았다",
       "sourceHash": "ebee8d80e17ca27c2faf12709f7a3068a67abd756c25fda830b599f07f066238",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The G2 Decision Record bears the Safety Manager’s signature"
     },
     {
       "key": "FPW.2.WP-IMPACT-ANALYSIS.name",
@@ -1517,22 +1531,22 @@
       "key": "FPW.2.WP-IMPACT-ANALYSIS.content.0",
       "source": "이전 Version과 바뀐 Registry 속성·Topology 관계",
       "sourceHash": "34c8bdd9c4b1e25e3de09456049dae0c82ba5a2ceb3b7d59ef4f4644a13b3a0b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Previous Version and changed Registry attributes and Topology relationships"
     },
     {
       "key": "FPW.2.WP-IMPACT-ANALYSIS.content.1",
       "source": "재-HARA 조건 해당 여부와 근거",
       "sourceHash": "d9e3054b5f0310a14299e0851ce6b3b97337e65f0870ef742abb39249061769d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Applicability of re-HARA triggers and supporting evidence"
     },
     {
       "key": "FPW.2.WP-IMPACT-ANALYSIS.content.2",
       "source": "영향 받는 Feature·차량 사양·회귀 시험 범위",
       "sourceHash": "1c5fcf7d6621438708b48249ba64295c6753021afb403c459c4ae5488653171f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Affected Features, vehicle specifications and regression-test scope"
     },
     {
       "key": "FPW.2.WP-HARA-TARA.name",
@@ -1545,22 +1559,22 @@
       "key": "FPW.2.WP-HARA-TARA.content.0",
       "source": "Item 정의와 위험 사건·ASIL·Safety Goal",
       "sourceHash": "01cc4dd9c3245dcab9ed02291fb23774dc66efba6b1d09b39bef5f109c6da103",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Item definition, hazardous events, ASIL and Safety Goals"
     },
     {
       "key": "FPW.2.WP-HARA-TARA.content.1",
       "source": "TARA 결과를 받아 반영한 교차 검토 내용",
       "sourceHash": "67c18e51dbd47034feb570618909e5c9bfb7ca8238d482401a27332e4061cd01",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cross-review incorporating TARA results"
     },
     {
       "key": "FPW.2.WP-HARA-TARA.content.2",
       "source": "ADS Feature면 원격 종료 경로와 비활성화 등급 확인 결과",
       "sourceHash": "fa876cea6f4fbb8b304094dda7d181c938e817c481ff5787b2a7a6474d55c2dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For ADS Features, verification of the remote termination path and deactivation class"
     },
     {
       "key": "FPW.2.WP-TARA.name",
@@ -1573,22 +1587,22 @@
       "key": "FPW.2.WP-TARA.content.0",
       "source": "위협 시나리오·공격 경로·위험 값",
       "sourceHash": "9cdcbf6b86613c12021e0640da3e98ac43bc3467a3aca87b8c6edbf9d2c207ed",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Threat scenarios, attack paths and risk values"
     },
     {
       "key": "FPW.2.WP-TARA.content.1",
       "source": "보안 목표와 사이버보안 요구 후보",
       "sourceHash": "e47d7aafae38baa099a018c15ada81ab395991f773198e61292d43f0e6f53b79",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Security goals and candidate cybersecurity requirements"
     },
     {
       "key": "FPW.2.WP-TARA.content.2",
       "source": "Kill·활성화 명령 경로(봉투·명령 인증)의 위협 평가",
       "sourceHash": "49d2f6de30bf90c8fa6f9a232ed287a5a33efaa719f1ac194cba2e589c338901",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Threat assessment of Kill and activation command paths, including envelope and command authentication"
     },
     {
       "key": "FPW.2.WP-SOTIF-ANALYSIS.name",
@@ -1601,15 +1615,15 @@
       "key": "FPW.2.WP-SOTIF-ANALYSIS.content.0",
       "source": "기능 사양과 성능 한계",
       "sourceHash": "0f956be8059bc99e35c9a4f2b2eafa1dc858d7c6f253642d90a7fc5d743c7c37",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Functional specification and performance limits"
     },
     {
       "key": "FPW.2.WP-SOTIF-ANALYSIS.content.1",
       "source": "트리거 조건과 위험 시나리오 평가",
       "sourceHash": "0bb9bacf7e60ad22e1ef7c24b61b558f2c5fa53b11497f7fc4d2dc6705f401a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Triggering conditions and hazardous-scenario assessment"
     },
     {
       "key": "FPW.2.WP-HOMOLOGATION-IMPACT.name",
@@ -1622,22 +1636,22 @@
       "key": "FPW.2.WP-HOMOLOGATION-IMPACT.content.0",
       "source": "영향 여부와 근거 조항, 대상 RXSWIN",
       "sourceHash": "4cc75a317fa5c5e187462347e955616fbb5cab4d2a39717a42fda33238cfdd9e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Impact assessment, supporting clauses and affected RXSWIN"
     },
     {
       "key": "FPW.2.WP-HOMOLOGATION-IMPACT.content.1",
       "source": "승인 기관 결정(개정·확장)이 필요한 경우 그 목록",
       "sourceHash": "0fc55f5ca60a6455cd7cd99d08259e9c2700ebe7e70599eb8a96ed4c3212daa8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Required authority decisions, such as revisions or extensions"
     },
     {
       "key": "FPW.2.WP-HOMOLOGATION-IMPACT.content.2",
       "source": "법규 담당 서명과 판단 시각",
       "sourceHash": "0f46d4985d5bd26f03039823bb27f644c5a18085c1aa7dfddd6afea74411e95b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Regulatory owner’s signature and assessment time"
     },
     {
       "key": "FPW.2.WP-G2-DECISION.name",
@@ -1650,15 +1664,15 @@
       "key": "FPW.2.WP-G2-DECISION.content.0",
       "source": "판정과 근거 Evidence ID(HARA·TARA·SOTIF·영향 분석)",
       "sourceHash": "a4ef44143871cdc7a6c3e140f273392cde7f106bff0835af9ed10eb755a3c3a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision and Evidence IDs for HARA, TARA, SOTIF and impact analysis"
     },
     {
       "key": "FPW.2.WP-G2-DECISION.content.1",
       "source": "Safety Manager 서명·시각, 조건부 통과 시 기한과 책임자",
       "sourceHash": "13fe2297dc5e5c3d118bb050c6268994d7e7b168dfe790d00d519a9d14dee63f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety Manager signature and time; deadline and accountable owner for a conditional pass"
     },
     {
       "key": "FPW.2-A01.name",
@@ -1671,43 +1685,43 @@
       "key": "FPW.2-A01.steps.0",
       "source": "이전 Version과 Registry 속성·Topology 관계를 비교한 변경 영향 분석 결과를 연다",
       "sourceHash": "7b4d71505ba3aa674cda2a9a7df604d941a16927e323896bb6b3fd6d8da59d73",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Open the change-impact analysis comparing the previous Version with Registry attributes and Topology relationships"
     },
     {
       "key": "FPW.2-A01.steps.1",
       "source": "재-HARA 조건(비활성화 등급·Safe State 변경, 위험 전파 관계 추가 등)에 걸리는 변경을 표시한다",
       "sourceHash": "1a262fbb9df6a85cde8ada2f7627decee738b0825252df2c2edb6c8a55022eb7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify re-HARA triggers, such as deactivation-class or Safe State changes and added hazard-propagation relationships"
     },
     {
       "key": "FPW.2-A01.steps.2",
       "source": "비활성화 등급이나 Safe State를 바꾸는 변경이면 새 Version과 G2~G5 재수행을 요구한다",
       "sourceHash": "1e93c5d537ede531d8c7b71ed1340c6556ccc041f839043640c04851686c58f9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Require a new Version and repetition of G2–G5 when the deactivation class or Safe State changes"
     },
     {
       "key": "FPW.2-A01.steps.3",
       "source": "협력사 기존 구현을 재사용하면 차이 보고를 영향 분석에 반영한다",
       "sourceHash": "e3f36096d929d316c84df15fbd2c1e7c829dc431a65886d5d898d5c8b96e4b05",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Include the difference report in impact analysis when reusing a supplier’s existing implementation"
     },
     {
       "key": "FPW.2-A01.checks.0",
       "source": "재-HARA 조건 해당 여부가 근거와 함께 기록되었다",
       "sourceHash": "c89d20daab8322be4d82410412cb5fbe3b472b001745c55037655eaf3f77f53e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Re-HARA trigger applicability is recorded with evidence"
     },
     {
       "key": "FPW.2-A01.checks.1",
       "source": "영향 받는 Feature와 회귀 시험 범위가 산정되었다",
       "sourceHash": "c9e289ba65191d3abca07d402b370243f94877f5bcf8870664b2176786f6d998",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Affected Features and regression-test scope are determined"
     },
     {
       "key": "FPW.2-A02.name",
@@ -1720,36 +1734,36 @@
       "key": "FPW.2-A02.steps.0",
       "source": "Safety Manager가 Item 정의를 기준으로 Kill·활성화 경로의 위험 사건과 ASIL을 평가한다",
       "sourceHash": "ff16486cdce1146f6710ccf9c20894d49604b0f91d602193d49fa714965e747c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Safety Manager assesses hazardous events and ASIL for Kill and activation paths against the Item definition"
     },
     {
       "key": "FPW.2-A02.steps.1",
       "source": "CSM의 TARA 결과(위협 시나리오)를 받아 위험 사건에 반영하고 교차 검토 내용을 기록한다",
       "sourceHash": "4d579be07196506e7e12a6fcf6c16444623db45001e5d591656bd82303586243",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Incorporate the CSM’s TARA threat scenarios into hazardous events and record the cross-review"
     },
     {
       "key": "FPW.2-A02.steps.2",
       "source": "ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다",
       "sourceHash": "4f767d8d99bea70020bcaba0c2dcc927a775759245c8437c9405f30546557b69",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For ADS Features, verify a deactivation class permitting remote termination and the request path, including envelopes, command authentication and Guard"
     },
     {
       "key": "FPW.2-A02.checks.0",
       "source": "TARA와의 교차 검토 기록이 HARA 결과에 남았다",
       "sourceHash": "27090c1df27cdd5ad1835bee8568724bec60358c031c4b76b8176e91d87c6cd4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "HARA results retain the TARA cross-review record"
     },
     {
       "key": "FPW.2-A02.checks.1",
       "source": "ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다",
       "sourceHash": "0d5d8d40e673b07ff1772c568fbfa61ca72394eddd26e0d2a56d41d6fd59eb49",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The ADS Feature is not classified in a class prohibiting remote termination"
     },
     {
       "key": "FPW.2-A06.name",
@@ -1762,36 +1776,36 @@
       "key": "FPW.2-A06.steps.0",
       "source": "CSM이 같은 Item 정의로 Kill·활성화 명령 경로의 위협 시나리오와 공격 경로를 찾는다",
       "sourceHash": "05512134b15959a5a6e4077b9661e756476394aeb7facace7972d3be4b0bfd28",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The CSM identifies threat scenarios and attack paths for Kill and activation commands using the same Item definition"
     },
     {
       "key": "FPW.2-A06.steps.1",
       "source": "위험 값을 매기고 보안 목표와 사이버보안 요구 후보를 정한다",
       "sourceHash": "1133c82837a54953cc79e84713b77c5cca3146027894a805d48e857d52d2ab5e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assign risk values and determine security goals and candidate cybersecurity requirements"
     },
     {
       "key": "FPW.2-A06.steps.2",
       "source": "결과를 Safety Manager에게 넘겨 HARA 교차 검토에 쓰게 한다",
       "sourceHash": "76555aa69bdd58f5fbca3d9678fb77ced32642c9c17ce5a3ee2ee4464f7d9f8d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand the results to the Safety Manager for HARA cross-review"
     },
     {
       "key": "FPW.2-A06.checks.0",
       "source": "위협 시나리오마다 위험 값과 보안 목표가 있다",
       "sourceHash": "13aaf9dbe87adb00ba0edb5779a00100c56ed155dc6fafb43792b817fe12596d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each threat scenario has a risk value and security goal"
     },
     {
       "key": "FPW.2-A06.checks.1",
       "source": "Kill·활성화 명령 경로가 평가 범위에 들어 있다",
       "sourceHash": "550c33c5cfa92a7d1b6af2c6d5a722f45e70d71231abc4daf861b4e2a3a97e4a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Kill and activation command paths are within assessment scope"
     },
     {
       "key": "FPW.2-A03.name",
@@ -1804,29 +1818,29 @@
       "key": "FPW.2-A03.steps.0",
       "source": "거동을 바꾸는 Version이면 기능 사양과 성능 한계를 이 Version 기준으로 다시 쓴다",
       "sourceHash": "d2378f7629a42fda21837d5088301071c79eb8827b1457645a078250d0afafe4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For a behavior-changing Version, update the functional specification and performance limits for this Version"
     },
     {
       "key": "FPW.2-A03.steps.1",
       "source": "알려진 트리거 조건과 운영에서 들어온 새 트리거 조건을 반영해 위험 시나리오를 평가한다",
       "sourceHash": "85247a64d6e475a1d0d9ece1611bbe153405c25ef3a887bc26dd1dac756ec1d3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess hazardous scenarios using known triggering conditions and new conditions from operations"
     },
     {
       "key": "FPW.2-A03.steps.2",
       "source": "평가 결과를 Safety Manager에게 넘겨 안전 판단에 쓰게 한다",
       "sourceHash": "11c518811ae3fdad64376501c369f150592e9edd5041cae8b5c75395f1922af2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand assessment results to the Safety Manager for safety decisions"
     },
     {
       "key": "FPW.2-A03.checks.0",
       "source": "SOTIF 분석의 대상 Version이 현재 Version과 같다",
       "sourceHash": "e393f95ba892ce6ba3f41d748c059786e2b418d2d77fc04e1843b84720f69d25",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The SOTIF analysis targets the current Version"
     },
     {
       "key": "FPW.2-A04.name",
@@ -1839,29 +1853,29 @@
       "key": "FPW.2-A04.steps.0",
       "source": "변경이 대상 시장 형식승인 범위(RXSWIN)에 영향을 주는지 조항별로 판단한다",
       "sourceHash": "8c9ca2f44bc24f56e54a2ab626592f851c10b7dd559e02ad694d4fdff06deba3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess by clause whether the change affects type-approval scope (RXSWIN) in target markets"
     },
     {
       "key": "FPW.2-A04.steps.1",
       "source": "영향이 있으면 승인 기관에 필요한 개정·확장 절차와 예상 시점을 정한다",
       "sourceHash": "bd8ef4ad72f768a36761e5e91267ef643d59239ce9abf37aeccd7c3481ded728",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If affected, determine required authority revision or extension procedures and the expected schedule"
     },
     {
       "key": "FPW.2-A04.steps.2",
       "source": "판단 결과에 서명하고 Feature Owner와 Release Manager에게 활성화 조건을 알린다",
       "sourceHash": "0bbccc1de6f202734c732d3155d3d8e5564bc37d8524501beefb0cf20ca93174",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Sign the assessment and notify the Feature Owner and Release Manager of activation conditions"
     },
     {
       "key": "FPW.2-A04.checks.0",
       "source": "판단서에 법규 담당 서명과 대상 RXSWIN이 있다",
       "sourceHash": "a35d176fb9f53c92303746b41bab16acbde3cfdee88b2bf60964b2f8f20f9f0e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The assessment includes the Regulatory owner’s signature and affected RXSWIN"
     },
     {
       "key": "FPW.2-A05.name",
@@ -1874,36 +1888,36 @@
       "key": "FPW.2-A05.steps.0",
       "source": "HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다",
       "sourceHash": "502ed2f336475f3f20115f5a80dde1e70a8cd7f0f57d643cf1fecd1a0c37446a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify HARA, TARA, SOTIF and type-approval assessments all target the current Version; record FAIL if anything is missing"
     },
     {
       "key": "FPW.2-A05.steps.1",
       "source": "등록 때 Feature DB 대표 ASIL을 바꿨다면 그 사유를 HARA에서 평가한 ASIL과 대조해 판정 근거에 남긴다",
       "sourceHash": "b56592d84e8bb404087cc209e5738d2a10d411b2005882deef5690e9d28f103a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If representative Feature DB ASIL changed at registration, compare its justification with the HARA-assessed ASIL and retain it as decision evidence"
     },
     {
       "key": "FPW.2-A05.steps.2",
       "source": "판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다",
       "sourceHash": "64966e287d75cfd2f950118bd44c6198e42ccc9cabc8a3b25a5b32763e0059db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Organize the decision and Evidence IDs and record them at the platform Safety/Security Gate with an individual signature"
     },
     {
       "key": "FPW.2-A05.steps.3",
       "source": "판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다",
       "sourceHash": "cffc2b96dbdfa767386310f30c611cf73f1b4cb836ce47e824d8a1063096828b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand the decision to the Requirement Owner to begin safety-requirement specification"
     },
     {
       "key": "FPW.2-A05.checks.0",
       "source": "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
       "sourceHash": "454a7e0dd6f31b0d4775128462461d164541dce8cc791d8ecb8165aed6a0176b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Decision Record includes the decision, Evidence, decision-maker role and time"
     },
     {
       "key": "FPW.2.BP1.name",
@@ -1916,8 +1930,8 @@
       "key": "FPW.2.BP1.definition",
       "source": "이전 구성과 제안 변경을 비교하여 재-HARA 조건과 영향을 받는 기능·차량·시험 범위를 식별한다. 재사용 구현의 차이와 위험 전파를 분석하고 재수행할 안전 활동을 결정한다.",
       "sourceHash": "b48b7504e415b3caa705755b1913d3980bad0c1d9f762118ebaefb06faa8b5bd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare the previous configuration and proposed change to identify re-HARA triggers and affected functions, vehicles and test scope. Analyze reused-implementation differences and hazard propagation, then determine the safety activities to repeat."
     },
     {
       "key": "FPW.2.BP2.name",
@@ -1930,8 +1944,8 @@
       "key": "FPW.2.BP2.definition",
       "source": "정의된 Item과 변경 범위의 위험 사건을 분석하여 안전 목표와 ASIL의 근거를 마련한다. 명령 경로와 종료 동작을 포함하고 보안 분석과의 교차 검토 결과를 보존한다.",
       "sourceHash": "7f0458e6b36033619276f076184d53cb7c452b5b030776fbf4b2d5172b9e0015",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Analyze hazardous events within the defined Item and change scope to establish safety goals and the ASIL rationale. Include command paths and termination behavior, and retain security-analysis cross-review."
     },
     {
       "key": "FPW.2.BP3.name",
@@ -1944,8 +1958,8 @@
       "key": "FPW.2.BP3.definition",
       "source": "같은 Item 범위에서 자산·위협 시나리오·공격 경로를 분석하여 보안 위험과 요구 후보를 도출한다. 안전 사건과 연결되는 결과를 안전 담당자에게 전달하고 상호 영향을 검토한다.",
       "sourceHash": "4655d809d99e0e65c336259af6e16170fd66565ca02db80216efbbfef329cbaa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Analyze assets, threat scenarios and attack paths within the same Item scope to derive security risks and candidate requirements. Hand safety-related results to the safety owner and review mutual impacts."
     },
     {
       "key": "FPW.2.BP4.name",
@@ -1958,8 +1972,8 @@
       "key": "FPW.2.BP4.definition",
       "source": "기능 사양과 성능 한계 및 알려진·새로운 트리거 조건을 현재 Version 기준으로 평가한다. 안전한 사용 범위와 필요한 시나리오의 변경을 기록하여 안전 판단과 검증 계획에 반영한다.",
       "sourceHash": "c87b3a9fbd0256f8d1fdf47463671c248a158d6f3f19efe635bafc9420b39e8c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess functional specifications, performance limits, and known and new triggering conditions for the current Version. Record changes to safe-use scope and required scenarios for safety decisions and verification planning."
     },
     {
       "key": "FPW.2.BP5.name",
@@ -1972,8 +1986,8 @@
       "key": "FPW.2.BP5.definition",
       "source": "변경 내용이 적용 시장의 형식승인 범위와 소프트웨어 식별에 미치는 영향을 판단한다. 필요한 기관 결정과 일정·활성화 조건을 정리하고 출시 책임자에게 전달한다.",
       "sourceHash": "f66faa6d5174be3a6042c1ee554e04041f6c6d37851c7a81c4ba215ceb526ba2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess how the change affects target-market type-approval scope and software identification. Organize required authority decisions, schedules and activation conditions, and hand them to the release owner."
     },
     {
       "key": "FPW.2.BP6.name",
@@ -1986,8 +2000,8 @@
       "key": "FPW.2.BP6.definition",
       "source": "현재 Version의 HARA·TARA·SOTIF·형식승인 판단을 함께 검토하여 변경 영향의 수용 가능성을 결정한다. 기준 ASIL과 다른 지정의 근거도 검토하고 판정 Evidence를 후속 요구 작성에 인계한다.",
       "sourceHash": "fd471e8a0c1d2e117333721b68ad21a6f317272cb51c1d8c4b5e8ef85eeba9b5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review the current Version’s HARA, TARA, SOTIF and type-approval assessments together to decide whether change impacts are acceptable. Review justification for ASIL assignments differing from the reference and hand decision Evidence to subsequent requirements work."
     },
     {
       "key": "FPW.2-S1.label",

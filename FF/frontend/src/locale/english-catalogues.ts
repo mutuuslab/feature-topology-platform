@@ -44,6 +44,11 @@ const loaders = {
   'workflowReference': () => import('./en/workflowReference'),
   'workspace-studio': () => import('./en/workspace-studio'),
 };
+const workflowParts: Array<() => Promise<{ default: Record<string, string> }>> = [
+  () => import('./en/workflow-metadata-parts/fpw-2'),
+];
 export async function loadEnglishCatalogues(): Promise<Record<string, Record<string, unknown>>> {
-  return Object.fromEntries(await Promise.all(Object.entries(loaders).map(async ([name, load]) => [name, (await load()).default])));
+  const catalogues = Object.fromEntries(await Promise.all(Object.entries(loaders).map(async ([name, load]) => [name, (await load()).default])));
+  if (workflowParts.length) catalogues['workflow-metadata'] = Object.assign({}, catalogues['workflow-metadata'], ...await Promise.all(workflowParts.map(async load => (await load()).default)));
+  return catalogues;
 }

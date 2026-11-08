@@ -9,6 +9,9 @@ it('uses English workflow display names while preserving source topology, RACI, 
   const korean = displayWorkflows(WORKFLOWS);
   await changeUiLanguage('en');
   const english = displayWorkflows(WORKFLOWS);
+  const hara=english.processes.find(process=>process.id==='FPW.2')!;
+  expect(hara.purpose).toContain('HARA, TARA and SOTIF');
+  expect(hara.workProducts.find(product=>product.key==='WP-IMPACT-ANALYSIS')?.content[0]).toBe('Previous Version and changed Registry attributes and Topology relationships');
   expect(english.processes.flatMap(p => p.activities).map(a => a.name).filter(name => /[가-힣]/.test(name))).toEqual([]);
   for (const [i, process] of english.processes.entries()) {
     const raw = WORKFLOWS.processes[i];

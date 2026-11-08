@@ -205,7 +205,7 @@ describe('확대 판정 패널 — Canary 관측 (TL-UI02·UI03, 통합 D-INT-4)
     expect(screen.getByText('1,120대')).toBeTruthy();
   });
 
-  it('단계 기준도 같은 판정 — Canary 관측 기간 미달·진행 중 차단은 막는 사유, 효력 범위·관측 시간·열린 이상 징후를 한 패널에', async () => {
+  it('단계 기준도 같은 판정 — Canary 관측 기간 미달·진행 중 긴급 차단은 막는 사유, 효력 범위·관측 시간·열린 이상 징후를 한 패널에', async () => {
     const stage: StageCriteriaInput = { fClass: 'F3', current: 300, beyondCanary: true, observedMs: 10 * 3600_000, openAnomalies: [], activeKills: ['KILL-00007'] };
     const ok = { ...OBS, verdict: 'OK' as const, breached: [] };
     const v = { ...VIEW(ok), decision: judgeExpansion({ canary: { verdict: 'OK', lagMinutes: 2, breached: [], registered: true }, evidence: null, stage }), stage: { fClass: 'F3', current: 300, ceiling: 10000, applies: true, observedMs: 10 * 3600_000, requiredMs: 86_400_000, openAnomalies: [], activeKills: ['KILL-00007'] } };
@@ -214,13 +214,13 @@ describe('확대 판정 패널 — Canary 관측 (TL-UI02·UI03, 통합 D-INT-4)
     expect(await screen.findByRole('heading', { name: /단계 기준/ })).toBeTruthy();
     expect(document.querySelector('[data-expansion="STOP"][data-expansion-blocked]')).toBeTruthy();
     expect(screen.getByText('단계 확대는 지금 서버가 막습니다 — 막는 사유 2건')).toBeTruthy();
-    expect(screen.getByText('진행 중 차단 — KILL-00007')).toBeTruthy();
+    expect(screen.getByText('진행 중 긴급 차단 — KILL-00007')).toBeTruthy();
     expect(screen.getByText('Canary 관측 기간 미달 · 10시간 / 24시간')).toBeTruthy();
     expect(screen.getByText('3% / 승인 100%')).toBeTruthy();
     expect(screen.getByText('1건 · KILL-00007')).toBeTruthy();
     // 단계 조정 Drawer — Canary 범위 안(≤ 5%)으로 넓히면 단계 기준은 보지 않는다(서버와 같다), 넘으면 막는다
     expect(stageGuard(v as never, 500).block).toBeUndefined();
-    expect(stageGuard(v as never, 5000).block).toContain('진행 중 차단 1건');
+    expect(stageGuard(v as never, 5000).block).toContain('진행 중 긴급 차단 1건');
   });
 });
 

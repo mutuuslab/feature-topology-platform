@@ -1,19 +1,30 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9392,
-  "translated": 9392,
+  "required": 9541,
+  "translated": 9541,
   "modules": [
     {
-      "module": "ads-change",
-      "source": "FF/frontend/src/copy/ads-change.ts",
-      "required": 229,
-      "translated": 229,
+      "module": "ads-ac",
+      "source": "FF/frontend/src/copy/ads-ac.ts",
+      "required": 68,
+      "translated": 68,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "cb521eb9f6081e5efd1b6cffc2f04656f0e907e5c94f8ceee266451a342c5bb2"
+      "sourceHash": "f21948d5a097e0529ba4d7f4ea4eff79c3c657d0d65e961334bdbfb594851dcd"
+    },
+    {
+      "module": "ads-change",
+      "source": "FF/frontend/src/copy/ads-change.ts",
+      "required": 230,
+      "translated": 230,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "9c06bf4ffb70045042e5534d65d01a03d14b7e9ca303bc74ee5b6f4b3582ea4c"
     },
     {
       "module": "ads-config",
@@ -172,13 +183,13 @@
     {
       "module": "control",
       "source": "FF/frontend/src/copy/control.ts",
-      "required": 110,
-      "translated": 110,
+      "required": 121,
+      "translated": 121,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "db477d92847a277a4beb5c2436ad9d51bfe30038c917e9f1a1106d55500427f6"
+      "sourceHash": "46f6fa3d4c745d304a29ae25cbf9d1ada25b820d8d37e666dc1cdbb693251d03"
     },
     {
       "module": "cost-explorer",
@@ -443,6 +454,17 @@
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
       "sourceHash": "c6f338b4f5f135b48afa6aa1a4477919149d58a31ac2778cbbcefb9ee6e03d50"
+    },
+    {
+      "module": "kill-scope",
+      "source": "FF/frontend/src/copy/kill-scope.ts",
+      "required": 69,
+      "translated": 69,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "a156d7781903e3ef1012345a008df164c92806ebfccabba718e6e8eeb95d2f7d"
     },
     {
       "module": "ko",

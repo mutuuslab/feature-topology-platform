@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../locale/react';
 // 승인 구성 조합 /config/compat (ADS-UI05 · ADS-BE10) — 승인 조합 표(1행 = 한 조합) + 차량 대조 탭(부합·불일치·부분 복구·보안 최소 버전 미달·형상 미확인).
 // 이 화면이 승인 조합의 원장(P-14). 핵심 메시지 '승인 조합 밖 차량 N대 — 부분 복구 M대 포함', 형상 미확인은 따로(부합으로 세지 않음).
 // 조합 등록 = 제안, 다른 사람(기능안전 담당) 승인 뒤에만 대조·발행 근거. 보안 최소 버전 표(사이버보안 담당 승인)가 등록·승인 하한(AcPanels.tsx).
@@ -5,7 +6,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { type CompatClass, type ConfigSet, type ConfigSetListItem, type ConfigVehicleRow } from '@ff/contracts';
 import { COMPAT_CLASSES, COMPAT_LABEL, configSetRegistrationBlocker, mergeSecurityMin } from '../../../../contracts/src/rules/ads-config';
-import { SECURITY_MIN_UNREGISTERED, unregisteredSecurityMin } from '../../../../contracts/src/rules/ads-config-approval';
+import { unregisteredSecurityMin } from '../../../../contracts/src/rules/ads-config-approval';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { compat as T } from '../../copy/ads-config';
@@ -95,6 +96,7 @@ export default function CompatSetsScreen() {
 }
 
 function SetsTab({ sets }: { sets: ConfigSetListItem[] }) {
+  useUiLocale();
   const [sp, setSp] = useSearchParams();
   const C = T.sets;
   const open = (id: string) => {
@@ -131,6 +133,7 @@ function SetsTab({ sets }: { sets: ConfigSetListItem[] }) {
 }
 
 function VehiclesTab({ sets }: { sets: ConfigSetListItem[] }) {
+  useUiLocale();
   const [sp, setSp] = useSearchParams();
   // 기본 — 조합 밖 차량이 가장 많은 조합
   const notMatch = (x: ConfigSetListItem) => COMPAT_CLASSES.reduce((a, k) => a + (k === 'MATCH' ? 0 : x.counts[k]), 0);
@@ -188,6 +191,7 @@ function VehiclesTab({ sets }: { sets: ConfigSetListItem[] }) {
 
 /** 승인 조합 등록 — 기준 조합을 복사해 ECU SW·보정 버전을 고친다. 보안 최소 버전 아래면 등록 버튼 대신 막힘 사유 */
 function RegisterForm({ sets, onDone }: { sets: ConfigSetListItem[]; onDone: () => void }) {
+  useUiLocale();
   const R = T.register;
   const [baseId, setBaseId] = useState(sets[0]?.setId ?? '');
   const base = sets.find((x) => x.setId === baseId) ?? null;
@@ -200,7 +204,7 @@ function RegisterForm({ sets, onDone }: { sets: ConfigSetListItem[]; onDone: () 
   if (!base) return null;
   const ecuSw = base.ecuSw.map((x) => ({ ...x, version: sw[x.swId] ?? x.version }));
   const missing = table.length ? unregisteredSecurityMin(ecuSw, table) : [];
-  const blocked = missing.length ? SECURITY_MIN_UNREGISTERED(missing) : configSetRegistrationBlocker({ ecuSw, securityMin: mergeSecurityMin(table.filter((m) => ecuSw.some((x) => x.swId === m.swId)), base.securityMin) });
+  const blocked = missing.length ? SM.unregisteredBlocker(missing) : configSetRegistrationBlocker({ ecuSw, securityMin: mergeSecurityMin(table.filter((m) => ecuSw.some((x) => x.swId === m.swId)), base.securityMin) });
   const body = {
     featureId: base.featureId, featureVersion: base.featureVersion, hw: base.hw, ecuSw, model: base.model,
     calibration: base.calibration ? { ...base.calibration, version: cal || base.calibration.version } : null,

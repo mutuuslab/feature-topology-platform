@@ -228,4 +228,6 @@ export default {
   'adsChange.exp.guardOpen': 'The server does not block stage expansion. Review the advisory reasons before expanding.',
   'adsChange.exp.guardClear': 'No blocking reasons · expansion to the next stage is available',
   'adsChange.exp.assumedNote': 'Evidence by axis is assumed. Once actual measurements are integrated, the same decision will block stage expansion.',
+
+  'adsChange.cls.ruleOn': 'Release guards apply to every Version. Enter the classification and have a Functional Safety Officer confirm it before release.',
 };

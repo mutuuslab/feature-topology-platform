@@ -1,7 +1,8 @@
+import { useUiLocale } from '../../locale/react';
 // 승인 구성 조합(/config/compat) 보강 — 조합 제안→승인(작성자 ≠ 승인자)·보안 최소 버전 표(사이버보안 담당 승인). 규칙은 contracts rules/ads-config-approval.ts.
 import { useState } from 'react';
 import type { ConfigSet, SecurityMinEntry } from '@ff/contracts';
-import { CONFIG_SET_SELF_APPROVAL, CONFIG_SET_STATUS_LABEL, SECURITY_MIN_SELF_APPROVAL, SECURITY_MIN_STATUS_LABEL, securityMinProposalBlocker } from '../../../../contracts/src/rules/ads-config-approval';
+import { securityMinProposalBlocker } from '../../../../contracts/src/rules/ads-config-approval';
 import { actorFor } from '../../api/actor';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -23,15 +24,17 @@ export interface SecurityMinsResp {
 
 /** 조합 상태 글자 — 승인 대기는 '미확인' 색(근거로 쓰지 않음) */
 export function SetStatus({ set }: { set: Pick<ConfigSet, 'status' | 'proposedBy' | 'approvedBy'> }) {
+  useUiLocale();
   return set.status === 'APPROVED' ? (
-    <VerdictReason tone="ok" label={CONFIG_SET_STATUS_LABEL.APPROVED} reason={`${A.proposer} ${personName(set.proposedBy)} · ${A.approver} ${personName(set.approvedBy)}`} />
+    <VerdictReason tone="ok" label={A.statusLabel.APPROVED} reason={`${A.proposer} ${personName(set.proposedBy)} · ${A.approver} ${personName(set.approvedBy)}`} />
   ) : (
-    <VerdictReason tone="unknown" label={CONFIG_SET_STATUS_LABEL.PROPOSED} reason={`${A.proposer} ${personName(set.proposedBy)}`} />
+    <VerdictReason tone="unknown" label={A.statusLabel.PROPOSED} reason={`${A.proposer} ${personName(set.proposedBy)}`} />
   );
 }
 
 /** 조합 승인 — 기능안전 담당, 제안자 본인이면 버튼 대신 사유(서버도 같은 사유로 거부) */
 export function SetApprove({ set }: { set: ConfigSet }) {
+  useUiLocale();
   const perm = usePermission(['SAFETY_OFFICER']);
   const { role } = useAppShell();
   const [open, setOpen] = useState(false);
@@ -39,7 +42,7 @@ export function SetApprove({ set }: { set: ConfigSet }) {
   const approve = useApiMutation<ConfigSet>('approveConfigSet', INVALIDATE);
   if (set.status === 'APPROVED') return null;
   if (!perm.ok) return <BlockedAction label={A.action} reason={STATIC_MODE ? A.readOnly : A.noPermission} />;
-  if (set.proposedBy && actorFor(role, ['SAFETY_OFFICER']).id === set.proposedBy) return <BlockedAction label={A.action} reason={CONFIG_SET_SELF_APPROVAL} />;
+  if (set.proposedBy && actorFor(role, ['SAFETY_OFFICER']).id === set.proposedBy) return <BlockedAction label={A.action} reason={A.selfApproval} />;
   return (
     <>
       <Button onClick={() => setOpen(true)}>{A.action}</Button>
@@ -62,6 +65,7 @@ export function SetApprove({ set }: { set: ConfigSet }) {
 
 /** 보안 최소 버전 표 탭 — 지금 하한·제안·승인 이력, 제안(올리기만)·승인(사이버보안 담당, 제안자 본인 제외) */
 export function SecurityMinTab() {
+  useUiLocale();
   const q = useApi<SecurityMinsResp>('securityMins');
   const items = q.data?.items ?? [];
   return (
@@ -89,7 +93,7 @@ export function SecurityMinTab() {
             rowKey={(r) => r.entryId}
             columns={[
               { key: 'sw', header: S.col.sw, cell: (r) => <span className="ds-mono">{`${r.swId} ${r.version}`}</span> },
-              { key: 's', header: S.col.status, cell: (r) => <VerdictReason tone={r.status === 'APPROVED' ? 'ok' : 'unknown'} label={SECURITY_MIN_STATUS_LABEL[r.status]} /> },
+              { key: 's', header: S.col.status, cell: (r) => <VerdictReason tone={r.status === 'APPROVED' ? 'ok' : 'unknown'} label={S.statusLabel[r.status]} /> },
               { key: 'r', header: S.col.rationale, cell: (r) => r.rationale },
               { key: 'p', header: S.col.proposer, cell: (r) => <span className="adsc-cell">{personName(r.proposedBy)}<span className="adsc-sub">{when(r.proposedAt)}</span></span> },
               { key: 'a', header: S.col.approver, cell: (r) => (r.status === 'APPROVED' ? <span className="adsc-cell">{personName(r.approvedBy)}<span className="adsc-sub">{when(r.approvedAt)}</span></span> : <MinApprove entry={r} entries={items} />) },
@@ -102,14 +106,15 @@ export function SecurityMinTab() {
 }
 
 function MinApprove({ entry, entries }: { entry: SecurityMinEntry; entries: SecurityMinEntry[] }) {
+  useUiLocale();
   const perm = usePermission(['SECURITY_OFFICER']);
   const { role } = useAppShell();
   const [reason, setReason] = useState('');
   const approve = useApiMutation<SecurityMinEntry>('approveSecurityMin', INVALIDATE);
   if (!perm.ok) return <BlockedAction label={S.approve.action} reason={STATIC_MODE ? S.readOnly : S.approve.noPermission} />;
-  if (actorFor(role, ['SECURITY_OFFICER']).id === entry.proposedBy) return <BlockedAction label={S.approve.action} reason={SECURITY_MIN_SELF_APPROVAL} />;
+  if (actorFor(role, ['SECURITY_OFFICER']).id === entry.proposedBy) return <BlockedAction label={S.approve.action} reason={S.selfApproval} />;
   const stale = securityMinProposalBlocker(entries.filter((e) => e.entryId !== entry.entryId), entry.swId, entry.version);
-  if (stale) return <BlockedAction label={S.approve.action} reason={stale.message} />;
+  if (stale) return <BlockedAction label={S.approve.action} reason={S.blocker[stale.code] ?? stale.message} />;
   return (
     <div className="adsc-row">
       <Field label={S.approve.reason}>
@@ -124,6 +129,7 @@ function MinApprove({ entry, entries }: { entry: SecurityMinEntry; entries: Secu
 }
 
 function ProposeAction({ entries }: { entries: SecurityMinEntry[] }) {
+  useUiLocale();
   const perm = usePermission(['SECURITY_OFFICER', 'VARIANT_OWNER']);
   const [open, setOpen] = useState(false);
   const [swId, setSwId] = useState('');
@@ -148,7 +154,7 @@ function ProposeAction({ entries }: { entries: SecurityMinEntry[] }) {
           </Field>
           <ErrorNote error={propose.error} />
           {blocked ? (
-            <BlockedAction label={S.propose.submit} reason={blocked.message} />
+            <BlockedAction label={S.propose.submit} reason={S.blocker[blocked.code] ?? blocked.message} />
           ) : (
             <Button variant="primary" disabled={!swId || !version || rationale.trim().length < 2 || propose.isPending} onClick={() => propose.mutate({ body: { swId, version, rationale } }, { onSuccess: () => setOpen(false) })}>
               {S.propose.submit}

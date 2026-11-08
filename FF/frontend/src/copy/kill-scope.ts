@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 긴급 차단 범위·해제·사건 범위 화면 문구(P11a) — 차단 콘솔에서 지연 적재되는 패널만 쓴다
-export const killScope = {
+export const killScope = /* @__PURE__ */ localizedCopy('kill-scope.killScope', {
   title: '차단 대상 범위',
   hint: '고르지 않으면 영향 범위 전체를 차단합니다. 고른 칸이 모두 맞는 차량만 남습니다',
   all: '전체',
@@ -55,4 +56,4 @@ export const killScope = {
     no: '아니요',
     note: '복원은 활성화가 아닙니다 — 활성화 불가도 정상 조합입니다(재판정·배포가 따로 필요)',
   },
-};
+});

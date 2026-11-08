@@ -1,6 +1,6 @@
+import { useUiLocale } from '../../locale/react';
 // /admin/iam › 권한 범위(ADS-BE15 · FFP-F057) — 계정별 시장·Feature·환경. 긴급 차단·해제·정책 배포 명령은 대상이 범위 안이어야 한다(서버가 거부·감사).
 import type { RoleScope } from '@ff/contracts';
-import { scopeAxisText } from '../../../../contracts/src/rules/role-scope';
 import { asyncState, useApi } from '../../api/hooks';
 import { roleScope as R } from '../../copy/ads-ac';
 import { personName } from '../../data/people';
@@ -13,7 +13,10 @@ interface ScopesView {
   commands: string[];
 }
 
+const scopeAxisText = (v: string[] | null) => v === null ? R.all : v.length ? v.join(', ') : R.none;
+
 export function RoleScopePanel() {
+  useUiLocale();
   const q = useApi<ScopesView>('roleScopes');
   const d = q.data;
   return (

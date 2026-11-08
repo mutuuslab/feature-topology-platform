@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../locale/react';
 // 차단 대상 범위(FR-KSW-001-002)·Variant 조건 확인(002-003)·영향 차량 그룹(003-001) — 새 차단 요청 폼 안의 패널.
 // 범위는 미리보기 차량의 속성으로 화면에서 거른다(정적 시연도 같은 결과). 요청에는 범위와 고른 차량을 함께 보내 서버가 다시 확인한다.
 import { impactGroups, KILL_SCOPE_KINDS, scopeMatches, type KillScopeFilter, type KillScopeKind } from '../../../../contracts/src/rules/kill-scope';
@@ -27,6 +28,7 @@ const FIELD: Record<KillScopeKind, keyof ScopeRow> = { countries: 'country', veh
 export const scopedRows = <T extends ScopeRow>(rows: readonly T[], scope: KillScopeFilter): T[] => rows.filter((r) => scopeMatches(scope, r));
 
 export function KillScopePanel({ rows, rule, scope, onScope }: { rows: readonly ScopeRow[]; rule?: VariantRuleView | null; scope: KillScopeFilter; onScope: (s: KillScopeFilter) => void }) {
+  useUiLocale();
   const kept = scopedRows(rows, scope);
   const groups = impactGroups(kept.map((r) => ({ ...r, verdict: r.verdict ?? 'UNKNOWN' })));
   return (
@@ -83,6 +85,7 @@ export interface PartiesView {
   suppliers: { supplier: string; swId: string; version: string }[];
 }
 export function KillParties({ p, person }: { p: PartiesView; person: (id: string) => string }) {
+  useUiLocale();
   const rows = [
     { k: S.partyCol.owner, v: p.owner ?? '—' },
     { k: S.partyCol.requester, v: person(p.requester) },

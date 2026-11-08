@@ -110,4 +110,16 @@ export default {
   "control.incident.scope.IN_SCOPE": 'In scope',
   "control.incident.outOfScope": (vin: string, featureId: string) => `${vin} is outside ${featureId}’s country, vehicle-model and trim scope — this Feature may not exist on that vehicle. The case may still be submitted`,
   "control.incident.unknownVehicle": (vin: string) => `${vin} is not registered — check the VIN`,
+
+  'control.restore.checks': 'Release confirmation',
+  'control.restore.check.resolved': 'Kill cause resolved',
+  'control.restore.check.causeFixed': 'Corrective action completed',
+  'control.restore.needChecks': 'Confirm that the kill cause is resolved and corrective action is complete.',
+  'control.restore.targets': 'Designated approvers (optional)',
+  'control.restore.targetsHint': 'Leave empty to allow any eligible restoration approver. Select people to restrict approval to those people.',
+  'control.restore.blockedNow': (n: number, total: number) => `${n} currently inhibited / ${total} kill targets`,
+  'control.restore.stageCol2.before': 'Before',
+  'control.restore.stageCol2.after': 'After',
+  'control.restore.stageCol2.by': 'Requested by',
+  'control.restore.blockState': (status: string, n: number) => `${status === 'RELEASED' ? 'Released' : 'Inhibited'} · ${n} remaining vehicles`,
 };

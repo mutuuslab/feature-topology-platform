@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../locale/react';
 import { p11 as p11Copy } from '../../copy/p11';
 // /ops/kill — 긴급 기능 차단(Kill Switch)·복구 (D03-03 · D03-04, PoC ⑥). 보고서 v1.1 7~9장: 긴급 상황에도 사전 2인 승인을 생략하지 않는다.
 // 요청(영향 범위·사유 분류·게이트 사전 점검·24시간 누적) → 서로 다른 2인 개인 서명 승인 → 게이트 최종 판정 → 서명·차량별 봉투 → 긴급 채널 → 차량 회신.
@@ -159,6 +160,7 @@ const planNote = (plan: ApprovalPlan, request: 'deactivate' | 'restore') => {
 };
 /** 후보 목록 — 이름(맡을 역할) */
 function Candidates({ title, items }: { title: string; items: { id: string; roles: ApproverRole[] }[] }) {
+  useUiLocale();
   return (
     <p className="ds-field__hint" data-testid="approver-candidates">
       <strong>{title}</strong> · {items.length ? items.map((c) => `${personLabel(c.id)} — ${roleNames(c.roles)}`).join(' / ') : CT.approval.candidatesNone}
@@ -192,6 +194,7 @@ function gateItems(checks: GateFinding[], plan: ApprovalPlan): RuleItem[] {
 }
 
 function NodeTable({ d, caption }: { d: Delivery; caption: string }) {
+  useUiLocale();
   return (
     <DataTable
       caption={caption}
@@ -231,6 +234,7 @@ function NodeTable({ d, caption }: { d: Delivery; caption: string }) {
 }
 
 function NewKill({ onDone }: { onDone: (k: Kill) => void }) {
+  useUiLocale();
   const perm = usePermission([...KILL_ROLES]);
   // 이상 징후 대응(/ops/anomalies)에서 넘어오면 대상 Feature·이상 건을 채워 둔다
   const [sp] = useSearchParams();
@@ -581,6 +585,7 @@ interface TimelineRow {
 
 /** 종료·복원 시간 기록 — 차량마다 다섯 시각, 신뢰 못 하는 시각은 흐리게 (FFG-ADS-007·TEL-004·TEL-010) */
 function KillTimeline({ id }: { id: string }) {
+  useUiLocale();
   const P = p11Copy.kill;
   const q = useApi<{ items: TimelineRow[] }>('killTimeline', { params: { id } });
   const rows = q.data?.items ?? [];
@@ -617,6 +622,7 @@ function KillTimeline({ id }: { id: string }) {
 
 /** 회신 요약 한 줄 — 반영 n/대상 m · 미수신(회신 없음) · 재전송(전달 작업 다시 보내기). 전달 작업이 없는 채널이면 재전송은 빼고 */
 function ReplySummary({ d, kind }: { d: Delivery; kind: 'KILL' | 'RESTORE' }) {
+  useUiLocale();
   const pub = useApi<{ delivery?: { attempts: number } | null }>('publicationDetail', { params: { id: d.publicationId } });
   const missing = d.nodes.filter((n) => n.reason.split(':')[0] === 'NO_REPORT').length;
   const attempts = pub.data?.delivery?.attempts;
@@ -633,6 +639,7 @@ function ReplySummary({ d, kind }: { d: Delivery; kind: 'KILL' | 'RESTORE' }) {
 
 /** 긴급 권한(Kill 발행)의 24시간 사후 독립 검토 (FFG-PLT-016) */
 function PostReview({ id }: { id: string }) {
+  useUiLocale();
   const q = useApi<{ items: { killId: string; due: string; status: 'REVIEWED' | 'PENDING' | 'OVERDUE'; review: any; issuedAt: string; featureId: string; requestedBy: string; approvers: string[] }[] }>('killPostReviews');
   const row = q.data?.items.find((r) => r.killId === id);
   if (!row) return null;
@@ -646,6 +653,7 @@ function PostReview({ id }: { id: string }) {
 
 /** 복원 전망 — 직전 차단 승인자를 빼고 복원을 승인할 수 있는 사람과, 없을 때 상위 대응(P4-1) */
 function RestoreOutlookNote({ k }: { k: Kill }) {
+  useUiLocale();
   const o = k.restoreOutlook;
   if (!o) return null;
   return (
@@ -664,6 +672,7 @@ function RestoreOutlookNote({ k }: { k: Kill }) {
 
 /** 단계적 복원 기록(FPW.8-A10) */
 function RestoreStages({ k }: { k: Kill }) {
+  useUiLocale();
   const C = CT.restore.stageCol;
   return (
     <DataTable
@@ -688,6 +697,7 @@ function RestoreStages({ k }: { k: Kill }) {
  * 남은 차량 일부만 고르면 단계적 복원(A10) — 관측 뒤 다시 요청해 넓힌다. 빠진 것이 있으면 버튼이 이유와 함께 막힌다.
  */
 function RestoreForm({ k }: { k: Kill }) {
+  useUiLocale();
   const perm = usePermission([...KILL_ROLES]);
   const requestRestore = useApiMutation('requestRestore', INVALIDATE);
   const ev = useApi<{ items: { evidenceRef: string; gate: string; featureVersion: string; inputResult: string }[] }>('evidenceLedger', { query: { featureId: k.featureId } });
@@ -788,6 +798,7 @@ function RestoreForm({ k }: { k: Kill }) {
 }
 
 function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
+  useUiLocale();
   const q = useApi<Kill>('killDetail', { params: { id: id ?? '' } }, { enabled: !!id });
   const env = useApi<Envelopes>('killEnvelopes', { params: { id: id ?? '' } }, { enabled: !!id && !!q.data?.command });
   const release = useApiMutation('releaseKill', INVALIDATE);
@@ -975,6 +986,7 @@ function KillDrawer({ id, onClose }: { id: string | null; onClose: () => void })
 }
 
 export function KillConsole() {
+  useUiLocale();
   const q = useApi<{ items: Kill[] }>('killRequests');
   usePlatformEvents(['kill.', 'publication.', 'vehicle.readback', 'ota.job.'], ['killRequests', 'killDetail', 'killEnvelopes', 'publicationDetail']);
   // 상세는 라우터 검색 파라미터로 연다 — 검토함 등 앱 안 이동(/ops/kill?id=…)에서도 열린다

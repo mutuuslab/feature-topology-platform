@@ -1,11 +1,12 @@
 import { localizedCopy } from '../locale/runtime';
-// Flag 코드 연결·대사·통제 화면 문구(20-97 §7) — 상태 라벨은 계약의 FLAG_COVERAGE_LABEL을 쓰고, 나머지는 여기 둔다.
-import { EVAL_SOURCE_LABEL, type FlagCoverageSeverity, type FlagLane, type FlagLaneState, type FlagRepoMode, type FlagScanStatus } from '@ff/contracts';
+// Flag 코드 연결·대사·통제 화면 문구(20-97 §7) — 계약 상태 키를 보존하고 표시 이름은 이곳에서 언어별로 읽는다.
+import type { FlagCoverageSeverity, FlagCoverageStatus, FlagLane, FlagLaneState, FlagRepoMode, FlagScanStatus } from '@ff/contracts';
 
 const n = (x: number) => x.toLocaleString('ko-KR');
 
 export const flagCode = /* @__PURE__ */ localizedCopy('flag-code.flagCode', {
   nav: { label: 'Flag 코드 연결 화면', coverage: '현황', reconcile: '대사판', lifecycle: '수명 관리' },
+  coverageStatus: { OK: '정상', PR_OPEN: 'Flag PR 검토 중', NO_CODE: '코드 없음', CALL_DELETED: '삭제된 호출', UNREGISTERED_KEY: '미등록 키', DYNAMIC_KEY: '동적 키', UNLEASH_MISMATCH: 'Unleash 불일치', STALE: '오래된 Flag', REMOVAL_DUE: '제거 대상' } satisfies Record<FlagCoverageStatus, string>,
   severity: { BLOCKER: '출시 차단', WARNING: '조치 필요', INFO: '진행 중', OK: '정상' } satisfies Record<FlagCoverageSeverity, string>,
   lane: { REGISTRY: '등록', CODE: '코드', UNLEASH: 'Unleash', DEPLOY: '배포', REPORT: '회신' } satisfies Record<FlagLane, string>,
   laneState: { OK: '맞음', PENDING: '진행 중', MISSING: '없음', MISMATCH: '어긋남', NOT_APPLICABLE: '해당 없음' } satisfies Record<FlagLaneState, string>,
@@ -39,7 +40,7 @@ export const flagCode = /* @__PURE__ */ localizedCopy('flag-code.flagCode', {
   via: { LITERAL: '문자열', CONST: '상수' } as Record<string, string>,
   pkg: { adas: 'ADAS', ivi: 'IVI', body: '바디', chassis: '섀시', powertrain: '파워트레인', safety: '안전', connectivity: '커넥티비티', platform: '플랫폼' } as Record<string, string>,
   // 평가 경로 — Feature 평가 운영과 같은 이름(평가 집계 한 저장소)
-  source: EVAL_SOURCE_LABEL as Record<string, string>,
+  source: { OFREP: '앱 평가 API(OFREP)', VEHICLE_SDK: '차량 SDK', UNLEASH_EDGE: 'Unleash Edge', PLATFORM: '플랫폼 판단' } as Record<string, string>,
   fallback: {
     DEFAULT_NO_SNAPSHOT: '스냅샷 없음',
     TTL_EXPIRED: '유효 기간 지남',

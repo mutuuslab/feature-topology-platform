@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 83,
-  "requiredLeaves": 9021,
+  "requiredLeaves": 9035,
   "modules": [
     {
       "module": "ads-change",
@@ -1385,7 +1385,8 @@
       ],
       "connectedExports": [
         "adsChange"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ads-config",
@@ -2231,7 +2232,8 @@
         "compat",
         "eligibility",
         "configLinks"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ads-evidence",
@@ -3976,7 +3978,8 @@
         "incidentReports",
         "safetyCase",
         "traceAds"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ads-p5",
@@ -5188,7 +5191,8 @@
         "eol",
         "install",
         "campaign"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ads-state",
@@ -6218,7 +6222,8 @@
         "fleetAxes",
         "orders",
         "axisWords"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ads",
@@ -6949,7 +6954,8 @@
         "terms",
         "axes",
         "ui"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "alm-inbox",
@@ -6970,7 +6976,8 @@
       ],
       "connectedExports": [
         "almInbox"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "alm",
@@ -6987,6 +6994,18 @@
           "kind": "text",
           "text": "놓친 변경을 15분마다, 모든 Epic을 하루 한 번 다시 맞춥니다. 받은 변경은 같은 확인을 거칩니다.",
           "sourceHash": "6cfce04f2ad63ac910b869fbd11d0a4db30e5d497f6d72384f72718c2c7c7c36"
+        },
+        {
+          "path": "alm.alm.reconcile.kind.INCREMENTAL",
+          "kind": "text",
+          "text": "증분 대사",
+          "sourceHash": "8a7c84ed3862ce13daa2039268799ec0288abf79e2938755e1e3e1f829a0908d"
+        },
+        {
+          "path": "alm.alm.reconcile.kind.FULL",
+          "kind": "text",
+          "text": "전체 대사",
+          "sourceHash": "7a9919aabe4f0deb29308036518cb6c59468f6e00f583a5e483971b2bdd3faed"
         },
         {
           "path": "alm.alm.reconcile.col.at",
@@ -7285,7 +7304,8 @@
       ],
       "connectedExports": [
         "alm"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "analysis",
@@ -7672,7 +7692,8 @@
       ],
       "connectedExports": [
         "analysis"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "audit",
@@ -8661,7 +8682,8 @@
         "AUDIT_ACTION_KO",
         "AUDIT_KEY_KO",
         "auditPlus"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "catalog-experience",
@@ -9126,7 +9148,8 @@
       ],
       "connectedExports": [
         "catalogExperience"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "compliance-rules",
@@ -9939,7 +9962,8 @@
       ],
       "connectedExports": [
         "complianceRules"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "connections",
@@ -10044,7 +10068,8 @@
       ],
       "connectedExports": [
         "connections"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "consult",
@@ -10383,7 +10408,8 @@
       ],
       "connectedExports": [
         "consult"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "control",
@@ -11053,7 +11079,8 @@
       "connectedExports": [
         "APPROVER_ROLE",
         "control"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "cost-explorer",
@@ -11176,7 +11203,8 @@
       ],
       "connectedExports": [
         "costExplorer"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "cost",
@@ -12858,7 +12886,8 @@
         "costBasis",
         "costCalib",
         "costActual"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "dashboard-department",
@@ -12993,7 +13022,8 @@
       ],
       "connectedExports": [
         "dashboardDepartment"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "dashboard",
@@ -14286,7 +14316,8 @@
       ],
       "connectedExports": [
         "dashboard"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "department-navigation",
@@ -14433,7 +14464,8 @@
       ],
       "connectedExports": [
         "departmentNavigation"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "departments",
@@ -15229,7 +15261,8 @@
       "connectedExports": [
         "departments",
         "deptNotice"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "error-actions",
@@ -15280,7 +15313,8 @@
       ],
       "connectedExports": [
         "errorActions"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "errors",
@@ -15391,7 +15425,8 @@
       ],
       "connectedExports": [
         "errors"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "experiment-analysis",
@@ -15580,7 +15615,8 @@
       ],
       "connectedExports": [
         "experimentAnalysis"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ext-gateway",
@@ -16776,7 +16812,8 @@
         "legacyRules",
         "legacyMessages",
         "settlement"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ext-sync",
@@ -17571,7 +17608,8 @@
       ],
       "connectedExports": [
         "extSync"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "external-demo",
@@ -18558,7 +18596,8 @@
       ],
       "connectedExports": [
         "externalDemo"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "external-gitlab",
@@ -18801,7 +18840,8 @@
       ],
       "connectedExports": [
         "externalGitlab"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "external",
@@ -18924,7 +18964,8 @@
       ],
       "connectedExports": [
         "externalLaunch"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "f0",
@@ -19102,7 +19143,8 @@
       "connectedExports": [
         "accounts",
         "ownerTransfer"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "flag-code",
@@ -19131,6 +19173,60 @@
           "kind": "text",
           "text": "수명 관리",
           "sourceHash": "c8247bc7f527f16a26a5d74deeb46f1475a82659e93961800231888cc5918f58"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.OK",
+          "kind": "text",
+          "text": "정상",
+          "sourceHash": "35688a85f0be1c636cd83847b4bbb23350a19d0c185f3ed7ee86684a01467352"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.PR_OPEN",
+          "kind": "text",
+          "text": "Flag PR 검토 중",
+          "sourceHash": "b9f5bac21f0c69ded024f0c12480eea17ffd8d27bfb56bb0d62994141b2ba736"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.NO_CODE",
+          "kind": "text",
+          "text": "코드 없음",
+          "sourceHash": "9366574b3ec2837b3655b2eda7533047c16a7d9a2b4e1768676834c8e4c8b404"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.CALL_DELETED",
+          "kind": "text",
+          "text": "삭제된 호출",
+          "sourceHash": "a64f83bb9c1c758ee818d0c9c5fea550f11ebd9f350d6c6cc6296d2ede9f0fb8"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.UNREGISTERED_KEY",
+          "kind": "text",
+          "text": "미등록 키",
+          "sourceHash": "2595e6f37418633b37f800139a5c4b7769cb7425e9456d15891bcc33ebc705be"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.DYNAMIC_KEY",
+          "kind": "text",
+          "text": "동적 키",
+          "sourceHash": "d255a6ba85cf483e0a082ba9669d7d2e06ab8473af9e60a935819eea94613d74"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.UNLEASH_MISMATCH",
+          "kind": "text",
+          "text": "Unleash 불일치",
+          "sourceHash": "7e0e5570d47cfa443547dd4e4b7a96f577497e017378c5ae78ba1697a9026e5a"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.STALE",
+          "kind": "text",
+          "text": "오래된 Flag",
+          "sourceHash": "67362b1cc23e15efde11e2cdc5d72fad45f8d5d6e2a302e44c7d42260c2f24c4"
+        },
+        {
+          "path": "flag-code.flagCode.coverageStatus.REMOVAL_DUE",
+          "kind": "text",
+          "text": "제거 대상",
+          "sourceHash": "76ee51a2482a707122e4c5c93395760a5c5d1e8a5936f9c4abe0bbe22795bf14"
         },
         {
           "path": "flag-code.flagCode.severity.BLOCKER",
@@ -19575,6 +19671,24 @@
           "kind": "text",
           "text": "플랫폼",
           "sourceHash": "e56c7fcf61e194b640383bb573942a4e1988d7d93f7bf21865743a99d0559289"
+        },
+        {
+          "path": "flag-code.flagCode.source.OFREP",
+          "kind": "text",
+          "text": "앱 평가 API(OFREP)",
+          "sourceHash": "3b1d16723df0524d8da1b239cec602191a0a36d727c0606d3776faebb1d17bbc"
+        },
+        {
+          "path": "flag-code.flagCode.source.VEHICLE_SDK",
+          "kind": "text",
+          "text": "차량 SDK",
+          "sourceHash": "bd6e9672a6bb633fff59aff0fabc6ec3767c21dd2a3991c44a97c77aac474ef4"
+        },
+        {
+          "path": "flag-code.flagCode.source.PLATFORM",
+          "kind": "text",
+          "text": "플랫폼 판단",
+          "sourceHash": "19a8364573fa5f7161a40c5ea8c8af4de2fde3ebc397eaf9567b1c470f1fcd65"
         },
         {
           "path": "flag-code.flagCode.fallback.DEFAULT_NO_SNAPSHOT",
@@ -21457,7 +21571,8 @@
       ],
       "connectedExports": [
         "flagCode"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "flags",
@@ -21922,7 +22037,8 @@
       ],
       "connectedExports": [
         "flags"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "fleet-search",
@@ -21955,7 +22071,8 @@
       ],
       "connectedExports": [
         "fleetSearch"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "formatters",
@@ -22024,7 +22141,8 @@
       ],
       "connectedExports": [
         "formatters"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "freshness",
@@ -22129,7 +22247,8 @@
       ],
       "connectedExports": [
         "freshness"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "impactSupplier",
@@ -22234,7 +22353,8 @@
       ],
       "connectedExports": [
         "impactPlus"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "inbox-lake",
@@ -22321,7 +22441,8 @@
       ],
       "connectedExports": [
         "inboxLake"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "inbox",
@@ -22786,6 +22907,73 @@
         "homeWork",
         "nextTurn",
         "signoffEvidence"
+      ],
+      "unresolvedCopyReferences": [
+        {
+          "path": "inbox.QUEUE_LABEL.baseline",
+          "expression": "{ return master.inbox.queues.baseline; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_LABEL.policy",
+          "expression": "{ return master.inbox.queues.policy; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_LABEL.product",
+          "expression": "{ return master.inbox.queues.product; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_LABEL.safety",
+          "expression": "{ return master.inbox.queues.safety; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_LABEL.kill",
+          "expression": "{ return master.inbox.queues.kill; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_LABEL.restore",
+          "expression": "{ return master.inbox.queues.restore; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_LABEL.sync",
+          "expression": "{ return master.inbox.queues.sync; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_ROLE.baseline",
+          "expression": "{ return master.inbox.roles.baseline; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_ROLE.policy",
+          "expression": "{ return master.inbox.roles.policy; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_ROLE.product",
+          "expression": "{ return master.inbox.roles.product; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_ROLE.safety",
+          "expression": "{ return master.inbox.roles.safety; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_ROLE.restore",
+          "expression": "{ return master.inbox.roles.restore; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "inbox.QUEUE_ROLE.sync",
+          "expression": "{ return master.inbox.roles.sync; }",
+          "kind": "late-getter"
+        }
       ]
     },
     {
@@ -31129,7 +31317,8 @@
       ],
       "connectedExports": [
         "ko"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "lake",
@@ -33274,7 +33463,8 @@
       ],
       "connectedExports": [
         "lake"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "lifecycle-gate",
@@ -33991,7 +34181,8 @@
       ],
       "connectedExports": [
         "lcGate"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "lists",
@@ -34054,7 +34245,8 @@
       ],
       "connectedExports": [
         "lists"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "login",
@@ -34225,7 +34417,8 @@
       ],
       "connectedExports": [
         "login"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "map-scope",
@@ -34246,7 +34439,8 @@
       ],
       "connectedExports": [
         "mapScope"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "master",
@@ -35995,7 +36189,8 @@
       ],
       "connectedExports": [
         "master"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "observability",
@@ -36473,7 +36668,8 @@
       "connectedExports": [
         "observability",
         "readbackFlow"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "operation-overview",
@@ -37598,7 +37794,8 @@
       ],
       "connectedExports": [
         "operationOverview"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ops5y",
@@ -37679,7 +37876,8 @@
       ],
       "connectedExports": [
         "ops5y"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ota",
@@ -37880,7 +38078,8 @@
       ],
       "connectedExports": [
         "ota"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "p10",
@@ -39473,7 +39672,8 @@
       ],
       "connectedExports": [
         "p10"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "p11",
@@ -40958,7 +41158,8 @@
       ],
       "connectedExports": [
         "p11"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "planning",
@@ -41285,7 +41486,8 @@
       ],
       "connectedExports": [
         "planning"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ple",
@@ -42527,7 +42729,8 @@
         "configurator",
         "assets",
         "homeEntry"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "privacy",
@@ -43095,7 +43298,8 @@
       "connectedExports": [
         "privacy",
         "reference"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "procedure-display",
@@ -43122,7 +43326,8 @@
       ],
       "connectedExports": [
         "procedureDisplay"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "procedure-panel",
@@ -43209,7 +43414,8 @@
       ],
       "connectedExports": [
         "procedurePanel"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "procedureFlow",
@@ -44292,7 +44498,8 @@
       ],
       "connectedExports": [
         "procedureFlow"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "procedures",
@@ -44895,6 +45102,28 @@
       ],
       "connectedExports": [
         "procedures"
+      ],
+      "unresolvedCopyReferences": [
+        {
+          "path": "procedures.procedures.loading",
+          "expression": "{ return procedurePanel.loading; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "procedures.procedures.loadFail",
+          "expression": "{ return procedurePanel.loadFail; }",
+          "kind": "late-getter"
+        },
+        {
+          "path": "procedures.procedures.display",
+          "expression": "procedureDisplay",
+          "kind": "Identifier"
+        },
+        {
+          "path": "procedures.procedures.panel",
+          "expression": "procedurePanel",
+          "kind": "Identifier"
+        }
       ]
     },
     {
@@ -45102,7 +45331,8 @@
       ],
       "connectedExports": [
         "procurementHome"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "propose-guide",
@@ -45339,7 +45569,8 @@
       ],
       "connectedExports": [
         "proposeGuide"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "propose-prd",
@@ -45529,6 +45760,13 @@
       "connectedExports": [
         "PRD_SECTIONS",
         "proposePrd"
+      ],
+      "unresolvedCopyReferences": [
+        {
+          "path": "propose-prd.PRD_TEMPLATE",
+          "expression": "prdTemplate()",
+          "kind": "CallExpression"
+        }
       ]
     },
     {
@@ -46716,7 +46954,8 @@
         "propose",
         "featureRefsTab",
         "proposeRefMore"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "records",
@@ -47406,7 +47645,8 @@
         "auditGaps",
         "evaluations",
         "integrationErrors"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "ref-explorer",
@@ -47559,7 +47799,8 @@
       ],
       "connectedExports": [
         "refExplorer"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "refdb",
@@ -49431,7 +49672,8 @@
         "refReleaseCols",
         "refChangeAudit",
         "refSourceReview"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "route-recovery",
@@ -49452,7 +49694,8 @@
       ],
       "connectedExports": [
         "routeRecovery"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "sim",
@@ -49491,7 +49734,8 @@
       ],
       "connectedExports": [
         "sim"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "status-labels",
@@ -49704,7 +49948,8 @@
       ],
       "connectedExports": [
         "statusLabels"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "supplier",
@@ -50151,7 +50396,8 @@
       ],
       "connectedExports": [
         "supplier"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "taxonomy-level-names",
@@ -50233,6 +50479,13 @@
       "connectedExports": [
         "LEVEL_KO",
         "taxonomyLevelNames"
+      ],
+      "unresolvedCopyReferences": [
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.levels",
+          "expression": "Object.keys(LEVEL_KO)",
+          "kind": "CallExpression"
+        }
       ]
     },
     {
@@ -50880,6 +51133,28 @@
         "taxonomyCopy",
         "regionCopy",
         "brandCopy"
+      ],
+      "unresolvedCopyReferences": [
+        {
+          "path": "taxonomy-levels.taxonomyCopy.levelKo",
+          "expression": "LEVEL_KO",
+          "kind": "Identifier"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.levels",
+          "expression": "taxonomyLevelNames.levels",
+          "kind": "PropertyAccessExpression"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.levelName",
+          "expression": "taxonomyLevelNames.levelName",
+          "kind": "PropertyAccessExpression"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.tab",
+          "expression": "taxonomyLevelNames.tab",
+          "kind": "PropertyAccessExpression"
+        }
       ]
     },
     {
@@ -51459,7 +51734,8 @@
       ],
       "connectedExports": [
         "topologyGraph"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "topology-motion",
@@ -51660,7 +51936,8 @@
       ],
       "connectedExports": [
         "topologyMotion"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "trace-links",
@@ -52353,7 +52630,8 @@
       ],
       "connectedExports": [
         "traceCopy"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "unsaved",
@@ -52410,7 +52688,8 @@
       ],
       "connectedExports": [
         "unsaved"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "virtual",
@@ -52935,7 +53214,8 @@
       ],
       "connectedExports": [
         "virtualCopy"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "work-product",
@@ -53046,7 +53326,8 @@
       ],
       "connectedExports": [
         "workProduct"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "workbench",
@@ -53799,7 +54080,8 @@
       ],
       "connectedExports": [
         "workbench"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "workbook",
@@ -53904,7 +54186,8 @@
       ],
       "connectedExports": [
         "workbook"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "workflow-execution",
@@ -54495,7 +54778,8 @@
       ],
       "connectedExports": [
         "workflowExecution"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "workflowReference",
@@ -54822,7 +55106,8 @@
       ],
       "connectedExports": [
         "workflowReference"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "workspace-data",
@@ -54861,7 +55146,8 @@
       ],
       "connectedExports": [
         "workspaceData"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     },
     {
       "module": "workspace-studio",
@@ -54960,7 +55246,8 @@
       ],
       "connectedExports": [
         "workspaceStudio"
-      ]
+      ],
+      "unresolvedCopyReferences": []
     }
   ]
 }

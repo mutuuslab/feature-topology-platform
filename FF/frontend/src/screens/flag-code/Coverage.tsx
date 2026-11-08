@@ -2,7 +2,7 @@
 // 필터는 화면에서 건다(정적 설치는 전체 대사 스냅샷 하나).
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FLAG_COVERAGE_LABEL, FLAG_COVERAGE_STATUSES, FLAG_PACKAGES, type FlagCoverageRow, type FlagCoverageStatus, type FlagRepository } from '@ff/contracts';
+import { FLAG_COVERAGE_STATUSES, FLAG_PACKAGES, type FlagCoverageRow, type FlagCoverageStatus, type FlagRepository } from '@ff/contracts';
 import { asyncState } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
 import { AsyncView, DataTable, PageHeader, Panel, Select, SummaryLine } from '../../design';
@@ -130,7 +130,7 @@ export function FlagCodeCoverageScreen() {
                 <option value="">{T.common.allStatuses}</option>
                 <option value="ATTENTION">{T.coverage.filterAttention}</option>
                 {FLAG_COVERAGE_STATUSES.filter((k) => counts[k] > 0).map((k) => (
-                  <option key={k} value={k}>{`${FLAG_COVERAGE_LABEL[k]} (${counts[k]})`}</option>
+                  <option key={k} value={k}>{`${T.coverageStatus[k]} (${counts[k]})`}</option>
                 ))}
               </Select>
               <Select label={C.pkg} value={pkg} onChange={(e) => set('package', e.target.value)}>

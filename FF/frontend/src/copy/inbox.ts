@@ -4,7 +4,13 @@ import { master } from './master';
 
 /** 대기열 이름 — 앞의 7개는 ko.master.inbox.queues 그대로 */
 export const QUEUE_LABEL = /* @__PURE__ */ localizedCopy('inbox.QUEUE_LABEL', {
-  ...master.inbox.queues,
+  get baseline() { return master.inbox.queues.baseline; },
+  get policy() { return master.inbox.queues.policy; },
+  get product() { return master.inbox.queues.product; },
+  get safety() { return master.inbox.queues.safety; },
+  get kill() { return master.inbox.queues.kill; },
+  get restore() { return master.inbox.queues.restore; },
+  get sync() { return master.inbox.queues.sync; },
   definition: '정의 승인 대기',
   refReview: 'Feature DB 검토 대기',
   signoff: 'Release Sign-off 대기',
@@ -23,7 +29,12 @@ export type QueueKey = keyof typeof QUEUE_LABEL;
 
 /** 대기열을 처리하는 사람(패널 머리) — 차단은 보고서 승인 역할 전부(FSM·CSM·운영 리더·상품 Owner·품질·법규) */
 export const QUEUE_ROLE: Record<QueueKey, string> = /* @__PURE__ */ localizedCopy('inbox.QUEUE_ROLE', {
-  ...master.inbox.roles,
+  get baseline() { return master.inbox.roles.baseline; },
+  get policy() { return master.inbox.roles.policy; },
+  get product() { return master.inbox.roles.product; },
+  get safety() { return master.inbox.roles.safety; },
+  get restore() { return master.inbox.roles.restore; },
+  get sync() { return master.inbox.roles.sync; },
   kill: '차단 승인자 2인 — F2 이상 안전·보안은 Safety Manager(FSM)·사이버보안(CSM), 그 밖은 운영 리더·상품 Owner·품질·법규도',
   definition: 'Feature 승인자(작성자 제외)',
   refReview: '도메인 검토자(요청자 제외)',

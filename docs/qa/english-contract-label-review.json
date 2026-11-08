@@ -1,0 +1,300 @@
+{
+  "scope": "Imported contract display captions outside copy; existing rendering helpers may already translate some. This is a conservative review inventory, not a list of permission changes.",
+  "references": [
+    {
+      "file": "data/people.ts",
+      "line": 4,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "design/safety.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "external/CbTrackers.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "EXT_KIND_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "external/ExternalApp.tsx",
+      "line": 3,
+      "displayLabelImports": [
+        "EXT_KIND_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/shared.tsx",
+      "line": 3,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "shell/NotificationBell.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "NOTIFICATION_CATEGORY_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/admin/Access.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/admin/AccountsPanel.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/admin/Oversight.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "REHARA_LABEL",
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/ChangeImpact.tsx",
+      "line": 6,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/CompatSets.tsx",
+      "line": 6,
+      "displayLabelImports": [
+        "COMPAT_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/OddProfiles.tsx",
+      "line": 6,
+      "displayLabelImports": [
+        "LIMIT_VERDICT_LABEL",
+        "ODD_AXIS_LABEL",
+        "SITE_STATUS_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/P5Panels.tsx",
+      "line": 7,
+      "displayLabelImports": [
+        "INSTALL_STAGE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/P5Panels.tsx",
+      "line": 8,
+      "displayLabelImports": [
+        "CANDIDATE_EXCLUSION_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/state-messages.ts",
+      "line": 3,
+      "displayLabelImports": [
+        "VERDICT_ACTION_LABEL",
+        "VERDICT_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ads/StatePanels.tsx",
+      "line": 6,
+      "displayLabelImports": [
+        "VERDICT_ACTION_LABEL",
+        "VERDICT_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/bom/EolChecks.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "ACCEPTANCE_GROUP_LABEL",
+        "ACCEPTANCE_STATE_LABEL",
+        "EOL_DECISION_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ext/DataLake.tsx",
+      "line": 6,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ext/ExtSyncTab.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "EPIC_SCOPE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ext/IntegrationErrorsTab.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "INTEGRATION_ERROR_SYSTEM_LABEL",
+        "INTEGRATION_ERROR_TYPE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ext/SupplierPackages.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "SUPPLIER_ARTIFACT_LABEL",
+        "SUPPLIER_CRITERION_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/features/EvaluationsTab.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "EVAL_SOURCE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/features/FeatureDetail.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/features/ImplLinks.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "INPUT_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/features/NextTurn.tsx",
+      "line": 3,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/features/SafetyTab.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "ASIL_EXCEPTION_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/home/Notifications.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "NOTIFICATION_CATEGORY_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ops/FleetMap.tsx",
+      "line": 7,
+      "displayLabelImports": [
+        "ACTIVATION_LABEL",
+        "LOCATION_PRECISION_LABEL",
+        "SUBSCRIPTION_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ops/FleetMapCanvas.tsx",
+      "line": 7,
+      "displayLabelImports": [
+        "ACTIVATION_LABEL",
+        "LOCATION_PRECISION_LABEL",
+        "SUBSCRIPTION_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/ple/Registrations.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "INPUT_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/policy/PolicyVersions.tsx",
+      "line": 4,
+      "displayLabelImports": [
+        "POLICY_REVISION_KIND_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/policy/Retirements.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/policy/Runtime.tsx",
+      "line": 7,
+      "displayLabelImports": [
+        "ELIGIBILITY_LABEL",
+        "REASON_AXIS_LABEL",
+        "REASON_RESULT_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/home/dashboard/Dashboard.tsx",
+      "line": 11,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    },
+    {
+      "file": "screens/home/dashboard/DashboardDialogs.tsx",
+      "line": 5,
+      "displayLabelImports": [
+        "ROLE_LABEL"
+      ],
+      "status": "REQUIRES_DISPLAY_REVIEW"
+    }
+  ]
+}

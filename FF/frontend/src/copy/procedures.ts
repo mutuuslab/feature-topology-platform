@@ -5,8 +5,8 @@ import { procedurePanel } from './procedure-panel';
 export const procedures = /* @__PURE__ */ localizedCopy('procedures.procedures', {
   title: '업무 절차',
   lead: '담당자별로 누가 언제 무엇을 하는지 — 표준 보고서 v1.1의 역할·Gate 기준 절차입니다.',
-  loading: procedurePanel.loading,
-  loadFail: procedurePanel.loadFail,
+  get loading() { return procedurePanel.loading; },
+  get loadFail() { return procedurePanel.loadFail; },
   notFound: '요청한 업무 절차를 찾을 수 없습니다. 목록에서 다시 골라주세요.',
   display: procedureDisplay,
   groups: '생애주기 단계',

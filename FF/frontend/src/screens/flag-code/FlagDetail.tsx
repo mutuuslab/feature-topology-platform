@@ -1,7 +1,7 @@
 // /flag-code/flags/:flagKey — Flag 코드 상세(20-97 §7.2). 5원천 칸, 사용처(저장소·파일·줄·호출식·커밋), 이전 스캔 근거,
 // PR·해제 이력, 최근 24시간 평가. 통제: 재스캔·해제 요청·PR 다시 만들기·시연 병합·해제 결정.
 import { Link, useParams } from 'react-router-dom';
-import { FLAG_COVERAGE_LABEL, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
+import { type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
 import { asyncState } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
 import { AsyncView, DataTable, IdChip, PageHeader, Panel } from '../../design';
@@ -44,7 +44,7 @@ export function FlagCodeDetailScreen() {
               message={{
                 tone: r.severity === 'BLOCKER' ? 'danger' : r.severity === 'WARNING' ? 'warn' : r.severity === 'OK' ? 'ok' : 'neutral',
                 text: finding?.message ?? D.noFinding,
-                status: { label: FLAG_COVERAGE_LABEL[r.status], tone: r.severity === 'BLOCKER' ? 'danger' : r.severity === 'WARNING' ? 'warn' : r.severity === 'OK' ? 'ok' : 'neutral' },
+                status: { label: T.coverageStatus[r.status], tone: r.severity === 'BLOCKER' ? 'danger' : r.severity === 'WARNING' ? 'warn' : r.severity === 'OK' ? 'ok' : 'neutral' },
               }}
               meta={
                 <>
@@ -96,7 +96,7 @@ export function FlagCodeDetailScreen() {
                     <li key={`${f.status}-${i}`} data-sev={f.severity}>
                       <SeverityBadge severity={f.severity} />
                       <span>
-                        <strong>{FLAG_COVERAGE_LABEL[f.status]}</strong> · {f.message}
+                        <strong>{T.coverageStatus[f.status]}</strong> · {f.message}
                       </span>
                       <small>
                         {`${C.since} ${when(f.since)}`}
@@ -175,7 +175,7 @@ export function FlagCodeDetailScreen() {
                         <WaiverLine w={w} />
                         <span>
                           {w.reason}
-                          <span className="fc-sub">{`${T.actions.statusAt(FLAG_COVERAGE_LABEL[w.coverageStatus])} · ${C.expires} ${when(w.expiresAt)}`}</span>
+                          <span className="fc-sub">{`${T.actions.statusAt(T.coverageStatus[w.coverageStatus])} · ${C.expires} ${when(w.expiresAt)}`}</span>
                         </span>
                         <small>
                           <WaiverDecision w={w} />

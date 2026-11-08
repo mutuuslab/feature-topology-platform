@@ -1,17 +1,19 @@
 // 대사 상태 표식 — Feature Flag 탭·정책 상세도 쓰므로 통제 부품(common.tsx)과 따로 둔다(화면 묶음을 가볍게).
 import { Link } from 'react-router-dom';
-import { FLAG_COVERAGE_LABEL, FLAG_LANES, type FlagCoverageSeverity, type FlagCoverageStatus } from '@ff/contracts';
+import { FLAG_LANES, type FlagCoverageSeverity, type FlagCoverageStatus } from '@ff/contracts';
 import { flagCode as T } from '../../copy/flag-code';
+import { useUiLocale } from '../../locale/react';
 import { Panel } from '../../design';
 import { when } from '../shared';
 import { detailOf, useCoverageDetail } from './data';
 import './flag-code.css';
 
-/** 대사 상태 — 라벨은 계약 FLAG_COVERAGE_LABEL, 색은 심각도 */
+/** 계약 상태 키와 심각도는 보존하고 표시 문구만 현재 언어로 읽는다. */
 export function StatusBadge({ status, severity }: { status: FlagCoverageStatus; severity: FlagCoverageSeverity }) {
+  useUiLocale();
   return (
     <span className="fc-status" data-sev={severity} data-status={status} title={T.severity[severity]}>
-      {FLAG_COVERAGE_LABEL[status]}
+      {T.coverageStatus[status]}
     </span>
   );
 }

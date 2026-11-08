@@ -15,6 +15,7 @@ function unwrap(node: ts.Expression): ts.Expression {
   return node;
 }
 let localInitializers = new Map<string, ts.Expression>();
+let unresolvedCopyReferences: { path: string; expression: string; kind: string }[] = [];
 function leaves(node: ts.Expression, path: string, out: { path: string; kind: string; text: string; sourceHash: string }[], onlyKorean = true, seen = new Set<string>()) {
   node = unwrap(node);
   if (ts.isIdentifier(node) && localInitializers.has(node.text) && !seen.has(node.text)) {
@@ -29,15 +30,20 @@ function leaves(node: ts.Expression, path: string, out: { path: string; kind: st
     for (const entry of node.properties) {
       if (ts.isPropertyAssignment(entry)) leaves(entry.initializer, `${path}.${prop(entry.name)}`, out, onlyKorean, seen);
       else if (ts.isShorthandPropertyAssignment(entry)) leaves(entry.name, `${path}.${entry.name.text}`, out, onlyKorean, seen);
+      else if (onlyKorean && ts.isSpreadAssignment(entry)) unresolvedCopyReferences.push({ path: `${path}.*`, expression: entry.expression.getText(), kind: 'spread' });
+      else if (onlyKorean && ts.isMethodDeclaration(entry)) unresolvedCopyReferences.push({ path: `${path}.${prop(entry.name)}`, expression: entry.getText(), kind: 'method' });
+      else if (onlyKorean && ts.isGetAccessorDeclaration(entry)) unresolvedCopyReferences.push({ path: `${path}.${prop(entry.name)}`, expression: entry.body?.getText() ?? '', kind: 'late-getter' });
     }
   } else if (ts.isArrayLiteralExpression(node)) {
     node.elements.forEach((entry, index) => { if (ts.isExpression(entry)) leaves(entry, `${path}.${index}`, out, onlyKorean, seen); });
   } else if (ts.isStringLiteralLike(node) || ts.isArrowFunction(node) || ts.isFunctionExpression(node) || ts.isTemplateExpression(node)) {
     const text = ts.isStringLiteralLike(node) ? node.text : node.getText();
     if (!onlyKorean || korean.test(text)) out.push({ path, kind: ts.isArrowFunction(node) || ts.isFunctionExpression(node) ? 'function' : 'text', text, sourceHash: createHash('sha256').update(text).digest('hex') });
+  } else if (onlyKorean && (ts.isIdentifier(node) && !['undefined','NaN','Infinity'].includes(node.text) || ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node) || ts.isCallExpression(node) || ts.isConditionalExpression(node))) {
+    unresolvedCopyReferences.push({ path, expression: node.getText(), kind: ts.SyntaxKind[node.kind] });
   }
 }
-const inventory: { module: string; file: string; leaves: { path: string; kind: string; text: string; sourceHash: string }[]; connectedExports: string[] }[] = [];
+const inventory: { module: string; file: string; leaves: { path: string; kind: string; text: string; sourceHash: string }[]; connectedExports: string[]; unresolvedCopyReferences: typeof unresolvedCopyReferences }[] = [];
 const allowed = new Map<string, Set<string>>();
 const signatures = new Map<string, string>();
 const signature = (node: ts.Expression) => ts.isArrowFunction(node) || ts.isFunctionExpression(node)
@@ -52,7 +58,8 @@ for (const name of files) {
   localInitializers = new Map(source.statements.flatMap((statement) => ts.isVariableStatement(statement)
     ? statement.declarationList.declarations.flatMap((declaration) => ts.isIdentifier(declaration.name) && declaration.initializer ? [[declaration.name.text, declaration.initializer] as const] : []) : []));
   const edits: { start: number; end: number; text: string }[] = [];
-  const entry: typeof inventory[number] = { module, file: `FF/frontend/src/copy/${name}`, leaves: [], connectedExports: [] };
+  unresolvedCopyReferences = [];
+  const entry: typeof inventory[number] = { module, file: `FF/frontend/src/copy/${name}`, leaves: [], connectedExports: [], unresolvedCopyReferences };
   for (const statement of source.statements) {
     if (!ts.isVariableStatement(statement) || !statement.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) continue;
     for (const declaration of statement.declarationList.declarations) {

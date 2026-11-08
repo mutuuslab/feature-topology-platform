@@ -10,10 +10,37 @@ import { useUiLocale } from '../locale/react';
 import { ROUTES, rolesOf, routeOf } from '../routes';
 import { DepartmentSelect } from '../shell/DepartmentSwitcher';
 import { DEPARTMENTS } from '../data/departments';
+import { procedures } from '../copy/procedures';
+import { QUEUE_LABEL, QUEUE_ROLE } from '../copy/inbox';
+import { StatusBadge } from '../screens/flag-code/badge';
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); __resetLocaleForTest(); });
 
 describe('reactive UI language catalogues', () => {
+  it('coverage badges translate display captions while retaining the canonical status and release-block severity', async () => {
+    const {container}=render(<StatusBadge status="NO_CODE" severity="BLOCKER"/>);
+    expect(screen.getByText('코드 없음')).toBeTruthy();
+    const badge=container.querySelector('[data-status]');
+    await act(async()=>{await changeUiLanguage('en');});
+    expect(screen.getByText('No code')).toBeTruthy();
+    expect(badge).toHaveAttribute('data-status','NO_CODE');
+    expect(badge).toHaveAttribute('data-sev','BLOCKER');
+    await act(async()=>{await changeUiLanguage('ko');});
+    expect(screen.getByText('코드 없음')).toBeTruthy();
+  });
+  it('delegated strings and inherited queue captions read their active child catalogue without changing queue keys', async () => {
+    const real=await catalogues.loadEnglishCatalogues();
+    const keys=Object.keys(QUEUE_LABEL), roleKeys=Object.keys(QUEUE_ROLE);
+    const original=QUEUE_LABEL.baseline;
+    vi.spyOn(catalogues,'loadEnglishCatalogues').mockResolvedValueOnce({...real,master:{...real.master,'master.inbox.queues.baseline':'Inherited Baseline request','master.inbox.roles.baseline':'Inherited BOM approver'}});
+    await changeUiLanguage('en');
+    expect(procedures.loading).toBe('Loading workflows.');
+    expect(procedures.loadFail).not.toMatch(/[가-힣]/);
+    expect(QUEUE_LABEL.baseline).toBe('Inherited Baseline request');
+    expect(QUEUE_ROLE.baseline).toBe('Inherited BOM approver');
+    expect(Object.keys(QUEUE_LABEL)).toEqual(keys); expect(Object.keys(QUEUE_ROLE)).toEqual(roleKeys);
+    await changeUiLanguage('ko'); expect(QUEUE_LABEL.baseline).toBe(original);
+  });
   it('switches body copy and interpolated UI text without remounting or translating a draft', async () => {
     localStorage.clear();
     function Draft() {

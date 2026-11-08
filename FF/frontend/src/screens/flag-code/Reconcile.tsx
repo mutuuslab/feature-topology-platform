@@ -2,7 +2,7 @@
 // 동적 키는 Flag를 정할 수 없어 파일 단위 카드로 둔다. 결정 대기 해제는 아래에서 직무 분리 안내와 함께 결정한다.
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FLAG_COVERAGE_LABEL, FLAG_PACKAGES, type FlagCoverageRow, type FlagCoverageSeverity, type FlagCoverageStatus, type FlagFileFinding, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
+import { FLAG_PACKAGES, type FlagCoverageRow, type FlagCoverageSeverity, type FlagCoverageStatus, type FlagFileFinding, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
 import { asyncState } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
 import { AsyncView, PageHeader, Panel, Segmented, Select } from '../../design';
@@ -166,7 +166,7 @@ export function FlagCodeReconcileScreen() {
           {columns.map((c) => (
             <section key={c.status} className="fc-col" data-sev={c.count ? c.top : undefined} data-column={c.status as FlagCoverageStatus} aria-labelledby={`col-${c.status}`}>
               <header>
-                <h3 id={`col-${c.status}`}>{FLAG_COVERAGE_LABEL[c.status]}</h3>
+                <h3 id={`col-${c.status}`}>{T.coverageStatus[c.status]}</h3>
                 <b>{c.count}</b>
               </header>
               {c.count > 0 && (
@@ -192,7 +192,7 @@ export function FlagCodeReconcileScreen() {
                 <WaiverLine w={w} />
                 <span>
                   <Link className="ds-mono" to={`/flag-code/flags/${encodeURIComponent(w.flagKey)}`}>{w.flagKey}</Link> · {w.reason}
-                  <span className="fc-sub">{`${T.actions.statusAt(FLAG_COVERAGE_LABEL[w.coverageStatus])} · ${T.col.expires} ${when(w.expiresAt)}`}</span>
+                  <span className="fc-sub">{`${T.actions.statusAt(T.coverageStatus[w.coverageStatus])} · ${T.col.expires} ${when(w.expiresAt)}`}</span>
                 </span>
                 <small>
                   <WaiverDecision w={w} />

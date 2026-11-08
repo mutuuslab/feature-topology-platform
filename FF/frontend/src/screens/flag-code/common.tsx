@@ -2,7 +2,7 @@
 // 권한은 화면이 역할로 판단해 이유를 보이고, 서버가 다시 거부한다(직무 분리 포함).
 import { useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FLAG_COVERAGE_LABEL, FLAG_LANES, FLAG_WAIVER_MAX_DAYS, type FlagCoverageRow, type FlagCoverageSeverity, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
+import { FLAG_LANES, FLAG_WAIVER_MAX_DAYS, type FlagCoverageRow, type FlagCoverageSeverity, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { useApiMutation } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
@@ -302,7 +302,7 @@ export function WaiverRequestButton({ row }: { row: FlagCoverageRow }) {
       <Drawer open={open} title={A.waiverTitle} onClose={() => setOpen(false)} dirty={!!reason}>
         <div className="fc-form">
           <p className="fc-note">{A.waiverBody}</p>
-          <p className="fc-note">{A.statusAt(FLAG_COVERAGE_LABEL[row.status])}</p>
+          <p className="fc-note">{A.statusAt(T.coverageStatus[row.status])}</p>
           <Field label={A.waiverReason}>
             <textarea className="ds-input" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>

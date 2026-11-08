@@ -1,8 +1,14 @@
 // Flag PR 뼈대(20-97 §1.3) — FF가 Feature 승인 때 차량 SW 저장소에 여는 PR의 파일 내용. 백엔드 PR 생성과 시연 생성기가 같은 결과를 쓴다.
 // 상수 파일은 키 문자열의 유일한 위치이고, 호출 뼈대는 기본값 false(OFF)로 상수를 넘긴다. 스캐너 v2가 상수를 키로 푼다.
 import type { ControlPointType } from '../enums';
-import type { FlagPlanEntry } from '../schemas/flag-code';
+import type { FlagPlanEntry, FlagPullRequest } from '../schemas/flag-code';
 import { flagConstantName, flagFeatureDir } from './flag-coverage';
+
+/** Same guard for native retry and its UI. A recent in-flight request is not another write. */
+export const FLAG_PR_RESUME_AFTER_MS = 10 * 60_000;
+export function flagPrResumable(pr: Pick<FlagPullRequest, 'state' | 'createdAt'>, now: number): boolean {
+  return pr.state === 'FAILED' || (pr.state === 'PLANNED' && Number.isFinite(Date.parse(pr.createdAt)) && now - Date.parse(pr.createdAt) > FLAG_PR_RESUME_AFTER_MS);
+}
 
 /** care_00022_signal → care00022SignalEnabled */
 export function flagGuardName(flagKey: string): string {

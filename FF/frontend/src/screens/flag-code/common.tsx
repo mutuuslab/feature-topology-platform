@@ -1,8 +1,9 @@
 // Flag 코드 연결 화면 공용 부품 — 하위 이동, 상태 표식, 5원천 칸, 소스·커밋 링크, 통제 동작(PR·재스캔·제거 PR·시연 병합·해제 요청/결정).
 // 권한은 화면이 역할로 판단해 이유를 보이고, 서버가 다시 거부한다(직무 분리 포함).
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FLAG_LANES, FLAG_WAIVER_MAX_DAYS, type FlagCoverageRow, type FlagCoverageSeverity, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
+import { useQueryClient } from '@tanstack/react-query';
+import { FLAG_LANES, FLAG_PR_RESUME_AFTER_MS, FLAG_WAIVER_MAX_DAYS, flagPrResumable, type FlagCoverageRow, type FlagCoverageSeverity, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { useApiMutation } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
@@ -10,7 +11,7 @@ import { Button, Drawer, ErrorNote, Field, Select } from '../../design';
 import { personLabel } from '../../data/people';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
-import { commitUrl, FLAG_CODE_INVALIDATE, shortPath } from './data';
+import { commitUrl, FLAG_CODE_INVALIDATE, listOf, shortPath, usePullRequests } from './data';
 import './flag-code.css';
 
 const A = T.actions;
@@ -181,6 +182,7 @@ export function CreatePrButton({ row, repos }: { row: FlagCoverageRow; repos: Fl
   const [picked, setTarget] = useState('');
   const target = picked || candidates[0]?.repoId || '';
   const [done, setDone] = useState<string | null>(null);
+  if (row.pullRequest && ['FAILED', 'PLANNED'].includes(row.pullRequest.state)) return <ResumePrButton prId={row.pullRequest.prId} repos={repos} />;
   if (!row.featureId || !row.version) return null;
   const why = !candidates.length ? A.noRepoForPkg : undefined;
   return (
@@ -212,6 +214,60 @@ export function CreatePrButton({ row, repos }: { row: FlagCoverageRow; repos: Fl
       </Drawer>
     </>
   );
+}
+
+/** Resume the recorded request, never a new one-key request inferred from a coverage row. */
+export function ResumePrButton({ prId, repos }: { prId: string; repos: FlagRepository[] }) {
+  const perm = usePermission(['IMPLEMENTER']);
+  const qc = useQueryClient();
+  const q = usePullRequests();
+  const pr = listOf<FlagPullRequest>(q.data).find((p) => p.prId === prId);
+  const removal = pr?.kind === 'REMOVAL';
+  const m = useApiMutation<FlagPullRequest>(removal ? 'createFlagRemovalPr' : 'createFlagPr', [...FLAG_CODE_INVALIDATE, 'flagRetirements']);
+  const [now, setNow] = useState(Date.now);
+  const [done, setDone] = useState<string | null>(null);
+  const [recovering, setRecovering] = useState(false);
+  const [recovered, setRecovered] = useState(false);
+  useEffect(() => {
+    if (pr?.state !== 'PLANNED') return;
+    const remaining = Date.parse(pr.createdAt) + FLAG_PR_RESUME_AFTER_MS - Date.now() + 1;
+    if (!Number.isFinite(remaining) || remaining <= 0) return;
+    const timer = setTimeout(() => setNow(Date.now()), remaining);
+    return () => clearTimeout(timer);
+  }, [pr?.createdAt, pr?.state]);
+  const repo = repos.find((r) => r.repoId === pr?.repoId);
+  const why = q.isPending ? A.resumeLoading : !pr || !repo || repo.status !== 'ACTIVE' || repo.mode === 'ACTIONS_OIDC' || (removal && (!pr.retirementId || pr.flagKeys.length !== 1)) ? A.resumeNoRepo : !flagPrResumable(pr, now) ? A.resumeWaiting : undefined;
+  const readBack = async (error: { status: number }) => {
+    if (error.status === 401 || error.status === 403 || !pr) return;
+    setRecovering(true);
+    try {
+      const result = await q.refetch();
+      const current = listOf<FlagPullRequest>(result.data).find((p) => p.prId === prId);
+      const same = current?.repoId === pr.repoId && current.featureId === pr.featureId && current.version === pr.version && current.kind === pr.kind && current.branch === pr.branch && JSON.stringify(current.flagKeys) === JSON.stringify(pr.flagKeys);
+      if (result.isSuccess && same && current?.state === 'OPEN' && current.number && current.url) {
+        setRecovered(true); setDone(A.resumeRecovered);
+        await Promise.all(FLAG_CODE_INVALIDATE.filter((name) => name !== 'flagPullRequests').map((name) => qc.invalidateQueries({ queryKey: [name] })));
+      }
+      else setDone(A.resumeUnconfirmed);
+    } finally { setRecovering(false); }
+  };
+  if (pr && !['FAILED', 'PLANNED'].includes(pr.state)) return <span className="fc-actions"><PrRef pr={pr} repository={repo?.repository} /><Done text={done} /></span>;
+  return <span className="fc-form" data-pr-resume={prId}>
+    <span className="fc-note">{A.resumeNote}</span>
+    {pr?.failure && <span className="fc-note" role="status">{pr.failure}</span>}
+    <Button disabled={!perm.ok || !!why || m.isPending || recovering} reason={perm.ok ? why : perm.hint} onClick={() => {
+      if (!pr) return;
+      setDone(null); setRecovered(false); m.reset();
+      m.mutate({ body: removal ? { flagKey: pr.flagKeys[0], repoId: pr.repoId, retirementId: pr.retirementId } : { featureId: pr.featureId, version: pr.version, repoId: pr.repoId, flagKeys: pr.flagKeys } }, {
+        onSuccess: (result) => setDone(result?.state === 'OPEN' ? A.resumeDone : result?.state === 'FAILED' ? A.createPrFailed(result.failure ?? '') : A.resumeUnconfirmed),
+        onError: (error) => { void readBack(error); },
+      });
+    }}>{A.resumePr}</Button>
+    {!recovered && <ErrorNote error={m.error} />}
+    <ErrorNote error={q.error} />
+    {(q.isError || (!q.isPending && !pr)) && <Button onClick={() => void q.refetch()}>{A.resumeReload}</Button>}
+    <Done text={done} />
+  </span>;
 }
 
 /** 제거 PR — Retirement가 승인된 Flag만, 구현 담당 */

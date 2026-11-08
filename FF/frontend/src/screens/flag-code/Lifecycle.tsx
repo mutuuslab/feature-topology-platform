@@ -6,7 +6,7 @@ import { asyncState, useApi } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
 import { AsyncView, DataTable, PageHeader, Panel } from '../../design';
 import { when } from '../shared';
-import { DemoMergeButton, FlagCodeNav, PrRef, RemovalPrButton, SeverityBadge, UsageLink } from './common';
+import { DemoMergeButton, FlagCodeNav, PrRef, RemovalPrButton, ResumePrButton, SeverityBadge, UsageLink } from './common';
 import { coverageOf, daysSince, listOf, primaryFinding, useCoverage, usePullRequests, useRepositories } from './data';
 
 const L = T.lifecycle;
@@ -103,8 +103,8 @@ export function FlagCodeLifecycleScreen() {
                   header: '',
                   srHeader: C.action,
                   cell: (r) => {
-                    const pr = removalPrs.find((p) => p.flagKeys.includes(r.flagKey) && (p.state === 'OPEN' || p.state === 'PLANNED'));
-                    return pr ? <DemoMergeButton pr={pr} repo={repos.find((x) => x.repoId === pr.repoId)} /> : <RemovalPrButton row={r} repos={repos} retirementId={retirementOf(r.flagKey)} />;
+                    const pr = removalPrs.find((p) => p.flagKeys.includes(r.flagKey));
+                    return pr?.state === 'OPEN' ? <DemoMergeButton pr={pr} repo={repos.find((x) => x.repoId === pr.repoId)} /> : pr && ['FAILED', 'PLANNED'].includes(pr.state) ? <ResumePrButton prId={pr.prId} repos={repos} /> : <RemovalPrButton row={r} repos={repos} retirementId={retirementOf(r.flagKey)} />;
                   },
                 },
               ]}

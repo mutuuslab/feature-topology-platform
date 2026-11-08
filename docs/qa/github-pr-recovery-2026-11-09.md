@@ -32,6 +32,14 @@ node ../node_modules/typescript/bin/tsc -p tsconfig.build.json
 
 의도 표식이 없는 예전 임의/legacy 브랜치는 자동 인수하지 않는다. 사람이 원문 커밋·파일·기존 PR을 확인하는 별도 정합 작업이 필요하며, 이 변경이 기존 브랜치를 강제로 덮어쓰지는 않는다. 원격 브랜치가 조회 이후 다른 작성자에 의해 변할 수 있어 마지막 ref 확인과 PR 응답 SHA 확인으로 탐지한다. 원격 브랜치 잠금이나 merge는 수행하지 않는다.
 
-현재 자동 PR은 `feature.lifecycle.changed`의 onPublish → db.afterCommit → autoPr 직접 호출이다. 기존 PR 행이 있으면 autoPr가 반환한다. 이 작업은 새 outbox scheduler나 자동 백그라운드 재시도를 추가하지 않았다. 기존 API의 FAILED/10분 초과 PLANNED 재개를 안전하게 마친다. UI의 수동 재개 버튼·설명·접근성은 이 checkpoint 뒤 추가 확인한다.
+현재 자동 PR은 `feature.lifecycle.changed`의 onPublish → db.afterCommit → autoPr 직접 호출이다. 기존 PR 행이 있으면 autoPr가 반환한다. 이 작업은 새 outbox scheduler나 자동 백그라운드 재시도를 추가하지 않았다. 기존 API의 FAILED/10분 초과 PLANNED 재개를 안전하게 마친다.
+
+## 수동 재개 UI 후속
+
+오래된 PLANNED가 PR_OPEN으로 분류되면 화면은 비활성 시연 병합만 제공했다. 또한 기존 생성 버튼은 현재 행의 Flag 하나를 보냈으므로 원래 자동 PR의 전체 Flag·본문과 달라질 수 있었다. 현황·대사·상세와 제거 PR 수명관리에서 원본 prId를 조회해 같은 저장소·Feature/version·전체 Flag·Retirement를 재사용하는 수동 재개를 연결했다. backend와 UI는 같은 순수 10분 초과 규칙을 사용하고 최근 PLANNED·조회 미완료·비활성 저장소·권한 부족은 설명과 함께 차단한다. 시간 경과 시 버튼을 다시 평가한다.
+
+API 응답 유실/일시 오류는 성공을 추측하지 않는다. 다시 GET한 목록에서 동일prId·저장소·Feature/version·kind·branch·Flag 집합의 OPEN/번호/URL을 확인해야 회복 성공을 표시하고 coverage를 갱신한다. 401/403은 이 경로로 성공 처리하지 않는다. 201 FAILED는 실패이며 재개할 수 있고, 읽기 실패에는 상태 재조회 버튼을 제공한다. KO/EN 문구를 함께 추가했다.
+
+후속 실제 실행: 프런트2파일31시험 PASS(신규10·기존18+메뉴별 POST연결3), backend2파일30시험 PASS(복구21+기존hardening9). contracts 빌드·frontend noEmit·backend build PASS. 첫 UI 시험의7실패는 로딩 때 교체된 예전 disabled DOM node를 잡은 시험 오류였으며 재렌더된 버튼을 다시 조회하도록 수정했다. 실제 브라우저 확인은 이 UI checkpoint 뒤 별도 기록한다.
 
 계약 대조: [GitHub 정확한 ref 조회](https://docs.github.com/en/rest/git/refs#get-a-reference), [open PR head/base 필터](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests), [커밋 비교](https://docs.github.com/en/rest/commits/commits#compare-two-commits). 이 검증은 기존 데모의 실제 HTTP 실행이며 회사 운영 GitHub 검증·전체 플랫폼 하네스·Publish 완료 판정이 아니다.

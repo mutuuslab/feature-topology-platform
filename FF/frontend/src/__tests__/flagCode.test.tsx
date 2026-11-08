@@ -307,6 +307,18 @@ describe('현황 — 필터·상태 라벨·출시 차단', () => {
     expect(await screen.findByText(T.actions.createPrFailed('FF_GITHUB_APP_ID가 없습니다.'))).toBeVisible();
     expect(screen.queryByText(T.actions.createPrDone)).not.toBeInTheDocument();
   });
+  it.each(['coverage', 'reconcile', 'detail'] as const)('%s 화면의 오래된 PLANNED는 기존 전체 요청을 POST로 재개한다', async (view) => {
+    const planned = { ...prs[0], state: 'PLANNED' as const, number: null, url: null, flagKeys: ['body_00040_param', 'body_00040_signal'] };
+    const row = { ...rows[2], pullRequest: { prId: planned.prId, kind: planned.kind, state: planned.state, number: null, url: null } };
+    override['/api/flag-code/coverage'] = { status: 200, body: { ...coverage, rows: rows.map((r) => r.flagKey === row.flagKey ? row : r) } };
+    override['/api/flag-code/pull-requests'] = { status: 200, body: { items: [planned] } };
+    override[`/api/flag-code/coverage/${row.flagKey}`] = { status: 200, body: { row, history: [], pullRequests: [planned], waivers: [] } };
+    mount(view === 'coverage' ? <FlagCodeCoverageScreen /> : view === 'reconcile' ? <FlagCodeReconcileScreen /> : <FlagCodeDetailScreen />, { role: 'integrator', at: `/flag-code/flags/${row.flagKey}`, path: view === 'detail' ? '/flag-code/flags/:flagKey' : '*' });
+    await waitFor(() => expect(screen.getByRole('button', { name: T.actions.resumePr })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: T.actions.resumePr }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).toMatchObject({ url: '/api/flag-code/pull-requests', role: 'IMPLEMENTER', body: { featureId: planned.featureId, version: planned.version, repoId: planned.repoId, flagKeys: planned.flagKeys } });
+  });
 });
 
 describe('조회 상태 — 403·오류·지연', () => {

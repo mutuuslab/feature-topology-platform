@@ -41,7 +41,7 @@ function NextAction({ row, repos, prs }: { row: FlagCoverageRow; repos: FlagRepo
     case 'STALE':
       return <Link to="/flag-retirements">{N.requestRetirement} →</Link>;
     case 'PR_OPEN':
-      return pr ? <DemoMergeButton pr={pr} repo={repos.find((x) => x.repoId === pr.repoId)} /> : null;
+      return row.pullRequest?.state === 'PLANNED' ? <CreatePrButton row={row} repos={repos} /> : pr ? <DemoMergeButton pr={pr} repo={repos.find((x) => x.repoId === pr.repoId)} /> : null;
     default:
       return null;
   }

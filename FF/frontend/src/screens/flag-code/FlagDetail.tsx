@@ -60,7 +60,7 @@ export function FlagCodeDetailScreen() {
                 <div className="fc-actions">
                   <RescanButton repos={reposForRow(r, repos)} />
                   {r.releaseBlocking && <WaiverRequestButton row={r} />}
-                  {(r.status === 'NO_CODE' || (r.pullRequest && ['FAILED', 'CLOSED'].includes(r.pullRequest.state))) && <CreatePrButton row={r} repos={repos} />}
+                   {(r.status === 'NO_CODE' || (r.pullRequest && ['FAILED', 'PLANNED', 'CLOSED'].includes(r.pullRequest.state))) && <CreatePrButton row={r} repos={repos} />}
                   {openPr && <DemoMergeButton pr={openPr} repo={repoOf(openPr.repoId)} />}
                 </div>
               }

@@ -8,6 +8,7 @@ import {
   flagFeatureDir,
   flagPackageOf,
   flagPrText,
+  flagPrResumable,
   flagRemovalBranch,
   flagScaffoldBranch,
   flagScaffoldFiles,
@@ -64,7 +65,6 @@ const DAY = 86_400_000;
 /** CI 업로드 scannedAt 시계 오차, 멈춘 배달·PLANNED PR을 다시 처리하기까지 */
 const UPLOAD_CLOCK_SKEW_MS = 5 * 60_000;
 const DELIVERY_STUCK_MS = 5 * 60_000;
-const PR_PLANNED_STUCK_MS = 10 * 60_000;
 const prBaseUrl = () => (process.env.FF_FLAG_PR_BASE_URL?.trim() || 'http://localhost:9012').replace(/\/$/, '');
 const ffJson = (v: unknown) => JSON.stringify(v);
 /** symbol·키에 줄바꿈·제어 문자가 섞이면 계약(clean)에 맞게 공백을 접는다 */
@@ -503,7 +503,7 @@ export class FlagCodeService implements OnModuleInit {
     const prior = this.store.prByBranch(repo.repoId, p.branch);
     const at = this.clock.iso();
     // PLANNED는 GitHub 호출 중 — 그 사이 서버가 멈추면 PLANNED로 남으므로 일정 시간 뒤에는 다시 만들 수 있다
-    const stuck = prior?.state === 'PLANNED' && Date.parse(at) - Date.parse(prior.createdAt) > PR_PLANNED_STUCK_MS;
+    const stuck = prior?.state === 'PLANNED' && flagPrResumable(prior, Date.parse(at));
     if (prior && !['FAILED', 'CLOSED'].includes(prior.state) && !stuck) throw new DomainError('CONFLICT', `같은 브랜치(${p.branch})의 Flag PR이 이미 ${prior.state} 상태입니다.`);
     const base: FlagPullRequest = {
       prId: prior?.prId ?? this.store.nextPrId(),

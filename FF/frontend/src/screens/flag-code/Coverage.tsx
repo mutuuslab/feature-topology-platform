@@ -193,7 +193,7 @@ export function FlagCodeCoverageScreen() {
                     key: 'act',
                     header: '',
                     srHeader: C.action,
-                    cell: (r) => (r.status === 'NO_CODE' && r.pullRequest?.state !== 'OPEN' ? <CreatePrButton row={r} repos={repos} /> : null),
+                    cell: (r) => ((r.status === 'NO_CODE' && r.pullRequest?.state !== 'OPEN') || (r.pullRequest && ['FAILED', 'PLANNED'].includes(r.pullRequest.state)) ? <CreatePrButton row={r} repos={repos} /> : null),
                   },
                 ]}
               />

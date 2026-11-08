@@ -250,9 +250,18 @@ function ShellFrame({ children }: { children: ReactNode }) {
             data-group-zone={g.zone}
             aria-current={g.key === current?.group ? 'true' : undefined}
             aria-pressed={g.key === group}
+            aria-expanded={narrow && !present ? g.key === group && panelOpen : undefined}
+            aria-controls={narrow && !present ? 'sh-group-panel' : undefined}
             title={g.ko}
             aria-label={g.ko}
             onClick={() => {
+              // 모바일은 그룹을 먼저 펼치고 사용자가 실제 하위 메뉴를 고른다.
+              // 바로 화면도 옮기면 route-change 효과가 새로 연 드로어를 즉시 닫는다.
+              if (narrow && !present) {
+                setGroup(g.key);
+                setPanelOpen(true);
+                return;
+              }
               // 시연 모드는 그룹 패널을 숨긴다. 아이콘 자체가 해당 그룹의 화면을 열어야 한다.
               const available = MENU.find((m) => m.key === g.key)?.items.filter((r) => !myRole || rolesOf(r) === 'all' || rolesOf(r).includes(role)) ?? [];
               const preferred = g.key === 'config' ? '/arch/topology' : g.key === 'admin' ? '/integration/connectors' : g.key === 'release' ? '/policies' : undefined;
@@ -271,7 +280,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
-      <aside className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
+      <aside id="sh-group-panel" className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
         {/* 좁은 화면 드로어에서만 보인다 — 레일 토글까지 내려가지 않아도 닫을 수 있게 */}
         <button type="button" className="sh-panel__close" aria-label={ko.action.close} title={ko.action.close} onClick={() => setPanelOpen(false)}>
           <Icon name="close" size={18} />

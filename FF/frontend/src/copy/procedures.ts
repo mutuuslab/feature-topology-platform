@@ -1,11 +1,12 @@
 // 업무 절차 화면 문구 — ko.ts와 분리(docs/65-workflows 모델이 원천, 활동·단계 문장은 모델 그대로 보인다).
+import { procedureDisplay } from './procedure-display';
 export const procedures = {
   title: '업무 절차',
   lead: '담당자별로 누가 언제 무엇을 하는지 — 표준 보고서 v1.1의 역할·Gate 기준 절차입니다.',
   loading: '업무 절차를 불러오는 중입니다.',
   loadFail: '업무 절차를 불러오지 못했습니다. 새로고침 후 다시 시도하세요.',
   notFound: '요청한 업무 절차를 찾을 수 없습니다. 목록에서 다시 골라주세요.',
-  display: { process: '업무 절차', activity: '활동', reference: '관련 업무' },
+  display: procedureDisplay,
   groups: '생애주기 단계',
   mine: {
     key: '내가 맡은 활동',

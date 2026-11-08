@@ -1,6 +1,6 @@
-// MENU 2.0 — 업무 기준 8그룹. 라우트·메뉴·breadcrumb·⌘K·IA 하네스가 모두 이 배열 하나를 읽는다.
+// 업무 기준 메뉴 — 라우트·메뉴·breadcrumb·⌘K·IA 하네스가 모두 이 배열 하나를 읽는다.
 // 규칙(__tests__/ia.test.ts가 강제): 모든 라우트는 메뉴 항목이거나 부모(parent)를 가진다 · 경로 중복 없음 ·
-// 메뉴 링크는 실제 라우트로 열린다 · 그룹은 8개. UI01~UI30(MENU 1.3) 코드는 추적 메타로 자동 연결된다.
+// 메뉴 링크는 실제 라우트로 열린다 · 구매·비용과 설정은 독립 그룹. UI01~UI30 추적 메타는 보존한다.
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { DEMO_EXTRAS } from './auth-mode';
 import { legacyTo } from './screens/legacyRedirect';
@@ -8,7 +8,7 @@ import { SPEC_MENU_ITEM } from './data/specMenu';
 import { screenOfRoute } from './data/uiLinks';
 import type { IconName } from './design';
 
-export type GroupKey = 'home' | 'feature' | 'config' | 'master' | 'verify' | 'release' | 'ops' | 'admin';
+export type GroupKey = 'home' | 'feature' | 'config' | 'master' | 'procurement' | 'verify' | 'release' | 'ops' | 'admin' | 'settings';
 
 export interface MenuGroup {
   key: GroupKey;
@@ -26,10 +26,12 @@ export const GROUPS: MenuGroup[] = [
   { key: 'feature', ko: 'Feature 정의', short: '정의', en: 'Feature Definition', icon: 'feature' },
   { key: 'config', ko: '구성·Topology', short: '구성', en: 'Configuration & Topology', icon: 'topology' },
   { key: 'master', ko: '기준정보', short: '기준', en: 'Master Data', icon: 'master' },
+  { key: 'procurement', ko: '구매·SW 개발비', short: '개발비', en: 'Procurement & SW Cost', icon: 'calculator' },
   { key: 'verify', ko: '검증·Gate', short: '검증', en: 'Verification & Gates', icon: 'gate' },
   { key: 'release', ko: '상품·출시', short: '출시', en: 'Products & Release', icon: 'release' },
   { key: 'ops', ko: '차량 운영·안전', short: '운영', en: 'Vehicle Ops & Safety', icon: 'ops', zone: 'ops' },
-  { key: 'admin', ko: '연계·감사·관리', short: '연계', en: 'Integration, Audit & Admin', icon: 'link' },
+  { key: 'admin', ko: '연계·감사', short: '연계', en: 'Integration & Audit', icon: 'link' },
+  { key: 'settings', ko: '설정', short: '설정', en: 'Settings', icon: 'settings' },
 ];
 
 type Page = LazyExoticComponent<ComponentType<any>> | ComponentType<any>;
@@ -88,7 +90,7 @@ const healthScreens = () => import('./screens/ops/FeatureHealth');
 const accessScreens = () => import('./screens/admin/Access');
 const learnScreens = () => import('./screens/learn/Learn');
 const procedureScreens = () => import('./screens/procedures/Procedures');
-// Feature DB·SW 개발비 산정 — 메뉴만 연 준비 중 화면(설계 30-95·20-94)
+// Feature DB·SW 개발비 산정 — 기존 목록·상세 구현을 지연 로딩한다.
 const costList = () => import('./screens/cost/CostList');
 const costDetail = () => import('./screens/cost/CostDetail');
 const costBasis = () => import('./screens/cost/CostBasis');
@@ -199,9 +201,9 @@ const ALL_ROUTES: AppRoute[] = [
 
   // 6 상품·출시
   { path: '/products', element: named(products, 'ProductList'), title: 'Feature Catalog 상품', group: 'release', menu: '/products', components: ['D01-03'], v2: true },
-  { path: '/procurement/sw-cost', element: named(costList, 'SwCostScreen'), title: 'SW 개발비 산정', group: 'release', menu: '/procurement/sw-cost', components: ['D07-01'], v2: true },
-  { path: '/procurement/sw-cost/basis', element: named(costBasis, 'CostBasisScreen'), title: '계수·단가 표', group: 'release', parent: '/procurement/sw-cost', components: ['D07-01'], v2: true },
-  { path: '/procurement/sw-cost/:estId', element: named(costDetail, 'CostDetailScreen'), title: 'SW 개발비 산정 과제', group: 'release', parent: '/procurement/sw-cost', components: ['D07-01'], v2: true },
+  { path: '/procurement/sw-cost', element: named(costList, 'SwCostScreen'), title: 'SW 개발비 산정', group: 'procurement', menu: '/procurement/sw-cost', components: ['D07-01'], v2: true },
+  { path: '/procurement/sw-cost/basis', element: named(costBasis, 'CostBasisScreen'), title: '계수·단가 표', group: 'procurement', menu: '/procurement/sw-cost/basis', parent: '/procurement/sw-cost', components: ['D07-01'], v2: true },
+  { path: '/procurement/sw-cost/:estId', element: named(costDetail, 'CostDetailScreen'), title: 'SW 개발비 산정 과제', group: 'procurement', parent: '/procurement/sw-cost', components: ['D07-01'], v2: true },
   { path: '/products/bill-of-features', element: named(pleScreens, 'BillOfFeaturesScreen'), title: 'Bill-of-Features', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/configurator', element: named(pleScreens, 'ConfiguratorScreen'), title: '제품 구성기', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
   { path: '/products/new', element: named(products, 'ProductCompose'), title: '새 상품 구성', group: 'release', parent: '/products', components: ['D01-03'], v2: true },
@@ -258,39 +260,39 @@ const ALL_ROUTES: AppRoute[] = [
 
   { path: '/events', element: named(auditEvents, 'EventsScreen'), title: 'Platform 이벤트', group: 'ops', menu: '/events', components: ['D04-04'], v2: true },
 
-  // 8 연계·감사·관리
+  // 연계·감사 및 구성·구매·운영·설정의 기존 경로(그룹은 위 GROUPS 기준)
   { path: '/integration/connectors', element: named(extScreens, 'IntegrationsScreen'), title: '외부 연계 현황', group: 'admin', menu: '/integration/connectors', components: ['D05-01'], v2: true },
   { path: '/integration/connector/:id', element: legacyTo('/integration/connectors'), title: '연계 상세 (이전 주소)', group: 'admin', parent: '/integration/connectors' },
-  { path: '/integration/code-repositories', element: named(flagCodeScreens, 'CodeRepositoriesScreen'), title: '코드 저장소 연결', group: 'admin', menu: '/integration/code-repositories', components: ['D04-01'], v2: true },
-  { path: '/integration/code-repositories/:repoId', element: named(flagCodeScreens, 'CodeRepositoryDetailScreen'), title: '저장소 상세', group: 'admin', parent: '/integration/code-repositories', components: ['D04-01'], v2: true },
-  { path: '/integration/code-scans', element: named(flagCodeScreens, 'CodeScansScreen'), title: '스캔 기록', group: 'admin', parent: '/integration/code-repositories', components: ['D04-01'], v2: true },
+  { path: '/integration/code-repositories', element: named(flagCodeScreens, 'CodeRepositoriesScreen'), title: '코드 저장소 연결', group: 'config', menu: '/integration/code-repositories', components: ['D04-01'], v2: true },
+  { path: '/integration/code-repositories/:repoId', element: named(flagCodeScreens, 'CodeRepositoryDetailScreen'), title: '저장소 상세', group: 'config', parent: '/integration/code-repositories', components: ['D04-01'], v2: true },
+  { path: '/integration/code-scans', element: named(flagCodeScreens, 'CodeScansScreen'), title: '스캔 기록', group: 'config', parent: '/integration/code-repositories', components: ['D04-01'], v2: true },
   { path: '/integration/datalake', element: named(() => import('./screens/ext/DataLake'), 'DataLakeScreen'), title: 'Data Lake 연계', group: 'admin', menu: '/integration/datalake', components: ['D05-01'], v2: true },
-  { path: '/integration/openfeature', element: named(() => import('./screens/ext/OpenFeatureScope'), 'OpenFeatureScopeScreen'), title: 'OpenFeature 범위', group: 'admin', menu: '/integration/openfeature', components: ['D05-01', 'D02-03'], v2: true },
+  { path: '/integration/openfeature', element: named(() => import('./screens/ext/OpenFeatureScope'), 'OpenFeatureScopeScreen'), title: 'OpenFeature 범위', group: 'config', menu: '/integration/openfeature', components: ['D05-01', 'D02-03'], v2: true },
   { path: '/integration/sync', element: named(extScreens, 'DataSyncScreen'), title: '데이터 동기화', group: 'admin', menu: '/integration/sync', components: ['D05-02'], v2: true },
   { path: '/integration/legacy', element: named(extScreens, 'LegacyScreen'), title: 'Legacy 연계', group: 'admin', menu: '/integration/legacy', components: ['D05-03', 'D05-07'], v2: true },
   { path: '/field', element: named(incidentScreens, 'FieldPortalScreen'), title: '현장 지원 포털', group: 'admin', menu: '/field', components: ['D05-05'], v2: true },
   { path: '/integration/jobs', element: legacyTo('/integration/sync'), title: '연계 작업 (이전 주소)', group: 'admin', parent: '/integration/sync' },
-  { path: '/supplier/portal', element: named(opsScreens, 'SupplierScreen'), title: '협력사 이관', group: 'admin', menu: '/supplier/portal', v2: true },
-  { path: '/supplier/package', element: legacyTo('/supplier/portal'), title: 'API 릴리스 패키지 (이전 주소)', group: 'admin', parent: '/supplier/portal' },
-  { path: '/supplier/package/:id', element: legacyTo('/supplier/portal'), title: '패키지 상세 (이전 주소)', group: 'admin', parent: '/supplier/portal' },
-  { path: '/decisions/supplier', element: legacyTo('/supplier/portal'), title: '협력사 범위 (이전 주소)', group: 'admin', parent: '/supplier/portal' },
+  { path: '/supplier/portal', element: named(opsScreens, 'SupplierScreen'), title: '협력사 이관', group: 'procurement', menu: '/supplier/portal', v2: true },
+  { path: '/supplier/package', element: legacyTo('/supplier/portal'), title: 'API 릴리스 패키지 (이전 주소)', group: 'procurement', parent: '/supplier/portal' },
+  { path: '/supplier/package/:id', element: legacyTo('/supplier/portal'), title: '패키지 상세 (이전 주소)', group: 'procurement', parent: '/supplier/portal' },
+  { path: '/decisions/supplier', element: legacyTo('/supplier/portal'), title: '협력사 범위 (이전 주소)', group: 'procurement', parent: '/supplier/portal' },
   { path: '/audit', element: named(auditEvents, 'AuditScreen'), title: '감사 이력', group: 'admin', menu: '/audit', components: ['D01-10'], v2: true },
   { path: '/insights/audit', element: legacyTo('/audit'), title: '감사 로그 (이전 주소)', group: 'admin', parent: '/audit' },
   { path: '/audit/oversight', element: named(() => import('./screens/admin/Oversight'), 'OversightScreen'), title: '감독 기록', group: 'admin', menu: '/audit/oversight', components: ['D06-09', 'D04-01', 'D06-05'], v2: true },
-  { path: '/admin/iam', element: named(accessScreens, 'IamScreen'), title: '플랫폼 인증·권한', group: 'admin', menu: '/admin/iam', components: ['D06-09'], v2: true },
-  { path: '/admin/users', element: legacyTo('/admin/iam'), title: '사용자·권한 (이전 주소)', group: 'admin', parent: '/admin/iam' },
-  { path: '/admin/permissions', element: legacyTo('/admin/iam'), title: '권한 매트릭스 (이전 주소)', group: 'admin', parent: '/admin/iam' },
-  { path: '/admin/org', element: legacyTo('/admin/iam'), title: '조직·도메인 (이전 주소)', group: 'admin', parent: '/admin/iam' },
-  { path: '/admin/security', element: named(opsScreens, 'SecurityScreen'), title: '보안·인증서', group: 'admin', menu: '/admin/security', components: ['D06-10', 'D06-11'], v2: true },
+  { path: '/admin/settings', element: named(opsScreens, 'SettingsScreen'), title: '설정', group: 'settings', menu: '/admin/settings', v2: true },
+  { path: '/admin/iam', element: named(accessScreens, 'IamScreen'), title: '플랫폼 인증·권한', group: 'settings', menu: '/admin/iam', components: ['D06-09'], v2: true },
+  { path: '/admin/users', element: legacyTo('/admin/iam'), title: '사용자·권한 (이전 주소)', group: 'settings', parent: '/admin/iam' },
+  { path: '/admin/permissions', element: legacyTo('/admin/iam'), title: '권한 매트릭스 (이전 주소)', group: 'settings', parent: '/admin/iam' },
+  { path: '/admin/org', element: legacyTo('/admin/iam'), title: '조직·도메인 (이전 주소)', group: 'settings', parent: '/admin/iam' },
+  { path: '/admin/security', element: named(opsScreens, 'SecurityScreen'), title: '보안·인증서', group: 'settings', menu: '/admin/security', components: ['D06-10', 'D06-11'], v2: true },
   { path: '/admin/data', element: named(() => import('./screens/admin/DataGovernance'), 'DataGovernanceScreen'), title: '데이터·규제 기록', group: 'admin', menu: '/admin/data', components: ['D06-08', 'D05-01', 'D04-03'], v2: true },
-  { path: '/data/workbench', element: def(() => import('./screens/data/Workbench')), title: '데이터 분석실', group: 'admin', menu: '/data/workbench', components: ['D05-02'], v2: true },
-  { path: '/biz/trials', element: named(bizScreens, 'TrialAnalyticsScreen'), title: '체험 전환 분석', group: 'admin', menu: '/biz/trials', components: ['D05-06'], v2: true },
-  { path: '/insights/business', element: legacyTo('/biz/trials'), title: '사업 지표 (이전 주소)', group: 'admin', parent: '/biz/trials' },
-  { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'admin', parent: '/biz/trials' },
-  { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'admin', parent: '/biz/trials' },
-  { path: '/admin/settings', element: named(opsScreens, 'SettingsScreen'), title: '설정', group: 'admin', menu: '/admin/settings', v2: true },
+  { path: '/data/workbench', element: def(() => import('./screens/data/Workbench')), title: '데이터 분석실', group: 'ops', menu: '/data/workbench', components: ['D05-02'], v2: true },
+  { path: '/biz/trials', element: named(bizScreens, 'TrialAnalyticsScreen'), title: '체험 전환 분석', group: 'ops', menu: '/biz/trials', components: ['D05-06'], v2: true },
+  { path: '/insights/business', element: legacyTo('/biz/trials'), title: '사업 지표 (이전 주소)', group: 'ops', parent: '/biz/trials' },
+  { path: '/insights/reports', element: legacyTo('/biz/trials'), title: '보고서 (이전 주소)', group: 'ops', parent: '/biz/trials' },
+  { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'ops', parent: '/biz/trials' },
   // 디자인 시스템 갤러리 — 데모·개발 빌드만(결정 D-RD-8, 견본 ID를 보인다). 갤러리 자체는 그대로 둔다(시각 회귀·키트 규칙)
-  ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'admin', menu: '/_design', v2: true } as AppRoute] : []),
+  ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'settings', menu: '/_design', v2: true } as AppRoute] : []),
   // 검토 포털 협의 요청 한 건 — '검토할 것 한 장'(W5 P5-1·P5-12), 포털 홈·요청 부서 홈에서 연다
   { path: '/consults/:id', element: named(() => import('./screens/workspaces/Consults'), 'ConsultScreen'), title: '협의 요청', group: 'home', parent: '/', components: ['D04-04'], v2: true },
   // 추적 커버리지(P3) — Feature별 요구·필수 Test Evidence 비율, 요구 미연결·Evidence 미등록 Feature

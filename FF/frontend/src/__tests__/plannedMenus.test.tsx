@@ -6,10 +6,11 @@ import { swCost } from '../copy/cost';
 import { featureDb } from '../copy/refdb';
 
 describe('Feature DB·SW 개발비 산정 메뉴', () => {
-  it('Feature DB는 기준정보, SW 개발비 산정은 상품·출시 메뉴에 있다', () => {
+  it('Feature DB는 기준정보, SW 개발비 산정은 독립 구매·비용 메뉴에 있다', () => {
     const itemsOf = (key: string) => MENU.find((g) => g.key === key)!.items.map((r) => r.menu);
     expect(itemsOf('master')).toContain('/master/feature-db');
-    expect(itemsOf('release')).toContain('/procurement/sw-cost');
+    expect(itemsOf('procurement')).toContain('/procurement/sw-cost');
+    expect(itemsOf('release')).not.toContain('/procurement/sw-cost');
   });
 
   it('메뉴 링크가 자기 화면으로 열린다 (옛 /cost 이동 주소와 섞이지 않는다)', () => {

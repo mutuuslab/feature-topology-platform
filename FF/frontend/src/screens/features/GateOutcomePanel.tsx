@@ -1,6 +1,8 @@
 // Feature 상세 › Gate 탭 보강(P10) — 최종 Go/No-Go, 선택한 Gate의 자동 검사(전이 때 다시 본다), 해당 없음(N/A) 요청·승인.
 // 규칙은 contracts(gate-outcome·gate-checks) — 서버 응답(goNoGo·checks·naRequests)을 그대로 보이고, N/A 불가 Gate는 같은 함수로 미리 막는다.
 import { useState } from 'react';
+import { useUiLocale } from '../../locale/react';
+import { contractCaptions } from '../../copy/contract-captions';
 import { GATE_NA_APPROVERS, GATE_NA_REQUESTERS, gateNaBlocker, type GateNaRequest, type GoNoGoResult } from '../../../../contracts/src/rules/gate-outcome';
 import type { GateCheck } from '../../../../contracts/src/rules/gate-checks';
 import type { Asil, GateId } from '@ff/contracts';
@@ -37,6 +39,7 @@ export function GoNoGoBar({ v }: { v?: GoNoGoResult }) {
 
 /** 선택한 Gate의 자동 검사 목록 */
 export function GateChecks({ checks }: { checks: GateCheck[] }) {
+  const {language}=useUiLocale();
   if (!checks.length) return null;
   return (
     <section aria-label={C.checks.title} data-testid="gate-checks">
@@ -46,8 +49,8 @@ export function GateChecks({ checks }: { checks: GateCheck[] }) {
           <li key={c.key} data-state={c.pass ? 'PASS' : 'FAIL'} data-check={c.key}>
             <Icon name={c.pass ? 'check' : 'close'} size={16} />
             <span>
-              {c.label}
-              <span className="ds-check__detail">{c.detail}</span>
+              {language === 'en' ? contractCaptions.gateCheck[c.key] : c.label}
+              <span className="ds-check__detail">{language === 'en' ? <>{c.pass ? C.checks.pass : C.checks.fail}<details><summary>{contractCaptions.sourceResponse}</summary><p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{c.detail}</p></details></> : c.detail}</span>
             </span>
           </li>
         ))}

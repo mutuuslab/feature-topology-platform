@@ -14,6 +14,7 @@ const loaders = {
   'compliance-rules': () => import('./en/compliance-rules'),
   'connections': () => import('./en/connections'),
   'consult': () => import('./en/consult'),
+  'contract-captions': () => import('./en/contract-captions'),
   'control': () => import('./en/control'),
   'cost-explorer': () => import('./en/cost-explorer'),
   'cost': () => import('./en/cost'),

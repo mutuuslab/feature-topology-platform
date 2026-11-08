@@ -4,17 +4,13 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  COMPLIANCE_CHECK_LABEL,
   COMPLIANCE_CHECKS,
   COMPLIANCE_ROLLOUT_MODES,
   COMPLIANCE_RULE_ROLES,
-  COMPLIANCE_RULE_STATUS_LABEL,
-  COMPLIANCE_RULE_TYPE_LABEL,
   COMPLIANCE_RULE_TYPES,
   CALS,
   complianceCandidateQuery,
   CreateComplianceRuleBody,
-  criterionLabel,
   GATES,
   MARKETS,
   UpdateComplianceRuleBody,
@@ -37,6 +33,12 @@ import { regionCodeDisplayLabel as regionCodeLabel } from '../../copy/taxonomy-l
 import { REGION_CODES } from '../../../../contracts/src/rules/region-code';
 import { regionCopy } from '../../copy/taxonomy-levels';
 import { RegionCandidates } from './RegionCandidates';
+import { contractCaptions } from '../../copy/contract-captions';
+import { complianceCriterionCaption as criterionLabel } from '../../data/contractCaptions';
+import { useUiLocale } from '../../locale/react';
+const COMPLIANCE_CHECK_LABEL=contractCaptions.complianceCheck;
+const COMPLIANCE_RULE_STATUS_LABEL=contractCaptions.complianceStatus;
+const COMPLIANCE_RULE_TYPE_LABEL=contractCaptions.complianceType;
 
 const ROLES = COMPLIANCE_RULE_ROLES as readonly Role[];
 const INVALIDATE = ['complianceRules', 'complianceRule', 'complianceValidations', 'complianceRulesApplicable'];
@@ -65,6 +67,7 @@ const itemLabel = (item: string | null) => {
 };
 
 export function ComplianceRegistryTab() {
+  useUiLocale();
   const q = useApi<{ items: ComplianceRule[] }>('complianceRules');
   const [sp, setSp] = useSearchParams();
   const [status, setStatus] = useState<'all' | ComplianceRuleStatus>('all');
@@ -526,6 +529,7 @@ interface CheckRow {
 
 /** 배포 검증 결과(FR-CRC-002-004·007·008) — 정책 검증·배포 시점 재판정, 고른 정책에 지금 적용할 룰(FR-CRC-002-001~003) */
 function ComplianceChecksPanel() {
+  useUiLocale();
   const K = C.checks;
   const q = useApi<{ items: CheckRow[] }>('complianceValidations');
   const [feature, setFeature] = useState('');

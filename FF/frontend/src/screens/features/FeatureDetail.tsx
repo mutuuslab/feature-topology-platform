@@ -1,3 +1,5 @@
+import { transitionCaption, roleCaptionFromSourceLabel } from '../../data/contractCaptions';
+import { TransitionBlocker } from '../../design/server-explanation';
 // /features/:id/:ver — Feature Version 상세 (v2). Lifecycle 전이·Gate 판정·의존관계·구현 추적·Baseline·감사.
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -444,9 +446,9 @@ function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifec
           }}
         >
           <p style={{ margin: 0 }}>
-            <LifecycleBadge value={d.feature.lifecycle} /> → <LifecycleBadge value={opt.to} /> · {opt.ko}
+            <LifecycleBadge value={d.feature.lifecycle} /> → <LifecycleBadge value={opt.to} /> · {transitionCaption(opt)}
           </p>
-          {hard.length > 0 && <ErrorNote error={{ message: ko.stepper.blocked, details: { blockers: hard } }} />}
+          {hard.length > 0 && <div className="ds-error" role="alert"><div><strong>{ko.stepper.blocked}</strong><ul>{hard.map((blocker,i)=><li key={`${blocker.code}:${blocker.ref ?? i}`}><TransitionBlocker blocker={blocker}/></li>)}</ul></div></div>}
           {/* 정의 승인 전 구현 미입력 — 막지 않고 알린다(승인 뒤에는 새 Version으로만 넣는다) */}
           {opt.to === 'APPROVED' && <ImplMissingNotice f={d.feature} onEdit={onClose} />}
           {/* 기준 행 막힘(연결 없음·요청 중·폐기 행·ASIL 다시 확인)은 '기준 행' 탭에서 연결과 ASIL 사유를 고친다 */}
@@ -479,7 +481,7 @@ function TransitionDrawer({ d, to, onClose, onWarnings }: { d: Detail; to: Lifec
           </Button>
           {perm.hint && <span className="ds-field__hint">{perm.hint}</span>}
           <p className="ds-field__hint" style={{ margin: 0 }}>
-            {opt.roles.join(' · ')}
+            {opt.roles.map(roleCaptionFromSourceLabel).join(' · ')}
           </p>
         </form>
       )}

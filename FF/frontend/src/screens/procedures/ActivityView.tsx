@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ProcedureCompleteBody, RaciKey, WorkflowActivity, WorkflowDoc, WorkflowProcess, WorkflowWorkProduct } from '@ff/contracts';
-import { procedureGateText } from '@ff/contracts';
+import { procedureGateCaption as procedureGateText } from '../../data/contractCaptions';
 import type { ApiError } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { procedures as P } from '../../copy/procedures';

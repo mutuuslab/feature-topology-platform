@@ -4,17 +4,21 @@ import { GATE_META, GATES, LIFECYCLE, type GateId, type Lifecycle } from '@ff/co
 import { ko } from '../copy/ko';
 import { StatusGlyph } from './icons';
 import { gateKind } from './status';
+import { contractCaptions } from '../copy/contract-captions';
+import { useUiLocale } from '../locale/react';
+import { TransitionBlocker } from './server-explanation';
 
 export interface StepperTransition {
   to: Lifecycle;
   auto?: boolean;
-  blockers: { message: string }[];
+  blockers: { code?:string; ref?:string; message: string }[];
 }
 
 const RANK = Object.fromEntries(LIFECYCLE.map((l, i) => [l, i])) as Record<Lifecycle, number>;
 
 /** labels — 단계 한글 이름 바꾸기(상품은 APPROVED를 '구성 승인'으로, Feature의 '정의 승인'과 나눈다) */
 export function LifecycleStepper({ current, transitions = [], labels }: { current: Lifecycle; transitions?: StepperTransition[]; labels?: Partial<Record<Lifecycle, string>> }) {
+  useUiLocale();
   return (
     <ol className="ds-stepper" aria-label="Lifecycle">
       {LIFECYCLE.map((lc) => {
@@ -27,7 +31,7 @@ export function LifecycleStepper({ current, transitions = [], labels }: { curren
             {t && t.blockers.length > 0 && (
               <ul className="ds-step__blockers" aria-label={ko.stepper.blocked}>
                 {t.blockers.slice(0, 4).map((b) => (
-                  <li key={b.message}>{b.message}</li>
+                  <li key={b.message}><TransitionBlocker blocker={b}/></li>
                 ))}
               </ul>
             )}
@@ -41,6 +45,7 @@ export function LifecycleStepper({ current, transitions = [], labels }: { curren
 
 /** tours: Gate 칸별 따라하기 스포트라이트 앵커(data-tour) */
 export function GateRail({ statuses, onSelect, tours }: { statuses: Partial<Record<GateId, string | null>>; onSelect?: (g: GateId) => void; tours?: Partial<Record<GateId, string>> }) {
+  useUiLocale();
   return (
     <div className="ds-gates" role="group" aria-label="Gate G1–G9">
       {GATES.map((g) => {
@@ -56,7 +61,7 @@ export function GateRail({ statuses, onSelect, tours }: { statuses: Partial<Reco
             data-stage-start={g === 'G4' || g === 'G8'}
             style={{ '--c': `var(--gate-${k})` } as CSSProperties}
             {...(onSelect ? { type: 'button', onClick: () => onSelect(g) } : {})}
-            title={`${g} ${GATE_META[g].name} · ${GATE_META[g].judgeRole}`}
+            title={`${g} ${GATE_META[g].name} · ${contractCaptions.gateJudge[g]}`}
             aria-label={`${g} ${GATE_META[g].name}: ${ko.gate[k]}`}
           >
             <span className="ds-gate__id">

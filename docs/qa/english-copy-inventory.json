@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 86,
-  "requiredLeaves": 9206,
+  "moduleCount": 87,
+  "requiredLeaves": 9279,
   "modules": [
     {
       "module": "ads-change",
@@ -10408,6 +10408,454 @@
       ],
       "connectedExports": [
         "consult"
+      ],
+      "unresolvedCopyReferences": []
+    },
+    {
+      "module": "contract-captions",
+      "file": "FF/frontend/src/copy/contract-captions.ts",
+      "leaves": [
+        {
+          "path": "contract-captions.contractCaptions.complianceType.LEGAL",
+          "kind": "text",
+          "text": "법규",
+          "sourceHash": "d9d7406bfa03fef9a942771928a75fcea14432422c27f6d1831fa54dde8d02b7"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceType.PRIVACY",
+          "kind": "text",
+          "text": "개인정보",
+          "sourceHash": "5cdfba05d4bfe9962ce37ccdf716bb4a833f9f2b2eeaa0a410d316d96d73a8a7"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceType.SAFETY",
+          "kind": "text",
+          "text": "안전",
+          "sourceHash": "beff908259d22050120359bdc1229490972108e9a282d0980ac09d68f63fe4ab"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceType.SECURITY",
+          "kind": "text",
+          "text": "보안",
+          "sourceHash": "792fe6d190cf180b58142a8c1db24ddd5099fffcc6a4b28ee5d1f4ea8ab4b04f"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceStatus.PROPOSED",
+          "kind": "text",
+          "text": "승인 대기",
+          "sourceHash": "b702670f35bdfcd04cfed986bb94cdef99d44228c4d2613b0382d36a3ca96084"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceStatus.APPROVED",
+          "kind": "text",
+          "text": "승인",
+          "sourceHash": "ae0b472e631ddef724071fd6dbc8c89351d9ed5e6536d7054e03a96a275b654c"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceStatus.REJECTED",
+          "kind": "text",
+          "text": "반려",
+          "sourceHash": "d283b7dbc864793f48ce9c18b99dedb5e9a78bcd48c98229ec009539d6413422"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceStatus.RETIRED",
+          "kind": "text",
+          "text": "만료",
+          "sourceHash": "c64674dc5592daebf936bbe6a588ce02ebb2a4d0b53ddcfffe6647fd54e41851"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.SAFE_DEFAULT_OFF",
+          "kind": "text",
+          "text": "Safe Default 꺼짐",
+          "sourceHash": "28cf690dbb46ff71165b65633d2be6efc253959e6528d37987503385ec25eb42"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.STAGED_ROLLOUT",
+          "kind": "text",
+          "text": "코호트 단계 배포",
+          "sourceHash": "38466efc0832013393be964f6c0e5f65c92367a678cd66a51ea46a6159a949b7"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.REQUIREMENT_TRACE",
+          "kind": "text",
+          "text": "요구사항 연결",
+          "sourceHash": "0e8a59a4326cb3bda49667219987285c506c58801f1c9ea4d01013fdd35465af"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.GATE_PASS",
+          "kind": "text",
+          "text": "Gate 통과",
+          "sourceHash": "e89c511a15b11c18510154b818ad015732f0feb5a5192caab16ca83e1dfd9527"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.ENTITLEMENT_REQUIRED",
+          "kind": "text",
+          "text": "사용 권한 상품 연결",
+          "sourceHash": "ba779c2fdfac2f94e01e31479e78c3d85c1df362e7cb3669af2afe3824024e17"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.NO_VEHICLE_ID_TARGETING",
+          "kind": "text",
+          "text": "차량 식별자로 대상 지정 금지",
+          "sourceHash": "d209db0ef6a89b0a9923bc0ecec91e324ae3717486b9580e970eae21ce5ac6c1"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.MARKET_PROFILE_CONFIRMED",
+          "kind": "text",
+          "text": "시장 Profile 확인",
+          "sourceHash": "c1dac0a9b659b6afa5e98c05b057ca3859abcb85e4b5dcf66578eff616899945"
+        },
+        {
+          "path": "contract-captions.contractCaptions.complianceCheck.TARA_RECORDED",
+          "kind": "text",
+          "text": "TARA 기록",
+          "sourceHash": "8d11d04ea6a0d65c86c00faef0a210babc7e3f25a388896a86e723a2c80ca776"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G1",
+          "kind": "text",
+          "text": "Feature 정의 승인자",
+          "sourceHash": "5efcecb78165b2fcabb7a4fb817cf45ba85c712928e4f9e5f2d6a8b6fd21e78b"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G2",
+          "kind": "text",
+          "text": "요구사항 검토 책임자",
+          "sourceHash": "238c587bae7ecd7e5402506700363fb75971304cf259e437de70c50ec5ed9a67"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G3",
+          "kind": "text",
+          "text": "차량 사양 승인자",
+          "sourceHash": "8251659fc585be3970914722c3bbcb3b437d6f84826458fb21501c8521b2fd50"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G4",
+          "kind": "text",
+          "text": "제어 통합 책임자",
+          "sourceHash": "acacaef51cdf1e14e25c212c6852239b7c220016e32d4cfc9da3bb67ab8c7fa2"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G5",
+          "kind": "text",
+          "text": "검증시험 책임자",
+          "sourceHash": "ab77f9819f180cf38e5a2f5f25767e5fe94caa3b617e6612d76e4678b24f72e6"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G6",
+          "kind": "text",
+          "text": "협력사 품질 승인자",
+          "sourceHash": "403df174ab4bc731289286430d2323f4a5854dc6414507a15920d98aa01260d2"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G7",
+          "kind": "text",
+          "text": "기능안전·보안 승인자",
+          "sourceHash": "224060de1f0e80ff621139f404018832edaa52832e7852583fc6e7e1d4794cb8"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G8",
+          "kind": "text",
+          "text": "OTA 릴리스 승인자",
+          "sourceHash": "31fbfeec6f6675974d7849987ce371370d30b94ef0d6360ee2dea13513dcf6b0"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateJudge.G9",
+          "kind": "text",
+          "text": "운영 출시 승인자",
+          "sourceHash": "388b15bfe60f22acc0bf58879d57928aee94dbc78eb4138bd64e7fbc04e76b3b"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.APPROVED",
+          "kind": "text",
+          "text": "정의 승인",
+          "sourceHash": "6efe0dec6b06f78a8edfff7a640e6417be4297d801f2e9e26d44c5e3f83084c2"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.START",
+          "kind": "text",
+          "text": "개발 착수 (Control Point 1개 이상)",
+          "sourceHash": "72664ad11f09bb3003e08cba21fac68df3920f34894d18434985ae7bbc08dfd7"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.VERIFIED",
+          "kind": "text",
+          "text": "검증 완료",
+          "sourceHash": "911b8768323a3ac669665a68b4c0312d4d84bdcf02037bc03c813c58631e7769"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.RELEASED",
+          "kind": "text",
+          "text": "출시",
+          "sourceHash": "84af99629613184497a9e470d30ef22330fc8067403a939f6590f83d0063d1ca"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.REWORK",
+          "kind": "text",
+          "text": "검증 실패 — 개발로 되돌림",
+          "sourceHash": "96bd90de518dbd578164ea0c74811cafae11f5fa3269708dd30a7ca0f65198ea"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.DEPRECATED",
+          "kind": "text",
+          "text": "신규 사용 중단",
+          "sourceHash": "3ce98bfd9300d84f15730ba959f580a0eccbf595735752894baeed8393e690bb"
+        },
+        {
+          "path": "contract-captions.contractCaptions.transition.RETIRED",
+          "kind": "text",
+          "text": "종료",
+          "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4"
+        },
+        {
+          "path": "contract-captions.contractCaptions.sourceResponse",
+          "kind": "text",
+          "text": "서버 응답 원문",
+          "sourceHash": "47f02386a57d0542160296f46f2b966766287d69ab56050283e6f752aaa849a0"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G1",
+          "kind": "text",
+          "text": "등록·분류",
+          "sourceHash": "f3e5c7f27d7a03346f4a6bf33dd834b556954086373781da8b63a032b0cdd8cc"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G2",
+          "kind": "text",
+          "text": "HARA 영향",
+          "sourceHash": "87b43d3ffa9c593516332d410c2844953ed27a2a7e09d48f007ee0df463f36c0"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G3",
+          "kind": "text",
+          "text": "안전요구·정의 승인",
+          "sourceHash": "4e410ac27100d8c709050bcfde81c137c057b176b487d6bd25082399a4bbd960"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G4",
+          "kind": "text",
+          "text": "설계 독립 검토",
+          "sourceHash": "3492ec212bc4e4c2d202269c287bd514e9593ea8e0face1c3c1080969fd8b22f"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G6",
+          "kind": "text",
+          "text": "서명 배포",
+          "sourceHash": "7ed5f65f14e52b3df220d630e44bd8df695d20bd67fdffdd5439887181ceaa4d"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G7",
+          "kind": "text",
+          "text": "출시·활성화",
+          "sourceHash": "b72329508ef7945067ad01ab63172778cfdfc922a3a55f50687804b661eb3bf6"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedure.G8",
+          "kind": "text",
+          "text": "운영 판정",
+          "sourceHash": "4a89be4d76d3dd36469dead455572c235304d67d34edeaabcdb42785d28bfb7c"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedureLink",
+          "kind": "function",
+          "text": "(gate:string,name:string,platform:string) => `절차 ${gate} ${name} = 플랫폼 ${platform}`",
+          "sourceHash": "2f489d7752d7728e8be252b3054a61c3d6ae6d9e485603040d28ce93d45572e5"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedureOnly",
+          "kind": "function",
+          "text": "(gate:string) => `절차 ${gate}`",
+          "sourceHash": "75373cee66c682cd867a3385cf8e5430728db1ea0ef0c2c8b82fbd8ccd437001"
+        },
+        {
+          "path": "contract-captions.contractCaptions.procedureNoGate",
+          "kind": "text",
+          "text": "플랫폼 Gate 없음 — 분기 드릴·긴급 차단·감사 기록으로 확인",
+          "sourceHash": "b574d731194ad1666e26d91d6c72078e79df518523af9371ef05903619a3b503"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.NO_RULE",
+          "kind": "text",
+          "text": "허용된 Lifecycle 전이가 없습니다.",
+          "sourceHash": "319eb7f8d7a30d34938fe6870338d3b7ec946baa4fec49f79ceb36e4f1594770"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.GATE_NOT_PASSED",
+          "kind": "text",
+          "text": "필수 Gate가 통과되지 않았습니다.",
+          "sourceHash": "1441a278c88f5be5ebfcb62bdc4698d2ef223c13d0f945124365c7c5d791512f"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.GATE_UNJUDGED",
+          "kind": "text",
+          "text": "필수 Gate 판정이 없습니다.",
+          "sourceHash": "1bf9f420d89890a3a2bc0b328f0865df465c522613de452e2a7ae2feab3fb30e"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.GATE_UNSIGNED",
+          "kind": "text",
+          "text": "Gate 판정 서명을 확인해야 합니다.",
+          "sourceHash": "9760e1c2ffa69e2e19f2e567f8b1ac931ba74821c67a4a62fb1da316f0666ea2"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.INPUT_MISSING",
+          "kind": "text",
+          "text": "필수 입력이 누락되었습니다.",
+          "sourceHash": "b3a0ffee01e64bb77362ecbc0a0e7a57f3866bd0ecbef610ceac2afd0a6273e8"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.DEPENDENCY_UNRESOLVED",
+          "kind": "text",
+          "text": "필요 관계 대상 Version이 확정되지 않았습니다.",
+          "sourceHash": "95da8ac9391511fb56296f56eea2f3d9d15b0c19340480368e4078304c079e7f"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.POLICY_MISSING",
+          "kind": "text",
+          "text": "Control Point의 정책 등록이 부족합니다.",
+          "sourceHash": "8f7b3c5759658b73a33292199058d2f5ceb92a80790b400353c81a1fdba8c450"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.RELEASE_SIGNOFF_MISSING",
+          "kind": "text",
+          "text": "현재 G8·G9에 묶인 Feature Owner 출시 책임 서명이 필요합니다.",
+          "sourceHash": "ba4ea0b89aeaf71c4d4f25c4e49c89fa7ceab678f8dab17ea98f30496ad78b80"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.REHARA_OPEN",
+          "kind": "text",
+          "text": "재-HARA 영향 검토가 열려 있습니다.",
+          "sourceHash": "52d8be6d9e8519fca1cd8abf4c364a1defc6d9ba2c4a87eb0236aaa1cf9df228"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.ROLE",
+          "kind": "text",
+          "text": "이 작업을 수행할 역할이 아닙니다.",
+          "sourceHash": "5aeeea14d4de08530a119e35a65fd6f79e8e170eb4edf1c39075438182382802"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.SEPARATION_OF_DUTY",
+          "kind": "text",
+          "text": "작성자와 승인·출시 담당자는 다른 사람이어야 합니다.",
+          "sourceHash": "642157bf520d16a05e5b2d05527bd72ff8e1a397912d74ed95235f1a404aad15"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.REASON_REQUIRED",
+          "kind": "text",
+          "text": "전이 사유를 입력하세요.",
+          "sourceHash": "b78489892b876556d07b835410903204854dca513afa70dc42f132d0ee30b7f7"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.REFDB_LINK_BLOCKED",
+          "kind": "text",
+          "text": "Feature DB 기준 행 연결과 ASIL 근거를 확인하세요.",
+          "sourceHash": "e550d9ba0b10b7f973c31b25363e70351ade996f9ee575e234b0325083b99705"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.FLAG_CODE_MISSING",
+          "kind": "text",
+          "text": "Flag 코드 연결 또는 대사 조건이 미충족입니다.",
+          "sourceHash": "3e7f73764861589fd7d29a26fdab58b7c33b8cd498766dd6de5c5698956e79ae"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.GATE_CHECK_FAILED",
+          "kind": "text",
+          "text": "현재 데이터의 Gate 자동 검사가 미충족입니다.",
+          "sourceHash": "ef099457af596a731d537862d3b5f7a17b47063f6a330d53b69732eeefa01d47"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.RETIREMENT_INCOMPLETE",
+          "kind": "text",
+          "text": "Flag Retirement 단계 또는 종료 조건이 미완료입니다.",
+          "sourceHash": "725d82a47afa74510fb367476079204d8f6e7c5719b871ab0a4458d0ee89156f"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.ISSUE_REQUIRED",
+          "kind": "text",
+          "text": "식별한 이슈 항목이 필요합니다.",
+          "sourceHash": "bf94e3f9e7d803fa37193797f1f2a15a54d7978480e6747e8cb5e38949566dee"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.WORK_PRODUCT",
+          "kind": "text",
+          "text": "필수 산출물의 연결·승인 조건이 미충족입니다.",
+          "sourceHash": "4ea43d842277346d322c59d4a990e525b2cdac82d6010bcc03e90c345c286cb3"
+        },
+        {
+          "path": "contract-captions.contractCaptions.blocker.REJUDGE_OPEN",
+          "kind": "text",
+          "text": "열린 재판정 요청을 해결해야 합니다.",
+          "sourceHash": "484c6ef7b69eefc49dfe1bed76a539be1fa00030df8fedd1f8591d54e8cc1392"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.OWNER",
+          "kind": "text",
+          "text": "Feature Owner 지정",
+          "sourceHash": "9167c9dd84bddcff0a00802224062ce21c015c37c74115e2186c267e2dd451c5"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.REQUIRES_RELEASED",
+          "kind": "text",
+          "text": "필요(requires) 관계 대상이 출시됨",
+          "sourceHash": "6f020655b2d4fcf17dbe82a63bf9817e2978896fead5ae341a326cd467a6481a"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.VARIANT_RULE",
+          "kind": "text",
+          "text": "Variant 조건 등록(국가·차종·트림·UPG-VC)",
+          "sourceHash": "0e5cbb0df19b3a25f467d271654dab682e765d8d461bc782c9f9083e40ee70e8"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.TEST_EVIDENCE",
+          "kind": "text",
+          "text": "필수 시험 Evidence",
+          "sourceHash": "078424ae4d3f97b63c72a685c069cfff0096af20882614da7abb953b70fb1fa6"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.SAFETY_EVIDENCE",
+          "kind": "text",
+          "text": "안전·보안 분석 근거",
+          "sourceHash": "7867b36de62407167cbe6a2a2437e55f7d2c648a61031696fccc8aa5b6e05000"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.SAFE_DEFAULT",
+          "kind": "text",
+          "text": "Safe Default와 정책 범위",
+          "sourceHash": "ea7e6b2910686212a7058872d94bbb561bb0a14c6b9946389ae98cf103121c05"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.KILL_READY",
+          "kind": "text",
+          "text": "긴급 차단 실행 준비",
+          "sourceHash": "c69eb8bdcb1d132370a161a3028b9f24b50d3e63ebd95c928873256032f5e564"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.DEPLOY_METHOD",
+          "kind": "text",
+          "text": "배포 방식과 대상",
+          "sourceHash": "3083a4d04751abade20122b1d1dcac54ec70c9b2da561c060f1a2ac80e4614d5"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.TELEMETRY",
+          "kind": "text",
+          "text": "텔레메트리 연결",
+          "sourceHash": "52433d84a0aa869533bb42cfc310674d8ef52c17cfb7dd4ec1511b85f82597ab"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.AUDIT_LOG",
+          "kind": "text",
+          "text": "감사 기록",
+          "sourceHash": "3ab9f85d4593d2a3aa1b9245a63ef29096c0a0678c74298c7834101f51519c2b"
+        },
+        {
+          "path": "contract-captions.contractCaptions.gateCheck.ALERT_RULE",
+          "kind": "text",
+          "text": "운영 경보 수신 규칙",
+          "sourceHash": "f47dfc46780c0d2a0869944ec6fe2c119ebce768e149501b5baaef9fb54d39ba"
+        }
+      ],
+      "connectedExports": [
+        "contractCaptions"
       ],
       "unresolvedCopyReferences": []
     },

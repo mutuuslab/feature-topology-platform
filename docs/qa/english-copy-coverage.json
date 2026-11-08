@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9206,
-  "translated": 9206,
+  "required": 9279,
+  "translated": 9279,
   "modules": [
     {
       "module": "ads-change",
@@ -157,6 +157,17 @@
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
       "sourceHash": "9f7521af68b2b20af8afe8e3ceafee5611c00cb7a5238ee2786626db45f6d918"
+    },
+    {
+      "module": "contract-captions",
+      "source": "FF/frontend/src/copy/contract-captions.ts",
+      "required": 73,
+      "translated": 73,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "235818bcee6dd4c5ec2b3802302b2fdcc5df0013cf5dabde0555a41ba16d8b5f"
     },
     {
       "module": "control",

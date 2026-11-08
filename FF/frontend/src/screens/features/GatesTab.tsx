@@ -1,3 +1,6 @@
+import { procedureGateCaption as procedureGateText } from '../../data/contractCaptions';
+import { contractCaptions } from '../../copy/contract-captions';
+import { useUiLocale } from '../../locale/react';
 // Feature 상세 › Gate 탭(D01-02) — G1~G9 판정·이력. 담당자 웨이브 W3:
 //  · 단계 밖 Gate·앞 단계 미통과는 제출 전에 막고 사유를 보인다(contracts gateStageBlocker — 서버와 같은 판정, P3-10)
 //  · G2·G7 PASS의 분석 근거 조건(HARA·TARA·ASIL 사유 검토·SM·CSM 서명)을 판정 전에 보인다(gateEvidenceBlockers, P3-1·3)
@@ -5,7 +8,7 @@
 //  · 판정 입력은 Gate마다 따로 — 앞 Gate 저장이 다음 Gate에 쓰던 입력을 지우지 않는다(P3-10). 오류 상자에 내부 코드를 붙이지 않는다
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { gateEvidenceBlockers, gateEvidenceInputOf, gateStageBlocker, procedureGatesFor, procedureGateText, ROUTES, type AnalysisView, type Asil, type GateId, type GateResult, type Lifecycle } from '@ff/contracts';
+import { gateEvidenceBlockers, gateEvidenceInputOf, gateStageBlocker, procedureGatesFor, ROUTES, type AnalysisView, type Asil, type GateId, type GateResult, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { actorFor } from '../../api/actor';
 import { analysis as A } from '../../copy/analysis';
@@ -34,6 +37,7 @@ const EMPTY: Form = { inputResult: 'PASS', rationale: '', evidenceRef: '', asilR
 export const evidenceHref = (ref: string, featureId: string) => `/verify/evidence?ref=${encodeURIComponent(ref)}&feature=${encodeURIComponent(featureId)}`;
 
 export function GatesTab({ id, ver }: { id: string; ver: string }) {
+  useUiLocale();
   const q = useApi<GateView & GateOutcomeView & { lifecycle?: Lifecycle }>('gates', { params: { id, ver } });
   const an = useApi<AnalysisView>('analysisEvidence', { params: { id, ver } });
   const [selected, setSelected] = useState<GateId>('G1');
@@ -86,7 +90,7 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
         <GateRail statuses={statuses} onSelect={setSelected} tours={{ G5: 'gate-g5' }} />
         {g && (
           <div className="ds-split">
-            <Panel title={`${g.gate} ${g.name}`} eyebrow={`${g.stage} · ${g.judgeRole}`} id="gate-hist" actions={<GateBadge status={g.status === '미판정' ? null : g.status} />}>
+            <Panel title={`${g.gate} ${g.name}`} eyebrow={`${g.stage} · ${contractCaptions.gateJudge[g.gate as GateId] ?? g.judgeRole}`} id="gate-hist" actions={<GateBadge status={g.status === '미판정' ? null : g.status} />}>
               <p className="ds-field__hint" data-testid="procedure-gate" style={{ marginTop: 0 }}>
                 {A.gate.procedure}: {procedure.length ? procedure.map((m) => procedureGateText(m.procedureGate)).join(' / ') : A.gate.procedureNone}
               </p>

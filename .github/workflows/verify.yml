@@ -26,7 +26,8 @@ jobs:
       # chromium은 전체 e2e, firefox·webkit은 핵심 흐름 스모크(e2e/tests/browsers.spec.ts, 출시 준비 RD-P2-03)
       - name: Playwright 브라우저 (e2e가 있을 때)
         run: if [ -f e2e/playwright.config.ts ]; then npx playwright install --with-deps chromium firefox webkit; fi
-      - run: npm run verify
+      # Collect every required gate result; verify still exits nonzero if any gate fails.
+      - run: npm run verify -- --keep-going
       - name: Git 커밋의 Feature Flag 사용처 스캔
         run: node tools/flag-sources.ts --repo .. --url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" --ref "$GITHUB_SHA" --path FF/examples/feature-flag-consumer --out flag-sources.json
       - name: Feature Flag 소스 연결 산출물

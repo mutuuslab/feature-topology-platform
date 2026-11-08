@@ -8,7 +8,7 @@ import { Explain, ExplainCodes, StatusGlyph, VerdictBadge, gateKind, splitCodes 
 import { useAppShell } from '../store';
 import { useWorkflows } from '../data/workflows';
 import { workflowLabels } from '../data/workflowLabels';
-import { procedures as PROC } from '../copy/procedures';
+import { workflowDisplay as PROC } from '../copy/procedure-panel';
 
 /** G1~G9 판정을 점 9개로 — 표 안에서 쓰는 축약형 */
 export function MiniGates({ gates }: { gates: Record<string, string | null | undefined> }) {
@@ -103,7 +103,7 @@ export function ProcedureText({ text }: { text: string }) {
   const doc = useWorkflows();
   if (!PROCEDURE_ID.test(text)) return <>{text}</>;
   // 절차 문서(지연 묶음)를 읽는 동안에도 식별자를 본문에 내놓지 않는다
-  const shown = doc && doc !== 'fail' ? workflowLabels(doc).text(text) : text.replace(new RegExp(PROCEDURE_ID.source, 'g'), PROC.display.reference);
+  const shown = doc && doc !== 'fail' ? workflowLabels(doc).text(text) : text.replace(new RegExp(PROCEDURE_ID.source, 'g'), PROC.reference);
   return <span title={text}>{shown}</span>;
 }
 

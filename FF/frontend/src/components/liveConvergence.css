@@ -200,7 +200,7 @@
   height: 100%;
   border-radius: var(--r-sm);
   background: var(--muted);
-  transition: width .45s cubic-bezier(.35, 0, .25, 1);
+  transition: width var(--t-slow) cubic-bezier(.35, 0, .25, 1);
 }
 .tone-pass .livemon-mix-track i { background: var(--pass); }
 .tone-pending .livemon-mix-track i { background: var(--pending); }
@@ -234,7 +234,7 @@
   border: 1px solid var(--line);
   background: var(--surface-3);
   color: var(--muted);
-  transition: background .3s, color .3s;
+  transition: background var(--t-slow), color var(--t-slow);
 }
 .livemon-dchip.is-up {
   color: var(--pass);
@@ -296,7 +296,7 @@
   display: block;
   background: var(--muted);
   opacity: .55;
-  transition: height .5s cubic-bezier(.35, 0, .25, 1);
+  transition: height var(--t-slow) cubic-bezier(.35, 0, .25, 1);
 }
 .tone-pass.livemon-cell i { background: var(--pass); opacity: .8; }
 .tone-pending.livemon-cell i { background: var(--pending); opacity: .8; }

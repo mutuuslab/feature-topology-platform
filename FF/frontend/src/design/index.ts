@@ -9,5 +9,6 @@ export * from './lifecycle';
 export * from './table';
 export * from './overlay';
 export * from './page';
+export * from './flash';
 export * from './safety';
 export * from './ext-ref';

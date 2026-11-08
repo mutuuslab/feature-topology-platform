@@ -119,9 +119,10 @@
   --topbar-h: 52px;
   --drawer-w: 380px;
 
-  /* 모션 */
+  /* 모션 — 상태 변화에만 짧게(tools/motion-rules.ts). fast: 누름·hover, base: 열고 닫기·강조, slow: 진행 채움 */
   --t-fast: 140ms;
   --t-base: 220ms;
+  --t-slow: 320ms;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   /* 종이 결 — 아주 옅은 계측 격자 */
@@ -252,5 +253,6 @@
   :root {
     --t-fast: 0ms;
     --t-base: 0ms;
+    --t-slow: 0ms;
   }
 }

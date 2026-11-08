@@ -9,7 +9,7 @@
 .vtel-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px dashed var(--line);padding-bottom:8px}
 .vtel-title{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px}
 .vtel-dot{width:8px;height:8px;border-radius:50%;background:var(--pass);animation:vtel-pulse 1.4s ease-in-out infinite}
-.vtel-dot[data-streaming="false"]{background:var(--pending);animation:none}
+.vtel-dot[data-streaming="false"]{background:var(--pending);animation: none}
 @keyframes vtel-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 .vtel-summary{font-size:12px;color:var(--ink);background:var(--surface-3);border:1px solid var(--line);border-radius:var(--r-pill);padding:2px 8px}
 .vtel-clock{margin-left:auto}
@@ -35,7 +35,7 @@
 .vtel-q[data-q="MISSING"]{color:var(--pending)}
 
 .vtel-gauge{display:block;height:6px;border-radius:var(--r-pill);background:var(--surface-3);overflow:hidden}
-.vtel-gauge>i{display:block;height:100%;background:var(--pass);transition:width .9s linear,background .3s}
+.vtel-gauge>i{display:block;height:100%;background:var(--pass);transition: width var(--t-slow) linear,background var(--t-slow)}
 .vtel-gauge>i[data-stale="true"]{background:var(--fail)}
 
 .vtel-stream{max-height:196px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2);padding:4px 6px}

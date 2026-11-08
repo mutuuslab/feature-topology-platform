@@ -15,6 +15,7 @@ import { snapshotP2 } from './snapshot-p2.ts';
 import { snapshotP3 } from './snapshot-p3.ts';
 import { snapshotP5 } from './snapshot-p5.ts';
 import { snapshotP10 } from './snapshot-p10.ts';
+import { snapshotWorkflow } from './snapshot-workflow.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, DEMO_SDK_KEY, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
@@ -87,7 +88,7 @@ export function backendGoneMessage(stage: string, exit: { code: number | null; s
 const gone = (stage: string) => new Error(backendGoneMessage(stage, { code: serverExit, signal: serverSignal }, PORT, serverTail));
 
 /** 빌드 PC에서 넘기는 환경 — OS 기본값과 배포 시드(cloudflare.yml의 snapshot:api 앞 변수)만 */
-const SNAPSHOT_ENV_PASS = /^(PATH|PATHEXT|SYSTEMROOT|WINDIR|COMSPEC|SYSTEMDRIVE|TEMP|TMP|TMPDIR|HOME|USERPROFILE|LANG|LC_ALL|FF_SHOWCASE|FF_SHOWCASE_VEHICLES|FF_SYNTHETIC|FF_BUILD_SHA)$/i;
+const SNAPSHOT_ENV_PASS = /^(PATH|PATHEXT|SYSTEMROOT|WINDIR|COMSPEC|SYSTEMDRIVE|TEMP|TMP|TMPDIR|HOME|USERPROFILE|LANG|LC_ALL|FF_SHOWCASE|FF_SHOWCASE_VEHICLES|FF_SHOWCASE_SCALE|FF_SYNTHETIC|FF_BUILD_SHA)$/i;
 
 /**
  * 스냅샷 백엔드 환경 — 빌드 PC 환경(실 Unleash·GLEO 브로커·외부 연계 URL·토큰·DB·CARLA Python·운영 모드)이 공개 스냅샷에 섞이지 않게
@@ -391,6 +392,7 @@ async function main() {
   await save('procedureState', {}, {}, PROC);
   await save('procedureSummary', {}, {}, PROC);
   await save('procedureInbox', {}, {}, PROC);
+  await snapshotWorkflow(save);
 
   // Feature Registry 목록 — FeatureList의 질의 모양: { q, lifecycle, country, latestOnly }
   const all = await save('listFeatures', {}, { latestOnly: false });

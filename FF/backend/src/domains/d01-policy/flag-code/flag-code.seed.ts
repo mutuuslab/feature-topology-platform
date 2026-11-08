@@ -10,6 +10,7 @@ import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
 import { DB, type Db } from '../../../kernel/db';
 import { isProduction, seedOf } from '../../../kernel/runtime-config';
+import { showcaseScale } from '../../../kernel/showcase-scale';
 import { DEMO_FIXTURES } from '../../../kernel/seed';
 import { countEvaluations, DEFAULT_APP, noteLastEvaluated, recordReach, type EvaluationSample } from '../../d04-ops/telemetry-ingest/evaluation-stats.service';
 import { SafetyProfileService } from '../registry/safety-profile.service';
@@ -163,9 +164,9 @@ export class FlagCodeSeeder implements OnApplicationBootstrap {
             const at = move(b.bucketStart);
             const app = DEFAULT_APP[b.source];
             const fb = b.fallbacks.reduce((n, x) => n + x.count, 0);
-            const cell = (result: EvaluationSample['result'], count: number, reason: string | null = null): EvaluationSample => ({ at, flagKey: f.flagKey, source: b.source, ...app, result, variant: '', reason, count });
+            const cell = (result: EvaluationSample['result'], count: number, reason: string | null = null): EvaluationSample => ({ at, flagKey: f.flagKey, source: b.source, ...app, result, variant: '', reason, count: count * showcaseScale() });
             countEvaluations(this.db, [cell('ON', b.enabled), cell('OFF', b.disabled - fb), cell('ERROR', b.errors), ...b.fallbacks.map((x) => cell('SAFE_DEFAULT', x.count, x.reason))]);
-            recordReach(this.db, [{ hour: evalHourOf(at), flagKey: f.flagKey, source: b.source, vehicles: b.vehicles }]);
+            recordReach(this.db, [{ hour: evalHourOf(at), flagKey: f.flagKey, source: b.source, vehicles: b.vehicles * showcaseScale() }]);
           }
           if (f.lastEvaluatedAt) noteLastEvaluated(this.db, f.flagKey, move(f.lastEvaluatedAt));
         }

@@ -1,9 +1,10 @@
 // 전시용 가상 차량은 원본 시연 사양·권한·품질 상태를 보존해 늘린다. 실차/실제 위치로 표시하지 않는다.
 import type { Entitlement, Vehicle, VehicleProfile } from '@ff/contracts';
+import { showcaseScale } from './showcase-scale';
 
 export function showcaseVehicleCount(env: Record<string, string | undefined>, baseline: number): number {
   if (env.FF_SHOWCASE !== '1' || env.FF_ENV === 'production' || env.FF_SEED === 'none') return baseline;
-  const n = Number(env.FF_SHOWCASE_VEHICLES ?? 480);
+  const n = Number(env.FF_SHOWCASE_VEHICLES ?? 480) * showcaseScale(env);
   if (!Number.isInteger(n) || n < baseline || n > 1200) throw new Error(`FF_SHOWCASE_VEHICLES는 ${baseline}~1200 정수여야 합니다.`);
   return n;
 }

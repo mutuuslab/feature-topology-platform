@@ -6,6 +6,7 @@ import { addDays, DATASET_FILES, DEMO_REFERENCE_SEED, EntitlementSchema, synthet
 import { z } from 'zod';
 import type { Db } from './db';
 import { expandShowcaseFleet, showcaseVehicleCount } from './showcase';
+import { showcaseScale } from './showcase-scale';
 
 export const DEFAULT_FIXTURES = join(__dirname, '..', '..', '..', 'data', 'fixtures', 'v0.81');
 /** 데이터셋 밖의 데모 데이터 — Fleet·사용 권한 (Fleet 연계 IF-06/07·결제 시스템의 모의) */
@@ -108,7 +109,7 @@ export function demoGrants(dir: string, anchor: string): Entitlement[] {
 /** 합성 모집단 크기 — FF_SYNTHETIC=0이면 넣지 않는다(기본 3000대) */
 const syntheticSize = () => {
   const n = Number(process.env.FF_SYNTHETIC ?? 3000);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) * showcaseScale() : 0;
 };
 
 /** 데모 Fleet·사용 권한·차량 성향 + 통계용 합성 체험 모집단 시드 — 데이터셋 시드와 별개로 한 번만 */

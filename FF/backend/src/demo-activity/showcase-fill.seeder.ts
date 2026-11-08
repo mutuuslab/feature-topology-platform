@@ -93,6 +93,8 @@ import { CostService } from '../domains/d07-cost/estimation/cost.service';
 import { ConsultService } from '../workflows/consult.service';
 import { DemoActivitySeeder, demoActivityEnabled } from './demo-activity.seeder';
 import { SHOWCASE_SCENARIOS_META, ShowcaseScenariosSeeder, showcaseScenariosEnabled } from './showcase-scenarios.seeder';
+import { ShowcaseExpansion } from './showcase-expansion';
+import { showcaseScale } from '../kernel/showcase-scale';
 
 export const SHOWCASE_FILL_META = 'seed:showcase-fill';
 /** 켜는가 — 데모 활동이 켜졌을 때, FF_SHOWCASE_FILL=0이면 끔(메모리 DB 부팅이 차량 회신을 기다리는 시간을 빼고 싶을 때) */
@@ -230,6 +232,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
       ['retention', () => this.retention()],
       // 마지막 — 차량 앱의 Flag 평가 기록(OFREP, IF-11 span). 홈 'Feature 적용 현황'의 실제 사용 단계가 표본을 가진다
       ['evaluations', () => this.evaluations()],
+      ['expansion', async () => { const result = new ShowcaseExpansion(this.db, this.moduleRef, this.clock).run(); if (showcaseScale() === 2) await this.svc(ExtSyncService).repairShowcaseRequirements(); return result; }],
     ];
     for (const [name, fn] of steps) {
       if (this.stopped) break;
@@ -897,7 +900,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
       const f = features.get(p.featureId, p.featureVersion);
       if (!f) continue;
       const scope = vehicles.filter((v) => v.country === f.country && v.vehicleModel === f.vehicleModel && v.trim === f.trim);
-      const pick = [...scope.filter((v) => holds.get(v.vin)?.has(p.flagKey)), ...scope.filter((v) => !holds.get(v.vin)?.has(p.flagKey))].slice(0, 12);
+      const pick = [...scope.filter((v) => holds.get(v.vin)?.has(p.flagKey)), ...scope.filter((v) => !holds.get(v.vin)?.has(p.flagKey))].slice(0, 12 * showcaseScale());
       for (const v of pick) {
         await ofrep.one(p.flagKey, { context: { targetingKey: vehiclePseudonym(v.vin) } });
         n++;

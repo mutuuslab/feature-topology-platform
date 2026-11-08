@@ -1,10 +1,13 @@
 import { CreateWorkflowCaseBody, WorkflowActivityReviewBody, WorkflowActivitySubmitBody, WorkflowArtifactBody, WorkflowExecutionError, WorkflowHandoffBody, WorkflowHandoffReceiveBody, WorkflowRoleGrantBody, addWorkflowArtifact, executionActivity, offerWorkflowHandoff, receiveWorkflowHandoff, reviewWorkflowActivity, submitWorkflowActivity, type WorkflowCase, type WorkflowCaseDetail, type WorkflowCaseHistory, type WorkflowCommandActor, type WorkflowRoleGrant, type WorkflowStoredFile } from '@ff/contracts';
 import { WORKFLOW_EXECUTION_MODEL as M } from '../../../../../contracts/src/generated/workflow-execution-model';
-import { registerSimHandler, registerSimReader, SimError } from '../engine';
-import type { SimReadContext, SimWriteContext } from '../types';
+import { registerSimHandler as registerHandler, registerSimReader as registerReader, SimError } from '../engine';
+import type { SimHandler, SimReader, SimReadContext, SimWriteContext } from '../types';
+import { hydrateWorkflowSnapshot } from './workflow-snapshot';
 import { canonicalJson, type WorkflowSourceObservation, type WorkflowSourceView } from '@ff/contracts';
 
 const CASE='workflowCase',GRANT='workflowGrant',HISTORY='workflowHistory';
+function registerSimReader(name:string,fn:SimReader) { registerReader(name,async ctx=>{activeRead(ctx);await hydrateWorkflowSnapshot(ctx);return fn(ctx);}); }
+function registerSimHandler(name:string,fn:SimHandler,opts:Parameters<typeof registerHandler>[2]={}) { registerHandler(name,async ctx=>{active(ctx);await hydrateWorkflowSnapshot(ctx);return fn(ctx);},opts); }
 const state=(ctx:SimReadContext,id:string)=>ctx.get<{state:string}>('f0Account',id)?.state??(Object.prototype.hasOwnProperty.call(M.personas,id.replace(/^usr-/,''))?'ACTIVE':'ABSENT');
 function grants(ctx:SimReadContext):WorkflowRoleGrant[] {const latest=new Map<string,WorkflowRoleGrant>();for(const g of ctx.list<WorkflowRoleGrant>(GRANT).sort((a,b)=>a.id-b.id))latest.set(`${g.accountId}|${g.roleId}`,g);return [...latest.values()].filter(g=>ctx.actor.role==='SYSTEM_ADMIN'||g.accountId===ctx.actor.id);}
 function roles(ctx:SimReadContext):string[] {return state(ctx,ctx.actor.id)!=='ACTIVE'?[]:[...new Set([...(M.personas[ctx.actor.persona]??[]),...grants(ctx).filter(g=>g.active&&g.accountId===ctx.actor.id).map(g=>g.roleId)])];}
@@ -26,6 +29,9 @@ registerSimReader('workflowCases',ctx=>{activeRead(ctx);return {items:ctx.list<W
 registerSimReader('workflowCase',ctx=>detail(ctx,ctx.req.params.id));
 registerSimReader('workflowCaseSources',async ctx=>{
   const item=detail(ctx,ctx.req.params.id).item;
+  const captured=await ctx.snapshot<WorkflowSourceView>('workflowCaseSources',{id:item.caseId});
+  const sourceEdited=Object.entries(ctx.overlay.entities).some(([key,rows])=>![CASE,GRANT,HISTORY,'f0Account'].includes(key)&&Object.keys(rows).length>0);
+  if(captured?.targetRef===item.targetRef&&!sourceEdited)return captured;
   const view:WorkflowSourceView={targetRef:item.targetRef,status:'DECLARED',items:[],unavailable:[],limitation:'정적 시연 데이터의 현재 레코드와 내용 해시입니다. 실제 외부 파일·개인 서명·원천 승인 유효성은 원천 시스템에서 확인하세요.'};
   const match=/^(FEAT-\d+)@([0-9]+\.[0-9]+\.[0-9]+)$/.exec(item.targetRef);
   if(!match)return view;

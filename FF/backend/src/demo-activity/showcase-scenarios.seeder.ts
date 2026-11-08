@@ -21,6 +21,7 @@ import { ConsultService } from '../workflows/consult.service';
 import { DEMO_ACTIVITY_META, DemoActivitySeeder } from './demo-activity.seeder';
 import { ShowcaseOperations } from './showcase-operations';
 import { ExtSyncService } from '../domains/d05-ext/api-gateway/ext-sync/ext-sync.service';
+import { showcaseScale } from '../kernel/showcase-scale';
 
 export const SHOWCASE_SCENARIOS_META = 'seed:showcase-scenarios:double';
 export const SHOWCASE_FEATURE_VERSIONS = 184;
@@ -84,13 +85,37 @@ export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplic
       await this.moduleRef.get(ExtSyncService, { strict: false }).repairShowcaseRequirements();
       return;
     }
+    const created = this.createCohort(SHOWCASE_FEATURE_VERSIONS, 0, SHOWCASE_SCENARIOS_META);
+    this.guardRetry(created);
+    this.operations();
+    await this.moduleRef.get(ExtSyncService, { strict: false }).repairShowcaseRequirements();
+  }
+
+  /** Runs after the original fill, preserving all pre-existing policy/product/approval IDs. */
+  expand() {
+    const marker = 'seed:showcase-scenarios:additional:v1';
+    const prior = this.db.get<{ value: string }>('SELECT value FROM meta WHERE key=?', marker);
+    if (prior) {
+      const state = JSON.parse(prior.value);
+      if (!state.enrichmentComplete) this.guardRetry(state.created, marker);
+      return JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key=?', marker)!.value);
+    }
+    if (showcaseScale() !== 2) return null;
+    const original = JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key=?', SHOWCASE_SCENARIOS_META)!.value);
+    const created = this.createCohort((SHOWCASE_FEATURE_VERSIONS + 1) * 2, original.created.length, marker);
+    this.guardRetry(created, marker);
+    return JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key=?', marker)!.value);
+  }
+
+  private createCohort(target: number, offset: number, marker: string) {
     const before = this.features.all().length;
     const refs = this.refs.listRefs({ status: 'ACTIVE' }).filter((r) => r.asilRep === 'QM' && !r.requires.length);
     if (!refs.length) throw new Error('전시 시나리오에 연결할 발행된 QM 기준 기능이 없습니다.');
     const created: string[] = [];
     // 한 묶음이 실패하면 marker와 함께 전체를 되돌린다. 같은 DB를 재기동해도 중복 생성하지 않는다.
     this.db.tx(() => {
-      for (let i = 0; i < Math.max(0, SHOWCASE_FEATURE_VERSIONS - before); i++) {
+      for (let index = 0; index < Math.max(0, target - before); index++) {
+        const i = index + offset;
         const mode = i % STATES.length;
         const ref = refs[i % refs.length];
         const variant = String(i + 1).padStart(3, '0');
@@ -126,11 +151,9 @@ export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplic
         if (rejected) this.policies.decide(approver, p.policyId, PolicyDecisionBody.parse({ decision: 'REJECT', reason: '전시 — 적용 범위 보완 후 재검증 요청' }));
       }
       const dependencies = this.dependencies(created);
-      this.db.run('INSERT INTO meta (key, value) VALUES (?, ?)', SHOWCASE_SCENARIOS_META, JSON.stringify({ at: this.clock.iso(), before, after: this.features.all().length, created, dependencies }));
+      this.db.run('INSERT INTO meta (key, value) VALUES (?, ?)', marker, JSON.stringify({ at: this.clock.iso(), before, after: this.features.all().length, created, dependencies }));
     });
-    this.guardRetry(created);
-    this.operations();
-    await this.moduleRef.get(ExtSyncService, { strict: false }).repairShowcaseRequirements();
+    return created;
   }
 
   onApplicationShutdown() { this.stopped = true; }
@@ -179,7 +202,7 @@ export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplic
     return added;
   }
 
-  private guardRetry(created: string[]) {
+  private guardRetry(created: string[], marker = SHOWCASE_SCENARIOS_META) {
     if (created.length >= 2) {
       const find = (key: string) => { const [id, version] = key.split('@'); return this.features.get(id, version)!; };
       const draft = find(created[0]), target = find(created[1]);
@@ -193,11 +216,11 @@ export class ShowcaseScenariosSeeder implements OnApplicationBootstrap, OnApplic
       const existing = this.topology.list({ featureId: draft.featureId }).find((d) => d.sourceFeatureId === draft.featureId && d.targetFeatureId === target.featureId && d.type === 'EXCLUDES');
       const relation = existing ?? this.topology.create(author, CreateDependencyBody.parse({ sourceFeatureId: draft.featureId, sourceVersion: draft.version, targetFeatureId: target.featureId, targetVersion: target.version, type: 'EXCLUDES' }));
       if (!draft.description?.includes('부서 검토 의견에 따라')) this.registry.updateDraft(author, draft.featureId, draft.version, UpdateDraftBody.parse({ description: `${draft.description}\n전시 — 부서 검토 의견에 따라 적용 범위 설명을 보완했습니다.` }));
-      const row = JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', SHOWCASE_SCENARIOS_META)!.value);
-      this.db.tx(() => this.db.run('UPDATE meta SET value = ? WHERE key = ?', JSON.stringify({ ...row, enrichmentComplete: true, dependencies: [...new Set([...(row.dependencies ?? []), relation.dependencyId])] }), SHOWCASE_SCENARIOS_META));
+      const row = JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', marker)!.value);
+      this.db.tx(() => this.db.run('UPDATE meta SET value = ? WHERE key = ?', JSON.stringify({ ...row, enrichmentComplete: true, dependencies: [...new Set([...(row.dependencies ?? []), relation.dependencyId])] }), marker));
     } else {
-      const row = JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', SHOWCASE_SCENARIOS_META)!.value);
-      this.db.tx(() => this.db.run('UPDATE meta SET value = ? WHERE key = ?', JSON.stringify({ ...row, enrichmentComplete: true }), SHOWCASE_SCENARIOS_META));
+      const row = JSON.parse(this.db.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', marker)!.value);
+      this.db.tx(() => this.db.run('UPDATE meta SET value = ? WHERE key = ?', JSON.stringify({ ...row, enrichmentComplete: true }), marker));
     }
   }
 }

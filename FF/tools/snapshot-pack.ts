@@ -5,6 +5,8 @@ import { basename, isAbsolute, join, relative, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { PACK_DIR, PACK_INDEX, PACK_VERSION, packetFile, packedRequest, type PacketIndex, type VehiclePacket } from './snapshot-pack-format.ts';
+import { packResources, resourceLogicalFiles } from './snapshot-resource-pack.ts';
+import { PAGES_MAX_FILE_BYTES } from './snapshot-resource-format.ts';
 const contracts = createRequire(import.meta.url)('../contracts/dist/index.js') as { routeUrl(n: string, p?: Record<string, string>, q?: Record<string, string>): string; snapshotFile(url: string): string };
 export const PAGES_FREE_FILE_LIMIT = 20000;
 export const hash = (s: string | Uint8Array) => createHash('sha256').update(s).digest('hex');
@@ -52,7 +54,7 @@ export function assertPagesFileCount(artifact: string): number {
 }
 /** Validate packets against the retained canonical lists; return the original logical filenames for coverage. */
 export function packedLogicalFiles(dir: string, allowOriginals = false): string[] {
-  if (!existsSync(join(dir, PACK_INDEX))) return [];
+  if (!existsSync(join(dir, PACK_INDEX))) return resourceLogicalFiles(dir, allowOriginals);
   const index = readJson(dir, PACK_INDEX) as PacketIndex, source = context(dir);
   if (index.version !== PACK_VERSION || JSON.stringify(index.vins) !== JSON.stringify(source.vins) || JSON.stringify(index.catalogIds) !== JSON.stringify(source.catalogIds) || JSON.stringify(index.flagKeys) !== JSON.stringify(source.flagKeys) || !Array.isArray(index.packets) || index.packets.length !== source.vins.length) fail('packet index does not cover the canonical source');
   const logical: string[] = [];
@@ -76,11 +78,13 @@ export function packedLogicalFiles(dir: string, allowOriginals = false): string[
     }
   }
   if (logical.length !== index.logicalFiles || new Set(logical).size !== logical.length) fail('logical count or filename collision');
-  return logical;
+  return [...logical, ...resourceLogicalFiles(dir, allowOriginals)];
 }
 export function packArtifact(artifact: string) {
   const dir = apiRoot(artifact), before = physicalFiles(artifact), source = context(dir);
   if (existsSync(join(dir, PACK_INDEX))) {
+    packedLogicalFiles(dir);
+    packResources(dir);
     const logical = packedLogicalFiles(dir);
     return { before, after: physicalFiles(artifact), logical: logical.length, packets: source.vins.length, idempotent: true, ...source };
   }
@@ -98,6 +102,7 @@ export function packArtifact(artifact: string) {
       originals.push({ file, sha256 });
     }
     const file = packetFile(hash(vin)), body = JSON.stringify(packet);
+    if (Buffer.byteLength(body) > PAGES_MAX_FILE_BYTES) fail('VIN packet exceeds 25MiB');
     packets.push({ file, body });
     index.packets.push({ vin, file, sha256: hash(body), bytes: Buffer.byteLength(body) });
   }
@@ -120,6 +125,7 @@ export function packArtifact(artifact: string) {
   // Validate the exact original bytes again before unlinking only the explicit two-family file list.
   for (const p of originals) { const path = within(dir, p.file); regular(path); if (hash(readFileSync(path)) !== p.sha256) fail(`source changed during packing: ${p.file}`); }
   for (const p of originals) unlinkSync(within(dir, p.file));
+  packResources(dir);
   const logical = packedLogicalFiles(dir);
   return { before, after: physicalFiles(artifact), logical: logical.length, packets: packets.length, idempotent: false, ...source };
 }

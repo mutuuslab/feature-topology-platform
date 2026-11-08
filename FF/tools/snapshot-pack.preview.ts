@@ -30,7 +30,7 @@ function assetResponse(body: BodyInit | null, init: ResponseInit = {}): Response
 const types: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.mjs': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.ico': 'image/x-icon', '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.glb': 'model/gltf-binary', '.gltf': 'model/gltf+json', '.wasm': 'application/wasm', '.mp4': 'video/mp4', '.webm': 'video/webm', '.txt': 'text/plain', '.log': 'text/plain', '.pdf': 'application/pdf', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' };
 function asset(request: Request, packetOnly = false): Response {
   const url = new URL(request.url);
-  if (packetOnly && !/^\/api-snapshot\/vehicle-query-packets\/[0-9a-f]{64}\.json$/.test(url.pathname)) return assetResponse(null, { status: 404 });
+  if (packetOnly && !/^\/api-snapshot\/(vehicle-query-packets|resource-query-packets)\/[0-9a-f]{64}\.json$/.test(url.pathname)) return assetResponse(null, { status: 404 });
   if (!packetOnly && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/__auth/'))) return assetResponse(null, { status: 404 });
   let path: string;
   try { path = decodeURIComponent(url.pathname); } catch { return assetResponse(null, { status: 400 }); }

@@ -92,6 +92,8 @@ const workflowParts: Array<() => Promise<{ default: Record<string, string> }>> =
   () => import('./en/workflow-metadata-parts/fpw-1'),
   () => import('./en/workflow-metadata-parts/fpw-14'),
   () => import('./en/workflow-metadata-parts/fpw-2'),
+  () => import('./en/workflow-metadata-parts/fpw-3'),
+  () => import('./en/workflow-metadata-parts/fpw-4'),
 ];
 export async function loadEnglishCatalogues(): Promise<Record<string, Record<string, unknown>>> {
   const catalogues = Object.fromEntries(await Promise.all(Object.entries(loaders).map(async ([name, load]) => [name, (await load()).default])));

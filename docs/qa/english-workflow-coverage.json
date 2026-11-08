@@ -2,8 +2,8 @@
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
   "total": 1800,
-  "missing": 988,
-  "translated": 447,
+  "missing": 856,
+  "translated": 579,
   "sourceEnglish": 365,
   "duplicate": [],
   "unknown": [],
@@ -30,6 +30,18 @@
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-2.ts",
       "entries": 62,
       "sourceFingerprint": "14744bd64634dae50886e358c803fbff6f8e5402278f9fa4bbea1e0b868bed03",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-3.ts",
+      "entries": 63,
+      "sourceFingerprint": "1dd30ff8ae21d79b068415af25b1f1e9e30871c7d5db7dd6e697f2f87dcd8d3a",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-4.ts",
+      "entries": 69,
+      "sourceFingerprint": "b0d642b34e85db0c65a291bd404b28ff9c4a5d1194ba6a9907f404cfcc5b065d",
       "status": "MATCH"
     }
   ],
@@ -2040,57 +2052,57 @@
       "key": "FPW.3.ref",
       "source": "표준 보고서 6.1절 G3, 6장 FFG-LCY-004·005, 16장(ASPICE SYS.2·SWE.1)",
       "sourceHash": "bdc024a65c296228a58554023976e7667bb95058161392d9223e831d0f62826b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report section 6.1 G3, chapter 6 FFG-LCY-004/005, chapter 16 (ASPICE SYS.2 and SWE.1)"
     },
     {
       "key": "FPW.3.purpose",
       "source": "HARA 결과로부터 검증 가능한 안전요구를 확정하고, Safety Goal부터 출시 Baseline까지 끊김 없이 추적되게 한 뒤, Feature 정의(G1~G3)를 승인해 개발 단계로 넘긴다.",
       "sourceHash": "6446c1d7261e08dce48d770f98468cde4ab4ef5913f0c283d44729a464706230",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm verifiable safety requirements from HARA results, preserve continuous traceability from Safety Goals through release Baselines, and approve the Feature definition (G1–G3) for handover to development."
     },
     {
       "key": "FPW.3.O1.text",
       "source": "비활성화 동작을 포함한 안전요구가 Safety Goal에서 도출된다.",
       "sourceHash": "805fc94ab2841a2439dc1305e0cfb7c06b1808ba8f6aa14763b4de1842f7fd07",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety requirements, including deactivation behavior, are derived from Safety Goals."
     },
     {
       "key": "FPW.3.O2.text",
       "source": "F2 이상 Feature의 안전요구가 양방향으로 빠짐없이 추적된다.",
       "sourceHash": "e0ed8328ba652b85b065851ebac58ce770be57acfc5faf39b209015e8dfa4b69",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety requirements for F2+ Features are completely traceable in both directions."
     },
     {
       "key": "FPW.3.O3.text",
       "source": "요구 검토가 판정되고 Feature 정의가 승인되어 APPROVED로 전이된다.",
       "sourceHash": "3d1cf28e894d34a7a9c6d032aa10dc219b76ed8af91ef320c9d1f1a79aa7ea70",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requirements review is decided and the Feature definition is approved, transitioning to APPROVED."
     },
     {
       "key": "FPW.3.entry.0",
       "source": "G2 판정이 PASS이고 HARA·TARA·SOTIF 결과가 현재 Version 기준이다",
       "sourceHash": "4b01d03a6b16c2bba8b3708ee72306a230cfe5f83ffa3f29c6191a6cc4182647",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G2 is PASS, and HARA, TARA and SOTIF results apply to the current Version"
     },
     {
       "key": "FPW.3.exit.0",
       "source": "안전요구가 Feature Version에 연결되고 추적 단절이 없다",
       "sourceHash": "6663730f8dc05eb654f9b4b72aafbf7f2e67c64c1d125027251673af0effe6bc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety requirements are linked to the Feature Version without traceability gaps"
     },
     {
       "key": "FPW.3.exit.1",
       "source": "G3 판정과 정의 승인(PROPOSED→APPROVED)이 남았다",
       "sourceHash": "fb40527f405f8ec5b547d764f24bb99597a96bd5ae05f6860621f767d81d7e76",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The G3 decision and definition approval (PROPOSED → APPROVED) are recorded"
     },
     {
       "key": "FPW.3.WP-SAFETY-REQ.name",
@@ -2103,22 +2115,22 @@
       "key": "FPW.3.WP-SAFETY-REQ.content.0",
       "source": "Safety Goal부터 기능·기술·SW 안전요구까지의 도출 관계",
       "sourceHash": "2ece90aecce24a09a39a76363f4509333be97f1c5c72ac165e538de30b4bc437",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Derivation from Safety Goals through functional, technical and SW safety requirements"
     },
     {
       "key": "FPW.3.WP-SAFETY-REQ.content.1",
       "source": "비활성화 등급·경고·인계·감소 시간·Safe State·끝 상태·운전자 정보 요구",
       "sourceHash": "d4a4fbdfdd6106b2f429558fe85b9fcaaf53e0ced91f50505c9fb368046829f5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requirements for deactivation class, warnings, handover, reduction time, Safe State, final state and driver information"
     },
     {
       "key": "FPW.3.WP-SAFETY-REQ.content.2",
       "source": "요구별 검증 기준과 ALM 요구 ID",
       "sourceHash": "0fe740009dcee077d27fb9ff899b0dfa476f00230373b483d7221ad4dee89876",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verification criteria and ALM requirement ID for each requirement"
     },
     {
       "key": "FPW.3.WP-TRACE-REPORT.name",
@@ -2131,15 +2143,15 @@
       "key": "FPW.3.WP-TRACE-REPORT.content.0",
       "source": "요구↔설계↔시험↔Baseline 양방향 연결 현황",
       "sourceHash": "d8a4e6fe38077116b108d1ffb0b7861ff42e20cbd253ac867f2243bdc146fd2f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Bidirectional requirements ↔ design ↔ test ↔ Baseline links"
     },
     {
       "key": "FPW.3.WP-TRACE-REPORT.content.1",
       "source": "끊긴 연결과 조치 담당",
       "sourceHash": "543c42fcd116cca874e93539e5350b0f558406688500911b90ac1980db4982e2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Broken links and their action owners"
     },
     {
       "key": "FPW.3.WP-REQ-REVIEW.name",
@@ -2152,15 +2164,15 @@
       "key": "FPW.3.WP-REQ-REVIEW.content.0",
       "source": "요구 특성(검증 가능성·일관성·완전성) 검토 결과",
       "sourceHash": "4bf015849752edcd0c1aa67cf21a258718374a22b5dc5723f28ff62e9d0fb56d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review results for verifiability, consistency and completeness"
     },
     {
       "key": "FPW.3.WP-REQ-REVIEW.content.1",
       "source": "Requirement Gate 판정과 판정자 서명",
       "sourceHash": "f6caa3f514137269c5734843bb89b1940240f6b385f35e3c6c40fadc9aa3e63e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requirement Gate decision and decision maker’s signature"
     },
     {
       "key": "FPW.3.WP-G3-DECISION.name",
@@ -2173,15 +2185,15 @@
       "key": "FPW.3.WP-G3-DECISION.content.0",
       "source": "G3 판정과 근거 Evidence ID",
       "sourceHash": "59f4304a687fe0efab63ac7991a7798679243abe559badc83136ab7719e9346a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G3 decision and supporting Evidence IDs"
     },
     {
       "key": "FPW.3.WP-G3-DECISION.content.1",
       "source": "PROPOSED→APPROVED 전이 기록과 승인자(작성자와 다른 사람)",
       "sourceHash": "c50d371af2e601fad5d826786e611739e0c7f3e2192d7171aeddd2899aefb5aa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "PROPOSED → APPROVED transition and approver distinct from the author"
     },
     {
       "key": "FPW.3.WP-IMPL-LINK.name",
@@ -2194,15 +2206,15 @@
       "key": "FPW.3.WP-IMPL-LINK.content.0",
       "source": "Function → SW ID·Version → 제어기(ECU) P/N 짝 — SW·ECU 기준정보에서 고른 값",
       "sourceHash": "fc8a80b6dcac6dd766bdb4cbca5dd57e4be3bef09ac5e0f20953f08157f128e7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Function → SW ID/Version → ECU P/N combinations selected from SW/ECU master data"
     },
     {
       "key": "FPW.3.WP-IMPL-LINK.content.1",
       "source": "VERIFIED 전이의 필수 입력(functions·swIds·swVersions·ecuPnos)",
       "sourceHash": "f2892505e97e384bd8612ae06cae6d85fbe194f191db1f7821dbb4f241146310",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Required VERIFIED transition inputs: functions, swIds, swVersions and ecuPnos"
     },
     {
       "key": "FPW.3.WP-EXT-SYNC.name",
@@ -2215,22 +2227,22 @@
       "key": "FPW.3.WP-EXT-SYNC.content.0",
       "source": "codeBeamer 요구·JIRA Epic·GitLab MR과 Feature Version의 연결·상태 대조 결과",
       "sourceHash": "29f5fbe18f83268e902139f8062e3789792c56feb8338cbeacac47ac67b50cec",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Links and state comparisons between codeBeamer requirements, JIRA Epics, GitLab MRs and the Feature Version"
     },
     {
       "key": "FPW.3.WP-EXT-SYNC.content.1",
       "source": "받은 함에서 거부된 외부 변경과 사유(권한·전이 규칙·계정 매핑)",
       "sourceHash": "ee71e4b626ebcaecd1770e5a4ccdcc8b64d1a737c68942747e5cfde080b9f96a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Rejected incoming external changes and reasons: permissions, transition rules or account mapping"
     },
     {
       "key": "FPW.3.WP-EXT-SYNC.content.2",
       "source": "충돌마다 고른 값(플랫폼 값·외부 값)과 처리자·사유",
       "sourceHash": "df87a3874bce0e42cf6b7c15294c1f039c86c83990eade16f8f1046d8dcfefb7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Selected platform/external value, resolver and reason for each conflict"
     },
     {
       "key": "FPW.3-A01.name",
@@ -2243,36 +2255,36 @@
       "key": "FPW.3-A01.steps.0",
       "source": "Safety Goal별로 기능·기술 안전요구를 도출하고 SW에 할당된 요구를 SW 안전요구로 나눈다",
       "sourceHash": "9fecaa32f6f163c3d6519231805289e823e8885a68d796e044771575ecb4b24c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Derive functional and technical safety requirements from each Safety Goal, then identify SW safety requirements allocated to software"
     },
     {
       "key": "FPW.3-A01.steps.1",
       "source": "F2 이상 Feature는 비활성화 등급·경고·인계·감소 시간·Safe State·끝 상태·운전자 정보를 요구로 쓴다",
       "sourceHash": "ec6771025b02ec2379f93b8cc1420dcbf9d9c044771c9e6961a068e44cbf4ec0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For F2+ Features, specify deactivation class, warnings, handover, reduction time, Safe State, final state and driver information as requirements"
     },
     {
       "key": "FPW.3-A01.steps.2",
       "source": "안전 관련 Flag·파라미터·임계값 변경은 소스 변경이 없어도 변경요청과 영향 분석을 붙인다",
       "sourceHash": "2e403ff58c229a71fac05b380560d2d27b41d1a605a0ae3cf1828c63e9fa5d86",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Attach a change request and impact analysis to safety-related Flag, parameter or threshold changes even without source-code changes"
     },
     {
       "key": "FPW.3-A01.steps.3",
       "source": "요구마다 검증 기준을 적고 ALM 요구 ID로 등록한다",
       "sourceHash": "71b6cbb86f3bc90725c1d4a41a6187c07186df73b0fdc40cf83eedc4ba18fa4b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define verification criteria for each requirement and register its ALM requirement ID"
     },
     {
       "key": "FPW.3-A01.checks.0",
       "source": "모든 Safety Goal에 하나 이상의 안전요구가 있고 요구마다 검증 기준이 있다",
       "sourceHash": "bd88463cfba1768b02f8aabf44b027e7ee4f9e32e6b7a419c6635a8c7feb514c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each Safety Goal has at least one safety requirement, and each requirement has verification criteria"
     },
     {
       "key": "FPW.3-A02.name",
@@ -2285,29 +2297,29 @@
       "key": "FPW.3-A02.steps.0",
       "source": "요구·안전 추적 화면에서 Safety Goal→요구→설계→시험→Baseline 연결을 양방향으로 확인한다",
       "sourceHash": "dcb60e44db4fcc264a54bd6e9d33ec5a1431bfdf78bad7cdc375f64cb9bb6540",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check bidirectional Safety Goal → requirement → design → test → Baseline links in Requirements and safety traceability"
     },
     {
       "key": "FPW.3-A02.steps.1",
       "source": "끊긴 연결마다 조치 담당과 기한을 지정한다",
       "sourceHash": "f91f51b44cae5dea7a63cd95ead16a1933a9e67c9e7b5f7b88ef3a52ee143c89",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assign an action owner and deadline to every broken link"
     },
     {
       "key": "FPW.3-A02.steps.2",
       "source": "F2 이상 Feature에 연결되지 않은 요구가 남아 있으면 판정 요청을 보류한다",
       "sourceHash": "3dfaa404113e8e784788353a9ec6e0af923eb00425b183b4d1f071ef8930806c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hold the decision request while any F2+ requirement remains unlinked"
     },
     {
       "key": "FPW.3-A02.checks.0",
       "source": "F2 이상 Feature의 끊긴 연결이 0건이다",
       "sourceHash": "82fa73a1fbe37b7ed682e065e8a012b5c9aafe7b96e037eac75d2bb5b7d57fb6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "No broken trace links remain for F2+ Features"
     },
     {
       "key": "FPW.3-A03.name",
@@ -2320,29 +2332,29 @@
       "key": "FPW.3-A03.steps.0",
       "source": "요구 특성(검증 가능성·일관성·완전성)을 체크리스트로 검토한다",
       "sourceHash": "77148b54798187646939318e14b401ffdccee969bfde8f7adcd7db5fb5d8711e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review verifiability, consistency and completeness with a checklist"
     },
     {
       "key": "FPW.3-A03.steps.1",
       "source": "결과를 플랫폼 Requirement Gate에 판정으로 등록한다",
       "sourceHash": "dfcc54883f67e0ff9458e1b9dcfaf661a45a81f99bb7b17dc6d58b8d2cb72028",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Register the result as a platform Requirement Gate decision"
     },
     {
       "key": "FPW.3-A03.steps.2",
       "source": "결함이 있으면 요구 Owner에게 돌려보내고 재검토 일정을 잡는다",
       "sourceHash": "db5a8299a47f442857023d32a005e62d7c1373569e7ea27838f546bdb27f0347",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Return defects to the requirement Owner and schedule another review"
     },
     {
       "key": "FPW.3-A03.checks.0",
       "source": "검토자가 요구 작성자와 다른 조직이다",
       "sourceHash": "14cefe5647465bfc0b07fcbf89665fd3869cbb431ee95e7154ea5b587b6ce561",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The reviewer is from an organization distinct from the requirements author"
     },
     {
       "key": "FPW.3-A05.name",
@@ -2355,36 +2367,36 @@
       "key": "FPW.3-A05.steps.0",
       "source": "정의 승인 전에 Feature 설계 담당 또는 SW 통합 담당이 PROPOSED 초안에서 Function → SW·Version → 제어기 P/N을 SW·ECU 기준정보에서 골라 연결한다",
       "sourceHash": "4006c5a279c361480bdda95420df3df5c8fd8df6f10e698bf86c1146b62b0c0b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Before definition approval, the Feature designer or SW integration owner selects Function → SW/Version → ECU P/N links from master data in the PROPOSED draft"
     },
     {
       "key": "FPW.3-A05.steps.1",
       "source": "Feature 상세 → 초안 수정 → 구현 연결에서 입력한다. 서버는 기준정보에 없는 짝을 거부한다",
       "sourceHash": "557febcbf4092eea16b98ab7733482e2e417d96e80bc2c42c6027654788e3440",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Enter links in Feature details → Edit draft → Implementation links. The server rejects combinations absent from master data"
     },
     {
       "key": "FPW.3-A05.steps.2",
       "source": "승인된 Version에 구현 연결이 빠져 있으면 새 Version에서 넣고 정의 승인을 다시 받는다",
       "sourceHash": "ca0a3c70283f4803c72a7c1e009308f052b55fbdcf2c7f530f2eb1ab37135181",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If an approved Version lacks implementation links, add them in a new Version and obtain definition approval again"
     },
     {
       "key": "FPW.3-A05.steps.3",
       "source": "외부 연계 현황에서 codeBeamer 요구·JIRA Epic·GitLab MR이 이 Version에 연결되고 상태가 맞는지 확인한다",
       "sourceHash": "e5b25d3a401e8820bbe41f139d6044ae0edf814b9bb84e339925ca3f493590e9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check external integrations to confirm codeBeamer requirements, JIRA Epics and GitLab MRs link to this Version with matching states"
     },
     {
       "key": "FPW.3-A05.checks.0",
       "source": "VERIFIED 필수 입력(functions·swIds·swVersions·ecuPnos)이 모두 기준정보에 있는 짝이다",
       "sourceHash": "1c5e95798fd2c6ad94e64038f41329894b504568e40beed5a10dc914e237deb0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All VERIFIED-required functions, swIds, swVersions and ecuPnos form combinations present in master data"
     },
     {
       "key": "FPW.3-A06.name",
@@ -2397,57 +2409,57 @@
       "key": "FPW.3-A06.steps.0",
       "source": "외부 연계 현황의 연계 동기화 탭에서 이 Version의 codeBeamer 요구·JIRA Epic 연결과 받은 함·보낼 함·열린 충돌을 확인한다",
       "sourceHash": "1306b2596a8c8874c22b7fa958ad7a29424e4d15a1335fe2d061f28e26e72b5b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "In the integration synchronization tab, inspect this Version’s codeBeamer/JIRA links, inbox, outbox and open conflicts"
     },
     {
       "key": "FPW.3-A06.steps.1",
       "source": "codeBeamer 요구가 개정되어 G2 재검토 표시가 붙었으면 요구 담당과 안전 담당에게 재검토를 요청한다",
       "sourceHash": "632e45a61118953482472b2fc1e0fdab750c61d7f4c011a34fd24c0ad90813be",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "When revised codeBeamer requirements produce a G2 reassessment marker, ask requirements and safety owners to review again"
     },
     {
       "key": "FPW.3-A06.steps.2",
       "source": "JIRA에서 들어온 Epic·변경요청 상태 변경이 거부되었으면 받은 함의 사유(권한·전이 규칙·계정 매핑)를 외부 담당에게 알린다",
       "sourceHash": "7dd06c19058f00470950955ee21a8a173d8adb6224c97aadf6275ffb067bd295",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If incoming JIRA Epic/change-request state changes are rejected, tell the external owner the inbox reason: permission, transition rule or account mapping"
     },
     {
       "key": "FPW.3-A06.steps.3",
       "source": "실패한 보낼 함 작업은 연결 설정·워크플로 전이·권한 원인을 고치고 다음 재시도에서 보내졌는지 확인한다",
       "sourceHash": "cc8d5282d196bbb074c0dcc8babebea77d2eb19776e5d44a94ae1287d3984c9e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Fix connection, workflow-transition or permission causes of failed outbox tasks and verify delivery at the next retry"
     },
     {
       "key": "FPW.3-A06.steps.4",
       "source": "충돌은 플랫폼 값 다시 보내기와 외부 값 다시 시도 중 하나를 사유와 함께 고른다. 외부 값은 플랫폼 가드를 다시 거친다",
       "sourceHash": "2181689a2bfc3ed660b569b5cd782e3a10debea9e7d8bae57136ad2408408f66",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Resolve conflicts by resending the platform value or retrying the external value with a reason. External values pass platform guards again"
     },
     {
       "key": "FPW.3-A06.steps.5",
       "source": "정의 승인 뒤에도 외부 요구 개정·상태 변경·충돌이 생기면 같은 확인을 다시 한다",
       "sourceHash": "1b89b8b014d415b98b946fe5719a5ff9777e851b9af98d00222850d2ac9fd512",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Repeat these checks for external requirement revisions, state changes or conflicts even after definition approval"
     },
     {
       "key": "FPW.3-A06.checks.0",
       "source": "열린 충돌이 0건이고 실패한 보낼 함 작업마다 조치 담당이 있다",
       "sourceHash": "2946517ed736264d439026d9bcad5ef06308878ff4329e379f265871050f63b2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "No conflicts remain open, and each failed outbox task has an action owner"
     },
     {
       "key": "FPW.3-A06.checks.1",
       "source": "Feature Version의 codeBeamer 요구·JIRA Epic 상태가 플랫폼 Lifecycle과 맞다",
       "sourceHash": "80c8d4f5cbc61a31c5125a292820054e151f655dfddd17be0e3ac403dde2f49e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Version’s codeBeamer requirement and JIRA Epic states match platform Lifecycle"
     },
     {
       "key": "FPW.3-A04.name",
@@ -2460,50 +2472,50 @@
       "key": "FPW.3-A04.steps.0",
       "source": "G1·G2·Requirement Gate 판정이 모두 PASS(또는 기한 있는 조건부)인지 확인하고 하나라도 없으면 승인하지 않는다",
       "sourceHash": "95a81050f24716c12e2a7b7bbe5f26d671269db607d9ff83b470aff040baf176",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify G1, G2 and Requirement Gate decisions are PASS or time-bounded conditional passes; do not approve if any are absent"
     },
     {
       "key": "FPW.3-A04.steps.1",
       "source": "판정 근거를 정리해 G3 판정을 남긴다",
       "sourceHash": "2e5d8c1eae489cf6b1edd4cca29af5bbd83a2041b448b21942e5978c4dec1341",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Organize supporting rationale and record the G3 decision"
     },
     {
       "key": "FPW.3-A04.steps.2",
       "source": "Lifecycle을 PROPOSED에서 APPROVED로 전이한다. 작성자는 이 전이를 할 수 없다",
       "sourceHash": "30296662c005abc2abe3681d19a9ce273973e10e5bc1cbb37d82594ea412904d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transition Lifecycle from PROPOSED to APPROVED. The author cannot perform this transition"
     },
     {
       "key": "FPW.3-A04.steps.3",
       "source": "승인 서랍이 구현 연결 미입력을 경고한다(막지는 않는다) — 빠졌으면 승인 대신 보완을 요청할 수 있다",
       "sourceHash": "77ff47225e9cb219ed82f70ae05083bed7cb0b234dacc3e85f9f8362f76334ee",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The approval drawer warns about missing implementation links without blocking — remediation may be requested instead of approval"
     },
     {
       "key": "FPW.3-A04.steps.4",
       "source": "아키텍트와 기준정보 담당에게 설계·Control Point 작업 시작을 알린다",
       "sourceHash": "b958cc62eabd72854eaa6f1f1f8a42af101b10841d5774ae3c27dcc78a3beb37",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Notify the architect and master-data owner to start design and Control Point work"
     },
     {
       "key": "FPW.3-A04.checks.0",
       "source": "Feature Version이 APPROVED이고 승인자가 Feature 작성자와 다르다",
       "sourceHash": "e96fd9fd623b4c2f75cd523017e362285baa37cba8a938065d9091fc8f02ef33",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Version is APPROVED, and the approver differs from its author"
     },
     {
       "key": "FPW.3-A04.checks.1",
       "source": "연결된 기준 행에 요청 중(PENDING)·폐기 행이 없다. 요청 중 행은 Feature DB 관리자 승인 뒤에만 전이한다",
       "sourceHash": "4ec394c923be39b1deac567fe3e767309b946cf619d3f9c57de2b0360c524e05",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "No linked reference row is PENDING or retired. A PENDING row requires Feature DB administrator approval before transition"
     },
     {
       "key": "FPW.3.BP1.name",
@@ -2516,8 +2528,8 @@
       "key": "FPW.3.BP1.definition",
       "source": "안전 목표와 영향 분석을 검증 가능한 기능·기술·SW 안전요구로 구체화한다. 종료 동작과 시간·운전자 정보 등 필요한 조건을 명시하고 요구 ID와 검증 기준을 관리한다.",
       "sourceHash": "7defae360a545893f7627120dd6b3451d41a7aebfabe29cfd7d221fce2588ca4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Refine Safety Goals and impact analysis into verifiable functional, technical and SW safety requirements. Specify termination behavior, timing and driver-information conditions, and manage requirement IDs and verification criteria."
     },
     {
       "key": "FPW.3.BP2.name",
@@ -2530,15 +2542,15 @@
       "key": "FPW.3.BP2.definition",
       "source": "안전 목표부터 요구·설계·시험·Baseline까지 추적 연결과 내용의 일관성을 양방향으로 확인한다. 공백의 조치 담당과 기한을 정하고 해결되지 않은 안전 관련 공백을 판정에 반영한다.",
       "sourceHash": "0eeeaf49b7a370a886903d658b653d242e012f4ff5eb4a669e38137c9b3e7c70",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check bidirectional links and content consistency from Safety Goals through requirements, design, tests and Baselines. Assign owners and deadlines for gaps and reflect unresolved safety-related gaps in decisions."
     },
     {
       "key": "FPW.3.BP2.notes.0",
       "source": "연결선이 존재하는 것만으로 요구와 결과의 내용이 일치한다고 판정하지 않는다.",
       "sourceHash": "e97711a51f88e11a4bcb19873e23a0f533d3149a210a7de22054e734de6d0f05",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A link’s existence alone does not establish that requirement content and results agree."
     },
     {
       "key": "FPW.3.BP3.name",
@@ -2551,8 +2563,8 @@
       "key": "FPW.3.BP3.definition",
       "source": "요구의 완전성·일관성·검증 가능성을 작성과 구분된 관점에서 검토한다. 발견 사항의 보완과 재검토를 추적하고 요구 검토 판정을 근거와 함께 기록한다.",
       "sourceHash": "24077e7cec9548e00efe3435dc676d753e44fc5074b6e07b85e9807516150c0e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review requirement completeness, consistency and verifiability from a perspective distinct from authoring. Track remediation and repeat reviews, and retain the requirements-review decision with evidence."
     },
     {
       "key": "FPW.3.BP4.name",
@@ -2565,8 +2577,8 @@
       "key": "FPW.3.BP4.definition",
       "source": "요구를 구현할 기능·SW Version·제어기 부품의 조합을 기준정보에서 식별한다. 정확한 짝을 Feature Version과 외부 개발 항목에 연결하고 연결이 빠졌거나 확정 구성이 다른 경우 보완 경로를 정한다.",
       "sourceHash": "156cbba870e431f8273eb22c194fc1133875b966a1ffe032b26b7995ccc346db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify master-data combinations of functions, SW Versions and ECU parts that implement requirements. Link exact combinations to the Feature Version and external development items, and define remediation when links are missing or confirmed configurations differ."
     },
     {
       "key": "FPW.3.BP5.name",
@@ -2579,15 +2591,15 @@
       "key": "FPW.3.BP5.definition",
       "source": "요구·Epic·변경요청·개발 상태의 동기화 결과를 확인하고 충돌의 원인과 주인을 식별한다. 선택한 해결 근거와 재시도 결과를 기록하며 외부 상태 변경에도 플랫폼 권한과 전이 규칙을 적용한다.",
       "sourceHash": "82f0c40ec0dfb17f49344460c474cbdf4592946d7986ea177485ef90873e82c8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check synchronization of requirements, Epics, change requests and development status, and identify conflict causes and owners. Record resolution rationale and retry results while applying platform permissions and transition rules to external changes."
     },
     {
       "key": "FPW.3.BP5.notes.0",
       "source": "외부 시스템의 상태 수신은 플랫폼 승인 가드를 생략하는 수단이 아니다.",
       "sourceHash": "be092f9fa325b6044626fa7412bbe46613acaed9d8fc67dded47eaa55c26a605",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Receiving external-system status does not bypass platform approval guards."
     },
     {
       "key": "FPW.3.BP6.name",
@@ -2600,8 +2612,8 @@
       "key": "FPW.3.BP6.definition",
       "source": "등록·영향 분석·요구 검토와 기준 연결의 승인 준비 상태를 확인한다. 작성자와 다른 승인자가 현재 근거로 정의 승인 여부를 결정하고 후속 설계·구현 작업을 인계한다.",
       "sourceHash": "5e08150e517ab786dfc89819aa5a2079813b6c79b158a6d1c0e3ac254c30ef4a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check approval readiness of registration, impact analysis, requirements review and reference links. An approver distinct from the author decides definition approval using current evidence and hands over subsequent design and implementation work."
     },
     {
       "key": "FPW.3-S1.label",
@@ -2628,64 +2640,64 @@
       "key": "FPW.4.ref",
       "source": "표준 보고서 6.1절 G4, 6장 FFG-LCY-006, 7.7절 FFG-DEAC-001, 8장(정책·TCL), 13장 FFG-TEL-007",
       "sourceHash": "af7ba4d15abb2587219eaa2036ae44fddd85c5acd3f7bf81ce56d3c03d52a202",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report section 6.1 G4, chapter 6 FFG-LCY-006, section 7.7 FFG-DEAC-001, chapter 8 (policies and TCL), chapter 13 FFG-TEL-007"
     },
     {
       "key": "FPW.4.purpose",
       "source": "안전요구를 차량 내 감시·Safety Guard 동작·플랫폼 정책과 Control Point 설계로 구현하고, 정책을 분야별로 검증·승인한 뒤 독립 검토자가 설계 적합성(G4)을 판정하게 한다.",
       "sourceHash": "424bc356b978d7fbb9c3527047b5e01bbd6db58aa937c605e15b7d19bce6c42c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Implement safety requirements as onboard monitoring, Safety Guard behavior, platform policies and Control Point design. Validate and approve policies by discipline, then have an independent reviewer assess design suitability (G4)."
     },
     {
       "key": "FPW.4.O1.text",
       "source": "F2 이상 Feature의 고장 대응이 차량 내부 감시와 안전기제로 설계된다.",
       "sourceHash": "27c36dd03318a0c6a4a0b6bb632606e6178e8ee4e3ee33325d74bae30dde0aaa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "F2+ fault responses are designed using onboard monitoring and safety mechanisms."
     },
     {
       "key": "FPW.4.O2.text",
       "source": "플랫폼 컴포넌트의 도구 신뢰도(TCL)와 확보 방법이 정해진다.",
       "sourceHash": "5f5abc427f0756ebd48578cec32a31d01ddd47f420a169d92763da2d63f4f760",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Platform component tool confidence (TCL) and assurance methods are defined."
     },
     {
       "key": "FPW.4.O3.text",
       "source": "Flag 정책이 작성·검증되고 작성자가 아닌 승인자가 승인한다.",
       "sourceHash": "7d2fe8207bd7b01f70c138b3b538f4bdd72096d1c16e39b5fda5028c1af4e4cb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Flag policies are authored and validated, then approved by someone other than the author."
     },
     {
       "key": "FPW.4.O4.text",
       "source": "독립 검토로 G4 설계 판정이 남는다.",
       "sourceHash": "9fc5d7713accfbabc13cf39eee12047d827802477a84dbb4092ca0b2ccb22c23",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Independent review retains the G4 design decision."
     },
     {
       "key": "FPW.4.entry.0",
       "source": "Feature Version이 APPROVED이고 안전요구가 추적 연결되어 있다",
       "sourceHash": "3f69641fb6b5feaf287bdbfd24682d3a7dfa9398513218f8da4951b9d73763ff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Version is APPROVED and safety requirements are linked"
     },
     {
       "key": "FPW.4.exit.0",
       "source": "설계서·정책이 승인되고 정책 해시가 고정되었다",
       "sourceHash": "63e2d77ae21d99dcf2c3e970be368bfc706e800ef0a349e9b55fc5781215bb03",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Design documents and policies are approved, and the policy hash is frozen"
     },
     {
       "key": "FPW.4.exit.1",
       "source": "G4 Decision Record가 독립 검토자 판정으로 남았다",
       "sourceHash": "469ced8a09a9e2caec5b4f943ca603cdc3c28999e826b9fe5813243231e4a801",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "An independent reviewer’s G4 Decision Record is retained"
     },
     {
       "key": "FPW.4.WP-SAFETY-DESIGN.name",
@@ -2698,29 +2710,29 @@
       "key": "FPW.4.WP-SAFETY-DESIGN.content.0",
       "source": "FTTI 안의 차량 내 고장 감지(독립 센서 plausibility 등)와 Safety Guard 보고 경로",
       "sourceHash": "0b7bb6c0076dcc2ed48ec95a13a1b29c8bacc83d2b86d36a1b9202821011e022",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Onboard fault detection within FTTI, such as independent sensor plausibility checks, and Safety Guard reporting paths"
     },
     {
       "key": "FPW.4.WP-SAFETY-DESIGN.content.1",
       "source": "원격 Kill을 안전기제에 넣지 않았다는 근거와 차량 내부 안전기제",
       "sourceHash": "c00659aae4567209cc14047d61ef0ed39f4220fe2305da953ea99585f5be7d05",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Rationale for excluding remote Kill from safety mechanisms and the onboard mechanisms used instead"
     },
     {
       "key": "FPW.4.WP-SAFETY-DESIGN.content.2",
       "source": "텔레메트리 도착 여부가 안전 판정에 영향을 주지 않는 구조",
       "sourceHash": "06f9f0de2200f756abe4e9807e15e88879a22699119a383b82214d3c1da1a189",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Architecture ensuring telemetry arrival does not affect safety decisions"
     },
     {
       "key": "FPW.4.WP-SAFETY-DESIGN.content.3",
       "source": "Control Point와 Flag가 상속하는 ASIL",
       "sourceHash": "74c9912342c682476185251cf939912c4f316acd28681b7ad3f0d4f3c4f4c6b0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ASIL inherited by Control Points and Flags"
     },
     {
       "key": "FPW.4.WP-TCL-RECORD.name",
@@ -2733,22 +2745,22 @@
       "key": "FPW.4.WP-TCL-RECORD.content.0",
       "source": "컴포넌트별 오류 출력 유형과 TI·TD·TCL",
       "sourceHash": "059fefe09b731d33db56e91fbe285d1230f6f70c9274b76bea459ea3712b21a7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Error-output types, TI, TD and TCL for each component"
     },
     {
       "key": "FPW.4.WP-TCL-RECORD.content.1",
       "source": "TD1 주장 시 출력 유형별 검출 수단",
       "sourceHash": "383912bb2a592c5280ce2b45c7683e387d4344e2dfee749779618b20f991cf3f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Per-output-type detection mechanisms supporting any TD1 claim"
     },
     {
       "key": "FPW.4.WP-TCL-RECORD.content.2",
       "source": "TCL2 이상 컴포넌트의 신뢰도 확보 방법",
       "sourceHash": "7a9cabc38e0c9e7362c561744b121a71764f22b66421e6d585e8511e35480db8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confidence assurance methods for TCL2+ components"
     },
     {
       "key": "FPW.4.WP-POLICY.name",
@@ -2761,22 +2773,22 @@
       "key": "FPW.4.WP-POLICY.content.0",
       "source": "대상 규칙·Variant 조건·기본값과 개정 번호",
       "sourceHash": "2449b94198660217ffd34b1c52e1824ff3db49a80cf68955a41c1e200416e4b4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target rules, Variant conditions, defaults and revision number"
     },
     {
       "key": "FPW.4.WP-POLICY.content.1",
       "source": "분야별 검증 8종 결과와 배포 안전성 판정",
       "sourceHash": "10ec2c6ded37f29a8fe954abb9d20f905e65d31cab8daa3da70cddad8287e131",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Eight discipline-specific validation results and deployment safety decision"
     },
     {
       "key": "FPW.4.WP-POLICY.content.2",
       "source": "승인자·정책 해시·승인 시각",
       "sourceHash": "3be445cc37cf78c089a69943ed8f6599b8c99eb108b26f8d6d28cef9167152ed",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approver, policy hash and approval time"
     },
     {
       "key": "FPW.4.WP-G4-DECISION.name",
@@ -2789,15 +2801,15 @@
       "key": "FPW.4.WP-G4-DECISION.content.0",
       "source": "설계 적합성 판정과 근거 Evidence ID",
       "sourceHash": "2d3f9a148dbe38f0b406613ed42bfa9dc704d9b7f69f60c25d9ee68032229e96",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Design suitability decision and supporting Evidence IDs"
     },
     {
       "key": "FPW.4.WP-G4-DECISION.content.1",
       "source": "독립 검토자 서명과 아키텍트 책임 확인",
       "sourceHash": "4a8260bd5db6b8e10802b8516189a0d7aa66048b7d8e53a5b5ec55c7f2a8ee69",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Independent reviewer signature and architect’s responsibility confirmation"
     },
     {
       "key": "FPW.4.WP-POLICY-CR.name",
@@ -2810,15 +2822,15 @@
       "key": "FPW.4.WP-POLICY-CR.content.0",
       "source": "정책 ID와 근거 JIRA 변경요청(CR) 키·상태",
       "sourceHash": "0b7ff44920d65b695ea855986996659b7f57639ac75dd5197cd878f1a19a1969",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Policy ID and supporting JIRA change-request key and state"
     },
     {
       "key": "FPW.4.WP-POLICY-CR.content.1",
       "source": "JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유",
       "sourceHash": "784d3cad27e53e96979826c43b52b1e1c1c06208b54b013a8d846e048b15c148",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Records and reasons showing whether JIRA CR approval/rejection applied to the policy decision or was rejected"
     },
     {
       "key": "FPW.4.WP-FLAG-PR-RESULT.name",
@@ -2831,22 +2843,22 @@
       "key": "FPW.4.WP-FLAG-PR-RESULT.content.0",
       "source": "대상 Feature Version·Flag와 저장소 PR",
       "sourceHash": "da906e653401b07d800188fdb593e39ac9ffcac7cd59b1f694255fae7bf5d0ff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Feature Version, Flag and repository PR"
     },
     {
       "key": "FPW.4.WP-FLAG-PR-RESULT.content.1",
       "source": "기본값·호출 구조 검토와 검사 결과",
       "sourceHash": "8a88b17d213617864dffec111c5cac62a4538a523a0fb74274b455e5eaed3a88",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Default-value/call-structure review and check results"
     },
     {
       "key": "FPW.4.WP-FLAG-PR-RESULT.content.2",
       "source": "병합 상태·스캔 참조·담당과 시각",
       "sourceHash": "84e42afd0e5bf592419c3b1dbbaed46681d4ecec82f972483373ea17e9ccee5c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Merge state, scan references, owner and time"
     },
     {
       "key": "FPW.4-A01.name",
@@ -2859,43 +2871,43 @@
       "key": "FPW.4-A01.steps.0",
       "source": "F2 이상 Feature가 FTTI 안에서 자기 고장을 감지해 Safety Guard에 보고하는 감시 구조를 설계한다",
       "sourceHash": "0de61e6313d264e527d75ace2002c8407b8896dd0cf55fb5e85273b2da4daa4e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Design monitoring so F2+ Features detect their own faults within FTTI and report to Safety Guard"
     },
     {
       "key": "FPW.4-A01.steps.1",
       "source": "원격 Kill은 FTTI 밖의 요청 경로로만 두고 FTTI 안의 대응은 차량 내부 안전기제로 설계한다",
       "sourceHash": "763717f13b51740f5e6fbf2823a69aeb587d8dc0cd417938ebeb9de83903dad3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Keep remote Kill only as an out-of-FTTI request path; use onboard mechanisms for responses within FTTI"
     },
     {
       "key": "FPW.4-A01.steps.2",
       "source": "텔레메트리가 늦거나 오지 않아도 차량 안전 판정이 바뀌지 않게 데이터 경로를 분리한다",
       "sourceHash": "bef3b91c24342f705bcd0523b14309e660f78c6ca1e0d859b3665faa2ea56359",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Separate data paths so delayed or missing telemetry cannot change vehicle safety decisions"
     },
     {
       "key": "FPW.4-A01.steps.3",
       "source": "안전 거동을 바꾸는 Flag와 전달 경로가 사용 SW의 최고 ASIL을 상속하도록 Control Point를 정의한다",
       "sourceHash": "7b00894dbf2552270d1d6889b54ff1261771f459958c8e08c3ba95a9eb0a5213",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define Control Points so safety-affecting Flags and their delivery paths inherit the highest ASIL of the SW they use"
     },
     {
       "key": "FPW.4-A01.checks.0",
       "source": "안전요구마다 설계 요소가 연결되었다",
       "sourceHash": "311496edb288d9516126e6a816544feb09e5e70e222bd618e8aed9b7ed0d5e57",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each safety requirement is linked to design elements"
     },
     {
       "key": "FPW.4-A01.checks.1",
       "source": "원격 Kill이 안전기제로 쓰인 곳이 없다",
       "sourceHash": "5485edd62b86a531361c1d570b66b6b312c3547666042d0337150e03f1e86a7f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Remote Kill is not used as a safety mechanism"
     },
     {
       "key": "FPW.4-A03.name",
@@ -2908,36 +2920,36 @@
       "key": "FPW.4-A03.steps.0",
       "source": "대상 규칙·Variant 조건·기본값을 정책으로 작성한다",
       "sourceHash": "eeffa4665b8fa9eb437757a924b97adc766bbf8d8a86197f44e0d1fd23fa028e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Author target rules, Variant conditions and defaults as a policy"
     },
     {
       "key": "FPW.4-A03.steps.1",
       "source": "정책에 브랜드·적용 지역 코드·법규 룰의 조회 조건을 연결하고 Feature Owner가 변경 근거와 개정 이력을 확인한다. 이 메타데이터 연결 자체를 배포 승인이나 차량 적용으로 보지 않는다",
       "sourceHash": "0b796ad2a0747c4cb02d9c0296ad50e0da209316030358e70e685265bdf8d58d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link brand, region-code and regulatory-rule query conditions to the policy; the Feature Owner checks change rationale and revision history. This metadata link alone is not deployment approval or vehicle application"
     },
     {
       "key": "FPW.4-A03.steps.2",
       "source": "분야별 검증 8종을 실행해 배포 안전성 판정을 받는다",
       "sourceHash": "b49b4f45c77e0332b06050ad855ed0fdea1b796884bd81836a9f84bf6b23e130",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Run all eight discipline-specific validations to obtain a deployment safety decision"
     },
     {
       "key": "FPW.4-A03.steps.3",
       "source": "수정하면 새 개정본이 되므로 다시 검증한다",
       "sourceHash": "2000090302faf66c1a8ba403abb111d7e3d0f33f4ba3e4f3082a1c7ed3b32e27",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Any edit creates a new revision and requires revalidation"
     },
     {
       "key": "FPW.4-A03.checks.0",
       "source": "최신 개정본의 분야별 검증이 모두 통과했다",
       "sourceHash": "81036dabf3b56983554c64c83088f6e11c3f77e17aa5d855186136c15658fe1e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All discipline-specific validations pass for the latest revision"
     },
     {
       "key": "FPW.4-A06.name",
@@ -2950,36 +2962,36 @@
       "key": "FPW.4-A06.steps.0",
       "source": "정책 상세의 변경요청 패널에서 근거 JIRA 변경요청(CR) 키를 골라 정책에 연결한다. 근거 CR이 없으면 JIRA에 만든 뒤 연결한다",
       "sourceHash": "8592803798c9cc23ef654363c535bd6a7d7408efa168fdc69f25cdaa50ccafaa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Choose a supporting JIRA change-request key in policy details and link it to the policy. Create the CR in JIRA first if none exists"
     },
     {
       "key": "FPW.4-A06.steps.1",
       "source": "외부 연계 현황에서 CR 상태와 연결된 정책·Feature Version을 확인한다",
       "sourceHash": "41aadd27462e5ac7d0449e7391abeb6ad2c183ea20fde8b373944f80be89807e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check CR state and linked policy/Feature Version in external integrations"
     },
     {
       "key": "FPW.4-A06.steps.2",
       "source": "승인자에게 CR을 알린다. JIRA에서 CR을 승인·반려해도 검증 GO 정책이고 정책 승인 권한이 있는 매핑된 계정일 때만 정책 결정으로 반영된다",
       "sourceHash": "3dfaa8b85b522506f2a30b7e8fea19519499a6cf52f8945f69c6977efe227f40",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Notify the approver about the CR. JIRA CR approval/rejection applies as a policy decision only for a validation-GO policy and a mapped account with policy approval permission"
     },
     {
       "key": "FPW.4-A06.steps.3",
       "source": "거부되어 CR 상태가 되돌아가면 받은 함의 사유를 CR 담당에게 알리고 플랫폼에서 승인하도록 안내한다",
       "sourceHash": "a835817804c940750c5707ae85d1e01e929cfe34c03dd82249975836f6787680",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If rejection reverts the CR state, notify the CR owner of the inbox reason and direct approval through the platform"
     },
     {
       "key": "FPW.4-A06.checks.0",
       "source": "승인 대상 정책에 근거 CR이 연결되어 있고 CR 상태가 정책 결정과 맞다",
       "sourceHash": "df665606d812d9658ea8ff8ead8c9f12d9dfeb697dfd81296ab4a1a1c27bc2a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The policy awaiting approval has a supporting CR, and its state matches the policy decision"
     },
     {
       "key": "FPW.4-A04.name",
@@ -2992,29 +3004,29 @@
       "key": "FPW.4-A04.steps.0",
       "source": "승인 대상 개정본의 해시와 배포 안전성 판정(GO)을 확인한다",
       "sourceHash": "7226a8adbff680112dedc1fa2d7b1f35457c5bf7e0ea6e4755c0490242984c45",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify the approval-target revision’s hash and deployment safety GO"
     },
     {
       "key": "FPW.4-A04.steps.1",
       "source": "정책 작성자가 아닌 사람이 승인 또는 반려한다",
       "sourceHash": "fc71bda7a7409010d87811e8c4c1ecf1eba5845ff81d3e22321ed04a513f9882",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Someone other than the policy author approves or rejects"
     },
     {
       "key": "FPW.4-A04.steps.2",
       "source": "반려하면 사유를 남겨 아키텍트에게 돌려보낸다",
       "sourceHash": "51387334f8f0bf2a6d88c4b82849d81cdf0de823d4c4de1ded535faa4e09a08f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For rejection, record a reason and return the policy to the architect"
     },
     {
       "key": "FPW.4-A04.checks.0",
       "source": "승인자가 정책 작성자와 다르고 승인 해시가 최신 개정본과 같다",
       "sourceHash": "f9639103f7db5c5bbfd7a372702d3fcba6e26239a8da9515e85161e1237aa9a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The approver differs from the policy author, and the approved hash matches the latest revision"
     },
     {
       "key": "FPW.4-A02.name",
@@ -3027,36 +3039,36 @@
       "key": "FPW.4-A02.trigger",
       "source": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
       "sourceHash": "2d63d234d81dc722df9fde9589293035d769931a4f6d88e7a6a6e088f8e8df43",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Design starts or a used platform component changes"
     },
     {
       "key": "FPW.4-A02.steps.0",
       "source": "이 Feature가 쓰는 플랫폼 컴포넌트마다 오류 출력 유형과 TI·TD를 정해 TCL을 기록한다",
       "sourceHash": "481d0189c8ac7cb574f248c3f3190001b26ca34ce02e83ee721132b85fcc420c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For every platform component used by this Feature, determine error-output types, TI and TD, then record TCL"
     },
     {
       "key": "FPW.4-A02.steps.1",
       "source": "TD1은 출력 유형별 검출 수단을 지정할 수 있을 때만 주장하고, 서명 서비스에는 쓰지 않는다",
       "sourceHash": "a1f0af8d6b3c9b657745b2342ccbeb556851167ec56022af7af6dd8e5f3fe710",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Claim TD1 only when detection mechanisms can be specified for each output type; do not apply it to signing services"
     },
     {
       "key": "FPW.4-A02.steps.2",
       "source": "TCL2 이상 컴포넌트의 신뢰도 확보 방법을 Safety Plan에 넣는다",
       "sourceHash": "a5033eb2db46eb4abd045dd5836e151012094f2a2a3083fc0ad29cd36d3ea185",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Include assurance methods for TCL2+ components in the Safety Plan"
     },
     {
       "key": "FPW.4-A02.checks.0",
       "source": "사용 컴포넌트 모두에 TCL과 확보 방법이 있다",
       "sourceHash": "14bceda4b054c397f6706a8e71a84b488acd413a13599a6a4bf21a391748ab2a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every used component has a TCL and assurance method"
     },
     {
       "key": "FPW.4-A05.name",
@@ -3069,36 +3081,36 @@
       "key": "FPW.4-A05.steps.0",
       "source": "설계·정책·인터페이스가 안전요구를 충족하는지 설계 작성자와 다른 검토자가 확인한다",
       "sourceHash": "3d9d31dffbbd4a075f7f892eacba93ebebcc1e94649cdfefb3700084a11e145c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A reviewer distinct from the design author checks that designs, policies and interfaces satisfy safety requirements"
     },
     {
       "key": "FPW.4-A05.steps.1",
       "source": "판정을 플랫폼 Control Gate와 Safety/Security Gate에 개인 서명으로 등록한다",
       "sourceHash": "df39fc0791cff4048aef92c604d2b0de0108c0414ac7ade0ee6f621fbce9d94f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Register personally signed decisions in platform Control and Safety/Security Gates"
     },
     {
       "key": "FPW.4-A05.steps.2",
       "source": "아키텍트가 판정에 대한 설계 책임을 확인하고, FAIL이면 수정 항목을 설계로 돌려보낸다",
       "sourceHash": "0c86e076761258c4d6c242c15e7a0ce35b9d89ba4482ca0c583f713f1b876b58",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The architect confirms design responsibility for the decision; FAIL findings return to design for correction"
     },
     {
       "key": "FPW.4-A05.checks.0",
       "source": "검토자가 설계·정책 작성자와 다른 조직이다",
       "sourceHash": "891e10c93e9913b462cc941162297c2792776d6eba9b1338e8dedcac13a8a5eb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The reviewer’s organization differs from the design/policy author’s"
     },
     {
       "key": "FPW.4-A05.checks.1",
       "source": "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
       "sourceHash": "454a7e0dd6f31b0d4775128462461d164541dce8cc791d8ecb8165aed6a0176b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Decision Record retains decision, supporting Evidence, reviewer role and timestamp"
     },
     {
       "key": "FPW.4-A07.name",
@@ -3111,29 +3123,29 @@
       "key": "FPW.4-A07.steps.0",
       "source": "Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다",
       "sourceHash": "b4c6bf29cd05fd64886b70393d9c0976640996f40fac2109a7ad7ea7f9c68b20",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "After Feature Version approval, inspect constants, call scaffolding and default OFF in the Flag PR opened by FF"
     },
     {
       "key": "FPW.4-A07.steps.1",
       "source": "기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다",
       "sourceHash": "25f4c0fade2ca5684e50253e11a65197d5484b42e0d05049ffb42b6352305184",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Implement the function branch, pass FF Flag checks and merge"
     },
     {
       "key": "FPW.4-A07.steps.2",
       "source": "PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다",
       "sourceHash": "cd966037dafa0ab125d268aa8d5c7c1405e2ee8c1d39d9c59c9f1d666091a1dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If PR creation failed, request PR recreation from Flag code links"
     },
     {
       "key": "FPW.4-A07.checks.0",
       "source": "해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다",
       "sourceHash": "5d6c368b1e89c1959f0a8fa606c79834ad06113b1fd376ae9bf22c21324d8840",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All Flags for the Version are linked correctly in code or under review"
     },
     {
       "key": "FPW.4.BP1.name",
@@ -3146,15 +3158,15 @@
       "key": "FPW.4.BP1.definition",
       "source": "안전요구를 차량 내부의 감시·Guard·안전 기제와 제어점 설계에 할당한다. 차량의 시간 예산 안에서 동작할 경로와 원격 요청·늦은 관측의 경계를 분리하여 요구와 설계의 대응을 보존한다.",
       "sourceHash": "a8c1fe7c1e579532330f8a91a7480898e174d52610073ecdef93af5c4f8d6e22",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Allocate safety requirements to onboard monitoring, Guards, safety mechanisms and Control Points. Preserve requirements-to-design correspondence while separating paths inside the vehicle’s timing budget from remote requests and delayed observations."
     },
     {
       "key": "FPW.4.BP1.notes.0",
       "source": "원격 통신이나 플랫폼 화면을 차량의 FTTI 안 안전 기제의 대체로 정의하지 않는다.",
       "sourceHash": "f342229394b93d5c6fc2343efc86f9b8fa527dc082371090c67574216d9e41b0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Remote communication or platform screens are not substitutes for onboard safety mechanisms operating within FTTI."
     },
     {
       "key": "FPW.4.BP2.name",
@@ -3167,8 +3179,8 @@
       "key": "FPW.4.BP2.definition",
       "source": "적용 대상·Variant·기본값을 명시한 정책을 작성하고 현재 개정본을 분야별 검증으로 평가한다. 수정으로 근거가 달라지면 재검증하여 승인 대상 내용과 결과를 일치시킨다.",
       "sourceHash": "3c6641e825c13ceca0353b120bb40436ac6619f2632da5db3d8d87405db3849b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Author policies specifying applicability, Variants and defaults, then evaluate the current revision with discipline-specific validation. Revalidate changed content so approved content and evidence agree."
     },
     {
       "key": "FPW.4.BP3.name",
@@ -3181,8 +3193,8 @@
       "key": "FPW.4.BP3.definition",
       "source": "정책 변경의 이유와 범위를 외부 변경요청에 연결하여 의사결정의 근거를 추적한다. 외부 결정의 반영 여부와 거부 사유를 확인하고 플랫폼 정책 상태와 불일치를 해소한다.",
       "sourceHash": "24f165f373ff262e766915a5fb746adb40e37d8867327b6add8eec249cd9869a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link policy-change reasons and scope to external change requests to preserve decision traceability. Verify external decisions and rejection reasons, and resolve differences with platform policy states."
     },
     {
       "key": "FPW.4.BP4.name",
@@ -3195,8 +3207,8 @@
       "key": "FPW.4.BP4.definition",
       "source": "최신 정책 내용의 해시와 검증 결과를 확인하여 승인 또는 반려를 결정한다. 작성자와 구분된 승인자가 결정 근거를 남기고 수정이 필요한 경우 작성자에게 인계한다.",
       "sourceHash": "00a345e91fd504cd353b532016abdf43c64cd5d7b7c635a0a2acca4f1727cd45",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify current policy hashes and validation results before approval or rejection. An approver distinct from the author records rationale and hands necessary revisions back to the author."
     },
     {
       "key": "FPW.4.BP5.name",
@@ -3209,8 +3221,8 @@
       "key": "FPW.4.BP5.definition",
       "source": "플랫폼 도구의 오류 출력과 검출 수단을 분석하여 신뢰도 분류와 확보 방법을 결정한다. 사용 범위와 분류 근거를 기록하고 필요한 확인 활동을 Safety Plan에 반영한다.",
       "sourceHash": "1f4fa14ed3f88b88e2d1fc7b03e54fcc9cae6f161d2a767fb3fa5ddca0b0fa94",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Analyze platform-tool error outputs and detection mechanisms to determine confidence classification and assurance methods. Record scope and classification rationale, and include necessary verification activities in the Safety Plan."
     },
     {
       "key": "FPW.4.BP6.name",
@@ -3223,8 +3235,8 @@
       "key": "FPW.4.BP6.definition",
       "source": "설계·정책·인터페이스가 안전요구를 충족하는지 독립적으로 검토한다. 발견 사항과 근거를 기록하고 설계 책임자의 확인 및 판정 결과에 따라 수정·재검토를 관리한다.",
       "sourceHash": "6de7feca396627c05872a0bcbcca8416ff8ff9f0f97307b083397ab9dd0f4092",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Independently review whether designs, policies and interfaces satisfy safety requirements. Record findings and evidence, obtain design-owner confirmation, and manage revisions and repeat reviews according to decisions."
     },
     {
       "key": "FPW.4.BP7.name",
@@ -3237,8 +3249,8 @@
       "key": "FPW.4.BP7.definition",
       "source": "승인된 Version의 Flag 코드 변경을 검토하고 기본값·호출 구조·검사 결과를 확인한다. 병합 결과와 코드 연결 상태를 추적하여 정의와 구현이 어긋난 채 후속 출시로 넘어가지 않게 한다.",
       "sourceHash": "10d40477c835aa3ca57195f09faa4e541799442e8d6949796873d6ee170de2bd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review Flag code changes for approved Versions, including defaults, call structure and check results. Track merge and code-link states so definition/implementation mismatches do not progress into release."
     },
     {
       "key": "FPW.4-S1.label",
@@ -3251,8 +3263,8 @@
       "key": "FPW.4-S2.label",
       "source": "설계 착수 또는 사용 플랫폼 컴포넌트 변경",
       "sourceHash": "2d63d234d81dc722df9fde9589293035d769931a4f6d88e7a6a6e088f8e8df43",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Design starts or a used platform component changes"
     },
     {
       "key": "FPW.4-E1.label",

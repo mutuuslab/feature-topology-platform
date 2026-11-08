@@ -109,7 +109,7 @@ describe('외부 도구 창 연결', () => {
     localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'approver' }));
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     mount(<ExternalToolLaunchers />, true);
-    const cb = await screen.findByRole('link', { name: 'CodeBeamer 새 창 열기', exact: true });
+    const cb = await screen.findByRole('link', { name: /^codeBeamer .*새 창 열기$/ });
     expect(cb.getAttribute('href')).toBe('/external.html?system=codebeamer&role=approver');
     fireEvent.click(cb);
     expect(open).toHaveBeenCalledTimes(1);

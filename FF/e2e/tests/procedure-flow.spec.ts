@@ -1,5 +1,8 @@
 // 업무 절차 흐름도 — 절차 흐름도가 보이고 상자를 누르면 활동이 열린다, 역할을 바꾸면 내 업무 흐름이 바뀐다, 텍스트 보기 전환, 메인 가젯 작은 판.
 import { expect, test, type Page } from '@playwright/test';
+import { WORKFLOWS } from '../../contracts/src/generated/workflows';
+
+const operational = WORKFLOWS.processes.find(p => p.id === 'FPW.8')!;
 
 async function asRole(page: Page, role: string) {
   await page.addInitScript((r) => {
@@ -52,7 +55,7 @@ test('절차서 표기 — 입력·산출물 레인의 문서, 제어 흐름과 
   await expect(heads.last()).toHaveText('산출물 (Outputs)');
   // 산출물 = 문서 상자(밖에서 오는 입력은 점선 문서), 제어 흐름(실선)과 객체 흐름(점선)이 따로
   await expect(flow.locator('.pf-doc[data-external]').first()).toBeVisible();
-  expect(await flow.locator('.pf-doc:not([data-external]):not([data-ref])').count()).toBe(11);
+  expect(await flow.locator('.pf-doc:not([data-external]):not([data-ref])').count()).toBe(new Set(operational.activities.flatMap(a => a.outputs)).size);
   expect(await flow.locator('polyline.pf-cf').count()).toBeGreaterThan(10);
   expect(await flow.locator('polyline.pf-of').count()).toBeGreaterThan(10);
   // 넓은 흐름도 — 가로로 스크롤해도 레인 머리는 왼쪽에 남는다
@@ -64,8 +67,7 @@ test('절차서 표기 — 입력·산출물 레인의 문서, 제어 흐름과 
   await scroller.evaluate((el) => (el.scrollLeft = 600));
   await expect.poll(async () => (await sticky.boundingBox())?.x).toBe(before?.x);
   // 흐름도 아래 절차서 본문 — 요약 문장, 활동 카드(RACI·입력/출력·수행 절차·완료 기준), 산출물 카드
-  // 2026-11-06 FPW.8에 Flag 평가 이상 확인(A12, 20-97 §6)이 더해져 활동 12개
-  await expect(page.locator('.pf-lead')).toContainText('활동 12개');
+  await expect(page.locator('.pf-lead')).toContainText(`활동 ${operational.activities.length}개`);
   const card = page.locator('[data-activity-card="FPW.8-A04"]');
   await expect(card.locator('.pf-raci-badge[data-k="R"]')).toBeVisible();
   await expect(card.getByText('수행 절차')).toBeVisible();
@@ -84,7 +86,7 @@ test('텍스트 보기 — 흐름도와 같은 활동을 표로 보이고, 다�
   await page.getByRole('radio', { name: '텍스트' }).click();
   const table = page.getByRole('table', { name: /운영·긴급 차단·복원 활동 순서/ });
   await expect(table).toBeVisible();
-  await expect(table.locator('tbody tr')).toHaveCount(12);
+  await expect(table.locator('tbody tr')).toHaveCount(operational.activities.length);
   await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toHaveCount(0);
   await page.getByRole('radio', { name: '흐름도' }).click();
   await expect(page.getByRole('group', { name: '운영·긴급 차단·복원 흐름도' })).toBeVisible();
@@ -94,7 +96,7 @@ test('텍스트 보기 — 흐름도와 같은 활동을 표로 보이고, 다�
 test('내 업무 흐름 — 역할 전환기에서 역할을 바꾸면 흐름이 그 역할 것으로 바뀐다', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'author');
-  await page.goto('/procedures');
+  await page.goto('/procedures?view=flow');
   const flow = page.getByRole('group', { name: '내 업무 흐름' });
   await expect(flow).toBeVisible();
   await page.getByRole('radio', { name: /전체/ }).click();
@@ -132,7 +134,7 @@ test('내 업무 흐름 텍스트 보기 · 전체업무흐름에서 절차 흐�
   await page.getByRole('tab', { name: '전체업무흐름' }).click();
   const map = page.getByRole('group', { name: '전체업무흐름' });
   await expect(map).toBeVisible();
-  await expect(map.locator('.pf-proc')).toHaveCount(14); // FPW.1~14(Feature DB 운영 FPW.14 포함)
+  await expect(map.locator('.pf-proc')).toHaveCount(WORKFLOWS.processes.length);
   await expect(map.locator('.pf-proc[data-mine]').first()).toBeVisible();
   expect(await noPageOverflow(page)).toBe(true);
   await map.getByRole('link', { name: /^검증·V\&V / }).click();

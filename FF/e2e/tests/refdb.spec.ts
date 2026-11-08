@@ -97,6 +97,8 @@ test('(a) 검색 AVH → 대표 + 포함 → 2단계 기준값·수정됨 → AS
   await name.fill(`오토 홀드 원격 해제 ${tag}`);
   await expect(nameField.locator('[data-ref-mark]')).toHaveText(P.markEdited);
   await page.locator('input[name="trim"]').fill(`E2E ${tag}`);
+  await page.locator('input[name="country"]').fill('KR');
+  await page.locator('input[name="vehicleModel"]').fill('NX4 PE');
   await page.locator('input[name="ownerId"]').fill('Chassis Control Team');
 
   // 대표 ASIL(B)과 다르게 하면 사유가 필수
@@ -153,6 +155,8 @@ test('(b) 추가 요청 → 요청 중 행을 대표로 등록 → 정의 승인
   await expect(page.locator('input[name="name"]')).toHaveValue(nameKo);
   await page.locator('input[name="trim"]').fill(`E2E ${tag}`);
   await page.locator('input[name="ownerId"]').fill('Body Control Team');
+  await page.locator('input[name="country"]').fill('KR');
+  await page.locator('input[name="vehicleModel"]').fill('NX4 PE');
   await page.locator('input[name="requirementIds"]').fill('REQ-E2E-REFDB');
   await submitProposedFeature(page);
   // 요청 중 행 연결은 등록하되 서버 안내(warnings)를 먼저 보인다
@@ -327,6 +331,7 @@ test('(e) axe WCAG 2.2 AA — Feature DB 목록·상세·변경 요청·제안 1
   await axeClean(page, '추가 요청 서랍');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: P.steps.pick, exact: true })).toBeVisible();
+  await page.locator('input[name="refSearch"]').fill('AVH');
   await page.getByRole('button', { name: P.primaryLabel(REF.avh) }).click();
   await page.locator('[data-ui="refPickNext"]').click();
   await expect(page.locator('input[name="name"]')).toBeVisible();

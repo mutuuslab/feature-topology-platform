@@ -26,7 +26,7 @@ export function ExternalToolLaunchers({ requirement, jira, featureId, version, c
     <section className="external-launchers" data-compact={compact || undefined} aria-label={T.title}>
       {tools.filter(({ ref }) => DEMO_EXTRAS || (ref && !isDemoReference(ref.system, ref.url))).map(({ system, ref }) => {
         const virtual = DEMO_EXTRAS && (!ref || isDemoReference(ref.system, ref.url));
-        return <a key={system} className="external-launcher" data-tool={system} href={ref ? externalReferenceUrl(ref, DEMO_EXTRAS, role) : externalUrl(system, undefined, role)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow} aria-label={`${T[system].name} ${T.newWindow}`}>
+        return <a key={system} className="external-launcher" data-tool={system} href={ref ? externalReferenceUrl(ref, DEMO_EXTRAS, role) : externalUrl(system, undefined, role)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>
           <span className="external-launcher__top"><ExtBrandLogo system={system} height={system === 'jira' ? 28 : 27} className="external-launcher__logo" /><span className="external-launcher__badge">{virtual && !seamless ? T.demo : T.connected}</span></span>
           <span className="external-launcher__task">{T[system].task}</span>
           {!compact && <span className="external-launcher__detail">{T[system].detail}</span>}

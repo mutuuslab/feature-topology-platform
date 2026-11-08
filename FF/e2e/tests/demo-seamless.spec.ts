@@ -43,7 +43,7 @@ test('JIRA·CodeBeamer 별도 창 — 시연 배지·안내 줄 없이 연다', 
   await page.goto('/features/FEAT-00001/2.1.0?tab=ext');
   await expect(page.getByTestId('ext-links')).toBeVisible();
   await expect(page.getByTestId('ext-links')).not.toContainText(MOCK_WORDS);
-  for (const name of ['CodeBeamer 새 창 열기', 'JIRA 새 창 열기']) {
+  for (const name of [/^codeBeamer .*새 창 열기$/, /^JIRA .*새 창 열기$/]) {
     const [win] = await Promise.all([context.waitForEvent('page'), page.getByRole('link', { name }).first().click()]);
     await expect(win.locator('.external-header')).toBeVisible();
     await expect(win.locator('.external-demo-badge')).toHaveCount(0);

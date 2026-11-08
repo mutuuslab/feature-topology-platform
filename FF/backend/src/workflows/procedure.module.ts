@@ -2,11 +2,13 @@
 import { Module } from '@nestjs/common';
 import { TrustModule } from '../domains/d06-qsec/pki-kms/trust.module';
 import { ProcedureController, ProcedureService } from './procedure.service';
+import { WorkflowExecutionController } from './workflow-execution.controller';
+import { WorkflowExecutionService } from './workflow-execution.service';
 
 @Module({
   imports: [TrustModule],
-  controllers: [ProcedureController],
-  providers: [ProcedureService],
+  controllers: [ProcedureController, WorkflowExecutionController],
+  providers: [ProcedureService, WorkflowExecutionService],
   exports: [ProcedureService],
 })
 export class ProcedureModule {}

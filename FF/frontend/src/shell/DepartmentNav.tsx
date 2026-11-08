@@ -5,15 +5,15 @@ import { useEffect, useMemo, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import type { DepartmentSummary } from '@ff/contracts';
 import { departments as D } from '../copy/departments';
+import { departmentNavigation as N } from '../copy/department-navigation';
 import { Icon } from '../design';
 import { routeOf, ROUTES } from '../routes';
-import { departmentMenu, type DeptMenuItem } from './departmentMenu';
+import { departmentMenu, departmentMenuGroups, type DeptMenuItem } from './departmentMenu';
+import './department-navigation.css';
 
 const horizontal = (w: string) => w === 'studio' || w === 'portal';
 /** 번들 검사 표식 — 운영 빌드(OIDC)에 이 문자열이 있으면 데모 부서 보기가 실린 것이다(tools/prod-bundle.test.ts) */
 export const DEPT_VIEW_MARKER = 'ff-dept-view-v1';
-/** 가로 메뉴에 펼쳐 두는 주 업무 수 */
-const FLAT_MAX = 6;
 
 function isActive(path: string, item: DeptMenuItem): boolean {
   const cur = routeOf(path);
@@ -32,6 +32,8 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
   const loc = useLocation();
   const menu = useMemo(() => departmentMenu(dept), [dept]);
   const rnr = loc.pathname === '/procedures/roles' && new URLSearchParams(loc.search).get('view') === 'dept';
+  const work = loc.pathname === '/procedures/work';
+  const dashboard = loc.pathname === '/' ? new URLSearchParams(loc.search).get('dashboard') : null;
   // 가로 메뉴의 '더 보기'는 본문 위에 뜬다 — 화면을 옮기면 닫고 Esc로도 닫는다
   const more = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -52,6 +54,13 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
       </NavLink>
     </li>
   );
+  const groups = (items: DeptMenuItem[], kind: string) => departmentMenuGroups(items).map((g) => {
+    const id = `dnav-${dept.id}-${kind}-${g.key}`;
+    return <section className="dnav-group" key={g.key} data-dept-category={g.key}>
+      <h3 className="dnav-group__title" id={id}>{g.title}</h3>
+      <ul className="sh-dnav__list" aria-labelledby={id}>{g.items.map(link)}</ul>
+    </section>;
+  });
   return (
     <nav className="sh-dnav" aria-label={D.nav.label(dept.name)} data-dept-nav={dept.id} data-dept-marker={DEPT_VIEW_MARKER} data-zone={dept.workspace === 'console' ? 'ops' : undefined}>
       <div className="sh-dnav__head">
@@ -61,13 +70,13 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
       </div>
       <ul className="sh-dnav__list sh-dnav__list--fixed">
         <li>
-          <NavLink to="/" end className={() => (loc.pathname === '/' ? 'active' : '')}>
+          <NavLink to="/" end className={() => (loc.pathname === '/' && !dashboard ? 'active' : '')}>
             <Icon name="home" size={16} />
             {D.nav.home}
           </NavLink>
         </li>
         <li>
-          <NavLink to="/procedures" className={() => (!rnr && loc.pathname.startsWith('/procedures') ? 'active' : '')} aria-label={procCount ? `${D.nav.procedures} — 내 차례 ${procCount}건` : undefined}>
+          <NavLink to="/procedures" className={() => (!rnr && !work && loc.pathname.startsWith('/procedures') ? 'active' : '')} aria-label={procCount ? `${D.nav.procedures} — 내 차례 ${procCount}건` : undefined}>
             <Icon name="layers" size={16} />
             {D.nav.procedures}
             {procCount > 0 && (
@@ -78,57 +87,19 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
           </NavLink>
         </li>
       </ul>
-      {flat ? (
-        <>
-          {/* 가로 메뉴는 한 줄에 — 주 업무 앞쪽만 펼치고 나머지 주 업무·협의·참조는 '더 보기'에 */}
-          <ul className="sh-dnav__list" aria-label={D.nav.primary}>
-            {menu.primary.slice(0, FLAT_MAX).map(link)}
-          </ul>
-          {menu.primary.length + menu.reference.length > FLAT_MAX && (
-            <details className="sh-dnav__more" ref={more}>
-              <summary>{D.nav.more}</summary>
-              <div className="sh-dnav__drop">
-                {/* 두 묶음 모두 머리말을 단다 — 펼친 주 업무의 나머지(내 업무)와 협의·참조 */}
-                {menu.primary.length > FLAT_MAX && (
-                  <>
-                    <p className="sh-dnav__section" id={`dnav-mp-${dept.id}`}>
-                      {D.nav.primary}
-                    </p>
-                    <ul className="sh-dnav__list" aria-labelledby={`dnav-mp-${dept.id}`}>
-                      {menu.primary.slice(FLAT_MAX).map(link)}
-                    </ul>
-                  </>
-                )}
-                {menu.reference.length > 0 && (
-                  <>
-                    <p className="sh-dnav__section" id={`dnav-mr-${dept.id}`}>
-                      {D.nav.reference}
-                    </p>
-                    <ul className="sh-dnav__list" aria-labelledby={`dnav-mr-${dept.id}`}>
-                      {menu.reference.map(link)}
-                    </ul>
-                  </>
-                )}
-              </div>
-            </details>
-          )}
-        </>
-      ) : (
-        <>
-          <p className="sh-dnav__section" id={`dnav-p-${dept.id}`}>
-            {D.nav.primary}
-          </p>
-          <ul className="sh-dnav__list" aria-labelledby={`dnav-p-${dept.id}`}>
-            {menu.primary.map(link)}
-          </ul>
-          {menu.reference.length > 0 && (
-            <details className="sh-dnav__more">
-              <summary>{D.nav.reference}</summary>
-              <ul className="sh-dnav__list">{menu.reference.map(link)}</ul>
-            </details>
-          )}
-        </>
-      )}
+      <ul className="sh-dnav__list"><li><NavLink to="/procedures/work">{N.work}</NavLink></li></ul>
+      <section className="dnav-group dnav-group--boards">
+        <h3 className="dnav-group__title" id={`dnav-${dept.id}-boards`}>{N.dashboards}</h3>
+        <ul className="sh-dnav__list" aria-labelledby={`dnav-${dept.id}-boards`}>
+          <li><NavLink to="/?dashboard=department" className={() => dashboard === 'department' ? 'active' : ''}>{N.departmentBoard}</NavLink></li>
+          <li><NavLink to="/?dashboard=role" className={() => dashboard === 'role' ? 'active' : ''}>{N.roleBoard}</NavLink></li>
+        </ul>
+      </section>
+      <div className="dnav-primary" aria-label={D.nav.primary}>{groups(menu.primary, 'primary')}</div>
+      {menu.reference.length > 0 && <details className="sh-dnav__more dnav-reference" ref={more}>
+        <summary>{D.nav.reference}</summary>
+        <div className="dnav-reference__groups">{groups(menu.reference, 'reference')}</div>
+      </details>}
       <div className="sh-dnav__foot">
         <NavLink to={`/procedures/roles?view=dept&dept=${dept.id}`} className={() => `sh-dnav__rnr${rnr ? ' active' : ''}`}>
           {D.nav.rnr}

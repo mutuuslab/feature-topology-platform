@@ -182,6 +182,69 @@ function packConstrained(items: { key: string; lo: number; hi: number; A: number
 }
 
 export function layoutFlow<N extends LNode, E extends LEdge>(input: { nodes: N[]; edges: E[]; laneOrder?: string[] }, opt: LayoutOptions = {}): FlowLayout<N, E> {
+  let best=layoutFlowOnce(input,opt);
+  if(!opt.pinnedLanes?.length)return best;
+  let score=crossings(best);
+  // Full process diagrams keep input/output lanes fixed. Optimize their actual routed crossings,
+  // rather than only role-to-role distance; document flows otherwise dominate newer procedures.
+  if(score<8)return best;
+  const pinned=new Set(opt.pinnedLanes);
+  for(let pass=0;pass<2;pass++){
+    let improved=false;
+    for(let i=0;i<best.lanes.length;i++)for(let j=i+1;j<best.lanes.length;j++){
+      if(pinned.has(best.lanes[i].id)||pinned.has(best.lanes[j].id))continue;
+      const order=best.lanes.map(l=>l.id);[order[i],order[j]]=[order[j],order[i]];
+      const candidate=layoutFlowOnce({...input,laneOrder:order},opt,true),next=crossings(candidate);
+      if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;improved=true;}
+    }
+    if(!improved)break;
+  }
+  let nodeOrder=input.nodes;
+  const fixedRanks=new Map(best.nodes.filter(n=>!n.free).map(n=>[n.id,n.rank]));
+  const documentRank=(id:string)=>Math.min(...input.edges.flatMap(e=>e.route!=='vert'?[]:e.from===id&&fixedRanks.has(e.to)?[fixedRanks.get(e.to)!]:e.to===id&&fixedRanks.has(e.from)?[fixedRanks.get(e.from)!]:[]));
+  // Document order decides which nearby column/row receives parallel inputs and outputs.
+  // Compare documents attached to the same process column within their own document lane.
+  for(let pass=0;pass<2;pass++){
+    let improved=false;
+    for(const lane of opt.pinnedLanes){
+      const indices=nodeOrder.flatMap((n,i)=>n.free&&n.lane===lane?[i]:[]);
+      for(let k=0;k<indices.length;k++)for(let z=k+1;z<indices.length;z++){
+        const nodes=[...nodeOrder],i=indices[k],j=indices[z];
+        if(documentRank(nodes[i].id)!==documentRank(nodes[j].id))continue;
+        [nodes[i],nodes[j]]=[nodes[j],nodes[i]];
+        const candidate=layoutFlowOnce({...input,nodes,laneOrder:best.lanes.map(l=>l.id)},opt,true),next=crossings(candidate);
+        if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;nodeOrder=nodes;improved=true;}
+      }
+    }
+    if(!improved)break;
+  }
+  // Document placement can change which role-lane ordering has the fewest crossings.
+  for(let pass=0;pass<2;pass++){
+    let improved=false;
+    for(let i=0;i<best.lanes.length;i++)for(let j=i+1;j<best.lanes.length;j++){
+      if(pinned.has(best.lanes[i].id)||pinned.has(best.lanes[j].id))continue;
+      const order=best.lanes.map(l=>l.id);[order[i],order[j]]=[order[j],order[i]];
+      const candidate=layoutFlowOnce({...input,nodes:nodeOrder,laneOrder:order},opt,true),next=crossings(candidate);
+      if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;improved=true;}
+    }
+    if(!improved)break;
+  }
+  // Parallel activities occupying the same role/column can exchange rows without changing order dependencies.
+  for(let pass=0;pass<2;pass++){
+    let improved=false;
+    for(let i=0;i<nodeOrder.length;i++)for(let j=i+1;j<nodeOrder.length;j++){
+      const a=nodeOrder[i],b=nodeOrder[j];
+      if(a.free||b.free||a.shape!=='rect'||b.shape!=='rect'||a.lane!==b.lane||fixedRanks.get(a.id)!==fixedRanks.get(b.id))continue;
+      const nodes=[...nodeOrder];[nodes[i],nodes[j]]=[nodes[j],nodes[i]];
+      const candidate=layoutFlowOnce({...input,nodes,laneOrder:best.lanes.map(l=>l.id)},opt,true),next=crossings(candidate);
+      if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;nodeOrder=nodes;improved=true;}
+    }
+    if(!improved)break;
+  }
+  return best;
+}
+
+function layoutFlowOnce<N extends LNode, E extends LEdge>(input: { nodes: N[]; edges: E[]; laneOrder?: string[] }, opt: LayoutOptions, fixedOrder=false): FlowLayout<N, E> {
   const laneLabelW = opt.laneLabelW ?? 116;
   const labelW = opt.labelW ?? 100;
   const ids = new Set(input.nodes.map((n) => n.id));
@@ -287,9 +350,9 @@ export function layoutFlow<N extends LNode, E extends LEdge>(input: { nodes: N[]
   const laneOf = new Map(input.nodes.map((n) => [n.id, n.lane]));
   const cost = (ls: string[]) => {
     const ix = new Map(ls.map((l, i) => [l, i]));
-    return fwd.reduce((s, e) => s + Math.abs(ix.get(laneOf.get(e.from)!)! - ix.get(laneOf.get(e.to)!)!), 0);
+    return valid.filter(e=>!e.hidden).reduce((s, e) => s + Math.abs(ix.get(laneOf.get(e.from)!)! - ix.get(laneOf.get(e.to)!)!), 0);
   };
-  for (let pass = 0, improved = true; improved && pass < 32; pass++) {
+  for (let pass = 0, improved = true; !fixedOrder && improved && pass < 32; pass++) {
     improved = false;
     for (let i = 0; i + 1 < lanes.length; i++) {
       if (pinnedLane.has(lanes[i]) || pinnedLane.has(lanes[i + 1])) continue;

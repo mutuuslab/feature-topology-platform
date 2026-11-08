@@ -38,8 +38,8 @@ describe('업무 절차 활동 완료 (서버 저장·검토함)', () => {
     expect(r.roleIds).toEqual(['R-FO']);
     expect(r.items).toContainEqual(expect.objectContaining({ activityId: A01, kind: 'TODO', processId: 'FPW.1' }));
     expect(r.summary).toMatchObject({ todo: expect.any(Number), review: expect.any(Number), done: 0 });
-    // 메인 화면 절차 지도 — 14개 프로세스(FPW.14 Feature DB 운영 포함)의 완료/내 차례 수
-    expect(r.summary.processes).toHaveLength(14);
+    // 현재 통합 모델의 18개 프로세스별 완료/내 차례 수
+    expect(r.summary.processes).toHaveLength(18);
     expect(r.summary.processes.map((p: any) => p.id)).toContain('FPW.14');
     expect(r.summary.processes.find((p: any) => p.id === 'FPW.1')).toMatchObject({ total: 6, done: 0, todo: 2 }) // A01 등록 + A06 Feature DB 추가 요청(앞 활동 없음);
   });

@@ -1,0 +1,15 @@
+.dnav-group { min-width: 0; }
+.dnav-group__title { margin: var(--sp-3) var(--sp-2) var(--sp-1); color: var(--muted); font-size: var(--fs-xs); font-weight: 700; }
+.dnav-group + .dnav-group { border-top: 1px solid var(--line); margin-top: var(--sp-2); }
+.dnav-reference__groups { padding-bottom: var(--sp-2); }
+.sh[data-workspace='studio'] .dnav-primary,
+.sh[data-workspace='portal'] .dnav-primary { display: flex; flex-wrap: wrap; gap: var(--sp-4); }
+.sh[data-workspace='studio'] .dnav-primary .dnav-group,
+.sh[data-workspace='portal'] .dnav-primary .dnav-group { border-top: 0; margin-top: 0; }
+.sh[data-workspace='studio'] .dnav-group--boards,
+.sh[data-workspace='portal'] .dnav-group--boards { flex: 0 0 auto; }
+@media (max-width: 767px) {
+  .sh[data-workspace] .dnav-primary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); gap: var(--sp-2); width: 100%; }
+  .sh[data-workspace] .dnav-group .sh-dnav__list { display: flex; flex-wrap: wrap; }
+  .sh[data-workspace] .dnav-group .sh-dnav__list a { white-space: normal; overflow-wrap: anywhere; }
+}

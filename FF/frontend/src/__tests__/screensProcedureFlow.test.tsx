@@ -140,9 +140,9 @@ describe('절차 흐름도 (/procedures/:id)', () => {
   });
 });
 
-describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
+describe('내 업무 흐름 (/procedures?view=flow)', () => {
   it('내 활동을 사슬로 잇고 받는 곳·넘기는 곳을 그린다', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=flow', 'author');
     const svg = await screen.findByRole('group', { name: '내 업무 흐름' });
     const steps = myWorkSteps(WORKFLOWS, WORKFLOWS.personas.author);
     expect(svg.querySelectorAll('[data-step]').length).toBe(steps.length);
@@ -153,7 +153,7 @@ describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
   });
 
   it('역할마다 다른 흐름 — 운영 조직은 긴급 차단 활동, Feature Owner는 등록 활동', async () => {
-    mount('/procedures', 'operator');
+    mount('/procedures?view=flow', 'operator');
     await screen.findByRole('group', { name: '내 업무 흐름' });
     const ops = myWorkSteps(WORKFLOWS, WORKFLOWS.personas.operator).map((s) => s.activity.id);
     const shown = [...document.querySelectorAll('[data-step]')].map((g) => g.getAttribute('data-step'));
@@ -162,7 +162,7 @@ describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
   });
 
   it('보이는 활동을 "지금 내 차례"로 줄이고, 텍스트 보기로 같은 내용을 표로 본다', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=flow', 'author');
     await screen.findByRole('group', { name: '내 업무 흐름' });
     fireEvent.click(screen.getByRole('radio', { name: /지금 내 차례/ }));
     const now = document.querySelectorAll('[data-step]').length;
@@ -173,7 +173,7 @@ describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
   });
 
   it('흐름의 내 활동을 누르면 그 절차의 활동 상세로 간다', async () => {
-    mount('/procedures', 'author');
+    mount('/procedures?view=flow', 'author');
     await screen.findByRole('group', { name: '내 업무 흐름' });
     fireEvent.click(screen.getByRole('button', { name: /Feature 등록·초안 작성/ }));
     await waitFor(() => expect(screen.getByTestId('where').textContent).toBe('/procedures/FPW.1?a=FPW.1-A01'));
@@ -181,10 +181,10 @@ describe('내 업무 흐름 (/procedures 허브 기본 탭)', () => {
 });
 
 describe('전체 지도 (/procedures?view=map)', () => {
-  it('14개 절차를 그리고 내 역할 참여를 표시하며, 누르면 그 절차 흐름도로 간다', async () => {
+  it('18개 절차를 그리고 내 역할 참여를 표시하며, 누르면 그 절차 흐름도로 간다', async () => {
     mount('/procedures?view=map', 'author');
     const svg = await screen.findByRole('group', { name: '전체 지도' });
-    expect(svg.querySelectorAll('.pf-proc').length).toBe(14);
+    expect(svg.querySelectorAll('.pf-proc').length).toBe(18);
     const mine = svg.querySelectorAll('.pf-proc[data-mine]').length;
     expect(mine).toBe(WORKFLOWS.processes.filter((p) => myWorkSteps(WORKFLOWS, WORKFLOWS.personas.author).some((s) => s.process.id === p.id)).length);
     expect(within(svg).getByRole('link', { name: /Feature 등록·분류 .*내 활동/ })).toBeTruthy();
@@ -202,7 +202,7 @@ describe('메인 화면 업무 절차 가젯 — 내 업무 흐름 작은 판', 
     expect(steps.length).toBeLessThanOrEqual(3);
     expect(svg.querySelector('.pf-node[data-now]')).toBeTruthy();
     expect(screen.getByRole('link', { name: '내 업무 흐름 전체 보기' }).getAttribute('href')).toBe('/procedures?view=flow');
-    expect(document.querySelectorAll('.pm-node').length).toBe(13);
+    expect(document.querySelectorAll('.pm-node').length).toBe(17);
   });
 });
 
@@ -272,7 +272,7 @@ describe('담당자별 업무 흐름 (?view=roles · /procedures/roles)', () => 
 });
 
 describe('업무 이름으로 읽는 절차 화면', () => {
-  it.each(['/', '/procedures', '/procedures?view=list', '/procedures?view=map', '/procedures/roles', ...WORKFLOWS.processes.map((p) => `/procedures/${p.id}`)])('화면과 접근성 이름에 내부 절차 코드를 표시하지 않는다: %s', async (path) => {
+  it.each(['/', '/procedures?view=flow', '/procedures?view=list', '/procedures?view=map', '/procedures/roles', ...WORKFLOWS.processes.map((p) => `/procedures/${p.id}`)])('화면과 접근성 이름에 내부 절차 코드를 표시하지 않는다: %s', async (path) => {
     stubState([]);
     mount(path);
     await waitFor(() => expect(document.querySelector('.pf-svg, .pf-matrix, .ds-learn-grid')).toBeTruthy());

@@ -15,6 +15,8 @@ const GENERATED_INDEX = join(FF, 'backend', 'src', 'generated', 'workflow-index.
 const GENERATED_MAP = join(FF, 'contracts', 'src', 'generated', 'workflow-map.ts');
 /** 셸(부서 전환·부서 메뉴)은 부서 이름·화면 유형·데모 계정·화면 목록만 첫 화면에 싣는다 — 같은 JSON에서 생성 */
 const GENERATED_DEPTS = join(FF, 'contracts', 'src', 'generated', 'departments.ts');
+const EXECUTION_SERVER = join(FF, 'backend', 'src', 'generated', 'workflow-execution-model.ts');
+const EXECUTION_BROWSER = join(FF, 'contracts', 'src', 'generated', 'workflow-execution-model.ts');
 const GENERATED_DIR = dirname(GENERATED);
 const SCHEMA = 1;
 
@@ -57,7 +59,7 @@ type JsonDoc = {
   schema: number;
   personas: Record<string, string[]>;
   roles: { id: string; name: string; platformRoles: string[] }[];
-  processes: { id: string; name: string; group: string; gates: string[]; activities: any[] }[];
+  processes: { id: string; name: string; group: string; gates: string[]; activities: any[]; workProducts?: { key: string; name: string; content: string[] }[] }[];
   departments: {
     id: string;
     name: string;
@@ -97,6 +99,18 @@ export function indexOf(doc: JsonDoc) {
       })),
     ),
   };
+}
+
+/** Case execution uses normative output content, not display-only progress checkboxes. */
+export function executionModelOf(doc: JsonDoc) {
+  return { roles: doc.roles.map((r) => ({id:r.id,name:r.name,platformRoles:r.platformRoles})), personas:doc.personas,
+    processes:doc.processes.map((p) => ({id:p.id,name:p.name,products:(p.workProducts ?? []).map((w) => ({key:w.key,name:w.name,content:w.content})),
+      activities:p.activities.map((a) => ({id:a.id,name:a.name,processId:p.id,raci:a.raci,inputs:a.inputs,outputs:a.outputs,next:a.next,screens:a.platform.screens,actions:a.platform.actions,checks:a.checks}))})) };
+}
+export function renderExecutionModule(doc: JsonDoc, browser = false): string {
+  return '// 생성 파일 — tools/workflow-sync.ts. 업무 건·산출물 실행 모델.\n' +
+    `import type { WorkflowExecutionModel } from '${browser ? '../schemas/workflow-execution' : '@ff/contracts'}';\n` +
+    `export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = ${JSON.stringify(executionModelOf(doc),null,1)};\n`;
 }
 
 /** 계약 타입(WorkflowMapDoc)과 같은 모양 — 13개 프로세스의 이름·단계·Gate·활동 수 */
@@ -164,6 +178,8 @@ function sync() {
   writeFileSync(GENERATED_INDEX, renderIndexModule(doc));
   writeFileSync(GENERATED_MAP, renderMapModule(doc));
   writeFileSync(GENERATED_DEPTS, renderDepartmentsModule(doc));
+  writeFileSync(EXECUTION_SERVER, renderExecutionModule(doc));
+  writeFileSync(EXECUTION_BROWSER, renderExecutionModule(doc,true));
   for (const [name, source] of Object.entries(renderLazyModules(doc))) writeFileSync(join(GENERATED_DIR, name), source);
   const acts = doc.processes.reduce((n: number, p: { activities: unknown[] }) => n + p.activities.length, 0);
   console.log(
@@ -178,6 +194,8 @@ function check(): number {
   }
   const doc = readSource();
   const bad: string[] = [];
+  if (!existsSync(EXECUTION_SERVER) || readFileSync(EXECUTION_SERVER,'utf8').replace(/\r\n/g,'\n') !== renderExecutionModule(doc)) bad.push(posix(relative(FF,EXECUTION_SERVER)));
+  if (!existsSync(EXECUTION_BROWSER) || readFileSync(EXECUTION_BROWSER,'utf8').replace(/\r\n/g,'\n') !== renderExecutionModule(doc,true)) bad.push(posix(relative(FF,EXECUTION_BROWSER)));
   if (!existsSync(GENERATED) || readFileSync(GENERATED, 'utf8').replace(/\r\n/g, '\n') !== renderWorkflowModule(doc)) bad.push(posix(relative(FF, GENERATED)));
   if (!existsSync(GENERATED_INDEX) || readFileSync(GENERATED_INDEX, 'utf8').replace(/\r\n/g, '\n') !== renderIndexModule(doc)) bad.push(posix(relative(FF, GENERATED_INDEX)));
   if (!existsSync(GENERATED_MAP) || readFileSync(GENERATED_MAP, 'utf8').replace(/\r\n/g, '\n') !== renderMapModule(doc)) bad.push(posix(relative(FF, GENERATED_MAP)));

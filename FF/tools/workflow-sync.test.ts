@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { workflowIndexOf, workflowMapOf } from '../contracts/src/rules/workflows.ts';
-import { indexOf, mapOf, renderIndexModule, renderMapModule, renderWorkflowModule, renderLazyModules, SOURCE } from './workflow-sync.ts';
+import { executionModelOf, indexOf, mapOf, renderIndexModule, renderMapModule, renderWorkflowModule, renderLazyModules, SOURCE } from './workflow-sync.ts';
 
 test('스키마 버전이 다르면 생성하지 않는다(타입과 데이터가 어긋나지 않게)', () => {
   assert.throws(() => renderWorkflowModule({ schema: 2 }), /schema 2/);
@@ -48,4 +48,16 @@ test('분할 파일 경로를 임의 ID로 만들거나 같은 프로세스를 �
   const doc = JSON.parse(readFileSync(SOURCE, 'utf8'));
   assert.throws(() => renderLazyModules({ ...doc, processes: [{ ...doc.processes[0], id: '../escape' }] }), /Invalid workflow process ID/);
   assert.throws(() => renderLazyModules({ ...doc, processes: [doc.processes[0], doc.processes[0]] }), /Duplicate workflow process ID/);
+});
+test('실행 모델은124활동의 RACI·입출력·인계·원천 action과122WP 필수 내용을 손실 없이 보존한다',()=>{
+  const doc=JSON.parse(readFileSync(SOURCE,'utf8')),model=executionModelOf(doc);
+  assert.equal(model.processes.flatMap(p=>p.activities).length,124);
+  assert.equal(new Set(model.processes.flatMap(p=>p.products.map(w=>w.key))).size,122);
+  for(const process of doc.processes){
+    const actual=model.processes.find(p=>p.id===process.id)!;
+    assert.deepEqual(actual.products,process.workProducts.map((w:any)=>({key:w.key,name:w.name,content:w.content})));
+    for(const activity of process.activities){
+      assert.deepEqual(actual.activities.find(a=>a.id===activity.id),{id:activity.id,name:activity.name,processId:process.id,raci:activity.raci,inputs:activity.inputs,outputs:activity.outputs,next:activity.next,screens:activity.platform.screens,actions:activity.platform.actions,checks:activity.checks});
+    }
+  }
 });

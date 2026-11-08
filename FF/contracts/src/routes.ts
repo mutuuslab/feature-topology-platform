@@ -43,6 +43,7 @@ import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { ProcedureCompleteBody } from './schemas/procedure';
+import { CreateWorkflowCaseBody, WorkflowActivityReviewBody, WorkflowActivitySubmitBody, WorkflowArtifactBody, WorkflowHandoffBody, WorkflowHandoffReceiveBody, WorkflowRoleGrantBody } from './schemas/workflow-execution';
 import { AddCostFeatureBody, COST_MONEY_ROLES, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostActualBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
 
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -159,6 +160,19 @@ export const ROUTES: RouteDef[] = [
 
   // 업무 절차 실행 (docs/65-workflows) — 완료는 서버 저장·감사·이벤트, 검토함은 내 역할 기준
   { name: 'procedureState', method: 'GET', path: '/api/procedures/state', summary: '업무 절차 활동 완료 상태(서버 저장) — Evidence·서명 포함', component: 'D04-04', personal: true },
+  { name: 'workflowIdentity', method: 'GET', path: '/api/workflow/identity', summary: '검증된 계정의 업무 역할·배정 가능 여부', component: 'D04-04', personal: true },
+  { name: 'workflowAssignableAccounts', method: 'GET', path: '/api/workflow/accounts', summary: '관리자의 명시 업무 역할 배정 대상 — 실제 로그인으로 확인된 활성 계정', component: 'D04-04', roles: ['SYSTEM_ADMIN'], personal: true },
+  { name: 'workflowRoleGrants', method: 'GET', path: '/api/workflow/roles', summary: '명시적으로 배정된 업무 역할 — 관리자 또는 본인', component: 'D04-04', personal: true },
+  { name: 'setWorkflowRoleGrant', method: 'POST', path: '/api/workflow/roles', summary: '시스템 관리자의 업무 조직 역할 배정·철회 — IAM 권한 변경 아님', component: 'D04-04', roles: ['SYSTEM_ADMIN'], body: WorkflowRoleGrantBody },
+  { name: 'workflowCases', method: 'GET', path: '/api/workflow/cases', summary: '담당·검토·협의 역할의 업무 건 목록', component: 'D04-04', personal: true },
+  { name: 'workflowCase', method: 'GET', path: '/api/workflow/cases/:id', summary: '업무 건 활동·산출물 버전·인계·변경 이력', component: 'D04-04', personal: true },
+  { name: 'workflowCaseSources', method: 'GET', path: '/api/workflow/cases/:id/sources', summary: '업무 대상의 실제 정본 기록·버전·현재 내용 해시 조회 — 외부 파일·승인 검증 아님', component: 'D04-04', personal: true },
+  { name: 'createWorkflowCase', method: 'POST', path: '/api/workflow/cases', summary: '대상별 업무 건 작성 — 실제 업무 모델의 수행·책임 역할', component: 'D04-04', roles: HUMAN_ROLES, body: CreateWorkflowCaseBody },
+  { name: 'createWorkflowArtifact', method: 'POST', path: '/api/workflow/cases/:id/artifacts', summary: '업무 산출물 내용·근거·첨부의 새 버전 작성', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowArtifactBody },
+  { name: 'submitWorkflowActivity', method: 'POST', path: '/api/workflow/cases/:id/activities/:activityId/submit', summary: '필수 산출물과 근거를 확인해 독립 검토 요청', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowActivitySubmitBody },
+  { name: 'reviewWorkflowActivity', method: 'POST', path: '/api/workflow/cases/:id/activities/:activityId/review', summary: '산출물 독립 검토 수락·보완 — 원천 Gate·정책 승인과 별개', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowActivityReviewBody },
+  { name: 'offerWorkflowHandoff', method: 'POST', path: '/api/workflow/cases/:id/handoffs', summary: '수락된 산출물을 다음 활동 담당자에게 인계 요청 — 요청 번호 멱등', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowHandoffBody },
+  { name: 'receiveWorkflowHandoff', method: 'POST', path: '/api/workflow/cases/:id/handoffs/:handoffId/receive', summary: '다음 활동 담당자의 실제 인수·반송 기록', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowHandoffReceiveBody },
   { name: 'procedureInbox', method: 'GET', path: '/api/procedures/inbox', summary: '내 업무 절차 검토함 — 준비된 수행(R)·책임(A) 활동, SLA 기한·초과', component: 'D04-04', personal: true },
   { name: 'procedureSummary', method: 'GET', path: '/api/procedures/summary', summary: '내 업무 절차 요약 — 메뉴 배지(할 일·검토·기한 초과)', component: 'D04-04', personal: true },
   { name: 'completeProcedureActivity', method: 'POST', path: '/api/procedures/activities/:id/complete', summary: '활동 완료 — Evidence·개인 서명(선택), 감사·인계 알림', component: 'D04-04', roles: HUMAN_ROLES, body: ProcedureCompleteBody },

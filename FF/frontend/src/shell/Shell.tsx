@@ -17,7 +17,6 @@ import { roleHome, useAppApi, useAppShell } from '../store';
 import { GROUPS, MENU, ROUTES, rolesOf, routeOf, trailOf, type GroupKey } from '../routes';
 import { logout } from '../auth';
 import { DepartmentSwitcher } from './DepartmentSwitcher';
-import { DepartmentNav } from './DepartmentNav';
 import { ALL_DEPARTMENTS, departmentById } from '../data/departments';
 import { SsoRoleSwitcher } from './SsoRoleSwitcher';
 import { login as L } from '../copy/login';
@@ -36,6 +35,8 @@ import './shell.css';
 // 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
 // 공개 시연 사이트 — 이 브라우저의 시연 데이터를 처음 상태로(누를 때만 불러온다, 20-60)
 const DemoReset = lazy(() => import('./DemoReset'));
+// Department work groups are only needed after a demo team is selected. OIDC builds omit the import entirely.
+const DepartmentNav = OIDC_AUTH ? null : lazy(() => import('./DepartmentNav').then(m=>({default:m.DepartmentNav})));
 
 const LS_PRESENT = 'ff.present';
 const LS_MYROLE = 'ff.myRole';
@@ -240,7 +241,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
       </header>
 
       {dept ? (
-        <DepartmentNav dept={dept} procCount={procCount} onAll={() => changeDepartment(ALL_DEPARTMENTS)} />
+        <Suspense fallback={<nav className="sh-dnav" aria-label={dept.name} aria-busy="true"><div className="ds-skel"><span/><span/></div></nav>}>
+          {DepartmentNav&&<DepartmentNav dept={dept} procCount={procCount} onAll={() => changeDepartment(ALL_DEPARTMENTS)} />}
+        </Suspense>
       ) : (
         <>
       <nav className="sh-rail" aria-label={ko.app.name}>

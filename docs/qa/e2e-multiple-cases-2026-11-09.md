@@ -1,3 +1,14 @@
+---
+id: TC-E2E-MULTIPLE-CASES-2026-11-09
+type: reference
+title: "여러 케이스별 실제 데이터 검증"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 여러 케이스별 실제 데이터 검증
 
 통합 저장소: `work/release-20261108-p10`, branch `release/web-20261108-p10`.

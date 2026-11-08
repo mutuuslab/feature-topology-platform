@@ -1,3 +1,14 @@
+---
+id: TC-WIRE-INTEGRATION-2026-11-09
+type: reference
+title: "차량 상태 보고 2.0·2.1 및 Feature epoch 통합"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 차량 상태 보고 2.0·2.1 및 Feature epoch 통합
 
 2026-11-09 / root. 원천 `gap/w@2166416c`와 원래 WT에 보존된 GLEO2.1 벡터·시험·snapshot-w 세 파일을 통합했다. 원래 작업 트리 파일은 수정하지 않았고 세 복사 파일의 SHA가 일치한다. 표준/감사 WIP 파일은 판정 근거로 자동 수용하지 않았다.

@@ -1,3 +1,14 @@
+---
+id: TC-GX-STATIC-PARITY-2026-11-09
+type: reference
+title: "GX static parity release checkpoint — 2026-11-09"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # GX static parity release checkpoint — 2026-11-09
 
 Base: independent `work/gx-static-20261109`, `feat/gx-static-20261109`, root `339ce7d0`. Later root AC/W/P11a changes must be preserved at integration. This is a source checkpoint; final integrated Publish is owned by root.

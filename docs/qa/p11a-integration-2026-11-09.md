@@ -1,3 +1,14 @@
+---
+id: TC-P11A-INTEGRATION-2026-11-09
+type: reference
+title: "사건별 차단·요청 접수·영향군·부분 복원 통합"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 사건별 차단·요청 접수·영향군·부분 복원 통합
 
 2026-11-09 / root. 원천 `gap/p11a@c8eba4a3`를 W2.1/P9/GX/AC 및 기존 업무/소프트웨어 전달과 통합했다. 원래 P11a WT의 세 tracked WIP는 diff 내용이 없는 EOL 상태로 관측해 추가 기능으로 복사하지 않았다.

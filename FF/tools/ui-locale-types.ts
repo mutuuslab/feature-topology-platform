@@ -40,7 +40,7 @@ for(const name of files){
         let member:ts.Symbol|undefined,length=path.length-index;
         for(;length>0;length--){member=target&&checker.getPropertyOfType(target,path.slice(index,index+length).join('.'));if(member)break;}
         // Numeric-looking string codes such as '01' remain string keys in Record<string, T>.
-        const indexed=target?( /^\d+$/.test(path[index]) ? checker.getIndexTypeOfType(target,ts.IndexKind.Number) ?? checker.getIndexTypeOfType(target,ts.IndexKind.String) : checker.getIndexTypeOfType(target,ts.IndexKind.String) ):undefined;
+        const indexed:ts.Type|undefined=target?( /^\d+$/.test(path[index]) ? checker.getIndexTypeOfType(target,ts.IndexKind.Number) ?? checker.getIndexTypeOfType(target,ts.IndexKind.String) : checker.getIndexTypeOfType(target,ts.IndexKind.String) ):undefined;
         target=member?checker.getTypeOfSymbolAtLocation(member,source):indexed;
         index+=member?length:target&&(target.flags&(ts.TypeFlags.StringLike|ts.TypeFlags.NumberLike|ts.TypeFlags.BooleanLike))?path.length-index:1;
       }

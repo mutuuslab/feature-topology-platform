@@ -1,3 +1,14 @@
+---
+id: TC-WORKFLOW-ARTIFACTS-2026-11-09
+type: reference
+title: "업무 건·절차 간 인계와 실제 대용량 첨부"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 업무 건·절차 간 인계와 실제 대용량 첨부
 
 범위: `feat/workflow-artifacts-20261109`, base `4c3f017c`. 계약 결합 하네스 수정 `5759ea62`를 `ee163b32`로 먼저 적용했다. 이 기록은 격리된 로컬 검증이며, 최종 통합·이해관계자 검토·Publish 완료 기록이 아니다.

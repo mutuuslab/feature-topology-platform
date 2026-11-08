@@ -1,3 +1,14 @@
+---
+id: TC-GITHUB-PR-RECOVERY-2026-11-09
+type: reference
+title: "GitHub Flag PR 부분 실패 복구"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # GitHub Flag PR 부분 실패 복구
 
 기준: RC `c799a0e9`, 분리 브랜치 `feat/github-recovery-20261109`. 실제 회사 GitHub나 새 운영 연결을 사용하지 않고 기존 `tools/flag-code/mock-github.ts`와 실제 로컬 HTTP transport를 사용했다. 개인키·토큰은 시험 안에서 생성·보관하며 로그에 출력하지 않는다.

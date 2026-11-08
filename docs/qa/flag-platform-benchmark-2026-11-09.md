@@ -1,3 +1,14 @@
+---
+id: TC-FLAG-PLATFORM-BENCHMARK-2026-11-09
+type: reference
+title: "Unleash·LaunchDarkly 비교와 Feature Platform 보완 원장"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # Unleash·LaunchDarkly 비교와 Feature Platform 보완 원장
 
 2026-11-09 / root / 관찰 RC `6c4ecde1`. 기능 이름이 있다는 사실과 같은 버전에서 검증한 동작을 분리한다. 전체 벤더 기능을 그대로 추가하는 요구가 아니며 차량의 서명·권리·안전·직무 분리 규칙에 맞춰 적용한다. 비용 확장은 이 원장 및 Publish 트랙과 별도다.

@@ -1,3 +1,14 @@
+---
+id: TC-AC-INTEGRATION-2026-11-09
+type: reference
+title: "AC 승인 조합·보안 최소 버전·권한 범위 통합"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # AC 승인 조합·보안 최소 버전·권한 범위 통합
 
 2026-11-09 / root. 기존 P10/P13/TX/SW/P9/GX와 F0 계정 관리 위에 `gap/ac@74e2f006`을 통합했다. 기존 감사 결론·상태 문구는 원천 병합으로 일괄 완료 처리하지 않고 보존했다.

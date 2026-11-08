@@ -1,3 +1,14 @@
+---
+id: TC-SOFTWARE-STATIC-DELIVERY-2026-11-09
+type: reference
+title: "정적 SW 원문 전달·공개 시험용 캡처 검증"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 정적 SW 원문 전달·공개 시험용 캡처 검증
 
 `42ff9d4d` → `47ff64d5`는 root의 native SW 전달 기능을 브라우저 안 실제 바이트 시연에 연결한다. Node의 native 기능·차량 인증은 root의 별도 검증이며, 여기서 기록하는 새 검토·영수증은 `LOCAL_SIMULATION`이다. 원문을 받았다는 사실을 설치·활성화·실차 적용으로 기록하지 않는다.

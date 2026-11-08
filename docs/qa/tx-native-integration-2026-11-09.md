@@ -1,3 +1,14 @@
+---
+id: TC-TX-NATIVE-INTEGRATION-2026-11-09
+type: reference
+title: "분류·지역·브랜드 기능 통합 체크포인트"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 분류·지역·브랜드 기능 통합 체크포인트
 
 TX 원천 `gap/tx@5cc12c69`의 5개 커밋을 현재 등록 자동화·P10·P13·대시보드·업무 실행·영어 구조와 통합한다.

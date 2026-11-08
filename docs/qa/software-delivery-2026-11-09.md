@@ -1,3 +1,14 @@
+---
+id: TC-SOFTWARE-DELIVERY-2026-11-09
+type: reference
+title: "실제 Flag 조건 SW 원문 다운로드"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 실제 Flag 조건 SW 원문 다운로드
 
 기존 IF-13 기록과 OTA 캠페인은 SW 원문 바이트 보관·다운로드의 근거가 아니었다. 신규 `/deployments/software`는 원문 업로드 → Feature 버전/SW 구성품 연결 → 다른 출시 담당자의 검토 → Ed25519 서명 매니페스트 → 현재 배포 Flag와 차량 지원/대상/권리/차단 평가 → 실제 원문 스트리밍으로 연결한다.

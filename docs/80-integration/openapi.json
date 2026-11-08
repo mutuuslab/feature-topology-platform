@@ -7957,6 +7957,36 @@
         }
       }
     },
+    "/api/policies/{id}/exception-sources": {
+      "get": {
+        "summary": "예외 배포 재평가 공개 사실·원천판·시각·서명",
+        "tags": [
+          "D03-02"
+        ],
+        "operationId": "policyExceptionSources",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/feature-flags": {
       "get": {
         "summary": "Feature Flag와 코드 사용처·배포 확인",

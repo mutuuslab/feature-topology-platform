@@ -1,3 +1,14 @@
+---
+id: TC-TX-STATIC-WORKFLOWS-2026-11-09
+type: reference
+title: "분류·적용 조건 정적 업무 실행 검증"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 분류·적용 조건 정적 업무 실행 검증
 
 구현 체크포인트 `f59b3709`는 native TX 기능을 브라우저 시연에도 연결한다. 정적 모드에서 숨기던 노드 관리·Feature 배치·브랜드 조건 편집을 표시하고, 실제 원천 스냅샷 위에 브라우저 변경을 저장한다. 정책 본문·승인·배포·활성화는 이 메타데이터 수정으로 바뀌지 않는다.

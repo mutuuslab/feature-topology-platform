@@ -1,3 +1,14 @@
+---
+id: TC-P9-INTEGRATION-2026-11-09
+type: reference
+title: "P9 차량 메시지·서명 캐시·OTA 대사 통합 검토"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # P9 차량 메시지·서명 캐시·OTA 대사 통합 검토
 
 2026-11-09, 담당 root. RC `release/web-20261108-p10`, base merge `b5c75895`, 신뢰 후속 `c799a0e9`. 아직 최종 게시 근거가 아니다.

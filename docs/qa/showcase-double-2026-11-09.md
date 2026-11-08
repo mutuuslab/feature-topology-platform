@@ -1,3 +1,14 @@
+---
+id: TC-SHOWCASE-DOUBLE-2026-11-09
+type: reference
+title: "공개 시연 데이터 확장 검증 — 2026-11-09"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 공개 시연 데이터 확장 검증 — 2026-11-09
 
 기준 `634b2542`, 데이터 구현 `b6cb8565`, 단일 VIN 최적화 `e78210b7`, 첫 조회 권한 보정 `d3a83072`. 추가 데이터는 가상 시연으로 표시한다. 실제 외부 승인·실차 근거를 생성하지 않으며 기존 Lifecycle·Gate·직무 분리·RACI 규칙을 유지한다.

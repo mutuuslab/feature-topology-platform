@@ -1,3 +1,14 @@
+---
+id: TC-GX-INTEGRATION-2026-11-09
+type: reference
+title: "GX 예외 정책 통합과 남은 정적 동등성"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # GX 예외 정책 통합과 남은 정적 동등성
 
 2026-11-09 / root / base `1ffa52b7`, 신뢰 후속 `6c4ecde1`. 최종 Publish 전 통합 원천이다.

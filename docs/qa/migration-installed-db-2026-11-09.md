@@ -1,3 +1,14 @@
+---
+id: TC-MIGRATION-INSTALLED-DB-2026-11-09
+type: reference
+title: "통합 마이그레이션 순서와 기존 설치 DB 보존 검증"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 통합 마이그레이션 순서와 기존 설치 DB 보존 검증
 
 2026-11-09 / root. 사용자 지정9543 서버와 원본 DB는 유지했다. 비용 작업에서 발견한 배열 순서 문제를 비개발비 원천에도 별도 수정했다. `MIGRATIONS`의 반환 배열만 이름순으로 정렬했으며 이미 실행기 `migrate()`도 같은 순서로 적용하고 있었다. 기존100개 SQL과 잠금 해시는 변경하지 않았다.

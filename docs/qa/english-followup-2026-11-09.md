@@ -1,3 +1,14 @@
+---
+id: TC-ENGLISH-FOLLOWUP-2026-11-09
+type: reference
+title: "영어 표시 후속 검증"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # 영어 표시 후속 검증
 
 UI 문구와 선언된 표시 메타데이터만 번역한다. 저장된 업무 원문, ID, enum 값, 계약, 권한, 금액 계산, 안전·검수 판정은 변경하지 않는다. 전체 영어 또는 전체 플랫폼 완료 보고서가 아니다.

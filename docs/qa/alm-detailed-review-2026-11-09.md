@@ -1,3 +1,14 @@
+---
+id: TC-ALM-DETAILED-REVIEW-2026-11-09
+type: reference
+title: "CodeBeamer·Jira·GitHub 상세 연계 검토"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+---
+
 # CodeBeamer·Jira·GitHub 상세 연계 검토
 
 사용자 지정 범위는 기존에 구성한 **데모**다. 기존 `/external.html?system=codebeamer|jira` 작업 창, DB에 저장되는 MockExtStore, 독립 HTTP Jira/CodeBeamer 참조 서버(`tools/ext-mocks`), GitHub App·OIDC·webhook 시험 서버(`tools/flag-code/mock-github.ts`)와 기존 실제 GitHub 작업 저장소를 사용한다. 회사 운영 계정 신규 연결을 게시 선행조건으로 만들지 않는다.

@@ -538,12 +538,11 @@ function gauges(model: DemoModel, t: number): { name: string; labels: Labels; va
     const killed = [...model.incidents(day - 1), ...model.incidents(day)].some((i) => i.featureId === p.featureId && t >= i.issued && t < i.released);
     for (const [country, total] of countries) {
       const point = ADOPTION_COUNTRY_POINTS[country];
-      if (!point) continue;
       const unknown = Math.round(total * (0.02 + rand('adoption-offline', country, Math.floor(t / (10 * MIN))) * 0.04));
       const disabled = killed ? Math.round((total - unknown) * 0.6) : 0;
       const applied = Math.round((total - unknown - disabled) * p.stageRatio * 0.9);
       const counts = { UNKNOWN: unknown, DISABLED: disabled, [p.stageRatio < 1 ? 'CANARY' : 'ON']: applied, OFF: total - unknown - disabled - applied };
-      for (const [state, value] of Object.entries(counts)) if (value > 0) g('ff_flag_adoption_vehicles', { flag: p.flagKey, country, state, lat: point[0], lon: point[1] }, value);
+      for (const [state, value] of Object.entries(counts)) if (value > 0) g('ff_flag_adoption_vehicles', { flag: p.flagKey, country, state, lat: point?.[0] ?? '', lon: point?.[1] ?? '' }, value);
     }
     g('ff_unleash_drift', { flag: p.flagKey }, driftWindow(t) && p.flagKey === model.catalog.policies.filter((x) => x.status === 'DEPLOYED').at(-1)?.flagKey ? 1 : 0);
   }

@@ -291,6 +291,7 @@ test('적용지도는 실제 국가 대표점 지표·대체표·공개 ON 보�
   assert.doesNotMatch(JSON.stringify(all), /"colorMode":"background"|"displayMode":"gradient"|"color":"(?:red|orange|green)"/);
   const publicMap = publicVariant(d).panels.find((p) => p.type === 'geomap')!;
   assert.match(String((publicMap.targets as any[])[0].expr), /state="ON"/);
+  assert.match(String((publicMap.targets as any[])[0].expr), /lat!="",lon!=""/);
   const generated = generate(catalog, [Date.parse('2026-11-06T12:00:00Z')]);
   const metric = generated.platform.find((m) => m.name === 'ff_flag_adoption_vehicles')!;
   assert.ok(metric && metric.points.length > 0);

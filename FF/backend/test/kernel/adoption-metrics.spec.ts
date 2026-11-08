@@ -14,7 +14,9 @@ it('국가 대표점 집계는 원천 상태·Canary·미수신을 보존하고 
   expect(counts.reduce((sum, r) => sum + r.vehicles, 0)).toBe(5);
   expect(counts.every((r) => r.lat === '36' && r.lon === '128')).toBe(true);
   expect(JSON.stringify(counts)).not.toMatch(/37\.123|127\.987|"vin"|offline|pending/);
-  expect(flagAdoptionCounts(runtime, vehicles.map((v) => ({ ...v, country: 'UNMAPPED' })), [{ flagKey: 'a', stageRatio: 1 }])).toEqual([]);
+  const unmapped=flagAdoptionCounts(runtime, vehicles.map((v) => ({ ...v, country: 'UNMAPPED' })), [{ flagKey: 'a', stageRatio: 1 }]);
+  expect(unmapped.reduce((sum,r)=>sum+r.vehicles,0)).toBe(5);
+  expect(unmapped.every((r)=>r.lat==='' && r.lon==='')).toBe(true);
 });
 
 let close: (() => Promise<void>) | undefined;

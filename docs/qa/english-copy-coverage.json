@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9146,
-  "translated": 9146,
+  "required": 9178,
+  "translated": 9178,
   "modules": [
     {
       "module": "ads-change",
@@ -744,13 +744,13 @@
     {
       "module": "software-delivery",
       "source": "FF/frontend/src/copy/software-delivery.ts",
-      "required": 68,
-      "translated": 68,
+      "required": 100,
+      "translated": 100,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "d91b73687ffc9f0428ef39c108cdbe9cc7c8b7c98fc2681833e0efa0637b1624"
+      "sourceHash": "27ff9f76d0bfd95f7d276189e3ff932e333968177f6a812121fdc20b73c73fad"
     },
     {
       "module": "status-labels",

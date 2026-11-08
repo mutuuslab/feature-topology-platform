@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
-  "total": 1800,
-  "missing": 856,
-  "translated": 579,
+  "total": 1802,
+  "missing": 725,
+  "translated": 712,
   "sourceEnglish": 365,
   "duplicate": [],
   "unknown": [],
@@ -42,6 +42,18 @@
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-4.ts",
       "entries": 69,
       "sourceFingerprint": "b0d642b34e85db0c65a291bd404b28ff9c4a5d1194ba6a9907f404cfcc5b065d",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-5.ts",
+      "entries": 70,
+      "sourceFingerprint": "401cbc9c75258490f7f5aaee37a4ff21e72b3c5507d5ba1d0519eff9269a7bbe",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-6.ts",
+      "entries": 63,
+      "sourceFingerprint": "b3a18a503f24f823460e522839fc6d5f580c01ef695623073d8fd26b92c7619a",
       "status": "MATCH"
     }
   ],
@@ -3284,78 +3296,78 @@
       "key": "FPW.5.ref",
       "source": "표준 보고서 12장(시험), 6.1절 G5, 6.3절 독립성",
       "sourceHash": "2d7521b1ee495914a2b042e6a2203627b267826b18d604bd454476238378f3d4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report chapter 12 (testing), section 6.1 G5 and section 6.3 independence"
     },
     {
       "key": "FPW.5.purpose",
       "source": "Feature Version이 안전요구와 비활성화 동작을 충족한다는 객관적 Evidence를 만들고, 그 Evidence를 Feature Version에 연결해 독립 V&V가 G5를 판정하게 한다.",
       "sourceHash": "dad8b4a7fc65fa4ff95887d23a3a1b3efe3a037200f3da2e4cb72c50cdd48ee7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Create objective Evidence that the Feature Version satisfies safety requirements and deactivation behavior, link it to that Version, and have independent V&V decide G5."
     },
     {
       "key": "FPW.5.O1.text",
       "source": "참조 ASIL에 맞는 독립성 수준과 검증 범위가 정해진다.",
       "sourceHash": "79b4ca78e12ed890c7e45549976b790567cc071d6ecb0dd9c34be6c78c550752",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Independence levels and verification scope are defined according to the reference ASIL."
     },
     {
       "key": "FPW.5.O2.text",
       "source": "시나리오·허용 조합·통합 가정이 정의되고 Version으로 관리된다.",
       "sourceHash": "cf7c797b3d166da1e8f72b0235a431f43ffa31632677eddf7210407dc5a05040",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scenarios, allowed combinations and integration assumptions are defined and versioned."
     },
     {
       "key": "FPW.5.O3.text",
       "source": "비활성화 등급별 동작·결함 주입·장악 가정 시험이 수행된다.",
       "sourceHash": "5d06fffecfafea6ad01286cb1317b78b0f8aaa45682b63feef232f0e4c8346d3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Deactivation-class behavior, fault injection and compromise-assumption tests are executed."
     },
     {
       "key": "FPW.5.O4.text",
       "source": "재현 정보를 갖춘 시험 Evidence가 Feature Version과 연결되어 G5 판정을 받는다.",
       "sourceHash": "86dd0033c13b56e28f924be26de60fa8cf7b4d0e101e0f4e11aabaa69c249960",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reproducible test Evidence is linked to the Feature Version and assessed at G5."
     },
     {
       "key": "FPW.5.entry.0",
       "source": "G4 설계 판정이 PASS(또는 기한이 있는 CONDITIONAL PASS)이고 정책·Control Point가 확정되었다",
       "sourceHash": "e36dd5e077bd9198317104e19751af24745140a0fac8a180331c94d5db474eec",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G4 design is PASS or time-bounded CONDITIONAL PASS, and policy and Control Points are confirmed"
     },
     {
       "key": "FPW.5.entry.1",
       "source": "안전요구가 Feature Version에 추적 연결되어 있다",
       "sourceHash": "0570cccd1db60250f2dc94fdd9e1aff6eb4f647bd055c5e5c77b8ec3647352e8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety requirements are trace-linked to the Feature Version"
     },
     {
       "key": "FPW.5.exit.0",
       "source": "모든 필수 시험이 TMS를 거쳐 Feature Version에 연결되었다",
       "sourceHash": "906382b89fadc8b1310c72c2232189d21e36da4cb8e205dfdc0a52a16026a8d9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All required tests are submitted through TMS and linked to the Feature Version"
     },
     {
       "key": "FPW.5.exit.1",
       "source": "미해결 결함이 없거나 잔여 위험이 Safety Manager에게 수용되었다",
       "sourceHash": "25e9d0d77831791ec13a436e4330449da731ae65575a740eaadc8ce9cc158815",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "No defects remain unresolved, or the Safety Manager has accepted the residual risk"
     },
     {
       "key": "FPW.5.exit.2",
       "source": "G5 Decision Record가 독립 V&V 서명으로 남았다",
       "sourceHash": "35ded86bd147843ed472299edd05d5cbcf45d5746565dcdc75492ebb2b566235",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The G5 Decision Record retains independent V&V signatures"
     },
     {
       "key": "FPW.5.WP-VV-PLAN.name",
@@ -3368,22 +3380,22 @@
       "key": "FPW.5.WP-VV-PLAN.content.0",
       "source": "참조 ASIL과 확인 조치별 독립성 수준",
       "sourceHash": "e52cea51f44a195c0b66ffc05a5d6d2baa6db7d859bc280ccac8f686ab5f683e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reference ASIL and independence level for each confirmation measure"
     },
     {
       "key": "FPW.5.WP-VV-PLAN.content.1",
       "source": "시험 수준(단위·HIL·차량)과 판정 기준",
       "sourceHash": "7848e259108d0f4a9df71f268a03c5c995daf743e46522872f422758ffe266a7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Test levels (unit, HIL and vehicle) and decision criteria"
     },
     {
       "key": "FPW.5.WP-VV-PLAN.content.2",
       "source": "시뮬레이션 도구 사용 범위와 도구 분류",
       "sourceHash": "29eff43ec0b22ae144bec27b3cad1b4ff5f9f48417d9ff681fd60d1a184c6d4b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Simulation-tool usage scope and classification"
     },
     {
       "key": "FPW.5.WP-TEST-SPEC.name",
@@ -3396,22 +3408,22 @@
       "key": "FPW.5.WP-TEST-SPEC.content.0",
       "source": "시나리오·ODD 정의와 Version",
       "sourceHash": "c0e017938e0b64d5715c0d2e8d7eb42e4a3064184f8baa3270f43dcb216aa3fc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scenario and ODD definitions and Versions"
     },
     {
       "key": "FPW.5.WP-TEST-SPEC.content.1",
       "source": "Topology 의존·충돌로 정한 허용 조합과 covering array, 부정 시험",
       "sourceHash": "5fb5f0c901b9b513485ef4b40ec49ada5d794de9ebc78b87a31f1051dcb02976",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Allowed combinations, covering arrays and negative tests derived from Topology dependencies and conflicts"
     },
     {
       "key": "FPW.5.WP-TEST-SPEC.content.2",
       "source": "결함 주입·LPC 장악 가정 시험 항목",
       "sourceHash": "4b5d120616039737705343378bf1fe23138e14246fc1bfd2018703b1255344d5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Fault-injection and assumed-LPC-compromise test cases"
     },
     {
       "key": "FPW.5.WP-INTEGRATION-REC.name",
@@ -3424,15 +3436,15 @@
       "key": "FPW.5.WP-INTEGRATION-REC.content.0",
       "source": "협력사 SEooC 사용 가정과 통합 대상의 대조 결과",
       "sourceHash": "cdd4b9b3614ed2611adb15db9a199372a33e43f544387e964851e7f5ca4b1d5b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Comparison of supplier SEooC usage assumptions with integration targets"
     },
     {
       "key": "FPW.5.WP-INTEGRATION-REC.content.1",
       "source": "CI/CD 변경 기록(IF-13)과 통합 빌드 식별",
       "sourceHash": "cadd5e951fa206327c96eb26d78b1996b2648469e1b4e3866b80271e6ce7599f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "CI/CD change records (IF-13) and integration-build identifiers"
     },
     {
       "key": "FPW.5.WP-TEST-RESULT.name",
@@ -3445,22 +3457,22 @@
       "key": "FPW.5.WP-TEST-RESULT.content.0",
       "source": "등급별 시나리오(작동 중·비작동 중·운전자 개입·전원 주기) 결과",
       "sourceHash": "6bf3c3ef3772c63614f1600bef52b0b272d64ce3e8d5566ed733f58cc643cff4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Class-specific scenario results: active, inactive, driver intervention and power cycling"
     },
     {
       "key": "FPW.5.WP-TEST-RESULT.content.1",
       "source": "결함 주입별 수렴 상태와 기대 결과 대조",
       "sourceHash": "c60cba11a0ba702963b212d68226ed4acb396d92ce81e69c2ccc8b649a44fd43",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Converged states and expected-result comparisons for each injected fault"
     },
     {
       "key": "FPW.5.WP-TEST-RESULT.content.2",
       "source": "가상검증(CARLA) 실행 결과와 재현 정보",
       "sourceHash": "272de20d6c0f996e74788559b80b0943f525ebe669b985bbf4f467b8e69ee1f7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "CARLA virtual validation results and reproduction data"
     },
     {
       "key": "FPW.5.WP-G5-EVIDENCE.name",
@@ -3473,15 +3485,15 @@
       "key": "FPW.5.WP-G5-EVIDENCE.content.0",
       "source": "TMS에 제출된 시험 명세·결과와 Feature ID·Version 연결",
       "sourceHash": "82291fa02a3ec437575bfd9a4051a2843dc4bbf21dc15de670033bf0167d9cca",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "TMS-submitted test specifications/results linked to Feature ID and Version"
     },
     {
       "key": "FPW.5.WP-G5-EVIDENCE.content.1",
       "source": "시험 재현 정보(환경·도구·입력·Version)",
       "sourceHash": "ea26a1a87475006f4ac908bf72077c90e192ee60dbcd5472d3b5d84cc9a1d6fa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Test reproduction data: environment, tools, inputs and Versions"
     },
     {
       "key": "FPW.5.WP-G5-DECISION.name",
@@ -3494,15 +3506,15 @@
       "key": "FPW.5.WP-G5-DECISION.content.0",
       "source": "판정과 근거 Evidence ID, 독립 V&V 서명",
       "sourceHash": "71ed6fee797b1da1f34485d2004dc474043302e7a5fa286846304014c7b200c2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision, supporting Evidence IDs and independent V&V signatures"
     },
     {
       "key": "FPW.5.WP-G5-DECISION.content.1",
       "source": "미해결 결함과 잔여 위험 수용 근거",
       "sourceHash": "b7faa04b7340dddad4abc357f0f09a8dec82668db354e88b71e35e63c3503514",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Unresolved defects and residual-risk acceptance rationale"
     },
     {
       "key": "FPW.5.WP-FLAG-RECON-RESULT.name",
@@ -3515,22 +3527,22 @@
       "key": "FPW.5.WP-FLAG-RECON-RESULT.content.0",
       "source": "대상 Version·검사 판·스캔 해시",
       "sourceHash": "469601d4a006eab08c95db6eeb3952e15851d2687027d33672a267714a8703b4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Version, check Version and scan hash"
     },
     {
       "key": "FPW.5.WP-FLAG-RECON-RESULT.content.1",
       "source": "불일치 항목과 조치 결과",
       "sourceHash": "7002efee67cf3224b14263b200a4518b142a072d7a31c36e9eecf9f263ac43cf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Mismatches and corrective-action results"
     },
     {
       "key": "FPW.5.WP-FLAG-RECON-RESULT.content.2",
       "source": "예외가 있으면 범위·결정·만료 참조",
       "sourceHash": "db00309880e361ff27c1e5ae83aec8610043c8187fca465733ac1f5367f614fc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Exception scope, decision and expiry references when applicable"
     },
     {
       "key": "FPW.5-A01.name",
@@ -3543,29 +3555,29 @@
       "key": "FPW.5-A01.steps.0",
       "source": "안전 분류와 안전요구에서 참조 ASIL을 확인한다",
       "sourceHash": "aa490664e6b22aaa5fd123590a3d7e3b183539389e69a5add3d3cd9e4bf30787",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check reference ASIL from safety classification and requirements"
     },
     {
       "key": "FPW.5-A01.steps.1",
       "source": "확인 검토·감사·평가의 독립성 수준을 참조 ASIL 기준으로 정하고, 시험·검토의 독립성은 Safety Plan에 따로 적는다",
       "sourceHash": "4c89604c4536cfefcb75269e58ca9c5e6b7ba1b3a541f902e0f52518ba471401",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define independence levels for confirmation reviews, audits and assessments from reference ASIL; separately document test/review independence in the Safety Plan"
     },
     {
       "key": "FPW.5-A01.steps.2",
       "source": "시험 수준별 범위와 판정 기준을 시험 조직·품질 조직과 합의한다",
       "sourceHash": "1849592e1147840e2ebbae406615348f42900ce397c50c919905e1924ac9da74",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Agree scope and decision criteria at each test level with test and quality organizations"
     },
     {
       "key": "FPW.5-A01.checks.0",
       "source": "확인 조치마다 독립성 수준과 수행 주체가 지정되었다",
       "sourceHash": "ecfa3326581de14872306edb09a14f5cecf8f01a51207a504629b80a34871f74",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each confirmation measure has an assigned independence level and performer"
     },
     {
       "key": "FPW.5-A02.name",
@@ -3578,36 +3590,36 @@
       "key": "FPW.5-A02.steps.0",
       "source": "시나리오와 ODD를 정의하고 Version을 붙인다",
       "sourceHash": "d15908d61a6779aac12fc39b21e03864bd70e15eb883b3e59ce1d295f3f86166",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define and version scenarios and ODD"
     },
     {
       "key": "FPW.5-A02.steps.1",
       "source": "Topology의 의존·충돌 관계로 허용 조합을 정하고, 안전 관련 Flag가 상호작용하면 3-way 이상 covering array를 만든다",
       "sourceHash": "b2314d06d4f5aec2369b3442734d53d18ed3e8b0fa32835a3fd697e1ddb011a8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Derive allowed combinations from Topology dependencies/conflicts and create at least 3-way covering arrays when safety-related Flags interact"
     },
     {
       "key": "FPW.5-A02.steps.2",
       "source": "허용되지 않는 조합에는 거부를 확인하는 부정 시험을 넣는다",
       "sourceHash": "951c1cd7bdc9e815b1fb305d547a1015d2e986260e19bdf7a62aa3245c559c9e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Include negative tests confirming rejection of forbidden combinations"
     },
     {
       "key": "FPW.5-A02.steps.3",
       "source": "시뮬레이션 결과를 판정 근거로 쓸 경우 도구 분류와, 시뮬레이션이 판정하지 못하는 항목의 실차·HIL 대체 시험을 정한다",
       "sourceHash": "e6cec6c4d1ec2a298370d0ca409d2ec10c87b569fcfe6388133bf7d6b37b50b3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "When simulation supports decisions, define tool classification and alternative vehicle/HIL tests for criteria simulation cannot assess"
     },
     {
       "key": "FPW.5-A02.checks.0",
       "source": "모든 시나리오에 Version이 있고 허용 조합 정의가 Topology와 일치한다",
       "sourceHash": "57fddd5161aee056f623ebf4b4b7e8bb640456af2f10e2a9b7d5b173c851bcc5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every scenario has a Version, and allowed combinations match Topology"
     },
     {
       "key": "FPW.5-A03.name",
@@ -3620,29 +3632,29 @@
       "key": "FPW.5-A03.steps.0",
       "source": "협력사가 문서화한 SEooC 사용 가정을 통합 대상 차량 SW 구성과 대조한다",
       "sourceHash": "488162181bb416adb009f0473fd5bfa849062157fad7f59116eaa9c3fb7d77dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare documented supplier SEooC assumptions with the target vehicle SW configuration"
     },
     {
       "key": "FPW.5-A03.steps.1",
       "source": "가정이 맞지 않는 항목은 협력사와 아키텍트에게 넘기고 통합 시험 항목으로 추가한다",
       "sourceHash": "4a5947d210a2c109e5a6018c3b261067d003615e970e9cd56b5212a046daf2b8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand mismatches to the supplier and architect and add integration tests"
     },
     {
       "key": "FPW.5-A03.steps.2",
       "source": "통합 빌드와 변경 기록을 CI/CD에서 플랫폼으로 등록한다",
       "sourceHash": "a349b5bf78717e7e9a01adecc47169cd02d06f89a4fe39aba5b1e772c27295ae",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Register integration builds and change records in the platform through CI/CD"
     },
     {
       "key": "FPW.5-A03.checks.0",
       "source": "모든 SEooC 가정이 충족 또는 조치 중으로 기록되었다",
       "sourceHash": "f67bd335b57042c52014f74c87f6b50ec88c0172f5b5bcb0c6e5aad692eec420",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every SEooC assumption is recorded as satisfied or undergoing corrective action"
     },
     {
       "key": "FPW.5-A04.name",
@@ -3655,43 +3667,43 @@
       "key": "FPW.5-A04.steps.0",
       "source": "F2 이상 Feature의 비활성화 등급별 동작을 단위·HIL·차량 수준에서 작동 중·비작동 중·운전자 개입·전원 주기 상황으로 시험한다",
       "sourceHash": "b8e1dce6bd299b3add1e1fbe3f0ea714d01759efd24276d7c8c7dfda6afa473e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Test F2+ deactivation-class behavior at unit, HIL and vehicle levels while active, inactive, under driver intervention and during power cycles"
     },
     {
       "key": "FPW.5-A04.steps.1",
       "source": "저장 장치 손상, 쓰기 실패, 비트 반전, 신뢰 시간 상실, HSM 오류를 주입하고 Safe State 수렴을 확인한다",
       "sourceHash": "6d47dab05d571f9d9e80a3a8f08e3ed1e07796fc2161f775022447a67bb19762",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Inject storage corruption, write failures, bit flips, loss of trusted time and HSM faults; verify convergence to Safe State"
     },
     {
       "key": "FPW.5-A04.steps.2",
       "source": "LPC가 장악되었다고 가정한 위조 프레임·변조 요청·위조 상태 보고가 Guard와 플랫폼에서 거부되는지 확인한다",
       "sourceHash": "ce098ef96a5e95125e068bd147630c131f257eb17386ca1028452644223967b9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assume LPC compromise and verify Guards/platform reject forged frames, tampered requests and forged status reports"
     },
     {
       "key": "FPW.5-A04.steps.3",
       "source": "ADS 기능이면 원격 종료 시나리오(인계 성공·실패 후 MRC·ODD 이탈)를 HIL과 시험장에서 수행한다",
       "sourceHash": "b73e5173ff49e107781c49274e4778dbb8dcfd489ed06d6c0fa61b7172579529",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For ADS, execute remote-termination scenarios (handover success, MRC after failure and ODD exit) using HIL and test tracks"
     },
     {
       "key": "FPW.5-A04.steps.4",
       "source": "정책을 CARLA 가상 차량에 적용해 시나리오를 실행하되, 결과는 TMS 제출 전까지 G5 근거로 쓰지 않는다",
       "sourceHash": "3ed0938fd29b6e19457d15325bad94991826d71de709b87551fd3045c68a88a5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Apply policies to CARLA virtual vehicles and run scenarios; do not use results as G5 evidence before TMS submission"
     },
     {
       "key": "FPW.5-A04.checks.0",
       "source": "시험 명세의 모든 항목에 결과가 있고 실패 항목은 결함으로 등록되었다",
       "sourceHash": "b9ae7def9bc70969bd286672458f40923dfe03dd2c76fbecdeff08ff93b8ab0d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every specified test has a result, and failed items are registered as defects"
     },
     {
       "key": "FPW.5-A07.name",
@@ -3704,29 +3716,29 @@
       "key": "FPW.5-A07.steps.0",
       "source": "어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다",
       "sourceHash": "56b387482de18f25e5b3a6aa73c6fb3783a809a619d8519609030ed4cdc792e9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "In reconciliation, verify this Version’s Flags have no missing code, deleted calls or Unleash mismatches"
     },
     {
       "key": "FPW.5-A07.steps.1",
       "source": "미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다",
       "sourceHash": "c00343f91f8711055060c9f54fb722462e6f92b2202c88c079b9dee8698e9b37",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Return unregistered/dynamic-key files to the responsible package and confirm resolution by rescanning"
     },
     {
       "key": "FPW.5-A07.steps.2",
       "source": "해소할 수 없으면 사유와 만료일로 출시 차단 해제를 요청한다",
       "sourceHash": "c4afd06d3450d78f37a6b4b22763bcdd592487169a1d5f7dd4c251c6b639a1dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If resolution is impossible, request a release-block exception with a reason and expiry"
     },
     {
       "key": "FPW.5-A07.checks.0",
       "source": "출시 관문의 Flag 코드 연결 판정이 통과 또는 승인된 해제다",
       "sourceHash": "81db2694833e33e9baf8488e2078fda5bd2635d779b26278caca5a2533b2cce6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The release gate’s Flag-code decision is pass or an approved exception"
     },
     {
       "key": "FPW.5-A05.name",
@@ -3739,29 +3751,29 @@
       "key": "FPW.5-A05.steps.0",
       "source": "시험 명세와 결과를 시험관리 도구에서 Feature ID·Version과 연결한다",
       "sourceHash": "0000ac5ddccb573b858b598dc3574e72032794da4a3dbb9b61cb68f91c21af2c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link test specifications/results to Feature ID and Version in the test-management tool"
     },
     {
       "key": "FPW.5-A05.steps.1",
       "source": "결과마다 환경·도구 Version·입력·시나리오 Version 같은 재현 정보를 넣는다",
       "sourceHash": "f099dad4a3af5c1e54f2d5a077667a7faa110c8facfde9cb14ca0cece21b6a10",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Include environment, tool Version, inputs and scenario Version as reproduction data for each result"
     },
     {
       "key": "FPW.5-A05.steps.2",
       "source": "TMS 연계(IF-09)로 플랫폼 검증 이력에 제출하고 연결되지 않은 시험이 없는지 확인한다",
       "sourceHash": "edfdff85a90e62e839f8c08b40a9af3ecbd6181ffb1d86d337ca060861252c75",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Submit through TMS integration (IF-09) to platform validation history and verify no tests remain unlinked"
     },
     {
       "key": "FPW.5-A05.checks.0",
       "source": "제출한 모든 시험이 Feature Version에 연결되고 재현 정보가 비어 있지 않다",
       "sourceHash": "35b4f34a480eb135b94568337c679af5258f414de2b709e145d6da5f3b988114",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every submitted test is linked to the Feature Version with nonempty reproduction information"
     },
     {
       "key": "FPW.5-A06.name",
@@ -3774,43 +3786,43 @@
       "key": "FPW.5-A06.steps.0",
       "source": "검증 계획의 판정 기준과 제출된 Evidence를 대조하고, 연결되지 않은 시험이나 빠진 항목이 있으면 FAIL로 판정한다",
       "sourceHash": "eca025152617286a273ea34262901ca5517317ccb59bd799275e3a3260367b77",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare submitted Evidence with verification-plan criteria; assess FAIL if tests are unlinked or items missing"
     },
     {
       "key": "FPW.5-A06.steps.1",
       "source": "미해결 결함의 잔여 위험을 Safety Manager와 검토해 수용 여부를 기록한다",
       "sourceHash": "3b0d52ac54e34fd2d6f6d8c9f948b48c4740f4d0818ca18b70588ae4892bec67",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review unresolved-defect residual risk with the Safety Manager and record acceptance decisions"
     },
     {
       "key": "FPW.5-A06.steps.2",
       "source": "Gate G5(Verification)·G6(Supplier)를 개인 서명으로 판정 등록한다",
       "sourceHash": "dc27017c6066fa933c31fd5b3cb9cc04681a894c4b37cffc6da955fb081f2d53",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Register personally signed Gate G5 (Verification) and G6 (Supplier) decisions"
     },
     {
       "key": "FPW.5-A06.steps.3",
       "source": "FAIL이면 결함 목록을 통합·시험 조직에 돌려보내 재시험을 요청한다",
       "sourceHash": "08a7292f396fbe5a207f28a5f5b9c072072225f62606b0cad7729c2e8cd191bc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "On FAIL, return the defect list to integration/test organizations and request retesting"
     },
     {
       "key": "FPW.5-A06.checks.0",
       "source": "판정자가 시험 수행·통합 담당과 다른 조직이다",
       "sourceHash": "a626176e99127d7bd2d2cc2eedfa94ba86a1099b968737b8ac0aee0d5067789b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The decision maker is from an organization distinct from test execution and integration"
     },
     {
       "key": "FPW.5-A06.checks.1",
       "source": "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
       "sourceHash": "454a7e0dd6f31b0d4775128462461d164541dce8cc791d8ecb8165aed6a0176b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Decision Record retains decision, supporting Evidence, reviewer role and timestamp"
     },
     {
       "key": "FPW.5.BP1.name",
@@ -3823,8 +3835,8 @@
       "key": "FPW.5.BP1.definition",
       "source": "안전 분류와 참조 ASIL에 맞추어 확인 조치의 독립성과 검증 범위를 계획한다. 수행 주체·시험 수준·판정 기준을 합의하여 결과를 평가할 일관된 기준을 마련한다.",
       "sourceHash": "dfd38470542eda56a572577be2f69e35484c0f2c7156c9e696d882b492629b71",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Plan confirmation-measure independence and verification scope according to safety classification and reference ASIL. Agree performers, test levels and decision criteria to establish a consistent basis for assessing results."
     },
     {
       "key": "FPW.5.BP2.name",
@@ -3837,8 +3849,8 @@
       "key": "FPW.5.BP2.definition",
       "source": "기능·ODD·의존 관계에서 정상 및 거부 시나리오와 허용 조합을 정의한다. 시나리오 판과 시험 범위를 관리하고 시뮬레이션으로 판단할 수 없는 항목의 대체 검증을 계획한다.",
       "sourceHash": "2b91b5a32bdc28ee98654e798bc47699df5f4df3056c9e952f3bcb311a9a1871",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define nominal/rejection scenarios and allowed combinations from functionality, ODD and dependencies. Manage scenario Versions and coverage, and plan alternative verification for items simulation cannot assess."
     },
     {
       "key": "FPW.5.BP3.name",
@@ -3851,8 +3863,8 @@
       "key": "FPW.5.BP3.definition",
       "source": "협력사 사용 가정과 실제 차량 SW 구성을 비교하여 통합 적합성을 확인한다. 불일치의 조치와 추가 시험을 정하고 통합 빌드·변경 기록을 결과에 연결한다.",
       "sourceHash": "eacc436b9153b0e9f2cf153a1a8f39444a709a4a6cae3bcd7559b22f0a5346f2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare supplier assumptions with the actual vehicle SW configuration to assess integration suitability. Define corrective actions and additional tests, and link integration builds and change records to results."
     },
     {
       "key": "FPW.5.BP4.name",
@@ -3865,15 +3877,15 @@
       "key": "FPW.5.BP4.definition",
       "source": "명세된 상황과 결함을 단위·HIL·차량 시험에 적용하여 안전 종료와 거부 동작을 확인한다. 실행 환경·실패·재현 정보를 보존하고 시뮬레이션과 실차 근거의 범위를 구분한다.",
       "sourceHash": "b9df3f53dd9c73e68f361d0b62e035c91b8ef1c0abeb4223074e499933dac24d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Apply specified situations and faults in unit, HIL and vehicle tests to verify safe termination and rejection behavior. Preserve execution environments, failures and reproduction information while distinguishing simulation from real-vehicle evidence."
     },
     {
       "key": "FPW.5.BP4.notes.0",
       "source": "가상 실행 결과는 정의된 TMS 제출과 판정 절차를 거쳐야 하며 실차 승인을 대신하지 않는다.",
       "sourceHash": "6f6011ae2e41026cfd120c0310c0c821bba17c431fd27ec3462911ee4e261732",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Virtual results require the defined TMS submission and decision process and do not replace real-vehicle approval."
     },
     {
       "key": "FPW.5.BP5.name",
@@ -3886,8 +3898,8 @@
       "key": "FPW.5.BP5.definition",
       "source": "정의된 Flag와 실제 코드·스캔·외부 정책 도구의 상태를 대조한다. 불일치의 조치 또는 기한 있는 예외를 추적하고 출시 관문이 사용하는 최신 결과를 확인한다.",
       "sourceHash": "9f3a7de72e8794a1732648ef81d2c9bb626472b75a624d2c047624ac56f81b66",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare defined Flags with actual code, scans and external policy-tool states. Track mismatch corrections or time-bounded exceptions and verify the current results used by release gates."
     },
     {
       "key": "FPW.5.BP6.name",
@@ -3900,8 +3912,8 @@
       "key": "FPW.5.BP6.definition",
       "source": "시험 명세·결과·재현 정보를 Feature Version과 양방향으로 연결한다. 시험관리 연계로 결과를 제출하고 빠진 시험이나 잘못 연결된 Version을 확인하여 판정 근거를 완성한다.",
       "sourceHash": "51239c5d6c4382e75281d6f5b647cc73e3830e1f22b6d4ef9d66da20f634d8e4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link test specifications, results and reproduction information bidirectionally to the Feature Version. Submit results through test-management integration and check missing tests or incorrect Version links to complete decision evidence."
     },
     {
       "key": "FPW.5.BP7.name",
@@ -3914,8 +3926,8 @@
       "key": "FPW.5.BP7.definition",
       "source": "검증 계획의 범위·독립성·판정 기준을 실제 제출 결과와 비교한다. 미해결 결함과 잔여 위험의 검토 근거를 포함하여 독립 판정하고 필요한 재시험을 인계한다.",
       "sourceHash": "ba90d0ea459150baf4251eabff9265be9d593220ab8b61ffeb60d0ac5c44162c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare planned scope, independence and decision criteria with actual submitted results. Make an independent decision including unresolved-defect and residual-risk review evidence, then hand over necessary retesting."
     },
     {
       "key": "FPW.5-S1.label",
@@ -3942,64 +3954,64 @@
       "key": "FPW.6.ref",
       "source": "표준 보고서 6.1절 G6, 6장 FFG-LCY-008·009, 8장(보안 배포), 15장(SBOM)",
       "sourceHash": "5c8b81becef155afcec4e6684f5d410106056e10b7524dbc33c3dbf3d1f29740",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report section 6.1 G6, chapter 6 FFG-LCY-008/009, chapter 8 (secure deployment) and chapter 15 (SBOM)"
     },
     {
       "key": "FPW.6.purpose",
       "source": "검증을 마친 Feature Version의 출시 Baseline을 확정하고, 서명된 패키지를 SUMS 기록과 함께 대상 차량에 전달할 수 있는 상태로 배포한다. 패키지 전달(G6)은 차량 내 효력(G7)과 따로 승인한다.",
       "sourceHash": "104d525c6ea85c93408bd32b3aba80c790e683991289664aec325a2afdc67afb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm the validated Feature Version’s release Baseline and deploy signed packages with SUMS records for delivery to target vehicles. Package delivery (G6) is approved separately from onboard effectiveness (G7)."
     },
     {
       "key": "FPW.6.O1.text",
       "source": "출시 Baseline이 요청자와 다른 승인자에 의해 확정된다.",
       "sourceHash": "f6c2f28934f6fae66664188e7d43234075dcb16128bcab83270169d389e79457",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The release Baseline is confirmed by an approver distinct from the requester."
     },
     {
       "key": "FPW.6.O2.text",
       "source": "Flag·파라미터 변경 명령이 SW 업데이트로 SUMS에 기록된다.",
       "sourceHash": "3135a60118faa3a6be7e9ad68270738073c4f69018f4d436cae7d3f2f4e4da39",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Flag and parameter change commands are recorded in SUMS as SW updates."
     },
     {
       "key": "FPW.6.O3.text",
       "source": "서명·SBOM이 결합된 패키지가 OTA Gate를 거쳐 서버에 배포된다.",
       "sourceHash": "93c9e7a206d8e86f707ef73af057dbd299a2b3daa30e43fe0f9c7ebdcb531d08",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Packages bound to signatures and SBOMs pass the OTA Gate and are deployed on the server."
     },
     {
       "key": "FPW.6.entry.0",
       "source": "G5 판정이 PASS이고 승인된 정책 개정본이 있다",
       "sourceHash": "618267ca7d64921490b1bb1a59d828f10c61e1b7f48afdb16559dc8b49f4c686",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G5 is PASS and an approved policy revision exists"
     },
     {
       "key": "FPW.6.entry.1",
       "source": "형식승인 영향 판단이 끝났다",
       "sourceHash": "bb367fd4e8a4e768528da1f4f260797c2f6d9cd1a8b66fc53dfa58e38cd74069",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Type-approval impact assessment is complete"
     },
     {
       "key": "FPW.6.exit.0",
       "source": "출시 Baseline이 확정되고 SUMS 기록이 남았다",
       "sourceHash": "10b2b1e0ceb4c4c02fd6f80d969d0433aceaeae6e6d6d0ffb7cf7a694a003df2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The release Baseline is confirmed and SUMS records retained"
     },
     {
       "key": "FPW.6.exit.1",
       "source": "서명된 정책이 서버에 배포되고 Unleash와 동기화되었다(차량 내 효력은 아직 없음)",
       "sourceHash": "e5398f091cc7c5c50cba26a138e739fdabbfbf3eef8dd8e9a9de360191ca9f3c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The signed policy is deployed to the server and synchronized with Unleash (no onboard effect yet)"
     },
     {
       "key": "FPW.6.WP-BASELINE-REQ.name",
@@ -4012,15 +4024,15 @@
       "key": "FPW.6.WP-BASELINE-REQ.content.0",
       "source": "포함 Feature Version·정책 개정본·Artifact 목록",
       "sourceHash": "110734b3d8c43282ac559096b6296b409f69fe7df3aea79337240f5d38084817",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Included Feature Versions, policy revisions and Artifacts"
     },
     {
       "key": "FPW.6.WP-BASELINE-REQ.content.1",
       "source": "요청자와 요청 사유",
       "sourceHash": "23d2dde66e9596b93b431d6e85c787aaa9c3883fad5c05a7fa7da2d10ead1958",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requester and request reason"
     },
     {
       "key": "FPW.6.WP-RELEASE-BASELINE.name",
@@ -4033,15 +4045,15 @@
       "key": "FPW.6.WP-RELEASE-BASELINE.content.0",
       "source": "확정된 BOM 구성(Feature·SW·Variant)과 해시",
       "sourceHash": "e6be81ba82f1c4516256c165b5afba3876c7fe808b911e1ed70278b4135861f0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirmed BOM composition (Features, SW and Variants) and hash"
     },
     {
       "key": "FPW.6.WP-RELEASE-BASELINE.content.1",
       "source": "승인자(요청자와 다른 사람)·승인 시각",
       "sourceHash": "25d40fab34ce25efc32c7e67d7f9aaa99f8254a92126fe6544d361029098f7f0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approver distinct from requester, and approval time"
     },
     {
       "key": "FPW.6.WP-SUMS-RECORD.name",
@@ -4054,15 +4066,15 @@
       "key": "FPW.6.WP-SUMS-RECORD.content.0",
       "source": "대상 RXSWIN과 형식승인 영향 평가 결과",
       "sourceHash": "f501cf5d2c107939ed090dc1be0301d37f5bd02390353537a21555a27f4a25c6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target RXSWIN and type-approval impact assessment"
     },
     {
       "key": "FPW.6.WP-SUMS-RECORD.content.1",
       "source": "사용자 고지 내용과 시장별 보존 기간",
       "sourceHash": "92b5355d96a5f68b1259f16eb288d512944a3b94ff5a455e3cfdb658dc901cd6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "User notices and market-specific retention periods"
     },
     {
       "key": "FPW.6.WP-SIGNED-PACKAGE.name",
@@ -4075,15 +4087,22 @@
       "key": "FPW.6.WP-SIGNED-PACKAGE.content.0",
       "source": "정책·설정 Artifact와 서명, 대상 해시",
       "sourceHash": "ac3718062141831b0080047d6fc835c9867e85f1fc0bdae840403ea2a96145fd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Policy/configuration Artifacts, signatures and target hashes"
     },
     {
       "key": "FPW.6.WP-SIGNED-PACKAGE.content.1",
       "source": "결합된 SBOM과 패키지 식별자",
       "sourceHash": "49bbc79dc16e5644e9b73c1df453f56f9830d76267863460c6dbd1e7f25c4845",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Bound SBOM and package identifier"
+    },
+    {
+      "key": "FPW.6.WP-SIGNED-PACKAGE.content.2",
+      "source": "실제 SW 원문 길이·SHA-256·구성품과 등록자/독립 검토자",
+      "sourceHash": "879ff6713c435ed233ccc204da05cd98b2a5b8d666ea110df784cd779888ebb6",
+      "status": "TRANSLATED",
+      "english": "Actual SW byte length, SHA-256, component, uploader and independent reviewer"
     },
     {
       "key": "FPW.6.WP-OTA-GATE.name",
@@ -4096,15 +4115,15 @@
       "key": "FPW.6.WP-OTA-GATE.content.0",
       "source": "R156 사전조건·대상·호환성 확인 결과",
       "sourceHash": "45d5e2c88cd52135aa9589fed59d42f0aa0724111eede93d66ab8c0db198b75f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "R156 prerequisite, target and compatibility checks"
     },
     {
       "key": "FPW.6.WP-OTA-GATE.content.1",
       "source": "판정자 서명과 시각",
       "sourceHash": "0c93cc3a70f2e40be823312f44b50f17395cdab48f4a671f0955cd71d08de02a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision maker’s signature and time"
     },
     {
       "key": "FPW.6.WP-G6-DECISION.name",
@@ -4117,22 +4136,22 @@
       "key": "FPW.6.WP-G6-DECISION.content.0",
       "source": "서버 배포(평가 기준 전환) 시각과 게시본 ID",
       "sourceHash": "9993816204c64235c759b8133d56dc6a1abc6a750401c982a5561c1e2bbb00dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Server deployment time (evaluation-basis switch) and publication ID"
     },
     {
       "key": "FPW.6.WP-G6-DECISION.content.1",
       "source": "Unleash 동기화 결과(flag·전략·환경)",
       "sourceHash": "c89a9506f5de214c01d6ef7c4f3f17c47550a7372152b8250ce678720b90b678",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Unleash synchronization results: Flags, strategies and environments"
     },
     {
       "key": "FPW.6.WP-G6-DECISION.content.2",
       "source": "Release Manager 판정과 근거 Evidence ID",
       "sourceHash": "60db21f1b7846333932c026e45e38444ac523af5500fc4e3b567d03e4cf2f185",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Release Manager decision and supporting Evidence IDs"
     },
     {
       "key": "FPW.6.WP-REPO-CONNECTION.name",
@@ -4145,22 +4164,22 @@
       "key": "FPW.6.WP-REPO-CONNECTION.content.0",
       "source": "저장소·패키지·기본 브랜치와 스캔 설정",
       "sourceHash": "fc0c1ba0f86e349fef2326e3be6ee2a68a19925f9d8d5769a7226b364cc08e42",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Repository, package, default branch and scan settings"
     },
     {
       "key": "FPW.6.WP-REPO-CONNECTION.content.1",
       "source": "webhook·서명 검증의 상태와 실패 조치",
       "sourceHash": "983401b2fd3c4b6164ff9d95b579da64dc1a32a3129e896e33c074bc9a8d4b81",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Webhook/signature verification status and failure actions"
     },
     {
       "key": "FPW.6.WP-REPO-CONNECTION.content.2",
       "source": "변경 사유·권한 있는 수행자·시각",
       "sourceHash": "cabf3ad58485ae974f16a806e98fef4a391b65c9a9ec2c787008f2432bf2dc7b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Change reason, authorized performer and timestamp"
     },
     {
       "key": "FPW.6-A01.name",
@@ -4173,29 +4192,29 @@
       "key": "FPW.6-A01.steps.0",
       "source": "G5 판정을 받은 Feature Version과 승인된 정책 개정본으로 출시 구성을 정한다",
       "sourceHash": "cbb769db4ac6452c5a4cd0e1b88d9c5b51ca06f9e5fe168bbef92cb990b97e1b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define release composition using the Feature Version with G5 approval and an approved policy revision"
     },
     {
       "key": "FPW.6-A01.steps.1",
       "source": "BOM 기준선 화면에서 Baseline 확정을 요청한다",
       "sourceHash": "c84c0ecf0006590833b6650f23f701057900fd78fae370979c8037a6d03669db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Request Baseline confirmation in BOM Baselines"
     },
     {
       "key": "FPW.6-A01.steps.2",
       "source": "요청자는 같은 Baseline의 승인자로 지정하지 않는다",
       "sourceHash": "6670112e6788e18c13a2020140c45aa9d27de257995b46346c1c0a5a78ef43ed",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not designate the requester as approver of the same Baseline"
     },
     {
       "key": "FPW.6-A01.checks.0",
       "source": "요청에 포함 Version·정책 개정본·Artifact가 빠짐없이 있다",
       "sourceHash": "08e7a721a2efb7cd15f128b99d4ec91ba084097107eaa6e812c99cefd7e732dd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The request includes all relevant Versions, policy revisions and Artifacts"
     },
     {
       "key": "FPW.6-A02.name",
@@ -4208,29 +4227,29 @@
       "key": "FPW.6-A02.steps.0",
       "source": "요청된 구성이 PLM 기준정보(차종·Variant·SW)와 일치하는지 대조한다",
       "sourceHash": "e67d4f2d8df6b932873b8f27727ad1d8522c1621564df7baf7b72e4d3c2ce868",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare requested composition with PLM vehicle, Variant and SW master data"
     },
     {
       "key": "FPW.6-A02.steps.1",
       "source": "일치하면 확정 승인하고, 다르면 사유를 남겨 반려한다",
       "sourceHash": "7e6366300e8f5e1c8481a88d879957ce73e7824493f85256cdbd78b40e0866a1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approve confirmation if it matches; otherwise reject with a reason"
     },
     {
       "key": "FPW.6-A02.steps.2",
       "source": "확정된 Baseline 해시를 Release Manager에게 알린다",
       "sourceHash": "d9413b8c0336ea19eaadd4fb36540422538b87e9de589f941d2ec6ef020a36a8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Notify the Release Manager of the confirmed Baseline hash"
     },
     {
       "key": "FPW.6-A02.checks.0",
       "source": "승인자가 요청자와 다르고 Baseline 해시가 고정되었다",
       "sourceHash": "9ddad1f7f2cb6f190758c4f194a4d5a367147477dbe5404fb50f7d19710e05dd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The approver differs from requester and the Baseline hash is frozen"
     },
     {
       "key": "FPW.6-A03.name",
@@ -4243,29 +4262,29 @@
       "key": "FPW.6-A03.steps.0",
       "source": "Flag·파라미터를 바꾸는 명령을 SW 업데이트로 보고 대상 RXSWIN과 형식승인 영향 평가를 SUMS에 기록한다",
       "sourceHash": "1f5d6ef86c56f75a5852259ffb5a767b68e8eaf5f2a94ee8b701d44f067dde7e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Treat Flag/parameter change commands as SW updates and retain target RXSWIN and type-approval impact assessments in SUMS"
     },
     {
       "key": "FPW.6-A03.steps.1",
       "source": "형식승인 영향이 있으면 승인 기관의 개정·확장 결정이 나왔는지 확인하고, 없으면 배포를 보류시킨다",
       "sourceHash": "224c43c456078abe95301526959c13f24446a73fe2199246a233413d6d644110",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For type-approval impacts, verify the authority’s revision/extension decision exists; otherwise hold deployment"
     },
     {
       "key": "FPW.6-A03.steps.2",
       "source": "사용자 고지 내용과 가장 긴 시장 요건의 보존 기간을 기록한다",
       "sourceHash": "8e4bdef3cafa6fc129d9757597a12af87d10df4ff5e8ff7b17a4f82cc102630b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record user notices and the longest applicable market retention period"
     },
     {
       "key": "FPW.6-A03.checks.0",
       "source": "SUMS 기록에 RXSWIN·영향 평가·고지 내용·보존 기간이 있다",
       "sourceHash": "a6bb532c80863b52eec4162340567762c57a052df6cdf13217b845e5ee8eec94",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "SUMS records include RXSWIN, impact assessment, user notices and retention period"
     },
     {
       "key": "FPW.6-A04.name",
@@ -4276,31 +4295,31 @@
     },
     {
       "key": "FPW.6-A04.steps.0",
-      "source": "확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다",
-      "sourceHash": "a9ee6c3f7c623f5d126911fd6f3cfd0a2940f4212e39d5333fbb928fe746f003",
-      "status": "MISSING",
-      "english": null
+      "source": "확정 Baseline의 정책·설정 Artifact를 묶고, SW가 포함되면 Feature Version의 실제 SW 구성품에 원문을 업로드해 길이·SHA-256을 대조한다",
+      "sourceHash": "ea8a37a288b8376fe001878192c9110aee12931decf494a0e18f7a1020335081",
+      "status": "TRANSLATED",
+      "english": "Bundle confirmed-Baseline policy/configuration Artifacts. If SW is included, upload original bytes against the Feature Version’s actual SW component and verify size/SHA-256"
     },
     {
       "key": "FPW.6-A04.steps.1",
       "source": "PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다",
       "sourceHash": "65fc15711fdb8748808ef14e5e1b64a9a35a1229abb09c4394572c4aef6b5a40",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Request signing using a deployment-purpose key managed by PKI Operations; never use a key of another purpose"
     },
     {
       "key": "FPW.6-A04.steps.2",
       "source": "SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다",
       "sourceHash": "5664b300b6fe321bc6df738caa1940d160714fb81cea57096e0dd7b7e03cc29f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Bind the SBOM and register CI/CD change records in the platform"
     },
     {
       "key": "FPW.6-A04.checks.0",
       "source": "패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다",
       "sourceHash": "396364e8159542900fd3dac2de93e5c18a484b9fb6d43318d1e0bb284c3082c9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The package signature verifies with a deployment-purpose key and an SBOM is bound"
     },
     {
       "key": "FPW.6-A05.name",
@@ -4313,29 +4332,29 @@
       "key": "FPW.6-A05.steps.0",
       "source": "R156 사전조건(대상 식별·호환성·사용자 고지 준비)을 확인한다",
       "sourceHash": "d57cdbcb0ade97d55227ccc3632cb5a591001f54e8d8665627701c53c332c814",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify R156 prerequisites: target identification, compatibility and user-notice readiness"
     },
     {
       "key": "FPW.6-A05.steps.1",
       "source": "서명·해시 검증 결과와 SUMS 기록을 근거로 OTA Gate를 판정 등록한다",
       "sourceHash": "0772beec29378254539e72ad86866b10e26cf33f95b499d4f91827e51b3b6c8d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record the OTA Gate decision using signature/hash verification and SUMS records"
     },
     {
       "key": "FPW.6-A05.steps.2",
       "source": "FAIL이면 사유를 Release Manager에게 돌려보낸다",
       "sourceHash": "c74343771c1819db18ee2e8767d31b49252bcc5880b4769638a1b30da2644444",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "On FAIL, return reasons to the Release Manager"
     },
     {
       "key": "FPW.6-A05.checks.0",
       "source": "판정 근거에 서명 검증·SUMS 기록 ID가 있다",
       "sourceHash": "c2f45ba8a6216ee7a6ab8912d2bb17c6214b97b2a0649b5aef896ef5176f0b07",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision evidence includes signature verification and SUMS record IDs"
     },
     {
       "key": "FPW.6-A06.name",
@@ -4346,31 +4365,38 @@
     },
     {
       "key": "FPW.6-A06.steps.0",
-      "source": "OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다",
-      "sourceHash": "fb998f9a0a3637a1508a615a9a17273021ae4101fb2c58cafb02bdf3663657c9",
-      "status": "MISSING",
-      "english": null
+      "source": "SW 원문을 함께 전달하면 등록자와 다른 출시 담당자가 원문·구성품을 검토해 서명 매니페스트와 실제 파일 해시의 SBOM을 승인한다",
+      "sourceHash": "8190705b8d53012f2f4a6f25635a106c6f1c1e1adcfed71c882e79d5db518101",
+      "status": "TRANSLATED",
+      "english": "When SW bytes are delivered, a release manager other than the uploader reviews the file and component and approves its signed manifest and SBOM containing the actual file hash"
     },
     {
       "key": "FPW.6-A06.steps.1",
-      "source": "Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다",
-      "sourceHash": "dfe69db4c8291d865556107c8f1afae028ca599996b65e19498e276fda16b3b5",
-      "status": "MISSING",
-      "english": null
+      "source": "OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다",
+      "sourceHash": "fb998f9a0a3637a1508a615a9a17273021ae4101fb2c58cafb02bdf3663657c9",
+      "status": "TRANSLATED",
+      "english": "Confirm OTA Gate PASS and deploy the policy to switch the server’s evaluation basis"
     },
     {
       "key": "FPW.6-A06.steps.2",
+      "source": "Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다",
+      "sourceHash": "dfe69db4c8291d865556107c8f1afae028ca599996b65e19498e276fda16b3b5",
+      "status": "TRANSLATED",
+      "english": "Synchronize Flags, tags, dependencies, strategies and environments with Unleash and check results"
+    },
+    {
+      "key": "FPW.6-A06.steps.3",
       "source": "이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다",
       "sourceHash": "e2cb07fdfba7577201a035dc22e5a9b7de6ee83c8e08a36b58e55471ef705af8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Tell Operations that this deployment covers package delivery only; onboard effectiveness starts with Canary after G7 approval"
     },
     {
       "key": "FPW.6-A06.checks.0",
       "source": "게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다",
       "sourceHash": "50f21022c13ff08d3031fc0e831ce8b7113436ee9a5dc83d1de91712dd982455",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The G6 deployment record retains publication ID and Unleash synchronization results"
     },
     {
       "key": "FPW.6-A07.name",
@@ -4383,29 +4409,29 @@
       "key": "FPW.6-A07.steps.0",
       "source": "차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다",
       "sourceHash": "067ab2f179391ce9c2fb5c175a1ad19e0a51437d545671002725e35b3598aa1e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Connect vehicle SW repositories with packages, default branches and scan schedules"
     },
     {
       "key": "FPW.6-A07.steps.1",
       "source": "webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다",
       "sourceHash": "ebff8560be7948c225018af2dac098d85447d3cadd0c4697f62949ddd68d9a74",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Investigate webhook failures and rejected scans with the integration organization"
     },
     {
       "key": "FPW.6-A07.steps.2",
       "source": "설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다",
       "sourceHash": "1e637c9b2b72c8c681ece277e8d569e4c8d656c9b6a4e5786169e2b44c4d273b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retain reasons for configuration changes and prevent implementers from weakening their own checks"
     },
     {
       "key": "FPW.6-A07.checks.0",
       "source": "연결 저장소의 webhook이 정상이고 최근 스캔이 서명 확인됐다",
       "sourceHash": "6c330ad9c038bfaedd5f84840bd47b785743119642307802ecdd0a38e938fc91",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Connected-repository webhooks are healthy and the latest scan signature has been verified"
     },
     {
       "key": "FPW.6.BP1.name",
@@ -4418,8 +4444,8 @@
       "key": "FPW.6.BP1.definition",
       "source": "검증된 Feature Version과 승인 정책으로 출시 구성을 식별하고 필요한 Artifact를 갖춘 Baseline 확정을 요청한다. 요청 범위를 고정하고 요청자와 승인자의 분리를 유지한다.",
       "sourceHash": "ccd3472203e5db0581e9c5acc1139b3ea36afb958772c9418ed00a7ba1aab71c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify release configurations from validated Feature Versions and approved policies, and request Baseline confirmation with necessary Artifacts. Freeze request scope and maintain requester–approver separation."
     },
     {
       "key": "FPW.6.BP2.name",
@@ -4432,8 +4458,8 @@
       "key": "FPW.6.BP2.definition",
       "source": "요청된 출시 구성이 차량 사양·SW·Variant 기준정보와 일치하는지 검토한다. 다른 승인자가 확정 또는 반려하고 확정된 해시와 구성을 출시 담당자에게 전달한다.",
       "sourceHash": "10d99be4de4b677db08d06cb73d1d9069595d74763d4379a4a76429bb5a59e86",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review requested release configurations against vehicle, SW and Variant master data. A separate approver confirms or rejects, then hands confirmed hashes and configurations to the release owner."
     },
     {
       "key": "FPW.6.BP3.name",
@@ -4446,8 +4472,8 @@
       "key": "FPW.6.BP3.definition",
       "source": "확정 구성과 형식승인 영향 판단을 SUMS 기록에 연결한다. 필요한 기관 결정·사용자 고지·보존 조건이 준비되었는지 확인하고 미해결 사항은 배포 준비 판단에 반영한다.",
       "sourceHash": "342eef79f288a23bbc06b111961a2a47690e40eaf130c53dc0fe8ca3fa4a6e65",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link confirmed configurations and type-approval impact assessments to SUMS records. Verify required authority decisions, user notices and retention conditions, reflecting unresolved items in deployment readiness."
     },
     {
       "key": "FPW.6.BP4.name",
@@ -4460,8 +4486,8 @@
       "key": "FPW.6.BP4.definition",
       "source": "확정된 정책·설정 Artifact와 SBOM을 하나의 배포 단위로 식별한다. 용도가 맞는 키의 서명과 해시를 확인하고 변경 기록을 통해 원본 구성과 게시 패키지를 추적한다.",
       "sourceHash": "f026d514f0eea64336dcea9b43456d21f21858dcd9c4c33c35a2af083c426c28",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify confirmed policy/configuration Artifacts and SBOM as one deployment unit. Verify signatures and hashes using keys of the correct purpose, and trace original configurations to published packages through change records."
     },
     {
       "key": "FPW.6.BP5.name",
@@ -4474,8 +4500,8 @@
       "key": "FPW.6.BP5.definition",
       "source": "대상 식별·호환성·고지·서명·SUMS의 사전조건을 평가한다. 근거에 연결된 OTA 판정을 남기고 부족한 조건과 보완 책임을 출시 담당자에게 전달한다.",
       "sourceHash": "dd2141eaaac75e79af91a61e155924c4de8d139fcb270a4c7bd1376f6371920e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess target identification, compatibility, notices, signatures and SUMS prerequisites. Record an evidence-linked OTA decision and hand incomplete conditions and remediation responsibilities to the release owner."
     },
     {
       "key": "FPW.6.BP6.name",
@@ -4488,15 +4514,15 @@
       "key": "FPW.6.BP6.definition",
       "source": "승인된 정책과 OTA 사전조건을 확인하여 서버 평가 기준과 외부 정책 도구를 일치시킨다. 서명 게시본·배포 결과를 기록하고 정책 전달과 차량 내 활성화의 차이를 운영 조직에 알린다.",
       "sourceHash": "61cc1796e4f164b164578fc70133b78d40b283e352bbe1d10926626c5ef74c35",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify approved policies and OTA prerequisites to align server evaluation rules with external policy tools. Retain signed publications/deployment results and explain the distinction between policy delivery and onboard activation to Operations."
     },
     {
       "key": "FPW.6.BP6.notes.0",
       "source": "열린 재-HARA는 출시 전이·Release Sign-off를 막으며 승인된 완화 정책의 배포 자체를 막지 않는다는 D-RD-6 경계를 따른다.",
       "sourceHash": "1129adb0667e640b0c5bba04f4c14e0bb4e20e18d4ec2e011a10b6861cda00aa",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Follow D-RD-6: open re-HARA blocks release transitions and Release Sign-off, but does not itself block deployment of an approved mitigation policy."
     },
     {
       "key": "FPW.6.BP7.name",
@@ -4509,8 +4535,8 @@
       "key": "FPW.6.BP7.definition",
       "source": "차량 SW 저장소의 패키지·기본 브랜치·스캔·webhook 연결을 통제한다. 설정 변경과 실패 원인을 기록하고 구현 담당자가 자기 검사를 약화시키지 못하도록 변경 책임을 분리한다.",
       "sourceHash": "880397b79c3c67d3c8cb82ca9562847fd17df2706cf56b3df2c6589cb0c22288",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Control vehicle SW repository package, default branch, scan and webhook configuration. Record changes and failure causes, and separate change responsibility so implementers cannot weaken their own checks."
     },
     {
       "key": "FPW.6-S1.label",

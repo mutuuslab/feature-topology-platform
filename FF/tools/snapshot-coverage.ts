@@ -12,6 +12,7 @@ import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { FF, walk } from './lib.ts';
+import { packedLogicalFiles } from './snapshot-pack.ts';
 
 export interface RouteLite {
   name: string;
@@ -307,9 +308,7 @@ export function checkCoverage(dir: string, opts: { update?: boolean; log?: (s: s
   const src = join(FF, 'frontend', 'src');
   const files = walk(src, ['.ts', '.tsx']).filter((f) => !f.includes(`${sep}api${sep}sim${sep}`));
   const sites = files.flatMap((f) => scanSource(relative(FF, f).split(sep).join('/'), readFileSync(f, 'utf8'), routes));
-  const stems = readdirSync(dir)
-    .filter((n) => n.endsWith('.json'))
-    .map((n) => n.slice(0, -5));
+  const stems = [...new Set([...readdirSync(dir).filter((n) => n.endsWith('.json')), ...packedLogicalFiles(dir)])].map((n) => n.slice(0, -5));
   const base = readBaseline();
   const all = compare(sites, routes, stems, simReaders(src), simQueryKeys(src));
   const gaps = all.gaps.filter((g) => !(gapKey(g) in (base.allow ?? {})));

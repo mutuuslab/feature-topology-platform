@@ -5,6 +5,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { autofill as AF, bof as B, regSteps as RS } from '../../frontend/src/copy/ple';
+import { propose as P } from '../../frontend/src/copy/propose';
 import { recordAnalysisApi } from './analysis';
 import { settle } from './settle';
 
@@ -62,6 +63,7 @@ test('(a) 기준 행 선택만으로 자동 채움 → 제출 → 검토 → 정
   await page.locator('[data-ui="refPickNext"]').click();
 
   // ② 자동 채움 — 사람이 고르던 칸이 출처와 함께 채워진다
+  await page.getByText(P.form.autofill).click();
   const af = page.getByTestId('autofill');
   await expect(af).toBeVisible();
   await expect(page.locator('[data-reg-step="1"] [aria-current="step"]')).toContainText(RS.stages[1]);
@@ -76,6 +78,8 @@ test('(a) 기준 행 선택만으로 자동 채움 → 제출 → 검토 → 정
   await axeClean(page, '등록 2단계(자동 채움)');
 
   // 아무것도 고치지 않고 제출
+  await page.locator('[data-ui="reviewFeature"]').click();
+  await page.getByRole('dialog').getByRole('checkbox').check();
   await page.locator('[data-ui="createFeature"]').click();
   await expect(page).toHaveURL(/\/features\/FEAT-\d+\/0\.1\.0/);
   const [, id] = page.url().match(/\/features\/(FEAT-\d+)\/0\.1\.0/)!;

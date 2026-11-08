@@ -7,11 +7,13 @@ import { STATIC_MODE } from '../../../api/client';
 import { asyncState, useApi } from '../../../api/hooks';
 import { useRefSearch } from '../../refdb/refSearch';
 import { propose as P, proposeRefMore as PM } from '../../../copy/propose';
-import { AsyncView, Button, DataTable, Field } from '../../../design';
+import { AsyncView, Button, DataTable, Drawer, Field } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefStatusBadge } from '../../refdb/common';
 import type { TaxonomyNodeLite } from './taxonomy';
 import { primaryOf, type PickedRef, type RefLite } from './prefill';
+import { IntentSuggest } from './IntentSuggest';
+import './propose.css';
 
 const LIMIT = 20;
 const SUB_SHOWN = 24;
@@ -44,6 +46,7 @@ export function RefPicker({
   nodes,
   domain,
   setDomain,
+  suggestIntent = false,
 }: {
   picked: PickedRef[];
   onChoose: (ref: RefLite, role: FeatureRefRole) => void;
@@ -56,10 +59,12 @@ export function RefPicker({
   nodes: TaxonomyNodeLite[];
   domain: string;
   setDomain: (d: string) => void;
+  suggestIntent?: boolean;
 }) {
   const [q, setQ] = useState('');
   const [component, setComponent] = useState('');
   const [confirm, setConfirm] = useState<{ ref: RefLite; role: FeatureRefRole } | null>(null);
+  const [change, setChange] = useState<{ ref: RefLite; promote: boolean } | null>(null);
   // 추가 요청은 Feature 작성자·DB 관리자만(서버 requestRefAdd와 같은 역할), 공개 데모는 읽기 전용
   const requestPerm = usePermission(['FEATURE_AUTHOR', 'REFDB_ADMIN']);
   const root = useRef<HTMLDivElement>(null);
@@ -94,7 +99,11 @@ export function RefPicker({
     if (ref.status === 'DEPRECATED') return setConfirm({ ref, role });
     pick(ref, role);
   };
-  const pick = (ref: RefLite, role: FeatureRefRole) => {
+  const pick = (ref: RefLite, role: FeatureRefRole, confirmed = false) => {
+    if (!confirmed && role === 'PRIMARY' && primary && primary.refId !== ref.refId) {
+      setChange({ ref, promote: false });
+      return;
+    }
     onChoose(ref, role);
     setAnnounce(P.announce.chosen(ref.refId, P.role[role]));
     // 고른 행의 표 칸(연결 표시)으로 — 표 안 자리에서 다음 행을 이어 고른다
@@ -108,7 +117,12 @@ export function RefPicker({
     setAnnounce(P.announce.removed(refId));
     setFocusNext(next ? `[data-ref-chosen="${next}"] button` : '#ref-chosen-h');
   };
-  const makePrimary = (refId: string) => {
+  const makePrimary = (refId: string, confirmed = false) => {
+    const ref = picked.find((p) => p.ref.refId === refId)?.ref;
+    if (!confirmed && ref && primary && primary.refId !== refId) {
+      setChange({ ref, promote: true });
+      return;
+    }
     onMakePrimary(refId);
     setAnnounce(P.announce.madePrimary(refId));
     setFocusNext(`[data-ref-chosen="${refId}"] button`);
@@ -119,6 +133,15 @@ export function RefPicker({
       <p className="ds-sr" aria-live="polite" data-testid="ref-pick-live">
         {announce}
       </p>
+      <section className="propose-role-guide" aria-labelledby="ref-role-guide-h">
+        <h3 id="ref-role-guide-h">{P.selection.title}</h3>
+        <dl>
+          <div><dt>{P.selection.primaryTitle}</dt><dd>{P.selection.primaryBody}</dd></div>
+          <div><dt>{P.selection.includedTitle}</dt><dd>{P.selection.includedBody}</dd></div>
+        </dl>
+        <p className="ds-field__hint">{P.selection.savedLater}</p>
+      </section>
+      {suggestIntent && <IntentSuggest pickedIds={new Set(picked.map((p) => p.ref.refId))} onPick={(ref) => choose(ref, 'PRIMARY')} />}
       <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <Field label={P.search} hint={STATIC_MODE ? P.searchHintStatic : P.searchHint}>
           <input className="ds-input" type="search" name="refSearch" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -148,6 +171,21 @@ export function RefPicker({
           </select>
         </Field>
       </div>
+
+      {change && primary && (
+        <Drawer open title={P.selection.changeTitle} onClose={() => setChange(null)}>
+          <p>{(change.promote ? P.selection.promote : P.selection.replace)(primary.refId, change.ref.refId)}</p>
+          <p className="ds-field__hint">{P.selection.changedFields}</p>
+          <div className="propose-actions">
+            <Button onClick={() => setChange(null)}>{P.selection.cancel}</Button>
+            <Button variant="primary" onClick={() => {
+              if (change.promote) makePrimary(change.ref.refId, true);
+              else pick(change.ref, 'PRIMARY', true);
+              setChange(null);
+            }}>{P.selection.confirm}</Button>
+          </div>
+        </Drawer>
+      )}
 
       {confirm && (
         <section className="ds-panel" aria-labelledby="ref-deprecated-h" data-testid="ref-deprecated" style={{ padding: 'var(--sp-3)' }}>
@@ -223,13 +261,19 @@ export function RefPicker({
                   const retired = !REF_STATUS_POLICY[r.status]?.selectable;
                   return (
                     <span style={{ display: 'inline-flex', gap: 'var(--sp-1)', flexWrap: 'wrap' }}>
-                      <Button disabled={retired} reason={retired ? P.retiredWhy : undefined} aria-label={P.primaryLabel(r.refId)} onClick={() => choose(r, 'PRIMARY')}>
-                        {P.choosePrimary}
-                      </Button>
-                      {!retired && (
-                        <Button variant="ghost" aria-label={P.includeLabel(r.refId)} onClick={() => choose(r, 'INCLUDED')}>
-                          {P.addIncluded}
+                      <span style={{ display: 'grid', gap: 'var(--sp-1)' }}>
+                        <Button disabled={retired} reason={retired ? P.retiredWhy : undefined} aria-label={P.primaryLabel(r.refId)} onClick={() => choose(r, 'PRIMARY')}>
+                          {P.choosePrimary}
                         </Button>
+                        <span className="ds-field__hint">{P.selection.primaryEffect}</span>
+                      </span>
+                      {!retired && (
+                        <span style={{ display: 'grid', gap: 'var(--sp-1)' }}>
+                          <Button variant="ghost" aria-label={P.includeLabel(r.refId)} onClick={() => choose(r, 'INCLUDED')}>
+                            {P.addIncluded}
+                          </Button>
+                          <span className="ds-field__hint">{P.selection.includedEffect}</span>
+                        </span>
                       )}
                     </span>
                   );
@@ -252,6 +296,10 @@ export function RefPicker({
           <h3 id="ref-chosen-h" tabIndex={-1}>
             {P.chosen}
           </h3>
+          <p className="propose-selection-summary" data-testid="ref-selection-summary" aria-live="polite">
+            {primary ? P.selection.base(primary.refId) : P.selection.emptyPrimary}
+            {' · '}{P.selection.included(picked.filter((p) => p.role === 'INCLUDED').length)}
+          </p>
           {picked.length === 0 ? (
             <p className="ds-field__hint">{P.chosenNone}</p>
           ) : (

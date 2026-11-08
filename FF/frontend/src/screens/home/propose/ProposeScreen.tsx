@@ -18,8 +18,8 @@ import { ASIL_VALUES, type TaxonomyNodeLite } from './taxonomy';
 import { choosePicked, list, makePrimaryPicked, prefillOf, primaryOf, regulationsOf, removePicked, sameList, type PickedRef, type Prefill, type RefLite } from './prefill';
 import { autofill as AF, profile as PR } from '../../../copy/ple';
 import { RegistrationSteps } from '../../ple/RegistrationSteps';
-import { IntentSuggest } from './IntentSuggest';
 import { AutofillPanel, scopeKey, useAutofill, variationPointsFor, type ProfileDraft } from './AutofillPanel';
+import { RegistrationReview } from './RegistrationReview';
 
 const INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
 type Form = typeof INITIAL;
@@ -51,6 +51,7 @@ export default function ProposeScreen() {
   const [asilReason, setAsilReason] = useState('');
   const [dupReason, setDupReason] = useState('');
   const [done, setDone] = useState<Created | null>(null);
+  const [reviewing, setReviewing] = useState(false);
   // 미리 채운 값과 그 값을 준 대표 행 — 대표를 바꾸면 사용자가 고치지 않은 칸만 새 기준값으로 바꾼다
   const [base, setBase] = useState<(Prefill & { refId: string }) | null>(null);
   // 자동 채움(20-60 §5.3) — 사람이 손대지 않은 제어점·범위·프로필만 대표 행이 바뀔 때 채운다
@@ -176,6 +177,7 @@ export default function ProposeScreen() {
   const why = whyDisabled(
     [!perm.ok, perm.hint],
     [!primary, P.nextWhy],
+    [!f.country.trim() || !f.vehicleModel.trim() || !f.trim.trim(), P.scopeWhy],
     [!f.name.trim() || !f.description.trim() || !f.ownerId.trim(), P.requiredWhy],
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
     [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
@@ -192,7 +194,7 @@ export default function ProposeScreen() {
 
   const text = (k: keyof Form, label: string, hint?: ReactNode, mono = true) => (
     <Field label={label} error={fe[k]} hint={hint}>
-      <input className={`ds-input${mono ? ' ds-input--mono' : ''}`} name={k} value={f[k]} onChange={set(k)} />
+      <input className={`ds-input${mono ? ' ds-input--mono' : ''}`} name={k} required={k === 'country' || k === 'vehicleModel' || k === 'trim'} maxLength={k === 'country' ? 8 : k === 'vehicleModel' || k === 'trim' ? 80 : undefined} value={f[k]} onChange={set(k)} />
     </Field>
   );
 
@@ -200,7 +202,7 @@ export default function ProposeScreen() {
     <div className="ds-screen">
       <PageHeader codes="D01-01 · PROPOSED 0.1.0 · 30-95 §6" title={P.title} lead={P.lead} message={message} />
       {/* 등록 진행 단계 — 마법사 두 단계 뒤로 제출·검토·정의 승인이 이어진다(20-60 §6) */}
-      <RegistrationSteps current={done || create.isSuccess ? 2 : step - 1} />
+      <RegistrationSteps current={done || create.isSuccess || reviewing ? 2 : step - 1} />
       <Panel id="propose-form" tour="feature-form">
         <h2 ref={stepHead} tabIndex={-1} style={{ marginTop: 0 }}>
           {step === 1 ? P.steps.pick : P.steps.confirm}
@@ -220,42 +222,31 @@ export default function ProposeScreen() {
           </section>
         ) : step === 1 ? (
           <>
-            <IntentSuggest pickedIds={new Set(picked.map((p) => p.ref.refId))} onPick={(ref) => choose(ref, 'PRIMARY')} />
-            <RefPicker picked={picked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => setRequesting(true)} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
+            <RefPicker suggestIntent picked={picked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => setRequesting(true)} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
           </>
         ) : (
           <>
-            {/* 2단계 칸 묶음 — 미리 채운 칸은 처음 열 때 잠깐 강조한다(data-prefilled, 움직임 줄이기면 강조 없이) */}
-            {af.data && profile ? (
-              <AutofillPanel
-                result={af.data}
-                form={{ name: f.name, description: f.description, asil: f.asil, tags: f.tags, owner: f.ownerId }}
-                cps={cps}
-                scope={scope}
-                onScope={(s) => {
-                  setScopeTouched(true);
-                  setF((x) => ({ ...x, ...s }));
-                }}
-                profile={profile}
-                onProfile={setProfile}
-              />
-            ) : (
-              af.pending && <p className="ds-field__hint" role="status">{AF.loading}</p>
-            )}
-            <p className="ds-field__hint" style={{ margin: 0 }}>{W.required.legend}</p>
+            <p className="ds-field__hint">{P.form.lead}</p>
+            <p className="propose-selection-summary">{primary?.nameKo} <span className="ds-mono">{primary?.refId}</span> · {P.selection.included(picked.length - 1)}</p>
+            {/* 필수 입력을 먼저 작성하고 출처·추가 구성은 뒤에서 확인한다. */}
             <div className="ds-split ds-prefill" data-prefilled={base?.refId}>
               <div className="ds-stack">
-                <Field label={P.name} error={fe.name} hint={mark('name')}>
-                  <input className="ds-input" name="name" value={f.name} onChange={set('name')} />
+                <h3 className="propose-section-heading">{P.form.identity} <span className="ds-tag">{P.form.required}</span></h3>
+                <Field label={P.name} error={fe.name} hint={<>{mark('name')} {P.form.nameHint}</>}>
+                  <input className="ds-input" name="name" required maxLength={200} value={f.name} onChange={set('name')} />
                 </Field>
-                <Field label={P.description} error={fe.description} hint={mark('description')}>
-                  <textarea className="ds-input" name="description" value={f.description} onChange={set('description')} rows={4} />
+                <Field label={P.description} error={fe.description} hint={<>{mark('description')} {P.form.descriptionHint}</>}>
+                  <textarea className="ds-input" name="description" required maxLength={2000} value={f.description} onChange={set('description')} rows={4} />
                 </Field>
+                <Field label={P.owner} error={fe.ownerId} hint={<span id="propose-owner-hint">{P.form.ownerHint}</span>}>
+                  <input className="ds-input" name="ownerId" aria-label={P.owner} aria-describedby="propose-owner-hint" required maxLength={100} value={f.ownerId} onChange={set('ownerId')} />
+                </Field>
+                <h3 className="propose-section-heading">{P.form.references}</h3>
                 {/* 정의 승인 필수(PROPOSED → APPROVED 필수 입력) — 등록은 되지만 비어 있으면 승인이 막힌다(P1-7) */}
-                <Field label={<>{P.requirements} <span className="ds-tag" data-required-for="approval">{W.required.tag}</span></>} error={fe.requirementIds} hint={W.required.reqHint}>
+                <Field label={<>{P.requirements} <span className="ds-tag" data-required-for="approval">{W.required.tag}</span></>} error={fe.requirementIds} hint={P.form.requirementsHint}>
                   <input className="ds-input ds-input--mono" name="requirementIds" value={f.requirementIds} onChange={set('requirementIds')} />
                 </Field>
-                {text('tags', P.tags, mark('tags'), false)}
+                {text('tags', P.tags, <>{mark('tags')} {P.form.tagsHint}</>, false)}
                 <section aria-labelledby="propose-regs-h" data-testid="ref-regulations">
                   <h3 id="propose-regs-h">{P.refRegulations}</h3>
                   <p className="ds-field__hint">{P.refRegulationsHint}</p>
@@ -271,21 +262,20 @@ export default function ProposeScreen() {
                 </section>
               </div>
               <div className="ds-stack">
-                {text('country', P.country)}
-                {text('vehicleModel', P.vehicleModel)}
-                {text('trim', P.trim)}
-                <Field label={P.owner} error={fe.ownerId}>
-                  <input className="ds-input" name="ownerId" value={f.ownerId} onChange={set('ownerId')} />
-                </Field>
+                <h3 className="propose-section-heading">{P.form.scope} <span className="ds-tag">{P.form.required}</span></h3>
+                <p className="ds-field__hint">{P.form.scopeHint}</p>
+                {text('country', P.country, P.form.countryHint)}
+                {text('vehicleModel', P.vehicleModel, P.form.modelHint)}
+                {text('trim', P.trim, P.form.trimHint)}
                 <Field
                   label={P.asil}
                   error={fe.asil}
                   hint={
-                    base ? (
+                    base ? <>{P.form.asilHint} {(
                       <span className="ds-tag ds-ref-mark" data-ref-mark={asilChanged ? 'edited' : 'base'}>
                         {asilChanged ? `${P.markEdited} · ${P.asilBase(base.asil)}` : `${P.markBase} · ${P.asilBase(base.asil)}`}
                       </span>
-                    ) : undefined
+                    )}</> : P.form.asilHint
                   }
                 >
                   <select className="ds-select" name="asil" value={f.asil} onChange={set('asil')}>
@@ -302,18 +292,28 @@ export default function ProposeScreen() {
                     </Field>
                   </div>
                 )}
-                {text('upgVc', P.upgVc)}
+                <h3 className="propose-section-heading">{P.form.optional}</h3>
+                {text('upgVc', P.upgVc, P.form.upgHint)}
                 <fieldset className="ds-choices" aria-label={P.cps}>
                   <legend className="ds-field__label">{P.cps}</legend>
+                  <p className="ds-field__hint" id="propose-cps-hint">{P.form.cpHint}</p>
                   {['Flag', 'Parameter', 'Signal', 'DTC'].map((c) => (
                     <label key={c}>
-                      <input type="checkbox" checked={cps.includes(c)} onChange={() => { setCpsTouched(true); setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c])); }} />
+                      <input type="checkbox" aria-describedby="propose-cps-hint" checked={cps.includes(c)} onChange={() => { setCpsTouched(true); setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c])); }} />
                       {c}
                     </label>
                   ))}
                 </fieldset>
               </div>
             </div>
+
+            {af.data && profile ? (
+              <details className="propose-autofill">
+                <summary>{P.form.autofill}</summary>
+                <AutofillPanel result={af.data} form={{ name: f.name, description: f.description, asil: f.asil, tags: f.tags, owner: f.ownerId }} cps={cps} scope={scope}
+                  onScope={(s) => { setScopeTouched(true); setF((x) => ({ ...x, ...s })); }} profile={profile} onProfile={setProfile} />
+              </details>
+            ) : af.pending && <p className="ds-field__hint" role="status">{AF.loading}</p>}
 
             <section aria-labelledby="propose-linked-h" data-testid="ref-linked">
               <h3 id="propose-linked-h">{P.linked}</h3>
@@ -352,13 +352,14 @@ export default function ProposeScreen() {
 
             <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <Button onClick={() => setStep(1)}>{P.changeRefs}</Button>
-              <Button variant="primary" data-ui="createFeature" disabled={!!why || create.isPending} reason={why} title={perm.hint} onClick={() => submit(false)}>
-                {P.submit}
+              <Button variant="primary" data-ui="reviewFeature" disabled={!!why || create.isPending} reason={why} title={perm.hint} onClick={() => setReviewing(true)}>
+                {P.review.open}
               </Button>
             </div>
           </>
         )}
       </Panel>
+      {reviewing && <RegistrationReview draft={f} picked={picked} cps={cps} onClose={() => setReviewing(false)} onRegister={() => { setReviewing(false); submit(false); }} />}
       {requesting && (
         <RefRequestDrawer
           open={requesting}

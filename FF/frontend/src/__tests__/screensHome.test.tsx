@@ -56,6 +56,13 @@ const inboxApi: Handler = (url) => {
     };
 };
 
+const registerDraft = async () => {
+  fireEvent.click(screen.getByRole('button', { name: '다음: 등록 전 확인' }));
+  const dialog = screen.getByRole('dialog');
+  fireEvent.click(within(dialog).getByRole('checkbox', { name: '국가·차종·트림이 실제 적용 대상과 일치함을 확인했습니다' }));
+  fireEvent.click(within(dialog).getByRole('button', { name: '확인한 내용으로 초안 등록' }));
+};
+
 describe('검토함 v2', () => {
   it('BOM 승인자(steward) — Baseline은 내 차례, 정책 승인·F2 안전 차단(FSM·CSM 몫)·내가 차단한 건의 복원은 아니다', async () => {
     handler = inboxApi;
@@ -142,15 +149,15 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
           ? { body: { items: [REF], total: 1 } }
           : undefined;
     mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);
-    fireEvent.click(await screen.findByRole('button', { name: 'BC-SEAT-010 대표로' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'BC-SEAT-010 기본 정보 가져오기' }));
     fireEvent.click(screen.getByRole('button', { name: '다음: 등록 정보 확인' }));
-    const submit = screen.getByRole('button', { name: '제안 등록' });
+    const submit = screen.getByRole('button', { name: '다음: 등록 전 확인' });
     expect(submit).toHaveProperty('disabled', true);
     expect((screen.getByLabelText(/^이름/) as HTMLInputElement).value).toBe('좌석 열선 원격');
     fireEvent.change(screen.getByLabelText(/^설명/), { target: { value: '원격으로 좌석 열선을 켠다' } });
     fireEvent.change(screen.getByLabelText(/^담당/), { target: { value: 'Body Platform Team' } });
     fireEvent.change(screen.getByLabelText(/^요구사항 ID/), { target: { value: 'REQ-1, REQ-2' } });
-    fireEvent.click(screen.getByRole('button', { name: '제안 등록' }));
+    await registerDraft();
     expect(await screen.findByText('detail-page')).toBeTruthy();
     const post = calls.find((c) => c.method === 'POST')!;
     expect(post.body).toMatchObject({ name: '좌석 열선 원격', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], asil: 'QM', featureRefs: [{ refId: 'BC-SEAT-010', role: 'PRIMARY' }] });

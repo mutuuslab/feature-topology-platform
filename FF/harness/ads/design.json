@@ -570,7 +570,7 @@
         "정책·Feature Version에 변경 종류 배지(정책·설정·SW·모델·ODD)",
         "변경 영향 화면: 종류별 경로(재-HARA·R156 영향·SUMS)와 미완료 항목",
         "릴리스 전후 비교: 대상·의존성·ODD·종료 동작 차이",
-        "출시 뒤 열린 재-HARA가 있으면 배포·서명 버튼 대신 사유"
+        "출시 뒤 열린 재-HARA가 있으면 출시 전이·Release Sign-off를 막고 사유를 표시한다. 승인된 정책의 서버 배포는 기존 승인·검증·권한을 유지해 허용한다(결정 D-RD-6)."
       ],
       "fe": [
         "screens/governance/Impact.tsx, policy/PolicyVersions.tsx"

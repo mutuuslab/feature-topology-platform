@@ -18,6 +18,58 @@ test('웹 게시 workflow는 수동 실행만 허용한다', () => {
   }
 });
 
+// 게시 직전의 실제 dist를 검사해야 한다. 별도 하네스 통과가 다른 산출물의 게시를 허용하지 않는다.
+function assertPagesPublishArtifact(yaml: string): void {
+  yaml = yaml.replace(/\r\n/g, '\n');
+  const steps = yaml.split(/(?=^      - (?:name|uses):)/m).slice(1);
+  const index = steps.findIndex((step) => /^      - name: Validate Pages publish artifact$/m.test(step));
+  assert.ok(index >= 0, 'Pages 게시 직전 산출물 게이트가 필요하다');
+  const gate = steps[index];
+  assert.match(gate, /^        working-directory: FF$/m);
+  assert.match(gate, /^        shell: bash$/m);
+  assert.doesNotMatch(gate, /^        (?:continue-on-error|if):/m, '산출물 게이트를 건너뛰거나 실패를 무시할 수 없다');
+  const run = gate.match(/^        run: \|\n((?:          [^\n]*(?:\n|$))*)/m)?.[1];
+  assert.ok(run, '게이트 실행 명령이 필요하다');
+  assert.deepEqual(run.trim().split('\n').map((line) => line.trim()), [
+    'set -euo pipefail',
+    'node --test tools/snapshot-pack.test.ts',
+    'node tools/snapshot-pack.ts frontend/dist',
+    'node tools/snapshot-coverage.ts frontend/dist/api-snapshot',
+    'node tools/local-leaks.ts frontend/dist',
+    'node tools/bundle-budget.ts frontend/dist',
+    'node tools/snapshot-pack.ts --check-file-count frontend/dist',
+  ], '세 검사는 실제 게시 dist를 대상으로 실패 즉시 중단해야 한다');
+  const wrangler = steps.map((step, at) => ({ step, at })).filter(({ step }) => /\bnpx\b[^\n]*\bwrangler@/.test(step));
+  assert.ok(wrangler.length >= 1, '게시 실행 단계를 확인해야 한다');
+  for (const { step, at } of wrangler) {
+    assert.ok(at > index, '어떤 wrangler 호출도 산출물 게이트보다 먼저 실행할 수 없다');
+    const condition = step.match(/^        if:\s*(.+)$/m)?.[1].trim();
+    assert.ok(!condition || condition === 'success()' || condition === '${{ success() }}', '게이트 실패 뒤 wrangler를 강제 실행할 수 없다');
+  }
+}
+
+test('Pages 게시 직전 산출물 게이트가 모든 wrangler보다 먼저 실패를 차단한다', () => {
+  assertPagesPublishArtifact(readFileSync(join(FF, '..', '.github', 'workflows', 'cloudflare.yml'), 'utf8'));
+});
+
+test('Pages 게시 산출물 계약은 누락·다른 폴더·실패 무시·후행 검사 회귀를 잡는다', () => {
+  const yaml = readFileSync(join(FF, '..', '.github', 'workflows', 'cloudflare.yml'), 'utf8').replace(/\r\n/g, '\n');
+  assertPagesPublishArtifact(yaml); // 기준 자체가 틀린 상태에서 음성 대조군이 공허하게 통과하지 않게 한다.
+  const coverage = '          node tools/snapshot-coverage.ts frontend/dist/api-snapshot\n';
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace(coverage, '')));
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace('          node tools/snapshot-pack.ts frontend/dist' + '\n', '')));
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace('          node tools/snapshot-pack.ts --check-file-count frontend/dist' + '\n', '')));
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace('node tools/local-leaks.ts frontend/dist', 'node tools/local-leaks.ts frontend/public/api-snapshot')));
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace(coverage, coverage.trimEnd() + ' || true\n')));
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace('      - name: Validate Pages publish artifact\n', '      - name: Validate Pages publish artifact\n        continue-on-error: true\n')));
+  assert.throws(() => assertPagesPublishArtifact(yaml.replace('      - name: Deploy\n', '      - name: Deploy\n        if: always()\n')));
+  const start = yaml.indexOf('      - name: Validate Pages publish artifact\n');
+  const next = yaml.indexOf('      - name: Ensure Pages project\n', start);
+  assert.ok(next > start);
+  const moved = yaml.slice(0, start) + yaml.slice(next) + yaml.slice(start, next);
+  assert.throws(() => assertPagesPublishArtifact(moved));
+});
+
 test('배포 시드 — cloudflare.yml의 snapshot:api 앞 환경 변수를 그대로 읽는다(공개본 전시 시드)', () => {
   const env = deploySeedEnv(readFileSync(join(FF, '..', '.github', 'workflows', 'cloudflare.yml'), 'utf8'));
   assert.equal(env.FF_SHOWCASE, '1');

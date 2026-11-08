@@ -4,8 +4,8 @@
 /** 등록 진행 단계(백엔드 REGISTRATION_STAGES와 같은 순서) */
 export const regSteps = {
   label: '등록 진행 단계',
-  stages: ['기준 기능 고르기', '자동 채움 확인', '제출', '검토', '정의 승인'] as const,
-  hint: ['Feature DB에서 대표 행', '출처를 보고 고칠 칸만', 'PROPOSED 0.1.0', 'G1~G3·안전 분류', 'Feature 승인자'] as const,
+  stages: ['작성 기준 선택', '등록 정보 작성', '초안 등록', '내용 검토', '정의 승인'] as const,
+  hint: ['기본값을 가져올 기능 1개', '설명·담당·적용 대상 확인', 'PROPOSED 0.1.0으로 저장', 'G1~G3·안전 분류 확인', 'Feature 승인자가 판단'] as const,
   no: (n: number) => `${n}`,
   current: '지금 단계',
   done: '끝남',
@@ -15,16 +15,16 @@ export const autofill = {
   // ① 이름·설명으로 찾기
   intentTitle: '이름·설명으로 찾기',
   intentLabel: '만들 기능을 한 줄로 적으세요',
-  intentHint: '기능명·별칭·사내 용어(SCC 같은 약칭)·설명 단어로 대표 기준 행 후보를 추천합니다',
+  intentHint: '기능명·별칭·사내 용어(SCC 같은 약칭)·설명으로 작성 기준 후보를 찾습니다',
   intentEmpty: '두 글자 이상 적으면 후보를 보여 줍니다',
   intentNone: '맞는 후보가 없습니다 — 아래 검색으로 찾거나 Feature DB에 추가를 요청하세요',
-  intentPick: (refId: string) => `${refId} 대표로 고르기`,
-  intentPicked: '고름',
+  intentPick: (refId: string) => `${refId} 추천 정보 가져오기`,
+  intentPicked: '선택됨',
   score: (n: number) => `점수 ${n}`,
 
   // ② 자동 채움 확인
   title: '자동으로 채운 항목',
-  lead: (refId: string) => `대표 기준 행 ${refId}에서 채웠습니다. 출처를 보고 필요한 칸만 고치세요 — 고친 칸은 등록 이력에 남습니다.`,
+  lead: (refId: string) => `작성 기준 ${refId}에서 가져온 값입니다. 실제 등록할 기능에 맞는지 확인해 수정하세요. 변경 내용은 등록 이력에 남습니다.`,
   col: { field: '항목', value: '값', source: '출처', state: '상태', actor: '누가', at: '언제' },
   field: {
     name: '이름',

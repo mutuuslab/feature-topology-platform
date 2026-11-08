@@ -71,6 +71,31 @@ describe('정책 목록', () => {
 });
 
 describe('정책 상세', () => {
+  it.each([
+    ['coordinator', false],
+    ['viewer', true],
+  ] as const)('D-RD-6: 열린 재-HARA 중 승인 정책 배포는 출시 서명과 구분하고 %s 배포 권한을 유지한다', async (role, disabled) => {
+    const approved = { ...POL, status: 'APPROVED' };
+    const change = {
+      impactId: 'CI-OPEN', featureId: POL.featureId, version: POL.featureVersion,
+      cls: { primary: 'CONFIG' }, reharaOpenAfterRelease: true, reharaRequestIds: ['RH-OPEN'],
+      paths: [{ path: 'REHARA', status: 'OPEN' }],
+    };
+    handler = (url) => {
+      if (url.startsWith('/api/change-impacts')) return { body: { items: [change] } };
+      if (url === `/api/policies/${POL.policyId}`) return { body: DETAIL({ policy: approved }) };
+      return { body: { items: [] } };
+    };
+    mount('/policies/POL-00003', '/policies/:id', <PolicyDetail />, role);
+    await waitFor(() => expect(document.querySelector('[data-change-chip="CI-OPEN"]')).toBeTruthy());
+    const deploy = screen.getByRole('button', { name: '서버 배포' }) as HTMLButtonElement;
+    expect(deploy.disabled).toBe(disabled);
+    if (!disabled) {
+      fireEvent.click(deploy);
+      expect(await screen.findByRole('dialog', { name: '서버 배포' })).toBeTruthy();
+    }
+  });
+
   it('검증기 8종 카드와 배포 안전성 판정을 그린다', async () => {
     handler = () => ({ body: DETAIL() });
     mount('/policies/POL-00003', '/policies/:id', <PolicyDetail />);

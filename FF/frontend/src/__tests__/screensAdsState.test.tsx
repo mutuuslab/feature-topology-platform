@@ -252,6 +252,15 @@ const PUB_DETAIL = {
 };
 
 describe('배포 상세 — 수렴 7구간', () => {
+  it('수렴 읽기가 실패해도 게시본은 표시하며 알 수 없는 차량 수를 0대로 표시하지 않는다', async () => {
+    handler = (url) => url.endsWith('/convergence') ? { status: 404, body: { error: { code: 'NOT_FOUND', message: '수렴 정보 없음' } } } : url.startsWith('/api/publications/PUB-00006') ? { body: PUB_DETAIL } : undefined;
+    mount('/deployments/PUB-00006', '/deployments/:id', <DeploymentDetail />);
+    await screen.findByText('수렴 정보 없음');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('긴급 차단 게시본');
+    expect(key().textContent).not.toContain('0대');
+    expect(key().textContent).toContain('확인하지 못했습니다');
+  });
+
   it('핵심 값은 적용 확인 안 된 차량 N대 — 대상 M대 중, 배타 7구간 합 = 대상, 누적은 보조 줄, 구간 거르기는 분절 필터(탭 아님)', async () => {
     handler = (url) => (url.startsWith('/api/publications/PUB-00006/convergence') ? { body: CONV } : url.startsWith('/api/publications/PUB-00006') ? { body: PUB_DETAIL } : undefined);
     mount('/deployments/PUB-00006', '/deployments/:id', <DeploymentDetail />);

@@ -153,11 +153,16 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await page.waitForURL(/\/deployments\/PUB-\d{5}$/);
   const rollbackPub = page.url().split('/').pop()!;
   await expect(page.locator('#main')).toContainText(/회신|확인/);
-  // 통신되는 차량이 모두 답할 때까지 — 이 게시본의 회신 진행 막대(첫 막대)가 모두 확인이 되거나, 끊긴 차량이 남아 '다시 제출'이 나온다
+  // 현 게시본의 실제 상태와 수렴을 확인한다. 상세에는 옛 목록용 진행 막대가 없다.
   // (상태 대기 — 고정 대기 없음)
-  const meter = page.locator('#main .ds-progress').first();
+  const currentPublication = page.locator(`[data-publication-id="${rollbackPub}"]`);
+  await expect(currentPublication).toHaveAttribute('data-publication-targets', /^\d+$/);
+  const targetCount = Number(await currentPublication.getAttribute('data-publication-targets'));
+  expect(targetCount, '복구 게시본의 실제 대상 차량이 있어야 한다').toBeGreaterThan(0);
+  await expect(currentPublication.locator('[data-ads-convergence]')).toBeVisible();
+  await expect(currentPublication.locator('[data-state="error"]')).toHaveCount(0);
   const retry = page.getByRole('button', { name: '다시 제출' }).first();
-  await expect.poll(async () => (await meter.getAttribute('data-status')) === 'CONFIRMED' || (await retry.isVisible()), { timeout: 30_000 }).toBe(true);
+  await expect.poll(async () => (await currentPublication.getAttribute('data-publication-status')) === 'CONFIRMED' || (await retry.isVisible()), { timeout: 30_000 }).toBe(true);
   await shot(page, 'rollback-replies');
   if (await retry.isVisible()) {
     await retry.click();
@@ -166,8 +171,17 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
     // 다시 제출이 받아들여지면 창이 닫힌다(성공 뒤에만 닫힘)
     await expect(page.getByRole('dialog')).toBeHidden();
   }
-  // 남은 차량 회신 → 게시본 확인(회신 진행 막대가 '적용 확인')
-  await expect.poll(async () => (await page.reload(), await meter.getAttribute('data-status')), { timeout: 30_000, intervals: [1_000] }).toBe('CONFIRMED');
+  // 남은 차량 회신 → 같은 게시본 CONFIRMED와 전 대상 차량의 APPLIED 집계를 함께 확인한다.
+  await expect.poll(async () => {
+    await page.reload();
+    // The route wrapper exists before its publication request finishes. Read a loaded
+    // state before reloading again, while preserving the outer confirmation deadline.
+    await expect(currentPublication).toHaveAttribute('data-publication-status', /\S+/, { timeout: 5_000 });
+    return currentPublication.getAttribute('data-publication-status');
+  }, { timeout: 30_000, intervals: [1_000] }).toBe('CONFIRMED');
+  await expect(currentPublication.locator('[data-key-message]')).toContainText(`대상 ${targetCount}대 모두 적용 확인`);
+  await expect(currentPublication.locator('[data-ads-convergence]')).toBeVisible();
+  await expect(currentPublication.locator('[data-state="error"]')).toHaveCount(0);
   await shot(page, 'rollback-confirmed');
 
   // 12. 롤백 완료(게시본이 모두 확인되면) — 이력, 복구 기준 버전 DEPLOYED, Unleash 대조(배포가 바뀌어 drift → 동기화 → 같음)

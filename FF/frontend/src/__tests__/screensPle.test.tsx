@@ -78,6 +78,13 @@ const mount = (path: string, el: JSX.Element, role = 'author') => {
   );
 };
 
+const registerDraft = async () => {
+  fireEvent.click(screen.getByRole('button', { name: '다음: 등록 전 확인' }));
+  const dialog = screen.getByRole('dialog');
+  fireEvent.click(within(dialog).getByRole('checkbox', { name: '국가·차종·트림이 실제 적용 대상과 일치함을 확인했습니다' }));
+  fireEvent.click(within(dialog).getByRole('button', { name: '확인한 내용으로 초안 등록' }));
+};
+
 describe('등록 진행 단계', () => {
   it('다섯 단계 — 지난 단계는 끝남, 지금 단계는 aria-current=step', () => {
     render(<RegistrationSteps current={1} />);
@@ -103,6 +110,7 @@ describe('Feature 등록 마법사 — 자동 채움', () => {
     fireEvent.click(document.querySelector('[data-ui="refPickNext"]') as HTMLElement);
 
     const table = await screen.findByTestId('autofill');
+    fireEvent.click(screen.getByText(P.form.autofill));
     expect(document.querySelector('[data-reg-step="1"]')).toBeTruthy();
     const asilRow = table.querySelector('[data-af-field="asil"]') as HTMLElement;
     expect(asilRow.textContent).toContain('대표 ASIL(L)');
@@ -125,7 +133,7 @@ describe('Feature 등록 마법사 — 자동 채움', () => {
 
     fireEvent.change(screen.getByLabelText(P.owner), { target: { value: '바디상품기획팀' } });
     handler = (url, init) => (url === '/api/features' && init?.method === 'POST' ? { status: 201, body: { featureId: 'FEAT-00999', version: '0.1.0' } } : undefined);
-    fireEvent.click(document.querySelector('[data-ui="createFeature"]') as HTMLElement);
+    await registerDraft();
     await screen.findByText('detail-page');
     const body = calls.find((c) => c.method === 'POST' && c.url === '/api/features')!.body;
     expect(body.controlPoints.sort()).toEqual(['DTC', 'Flag', 'Parameter', 'Signal']);
@@ -140,15 +148,16 @@ describe('Feature 등록 마법사 — 자동 채움', () => {
     fireEvent.click(await screen.findByRole('button', { name: A.intentPick('BC-SEAT-001') }));
     fireEvent.click(document.querySelector('[data-ui="refPickNext"]') as HTMLElement);
     await screen.findByTestId('autofill');
+    fireEvent.click(screen.getByText(P.form.autofill));
     await waitFor(() => expect((screen.getByLabelText('DTC') as HTMLInputElement).checked).toBe(true));
     fireEvent.click(screen.getByLabelText('DTC'));
     expect(within(screen.getByTestId('af-vps')).queryByText(PR.vpKind.DTC)).toBeNull();
     fireEvent.change(screen.getByLabelText(P.owner), { target: { value: '바디상품기획팀' } });
     fireEvent.change(screen.getByLabelText(PR.role), { target: { value: 'SUB' } });
-    expect((document.querySelector('[data-ui="createFeature"]') as HTMLButtonElement).disabled).toBe(true);
+    expect((document.querySelector('[data-ui="reviewFeature"]') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getAllByText(PR.parentWhy).length).toBeGreaterThan(0);
     fireEvent.change(document.querySelector('input[name="parentRefId"]') as HTMLInputElement, { target: { value: 'BC-SEAT-009' } });
-    expect((document.querySelector('[data-ui="createFeature"]') as HTMLButtonElement).disabled).toBe(false);
+    expect((document.querySelector('[data-ui="reviewFeature"]') as HTMLButtonElement).disabled).toBe(false);
   });
 });
 

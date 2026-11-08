@@ -33,6 +33,7 @@ import {
   type TimelineCommand,
   type TimelineReport,
 } from '@ff/contracts';
+import { classifyDelivery, convergenceCounts, cumulativeDelivery, REPORT_INTERVAL_DEFAULT_MS, type DeliveryEvent } from '../../../../../contracts/src/rules/ads-state';
 import { registerSimHandler, registerSimReader, registerSimTask, registerSimView, simUnhandled } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
 
@@ -199,6 +200,36 @@ registerSimReader('publicationDetail', (ctx) => {
   if (!p) return undefined;
   const store = ctx.overlay.data.killDelivery?.[p.publicationId] ?? {};
   return { publication: p, verification: { valid: true, reason: 'SIGNATURE_VALID' }, readbacks: store.readbacks ?? [], calls: store.calls ?? [], delivery: store.job ?? null };
+});
+
+// 새 게시본은 빌드 시 스냅샷이 없다. 서버 AdsStateService와 같은 회신 사실·순수 규칙으로 수렴을 계산한다.
+registerSimReader('adsConvergence', async (ctx) => {
+  const p = ctx.get(PUB, ctx.req.params.id);
+  if (!p) return undefined; // 기존 게시본은 기존 스냅샷, 없는 ID는 엔진의 404를 유지한다.
+  const detail = await ctx.snapshot<any>('featureDetail', { id: p.payload.featureId, ver: p.payload.featureVersion });
+  const feature = detail?.feature;
+  const axes = await ctx.snapshot<any>('adsAxisDistribution', {}, { featureId: p.payload.featureId });
+  const basis = axes?.selected?.featureId === p.payload.featureId ? axes.selected : null;
+  const cls = feature && (feature.tags?.includes('adas') || ['B', 'C', 'D'].includes(feature.asil)) ? 'ADAS' : 'QM';
+  const hasBasis = Number.isFinite(basis?.staleAfterMs) && basis.staleAfterMs > 0;
+  const staleAfterMs = hasBasis ? basis.staleAfterMs : REPORT_INTERVAL_DEFAULT_MS[cls];
+  const readbacks = ctx.overlay.data.killDelivery?.[p.publicationId]?.readbacks ?? [];
+  const per = p.payload.targets.map((vin: string) => {
+    const node = p.nodes.find((n: any) => n.nodeId === vin);
+    const events: DeliveryEvent[] = readbacks.filter((r: any) => r.vin === vin && r.publicationId === p.publicationId).map((r: any) => ({
+      stage: r.rejectReason ? 'REJECTED' : r.metricType === 'READBACK' && node?.state === 'CONFIRMED' ? 'APPLIED' : 'RECEIVED',
+      at: r.at, reasonCode: r.rejectReason ?? null,
+    }));
+    return { vin, events };
+  });
+  const vehicles = per.map(({ vin, events }) => {
+    const c = classifyDelivery(events, staleAfterMs, Date.now());
+    return { vin, bin: c.bin, lastStage: c.last?.stage ?? null, at: c.last?.at ?? null, reasonCode: c.last?.reasonCode ?? null };
+  });
+  const bins = convergenceCounts(vehicles.map((v) => v.bin));
+  return { publicationId: p.publicationId, kind: p.kind, featureId: p.payload.featureId, featureName: feature?.name ?? null,
+    flagKey: p.payload.flagKey, status: p.status, total: vehicles.length, staleAfterMs, assumed: hasBasis ? basis.assumed : true,
+    bins, notApplied: vehicles.length - bins.APPLIED, cumulative: cumulativeDelivery(per.map((x) => x.events)), vehicles };
 });
 
 // 영향 범위 미리보기 — 진행 중 차단·원장·24시간 누적을 시연 상태로, 게이트 사전 점검은 같은 규칙(승인 칸 제외)

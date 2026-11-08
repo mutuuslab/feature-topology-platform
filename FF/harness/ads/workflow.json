@@ -546,7 +546,7 @@
         {
           "id": "FPW.6-A06",
           "change": "modify",
-          "what": "OTA Gate PASS와 함께 출시 뒤 열린 재-HARA가 없는지 확인하고, 있으면 배포하지 않는다(플랫폼이 거부)"
+          "what": "OTA Gate PASS와 기존 승인·가상검증·Lifecycle·ODD 축소 규칙을 확인해 정책을 배포한다. 출시 뒤 열린 재-HARA는 정책 배포를 막지 않으며, 출시 전이와 Release Sign-off만 막는다(결정 D-RD-6)"
         },
         {
           "id": "FPW.7-A09",
@@ -559,7 +559,7 @@
       "newProcess": null,
       "none": false,
       "noneWhy": null,
-      "sha": "cc4fa95f338a"
+      "sha": "5e34933e6edf"
     },
     "ADS-UI10": {
       "activities": [

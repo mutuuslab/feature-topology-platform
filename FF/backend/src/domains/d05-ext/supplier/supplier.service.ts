@@ -11,12 +11,14 @@ import { FeatureRepo, TopologyRepo } from '../../d01-policy/repos';
 import { checkedArtifacts, supplierGateFacts, supplierPackageCheck } from './supplier-gate';
 import { publicArtifactUri, verifyArtifact } from './supplier-proof';
 import { SupplierStore } from './supplier.store';
+import { TraceLinkService } from '../../d01-policy/registry/trace-link.service';
+import { contractGaps, supplierScope } from '@ff/contracts';
 
 @Injectable()
 @PlatformComponent('D05-01')
 export class SupplierService {
   private readonly store: SupplierStore;
-  constructor(@Inject(DB) private readonly db: Db, private readonly features: FeatureRepo, private readonly topology: TopologyRepo, private readonly clock: Clock, private readonly audit: AuditService, private readonly events: EventService) { this.store = new SupplierStore(db); }
+  constructor(@Inject(DB) private readonly db: Db, private readonly features: FeatureRepo, private readonly topology: TopologyRepo, private readonly clock: Clock, private readonly audit: AuditService, private readonly events: EventService, private readonly trace: TraceLinkService) { this.store = new SupplierStore(db); }
 
   private feature(id: string, version?: string) {
     const f = version ? this.features.get(id, version) : this.features.versions(id).at(-1);
@@ -154,4 +156,36 @@ export class SupplierService {
     });
   }
   gate(featureId: string, version: string) { return supplierGateFacts(this.db, this.feature(featureId, version)); }
+  scope(featureId: string, version: string) {
+    const feature = this.feature(featureId, version);
+    const versions = this.features.versions(featureId);
+    const previous = versions[versions.findIndex((f) => f.version === version) - 1] ?? null;
+    const incoming = this.topology.incoming(featureId).filter((d) => d.type === 'REQUIRES');
+    // Version 미확정 관계는 기존 Topology 규칙도 승인 보류다. 현재 버전의 확정 의존으로 세지 않는다.
+    const dependents = incoming.filter((d) => d.targetVersion === version).flatMap((d) => {
+      const dependent = this.features.get(d.sourceFeatureId, d.sourceVersion);
+      return dependent ? [dependent] : [];
+    });
+    // 다른 Feature Version의 더 높은 패키지 버전을 현재 납품물로 고르지 않는다.
+    const packages = this.store.packages(featureId).filter((p) => p.featureVersion === version);
+    const latestByPackage = Object.fromEntries(packages.map((p) => {
+      const latest = latestArtifacts(checkedArtifacts(this.store, p));
+      // 현황의 시험 ID·커버리지도 서버가 보관 본문을 확인한 경우에만 사용한다.
+      if (latest.TEST_EVIDENCE?.integrity !== 'VERIFIED') delete latest.TEST_EVIDENCE;
+      return [p.packageId, latest];
+    }));
+    const trace = this.trace.featureSummary(featureId).coverage.test;
+    const scope = supplierScope({ feature, previous, dependents, sw: this.topology.allSw(), mappings: this.store.mappings(featureId), packages, latestByPackage, hasCriteria: this.store.criteria(featureId).length > 0, directory: [], traceEvidence: { required: trace.required, withEvidence: trace.withEvidence } });
+    const suppliers = scope.map((s) => {
+      const report = s.latestPackage ? latestByPackage[s.latestPackage.packageId]?.TEST_EVIDENCE : undefined;
+      return { ...s, evidence: { ...s.evidence,
+        // P3 추적 원장은 Feature ID 공통이다. Version 결속을 확인하지 못한 추적 근거로 완료를 추정하지 않는다.
+        status: trace.required > 0 && s.evidence.status === 'COMPLETE' ? 'PARTIAL' as const : s.evidence.status,
+        detail: s.evidence.detail + (trace.required > 0 ? ' · 추적 근거는 Feature 공통이며 Version 결속 미확인' : ''),
+        featureVersion: version, verification: report ? 'VERIFIED' as const : 'MISSING' as const,
+        source: report ? 'SUPPLIER_PACKAGE_BODY' as const : 'UNCONFIRMED' as const,
+      } };
+    });
+    return { feature: { featureId, version, name: feature.name }, suppliers, contractGaps: contractGaps(featureId, version, suppliers), unresolvedDependencies: incoming.filter((d) => !d.targetVersion).map((d) => ({ dependencyId: d.dependencyId, sourceFeatureId: d.sourceFeatureId, sourceVersion: d.sourceVersion })), traceEvidence: { scope: 'FEATURE_ID', versionBound: false, required: trace.required, withEvidence: trace.withEvidence }, directory: { mode: 'UNCONFIGURED', source: 'UNCONFIRMED', reason: '협력사 연락처 원본이 연결되지 않았습니다.' } };
+  }
 }

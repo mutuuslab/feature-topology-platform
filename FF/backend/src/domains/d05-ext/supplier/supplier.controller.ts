@@ -42,4 +42,6 @@ export class SupplierController {
   createCriteria(@CurrentActor() a: Actor, @Body(new ZodPipe(CreateSupplierCriteriaBody)) b: CreateSupplierCriteriaBody) { return this.supplier.createCriteria(a, b); }
   @Get('features/:id/versions/:ver/supplier-gate')
   gate(@Param('id') id: string, @Param('ver') version: string) { return this.supplier.gate(id, version); }
+  @Get('features/:id/versions/:ver/supplier-scope')
+  scope(@Param('id') id: string, @Param('ver') version: string) { return this.supplier.scope(id, version); }
 }

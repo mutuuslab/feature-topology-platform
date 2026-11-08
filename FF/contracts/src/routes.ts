@@ -658,6 +658,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'supplierCriteria', method: 'GET', path: '/api/supplier-criteria', summary: 'Feature별 검수 기준 개정 이력', component: 'D05-01', query: ['featureId'], requiredQuery: ['featureId'], sample: { featureId: 'FEAT-00010' } },
   { name: 'createSupplierCriteria', method: 'POST', path: '/api/supplier-criteria', summary: '검수 기준 새 개정 등록', component: 'D05-01', roles: ['GATE_JUDGE'], body: CreateSupplierCriteriaBody },
   { name: 'supplierGate', method: 'GET', path: '/api/features/:id/versions/:ver/supplier-gate', summary: 'G6 협력사 검수 대상·승인 패키지·막힘 사유', component: 'D05-01' },
+  { name: 'supplierScope', method: 'GET', path: '/api/features/:id/versions/:ver/supplier-scope', summary: '협력사 책임 범위·검증된 시험 근거·계약 누락', component: 'D05-01' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

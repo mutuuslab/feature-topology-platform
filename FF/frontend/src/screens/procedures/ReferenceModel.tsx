@@ -9,6 +9,7 @@ import './reference-model.css';
 const PARTS: RaciKey[] = ['R', 'A', 'C', 'I'];
 const ids = (a: WorkflowActivity, k: RaciKey) => k === 'A' ? [a.raci.A] : a.raci[k];
 const participates = (a: WorkflowActivity, roles: Set<string>) => PARTS.some((k) => ids(a, k).some((id) => roles.has(id)));
+const definitionPath = (pid: string, dept?: string, bp?: string) => `/procedures/${pid}?docview=reference${dept ? `&dept=${encodeURIComponent(dept)}` : ''}${bp ? `#${encodeURIComponent(bp)}` : ''}`;
 
 /** Only source-declared evidence links count. An activity's other outcomes are never inferred. */
 export function referenceEvidence(p: WorkflowProcess) {
@@ -67,9 +68,10 @@ export function ReferenceModel({ doc }: { doc: WorkflowDoc }) {
     {!matches.length && <p>{W.noMatch}</p>}
     <div className="wr-catalog">{matches.map(({ p, activities, practices }) => <article className="wr-process" key={p.id} data-process-reference={p.id}>
       <div className="wr-process__identity"><span>{p.id}</span><span>{p.group}</span></div>
-      <h2><Link to={`/procedures/${p.id}?docview=reference`}>{p.name}</Link></h2>
+      <h2><Link to={definitionPath(p.id, dept?.id)}>{p.name}</Link></h2>
       <p>{p.purpose}</p>
-      <div className="wr-process__foot"><span>{W.counts(practices.length, activities.length)}</span><Link to={`/procedures/${p.id}?docview=reference`}>{W.open}<span className="ds-sr"> · {p.name}</span></Link></div>
+      {dept && <details className="wr-department-bps"><summary>{W.departmentPractices} · {practices.length}</summary><ul>{practices.map((bp) => <li key={bp.id}><Link to={definitionPath(p.id, dept.id, bp.id)}>{bp.id} · {bp.name}</Link><small>{PARTS.filter((k) => activities.some((a) => bp.activityIds.includes(a.id) && ids(a, k).some((id) => roles.has(id)))).map((k) => `${k} ${W.role[k]}`).join(' · ')}</small></li>)}</ul></details>}
+      <div className="wr-process__foot"><span>{W.counts(practices.length, activities.length)}</span><Link to={definitionPath(p.id, dept?.id)}>{W.open}<span className="ds-sr"> · {p.name}</span></Link></div>
     </article>)}</div>
   </div>;
 }
@@ -83,6 +85,9 @@ function TraceTable({ p, rows, title, names, firstColumn = W.output }: { p: Work
 }
 
 export function ProcessReference({ doc, process: p }: { doc: WorkflowDoc; process: WorkflowProcess }) {
+  const [sp] = useSearchParams();
+  const dept = doc.departments.find((d) => d.id === sp.get('dept'));
+  const deptRoles = new Set(dept?.roles ?? []);
   const practices = p.basePractices ?? [];
   const roleName = (id: string) => doc.roles.find((r) => r.id === id)?.name ?? id;
   const allProducts = doc.processes.flatMap((q) => q.workProducts.map((w) => ({ ...w, process: q })));
@@ -92,21 +97,23 @@ export function ProcessReference({ doc, process: p }: { doc: WorkflowDoc; proces
   const source = (key: string) => doc.processes.filter((q) => q.id !== p.id && q.activities.some((a) => a.outputs.includes(key)));
   const consumers = (key: string) => doc.processes.filter((q) => q.id !== p.id && q.activities.some((a) => a.inputs.includes(key)));
   const related = doc.processes.filter((q) => q.id !== p.id && (inputs.some((k) => q.activities.some((a) => a.outputs.includes(k))) || [...outputs].some((k) => q.activities.some((a) => a.inputs.includes(k)))));
-  const processLink = (q: WorkflowProcess) => <Link key={q.id} to={`/procedures/${q.id}?docview=reference`}>{q.id} · {q.name}</Link>;
+  const processLink = (q: WorkflowProcess) => <Link key={q.id} to={definitionPath(q.id, dept?.id)}>{q.id} · {q.name}</Link>;
   return <article className="wr-sheet" data-process-sheet={p.id}>
     <header className="wr-sheet__identity"><span className="ds-eyebrow">{p.id} · {p.en}</span><p>{W.draft} · v{doc.referenceModel?.version}</p><p className="ds-field__hint">{W.boundary}</p></header>
+    {dept && <p className="wr-department-context"><b>{dept.name}</b> · {W.departmentContext}</p>}
     <section aria-labelledby="wr-purpose"><h2 id="wr-purpose">{W.purpose}</h2><p className="wr-purpose">{p.purpose}</p></section>
     <section aria-labelledby="wr-outcomes"><h2 id="wr-outcomes">{W.outcomes}</h2><ol className="wr-outcomes">{p.outcomes.map((o) => <li key={o.id}><b>{o.id}</b><span>{o.text}</span></li>)}</ol></section>
     <div className="wr-criteria">{[[W.entry, p.entry], [W.exit, p.exit]].map(([title, items]) => <section key={title as string}><h3>{title}</h3><ul>{(items as string[]).map((x) => <li key={x}>{x}</li>)}</ul></section>)}</div>
     <section aria-labelledby="wr-practices"><h2 id="wr-practices">{W.practices}</h2><p className="ds-field__hint">{W.practiceHint}</p>
       <div className="wr-practices">{practices.map((bp) => {
         const activities = p.activities.filter((a) => bp.activityIds.includes(a.id));
-        return <details className="wr-practice" id={bp.id} key={bp.id}>
-          <summary><span>{bp.id}</span><strong>{bp.name}</strong><small>{bp.outcomes.join(' · ')}</small></summary>
+        const departmentRelevant = !!dept && activities.some((a) => participates(a, deptRoles));
+        return <details className="wr-practice" id={bp.id} key={bp.id} data-department-relevant={departmentRelevant || undefined}>
+          <summary><span>{bp.id}</span><strong>{bp.name}</strong><small>{departmentRelevant && `${W.departmentMark} · `}{bp.outcomes.join(' · ')}</small></summary>
           <p>{bp.definition}</p>
           {bp.notes.map((note, n) => <p className="wr-note" key={n}><b>{W.note(n + 1)}</b> {note}</p>)}
           <p><b>{W.contributes}</b> {bp.outcomes.map((id) => `${id} ${p.outcomes.find((o) => o.id === id)?.text ?? ''}`).join(' · ')}</p>
-          <h4>{W.activities}</h4><ul>{activities.map((a) => <li key={a.id}><Link to={`/procedures/${p.id}?a=${a.id}`}>{a.id} · {a.name}</Link><div className="wr-raci">{PARTS.filter((k) => ids(a, k).length).map((k) => <span key={k}><b>{k} {W.role[k]}</b> {ids(a, k).map(roleName).join(', ')}</span>)}</div></li>)}</ul>
+          <h4>{W.activities}</h4><ul>{activities.map((a) => <li key={a.id}><Link to={`/procedures/${p.id}?a=${a.id}${dept ? `&dept=${encodeURIComponent(dept.id)}` : ''}`}>{a.id} · {a.name}</Link><div className="wr-raci">{PARTS.filter((k) => ids(a, k).length).map((k) => <span key={k}><b>{k} {W.role[k]}</b> {ids(a, k).map(roleName).join(', ')}</span>)}</div></li>)}</ul>
           <div className="wr-bp-io"><div><h4>{W.inputs}</h4>{[...new Set(activities.flatMap((a) => a.inputs))].map((id) => <WorkProductButton key={id} doc={doc} productKey={id} />)}</div><div><h4>{W.outputs}</h4>{[...new Set(activities.flatMap((a) => a.outputs))].map((id) => <WorkProductButton key={id} doc={doc} productKey={id} />)}</div></div>
         </details>;
       })}</div>

@@ -9,7 +9,7 @@ afterEach(cleanup);
 
 function Location() {
   const l = useLocation();
-  return <output aria-label="시험 경로">{l.pathname}{l.search}</output>;
+  return <output aria-label="시험 경로">{l.pathname}{l.search}{l.hash}</output>;
 }
 function mount(element: React.ReactNode, path = '/procedures?view=reference') {
   return render(<MemoryRouter initialEntries={[path]}><Routes><Route path="*" element={<>{element}<Location /></>} /></Routes></MemoryRouter>);
@@ -40,6 +40,19 @@ describe('업무 레퍼런스 모델의 조회와 실제 처리 경계', () => {
     expect(screen.getByText('SW 개발비 산정 열람자')).toBeTruthy();
     expect(screen.queryByRole('checkbox')).toBeNull();
     expect(localStorage.getItem('fp.state.v2')).toBeNull();
+  });
+
+  it('부서의 BP별 책임을 펼쳐 원래 부서 맥락과 BP 위치를 가진 정의 링크로 이동한다', () => {
+    mount(<ReferenceModel doc={WORKFLOWS} />);
+    const d = WORKFLOWS.departments.find((x) => x.roles.includes('R-SYS'))!;
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: d.id } });
+    const card = document.querySelector('[data-process-reference="FPW.16"]') as HTMLElement;
+    fireEvent.click(card.querySelector('.wr-department-bps summary')!);
+    const link = within(card).getByRole('link', { name: 'FPW.16.BP1 · 계정 상태 변경' });
+    expect(link.closest('li')?.textContent).toContain('R 수행');
+    expect(link.closest('li')?.textContent).toContain('A 책임');
+    fireEvent.click(link);
+    expect(screen.getByLabelText('시험 경로').textContent).toBe(`/procedures/FPW.16?docview=reference&dept=${d.id}#FPW.16.BP1`);
   });
 
   it('업무 정의를 펼쳐 연결 활동으로 이동하면 기존 활동 ID를 정확히 보존한다', () => {

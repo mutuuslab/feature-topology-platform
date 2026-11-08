@@ -49,6 +49,12 @@
 .wr-table td { text-align: center; }
 .wr-view { display: flex; flex-wrap: wrap; gap: var(--sp-3); padding-block: var(--sp-2); border-block-end: 1px solid var(--line); margin-block-end: var(--sp-4); }
 .wr-view a[aria-current='page'] { font-weight: 700; color: var(--ink); border-block-end: 2px solid var(--accent); }
+.wr-department-bps { margin-block: var(--sp-3); font-size: var(--fs-sm); }
+.wr-department-bps summary { cursor: pointer; color: var(--accent); }
+.wr-department-bps li { margin-block: var(--sp-2); }
+.wr-department-bps small { display: block; color: var(--muted); }
+.wr-department-context { padding: var(--sp-3); background: var(--accent-soft); }
+.wr-practice[data-department-relevant] { border-inline-start: 2px solid var(--accent); padding-inline-start: var(--sp-3); }
 @media (max-width: 720px) {
   .wr-filters, .wr-catalog, .wr-criteria, .wr-interfaces, .wr-bp-io { grid-template-columns: minmax(0, 1fr); }
   .wr-process, .wr-process:nth-child(odd), .wr-process:nth-child(even) { border-inline-end: 0; padding-inline: 0; }

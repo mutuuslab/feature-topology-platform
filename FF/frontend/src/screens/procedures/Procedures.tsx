@@ -257,6 +257,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
         codes={p.ref}
         title={p.name}
         message={
+          reference ? { tone: 'neutral', value: p.basePractices?.length ?? 0, text: W.practiceKey, action: back } :
           // ?role= 담당자를 강조해 왔으면 핵심 메시지도 그 담당자 기준(내 역할 문장이 강조와 어긋나지 않게)
           focus
             ? nFocus
@@ -268,7 +269,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
         }
       />
       <nav className="wr-view" aria-label={W.tab}>
-        <Link to={{ search: '?docview=reference' }} aria-current={reference ? 'page' : undefined}>{W.definition}</Link>
+        <Link to={{ search: `?docview=reference${sp.get('dept') ? `&dept=${encodeURIComponent(sp.get('dept')!)}` : ''}`, hash: sel ? `#${p.basePractices?.find((bp) => bp.activityIds.includes(sel.id))?.id ?? ''}` : '' }} aria-current={reference ? 'page' : undefined}>{W.definition}</Link>
         <Link to={{ search: focus ? `?role=${focus}` : '' }} aria-current={!reference ? 'page' : undefined}>{W.execution}</Link>
         <Link to="/procedures?view=reference">{W.back}</Link>
       </nav>

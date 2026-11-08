@@ -8,6 +8,7 @@ import { AppProvider } from '../store';
 import { __resetProcedureStore } from '../data/procedureProgress';
 import { ProceduresHub, ProcessDetail } from '../screens/procedures/Procedures';
 import ScreenProcedure from '../shell/ScreenProcedure';
+import { WORKFLOWS } from '../../../contracts/src/generated/workflows';
 
 beforeEach(() => {
   localStorage.clear();
@@ -69,6 +70,16 @@ describe('업무 절차 허브', () => {
 });
 
 describe('절차 상세', () => {
+  it('선택된 기존 활동에서 업무 정의로 돌아가면 같은 BP와 조회 부서가 보존된다', async () => {
+    const d = WORKFLOWS.departments.find((x) => x.roles.includes('R-CE'))!;
+    mount(`/procedures/FPW.15?a=FPW.15-A01&dept=${d.id}`, 'viewer');
+    const link = await screen.findByRole('link', { name: '업무 정의 보기' });
+    expect(link.getAttribute('href')).toBe(`/procedures/FPW.15?docview=reference&dept=${d.id}#FPW.15.BP1`);
+    fireEvent.click(link);
+    await waitFor(() => expect(document.querySelector('[data-process-sheet="FPW.15"]')).toBeTruthy());
+    expect(document.getElementById('FPW.15.BP1')?.getAttribute('data-department-relevant')).toBe('true');
+    expect(screen.getByRole('heading', { name: '목적 · Purpose' })).toBeTruthy();
+  });
   it('흐름도의 활동을 누르면 단계와 완료 기준이 보이고 주소(?a=)에 남는다', async () => {
     mount('/procedures/FPW.7', 'author');
     const svg = await screen.findByRole('group', { name: '출시·활성화·단계적 확대 흐름도' });

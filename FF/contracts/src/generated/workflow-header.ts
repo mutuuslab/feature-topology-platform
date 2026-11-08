@@ -1076,6 +1076,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/verify/evidence",
      "/config/compat",
      "/deployments",
+     "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
      "/verify/compliance",
@@ -2335,6 +2336,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/deployments",
+     "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
      "/integration/code-repositories",
@@ -3439,6 +3441,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
+     "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
      "/flag-code/reconcile",
@@ -3985,6 +3988,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/arch/components",
      "/deployments",
      "/master/artifacts",
+     "/deployments/software",
      "/audit/oversight",
      "/fleet/live",
      "/admin/iam",
@@ -5286,6 +5290,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/validations/virtual",
      "/verify/safety-case",
      "/deployments",
+     "/deployments/software",
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
@@ -5921,6 +5926,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/fleet/vehicles"
     ],
     "reference": [
+     "/deployments/software",
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
@@ -6129,6 +6135,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
     "reference": [
      "/deployments",
      "/master/artifacts",
+     "/deployments/software",
      "/admin/settings",
      "/events",
      "/notifications/rules"

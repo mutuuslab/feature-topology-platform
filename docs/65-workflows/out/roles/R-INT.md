@@ -93,8 +93,8 @@ last_updated: 2026-11-08
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
 - 입력: WP-RELEASE-BASELINE → 출력: WP-SIGNED-PACKAGE
-- 플랫폼: `registerChangeRecord`, `/deployments`, `/master/artifacts`
-1. 확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다
+- 플랫폼: `registerChangeRecord`, `uploadSoftware`, `createSoftwarePackage`, `/deployments`, `/master/artifacts`, `/deployments/software`
+1. 확정 Baseline의 정책·설정 Artifact를 묶고, SW가 포함되면 Feature Version의 실제 SW 구성품에 원문을 업로드해 길이·SHA-256을 대조한다
 2. PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다
 3. SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다
 - [ ] 패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다

@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9546/admin/iam",
+  "iam_url": "http://127.0.0.1:9580/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-08T19:38:41.191Z",
+  "fetched_at": "2026-11-08T21:08:55.443Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\release-20261108-p10\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-08T19:35:53.603Z",
+  "contracts_dist_mtime": "2026-11-08T20:46:54.898Z",
   "ff_git": {
-   "head": "ef5514288d1338e8beb0715d6ad6f583ba5409ce",
-   "dirty_files": 25
+   "head": "f1919767167b91080bc6f352056a9c994c6c5dba",
+   "dirty_files": 1
   },
-  "iam_sha256": "e00380eb934dd993f0149bc05f770960089d4c99561b4b42f2d6698efe73ee43"
+  "iam_sha256": "fb51a205f66e6eb9e377739fe64b1a8b7f8a0a57d52336d619f38afe13bc64db"
  },
  "roles": [
   {
@@ -138,6 +138,51 @@
   }
  ],
  "permissions": [
+  {
+   "name": "uploadSoftware",
+   "method": "POST",
+   "path": "/api/software/uploads",
+   "summary": "SW 실제 원문 스트림 업로드",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "createSoftwarePackage",
+   "method": "POST",
+   "path": "/api/software/packages",
+   "summary": "Feature 버전·SW 구성품·실제 SHA-256 연결",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "reviewSoftwarePackage",
+   "method": "POST",
+   "path": "/api/software/packages/:id/review",
+   "summary": "등록자와 다른 출시 담당자의 SW 승인·회수",
+   "component": "D04-01",
+   "roles": [
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "checkSoftwareDownload",
+   "method": "POST",
+   "path": "/api/software/packages/:id/check",
+   "summary": "실제 배포 Flag·차량·권한·지원·해시 판정",
+   "component": "D04-01",
+   "roles": [
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "OPERATOR",
+    "AUDITOR"
+   ]
+  },
   {
    "name": "readNotification",
    "method": "POST",
@@ -272,6 +317,99 @@
    "summary": "시스템 관리자의 업무 조직 역할 배정·철회 — IAM 권한 변경 아님",
    "component": "D04-04",
    "roles": [
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "uploadWorkflowFile",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/activities/:activityId/uploads",
+   "summary": "실제 바이너리 바이트 업로드 — JSON 본문 아님",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "offerCrossCaseWorkflow",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/transfers",
+   "summary": "검토된 산출물을 다른 업무 건으로 인계",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "receiveCrossCaseWorkflow",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/transfers/:handoffId/receive",
+   "summary": "수신 담당자의 양쪽 버전 인수·반송",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
     "SYSTEM_ADMIN"
    ]
   },
@@ -3494,6 +3632,11 @@
   {
    "path": "/flag-retirements",
    "title": "Flag Retirement",
+   "group": "release"
+  },
+  {
+   "path": "/deployments/software",
+   "title": "SW 패키지 및 다운로드",
    "group": "release"
   },
   {

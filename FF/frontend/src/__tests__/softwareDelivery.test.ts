@@ -1,7 +1,7 @@
 import { afterEach,beforeEach,describe,expect,it,vi } from 'vitest';
 import { createHash,generateKeyPairSync,sign,webcrypto } from 'node:crypto';
 import { canonicalJson } from '@ff/contracts';
-import { downloadSoftware,verifySoftwareManifest,type SoftwareVerdict } from '../api/software';
+import { downloadSoftware,softwareTraceTone,verifySoftwareManifest,type SoftwareVerdict } from '../api/software';
 
 const bytes=new TextEncoder().encode('export const software = "real bytes";\n');
 const sha=createHash('sha256').update(bytes).digest('hex');
@@ -15,6 +15,7 @@ function verdict():SoftwareVerdict {
 beforeEach(()=>{vi.stubGlobal('crypto',webcrypto);vi.stubEnv('VITE_DATA_MODE','live');});
 afterEach(()=>{vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe('SW client signature and original bytes',()=>{
+ it.each([['KILL','FALSE','pass'],['KILL','TRUE','blocked'],['ENTITLEMENT','FALSE','blocked'],['DECIDE','UNKNOWN','unknown']])('shows %s=%s as %s', (step,result,tone)=>{expect(softwareTraceTone({step,result})).toBe(tone);});
  it('independently verifies the signed manifest with Ed25519',async()=>{expect(await verifySoftwareManifest(verdict())).toBe(true);});
  it('rejects altered visible metadata, signature, expired key and wrong key purpose',async()=>{
    const changed=verdict();changed.package.sha256='0'.repeat(64);expect(await verifySoftwareManifest(changed)).toBe(false);

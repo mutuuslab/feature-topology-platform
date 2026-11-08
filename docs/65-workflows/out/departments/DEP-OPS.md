@@ -40,7 +40,7 @@ last_updated: 2026-11-08
 |---|---|---|---|---|---|
 | FPW.6-A03 SUMS 기록·형식승인 확인 | FPW.6 서명 배포 | I (운영 조직) | 출시 Baseline `WP-RELEASE-BASELINE`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` → SUMS 업데이트 기록 `WP-SUMS-RECORD` | 플랫폼 밖 | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | I (운영 조직) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
-| FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | C (운영 조직) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/integration/connectors`, `/ops/ota-installs` 외 1 | 1차 |
+| FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | C (운영 조직) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/deployments/software`, `/integration/connectors` 외 2 | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | R·A (운영 조직) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | C (운영 조직) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A07 형식승인·사용자 고지 확인 | FPW.7 출시·활성화·단계적 확대 | I (운영 조직) | 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` | 플랫폼 밖 | 1차 |
@@ -111,4 +111,4 @@ last_updated: 2026-11-08
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/activation/decide`, `/policies/:id`, `/fleet/live`, `/features/:id/:ver`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/deployments`, `/audit`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/admin/settings`, `/events`, `/notifications/rules`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`, `/data/workbench`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`
-- 참조 화면(협의·통보): `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/experiments`, `/admin/approval`, `/products/:id/:ver`, `/ops/incident-reports`, `/audit/oversight`, `/quality/feedback`, `/flag-retirements`, `/admin/security`, `/admin/data`, `/verify/compliance`, `/trace/ads`, `/admin/iam`, `/biz/trials`
+- 참조 화면(협의·통보): `/deployments/software`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/experiments`, `/admin/approval`, `/products/:id/:ver`, `/ops/incident-reports`, `/audit/oversight`, `/quality/feedback`, `/flag-retirements`, `/admin/security`, `/admin/data`, `/verify/compliance`, `/trace/ads`, `/admin/iam`, `/biz/trials`

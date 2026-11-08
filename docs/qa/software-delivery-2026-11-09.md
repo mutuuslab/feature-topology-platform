@@ -18,6 +18,17 @@
 - `software-delivery-client.log`: 실제 Ed25519 검증/metadata위조·키만료·용도오류·서명손상/실제Blob SHA/원문손상/미승인시네트워크요청0 **5 PASS**.
 - FE·BE TypeScript 빌드 PASS. 마이그레이션 잠금92(신규441), 기존91 SQL 해시 불변. OpenAPI550경로·raw binary request/response와필수query명시.
 
+## 실제 production 브라우저 수락
+
+고정 source `2aa42b0b8a3019f8fc545d170d3aa219f460264c`의 web9581/API9580에서 원문 생성·업로드·등록 → 실제 다른 사람(`usr-integrator`→`usr-coordinator`)의 승인 → `KMH-NX4-0001`/`care_00022_signal`의 native `POLICY_MATCH` → 실제 파일 다운로드/Ed25519·길이·SHA 확인을 실행했다. 이 API는 v0.81+native demo activity이며 이전 2배 Showcase E2E와 다른 격리 데이터다.
+
+- 내려받은 실행 가능한 시험 JS **394바이트**, SHA-256 `9c99a0c2bc405a42f65ba8b15719a0173bbb96c251417988332e3ec5c1833a55`.
+- 직접 생성한 해당 파일만 Node에서 실행하여 `selfTest:true`/`installationPerformed:false` 확인. 실제 ECU SW 실행·실차 인증 근거가 아님.
+- 1366/390 가로 넘침0·JS0·HTTP오류0. 생성 manifest signature와 화면 package의 원문 속성을 클라이언트에서 독립 검증했다. 실제 PNG를 직접 검토했다.
+- `out/software-browser-20261109/results.json`, `browser-r2.log`, `actual-downloaded-demo.mjs`, `verified-{1366,390}.png`. `public-demo-allowlist.json`의 단일 ID만 공개 시험 SW 캡처 허용 대상이다.
+
+상세 후속에는 판정 trace·중단 원인·키 검증 사유·서명 manifest/SBOM 저장과 모바일 metadata 구획을 추가한다. 기존 토큰 lint raw color0. 별도 실제 API9580에서 IAM24역할/217권한/SoD16/109화면/13계정·dist diff0을 추출했다. FPW.6-A04(원문 등록)와 FPW.6-A06(출시 담당자의 독립 승인)에 권한을 나눠 연결하고 모델0오류/0경고·생성59문서·pytest7 PASS. R-INT에게 승인 권한을 추가하지 않았다.
+
 ## 남은 수락
 
-동일 source production 브라우저의 실제 업로드→역할전환/분리검토→실파일다운로드, 390/1366 레이아웃·297KiB 예산, 영어, 정적 browser Blob/공개 허용 시험SW capture와 pack, 업무절차 연계·최신 IAM 생성·전체 E2E는 후속 검증한다. 이 체크포인트를 최종 Publish 완료로 보고하지 않는다. 시험용 executable JavaScript는 실제 회사 SW/인증 ECU 이미지가 아니다.
+최신 상세 후속까지 같은 source의 production 재검증, 영어, 정적 browser Blob/공개 허용 시험SW capture와 pack의 RC 통합, 전체 E2E는 후속 검증한다. 이 체크포인트를 최종 Publish 완료로 보고하지 않는다. 시험용 executable JavaScript는 실제 회사 SW/인증 ECU 이미지가 아니다.

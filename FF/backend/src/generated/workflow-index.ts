@@ -1456,10 +1456,13 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/deployments",
-    "/master/artifacts"
+    "/master/artifacts",
+    "/deployments/software"
    ],
    "actions": [
-    "registerChangeRecord"
+    "registerChangeRecord",
+    "uploadSoftware",
+    "createSoftwarePackage"
    ],
    "anchor": null,
    "slaHours": null
@@ -1522,11 +1525,13 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/deployments",
+    "/deployments/software",
     "/integration/connectors",
     "/ops/ota-installs",
     "/deployments/campaigns/:id"
    ],
    "actions": [
+    "reviewSoftwarePackage",
     "deployPolicy",
     "syncUnleash"
    ],

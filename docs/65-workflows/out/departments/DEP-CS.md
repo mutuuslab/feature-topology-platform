@@ -43,7 +43,7 @@ last_updated: 2026-11-08
 | FPW.2-A05 G2 HARA 영향 판정 | FPW.2 HARA·변경 영향 판단 | C (CSM) | HARA·TARA 결과 `WP-HARA-TARA`, TARA 결과 `WP-TARA`, SOTIF 분석 `WP-SOTIF-ANALYSIS`, 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT`, Feature DB 기준 행 연결 `WP-REF-LINK` → G2 Decision Record `WP-G2-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4 안전 설계·정책 설계 | C (CSM) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | `/arch/components` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | C (CSM) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | C (CSM) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts` | 1차 |
+| FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | C (CSM) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts`, `/deployments/software` | 1차 |
 | FPW.6-A05 OTA Gate 판정 등록 | FPW.6 서명 배포 | C (CSM) | 서명 배포 패키지 `WP-SIGNED-PACKAGE`, SUMS 업데이트 기록 `WP-SUMS-RECORD` → OTA Gate 판정 기록 `WP-OTA-GATE` | `/features/:id/:ver` | 1차 |
 | FPW.8-A02 차단 필요성·범위 판단 | FPW.8 운영·긴급 차단·복원 | C (CSM) | 이상 징후 건 `WP-ANOMALY-CASE`, 안전 분류(네 축) `WP-SAFETY-PROFILE`, VEX 판정·대응 결정 `WP-VEX-DECISION` → 차단 판단서 `WP-KILL-PLAN` | `/ops/kill` | 1차 |
 | FPW.8-A04 긴급 차단 요청 | FPW.8 운영·긴급 차단·복원 | I (CSM) | 차단 판단서 `WP-KILL-PLAN`, 리콜·봉쇄 근거 `WP-RECALL-BASIS` → 긴급 차단 요청 `WP-KILL-REQ` | `/ops/kill` | 1차 |
@@ -87,4 +87,4 @@ last_updated: 2026-11-08
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/ops/kill`, `/admin/security`, `/admin/data`, `/verify/compliance`, `/trace/ads`
-- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/arch/components`, `/deployments`, `/master/artifacts`, `/audit/oversight`, `/fleet/live`, `/admin/iam`, `/admin/settings`, `/events`, `/notifications/rules`, `/data/workbench`, `/products`
+- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/arch/components`, `/deployments`, `/master/artifacts`, `/deployments/software`, `/audit/oversight`, `/fleet/live`, `/admin/iam`, `/admin/settings`, `/events`, `/notifications/rules`, `/data/workbench`, `/products`

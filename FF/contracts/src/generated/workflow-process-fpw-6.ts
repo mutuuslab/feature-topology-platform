@@ -224,7 +224,8 @@ export const PROCESS: WorkflowProcess = {
    "retained": false,
    "content": [
     "정책·설정 Artifact와 서명, 대상 해시",
-    "결합된 SBOM과 패키지 식별자"
+    "결합된 SBOM과 패키지 식별자",
+    "실제 SW 원문 길이·SHA-256·구성품과 등록자/독립 검토자"
    ]
   },
   {
@@ -465,7 +466,7 @@ export const PROCESS: WorkflowProcess = {
     "WP-SIGNED-PACKAGE"
    ],
    "steps": [
-    "확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다",
+    "확정 Baseline의 정책·설정 Artifact를 묶고, SW가 포함되면 Feature Version의 실제 SW 구성품에 원문을 업로드해 길이·SHA-256을 대조한다",
     "PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다",
     "SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다"
    ],
@@ -474,11 +475,14 @@ export const PROCESS: WorkflowProcess = {
    ],
    "platform": {
     "actions": [
-     "registerChangeRecord"
+     "registerChangeRecord",
+     "uploadSoftware",
+     "createSoftwarePackage"
     ],
     "screens": [
      "/deployments",
-     "/master/artifacts"
+     "/master/artifacts",
+     "/deployments/software"
     ],
     "gates": [],
     "anchor": null,
@@ -587,6 +591,7 @@ export const PROCESS: WorkflowProcess = {
     "WP-G6-DECISION"
    ],
    "steps": [
+    "SW 원문을 함께 전달하면 등록자와 다른 출시 담당자가 원문·구성품을 검토해 서명 매니페스트와 실제 파일 해시의 SBOM을 승인한다",
     "OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다",
     "Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다",
     "이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다"
@@ -596,11 +601,13 @@ export const PROCESS: WorkflowProcess = {
    ],
    "platform": {
     "actions": [
+     "reviewSoftwarePackage",
      "deployPolicy",
      "syncUnleash"
     ],
     "screens": [
      "/deployments",
+     "/deployments/software",
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id"

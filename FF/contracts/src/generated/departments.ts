@@ -66,6 +66,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/evidence",
      "/config/compat",
      "/deployments",
+     "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
      "/verify/compliance",
@@ -204,6 +205,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/deployments",
+     "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
      "/integration/code-repositories",
@@ -365,6 +367,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
+     "/deployments/software",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
      "/flag-code/reconcile",
@@ -425,6 +428,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/arch/components",
      "/deployments",
      "/master/artifacts",
+     "/deployments/software",
      "/audit/oversight",
      "/fleet/live",
      "/admin/iam",
@@ -569,6 +573,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations/virtual",
      "/verify/safety-case",
      "/deployments",
+     "/deployments/software",
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
@@ -664,6 +669,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/fleet/vehicles"
     ],
     "reference": [
+     "/deployments/software",
      "/integration/connectors",
      "/ops/ota-installs",
      "/deployments/campaigns/:id",
@@ -711,6 +717,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "reference": [
      "/deployments",
      "/master/artifacts",
+     "/deployments/software",
      "/admin/settings",
      "/events",
      "/notifications/rules"

@@ -60,9 +60,9 @@ flowchart LR
 | FPW.6-A01 | 출시 Baseline 확정 요청 | R Feature Owner · A Feature Owner · C Release Manager, 아키텍트 · I 기준정보 담당 | WP-G5-DECISION, WP-POLICY | WP-BASELINE-REQ | `requestBaseline`, `/baselines` | – |
 | FPW.6-A02 | 출시 Baseline 확정 승인 | R 기준정보 담당 · A 기준정보 담당 · C Release Manager · I Feature Owner, 법규 담당 | WP-BASELINE-REQ | WP-RELEASE-BASELINE | `decideBaseline`, `/baselines`, `/config/compat` | – |
 | FPW.6-A03 | SUMS 기록·형식승인 확인 | R 법규 담당 · A 법규 담당 · C Release Manager · I Feature Owner, 운영 조직 | WP-RELEASE-BASELINE, WP-HOMOLOGATION-IMPACT | WP-SUMS-RECORD | 플랫폼 밖 | FFG-LCY-008, FFG-GEN-006 |
-| FPW.6-A04 | 서명 패키지 작성·SBOM 결합 | R 통합 조직 · A Release Manager · C PKI 운영, CSM · I 품질 조직 | WP-RELEASE-BASELINE | WP-SIGNED-PACKAGE | `registerChangeRecord`, `/deployments`, `/master/artifacts` | – |
+| FPW.6-A04 | 서명 패키지 작성·SBOM 결합 | R 통합 조직 · A Release Manager · C PKI 운영, CSM · I 품질 조직 | WP-RELEASE-BASELINE | WP-SIGNED-PACKAGE | `registerChangeRecord`, `uploadSoftware`, `createSoftwarePackage`, `/deployments`, `/master/artifacts`, `/deployments/software` | – |
 | FPW.6-A05 | OTA Gate 판정 등록 | R 품질 조직 · A Release Manager · C 법규 담당, CSM · I 운영 조직 | WP-SIGNED-PACKAGE, WP-SUMS-RECORD | WP-OTA-GATE | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
-| FPW.6-A06 | G6 서명 배포 실행 | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id` | FFG-LCY-009 |
+| FPW.6-A06 | G6 서명 배포 실행 | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `reviewSoftwarePackage`, `deployPolicy`, `syncUnleash`, `/deployments`, `/deployments/software`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id` | FFG-LCY-009 |
 | FPW.6-A07 | 코드 저장소 연결 관리 | R Release Manager · A Release Manager · C 통합 조직 · I 아키텍트 |  | WP-REPO-CONNECTION | `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans` | – |
 
 ### 수행 절차와 완료 기준
@@ -92,7 +92,7 @@ flowchart LR
 - [ ] SUMS 기록에 RXSWIN·영향 평가·고지 내용·보존 기간이 있다
 
 #### FPW.6-A04 서명 패키지 작성·SBOM 결합
-1. 확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다
+1. 확정 Baseline의 정책·설정 Artifact를 묶고, SW가 포함되면 Feature Version의 실제 SW 구성품에 원문을 업로드해 길이·SHA-256을 대조한다
 2. PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다
 3. SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다
 
@@ -108,9 +108,10 @@ flowchart LR
 - [ ] 판정 근거에 서명 검증·SUMS 기록 ID가 있다
 
 #### FPW.6-A06 G6 서명 배포 실행
-1. OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다
-2. Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다
-3. 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
+1. SW 원문을 함께 전달하면 등록자와 다른 출시 담당자가 원문·구성품을 검토해 서명 매니페스트와 실제 파일 해시의 SBOM을 승인한다
+2. OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다
+3. Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다
+4. 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
 
 완료 기준:
 - [ ] 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
@@ -130,7 +131,7 @@ flowchart LR
 | WP-BASELINE-REQ | Baseline 확정 요청 | 산출 | 포함 Feature Version·정책 개정본·Artifact 목록; 요청자와 요청 사유 |
 | WP-RELEASE-BASELINE | 출시 Baseline | 산출 | 확정된 BOM 구성(Feature·SW·Variant)과 해시; 승인자(요청자와 다른 사람)·승인 시각 |
 | WP-SUMS-RECORD | SUMS 업데이트 기록 | 산출 | 대상 RXSWIN과 형식승인 영향 평가 결과; 사용자 고지 내용과 시장별 보존 기간 |
-| WP-SIGNED-PACKAGE | 서명 배포 패키지 | 산출 | 정책·설정 Artifact와 서명, 대상 해시; 결합된 SBOM과 패키지 식별자 |
+| WP-SIGNED-PACKAGE | 서명 배포 패키지 | 산출 | 정책·설정 Artifact와 서명, 대상 해시; 결합된 SBOM과 패키지 식별자; 실제 SW 원문 길이·SHA-256·구성품과 등록자/독립 검토자 |
 | WP-OTA-GATE | OTA Gate 판정 기록 | 산출 | R156 사전조건·대상·호환성 확인 결과; 판정자 서명과 시각 |
 | WP-G6-DECISION | G6 배포 기록 | 산출 | 서버 배포(평가 기준 전환) 시각과 게시본 ID; Unleash 동기화 결과(flag·전략·환경); Release Manager 판정과 근거 Evidence ID |
 | WP-REPO-CONNECTION | 코드 저장소 연결·변경 기록 | 산출 | 저장소·패키지·기본 브랜치와 스캔 설정; webhook·서명 검증의 상태와 실패 조치; 변경 사유·권한 있는 수행자·시각 |

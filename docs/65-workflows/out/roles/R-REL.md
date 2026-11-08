@@ -35,8 +35,8 @@ last_updated: 2026-11-08
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
 - 입력: WP-RELEASE-BASELINE → 출력: WP-SIGNED-PACKAGE
-- 플랫폼: `registerChangeRecord`, `/deployments`, `/master/artifacts`
-1. 확정 Baseline의 정책·설정 Artifact를 묶어 대상 해시를 계산한다
+- 플랫폼: `registerChangeRecord`, `uploadSoftware`, `createSoftwarePackage`, `/deployments`, `/master/artifacts`, `/deployments/software`
+1. 확정 Baseline의 정책·설정 Artifact를 묶고, SW가 포함되면 Feature Version의 실제 SW 구성품에 원문을 업로드해 길이·SHA-256을 대조한다
 2. PKI 운영이 관리하는 배포 용도 서명 키로 서명을 요청하고, 다른 용도의 키는 쓰지 않는다
 3. SBOM을 결합하고 CI/CD 변경 기록을 플랫폼에 등록한다
 - [ ] 패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다
@@ -55,10 +55,11 @@ last_updated: 2026-11-08
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
 - 입력: WP-OTA-GATE, WP-RELEASE-BASELINE → 출력: WP-G6-DECISION
-- 플랫폼: `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id`
-1. OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다
-2. Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다
-3. 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
+- 플랫폼: `reviewSoftwarePackage`, `deployPolicy`, `syncUnleash`, `/deployments`, `/deployments/software`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id`
+1. SW 원문을 함께 전달하면 등록자와 다른 출시 담당자가 원문·구성품을 검토해 서명 매니페스트와 실제 파일 해시의 SBOM을 승인한다
+2. OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다
+3. Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다
+4. 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
 - [ ] 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
 
 ### FPW.6-A07 코드 저장소 연결 관리 — 수행·책임

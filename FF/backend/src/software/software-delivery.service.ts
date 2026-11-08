@@ -86,8 +86,9 @@ export class SoftwareDeliveryService {
   async check(id:string,vin:string,flagKey:string){
     const item=this.get(id),manifest=this.manifest(item);
     let blocked:string|null=null,decision:Awaited<ReturnType<ActivationService['decide']>>|null=null;
+    const signatureCheck=item.signature?this.pki.verify(manifest,item.signature,this.pki.keys(),'policy'):{valid:false,reason:'UNSIGNED'};
     if(item.status!=='APPROVED')blocked=item.status==='REVOKED'?'PACKAGE_REVOKED':'PACKAGE_NOT_APPROVED';
-    else if(!item.signature||!this.pki.verify(manifest,item.signature,this.pki.keys(),'policy').valid)blocked='MANIFEST_SIGNATURE_INVALID';
+    else if(!signatureCheck.valid)blocked='MANIFEST_SIGNATURE_INVALID';
     const deployed=this.policies.deployed(flagKey);
     if(!blocked&&(!deployed||deployed.featureId!==item.featureId||deployed.featureVersion!==item.featureVersion))blocked='DEPLOYED_FEATURE_MISMATCH';
     if(!blocked){decision=await this.activation.decide(vin,flagKey);if(!decision.result.value||decision.result.reason!=='POLICY_MATCH')blocked=decision.result.reason;}
@@ -98,7 +99,7 @@ export class SoftwareDeliveryService {
       else if(!current||current.policyId!==decision!.policy.policyId||current.revision!==decision!.policy.revision||current.contentHash!==decision!.policy.contentHash)blocked='POLICY_CHANGED';
       else this.file(item);
     }
-    return {allowed:blocked===null,blocked,vin,flagKey,package:item,manifest,signature:item.signature,publicKey:item.signature?this.pki.publicKey(item.signature.keyId):null,
+    return {allowed:blocked===null,blocked,vin,flagKey,package:item,manifest,signature:item.signature,signatureCheck,checkedAt:this.clock.iso(),publicKey:item.signature?this.pki.publicKey(item.signature.keyId):null,
       policy:decision?{policyId:decision.policy.policyId,revision:decision.policy.revision,featureId:decision.policy.featureId,featureVersion:decision.policy.featureVersion}:null,
       evaluation:decision?.result??null,boundary:'FILE_DOWNLOAD_ONLY'};
   }

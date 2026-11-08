@@ -1798,7 +1798,8 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      "name": "서명 배포 패키지",
      "content": [
       "정책·설정 Artifact와 서명, 대상 해시",
-      "결합된 SBOM과 패키지 식별자"
+      "결합된 SBOM과 패키지 식별자",
+      "실제 SW 원문 길이·SHA-256·구성품과 등록자/독립 검토자"
      ]
     },
     {
@@ -1965,10 +1966,13 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ],
      "screens": [
       "/deployments",
-      "/master/artifacts"
+      "/master/artifacts",
+      "/deployments/software"
      ],
      "actions": [
-      "registerChangeRecord"
+      "registerChangeRecord",
+      "uploadSoftware",
+      "createSoftwarePackage"
      ],
      "checks": [
       "패키지 서명이 배포 용도 키로 검증되고 SBOM이 결합되었다"
@@ -2041,11 +2045,13 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ],
      "screens": [
       "/deployments",
+      "/deployments/software",
       "/integration/connectors",
       "/ops/ota-installs",
       "/deployments/campaigns/:id"
      ],
      "actions": [
+      "reviewSoftwarePackage",
       "deployPolicy",
       "syncUnleash"
      ],

@@ -34,7 +34,7 @@ last_updated: 2026-11-08
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
-| FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | C (PKI 운영) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts` | 1차 |
+| FPW.6-A04 서명 패키지 작성·SBOM 결합 | FPW.6 서명 배포 | C (PKI 운영) | 출시 Baseline `WP-RELEASE-BASELINE` → 서명 배포 패키지 `WP-SIGNED-PACKAGE` | `/deployments`, `/master/artifacts`, `/deployments/software` | 1차 |
 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11 보안·키·취약점 관리 | R (PKI 운영) | HARA·TARA 결과 `WP-HARA-TARA` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A02 키 교체 플랫폼 기록 | FPW.11 보안·키·취약점 관리 | C (PKI 운영) | 서명 키 대장 `WP-KEY-REGISTER` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A03 키 유출 대응·epoch 상향 | FPW.11 보안·키·취약점 관리 | C (PKI 운영) | 서명 키 대장 `WP-KEY-REGISTER` → 키 사고 대응 기록 `WP-KEY-INCIDENT` | `/admin/security` | 2차 초안 |
@@ -52,4 +52,4 @@ last_updated: 2026-11-08
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/admin/security`, `/admin/iam`, `/verify/compliance`
-- 참조 화면(협의·통보): `/deployments`, `/master/artifacts`, `/admin/settings`, `/events`, `/notifications/rules`
+- 참조 화면(협의·통보): `/deployments`, `/master/artifacts`, `/deployments/software`, `/admin/settings`, `/events`, `/notifications/rules`

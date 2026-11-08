@@ -19,6 +19,11 @@ export const softwareDelivery=/* @__PURE__ */ localizedCopy('software-delivery.s
   apiHint:'차량은 사람 역할 헤더 대신 차량 키로 서명한 /vehicle/v1/:vin/software/:id/download 요청을 사용합니다.',
   provenance:{LOCAL_SIMULATION:'이 브라우저에서 생성한 시연 기록',CAPTURED_EXECUTABLE_DEMO:'공개가 허용된 시험용 SW 원문 사본'},
   staticBoundary:'정적 시연의 검토·다운로드는 실제 운영 시스템의 승인·설치 이력을 변경하지 않습니다.',
+  noSw:'이 Feature 버전에 연결된 SW 구성품이 없습니다. Feature 구성정보를 먼저 확인하세요.',featureDetail:'Feature 구성정보 확인',
+  checkedAt:'조건 확인 시각',evaluationTrace:'차량 Flag 판정 흐름',manifestDownload:'서명 매니페스트 및 SBOM 저장',
+  traceStates:{pass:'조건 충족',blocked:'조건 미충족',unknown:'확인 필요'},
+  traceSteps:{DEPLOYED:'배포 정책',KILL:'긴급 차단',APPLICABILITY:'차량 적용 범위',SUPPORT:'차량 SW 지원',ENTITLEMENT:'사용 권리',TARGETING:'타기팅',COHORT:'단계적 적용 대상',DECIDE:'최종 판정'},
+  signatureReasons:{UNSIGNED:'서명 전',SIGNATURE_VALID:'서명 유효',UNKNOWN_KEY:'신뢰 키 없음',WRONG_KEY_PURPOSE:'서명 키 용도 불일치',KEY_EXPIRED:'서명 키 만료',PAYLOAD_TAMPERED:'매니페스트 해시 불일치',BAD_SIGNATURE:'서명 검증 실패'},
   states:{DRAFT:'검토 전',APPROVED:'승인',REVOKED:'회수'},sources:{UPLOADED_SOFTWARE:'사용자 업로드 SW',EXECUTABLE_DEMO:'실행 가능한 시험용 SW'},
-  causes:{PACKAGE_REVOKED:'패키지 승인이 회수되었습니다.',PACKAGE_NOT_APPROVED:'별도 담당자의 SW 검토 승인이 필요합니다.',MANIFEST_SIGNATURE_INVALID:'매니페스트 서명이 유효하지 않습니다.',DEPLOYED_FEATURE_MISMATCH:'배포 Flag의 Feature 버전과 SW 패키지 버전이 다릅니다.',SOFTWARE_COMPONENT_REMOVED:'현재 Feature의 SW 구성품 연결이 변경되었습니다.',PACKAGE_CHANGED:'조건 조회 중 패키지가 변경되었습니다.',POLICY_CHANGED:'조건 조회 중 배포 정책이 변경되었습니다.'},
+  causes:{PACKAGE_REVOKED:'패키지 승인이 회수되었습니다.',PACKAGE_NOT_APPROVED:'별도 담당자의 SW 검토 승인이 필요합니다.',MANIFEST_SIGNATURE_INVALID:'매니페스트 서명이 유효하지 않습니다.',DEPLOYED_FEATURE_MISMATCH:'배포 Flag의 Feature 버전과 SW 패키지 버전이 다릅니다.',SOFTWARE_COMPONENT_REMOVED:'현재 Feature의 SW 구성품 연결이 변경되었습니다.',PACKAGE_CHANGED:'조건 조회 중 패키지가 변경되었습니다.',POLICY_CHANGED:'조건 조회 중 배포 정책이 변경되었습니다.',KILL_SWITCH:'이 차량·Feature에 긴급 차단이 적용되어 있습니다.',NOT_DEPLOYED:'현재 사용할 수 있는 배포 정책이 없습니다.',NOT_APPLICABLE:'차량의 국가·차종·트림이 적용 범위와 다릅니다.',NOT_SUPPORTED:'차량 SW 또는 구성품 지원 조건을 충족하지 못했습니다.',NO_ENTITLEMENT:'유효한 사용 권리가 없거나 기간이 만료되었습니다.',TARGETING_MISS:'차량이 정책 타기팅 조건을 충족하지 못했습니다.',COHORT_MISS:'아직 이 차량의 단계적 적용 순서가 아닙니다.',CONTEXT_UNKNOWN:'판정에 필요한 차량 문맥을 확인할 수 없습니다.',ERROR_SAFE_DEFAULT:'평가 원천 또는 처리 오류로 안전 기본값을 사용했습니다.'},
 });

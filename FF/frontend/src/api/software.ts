@@ -11,7 +11,13 @@ export interface SoftwarePackageView {
 export interface SoftwareVerdict {
   allowed:boolean;blocked:string|null;vin:string;flagKey:string;package:SoftwarePackageView;manifest:unknown;
   signature:{keyId:string;payloadHash:string;signature:string}|null;publicKey:{pem:string;purpose:string;notAfter:string}|null;
-  policy:{policyId:string;revision:number}|null;evaluation:{value:boolean;reason:string}|null;
+  policy:{policyId:string;revision:number}|null;evaluation:{value:boolean;reason:string;trace?:{step:string;result:string;detail:string}[]}|null;
+  checkedAt?:string;signatureCheck?:{valid:boolean;reason:string};
+}
+/** KILL=false means no emergency block. Unknown evidence never receives a passing color. */
+export function softwareTraceTone(step:{step:string;result:string}):'pass'|'blocked'|'unknown'{
+  if(!['TRUE','FALSE'].includes(step.result))return 'unknown';
+  return (step.step==='KILL'?step.result==='FALSE':step.result==='TRUE')?'pass':'blocked';
 }
 async function binary(name:string,role:string,params:Record<string,string>,query:Record<string,string>,file?:File){
   const route=ROUTES.find(r=>r.name===name)!;

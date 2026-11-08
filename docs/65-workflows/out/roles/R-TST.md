@@ -3,7 +3,7 @@ id: WF-ROLE-TST
 type: workflow
 title: "시험 조직 업무 절차서 / Test Organization Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -16,7 +16,8 @@ traces:
     - WF-FPW-8
     - WF-FPW-9
     - WF-FPW-10
-last_updated: 2026-11-05
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -109,6 +110,7 @@ last_updated: 2026-11-05
 - FPW.9-A04 코드·설정·시험 삭제 기록 (협의)
 - FPW.9-A06 Flag 제거 PR 병합 (협의)
 - FPW.10-A07 EOL 프로비저닝 검증 (협의)
+- FPW.18-A02 운영·품질 데이터 분석 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

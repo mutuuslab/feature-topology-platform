@@ -15,6 +15,7 @@ const GENERATED_INDEX = join(FF, 'backend', 'src', 'generated', 'workflow-index.
 const GENERATED_MAP = join(FF, 'contracts', 'src', 'generated', 'workflow-map.ts');
 /** 셸(부서 전환·부서 메뉴)은 부서 이름·화면 유형·데모 계정·화면 목록만 첫 화면에 싣는다 — 같은 JSON에서 생성 */
 const GENERATED_DEPTS = join(FF, 'contracts', 'src', 'generated', 'departments.ts');
+const GENERATED_DIR = dirname(GENERATED);
 const SCHEMA = 1;
 
 const posix = (p: string) => p.split(sep).join('/');
@@ -28,6 +29,28 @@ export function renderWorkflowModule(doc: { schema: number }): string {
     `export const WORKFLOWS: WorkflowDoc = ${JSON.stringify(doc, null, 1)};`,
     '',
   ].join('\n');
+}
+
+/** Browser data is split at process boundaries. No definition or evidence link is dropped. */
+export function renderLazyModules(doc: JsonDoc): Record<string, string> {
+  if (doc.schema !== SCHEMA) throw new Error(`workflows.json schema ${doc.schema}`);
+  const names = doc.processes.map((p) => {
+    if (!/^FPW\.[1-9][0-9]*$/.test(p.id)) throw new Error(`Invalid workflow process ID: ${p.id}`);
+    return `workflow-process-${p.id.toLowerCase().replace('.', '-')}`;
+  });
+  if (new Set(names).size !== names.length) throw new Error('Duplicate workflow process ID');
+  const generated = '// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.\n';
+  const { processes, ...header } = doc;
+  const modules: Record<string, string> = {
+    'workflow-index.ts': generated + "import type { WorkflowIndexDoc } from '../rules/workflows';\n" + `export const WORKFLOW_INDEX: WorkflowIndexDoc = ${JSON.stringify(indexOf(doc), null, 1)};\n`,
+    'workflow-header.ts': generated + "import type { WorkflowDoc } from '../rules/workflows';\n" + `export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = ${JSON.stringify(header, null, 1)};\n`,
+    'workflow-loader.ts': generated + "import type { WorkflowDoc } from '../rules/workflows';\nimport { WORKFLOW_HEADER } from './workflow-header';\n" +
+      `export async function loadWorkflowDocument(): Promise<WorkflowDoc> {\n const modules = await Promise.all([\n${names.map((n) => `  import('./${n}'),`).join('\n')}\n ]);\n return { ...WORKFLOW_HEADER, processes: modules.map((m) => m.PROCESS) };\n}\n`,
+  };
+  processes.forEach((p, n) => {
+    modules[`${names[n]}.ts`] = generated + "import type { WorkflowProcess } from '../rules/workflows';\n" + `export const PROCESS: WorkflowProcess = ${JSON.stringify(p, null, 1)};\n`;
+  });
+  return modules;
 }
 
 type JsonDoc = {
@@ -141,6 +164,7 @@ function sync() {
   writeFileSync(GENERATED_INDEX, renderIndexModule(doc));
   writeFileSync(GENERATED_MAP, renderMapModule(doc));
   writeFileSync(GENERATED_DEPTS, renderDepartmentsModule(doc));
+  for (const [name, source] of Object.entries(renderLazyModules(doc))) writeFileSync(join(GENERATED_DIR, name), source);
   const acts = doc.processes.reduce((n: number, p: { activities: unknown[] }) => n + p.activities.length, 0);
   console.log(
     `workflow:sync  프로세스 ${doc.processes.length}개 · 활동 ${acts}개 · 부서 ${doc.departments.length}개 → ${posix(relative(FF, GENERATED))} · ${posix(relative(FF, GENERATED_INDEX))} · ${posix(relative(FF, GENERATED_MAP))} · ${posix(relative(FF, GENERATED_DEPTS))}`,
@@ -158,6 +182,10 @@ function check(): number {
   if (!existsSync(GENERATED_INDEX) || readFileSync(GENERATED_INDEX, 'utf8').replace(/\r\n/g, '\n') !== renderIndexModule(doc)) bad.push(posix(relative(FF, GENERATED_INDEX)));
   if (!existsSync(GENERATED_MAP) || readFileSync(GENERATED_MAP, 'utf8').replace(/\r\n/g, '\n') !== renderMapModule(doc)) bad.push(posix(relative(FF, GENERATED_MAP)));
   if (!existsSync(GENERATED_DEPTS) || readFileSync(GENERATED_DEPTS, 'utf8').replace(/\r\n/g, '\n') !== renderDepartmentsModule(doc)) bad.push(posix(relative(FF, GENERATED_DEPTS)));
+  for (const [name, source] of Object.entries(renderLazyModules(doc))) {
+    const path = join(GENERATED_DIR, name);
+    if (!existsSync(path) || readFileSync(path, 'utf8').replace(/\r\n/g, '\n') !== source) bad.push(posix(relative(FF, path)));
+  }
   if (bad.length) {
     console.error(`workflow:check  ✗ 생성 모듈이 업무 절차 JSON과 다름(npm run workflow:sync): ${bad.join(', ')}`);
     return 1;

@@ -3,14 +3,14 @@ id: WF-ROLE-RDA
 type: workflow
 title: "Feature DB 관리자 업무 절차서 / Feature DB Administrator Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - WF-FPW-1
     - WF-FPW-14
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 

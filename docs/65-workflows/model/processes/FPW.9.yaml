@@ -55,6 +55,16 @@ process:
       content:
         - DEPRECATED·RETIRED 전이 시각
         - Flag ID 재사용 금지 표시와 Catalog 퇴역 결과
+    - key: WP-FLAG-REMOVAL-SCAN
+      name: Flag 제거 검토·스캔 결과
+      en: Flag 제거 검토·스캔 결과
+      kind: output
+      content:
+        - Retirement 승인·제거 PR·병합 참조
+        - 최종 값 분기 검토와 정적 분석 결과
+        - 참조 잔존 수·마지막 스캔·수행자와 시각
+      retained: true
+
   activities:
     - id: FPW.9-A01
       name: 운영 결과 품질 피드백 수용
@@ -122,7 +132,7 @@ process:
       rules: [FFG-LCY-011]
       raci: {R: [R-INT], A: R-FO, C: [R-TST], I: [R-REL]}
       inputs: [WP-RETIRE-LOG]
-      outputs: []
+      outputs: [WP-FLAG-REMOVAL-SCAN]
       steps:
         - Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
         - 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
@@ -145,3 +155,81 @@ process:
       checks:
         - Lifecycle이 RETIRED이고 Flag ID 재사용 금지 표시가 있다
       platform: {actions: [transition], screens: [/features/:id/:ver]}
+
+  base_practices:
+    - id: FPW.9.BP1
+      name: 운영 결과 품질 피드백 수용
+      definition_ko: 드릴·복원 관측·이상 조사 결과에서 반복 문제와 개선 항목을 식별한다. 수용한 피드백을 담당자·후속 Version·시험 시나리오에 연결하여 반영과 효과를
+        추적한다.
+      notes: []
+      activity_ids:
+        - FPW.9-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-QUALITY-FEEDBACK
+          outcomes:
+            - O1
+    - id: FPW.9.BP2
+      name: Flag Retirement 요청
+      definition_ko: 만료가 다가오거나 종료할 Flag의 연장 또는 Retirement 필요성을 검토한다. 영향 차량·구 Version 잔존과 예정 릴리스를 확인하고 종료
+        사유와 범위를 명시한 요청을 제출한다.
+      notes: []
+      activity_ids:
+        - FPW.9-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-RETIRE-REQ
+          outcomes:
+            - O2
+    - id: FPW.9.BP3
+      name: Flag Retirement 승인
+      definition_ko: 요청자와 구분된 책임자가 영향·안전 조건과 종료 계획을 검토한다. 필요한 독립 승인을 확보하고 삭제 기한·조건과 후속 책임을 통합·기획에 인계한다.
+      notes: []
+      activity_ids:
+        - FPW.9-A03
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-RETIRE-APPROVAL
+          outcomes:
+            - O2
+    - id: FPW.9.BP4
+      name: 코드·설정·시험 삭제 기록
+      definition_ko: 승인된 Retirement 범위의 코드·설정·시험 제거와 차량 잔존을 단계별로 확인한다. 각 단계의 근거를 기록하고 잔존 및 후속 조건이 해소되어야
+        종료 단계를 닫는다.
+      notes: []
+      activity_ids:
+        - FPW.9-A04
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-RETIRE-LOG
+          outcomes:
+            - O3
+    - id: FPW.9.BP5
+      name: Flag 제거 PR 병합
+      definition_ko: 승인된 Flag 제거 변경을 검토하고 최종 값 분기와 병합 결과를 확인한다. 정적 분석·대사 결과를 보존하여 코드 참조가 제거되었는지 판단한다.
+      notes: []
+      activity_ids:
+        - FPW.9-A06
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-FLAG-REMOVAL-SCAN
+          outcomes:
+            - O3
+    - id: FPW.9.BP6
+      name: Lifecycle 종료 전이
+      definition_ko: 신규 사용 중지와 최종 종료의 조건을 구분하여 Lifecycle을 전이한다. Retirement 근거·수행 기록·ID 재사용 금지를 보존하고 상품 구성에
+        종료 사실을 반영하도록 전달한다.
+      notes: []
+      activity_ids:
+        - FPW.9-A05
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-RETIRE-CLOSE
+          outcomes:
+            - O3

@@ -3,16 +3,17 @@ id: WF-DEP-ITSEC
 type: workflow
 title: "IT인프라·보안운영팀 R&R / IT Infrastructure & SecOps Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - WF-FPW-6
     - WF-FPW-11
+    - WF-FPW-16
     - WF-ROLE-PKI
     - WF-ROLE-SYS
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -29,7 +30,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 1 · 책임 0 · 협의 3 · 통보 0 (활동 4개)
+수행 3 · 책임 2 · 협의 5 · 통보 0 (활동 8개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -37,6 +38,10 @@ last_updated: 2026-11-05
 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11 보안·키·취약점 관리 | R (PKI 운영) | HARA·TARA 결과 `WP-HARA-TARA` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A02 키 교체 플랫폼 기록 | FPW.11 보안·키·취약점 관리 | C (PKI 운영) | 서명 키 대장 `WP-KEY-REGISTER` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A03 키 유출 대응·epoch 상향 | FPW.11 보안·키·취약점 관리 | C (PKI 운영) | 서명 키 대장 `WP-KEY-REGISTER` → 키 사고 대응 기록 `WP-KEY-INCIDENT` | `/admin/security` | 2차 초안 |
+| FPW.16-A01 계정 상태 변경 | FPW.16 플랫폼 접근·운영·복구 | R·A (시스템 관리자) | – → 계정 상태 변경 기록 `WP-ACCESS-CHANGE` | `/admin/iam` | 2차 초안 |
+| FPW.16-A02 부재 소유자 이관 | FPW.16 플랫폼 접근·운영·복구 | R·A (시스템 관리자) | 계정 상태 변경 기록 `WP-ACCESS-CHANGE` → 기록 소유자 이관 `WP-OWNER-HANDOVER` | `/admin/iam`, `/verify/compliance` | 2차 초안 |
+| FPW.16-A03 운영 설정·상태 점검 | FPW.16 플랫폼 접근·운영·복구 | C (시스템 관리자) | – → 플랫폼 운영 점검 `WP-PLATFORM-OPS` | `/admin/settings`, `/events`, `/notifications/rules` | 2차 초안 |
+| FPW.16-A04 백업·복구 점검 | FPW.16 플랫폼 접근·운영·복구 | C (시스템 관리자) | 플랫폼 운영 점검 `WP-PLATFORM-OPS` → 백업·복구 점검 기록 `WP-RECOVERY-DRILL` | `/admin/settings` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -46,5 +51,5 @@ last_updated: 2026-11-05
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/admin/security`
-- 참조 화면(협의·통보): `/deployments`, `/master/artifacts`
+- 주 업무 화면: `/admin/security`, `/admin/iam`, `/verify/compliance`
+- 참조 화면(협의·통보): `/deployments`, `/master/artifacts`, `/admin/settings`, `/events`, `/notifications/rules`

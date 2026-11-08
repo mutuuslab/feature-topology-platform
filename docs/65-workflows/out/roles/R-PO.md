@@ -3,14 +3,15 @@ id: WF-ROLE-PO
 type: workflow
 title: "상품 Owner 업무 절차서 / Product Owner Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - WF-FPW-7
     - WF-FPW-9
-last_updated: 2026-11-05
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -53,6 +54,8 @@ last_updated: 2026-11-05
 - FPW.7-A12 Release Sign-off(출시 책임 확인) (통보)
 - FPW.7-A09 출시 전이 (통보)
 - FPW.9-A05 Lifecycle 종료 전이 (통보)
+- FPW.18-A03 체험·전환 분석 (협의)
+- FPW.18-A04 개선 과제 인계 (통보)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

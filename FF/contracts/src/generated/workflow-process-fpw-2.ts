@@ -1,0 +1,1251 @@
+// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.
+import type { WorkflowProcess } from '../rules/workflows';
+export const PROCESS: WorkflowProcess = {
+ "id": "FPW.2",
+ "name": "HARA·변경 영향 판단",
+ "en": "HARA & Change Impact",
+ "group": "생애주기",
+ "gates": [
+  "G2"
+ ],
+ "ref": "표준 보고서 6.1절 G2·6.4절 재-HARA 조건, 3장(ADS), 14장(HARA·TARA·SOTIF)",
+ "purpose": "등록·분류된 Feature Version이나 그 변경이 차량 위험에 어떤 영향을 주는지 HARA·TARA·SOTIF로 분석하고, Topology의 위험 전파 범위와 형식승인 영향을 확정해 안전요구 작성(G3)의 입력을 만든다.",
+ "outcomes": [
+  {
+   "id": "O1",
+   "text": "재-HARA가 필요한 변경이 자동 검출되어 Safety Manager에게 요청된다."
+  },
+  {
+   "id": "O2",
+   "text": "같은 Item 정의 위에서 HARA와 TARA가 수행되고 서로 교차 검토된다."
+  },
+  {
+   "id": "O3",
+   "text": "거동을 바꾸는 Version의 SOTIF 분석(성능 한계·트리거 조건)이 갱신된다."
+  },
+  {
+   "id": "O4",
+   "text": "형식승인 영향 1차 판단과 G2 판정이 기록된다."
+  }
+ ],
+ "basePractices": [
+  {
+   "id": "FPW.2.BP1",
+   "name": "재-HARA 조건 검출·영향 범위 산정",
+   "definition": "이전 구성과 제안 변경을 비교하여 재-HARA 조건과 영향을 받는 기능·차량·시험 범위를 식별한다. 재사용 구현의 차이와 위험 전파를 분석하고 재수행할 안전 활동을 결정한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.2-A01"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-IMPACT-ANALYSIS",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.2.BP2",
+   "name": "HARA 수행",
+   "definition": "정의된 Item과 변경 범위의 위험 사건을 분석하여 안전 목표와 ASIL의 근거를 마련한다. 명령 경로와 종료 동작을 포함하고 보안 분석과의 교차 검토 결과를 보존한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.2-A02"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-HARA-TARA",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.2.BP3",
+   "name": "TARA 수행",
+   "definition": "같은 Item 범위에서 자산·위협 시나리오·공격 경로를 분석하여 보안 위험과 요구 후보를 도출한다. 안전 사건과 연결되는 결과를 안전 담당자에게 전달하고 상호 영향을 검토한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.2-A06"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-TARA",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.2.BP4",
+   "name": "SOTIF 분석 갱신",
+   "definition": "기능 사양과 성능 한계 및 알려진·새로운 트리거 조건을 현재 Version 기준으로 평가한다. 안전한 사용 범위와 필요한 시나리오의 변경을 기록하여 안전 판단과 검증 계획에 반영한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.2-A03"
+   ],
+   "outcomes": [
+    "O3"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-SOTIF-ANALYSIS",
+     "outcomes": [
+      "O3"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.2.BP5",
+   "name": "형식승인 영향 1차 판단",
+   "definition": "변경 내용이 적용 시장의 형식승인 범위와 소프트웨어 식별에 미치는 영향을 판단한다. 필요한 기관 결정과 일정·활성화 조건을 정리하고 출시 책임자에게 전달한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.2-A04"
+   ],
+   "outcomes": [
+    "O4"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-HOMOLOGATION-IMPACT",
+     "outcomes": [
+      "O4"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.2.BP6",
+   "name": "G2 HARA 영향 판정",
+   "definition": "현재 Version의 HARA·TARA·SOTIF·형식승인 판단을 함께 검토하여 변경 영향의 수용 가능성을 결정한다. 기준 ASIL과 다른 지정의 근거도 검토하고 판정 Evidence를 후속 요구 작성에 인계한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.2-A05"
+   ],
+   "outcomes": [
+    "O4"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-G2-DECISION",
+     "outcomes": [
+      "O4"
+     ]
+    }
+   ]
+  }
+ ],
+ "rules": [
+  "FFG-LCY-003",
+  "FFG-SEC-001",
+  "FFG-ADS-002",
+  "FFG-SOT-001",
+  "FFG-GEN-006",
+  "FFG-CLS-004",
+  "FFG-LCY-001"
+ ],
+ "entry": [
+  "G1 판정이 PASS 또는 기한이 있는 CONDITIONAL PASS다",
+  "Feature Version의 대상 차량 사양과 의존 관계가 Topology에 등록되어 있다"
+ ],
+ "exit": [
+  "HARA·TARA 결과와 교차 검토 기록이 Feature Version에 연결되었다",
+  "SOTIF 분석이 이 Version 기준으로 갱신되었다",
+  "G2 Decision Record가 Safety Manager 서명으로 남았다"
+ ],
+ "workProducts": [
+  {
+   "key": "WP-IMPACT-ANALYSIS",
+   "name": "변경 영향 분석서",
+   "en": "Change Impact Analysis",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "이전 Version과 바뀐 Registry 속성·Topology 관계",
+    "재-HARA 조건 해당 여부와 근거",
+    "영향 받는 Feature·차량 사양·회귀 시험 범위"
+   ]
+  },
+  {
+   "key": "WP-HARA-TARA",
+   "name": "HARA·TARA 결과",
+   "en": "HARA / TARA Results",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "Item 정의와 위험 사건·ASIL·Safety Goal",
+    "TARA 결과를 받아 반영한 교차 검토 내용",
+    "ADS Feature면 원격 종료 경로와 비활성화 등급 확인 결과"
+   ]
+  },
+  {
+   "key": "WP-TARA",
+   "name": "TARA 결과",
+   "en": "TARA Results",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "위협 시나리오·공격 경로·위험 값",
+    "보안 목표와 사이버보안 요구 후보",
+    "Kill·활성화 명령 경로(봉투·명령 인증)의 위협 평가"
+   ]
+  },
+  {
+   "key": "WP-SOTIF-ANALYSIS",
+   "name": "SOTIF 분석",
+   "en": "SOTIF Analysis",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "기능 사양과 성능 한계",
+    "트리거 조건과 위험 시나리오 평가"
+   ]
+  },
+  {
+   "key": "WP-HOMOLOGATION-IMPACT",
+   "name": "형식승인 영향 판단서",
+   "en": "Type Approval Impact Assessment",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "영향 여부와 근거 조항, 대상 RXSWIN",
+    "승인 기관 결정(개정·확장)이 필요한 경우 그 목록",
+    "법규 담당 서명과 판단 시각"
+   ]
+  },
+  {
+   "key": "WP-G2-DECISION",
+   "name": "G2 Decision Record",
+   "en": "G2 Decision Record",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "판정과 근거 Evidence ID(HARA·TARA·SOTIF·영향 분석)",
+    "Safety Manager 서명·시각, 조건부 통과 시 기한과 책임자"
+   ]
+  }
+ ],
+ "activities": [
+  {
+   "id": "FPW.2-A01",
+   "name": "재-HARA 조건 검출·영향 범위 산정",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [
+    "FFG-LCY-003",
+    "FFG-CLS-004"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-ARC",
+     "R-FO",
+     "R-PUR"
+    ],
+    "I": [
+     "R-REQ",
+     "R-TST"
+    ]
+   },
+   "inputs": [
+    "WP-G1-DECISION",
+    "WP-FEAT-SCOPE",
+    "WP-SAFETY-PROFILE",
+    "WP-SUPPLIER-DIFF"
+   ],
+   "outputs": [
+    "WP-IMPACT-ANALYSIS"
+   ],
+   "steps": [
+    "이전 Version과 Registry 속성·Topology 관계를 비교한 변경 영향 분석 결과를 연다",
+    "재-HARA 조건(비활성화 등급·Safe State 변경, 위험 전파 관계 추가 등)에 걸리는 변경을 표시한다",
+    "비활성화 등급이나 Safe State를 바꾸는 변경이면 새 Version과 G2~G5 재수행을 요구한다",
+    "협력사 기존 구현을 재사용하면 차이 보고를 영향 분석에 반영한다"
+   ],
+   "checks": [
+    "재-HARA 조건 해당 여부가 근거와 함께 기록되었다",
+    "영향 받는 Feature와 회귀 시험 범위가 산정되었다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/analysis/impact",
+     "/arch/topology"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.2-A02",
+    "FPW.2-A06",
+    "FPW.2-A03",
+    "FPW.2-A04"
+   ]
+  },
+  {
+   "id": "FPW.2-A02",
+   "name": "HARA 수행",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-ADS-002"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-CSM",
+     "R-ARC",
+     "R-FO"
+    ],
+    "I": [
+     "R-REQ",
+     "R-REG"
+    ]
+   },
+   "inputs": [
+    "WP-IMPACT-ANALYSIS"
+   ],
+   "outputs": [
+    "WP-HARA-TARA"
+   ],
+   "steps": [
+    "Safety Manager가 Item 정의를 기준으로 Kill·활성화 경로의 위험 사건과 ASIL을 평가한다",
+    "CSM의 TARA 결과(위협 시나리오)를 받아 위험 사건에 반영하고 교차 검토 내용을 기록한다",
+    "ADS Feature는 원격 종료가 가능한 비활성화 등급과 요청 경로(봉투·명령 인증·Guard)를 갖췄는지 확인한다"
+   ],
+   "checks": [
+    "TARA와의 교차 검토 기록이 HARA 결과에 남았다",
+    "ADS Feature가 원격 종료 불가 등급으로 분류되지 않았다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.2-A05"
+   ]
+  },
+  {
+   "id": "FPW.2-A06",
+   "name": "TARA 수행",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-SEC-001"
+   ],
+   "raci": {
+    "R": [
+     "R-CSM"
+    ],
+    "A": "R-CSM",
+    "C": [
+     "R-SM",
+     "R-ARC"
+    ],
+    "I": [
+     "R-REQ"
+    ]
+   },
+   "inputs": [
+    "WP-IMPACT-ANALYSIS"
+   ],
+   "outputs": [
+    "WP-TARA"
+   ],
+   "steps": [
+    "CSM이 같은 Item 정의로 Kill·활성화 명령 경로의 위협 시나리오와 공격 경로를 찾는다",
+    "위험 값을 매기고 보안 목표와 사이버보안 요구 후보를 정한다",
+    "결과를 Safety Manager에게 넘겨 HARA 교차 검토에 쓰게 한다"
+   ],
+   "checks": [
+    "위협 시나리오마다 위험 값과 보안 목표가 있다",
+    "Kill·활성화 명령 경로가 평가 범위에 들어 있다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.2-A05"
+   ]
+  },
+  {
+   "id": "FPW.2-A03",
+   "name": "SOTIF 분석 갱신",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O3"
+   ],
+   "rules": [
+    "FFG-SOT-001"
+   ],
+   "raci": {
+    "R": [
+     "R-ARC"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-FO",
+     "R-TST"
+    ],
+    "I": [
+     "R-REQ"
+    ]
+   },
+   "inputs": [
+    "WP-IMPACT-ANALYSIS"
+   ],
+   "outputs": [
+    "WP-SOTIF-ANALYSIS"
+   ],
+   "steps": [
+    "거동을 바꾸는 Version이면 기능 사양과 성능 한계를 이 Version 기준으로 다시 쓴다",
+    "알려진 트리거 조건과 운영에서 들어온 새 트리거 조건을 반영해 위험 시나리오를 평가한다",
+    "평가 결과를 Safety Manager에게 넘겨 안전 판단에 쓰게 한다"
+   ],
+   "checks": [
+    "SOTIF 분석의 대상 Version이 현재 Version과 같다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.2-A05"
+   ]
+  },
+  {
+   "id": "FPW.2-A04",
+   "name": "형식승인 영향 1차 판단",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O4"
+   ],
+   "rules": [
+    "FFG-GEN-006"
+   ],
+   "raci": {
+    "R": [
+     "R-REG"
+    ],
+    "A": "R-REG",
+    "C": [
+     "R-SM",
+     "R-FO"
+    ],
+    "I": [
+     "R-REL"
+    ]
+   },
+   "inputs": [
+    "WP-IMPACT-ANALYSIS"
+   ],
+   "outputs": [
+    "WP-HOMOLOGATION-IMPACT"
+   ],
+   "steps": [
+    "변경이 대상 시장 형식승인 범위(RXSWIN)에 영향을 주는지 조항별로 판단한다",
+    "영향이 있으면 승인 기관에 필요한 개정·확장 절차와 예상 시점을 정한다",
+    "판단 결과에 서명하고 Feature Owner와 Release Manager에게 활성화 조건을 알린다"
+   ],
+   "checks": [
+    "판단서에 법규 담당 서명과 대상 RXSWIN이 있다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.2-A05"
+   ]
+  },
+  {
+   "id": "FPW.2-A05",
+   "name": "G2 HARA 영향 판정",
+   "trigger": null,
+   "gateDecision": "G2",
+   "independentOf": [],
+   "outcomes": [
+    "O4"
+   ],
+   "rules": [
+    "FFG-LCY-001"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-CSM",
+     "R-REG"
+    ],
+    "I": [
+     "R-FO",
+     "R-REQ",
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-HARA-TARA",
+    "WP-TARA",
+    "WP-SOTIF-ANALYSIS",
+    "WP-HOMOLOGATION-IMPACT",
+    "WP-REF-LINK"
+   ],
+   "outputs": [
+    "WP-G2-DECISION"
+   ],
+   "steps": [
+    "HARA·TARA·SOTIF·형식승인 판단이 모두 현재 Version 기준인지 확인하고, 빠진 것이 있으면 FAIL로 판정한다",
+    "등록 때 Feature DB 대표 ASIL을 바꿨다면 그 사유를 HARA에서 평가한 ASIL과 대조해 판정 근거에 남긴다",
+    "판정과 근거 Evidence ID를 정리해 플랫폼 Safety/Security Gate에 개인 서명으로 등록한다",
+    "판정 결과를 요구 Owner에게 넘겨 안전요구 작성을 시작하게 한다"
+   ],
+   "checks": [
+    "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다"
+   ],
+   "platform": {
+    "actions": [
+     "judgeGate"
+    ],
+    "screens": [
+     "/features/:id/:ver",
+     "/admin/approval"
+    ],
+    "gates": [
+     "G7"
+    ],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  }
+ ],
+ "layout": {
+  "width": 1086,
+  "height": 392,
+  "lanes": [
+   {
+    "role": "R-SM",
+    "label": "Safety Manager",
+    "x": 0,
+    "y": 0,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "role": "R-CSM",
+    "label": "CSM",
+    "x": 0,
+    "y": 98,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "role": "R-ARC",
+    "label": "아키텍트",
+    "x": 0,
+    "y": 196,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "role": "R-REG",
+    "label": "법규 담당",
+    "x": 0,
+    "y": 294,
+    "w": 1086,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.2-A01",
+    "kind": "action",
+    "label": "재-HARA 조건 검출·영향 범위 산정",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A02",
+    "kind": "action",
+    "label": "HARA 수행",
+    "x": 478,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A05",
+    "kind": "action",
+    "label": "G2 HARA 영향 판정",
+    "x": 758,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A06",
+    "kind": "action",
+    "label": "TARA 수행",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A03",
+    "kind": "action",
+    "label": "SOTIF 분석 갱신",
+    "x": 478,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A04",
+    "kind": "action",
+    "label": "형식승인 영향 1차 판단",
+    "x": 478,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.2-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 960,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.2-S1",
+    "to": "FPW.2-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      478,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A06",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A03",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      245
+     ],
+     [
+      478,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A04",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      343
+     ],
+     [
+      478,
+      343
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A02",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A06",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      746,
+      147
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A03",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      245
+     ],
+     [
+      746,
+      245
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A04",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      343
+     ],
+     [
+      746,
+      343
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A05",
+    "to": "FPW.2-E1",
+    "kind": "end",
+    "points": [
+     [
+      946,
+      49
+     ],
+     [
+      960,
+      49
+     ]
+    ]
+   }
+  ],
+  "joins": [
+   [
+    746,
+    49
+   ],
+   [
+    746,
+    147
+   ],
+   [
+    746,
+    245
+   ]
+  ]
+ },
+ "departmentLayout": {
+  "width": 1086,
+  "height": 392,
+  "lanes": [
+   {
+    "department": "DEP-FS",
+    "label": "기능안전팀",
+    "x": 0,
+    "y": 0,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "department": "DEP-CS",
+    "label": "차량사이버보안팀",
+    "x": 0,
+    "y": 98,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "department": "DEP-SE",
+    "label": "시스템엔지니어링팀",
+    "x": 0,
+    "y": 196,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "department": "DEP-HOM",
+    "label": "법규인증팀",
+    "x": 0,
+    "y": 294,
+    "w": 1086,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.2-A01",
+    "kind": "action",
+    "label": "재-HARA 조건 검출·영향 범위 산정",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A02",
+    "kind": "action",
+    "label": "HARA 수행",
+    "x": 478,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A05",
+    "kind": "action",
+    "label": "G2 HARA 영향 판정",
+    "x": 758,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A06",
+    "kind": "action",
+    "label": "TARA 수행",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A03",
+    "kind": "action",
+    "label": "SOTIF 분석 갱신",
+    "x": 478,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-A04",
+    "kind": "action",
+    "label": "형식승인 영향 1차 판단",
+    "x": 478,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.2-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.2-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 960,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.2-S1",
+    "to": "FPW.2-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      478,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A06",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A03",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      245
+     ],
+     [
+      478,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A01",
+    "to": "FPW.2-A04",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      343
+     ],
+     [
+      478,
+      343
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A02",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A06",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      746,
+      147
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A03",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      245
+     ],
+     [
+      746,
+      245
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A04",
+    "to": "FPW.2-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      343
+     ],
+     [
+      746,
+      343
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.2-A05",
+    "to": "FPW.2-E1",
+    "kind": "end",
+    "points": [
+     [
+      946,
+      49
+     ],
+     [
+      960,
+      49
+     ]
+    ]
+   }
+  ],
+  "joins": [
+   [
+    746,
+    49
+   ],
+   [
+    746,
+    147
+   ],
+   [
+    746,
+    245
+   ]
+  ]
+ }
+};

@@ -3,6 +3,18 @@ import type { WorkflowDoc } from '../rules/workflows';
 
 export const WORKFLOWS: WorkflowDoc = {
  "schema": 1,
+ "referenceModel": {
+  "id": "FFP-BRM",
+  "title": "Feature Platform 업무 레퍼런스 모델",
+  "version": "0.3.0",
+  "status": "draft",
+  "scope": "기존 14개 부서의 Feature 생애주기와 플랫폼 지원 업무. 조직 가정안이며 실제 조직 승인과 외부 수행 증거는 별도다.",
+  "benchmark": {
+   "title": "Automotive SPICE Process Assessment / Reference Model",
+   "version": "4.0",
+   "url": "https://vda-qmc.de/wp-content/uploads/2023/12/Automotive-SPICE-PAM-v40.pdf"
+  }
+ },
  "note": "docs/65-workflows/scripts/build_json.py가 모델(model/*.yaml)에서 만든다. 손으로 고치지 않는다.",
  "roles": [
   {
@@ -938,6 +950,76 @@ export const WORKFLOWS: WorkflowDoc = {
       "I"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.15-A01",
+     "process": "FPW.15",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A01",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A02",
+     "process": "FPW.17",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A01",
+     "process": "FPW.18",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A02",
+     "process": "FPW.18",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A03",
+     "process": "FPW.18",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A04",
+     "process": "FPW.18",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -964,7 +1046,10 @@ export const WORKFLOWS: WorkflowDoc = {
      "/admin/approval",
      "/flag-retirements",
      "/flag-code/lifecycle",
-     "/master/feature-db/:refId"
+     "/master/feature-db/:refId",
+     "/data/workbench",
+     "/biz/trials",
+     "/products"
     ],
     "reference": [
      "/analysis/impact",
@@ -981,6 +1066,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/verify/evidence",
      "/config/compat",
      "/deployments",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/verify/compliance",
      "/verify/safety-case",
      "/fleet/live",
@@ -989,6 +1076,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
@@ -998,7 +1086,19 @@ export const WORKFLOWS: WorkflowDoc = {
      "/quality/feedback",
      "/trace/ads",
      "/master/feature-db/changes/:id",
-     "/master/feature-db/changes"
+     "/master/feature-db/changes",
+     "/procurement/sw-cost",
+     "/procurement/sw-cost/:estId",
+     "/master/reference-values",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/fleet/vehicles/:vin"
     ]
    },
    "handoffs": {
@@ -1062,6 +1162,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.14-A01",
       "to": "FPW.14-A02",
       "department": "DEP-SE"
+     },
+     {
+      "from": "FPW.18-A01",
+      "to": "FPW.18-A02",
+      "department": "DEP-OPS"
      }
     ],
     "in": [
@@ -1094,6 +1199,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.9-A03",
       "to": "FPW.9-A04",
       "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.18-A02",
+      "to": "FPW.18-A03",
+      "department": "DEP-OPS"
      }
     ]
    }
@@ -1478,6 +1588,43 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.15-A03",
+     "process": "FPW.15",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A02",
+     "process": "FPW.17",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A03",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A04",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -1496,7 +1643,12 @@ export const WORKFLOWS: WorkflowDoc = {
      "/flag-code/reconcile",
      "/flag-retirements",
      "/master/feature-db/changes/:id",
-     "/master/feature-db/changes"
+     "/master/feature-db/changes",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo"
     ],
     "reference": [
      "/master/define",
@@ -1514,9 +1666,13 @@ export const WORKFLOWS: WorkflowDoc = {
      "/verify/evidence",
      "/baselines",
      "/integration/code-repositories",
+     "/integration/code-repositories/:repoId",
      "/integration/code-scans",
      "/integration/openfeature",
-     "/master/feature-db/:refId"
+     "/master/feature-db/:refId",
+     "/procurement/sw-cost/:estId",
+     "/precheck",
+     "/trace/coverage"
     ]
    },
    "handoffs": {
@@ -1565,6 +1721,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.14-A02",
       "to": "FPW.14-A03",
       "department": "DEP-PLM"
+     },
+     {
+      "from": "FPW.17-A02",
+      "to": "FPW.17-A03",
+      "department": "DEP-INT"
      }
     ],
     "in": [
@@ -1602,6 +1763,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.14-A01",
       "to": "FPW.14-A02",
       "department": "DEP-PDP"
+     },
+     {
+      "from": "FPW.17-A01",
+      "to": "FPW.17-A02",
+      "department": "DEP-PLM"
      }
     ]
    }
@@ -1903,6 +2069,42 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.8-A13",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A14",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A15",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A16",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.9-A02",
      "process": "FPW.9",
      "part": "C",
@@ -2042,6 +2244,63 @@ export const WORKFLOWS: WorkflowDoc = {
       "I"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.15-A03",
+     "process": "FPW.15",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A01",
+     "process": "FPW.17",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A02",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A03",
+     "process": "FPW.17",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A04",
+     "process": "FPW.17",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A05",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -2054,9 +2313,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/deployments",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/integration/code-repositories",
+     "/integration/code-repositories/:repoId",
      "/flag-code/lifecycle",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/precheck",
+     "/trace/coverage"
     ],
     "reference": [
      "/master/control-points",
@@ -2075,9 +2339,23 @@ export const WORKFLOWS: WorkflowDoc = {
      "/fleet/live",
      "/notifications",
      "/ops/flag-evaluations",
+     "/ops/rollback",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
      "/supplier/portal",
      "/admin/security",
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/procurement/sw-cost/:estId",
+     "/master/reference-values",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol"
     ]
    },
    "handoffs": {
@@ -2158,6 +2436,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.10-A06",
       "to": "FPW.10-A07",
       "department": "DEP-VAL"
+     },
+     {
+      "from": "FPW.17-A02",
+      "to": "FPW.17-A03",
+      "department": "DEP-SE"
      }
     ]
    }
@@ -2315,6 +2598,43 @@ export const WORKFLOWS: WorkflowDoc = {
       "A"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.17-A01",
+     "process": "FPW.17",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A02",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A03",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A05",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -2326,7 +2646,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/config/compat",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
-     "/master/feature-db"
+     "/master/feature-db",
+     "/master/reference-values"
     ],
     "reference": [
      "/master/define",
@@ -2339,7 +2660,18 @@ export const WORKFLOWS: WorkflowDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
-     "/master/feature-db/:refId"
+     "/master/feature-db/:refId",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo",
+     "/precheck",
+     "/trace/coverage",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol"
     ]
    },
    "handoffs": {
@@ -2358,6 +2690,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.6-A02",
       "to": "FPW.6-A04",
       "department": "DEP-INT"
+     },
+     {
+      "from": "FPW.17-A01",
+      "to": "FPW.17-A02",
+      "department": "DEP-SE"
      }
     ],
     "in": [
@@ -2820,6 +3157,43 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.8-A13",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A14",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A15",
+     "process": "FPW.8",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A16",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.9-A01",
      "process": "FPW.9",
      "part": "C",
@@ -2983,6 +3357,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.18-A04",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -2999,6 +3382,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/kill",
      "/fleet/live",
      "/deployments",
+     "/ops/rollback",
      "/flag-retirements",
      "/ops/safety-kpi",
      "/trace/ads"
@@ -3018,11 +3402,14 @@ export const WORKFLOWS: WorkflowDoc = {
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/flag-code/reconcile",
      "/experiments",
      "/notifications",
      "/ops/anomalies",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
@@ -3030,11 +3417,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/incident-reports",
      "/audit/oversight",
      "/audit",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
      "/quality/feedback",
      "/supplier/portal",
      "/admin/security",
      "/master/feature-db/changes/:id",
-     "/master/feature-db/changes"
+     "/master/feature-db/changes",
+     "/data/workbench",
+     "/products"
     ]
    },
    "handoffs": {
@@ -3102,6 +3493,11 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "from": "FPW.8-A09",
       "to": "FPW.8-A10",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.8-A14",
+      "to": "FPW.8-A15",
       "department": "DEP-OPS"
      },
      {
@@ -3194,6 +3590,11 @@ export const WORKFLOWS: WorkflowDoc = {
      {
       "from": "FPW.8-A08",
       "to": "FPW.8-A09",
+      "department": "DEP-OPS"
+     },
+     {
+      "from": "FPW.8-A13",
+      "to": "FPW.8-A14",
       "department": "DEP-OPS"
      },
      {
@@ -3431,6 +3832,35 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.12-A06",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A07",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A08",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.13-A01",
      "process": "FPW.13",
      "part": "C",
@@ -3465,12 +3895,49 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.16-A01",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A03",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A04",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A04",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
     "primary": [
      "/ops/kill",
      "/admin/security",
+     "/admin/data",
      "/verify/compliance",
      "/trace/ads"
     ],
@@ -3481,7 +3948,13 @@ export const WORKFLOWS: WorkflowDoc = {
      "/deployments",
      "/master/artifacts",
      "/audit/oversight",
-     "/fleet/live"
+     "/fleet/live",
+     "/admin/iam",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules",
+     "/data/workbench",
+     "/products"
     ]
    },
    "handoffs": {
@@ -3517,6 +3990,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.11-A01",
       "to": "FPW.11-A02",
       "department": "DEP-ITSEC"
+     },
+     {
+      "from": "FPW.12-A06",
+      "to": "FPW.12-A07",
+      "department": "DEP-DPO"
      }
     ]
    }
@@ -3813,6 +4291,24 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.16-A02",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A01",
+     "process": "FPW.17",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -3832,7 +4328,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/audit/oversight",
      "/audit",
      "/admin/security",
-     "/master/feature-db"
+     "/master/feature-db",
+     "/admin/iam",
+     "/master/reference-values"
     ]
    },
    "handoffs": {
@@ -4152,6 +4650,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.18-A02",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -4182,7 +4689,12 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/kill",
      "/quality/feedback",
      "/flag-retirements",
-     "/flag-code/lifecycle"
+     "/flag-code/lifecycle",
+     "/data/workbench",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/fleet/vehicles/:vin"
     ]
    },
    "handoffs": {
@@ -4454,6 +4966,42 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.8-A13",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A14",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A15",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A16",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.9-A01",
      "process": "FPW.9",
      "part": "R",
@@ -4547,6 +5095,24 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.12-A07",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A08",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.13-A01",
      "process": "FPW.13",
      "part": "I",
@@ -4572,6 +5138,96 @@ export const WORKFLOWS: WorkflowDoc = {
       "I"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.16-A01",
+     "process": "FPW.16",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A02",
+     "process": "FPW.16",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A03",
+     "process": "FPW.16",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A04",
+     "process": "FPW.16",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A03",
+     "process": "FPW.17",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A04",
+     "process": "FPW.17",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A05",
+     "process": "FPW.17",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A01",
+     "process": "FPW.18",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A02",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A04",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -4591,6 +5247,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "/verify/safety-case",
      "/deployments",
      "/integration/connectors",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
@@ -4598,13 +5256,34 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
      "/integration/datalake",
      "/audit",
+     "/ops/rollback",
+     "/policies/:id",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
      "/admin/data",
-     "/trace/ads"
+     "/trace/ads",
+     "/admin/iam",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules",
+     "/precheck",
+     "/trace/coverage",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol",
+     "/data/workbench",
+     "/biz/trials",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/products"
     ]
    },
    "handoffs": {
@@ -4935,6 +5614,45 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": true
     },
     {
+     "id": "FPW.8-A13",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A14",
+     "process": "FPW.8",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A15",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
+     "id": "FPW.8-A16",
+     "process": "FPW.8",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": true
+    },
+    {
      "id": "FPW.9-A01",
      "process": "FPW.9",
      "part": "I",
@@ -5034,6 +5752,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.12-A06",
+     "process": "FPW.12",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.13-A02",
      "process": "FPW.13",
      "part": "I",
@@ -5059,6 +5786,64 @@ export const WORKFLOWS: WorkflowDoc = {
       "R"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.16-A01",
+     "process": "FPW.16",
+     "part": "I",
+     "parts": [
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A03",
+     "process": "FPW.16",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A04",
+     "process": "FPW.16",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.17-A05",
+     "process": "FPW.17",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A01",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A02",
+     "process": "FPW.18",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -5072,16 +5857,33 @@ export const WORKFLOWS: WorkflowDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
      "/integration/datalake",
      "/ops/kill",
      "/deployments",
-     "/audit"
+     "/audit",
+     "/ops/rollback",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol",
+     "/data/workbench",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles"
     ],
     "reference": [
      "/integration/connectors",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/experiments",
      "/admin/approval",
      "/products/:id/:ver",
@@ -5092,7 +5894,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/admin/security",
      "/admin/data",
      "/verify/compliance",
-     "/trace/ads"
+     "/trace/ads",
+     "/admin/iam",
+     "/biz/trials"
     ]
    },
    "handoffs": {
@@ -5126,6 +5930,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "from": "FPW.8-A08",
       "to": "FPW.8-A09",
       "department": "DEP-QA"
+     },
+     {
+      "from": "FPW.8-A13",
+      "to": "FPW.8-A14",
+      "department": "DEP-FS"
+     },
+     {
+      "from": "FPW.18-A02",
+      "to": "FPW.18-A03",
+      "department": "DEP-PDP"
      }
     ],
     "in": [
@@ -5160,9 +5974,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-QA"
      },
      {
+      "from": "FPW.8-A14",
+      "to": "FPW.8-A15",
+      "department": "DEP-FS"
+     },
+     {
       "from": "FPW.13-A02",
       "to": "FPW.13-A04",
       "department": "DEP-HOM"
+     },
+     {
+      "from": "FPW.18-A01",
+      "to": "FPW.18-A02",
+      "department": "DEP-PDP"
      }
     ]
    }
@@ -5216,15 +6040,58 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.16-A01",
+     "process": "FPW.16",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A02",
+     "process": "FPW.16",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A03",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A04",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
     "primary": [
-     "/admin/security"
+     "/admin/security",
+     "/admin/iam",
+     "/verify/compliance"
     ],
     "reference": [
      "/deployments",
-     "/master/artifacts"
+     "/master/artifacts",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules"
     ]
    },
    "handoffs": {
@@ -5320,10 +6187,97 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.15-A01",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A02",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A03",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A04",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A05",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A06",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A07",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
-    "primary": [],
+    "primary": [
+     "/procurement/sw-cost",
+     "/procurement/sw-cost/:estId",
+     "/procurement/sw-cost/basis"
+    ],
     "reference": [
      "/analysis/impact",
      "/arch/topology",
@@ -5441,6 +6395,24 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.12-A06",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A07",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.13-A02",
      "process": "FPW.13",
      "part": "C",
@@ -5457,6 +6429,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.18-A01",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
@@ -5466,7 +6447,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "/admin/data",
      "/integration/openfeature",
      "/verify/compliance",
-     "/trace/ads"
+     "/trace/ads",
+     "/data/workbench",
+     "/biz/trials"
     ]
    },
    "handoffs": {
@@ -5532,19 +6515,85 @@ export const WORKFLOWS: WorkflowDoc = {
       "C"
      ],
      "firstScope": false
+    },
+    {
+     "id": "FPW.12-A06",
+     "process": "FPW.12",
+     "part": "R",
+     "parts": [
+      "R",
+      "A"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A07",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.12-A08",
+     "process": "FPW.12",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.16-A04",
+     "process": "FPW.16",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A01",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.18-A03",
+     "process": "FPW.18",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
     }
    ],
    "screens": {
     "primary": [
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/admin/data"
     ],
     "reference": [
      "/ops/safety-kpi",
-     "/admin/data"
+     "/admin/settings",
+     "/data/workbench",
+     "/biz/trials",
+     "/products",
+     "/entitlements"
     ]
    },
    "handoffs": {
-    "out": [],
+    "out": [
+     {
+      "from": "FPW.12-A06",
+      "to": "FPW.12-A07",
+      "department": "DEP-CS"
+     }
+    ],
     "in": []
    }
   }
@@ -5561,7 +6610,7 @@ export const WORKFLOWS: WorkflowDoc = {
    "FPW.8",
    "FPW.9"
   ],
-  "note": "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다.",
+  "note": "핵심 생애주기(FPW.1~9)의 기존 검토 범위를 보존한다. 지원 업무(FPW.10~18)를 포함한 레퍼런스 정의는 조직 검토 전 초안이며 실제 수행·승인은 별도 근거로 확인한다.",
   "demoNotes": [
    "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(관제실)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05).",
    "복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 심사 결재함)+opslead 또는 다른 CSM이 맡는다(2026-11-05).",
@@ -5629,6 +6678,142 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O3",
      "text": "G1 판정이 서명된 Decision Record로 남고 다음 단계(G2)로 넘어간다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.1.BP1",
+     "name": "Feature 등록·초안 작성",
+     "definition": "제안의 목적과 기존 기능과의 관계를 검토하여 새 Feature 또는 개정의 범위를 정한다. 작성 기준과 자동 채움의 출처, 적용 대상·담당·안전 수준을 확인하고 필요한 수정 근거를 보존하여 초안을 등록한다.",
+     "notes": [
+      "작성 기준(PRIMARY)은 하나이고 관련 연결(INCLUDED)은 기본값을 합치는 기능이 아니다. 초안 등록은 정의 승인이나 차량 배포가 아니다."
+     ],
+     "activityIds": [
+      "FPW.1-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FEAT-REG",
+       "outcomes": [
+        "O1"
+       ]
+      },
+      {
+       "workProduct": "WP-REF-LINK",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.1.BP2",
+     "name": "대상 차량 사양·의존 등록",
+     "definition": "차량·시장 기준정보와 기능 의존 관계를 확인하여 이 Feature가 적용될 범위를 정의한다. 변이와 공유 자산의 관계를 점검하고 안전 분류에 영향을 주는 관계를 분류 담당자에게 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.1-A02"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FEAT-SCOPE",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.1.BP3",
+     "name": "안전 분류(네 축) 확정",
+     "definition": "대상 기능의 위험과 종료 동작을 근거로 안전 분류 네 축을 결정한다. 허용 조합과 시간 예산을 검토하고 등급 변경의 영향 근거를 연결한 뒤 권한 있는 담당자가 분류를 확정한다.",
+     "notes": [
+      "분류 확정은 근거와 서명이 필요한 별도 판단이며 자동 채움 값의 수락만으로 이루어지지 않는다."
+     ],
+     "activityIds": [
+      "FPW.1-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SAFETY-PROFILE",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.1.BP4",
+     "name": "법규 의무 기능 판정",
+     "definition": "적용 시장의 고정된 Compliance Profile과 기능의 역할을 대조하여 의무 기능 해당 여부를 판단한다. 판단 근거와 시장별 제한을 기록하고 분류·원격 요청 제한에 반영하도록 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.1-A04"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REG-CLASS",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.1.BP5",
+     "name": "G1 등록·분류 판정",
+     "definition": "등록·차량 범위·기준 연결·안전 분류·법규 판단의 완전성과 일관성을 확인한다. 누락과 조건을 식별하고 작성자와 구분된 판정자가 근거를 연결한 G1 판정을 기록한다.",
+     "notes": [
+      "요청 중 기준 기능의 후속 관리자 승인은 Feature 정의 승인과 구분한다."
+     ],
+     "activityIds": [
+      "FPW.1-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G1-DECISION",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.1.BP6",
+     "name": "Feature DB 추가 요청",
+     "definition": "기존 기준 기능으로 제안을 표현할 수 없는지 확인한 뒤 필요한 기능의 식별·분류·출처를 갖춘 추가 요청을 제출한다. 요청 상태를 추적하고 발행 또는 반려 결과에 따라 Feature 연결을 정리한다.",
+     "notes": [
+      "추가 요청이 접수되어 정식 형식 ID를 받더라도 기준 기능이 승인·발행되었다는 뜻은 아니다."
+     ],
+     "activityIds": [
+      "FPW.1-A06"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REF-ADD-REQ",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -5788,7 +6973,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
       "등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
       "2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다",
-      "관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다",
+      "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다",
       "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
       "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
      ],
@@ -6792,6 +7977,128 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O4",
      "text": "형식승인 영향 1차 판단과 G2 판정이 기록된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.2.BP1",
+     "name": "재-HARA 조건 검출·영향 범위 산정",
+     "definition": "이전 구성과 제안 변경을 비교하여 재-HARA 조건과 영향을 받는 기능·차량·시험 범위를 식별한다. 재사용 구현의 차이와 위험 전파를 분석하고 재수행할 안전 활동을 결정한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.2-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-IMPACT-ANALYSIS",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.2.BP2",
+     "name": "HARA 수행",
+     "definition": "정의된 Item과 변경 범위의 위험 사건을 분석하여 안전 목표와 ASIL의 근거를 마련한다. 명령 경로와 종료 동작을 포함하고 보안 분석과의 교차 검토 결과를 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.2-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-HARA-TARA",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.2.BP3",
+     "name": "TARA 수행",
+     "definition": "같은 Item 범위에서 자산·위협 시나리오·공격 경로를 분석하여 보안 위험과 요구 후보를 도출한다. 안전 사건과 연결되는 결과를 안전 담당자에게 전달하고 상호 영향을 검토한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.2-A06"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-TARA",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.2.BP4",
+     "name": "SOTIF 분석 갱신",
+     "definition": "기능 사양과 성능 한계 및 알려진·새로운 트리거 조건을 현재 Version 기준으로 평가한다. 안전한 사용 범위와 필요한 시나리오의 변경을 기록하여 안전 판단과 검증 계획에 반영한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.2-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SOTIF-ANALYSIS",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.2.BP5",
+     "name": "형식승인 영향 1차 판단",
+     "definition": "변경 내용이 적용 시장의 형식승인 범위와 소프트웨어 식별에 미치는 영향을 판단한다. 필요한 기관 결정과 일정·활성화 조건을 정리하고 출시 책임자에게 전달한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.2-A04"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-HOMOLOGATION-IMPACT",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.2.BP6",
+     "name": "G2 HARA 영향 판정",
+     "definition": "현재 Version의 HARA·TARA·SOTIF·형식승인 판단을 함께 검토하여 변경 영향의 수용 가능성을 결정한다. 기준 ASIL과 다른 지정의 근거도 검토하고 판정 Evidence를 후속 요구 작성에 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.2-A05"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G2-DECISION",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -7917,6 +9224,132 @@ export const WORKFLOWS: WorkflowDoc = {
      "text": "요구 검토가 판정되고 Feature 정의가 승인되어 APPROVED로 전이된다."
     }
    ],
+   "basePractices": [
+    {
+     "id": "FPW.3.BP1",
+     "name": "안전요구 도출·명세",
+     "definition": "안전 목표와 영향 분석을 검증 가능한 기능·기술·SW 안전요구로 구체화한다. 종료 동작과 시간·운전자 정보 등 필요한 조건을 명시하고 요구 ID와 검증 기준을 관리한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.3-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SAFETY-REQ",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.3.BP2",
+     "name": "양방향 추적성 점검",
+     "definition": "안전 목표부터 요구·설계·시험·Baseline까지 추적 연결과 내용의 일관성을 양방향으로 확인한다. 공백의 조치 담당과 기한을 정하고 해결되지 않은 안전 관련 공백을 판정에 반영한다.",
+     "notes": [
+      "연결선이 존재하는 것만으로 요구와 결과의 내용이 일치한다고 판정하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.3-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-TRACE-REPORT",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.3.BP3",
+     "name": "요구 검토 판정 등록",
+     "definition": "요구의 완전성·일관성·검증 가능성을 작성과 구분된 관점에서 검토한다. 발견 사항의 보완과 재검토를 추적하고 요구 검토 판정을 근거와 함께 기록한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.3-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REQ-REVIEW",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.3.BP4",
+     "name": "구현 연결 입력",
+     "definition": "요구를 구현할 기능·SW Version·제어기 부품의 조합을 기준정보에서 식별한다. 정확한 짝을 Feature Version과 외부 개발 항목에 연결하고 연결이 빠졌거나 확정 구성이 다른 경우 보완 경로를 정한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.3-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-IMPL-LINK",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.3.BP5",
+     "name": "외부 연계 동기화·충돌 해결",
+     "definition": "요구·Epic·변경요청·개발 상태의 동기화 결과를 확인하고 충돌의 원인과 주인을 식별한다. 선택한 해결 근거와 재시도 결과를 기록하며 외부 상태 변경에도 플랫폼 권한과 전이 규칙을 적용한다.",
+     "notes": [
+      "외부 시스템의 상태 수신은 플랫폼 승인 가드를 생략하는 수단이 아니다."
+     ],
+     "activityIds": [
+      "FPW.3-A06"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-EXT-SYNC",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.3.BP6",
+     "name": "G3 판정·Feature 정의 승인",
+     "definition": "등록·영향 분석·요구 검토와 기준 연결의 승인 준비 상태를 확인한다. 작성자와 다른 승인자가 현재 근거로 정의 승인 여부를 결정하고 후속 설계·구현 작업을 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.3-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G3-DECISION",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    }
+   ],
    "rules": [
     "FFG-LCY-004",
     "FFG-LCY-005",
@@ -8928,6 +10361,150 @@ export const WORKFLOWS: WorkflowDoc = {
      "text": "독립 검토로 G4 설계 판정이 남는다."
     }
    ],
+   "basePractices": [
+    {
+     "id": "FPW.4.BP1",
+     "name": "차량 내 감시·안전기제 설계",
+     "definition": "안전요구를 차량 내부의 감시·Guard·안전 기제와 제어점 설계에 할당한다. 차량의 시간 예산 안에서 동작할 경로와 원격 요청·늦은 관측의 경계를 분리하여 요구와 설계의 대응을 보존한다.",
+     "notes": [
+      "원격 통신이나 플랫폼 화면을 차량의 FTTI 안 안전 기제의 대체로 정의하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.4-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SAFETY-DESIGN",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.4.BP2",
+     "name": "Flag 정책 작성·검증",
+     "definition": "적용 대상·Variant·기본값을 명시한 정책을 작성하고 현재 개정본을 분야별 검증으로 평가한다. 수정으로 근거가 달라지면 재검증하여 승인 대상 내용과 결과를 일치시킨다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.4-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-POLICY",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.4.BP3",
+     "name": "정책 근거 변경요청(CR) 연결",
+     "definition": "정책 변경의 이유와 범위를 외부 변경요청에 연결하여 의사결정의 근거를 추적한다. 외부 결정의 반영 여부와 거부 사유를 확인하고 플랫폼 정책 상태와 불일치를 해소한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.4-A06"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-POLICY-CR",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.4.BP4",
+     "name": "정책 승인",
+     "definition": "최신 정책 내용의 해시와 검증 결과를 확인하여 승인 또는 반려를 결정한다. 작성자와 구분된 승인자가 결정 근거를 남기고 수정이 필요한 경우 작성자에게 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.4-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-POLICY",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.4.BP5",
+     "name": "플랫폼 도구 신뢰도 분류",
+     "definition": "플랫폼 도구의 오류 출력과 검출 수단을 분석하여 신뢰도 분류와 확보 방법을 결정한다. 사용 범위와 분류 근거를 기록하고 필요한 확인 활동을 Safety Plan에 반영한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.4-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-TCL-RECORD",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.4.BP6",
+     "name": "G4 설계 독립 검토·판정",
+     "definition": "설계·정책·인터페이스가 안전요구를 충족하는지 독립적으로 검토한다. 발견 사항과 근거를 기록하고 설계 책임자의 확인 및 판정 결과에 따라 수정·재검토를 관리한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.4-A05"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G4-DECISION",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.4.BP7",
+     "name": "Flag PR 검토·병합",
+     "definition": "승인된 Version의 Flag 코드 변경을 검토하고 기본값·호출 구조·검사 결과를 확인한다. 병합 결과와 코드 연결 상태를 추적하여 정의와 구현이 어긋난 채 후속 출시로 넘어가지 않게 한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.4-A07"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FLAG-PR-RESULT",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    }
+   ],
    "rules": [
     "FFG-LCY-006",
     "FFG-DEAC-001",
@@ -9001,6 +10578,18 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "정책 ID와 근거 JIRA 변경요청(CR) 키·상태",
       "JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유"
+     ]
+    },
+    {
+     "key": "WP-FLAG-PR-RESULT",
+     "name": "Flag 코드 변경 검토·병합 기록",
+     "en": "Flag 코드 변경 검토·병합 기록",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "대상 Feature Version·Flag와 저장소 PR",
+      "기본값·호출 구조 검토와 검사 결과",
+      "병합 상태·스캔 참조·담당과 시각"
      ]
     }
    ],
@@ -9397,7 +10986,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "inputs": [
       "WP-G4-DECISION"
      ],
-     "outputs": [],
+     "outputs": [
+      "WP-FLAG-PR-RESULT"
+     ],
      "steps": [
       "Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다",
       "기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다",
@@ -10105,6 +11696,150 @@ export const WORKFLOWS: WorkflowDoc = {
      "text": "재현 정보를 갖춘 시험 Evidence가 Feature Version과 연결되어 G5 판정을 받는다."
     }
    ],
+   "basePractices": [
+    {
+     "id": "FPW.5.BP1",
+     "name": "독립성 수준·검증 계획 확정",
+     "definition": "안전 분류와 참조 ASIL에 맞추어 확인 조치의 독립성과 검증 범위를 계획한다. 수행 주체·시험 수준·판정 기준을 합의하여 결과를 평가할 일관된 기준을 마련한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.5-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-VV-PLAN",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.5.BP2",
+     "name": "시나리오·허용 조합 정의",
+     "definition": "기능·ODD·의존 관계에서 정상 및 거부 시나리오와 허용 조합을 정의한다. 시나리오 판과 시험 범위를 관리하고 시뮬레이션으로 판단할 수 없는 항목의 대체 검증을 계획한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.5-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-TEST-SPEC",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.5.BP3",
+     "name": "통합 시험·SEooC 가정 확인",
+     "definition": "협력사 사용 가정과 실제 차량 SW 구성을 비교하여 통합 적합성을 확인한다. 불일치의 조치와 추가 시험을 정하고 통합 빌드·변경 기록을 결과에 연결한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.5-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-INTEGRATION-REC",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.5.BP4",
+     "name": "비활성화·결함 주입 시험 수행",
+     "definition": "명세된 상황과 결함을 단위·HIL·차량 시험에 적용하여 안전 종료와 거부 동작을 확인한다. 실행 환경·실패·재현 정보를 보존하고 시뮬레이션과 실차 근거의 범위를 구분한다.",
+     "notes": [
+      "가상 실행 결과는 정의된 TMS 제출과 판정 절차를 거쳐야 하며 실차 승인을 대신하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.5-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-TEST-RESULT",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.5.BP5",
+     "name": "Flag 코드 연결 확인",
+     "definition": "정의된 Flag와 실제 코드·스캔·외부 정책 도구의 상태를 대조한다. 불일치의 조치 또는 기한 있는 예외를 추적하고 출시 관문이 사용하는 최신 결과를 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.5-A07"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FLAG-RECON-RESULT",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.5.BP6",
+     "name": "시험 Evidence 연결·TMS 제출",
+     "definition": "시험 명세·결과·재현 정보를 Feature Version과 양방향으로 연결한다. 시험관리 연계로 결과를 제출하고 빠진 시험이나 잘못 연결된 Version을 확인하여 판정 근거를 완성한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.5-A05"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G5-EVIDENCE",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.5.BP7",
+     "name": "G5 V&V 판정",
+     "definition": "검증 계획의 범위·독립성·판정 기준을 실제 제출 결과와 비교한다. 미해결 결함과 잔여 위험의 검토 근거를 포함하여 독립 판정하고 필요한 재시험을 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.5-A06"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G5-DECISION",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    }
+   ],
    "rules": [
     "FFG-LCY-007",
     "FFG-TST-001",
@@ -10197,6 +11932,18 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "판정과 근거 Evidence ID, 독립 V&V 서명",
       "미해결 결함과 잔여 위험 수용 근거"
+     ]
+    },
+    {
+     "key": "WP-FLAG-RECON-RESULT",
+     "name": "Flag 코드 대사·예외 확인 기록",
+     "en": "Flag 코드 대사·예외 확인 기록",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "대상 Version·검사 판·스캔 해시",
+      "불일치 항목과 조치 결과",
+      "예외가 있으면 범위·결정·만료 참조"
      ]
     }
    ],
@@ -10474,7 +12221,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "inputs": [
       "WP-INTEGRATION-REC"
      ],
-     "outputs": [],
+     "outputs": [
+      "WP-FLAG-RECON-RESULT"
+     ],
      "steps": [
       "어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다",
       "미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다",
@@ -11251,6 +13000,150 @@ export const WORKFLOWS: WorkflowDoc = {
      "text": "서명·SBOM이 결합된 패키지가 OTA Gate를 거쳐 서버에 배포된다."
     }
    ],
+   "basePractices": [
+    {
+     "id": "FPW.6.BP1",
+     "name": "출시 Baseline 확정 요청",
+     "definition": "검증된 Feature Version과 승인 정책으로 출시 구성을 식별하고 필요한 Artifact를 갖춘 Baseline 확정을 요청한다. 요청 범위를 고정하고 요청자와 승인자의 분리를 유지한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.6-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-BASELINE-REQ",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.6.BP2",
+     "name": "출시 Baseline 확정 승인",
+     "definition": "요청된 출시 구성이 차량 사양·SW·Variant 기준정보와 일치하는지 검토한다. 다른 승인자가 확정 또는 반려하고 확정된 해시와 구성을 출시 담당자에게 전달한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.6-A02"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RELEASE-BASELINE",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.6.BP3",
+     "name": "SUMS 기록·형식승인 확인",
+     "definition": "확정 구성과 형식승인 영향 판단을 SUMS 기록에 연결한다. 필요한 기관 결정·사용자 고지·보존 조건이 준비되었는지 확인하고 미해결 사항은 배포 준비 판단에 반영한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.6-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SUMS-RECORD",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.6.BP4",
+     "name": "서명 패키지 작성·SBOM 결합",
+     "definition": "확정된 정책·설정 Artifact와 SBOM을 하나의 배포 단위로 식별한다. 용도가 맞는 키의 서명과 해시를 확인하고 변경 기록을 통해 원본 구성과 게시 패키지를 추적한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.6-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SIGNED-PACKAGE",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.6.BP5",
+     "name": "OTA Gate 판정 등록",
+     "definition": "대상 식별·호환성·고지·서명·SUMS의 사전조건을 평가한다. 근거에 연결된 OTA 판정을 남기고 부족한 조건과 보완 책임을 출시 담당자에게 전달한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.6-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-OTA-GATE",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.6.BP6",
+     "name": "G6 서명 배포 실행",
+     "definition": "승인된 정책과 OTA 사전조건을 확인하여 서버 평가 기준과 외부 정책 도구를 일치시킨다. 서명 게시본·배포 결과를 기록하고 정책 전달과 차량 내 활성화의 차이를 운영 조직에 알린다.",
+     "notes": [
+      "열린 재-HARA는 출시 전이·Release Sign-off를 막으며 승인된 완화 정책의 배포 자체를 막지 않는다는 D-RD-6 경계를 따른다."
+     ],
+     "activityIds": [
+      "FPW.6-A06"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G6-DECISION",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.6.BP7",
+     "name": "코드 저장소 연결 관리",
+     "definition": "차량 SW 저장소의 패키지·기본 브랜치·스캔·webhook 연결을 통제한다. 설정 변경과 실패 원인을 기록하고 구현 담당자가 자기 검사를 약화시키지 못하도록 변경 책임을 분리한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.6-A07"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REPO-CONNECTION",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    }
+   ],
    "rules": [
     "FFG-LCY-008",
     "FFG-LCY-009",
@@ -11331,6 +13224,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "서버 배포(평가 기준 전환) 시각과 게시본 ID",
       "Unleash 동기화 결과(flag·전략·환경)",
       "Release Manager 판정과 근거 Evidence ID"
+     ]
+    },
+    {
+     "key": "WP-REPO-CONNECTION",
+     "name": "코드 저장소 연결·변경 기록",
+     "en": "코드 저장소 연결·변경 기록",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "저장소·패키지·기본 브랜치와 스캔 설정",
+      "webhook·서명 검증의 상태와 실패 조치",
+      "변경 사유·권한 있는 수행자·시각"
      ]
     }
    ],
@@ -11672,7 +13577,9 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "screens": [
        "/deployments",
-       "/integration/connectors"
+       "/integration/connectors",
+       "/ops/ota-installs",
+       "/deployments/campaigns/:id"
       ],
       "gates": [],
       "anchor": null,
@@ -11709,7 +13616,9 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      "inputs": [],
-     "outputs": [],
+     "outputs": [
+      "WP-REPO-CONNECTION"
+     ],
      "steps": [
       "차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다",
       "webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다",
@@ -11725,6 +13634,7 @@ export const WORKFLOWS: WorkflowDoc = {
       ],
       "screens": [
        "/integration/code-repositories",
+       "/integration/code-repositories/:repoId",
        "/integration/code-scans"
       ],
       "gates": [],
@@ -12417,6 +14327,268 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O5",
      "text": "효력이 Canary Cohort부터 관측 기준을 만족할 때만 넓어진다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.7.BP1",
+     "name": "Canary·Shadow 판정 기준 정의",
+     "definition": "안전 분류와 배포 범위를 기준으로 Canary 단계·관측 기간·중단 기준을 사전에 정한다. 단계 간 확대 조건을 합의하고 Shadow의 비간섭 검증 범위를 명시한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-CANARY-PLAN",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP2",
+     "name": "출시 차단 해제 결정",
+     "definition": "출시 차단 해제 요청의 현재 불일치·범위·근거·만료를 검토한다. 요청자와 다른 결정자가 제한된 예외를 승인하거나 반려하고 만료 뒤 원래 차단이 다시 적용되는지 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A13"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FLAG-WAIVER",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP3",
+     "name": "효과 실험 계획 등록",
+     "definition": "확인할 효과와 지표·대상·기간을 정하여 실험을 계획한다. 안전 관련 기능에 허용되는 방식과 비간섭 근거를 확인하고 승인 범위 내 실행 시점을 관계자와 맞춘다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A02"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-EXPERIMENT-PLAN",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP4",
+     "name": "Safety Case·SOTIF 근거 정리",
+     "definition": "안전 주장과 잔여 위험을 현재 Version의 분석·검증 근거에 연결한다. 주장·논거·증거의 공백을 확인할 수 있도록 Safety Case를 구성하고 독립 검토에 넘긴다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SAFETY-CASE",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP5",
+     "name": "Safety Case 독립 검토",
+     "definition": "적격한 독립 검토자가 Safety Case의 주장과 증거를 검토하고 일부 근거를 재현한다. 적용 범위·불확실성·발견 사항과 조치 책임을 기록하여 출시 판단에 제공한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A04"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SC-REVIEW",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP6",
+     "name": "상품 구성 작성",
+     "definition": "판매할 기능·구성·조건을 상품으로 정의하고 의존·배타·카탈로그 제약을 검증한다. 적합한 차량의 체험 범위를 계획하고 검증되지 않은 구성은 초안으로 구분한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PRODUCT",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP7",
+     "name": "상품 구성 승인",
+     "definition": "상품 작성과 분리된 책임자가 구성·판매 조건·카탈로그 제약을 검토한다. 구성 승인 또는 반려의 사유를 남기고 고객 출시 승인과의 사람 분리를 유지한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A06"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PRODUCT-APPROVAL",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP8",
+     "name": "형식승인·사용자 고지 확인",
+     "definition": "기관 결정과 시장별 고지·효력 조건이 활성화 범위에 맞는지 확인한다. 기능 작동 중 변경이 허용되지 않는 조건을 명시하여 출시·활성화 판단에 제공한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A07"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ACTIVATION-PRECHECK",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP9",
+     "name": "G7 출시·활성화 판정",
+     "definition": "Safety Case 검토·Canary 기준·고지·활성화 조건을 모아 출시 준비를 판단한다. AI·모델을 포함한 변경 관리 근거를 확인하고 필요한 Gate 판정과 출시 책임 확인을 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A08"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-G7-DECISION",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP10",
+     "name": "Release Sign-off(출시 책임 확인)",
+     "definition": "현재 Gate 판정과 안전 근거·Canary 계획을 확인한 Feature 책임자가 출시 책임을 명시적으로 확인한다. 서명을 당시 판정 기록에 묶고 근거 판정이 바뀌면 서명의 효력을 다시 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A12"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RELEASE-SIGNOFF",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP11",
+     "name": "출시 전이",
+     "definition": "현재 OTA·운영 판정과 유효한 출시 책임 서명을 확인하여 출시 전이를 수행한다. 수행자·시각·결과를 기록하고 실패 또는 보완이 필요한 경우 해당 개발·검토 단계로 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A09"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RELEASE-RECORD",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP12",
+     "name": "상품 고객 출시 승인",
+     "definition": "구성 승인과 구분된 책임자가 고객 제공 준비와 상품 출시 조건을 검토한다. 고객 출시 결정을 기록하고 상품기획·운영에 제공 범위와 후속 체험 절차를 전달한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A10"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PRODUCT-RELEASE",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.7.BP13",
+     "name": "Canary 활성화·단계적 확대",
+     "definition": "승인된 Canary 범위에서 활성화를 시작하고 단계별 관측 결과를 평가한다. 사전 조건을 만족할 때만 확대하며 중단 기준에 해당하면 확대를 멈추고 이상 대응으로 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.7-A11"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ROLLOUT-RECORD",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -14667,7 +16839,7 @@ export const WORKFLOWS: WorkflowDoc = {
     "G8"
    ],
    "ref": "표준 보고서 7장(비활성화·복원), 8.x FFG-PLT-005·016, 14장 FFG-SEC-003·004, 6.1절 G8",
-   "purpose": "출시된 Feature를 운행 중 감시하고, 이상 징후가 안전·보안·법규 위험으로 확인되면 2인 승인을 거친 긴급 차단을 발행해 차량별 적용을 확인한 뒤, 원인을 해소하고 다른 승인자의 승인으로 단계적으로 복원한다.",
+   "purpose": "출시된 Feature를 운행 중 감시하고, 이상 징후가 안전·보안·법규 위험으로 확인되면 2인 승인을 거친 긴급 차단을 발행해 차량별 적용을 확인한 뒤, 원인을 해소하고 다른 승인자의 승인으로 단계적으로 복원한다. 정책 복구가 필요하면 복구 기준·전 범위·독립 승인을 재검증하여 롤백하고 차량별 적용과 미회신을 추적한다.",
    "outcomes": [
     {
      "id": "O1",
@@ -14692,6 +16864,338 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O6",
      "text": "정기 드릴로 차단·복원 능력이 측정되고 G8 운영 판정이 남는다."
+    },
+    {
+     "id": "O7",
+     "text": "정책 롤백의 복구 기준·범위·독립 승인·실행 재검증과 차량별 적용·미회신 결과가 추적된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.8.BP1",
+     "name": "Flag 평가 이상 확인",
+     "definition": "평가 오류·기본값 폴백·서명 이상을 식별하여 코드·배포·차량 회신과 대조한다. 원인·영향·조치를 기록하고 필요한 차단 또는 재배포 판단에 근거를 제공한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A12"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FLAG-EVAL-INVESTIGATION",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP2",
+     "name": "이상 징후 확인",
+     "definition": "운행 관측·경보·VOC에서 이상 징후와 영향 기능·차량을 식별한다. 데이터 신선도와 사실의 범위를 확인하고 조사·조치·효과 확인 또는 기각의 근거와 책임을 추적한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ANOMALY-CASE",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP3",
+     "name": "차단 필요성·범위 판단",
+     "definition": "이상 징후의 사유와 설계된 종료 동작에 따라 차단 필요성과 유효 범위를 판단한다. 누적 상한·대량 종료 계획과 게이트 결과를 확인하여 승인에 필요한 차단 계획을 마련한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A02"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KILL-PLAN",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP4",
+     "name": "리콜·봉쇄 근거 연계",
+     "definition": "안전 차단의 근거가 되는 리콜·봉쇄 결정과 시장별 보고 책임·기한을 확인한다. 검증 가능한 근거 ID를 요청 담당자에게 전달하고 불충분한 근거는 보완하도록 한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RECALL-BASIS",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP5",
+     "name": "긴급 차단 요청",
+     "definition": "확정한 대상·사유·범위와 리콜 또는 봉쇄 근거를 갖추어 긴급 차단을 요청한다. 명시적 확인과 요청·승인자 분리를 유지하며 승인 대기 결과를 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A04"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KILL-REQ",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP6",
+     "name": "긴급 차단 2인 승인",
+     "definition": "필요한 역할의 서로 다른 승인자가 차단의 근거·범위·상한을 독립적으로 검토한다. 개인 서명을 수집하고 최종 게이트와 발행 명령을 확인하여 승인과 발행의 연결을 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A05"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KILL-DECISION",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP7",
+     "name": "긴급 권한 사후 검토",
+     "definition": "긴급 권한 사용의 사유·범위·절차 준수를 요청·승인에 참여하지 않은 검토자가 기한 내 확인한다. 개선 항목과 책임을 한 번의 독립 검토 기록으로 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A07"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-POST-REVIEW",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP8",
+     "name": "차단 전달·적용 추적",
+     "definition": "게시 명령의 전달과 실제 차량 적용을 유효한 보고 근거로 구분하여 추적한다. 기한 초과·불일치 차량을 식별하고 연결된 이상 건과 상위 대응 결정을 관리한다.",
+     "notes": [
+      "전송 수락이나 OTA 전달 통보만으로 차량의 적용 완료를 선언하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.8-A06"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KILL-TRACE",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP9",
+     "name": "원인 조치·복원 요청",
+     "definition": "원인을 조치하고 재검증 근거를 확보한 뒤 차단 해제 범위와 관측 단계를 요청한다. 이전 차단 승인자와의 분리를 유지하고 복원 승인에 필요한 근거와 Cohort를 명시한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A08"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RESTORE-REQ",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP10",
+     "name": "복원 2인 승인",
+     "definition": "직전 차단 승인에 참여하지 않은 승인자들이 복원 근거·범위·재검증을 독립적으로 검토한다. 요구되는 서명과 게이트를 만족한 복원 게시본을 확인하고 판단을 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A09"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RESTORE-DECISION",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP11",
+     "name": "단계적 복원·관측",
+     "definition": "승인 범위의 차단 해제를 Canary부터 적용하고 회신과 관측 결과를 확인한다. 정상 활성화는 차량 자체 시험·ODD·Guard의 별도 조건에 따르며 관측 기준을 만족할 때만 복원 범위를 넓힌다.",
+     "notes": [
+      "복원 명령의 차단 해제(INACTIVE)는 기능을 즉시 ACTIVE로 만드는 명령이 아니다."
+     ],
+     "activityIds": [
+      "FPW.8-A10"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RESTORE-ROLLOUT",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP12",
+     "name": "분기 드릴·G8 운영 판정",
+     "definition": "시험 범위에서 차단·복원 드릴을 수행하여 전달·적용·보고의 정확성을 확인한다. 분기 운영 근거와 독립 검토 의견을 모아 개선 사항과 운영 판정을 기록한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A11"
+     ],
+     "outcomes": [
+      "O6"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-DRILL-REPORT",
+       "outcomes": [
+        "O6"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP13",
+     "name": "정책 롤백 요청·계획",
+     "definition": "현재 배포와 복구 기준 정책을 식별하고 대상 전 범위·조건·승인대상자를 가진 롤백 요청 또는 계획을 작성한다. 긴급 차단 해제와 정책 버전 복구를 구분하며 SW 바이너리 롤백을 임의 실행하지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A13"
+     ],
+     "outcomes": [
+      "O7"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RBK-REQ",
+       "outcomes": [
+        "O7"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP14",
+     "name": "정책 롤백 독립 승인",
+     "definition": "요청자와 다른 지정 승인대상자가 복구 기준·범위·조건을 검토하여 승인 또는 반려한다. 조직 역할의 참여만으로 승인되지 않으며 해당 요청의 실제 승인 이력을 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A14"
+     ],
+     "outcomes": [
+      "O7"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RBK-DEC",
+       "outcomes": [
+        "O7"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP15",
+     "name": "롤백 재검증·실행",
+     "definition": "승인된 수동 요청을 실행하거나 승인된 자동 계획의 조건 충족 실행을 확인한다. 실행 직전의 현재 배포·검증·운영 승인·서명과 적용 가능성을 재확인하고 새 서명 게시본을 원본 배포에 연결한다.",
+     "notes": [
+      "자동 실행은 기존 서버의 승인 계획·조건 판정 경로에 따른다. 업무 체크를 완료해도 자동 롤백이 발생하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.8-A15"
+     ],
+     "outcomes": [
+      "O7"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RBK-EXEC",
+       "outcomes": [
+        "O7"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.8.BP16",
+     "name": "롤백 적용·미회신 확인",
+     "definition": "새 롤백 게시본의 동일 대상 집합을 기준으로 전달과 실제 적용을 구분해 추적한다. 거부·미회신·기한초과는 재시도 및 미해결 위험으로 남기고 운영 화면의 성공 표지만으로 종결하지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.8-A16"
+     ],
+     "outcomes": [
+      "O7"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RBK-CLOSE",
+       "outcomes": [
+        "O7"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -14838,6 +17342,62 @@ export const WORKFLOWS: WorkflowDoc = {
       "시험 Cohort의 전달 시간·적용률·보고 정확도",
       "분기 운영 점검 결과와 G8 판정 서명"
      ]
+    },
+    {
+     "key": "WP-FLAG-EVAL-INVESTIGATION",
+     "name": "Flag 평가 이상 조사 기록",
+     "en": "Flag 평가 이상 조사 기록",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "영향 Flag·Version·차량과 관측 기간",
+      "폴백·서명·평가 오류와 대조한 게시본·회신",
+      "원인·조치·차단 또는 재배포 인계"
+     ]
+    },
+    {
+     "key": "WP-RBK-REQ",
+     "name": "정책 롤백 요청·계획",
+     "en": "Policy Rollback Request and Plan",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "현재 배포 ID·복구 정책 버전·전 범위·수동 사유 또는 자동 조건",
+      "미리보기 검증과 지정 승인대상자"
+     ]
+    },
+    {
+     "key": "WP-RBK-DEC",
+     "name": "정책 롤백 승인 기록",
+     "en": "Policy Rollback Decision",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "지정 승인대상자와 요청자 분리",
+      "승인/반려 사유·범위·복구 기준 및 판정 시각"
+     ]
+    },
+    {
+     "key": "WP-RBK-EXEC",
+     "name": "정책 롤백 실행 추적",
+     "en": "Policy Rollback Execution",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "실행 직전 재검증·실행자·현재 배포 변화 확인",
+      "새 서명 게시본 ID·전송·실패 및 원본 배포 연결"
+     ]
+    },
+    {
+     "key": "WP-RBK-CLOSE",
+     "name": "정책 롤백 적용 확인",
+     "en": "Policy Rollback Application Review",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "대상 분모·차량별 ACK/READBACK·적용·거부·미회신",
+      "재시도·기한초과·완료 또는 미해결 인계 근거"
+     ]
     }
    ],
    "activities": [
@@ -14864,7 +17424,9 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      "inputs": [],
-     "outputs": [],
+     "outputs": [
+      "WP-FLAG-EVAL-INVESTIGATION"
+     ],
      "steps": [
       "평가 모니터링에서 기본값 폴백·서명 오류·오류 수가 늘어난 Flag를 찾는다",
       "차량 회신과 게시본을 대조해 원인이 배포·서명·차량 중 어디인지 가른다",
@@ -14946,6 +17508,7 @@ export const WORKFLOWS: WorkflowDoc = {
        "/ops/anomalies",
        "/ops/safety-kpi",
        "/ops/incidents",
+       "/ops/incident-reports/:id",
        "/ops/feature-health",
        "/ops/feature-health/:findingId",
        "/ops/collection",
@@ -15479,7 +18042,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-RESTORE-ROLLOUT"
      ],
      "steps": [
-      "Canary Cohort부터 복원을 적용하고 차량이 다음 시동 자체 시험 뒤 활성으로 돌아왔는지 확인한다",
+      "Canary Cohort부터 차단 해제를 적용하고 차량이 INACTIVE 상태로 복귀했는지 확인한다. 재활성화는 정상 활성화 Guard·ODD·자체 시험 조건을 별도로 확인한다",
       "사전에 정한 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
       "이상이 보이면 확대를 멈추고 다시 차단 판단(A02)으로 넘긴다"
      ],
@@ -15559,11 +18122,240 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": []
+    },
+    {
+     "id": "FPW.8-A13",
+     "name": "정책 롤백 요청·계획",
+     "trigger": "정책 복구 필요 또는 자동 복구 계획 수립",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O7"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-REL",
+       "R-SM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-RBK-REQ"
+     ],
+     "steps": [
+      "현재 배포 ID와 같은 flag의 이전 배포 정책 및 복구 가능 근거를 확인한다",
+      "전 대상 범위와 사유 또는 자동 조건을 정해 미리보기를 검증한다",
+      "지정 승인대상자를 넣어 요청 또는 계획을 만들고 기준 배포를 고정한다"
+     ],
+     "checks": [
+      "현재 배포가 바뀌면 낡은 요청으로 실행하지 않는다",
+      "정책 전 범위를 덮지 못하거나 SW 버전 실행 위임이 미확정이면 보류한다"
+     ],
+     "platform": {
+      "actions": [
+       "previewRollback",
+       "createRollbackRequest",
+       "createRollbackPlan"
+      ],
+      "screens": [
+       "/ops/rollback",
+       "/policies/:id"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.8-A14"
+     ]
+    },
+    {
+     "id": "FPW.8-A14",
+     "name": "정책 롤백 독립 승인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O7"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-REL"
+      ],
+      "I": [
+       "R-OPS",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-RBK-REQ"
+     ],
+     "outputs": [
+      "WP-RBK-DEC"
+     ],
+     "steps": [
+      "자신이 지정 승인대상자이며 요청자와 다른 사람인지 확인한다",
+      "복구 기준·적용 범위·조건과 안전 영향을 검토한다",
+      "사유를 남겨 승인 또는 반려하고 후속 실행자에게 결과를 알린다"
+     ],
+     "checks": [
+      "요청자 자기 승인과 지정되지 않은 사람의 승인이 차단된다",
+      "자동 계획 승인도 승인된 조건·범위를 넘지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "decideRollbackRequest",
+       "decideRollbackPlan"
+      ],
+      "screens": [
+       "/ops/rollback"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.8-A15"
+     ]
+    },
+    {
+     "id": "FPW.8-A15",
+     "name": "롤백 재검증·실행",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O7"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-REL",
+       "R-SM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-RBK-DEC"
+     ],
+     "outputs": [
+      "WP-RBK-EXEC"
+     ],
+     "steps": [
+      "승인된 요청 또는 계획과 현재 배포의 일치 여부를 확인한다",
+      "복구 기준의 검증·운영 승인·서명·현재 적용 가능성을 다시 확인한다",
+      "허용된 실행을 수행하고 새 게시본 및 실행 이력을 연결한다"
+     ],
+     "checks": [
+      "승인 후 상태·키·기준이 달라지면 재검증에서 차단된다",
+      "실행 응답을 차량 적용 완료로 간주하지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "executeRollbackRequest"
+      ],
+      "screens": [
+       "/ops/rollback",
+       "/deployments/:id"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.8-A16"
+     ]
+    },
+    {
+     "id": "FPW.8-A16",
+     "name": "롤백 적용·미회신 확인",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O7"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-REL"
+      ],
+      "I": [
+       "R-SM",
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-RBK-EXEC"
+     ],
+     "outputs": [
+      "WP-RBK-CLOSE"
+     ],
+     "steps": [
+      "현재 롤백 게시본과 대상 차량 분모를 고정한다",
+      "차량별 수신·적용·거부·기한초과를 확인하고 허용된 재시도를 수행한다",
+      "모든 적용 완료 또는 미해결 차량·위험·담당자를 기록해 인계한다"
+     ],
+     "checks": [
+      "수신 ACK와 적용 READBACK을 구분한다",
+      "누락 데이터는 대상 0 또는 성공으로 표시하지 않는다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/ops/rollback",
+       "/deployments/:id",
+       "/fleet/vehicles/:vin"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
     }
    ],
    "layout": {
     "width": 3046,
-    "height": 572,
+    "height": 662,
     "lanes": [
      {
       "role": "R-OPS",
@@ -15571,13 +18363,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 0,
       "w": 3046,
-      "h": 278
+      "h": 368
      },
      {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0,
-      "y": 278,
+      "y": 368,
       "w": 3046,
       "h": 98
      },
@@ -15585,7 +18377,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-REG",
       "label": "법규 담당",
       "x": 0,
-      "y": 376,
+      "y": 466,
       "w": 3046,
       "h": 98
      },
@@ -15593,7 +18385,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-QA",
       "label": "품질 조직",
       "x": 0,
-      "y": 474,
+      "y": 564,
       "w": 3046,
       "h": 98
      }
@@ -15663,11 +18455,38 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.8-A13",
+      "kind": "action",
+      "label": "정책 롤백 요청·계획",
+      "x": 198,
+      "y": 286,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A15",
+      "kind": "action",
+      "label": "롤백 재검증·실행",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A16",
+      "kind": "action",
+      "label": "롤백 적용·미회신 확인",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.8-A02",
       "kind": "action",
       "label": "차단 필요성·범위 판단",
       "x": 758,
-      "y": 294,
+      "y": 384,
       "w": 188,
       "h": 66
      },
@@ -15676,7 +18495,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "긴급 차단 2인 승인",
       "x": 1598,
-      "y": 294,
+      "y": 384,
       "w": 188,
       "h": 66
      },
@@ -15685,7 +18504,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "복원 2인 승인",
       "x": 2438,
-      "y": 294,
+      "y": 384,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A14",
+      "kind": "action",
+      "label": "정책 롤백 독립 승인",
+      "x": 478,
+      "y": 384,
       "w": 188,
       "h": 66
      },
@@ -15694,7 +18522,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "리콜·봉쇄 근거 연계",
       "x": 1038,
-      "y": 392,
+      "y": 482,
       "w": 188,
       "h": 66
      },
@@ -15703,7 +18531,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "긴급 권한 사후 검토",
       "x": 1878,
-      "y": 490,
+      "y": 580,
       "w": 188,
       "h": 66
      },
@@ -15735,11 +18563,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.8-S4",
+      "kind": "start",
+      "label": "정책 복구 필요 또는 자동 복구 계획 수립",
+      "x": 146,
+      "y": 310,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.8-E1",
       "kind": "end",
       "label": "종료",
       "x": 2080,
-      "y": 514,
+      "y": 604,
       "w": 18,
       "h": 18
      },
@@ -15758,6 +18595,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 220,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E4",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 40,
       "w": 18,
       "h": 18
      }
@@ -15809,6 +18655,21 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.8-S4",
+      "to": "FPW.8-A13",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        319
+       ],
+       [
+        198,
+        319
+       ]
+      ]
+     },
+     {
       "from": "FPW.8-A12",
       "to": "FPW.8-A01",
       "kind": "flow",
@@ -15846,11 +18707,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         746,
-        327
+        417
        ],
        [
         758,
-        327
+        417
        ]
       ]
      },
@@ -15861,19 +18722,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         946,
-        327
+        417
        ],
        [
         1026,
-        327
+        417
        ],
        [
         1026,
-        425
+        515
        ],
        [
         1038,
-        425
+        515
        ]
       ]
      },
@@ -15884,11 +18745,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1226,
-        425
+        515
        ],
        [
         1306,
-        425
+        515
        ],
        [
         1306,
@@ -15915,11 +18776,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         1586,
-        327
+        417
        ],
        [
         1598,
-        327
+        417
        ]
       ]
      },
@@ -15930,11 +18791,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1786,
-        327
+        417
        ],
        [
         1866,
-        327
+        417
        ],
        [
         1866,
@@ -15953,19 +18814,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1786,
-        327
+        417
        ],
        [
         1866,
-        327
+        417
        ],
        [
         1866,
-        523
+        613
        ],
        [
         1878,
-        523
+        613
        ]
       ]
      },
@@ -15999,11 +18860,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         2426,
-        327
+        417
        ],
        [
         2438,
-        327
+        417
        ]
       ]
      },
@@ -16014,11 +18875,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         2626,
-        327
+        417
        ],
        [
         2706,
-        327
+        417
        ],
        [
         2706,
@@ -16031,17 +18892,78 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.8-A13",
+      "to": "FPW.8-A14",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        319
+       ],
+       [
+        466,
+        319
+       ],
+       [
+        466,
+        417
+       ],
+       [
+        478,
+        417
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A14",
+      "to": "FPW.8-A15",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        417
+       ],
+       [
+        746,
+        417
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A15",
+      "to": "FPW.8-A16",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
       "from": "FPW.8-A07",
       "to": "FPW.8-E1",
       "kind": "end",
       "points": [
        [
         2066,
-        523
+        613
        ],
        [
         2080,
-        523
+        613
        ]
       ]
      },
@@ -16072,6 +18994,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         229
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A16",
+      "to": "FPW.8-E4",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1240,
+        49
        ]
       ]
      }
@@ -16085,7 +19022,7 @@ export const WORKFLOWS: WorkflowDoc = {
    },
    "departmentLayout": {
     "width": 3046,
-    "height": 572,
+    "height": 662,
     "lanes": [
      {
       "department": "DEP-OPS",
@@ -16093,13 +19030,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 0,
       "w": 3046,
-      "h": 278
+      "h": 368
      },
      {
       "department": "DEP-FS",
       "label": "기능안전팀",
       "x": 0,
-      "y": 278,
+      "y": 368,
       "w": 3046,
       "h": 98
      },
@@ -16107,7 +19044,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-HOM",
       "label": "법규인증팀",
       "x": 0,
-      "y": 376,
+      "y": 466,
       "w": 3046,
       "h": 98
      },
@@ -16115,7 +19052,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "department": "DEP-QA",
       "label": "품질팀",
       "x": 0,
-      "y": 474,
+      "y": 564,
       "w": 3046,
       "h": 98
      }
@@ -16185,11 +19122,38 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.8-A13",
+      "kind": "action",
+      "label": "정책 롤백 요청·계획",
+      "x": 198,
+      "y": 286,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A15",
+      "kind": "action",
+      "label": "롤백 재검증·실행",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A16",
+      "kind": "action",
+      "label": "롤백 적용·미회신 확인",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.8-A02",
       "kind": "action",
       "label": "차단 필요성·범위 판단",
       "x": 758,
-      "y": 294,
+      "y": 384,
       "w": 188,
       "h": 66
      },
@@ -16198,7 +19162,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "긴급 차단 2인 승인",
       "x": 1598,
-      "y": 294,
+      "y": 384,
       "w": 188,
       "h": 66
      },
@@ -16207,7 +19171,16 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "복원 2인 승인",
       "x": 2438,
-      "y": 294,
+      "y": 384,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.8-A14",
+      "kind": "action",
+      "label": "정책 롤백 독립 승인",
+      "x": 478,
+      "y": 384,
       "w": 188,
       "h": 66
      },
@@ -16216,7 +19189,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "리콜·봉쇄 근거 연계",
       "x": 1038,
-      "y": 392,
+      "y": 482,
       "w": 188,
       "h": 66
      },
@@ -16225,7 +19198,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "긴급 권한 사후 검토",
       "x": 1878,
-      "y": 490,
+      "y": 580,
       "w": 188,
       "h": 66
      },
@@ -16257,11 +19230,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.8-S4",
+      "kind": "start",
+      "label": "정책 복구 필요 또는 자동 복구 계획 수립",
+      "x": 146,
+      "y": 310,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.8-E1",
       "kind": "end",
       "label": "종료",
       "x": 2080,
-      "y": 514,
+      "y": 604,
       "w": 18,
       "h": 18
      },
@@ -16280,6 +19262,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 220,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.8-E4",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 40,
       "w": 18,
       "h": 18
      }
@@ -16331,6 +19322,21 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.8-S4",
+      "to": "FPW.8-A13",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        319
+       ],
+       [
+        198,
+        319
+       ]
+      ]
+     },
+     {
       "from": "FPW.8-A12",
       "to": "FPW.8-A01",
       "kind": "flow",
@@ -16368,11 +19374,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         746,
-        327
+        417
        ],
        [
         758,
-        327
+        417
        ]
       ]
      },
@@ -16383,19 +19389,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         946,
-        327
+        417
        ],
        [
         1026,
-        327
+        417
        ],
        [
         1026,
-        425
+        515
        ],
        [
         1038,
-        425
+        515
        ]
       ]
      },
@@ -16406,11 +19412,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1226,
-        425
+        515
        ],
        [
         1306,
-        425
+        515
        ],
        [
         1306,
@@ -16437,11 +19443,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         1586,
-        327
+        417
        ],
        [
         1598,
-        327
+        417
        ]
       ]
      },
@@ -16452,11 +19458,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1786,
-        327
+        417
        ],
        [
         1866,
-        327
+        417
        ],
        [
         1866,
@@ -16475,19 +19481,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1786,
-        327
+        417
        ],
        [
         1866,
-        327
+        417
        ],
        [
         1866,
-        523
+        613
        ],
        [
         1878,
-        523
+        613
        ]
       ]
      },
@@ -16521,11 +19527,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         2426,
-        327
+        417
        ],
        [
         2438,
-        327
+        417
        ]
       ]
      },
@@ -16536,11 +19542,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         2626,
-        327
+        417
        ],
        [
         2706,
-        327
+        417
        ],
        [
         2706,
@@ -16553,17 +19559,78 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.8-A13",
+      "to": "FPW.8-A14",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        319
+       ],
+       [
+        466,
+        319
+       ],
+       [
+        466,
+        417
+       ],
+       [
+        478,
+        417
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A14",
+      "to": "FPW.8-A15",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        417
+       ],
+       [
+        746,
+        417
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A15",
+      "to": "FPW.8-A16",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
       "from": "FPW.8-A07",
       "to": "FPW.8-E1",
       "kind": "end",
       "points": [
        [
         2066,
-        523
+        613
        ],
        [
         2080,
-        523
+        613
        ]
       ]
      },
@@ -16594,6 +19661,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         229
+       ]
+      ]
+     },
+     {
+      "from": "FPW.8-A16",
+      "to": "FPW.8-E4",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1240,
+        49
        ]
       ]
      }
@@ -16626,6 +19708,128 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O3",
      "text": "Retirement 대상 Flag의 코드·설정·시험이 기한 안에 삭제되고 Lifecycle이 종료된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.9.BP1",
+     "name": "운영 결과 품질 피드백 수용",
+     "definition": "드릴·복원 관측·이상 조사 결과에서 반복 문제와 개선 항목을 식별한다. 수용한 피드백을 담당자·후속 Version·시험 시나리오에 연결하여 반영과 효과를 추적한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.9-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-QUALITY-FEEDBACK",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.9.BP2",
+     "name": "Flag Retirement 요청",
+     "definition": "만료가 다가오거나 종료할 Flag의 연장 또는 Retirement 필요성을 검토한다. 영향 차량·구 Version 잔존과 예정 릴리스를 확인하고 종료 사유와 범위를 명시한 요청을 제출한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.9-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RETIRE-REQ",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.9.BP3",
+     "name": "Flag Retirement 승인",
+     "definition": "요청자와 구분된 책임자가 영향·안전 조건과 종료 계획을 검토한다. 필요한 독립 승인을 확보하고 삭제 기한·조건과 후속 책임을 통합·기획에 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.9-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RETIRE-APPROVAL",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.9.BP4",
+     "name": "코드·설정·시험 삭제 기록",
+     "definition": "승인된 Retirement 범위의 코드·설정·시험 제거와 차량 잔존을 단계별로 확인한다. 각 단계의 근거를 기록하고 잔존 및 후속 조건이 해소되어야 종료 단계를 닫는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.9-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RETIRE-LOG",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.9.BP5",
+     "name": "Flag 제거 PR 병합",
+     "definition": "승인된 Flag 제거 변경을 검토하고 최종 값 분기와 병합 결과를 확인한다. 정적 분석·대사 결과를 보존하여 코드 참조가 제거되었는지 판단한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.9-A06"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-FLAG-REMOVAL-SCAN",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.9.BP6",
+     "name": "Lifecycle 종료 전이",
+     "definition": "신규 사용 중지와 최종 종료의 조건을 구분하여 Lifecycle을 전이한다. Retirement 근거·수행 기록·ID 재사용 금지를 보존하고 상품 구성에 종료 사실을 반영하도록 전달한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.9-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RETIRE-CLOSE",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -16695,6 +19899,18 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "DEPRECATED·RETIRED 전이 시각",
       "Flag ID 재사용 금지 표시와 Catalog 퇴역 결과"
+     ]
+    },
+    {
+     "key": "WP-FLAG-REMOVAL-SCAN",
+     "name": "Flag 제거 검토·스캔 결과",
+     "en": "Flag 제거 검토·스캔 결과",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "Retirement 승인·제거 PR·병합 참조",
+      "최종 값 분기 검토와 정적 분석 결과",
+      "참조 잔존 수·마지막 스캔·수행자와 시각"
      ]
     }
    ],
@@ -16961,7 +20177,9 @@ export const WORKFLOWS: WorkflowDoc = {
      "inputs": [
       "WP-RETIRE-LOG"
      ],
-     "outputs": [],
+     "outputs": [
+      "WP-FLAG-REMOVAL-SCAN"
+     ],
      "steps": [
       "Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다",
       "최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다",
@@ -17645,6 +20863,148 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O5",
      "text": "공급망 원산지와 EOL 프로비저닝이 기록·검증된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.10.BP1",
+     "name": "계약 전 협력사 역량 확인",
+     "definition": "후보 협력사의 공급 범위와 평가 근거를 계약 전에 검토한다. 안전·보안·개발 역량의 부족 사항을 식별하고 개선 책임과 기한을 합의하여 계약 판단에 제공한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SUPPLIER-ASSESS",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.10.BP2",
+     "name": "DIA·CIA 체결",
+     "definition": "역할 분담·납품물·시간 예산·통지·현장 지원과 안전 정보 제공 조건을 계약에 명시한다. 법무 검토를 거쳐 책임 있는 구매 조직이 체결하고 후속 이행의 기준을 공유한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-DIA",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.10.BP3",
+     "name": "확인 조치 독립성 지정",
+     "definition": "협력사 범위에서 필요한 확인 조치와 독립성 수준을 계획한다. 수행자를 지정하고 자체 선언과 OEM의 확인 결과를 구분하여 입고 판정의 조건을 마련한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A03"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-CONFIRMATION-PLAN",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.10.BP4",
+     "name": "공급망 원산지 속성 관리",
+     "definition": "공급 구성요소의 개발 주체·국가·소유·통제 속성을 SBOM과 연결하여 관리한다. 적용 시장의 판단 근거와 보존 책임을 식별해 추적 가능한 원산지 기록을 유지한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A04"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ORIGIN-RECORD",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.10.BP5",
+     "name": "기존 구현 진단",
+     "definition": "재사용 또는 인수할 구현을 적용 요구와 비교하여 차이·위험·보완 계획을 식별한다. 분석 결과를 안전 영향 판단의 입력으로 전달하고 재사용 범위의 가정을 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SUPPLIER-DIFF",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.10.BP6",
+     "name": "Gate별 납품물 입고 검사",
+     "definition": "계약된 Gate 납품물과 사용 가정을 OEM 환경에서 확인한다. 수정 납품의 재검사와 합격 기준을 적용하여 결과를 기록하고 통합 담당자에게 사용 가정을 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A06"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-INTAKE-RESULT",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.10.BP7",
+     "name": "EOL 프로비저닝 검증",
+     "definition": "출고 구성의 초기 기록과 프로비저닝 표식이 의도한 장치에 남았는지 검증한다. 누락 기록을 정상 첫 시동으로 취급하지 않는지 확인하고 생산 기준정보와 결과를 연결한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.10-A07"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-EOL-RECORD",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -18861,6 +22221,130 @@ export const WORKFLOWS: WorkflowDoc = {
      "text": "OSS 라이선스·보안 관리 프로그램이 운영된다."
     }
    ],
+   "basePractices": [
+    {
+     "id": "FPW.11.BP1",
+     "name": "서명 키 계층·HSM 운영",
+     "definition": "명령·정책의 용도별 키 계층과 HSM 보관·사용 조건을 정의한다. 승인 서명과 키 사용의 경계를 확인하고 정기·긴급 교체 및 대장 관리 책임을 정한다.",
+     "notes": [
+      "실제 HSM·KMS 운용은 플랫폼 밖 업무다. 시연 서명을 실제 HSM 운용 근거로 취급하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.11-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KEY-REGISTER",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.11.BP2",
+     "name": "키 교체 플랫폼 기록",
+     "definition": "외부 키 운영 결과를 플랫폼의 키 용도·상태·검증 이력과 일치시킨다. 교체 사유와 시각을 대장에 반영하고 이전 서명 검증과 신규 사용의 경계를 관계자에게 알린다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.11-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KEY-REGISTER",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.11.BP3",
+     "name": "키 유출 대응·epoch 상향",
+     "definition": "키 유출·오사용의 용도와 영향 차량을 식별하여 사고 대응 범위를 정한다. 필요한 epoch 상향과 통지를 수행하고 추가 안전·보안 차단 판단으로 연결한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.11-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KEY-INCIDENT",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.11.BP4",
+     "name": "취약점 영향 특정·대응 결정",
+     "definition": "취약점을 배포 단위의 SBOM·구성·차량 범위와 대조하여 실제 영향을 판단한다. VEX와 대응 기한을 기록하고 차단·업데이트 등 선택한 조치를 CSMS 운영에 연결한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.11-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-VEX-DECISION",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.11.BP5",
+     "name": "OSS 라이선스·보안 프로그램 운영",
+     "definition": "사용하는 OSS의 라이선스·보안 의무와 변경 영향을 검토한다. 이행 근거와 미충족 사항을 관리하고 수용할 수 없는 구성요소의 대체를 통합 조직에 요청한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.11-A06"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-OSS-PROGRAM",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.11.BP6",
+     "name": "CSMS Evidence·R155 보고",
+     "definition": "보안 분석·요구·시험·관측·사고 대응 근거를 현재 배포와 연결해 정리한다. 보고 항목과 Evidence의 대응을 확인하고 법규 담당자와 기관 제출 범위를 확정한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.11-A05"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-CSMS-EVIDENCE",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    }
+   ],
    "rules": [
     "FFG-SEC-002",
     "FFG-SBOM-005",
@@ -19926,7 +23410,7 @@ export const WORKFLOWS: WorkflowDoc = {
    "group": "지원",
    "gates": [],
    "ref": "표준 보고서 13장(텔레메트리·데이터), 11장 FFG-OFT-003",
-   "purpose": "운행 감시에 쓰는 데이터의 범주·접근·보존을 정하고, 평가 컨텍스트에 개인정보가 들어가지 않게 하며, 시장별 데이터 이전·접근권·보존 의무를 지킨다.",
+   "purpose": "운행 감시에 쓰는 데이터의 범주·접근·보존을 정하고, 평가 컨텍스트에 개인정보가 들어가지 않게 하며, 시장별 데이터 이전·접근권·보존 의무를 지킨다. 처리 목적과 동의 또는 적법 근거를 검토하고 정보주체 요청의 독립 처리와 감사 연속성을 확인한다.",
    "outcomes": [
     {
      "id": "O1",
@@ -19947,6 +23431,180 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O5",
      "text": "범주별 보존 기간이 지난 데이터가 삭제되고 기록된다."
+    },
+    {
+     "id": "O6",
+     "text": "개인정보 처리 목적·동의 또는 적법 근거·보존·접근 범위가 검토되고 미확정 사항이 식별된다."
+    },
+    {
+     "id": "O7",
+     "text": "정보주체 내보내기·삭제/가명화 요청과 독립 실행·거절 결과가 감사 연속성을 보존하며 추적된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.12.BP1",
+     "name": "운행 감시 지표·경보 기준 기록",
+     "definition": "Safety Case와 연결되는 운행 감시 목적과 지표·경보 기준을 정한다. 데이터 범주·접근·보존 조건을 기록하고 운영 담당자가 기준에 따라 감시하도록 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.12-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-KPI-PLAN",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP2",
+     "name": "중국 데이터 현지 처리·이전 심사",
+     "definition": "적용 시장의 데이터 범주와 처리·조회·이전 경로를 식별한다. 법무가 정한 심사 방식과 결과를 기록하고 허용되지 않거나 미확정인 경로를 운영 범위에서 구분한다.",
+     "notes": [
+      "이 업무 정의는 특정 법규의 현재 적용 여부나 국외 이전 승인을 대신하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.12-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-DATA-TRANSFER",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP3",
+     "name": "EU 데이터 접근 요청 처리",
+     "definition": "요청자의 권한과 대상 차량·제공 범위를 확인하여 데이터 접근 요청을 처리한다. 동의·공유·이용 계약의 근거와 실제 제공 결과를 기록해 요청과 처리를 추적한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.12-A04"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-DATA-ACCESS",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP4",
+     "name": "평가 컨텍스트 개인정보 검토",
+     "definition": "평가 목적과 컨텍스트 속성을 검토하여 가명 식별과 금지 정보의 경계를 확인한다. 평가 이전의 거부 시험과 검토 근거를 보존하고 부적절한 수집·사용을 보완하도록 한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.12-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-CONTEXT-REVIEW",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP5",
+     "name": "보존 기간 경과 데이터 삭제",
+     "definition": "데이터 범주별로 정해진 보존·삭제 조건과 조사 보류 사유를 확인한다. 대상과 예외를 구분하여 처리를 수행하고 삭제 건수·보류·책임을 기록한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.12-A05"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RETENTION-LOG",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP6",
+     "name": "처리 목적·근거 검토",
+     "definition": "개인정보의 목적·최소 항목·동의 또는 적법 근거와 보존·접근·이전 제한을 검토하여 실행 담당자에게 인계한다. 이 레퍼런스 정의는 고객 동의 수집이나 법률 적합성 승인을 생성하지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.12-A06"
+     ],
+     "outcomes": [
+      "O6"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PRIVACY-REVIEW",
+       "outcomes": [
+        "O6"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP7",
+     "name": "정보주체 요청 접수",
+     "definition": "정보주체 요청의 신원·대상·목적을 확인하고 저장소별 처리 범위를 집계하여 요청을 기록한다. 내보내기·삭제·가명화와 보존 예외를 구분해 실제 실행 또는 거절 판단에 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.12-A07"
+     ],
+     "outcomes": [
+      "O7"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PRIVACY-REQ",
+       "outcomes": [
+        "O7"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.12.BP8",
+     "name": "정보주체 독립 처리",
+     "definition": "허용된 내보내기와 삭제·가명화 또는 거절을 근거에 따라 수행하고 결과를 확인한다. 삭제·가명화는 요청자와 다른 보안 담당자가 실행하며 가명화 후 감사 연속성과 외부 Lake 미완료 상태를 보존한다.",
+     "notes": [
+      "같은 조직 역할의 서로 다른 사람이 요청·실행을 맡는다. 문서의 RACI만으로 사람 분리를 충족했다고 판정하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.12-A08"
+     ],
+     "outcomes": [
+      "O7"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PRIVACY-RESULT",
+       "outcomes": [
+        "O7"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -20016,6 +23674,39 @@ export const WORKFLOWS: WorkflowDoc = {
      "content": [
       "범주별 삭제 건수와 시각",
       "열린 Incident·이상 건에 연결되어 보류한 데이터"
+     ]
+    },
+    {
+     "key": "WP-PRIVACY-REVIEW",
+     "name": "개인정보 목적·근거 검토",
+     "en": "Privacy Purpose and Basis Review",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "처리 목적·최소 항목·정보주체·동의 또는 적법 근거의 원본 참조",
+      "접근·보존·국외 이전 제한·검토 담당자·미확정 사항"
+     ]
+    },
+    {
+     "key": "WP-PRIVACY-REQ",
+     "name": "정보주체 처리 요청",
+     "en": "Data Subject Request",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "검증된 요청자·대상 사용자/차량과 요청 종류",
+      "대상 저장소·미리 집계한 행·요청 사유와 요청자"
+     ]
+    },
+    {
+     "key": "WP-PRIVACY-RESULT",
+     "name": "정보주체 처리 결과",
+     "en": "Data Subject Request Result",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "요청자와 다른 실행자·근거·처리/거절 시각",
+      "내보내기 또는 삭제/가명화 결과·Lake 위임 상태·감사 체인 보존"
      ]
     }
    ],
@@ -20294,18 +23985,184 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": []
+    },
+    {
+     "id": "FPW.12-A06",
+     "name": "처리 목적·근거 검토",
+     "trigger": "새 처리 목적 또는 처리 범위 변경",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O6"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-DPO"
+      ],
+      "A": "R-DPO",
+      "C": [
+       "R-LEG",
+       "R-CSM"
+      ],
+      "I": [
+       "R-OPS"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-PRIVACY-REVIEW"
+     ],
+     "steps": [
+      "수집·이용 목적과 최소 데이터 및 정보주체 범위를 식별한다",
+      "동의 또는 적용 가능한 처리 근거의 원본과 보존·접근·이전 제한을 법무와 검토한다",
+      "확정된 범위와 미확정 항목을 보안·운영 담당자에게 인계한다"
+     ],
+     "checks": [
+      "화면 조회나 데모 값으로 동의 획득을 대신하지 않는다",
+      "적용 시장과 실제 검토 근거를 식별한다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/admin/data"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.12-A07"
+     ]
+    },
+    {
+     "id": "FPW.12-A07",
+     "name": "정보주체 요청 접수",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O7"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-DPO",
+       "R-LEG"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-PRIVACY-REVIEW"
+     ],
+     "outputs": [
+      "WP-PRIVACY-REQ"
+     ],
+     "steps": [
+      "요청 주체와 대상 사용자·차량 및 처리 목적을 확인한다",
+      "개인정보 목록에서 대상 저장소와 예상 행 및 보존 예외를 확인한다",
+      "내보내기 또는 삭제·가명화 요청과 사유를 기록하고 독립 실행자에게 인계한다"
+     ],
+     "checks": [
+      "대상 식별자와 목적을 무단 확대하지 않는다",
+      "요청 접수를 실제 삭제 완료로 표시하지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "createPrivacyRequest"
+      ],
+      "screens": [
+       "/admin/data"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.12-A08"
+     ]
+    },
+    {
+     "id": "FPW.12-A08",
+     "name": "정보주체 독립 처리",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O7"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CSM"
+      ],
+      "A": "R-CSM",
+      "C": [
+       "R-DPO"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-PRIVACY-REQ"
+     ],
+     "outputs": [
+      "WP-PRIVACY-RESULT"
+     ],
+     "steps": [
+      "삭제·가명화 실행자는 요청자와 다른 사람인지 확인한다",
+      "보존 예외와 목적을 검토하여 허용된 내보내기·실행 또는 사유 있는 거절을 수행한다",
+      "처리 행·Lake 위임 상태와 감사 체인을 확인하고 미완료 항목을 인계한다"
+     ],
+     "checks": [
+      "삭제·가명화 요청자 자기 실행이 차단된다",
+      "Lake 요청 전송과 외부 삭제 완료를 구분한다"
+     ],
+     "platform": {
+      "actions": [
+       "privacyExport",
+       "executePrivacyRequest",
+       "rejectPrivacyRequest"
+      ],
+      "screens": [
+       "/admin/data"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
     }
    ],
    "layout": {
-    "width": 526,
-    "height": 482,
+    "width": 1086,
+    "height": 670,
     "lanes": [
      {
       "role": "R-SM",
       "label": "Safety Manager",
       "x": 0,
       "y": 0,
-      "w": 526,
+      "w": 1086,
       "h": 98
      },
      {
@@ -20313,7 +24170,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "법무",
       "x": 0,
       "y": 98,
-      "w": 526,
+      "w": 1086,
       "h": 98
      },
      {
@@ -20321,7 +24178,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "법규 담당",
       "x": 0,
       "y": 196,
-      "w": 526,
+      "w": 1086,
       "h": 188
      },
      {
@@ -20329,7 +24186,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "데이터 보호 담당",
       "x": 0,
       "y": 384,
-      "w": 526,
+      "w": 1086,
+      "h": 188
+     },
+     {
+      "role": "R-CSM",
+      "label": "CSM",
+      "x": 0,
+      "y": 572,
+      "w": 1086,
       "h": 98
      }
     ],
@@ -20380,6 +24245,33 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.12-A06",
+      "kind": "action",
+      "label": "처리 목적·근거 검토",
+      "x": 198,
+      "y": 490,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A07",
+      "kind": "action",
+      "label": "정보주체 요청 접수",
+      "x": 478,
+      "y": 588,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A08",
+      "kind": "action",
+      "label": "정보주체 독립 처리",
+      "x": 758,
+      "y": 588,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.12-S1",
       "kind": "start",
       "label": "시작",
@@ -20425,6 +24317,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.12-S6",
+      "kind": "start",
+      "label": "새 처리 목적 또는 처리 범위 변경",
+      "x": 146,
+      "y": 514,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.12-E1",
       "kind": "end",
       "label": "종료",
@@ -20466,6 +24367,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E6",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 612,
       "w": 18,
       "h": 18
      }
@@ -20547,6 +24457,59 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.12-S6",
+      "to": "FPW.12-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        523
+       ],
+       [
+        198,
+        523
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A06",
+      "to": "FPW.12-A07",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        523
+       ],
+       [
+        466,
+        523
+       ],
+       [
+        466,
+        621
+       ],
+       [
+        478,
+        621
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A07",
+      "to": "FPW.12-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        621
+       ],
+       [
+        758,
+        621
+       ]
+      ]
+     },
+     {
       "from": "FPW.12-A01",
       "to": "FPW.12-E1",
       "kind": "end",
@@ -20618,6 +24581,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A08",
+      "to": "FPW.12-E6",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        621
+       ],
+       [
+        960,
+        621
        ]
       ]
      }
@@ -20625,15 +24603,15 @@ export const WORKFLOWS: WorkflowDoc = {
     "joins": []
    },
    "departmentLayout": {
-    "width": 526,
-    "height": 482,
+    "width": 1086,
+    "height": 670,
     "lanes": [
      {
       "department": "DEP-FS",
       "label": "기능안전팀",
       "x": 0,
       "y": 0,
-      "w": 526,
+      "w": 1086,
       "h": 98
      },
      {
@@ -20641,7 +24619,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "법무팀",
       "x": 0,
       "y": 98,
-      "w": 526,
+      "w": 1086,
       "h": 98
      },
      {
@@ -20649,7 +24627,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "법규인증팀",
       "x": 0,
       "y": 196,
-      "w": 526,
+      "w": 1086,
       "h": 188
      },
      {
@@ -20657,7 +24635,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "개인정보보호팀",
       "x": 0,
       "y": 384,
-      "w": 526,
+      "w": 1086,
+      "h": 188
+     },
+     {
+      "department": "DEP-CS",
+      "label": "차량사이버보안팀",
+      "x": 0,
+      "y": 572,
+      "w": 1086,
       "h": 98
      }
     ],
@@ -20708,6 +24694,33 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.12-A06",
+      "kind": "action",
+      "label": "처리 목적·근거 검토",
+      "x": 198,
+      "y": 490,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A07",
+      "kind": "action",
+      "label": "정보주체 요청 접수",
+      "x": 478,
+      "y": 588,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.12-A08",
+      "kind": "action",
+      "label": "정보주체 독립 처리",
+      "x": 758,
+      "y": 588,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.12-S1",
       "kind": "start",
       "label": "시작",
@@ -20753,6 +24766,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.12-S6",
+      "kind": "start",
+      "label": "새 처리 목적 또는 처리 범위 변경",
+      "x": 146,
+      "y": 514,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.12-E1",
       "kind": "end",
       "label": "종료",
@@ -20794,6 +24816,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.12-E6",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 612,
       "w": 18,
       "h": 18
      }
@@ -20875,6 +24906,59 @@ export const WORKFLOWS: WorkflowDoc = {
       ]
      },
      {
+      "from": "FPW.12-S6",
+      "to": "FPW.12-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        523
+       ],
+       [
+        198,
+        523
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A06",
+      "to": "FPW.12-A07",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        523
+       ],
+       [
+        466,
+        523
+       ],
+       [
+        466,
+        621
+       ],
+       [
+        478,
+        621
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A07",
+      "to": "FPW.12-A08",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        621
+       ],
+       [
+        758,
+        621
+       ]
+      ]
+     },
+     {
       "from": "FPW.12-A01",
       "to": "FPW.12-E1",
       "kind": "end",
@@ -20946,6 +25030,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.12-A08",
+      "to": "FPW.12-E6",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        621
+       ],
+       [
+        960,
+        621
        ]
       ]
      }
@@ -20977,6 +25076,88 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O4",
      "text": "원격 종료·복원 절차가 시스템 설명 문서에 운영 절차와 같게 적힌다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.13.BP1",
+     "name": "표준 판 고정",
+     "definition": "프로젝트가 적용할 표준의 판과 적용 범위를 결정하여 Safety Plan에 고정한다. 참고 초안과 승인된 판정 기준을 구분하고 법규·보안 담당자가 같은 기준을 사용하도록 공유한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.13-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-STANDARD-EDITIONS",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.13.BP2",
+     "name": "Compliance Profile 정의",
+     "definition": "시장별 적용 규정·의무 기능·필수 근거·판정 파라미터를 버전 있는 Profile로 정의한다. 발효·국내 도입·최종 법문 확인 결과를 기록하고 생성된 정책·명령의 기준 판과 연결한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.13-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COMPLIANCE-PROFILE",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.13.BP3",
+     "name": "분기 법규 감시·Profile 갱신",
+     "definition": "정기적으로 표준·법규 변화를 확인하여 현재 Profile과의 차이를 평가한다. 변경 또는 무변경의 근거를 남기고 영향 기능·담당·해소 기한을 후속 검토에 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.13-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COMPLIANCE-PROFILE",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.13.BP4",
+     "name": "원격 종료 시스템 설명 작성",
+     "definition": "원격 종료·복원의 사유·승인·해제·시장별 운영 방법을 시스템 설명으로 정리한다. 실제 운영 절차와 드릴 결과를 대조하여 문서와 운용의 불일치를 해소한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.13-A04"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-SYSTEM-DESCRIPTION",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
     }
    ],
    "rules": [
@@ -21691,6 +25872,108 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O5",
      "text": "출처마다 다음 점검일이 관리되고 기한이 지난 출처가 점검된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.14.BP1",
+     "name": "변경 요청 작성",
+     "definition": "기준 기능의 변경 종류·필드·근거 출처와 대체 방안을 명시한 요청을 작성한다. 영향을 받는 Feature와 산정 과제를 확인하고 변경 판단에 필요한 정보를 제공한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.14-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REF-CHANGE-REQ",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.14.BP2",
+     "name": "자동 점검·도메인 검토",
+     "definition": "자동 점검과 담당 도메인의 검토로 식별·출처·규모·관계의 타당성을 확인한다. 누락·반대·보완 사항과 안전 등급 변경 의견을 기록하고 요청자와 검토자의 분리를 유지한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.14-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REF-REVIEW",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.14.BP3",
+     "name": "변경 승인·반려",
+     "definition": "요청과 점검·도메인 의견을 함께 검토하여 변경 승인 또는 반려를 결정한다. 작성·검토와 분리된 관리자가 사유를 남기고 발행 전 대기 상태를 명확히 한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.14-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REF-DECISION",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.14.BP4",
+     "name": "Feature DB 버전 발행",
+     "definition": "승인된 변경을 발행 단위로 묶어 품질 상태·발행 노트·정규화 해시를 기록한다. 상태 확정과 영향 사용자 통지를 확인하여 등록·산정이 같은 발행판을 참조하도록 한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.14-A04"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REFDB-RELEASE",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.14.BP5",
+     "name": "출처 정기 점검",
+     "definition": "점검 기한과 출처의 개정 여부를 확인하여 기준 기능에 미치는 영향을 평가한다. 필요한 도메인·법규 검토를 요청하고 점검 결과·후속 변경·다음 기한을 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.14-A05"
+     ],
+     "outcomes": [
+      "O5"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-REF-SOURCE-REVIEW",
+       "outcomes": [
+        "O5"
+       ]
+      }
+     ]
     }
    ],
    "rules": [],
@@ -22528,6 +26811,3849 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         245
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.15",
+   "name": "SW 개발비·원가 기준 관리",
+   "en": "Software Cost and Cost Basis Management",
+   "group": "지원",
+   "gates": [],
+   "ref": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
+   "purpose": "Feature·기준 행·적용 범위를 산정 근거로 고정하고 공수·계수·단가의 출처와 검토 책임을 분리하여 재현 가능한 SW 개발비를 산정하며, 승인 결과를 보존한 채 실적을 다음 원가 기준 개정에 반영한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "산정 대상과 Feature·기준 행 버전, 제외 범위 및 가정이 식별된다."
+    },
+    {
+     "id": "O2",
+     "text": "공수·MBD 작업·계수·단가 버전과 계산 오류가 검토되어 산정 결과가 재현된다."
+    },
+    {
+     "id": "O3",
+     "text": "작성자와 다른 승인자가 검토한 제출·승인·반려 이력이 남고 승인 스냅샷이 보존된다."
+    },
+    {
+     "id": "O4",
+     "text": "금액 열람 권한을 지켜 승인 결과가 공유되며 실적 오차가 다음 기준 개정의 근거가 된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.15.BP1",
+     "name": "산정 범위 설정",
+     "definition": "산정 과제의 목적·범위·책임을 정하고 산정 대상 Feature와 기준 행을 특정 버전으로 식별한다. 구입 계약 확정이나 Feature 출시 승인과 구분한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-SCOPE",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.15.BP2",
+     "name": "원가 기준 발행",
+     "definition": "단가와 계수의 출처·적용 조건을 관리하고 개정된 값을 번호가 있는 새 기준으로 발행한다. 발행이 과거 승인 과제의 금액을 바꾸지 않도록 승인 스냅샷과 분리한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-BASIS",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.15.BP3",
+     "name": "공수·규모 입력",
+     "definition": "Feature별 규모·공수·재사용과 MBD 작업을 출처에 따라 입력하고 계산 오류·합계를 검토한다. 자동 채운 값도 추정 가정으로 확인하며 산정 금액을 사업 승인으로 취급하지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-CALC",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.15.BP4",
+     "name": "산정 검토 요청",
+     "definition": "재현 가능한 산정 입력과 검토 체크를 갖춰 독립 승인자에게 제출한다. 제출 응답만으로 승인되었다고 표시하지 않고 과제의 실제 상태와 보완 요구를 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-REVIEW",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.15.BP5",
+     "name": "산정 승인·반려",
+     "definition": "작성자와 다른 승인자가 산정 근거와 불확실성을 검토해 승인 또는 반려한다. 승인 뒤 입력 변경은 개정 절차로 분리하고 같은 과제의 승인 증거를 덮어쓰지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-REVIEW",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.15.BP6",
+     "name": "승인 결과 열람·공유",
+     "definition": "금액 열람 권한을 가진 사람이 승인 결과와 가정을 조회하고 허용된 범위로 공유한다. 열람자는 산정 입력이나 승인 상태를 바꾸지 않으며 내보내기 감사와 전달 제한을 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A06"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-SHARE",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.15.BP7",
+     "name": "실적·교정 검토",
+     "definition": "승인 이후 실적을 별도 기록하여 추정 오차를 분석하고 단가·계수 개정의 근거를 제시한다. 제안의 수용은 새 기준 발행에서 결정하며 과거 승인 결과와 구분한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A07"
+     ],
+     "outcomes": [
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-ACTUAL",
+       "outcomes": [
+        "O4"
+       ]
+      }
+     ]
+    }
+   ],
+   "rules": [],
+   "entry": [
+    "산정 대상 Feature 또는 Feature DB 기준 행과 담당자가 식별되어 있다",
+    "산정 역할과 금액 열람 권한이 기존 IAM에 부여되어 있다"
+   ],
+   "exit": [
+    "승인 또는 반려 결과와 계산 기준 버전이 추적된다",
+    "승인된 과거 금액을 덮어쓰지 않고 실적과 새 기준 버전이 분리된다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-COST-SCOPE",
+     "name": "산정 범위·과제",
+     "en": "Cost Scope and Project",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "대상 Feature/버전·기준 행·작성자",
+      "차량/시장·포함/제외·가정과 과제 설정"
+     ]
+    },
+    {
+     "key": "WP-COST-BASIS",
+     "name": "발행 원가 기준",
+     "en": "Published Cost Basis",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "단가·계수·통화·근거 출처와 버전",
+      "초안과 발행자·사유·적용 시점"
+     ]
+    },
+    {
+     "key": "WP-COST-CALC",
+     "name": "산정 입력·계산 결과",
+     "en": "Cost Calculation",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "줄별 규모·공수·MBD 입력과 근거",
+      "계산 오류·합계·적용 기준 버전"
+     ]
+    },
+    {
+     "key": "WP-COST-REVIEW",
+     "name": "산정 검토·승인 기록",
+     "en": "Cost Review and Decision",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "검토 체크·제출·승인/반려 사유와 사람·시각",
+      "승인 스냅샷과 개정 관계"
+     ]
+    },
+    {
+     "key": "WP-COST-SHARE",
+     "name": "산정 결과 공유 기록",
+     "en": "Cost Disclosure Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "열람/내보내기 대상·권한·버전",
+      "내보내기 감사 기록과 공유 제한"
+     ]
+    },
+    {
+     "key": "WP-COST-ACTUAL",
+     "name": "실적·오차 검토",
+     "en": "Cost Actuals and Calibration",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "승인 뒤 실적 공수·출처·편차",
+      "교정 제안과 다음 기준 개정의 채택/보류 근거"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.15-A01",
+     "name": "산정 범위 설정",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CE"
+      ],
+      "A": "R-CE",
+      "C": [
+       "R-FO",
+       "R-PUR"
+      ],
+      "I": [
+       "R-CA"
+      ]
+     },
+     "inputs": [
+      "WP-REF-LINK"
+     ],
+     "outputs": [
+      "WP-COST-SCOPE"
+     ],
+     "steps": [
+      "대상 Feature와 기준 행의 버전을 확인한다",
+      "차량·시장 범위와 포함·제외 및 가정을 적어 과제를 만든다",
+      "작성 책임자와 산정에 사용할 기준 버전을 확인한다"
+     ],
+     "checks": [
+      "대상과 가정이 과제 설정에 남는다"
+     ],
+     "platform": {
+      "actions": [
+       "costProjectCreate",
+       "costFeatureAdd",
+       "costProjectUpdate"
+      ],
+      "screens": [
+       "/procurement/sw-cost",
+       "/procurement/sw-cost/:estId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.15-A03"
+     ]
+    },
+    {
+     "id": "FPW.15-A02",
+     "name": "원가 기준 발행",
+     "trigger": "원가 기준 개정 필요",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CBA"
+      ],
+      "A": "R-CBA",
+      "C": [
+       "R-CE",
+       "R-PUR"
+      ],
+      "I": [
+       "R-CA"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-COST-BASIS"
+     ],
+     "steps": [
+      "현행 단가·계수와 출처 및 통화를 확인한다",
+      "변경 항목을 새 기준 초안으로 작성한다",
+      "사유를 적어 새 기준 버전을 발행하고 적용 대상을 알린다"
+     ],
+     "checks": [
+      "과거 승인 산정은 발행 전 스냅샷을 유지한다",
+      "기준 버전과 변경 사유가 남는다"
+     ],
+     "platform": {
+      "actions": [
+       "costBasisDraft",
+       "costBasisPublish"
+      ],
+      "screens": [
+       "/procurement/sw-cost/basis"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.15-A03",
+     "name": "공수·규모 입력",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CE"
+      ],
+      "A": "R-CE",
+      "C": [
+       "R-ARC",
+       "R-INT"
+      ],
+      "I": [
+       "R-CA"
+      ]
+     },
+     "inputs": [
+      "WP-COST-SCOPE",
+      "WP-COST-BASIS"
+     ],
+     "outputs": [
+      "WP-COST-CALC"
+     ],
+     "steps": [
+      "과제에 대상 Feature를 담고 입력 행과 중복을 확인한다",
+      "규모·복잡도·재사용과 MBD 작업별 공수 근거를 입력한다",
+      "오류와 합계를 계산해 기준 버전 및 제외 항목을 재확인한다"
+     ],
+     "checks": [
+      "필수 입력 오류가 해소되거나 보류 사유가 남는다",
+      "줄별 입력과 계산 기준을 재현할 수 있다"
+     ],
+     "platform": {
+      "actions": [
+       "costLineUpdate",
+       "costMbdPut"
+      ],
+      "screens": [
+       "/procurement/sw-cost/:estId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.15-A04"
+     ]
+    },
+    {
+     "id": "FPW.15-A04",
+     "name": "산정 검토 요청",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CE"
+      ],
+      "A": "R-CE",
+      "C": [
+       "R-PUR"
+      ],
+      "I": [
+       "R-CA"
+      ]
+     },
+     "inputs": [
+      "WP-COST-CALC"
+     ],
+     "outputs": [
+      "WP-COST-REVIEW"
+     ],
+     "steps": [
+      "범위·기준 버전·계산 오류와 검토 체크를 확인한다",
+      "불확실한 가정과 제외 항목을 검토 설명에 남긴다",
+      "제출 전이를 요청하고 제출 상태와 시각을 확인한다"
+     ],
+     "checks": [
+      "제출과 미해결 항목이 기록된다"
+     ],
+     "platform": {
+      "actions": [
+       "costCheckPut",
+       "costTransition"
+      ],
+      "screens": [
+       "/procurement/sw-cost/:estId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.15-A05"
+     ]
+    },
+    {
+     "id": "FPW.15-A05",
+     "name": "산정 승인·반려",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CA"
+      ],
+      "A": "R-CA",
+      "C": [
+       "R-PUR"
+      ],
+      "I": [
+       "R-CE",
+       "R-CV"
+      ]
+     },
+     "inputs": [
+      "WP-COST-REVIEW",
+      "WP-COST-CALC"
+     ],
+     "outputs": [
+      "WP-COST-REVIEW"
+     ],
+     "steps": [
+      "작성자와 자신이 다른 사람인지 확인한다",
+      "범위·공수·단가와 검토 체크를 근거로 승인 또는 반려를 판단한다",
+      "사유를 남겨 전이하고 승인 스냅샷 또는 보완 요청을 확인한다"
+     ],
+     "checks": [
+      "자기 작성 과제의 승인이 차단된다",
+      "판정자·사유와 승인 스냅샷이 추적된다"
+     ],
+     "platform": {
+      "actions": [
+       "costCheckPut",
+       "costTransition"
+      ],
+      "screens": [
+       "/procurement/sw-cost/:estId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.15-A06"
+     ]
+    },
+    {
+     "id": "FPW.15-A06",
+     "name": "승인 결과 열람·공유",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CV"
+      ],
+      "A": "R-PUR",
+      "C": [
+       "R-CE"
+      ],
+      "I": [
+       "R-CA"
+      ]
+     },
+     "inputs": [
+      "WP-COST-REVIEW"
+     ],
+     "outputs": [
+      "WP-COST-SHARE"
+     ],
+     "steps": [
+      "자신의 금액 열람 권한과 공유 목적을 확인한다",
+      "승인 버전과 금액·가정을 조회하고 필요하면 허용된 내보내기를 사용한다",
+      "내보내기 감사와 전달 범위를 확인하고 승인 원본을 보존한다"
+     ],
+     "checks": [
+      "조회가 작성·승인 권한으로 확대되지 않는다",
+      "공유한 버전과 대상이 식별된다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/procurement/sw-cost",
+       "/procurement/sw-cost/:estId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.15-A07",
+     "name": "실적·교정 검토",
+     "trigger": "승인 뒤 실적 확보",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O4"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CE"
+      ],
+      "A": "R-CBA",
+      "C": [
+       "R-PUR"
+      ],
+      "I": [
+       "R-CA"
+      ]
+     },
+     "inputs": [
+      "WP-COST-REVIEW"
+     ],
+     "outputs": [
+      "WP-COST-ACTUAL"
+     ],
+     "steps": [
+      "승인된 기준 버전과 실적 공수의 수집 범위를 확인한다",
+      "실적과 출처를 기록하고 산정 오차 및 교정 제안을 검토한다",
+      "다음 기준 개정에 반영할 항목과 보류 사유를 기준 관리자에게 전달한다"
+     ],
+     "checks": [
+      "실적 입력이 승인 금액을 소급 변경하지 않는다",
+      "교정 제안은 기준 개정 전 자동 적용되지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "costActualPut"
+      ],
+      "screens": [
+       "/procurement/sw-cost/:estId",
+       "/procurement/sw-cost/basis"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1646,
+    "height": 482,
+    "lanes": [
+     {
+      "role": "R-CE",
+      "label": "SW 개발비 산정 작성자",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 188
+     },
+     {
+      "role": "R-CBA",
+      "label": "원가 기준 관리자",
+      "x": 0,
+      "y": 188,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-CA",
+      "label": "SW 개발비 산정 승인자",
+      "x": 0,
+      "y": 286,
+      "w": 1646,
+      "h": 98
+     },
+     {
+      "role": "R-CV",
+      "label": "SW 개발비 산정 열람자",
+      "x": 0,
+      "y": 384,
+      "w": 1646,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.15-A01",
+      "kind": "action",
+      "label": "산정 범위 설정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A03",
+      "kind": "action",
+      "label": "공수·규모 입력",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A04",
+      "kind": "action",
+      "label": "산정 검토 요청",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A07",
+      "kind": "action",
+      "label": "실적·교정 검토",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A02",
+      "kind": "action",
+      "label": "원가 기준 발행",
+      "x": 198,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A05",
+      "kind": "action",
+      "label": "산정 승인·반려",
+      "x": 1038,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A06",
+      "kind": "action",
+      "label": "승인 결과 열람·공유",
+      "x": 1318,
+      "y": 400,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-S2",
+      "kind": "start",
+      "label": "원가 기준 개정 필요",
+      "x": 146,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-S3",
+      "kind": "start",
+      "label": "승인 뒤 실적 확보",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 424,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.15-S1",
+      "to": "FPW.15-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-S2",
+      "to": "FPW.15-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        237
+       ],
+       [
+        198,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-S3",
+      "to": "FPW.15-A07",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A01",
+      "to": "FPW.15-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A03",
+      "to": "FPW.15-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A04",
+      "to": "FPW.15-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1026,
+        335
+       ],
+       [
+        1038,
+        335
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A05",
+      "to": "FPW.15-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        335
+       ],
+       [
+        1306,
+        335
+       ],
+       [
+        1306,
+        433
+       ],
+       [
+        1318,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A02",
+      "to": "FPW.15-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        237
+       ],
+       [
+        400,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A06",
+      "to": "FPW.15-E2",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        433
+       ],
+       [
+        1520,
+        433
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A07",
+      "to": "FPW.15-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1646,
+    "height": 278,
+    "lanes": [
+     {
+      "department": "DEP-PUR",
+      "label": "구매팀",
+      "x": 0,
+      "y": 0,
+      "w": 1646,
+      "h": 278
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.15-A01",
+      "kind": "action",
+      "label": "산정 범위 설정",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A02",
+      "kind": "action",
+      "label": "원가 기준 발행",
+      "x": 198,
+      "y": 106,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A03",
+      "kind": "action",
+      "label": "공수·규모 입력",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A04",
+      "kind": "action",
+      "label": "산정 검토 요청",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A05",
+      "kind": "action",
+      "label": "산정 승인·반려",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A06",
+      "kind": "action",
+      "label": "승인 결과 열람·공유",
+      "x": 1318,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-A07",
+      "kind": "action",
+      "label": "실적·교정 검토",
+      "x": 198,
+      "y": 196,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.15-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-S2",
+      "kind": "start",
+      "label": "원가 기준 개정 필요",
+      "x": 146,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-S3",
+      "kind": "start",
+      "label": "승인 뒤 실적 확보",
+      "x": 146,
+      "y": 220,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 1520,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 220,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.15-S1",
+      "to": "FPW.15-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-S2",
+      "to": "FPW.15-A02",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        139
+       ],
+       [
+        198,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-S3",
+      "to": "FPW.15-A07",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        229
+       ],
+       [
+        198,
+        229
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A01",
+      "to": "FPW.15-A03",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A03",
+      "to": "FPW.15-A04",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A04",
+      "to": "FPW.15-A05",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A05",
+      "to": "FPW.15-A06",
+      "kind": "flow",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1318,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A02",
+      "to": "FPW.15-E1",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        139
+       ],
+       [
+        400,
+        139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A06",
+      "to": "FPW.15-E2",
+      "kind": "end",
+      "points": [
+       [
+        1506,
+        49
+       ],
+       [
+        1520,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A07",
+      "to": "FPW.15-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        229
+       ],
+       [
+        400,
+        229
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.16",
+   "name": "플랫폼 접근·운영·복구",
+   "en": "Platform Access Operations and Recovery",
+   "group": "지원",
+   "gates": [],
+   "ref": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
+   "purpose": "업무 수행자의 접근 상태와 기록 소유권을 통제하고 플랫폼 운영·복구 근거를 보존하여 담당자 변경 또는 서비스 장애 중에도 권한 범위를 넘지 않는 업무 연속성을 유지한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "계정 상태 변경의 근거·책임자와 영향 업무가 식별되고 계정 상태가 확인된다."
+    },
+    {
+     "id": "O2",
+     "text": "소유자가 없거나 비활성인 기록만 적격 담당자에게 이관되고 내용·버전·상태는 유지된다."
+    },
+    {
+     "id": "O3",
+     "text": "운영 설정·관측·백업 및 복구 점검 근거와 미해결 장애가 인계된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.16.BP1",
+     "name": "계정 상태 변경",
+     "definition": "근거가 있는 계정의 비활성·재활성을 기록하고 실제 응답 및 감사 이력을 확인한다. 이 활동은 계정 상태 통제이며 임의 역할 부여나 모든 업무 데이터 편집을 허용하지 않는다.",
+     "notes": [
+      "정적 미리보기의 로컬 모의 처리와 실제 IdP·서버 상태 변경은 별도 검증 대상이다."
+     ],
+     "activityIds": [
+      "FPW.16-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ACCESS-CHANGE",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.16.BP2",
+     "name": "부재 소유자 이관",
+     "definition": "소유자가 없거나 비활성인 컴플라이언스 룰의 책임을 적격한 담당 계정에 인계한다. 이관과 내용 변경을 분리하고 원소유자 상태·새 소유자의 담당 역할·사유를 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.16-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-OWNER-HANDOVER",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.16.BP3",
+     "name": "운영 설정·상태 점검",
+     "definition": "설정·이벤트·관측 자료를 사용하여 플랫폼의 연결과 서비스 상태를 점검하고 장애 대응을 인계한다. 서버 설정 변경은 승인된 운영 환경의 절차로 수행하며 브라우저 조회 권한을 서버 관리자 권한으로 간주하지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.16-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PLATFORM-OPS",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.16.BP4",
+     "name": "백업·복구 점검",
+     "definition": "서비스·데이터·감사 기록의 복구 가능성을 격리된 실행으로 점검하고 결과와 미해결 위험을 보존한다. 플랫폼 화면은 근거를 참조하는 곳이며 외부 인프라 백업이나 재해 복구를 자동 실행한 것으로 표시하지 않는다.",
+     "notes": [
+      "백업·복원은 승인된 서버/DB 운영 절차에서 수행한다. 이 업무 모델을 등록해도 백업이 생성되거나 복구 승인이 발생하지 않는다."
+     ],
+     "activityIds": [
+      "FPW.16-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-RECOVERY-DRILL",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    }
+   ],
+   "rules": [],
+   "entry": [
+    "기존 IAM·외부 IdP의 책임 경계와 운영 담당자가 식별되어 있다"
+   ],
+   "exit": [
+    "접근 변경·이관 사유와 변경 결과가 남는다",
+    "운영 점검과 복구 증거를 실제 실행 여부와 구분하여 인계한다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-ACCESS-CHANGE",
+     "name": "계정 상태 변경 기록",
+     "en": "Account Status Change",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "입퇴사·전보 근거·대상 계정·변경 사유",
+      "비활성/재활성 결과·실행자·시각·미확인 상태"
+     ]
+    },
+    {
+     "key": "WP-OWNER-HANDOVER",
+     "name": "기록 소유자 이관",
+     "en": "Record Ownership Handover",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "부재/비활성 원소유자·새 적격 소유자·대상 기록",
+      "이관 사유·전후 소유자·내용/버전/상태 보존 확인"
+     ]
+    },
+    {
+     "key": "WP-PLATFORM-OPS",
+     "name": "플랫폼 운영 점검",
+     "en": "Platform Operations Check",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "서버 운영 설정의 변경 승인 근거·연결 상태",
+      "관측 지표·장애·담당자와 외부 운영 증거"
+     ]
+    },
+    {
+     "key": "WP-RECOVERY-DRILL",
+     "name": "백업·복구 점검 기록",
+     "en": "Backup and Recovery Check",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "백업 범위·식별자·보관 정책과 복구 절차",
+      "격리된 복구 실행 시각·정합성·복구 시간·미해결 항목"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.16-A01",
+     "name": "계정 상태 변경",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-SYS"
+      ],
+      "A": "R-SYS",
+      "C": [
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA",
+       "R-OPS"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-ACCESS-CHANGE"
+     ],
+     "steps": [
+      "입퇴사·전보 근거와 대상 계정 및 영향 업무를 확인한다",
+      "자기 계정을 제외하고 사유를 적어 비활성 또는 재활성 처리를 수행한다",
+      "응답 상태와 감사 이력을 확인하고 권한 변경이 필요한 사항은 외부 IdP 담당자에게 인계한다"
+     ],
+     "checks": [
+      "미확인 또는 실패 응답을 변경 완료로 기록하지 않는다",
+      "계정 상태 기록이 역할 부여 권한으로 확대되지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "deactivateAccount",
+       "reactivateAccount"
+      ],
+      "screens": [
+       "/admin/iam"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.16-A02"
+     ]
+    },
+    {
+     "id": "FPW.16-A02",
+     "name": "부재 소유자 이관",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-SYS"
+      ],
+      "A": "R-SYS",
+      "C": [
+       "R-REG"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-ACCESS-CHANGE"
+     ],
+     "outputs": [
+      "WP-OWNER-HANDOVER"
+     ],
+     "steps": [
+      "원소유자가 없거나 비활성인 기록과 미결 업무를 확인한다",
+      "기록 담당 역할을 가진 새 계정을 지정하고 이관 사유를 적는다",
+      "소유자 이관 뒤 기록 내용·버전·상태와 감사 흔적이 보존됐는지 확인한다"
+     ],
+     "checks": [
+      "활성 소유자의 기록이나 부적격 새 소유자 이관이 차단된다",
+      "기록 본문을 고치지 않고 소유권만 변경한다"
+     ],
+     "platform": {
+      "actions": [
+       "transferComplianceRuleOwner"
+      ],
+      "screens": [
+       "/admin/iam",
+       "/verify/compliance"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.16-A03",
+     "name": "운영 설정·상태 점검",
+     "trigger": "정기 점검 또는 장애",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SYS",
+       "R-CSM"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-PLATFORM-OPS"
+     ],
+     "steps": [
+      "현재 운영 모드와 연결 대상 및 설정 변경 근거를 확인한다",
+      "설정·상태 화면과 운영 환경의 관측 자료로 연결·오류·보존 상태를 점검한다",
+      "비밀 값을 본문에 옮기지 않고 장애와 담당자 및 후속 조치를 기록한다"
+     ],
+     "checks": [
+      "개발 PC 설정을 원격 운영 확인 근거로 쓰지 않는다",
+      "관측 실패와 미확인 연결은 정상 완료와 구분한다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/admin/settings",
+       "/events",
+       "/notifications/rules"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.16-A04",
+     "name": "백업·복구 점검",
+     "trigger": "복구 훈련 또는 사고 복구",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SYS",
+       "R-CSM",
+       "R-DPO"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-PLATFORM-OPS"
+     ],
+     "outputs": [
+      "WP-RECOVERY-DRILL"
+     ],
+     "steps": [
+      "운영 환경의 백업 범위·보관 정책과 복구 책임자를 확인한다",
+      "승인된 격리 환경에서 복구 절차를 실행하고 데이터 및 감사 연속성을 대조한다",
+      "실측 시간·검증 결과·미실행 항목을 구분해 기록하고 개선을 인계한다"
+     ],
+     "checks": [
+      "계획서 존재만으로 복구 성공을 판정하지 않는다",
+      "실제 실행 환경과 증거 위치가 기록된다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/admin/settings"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 806,
+    "height": 286,
+    "lanes": [
+     {
+      "role": "R-SYS",
+      "label": "시스템 관리자",
+      "x": 0,
+      "y": 0,
+      "w": 806,
+      "h": 98
+     },
+     {
+      "role": "R-OPS",
+      "label": "운영 조직",
+      "x": 0,
+      "y": 98,
+      "w": 806,
+      "h": 188
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.16-A01",
+      "kind": "action",
+      "label": "계정 상태 변경",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-A02",
+      "kind": "action",
+      "label": "부재 소유자 이관",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-A03",
+      "kind": "action",
+      "label": "운영 설정·상태 점검",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-A04",
+      "kind": "action",
+      "label": "백업·복구 점검",
+      "x": 198,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-S2",
+      "kind": "start",
+      "label": "정기 점검 또는 장애",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-S3",
+      "kind": "start",
+      "label": "복구 훈련 또는 사고 복구",
+      "x": 146,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 680,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.16-S1",
+      "to": "FPW.16-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-S2",
+      "to": "FPW.16-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-S3",
+      "to": "FPW.16-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        237
+       ],
+       [
+        198,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A01",
+      "to": "FPW.16-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A02",
+      "to": "FPW.16-E1",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        680,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A03",
+      "to": "FPW.16-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        400,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A04",
+      "to": "FPW.16-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        237
+       ],
+       [
+        400,
+        237
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 806,
+    "height": 286,
+    "lanes": [
+     {
+      "department": "DEP-ITSEC",
+      "label": "IT인프라·보안운영팀",
+      "x": 0,
+      "y": 0,
+      "w": 806,
+      "h": 98
+     },
+     {
+      "department": "DEP-OPS",
+      "label": "OTA·서비스운영팀",
+      "x": 0,
+      "y": 98,
+      "w": 806,
+      "h": 188
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.16-A01",
+      "kind": "action",
+      "label": "계정 상태 변경",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-A02",
+      "kind": "action",
+      "label": "부재 소유자 이관",
+      "x": 478,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-A03",
+      "kind": "action",
+      "label": "운영 설정·상태 점검",
+      "x": 198,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-A04",
+      "kind": "action",
+      "label": "백업·복구 점검",
+      "x": 198,
+      "y": 204,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.16-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-S2",
+      "kind": "start",
+      "label": "정기 점검 또는 장애",
+      "x": 146,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-S3",
+      "kind": "start",
+      "label": "복구 훈련 또는 사고 복구",
+      "x": 146,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 680,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 138,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.16-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 228,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.16-S1",
+      "to": "FPW.16-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-S2",
+      "to": "FPW.16-A03",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        147
+       ],
+       [
+        198,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-S3",
+      "to": "FPW.16-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        237
+       ],
+       [
+        198,
+        237
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A01",
+      "to": "FPW.16-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        478,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A02",
+      "to": "FPW.16-E1",
+      "kind": "end",
+      "points": [
+       [
+        666,
+        49
+       ],
+       [
+        680,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A03",
+      "to": "FPW.16-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        147
+       ],
+       [
+        400,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.16-A04",
+      "to": "FPW.16-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        237
+       ],
+       [
+        400,
+        237
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.17",
+   "name": "기준정보·공유 자산·연계 품질",
+   "en": "Master Data Shared Assets and Integration Quality",
+   "group": "지원",
+   "gates": [],
+   "ref": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
+   "purpose": "차량·시장 기준 값과 SW 구조·공유 자산의 출처 및 영향 관계를 관리하고 사전 점검과 외부 연계 대사를 통해 일관된 식별자와 버전으로 후속 업무에 인계한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "차종·시장·사양 기준 값의 유효 범위와 사용 중지 영향이 식별된다."
+    },
+    {
+     "id": "O2",
+     "text": "ECU·SW·Function·Feature·공유 자산 및 EO 변경의 추적 관계가 검토된다."
+    },
+    {
+     "id": "O3",
+     "text": "사전 점검 오류와 외부 연계 충돌이 원소유자 규칙에 따라 처리되고 대사 근거가 보존된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.17.BP1",
+     "name": "차량·시장 기준 관리",
+     "definition": "판매국·지역·차종·트림의 식별자와 상위 관계를 관리하고 신규 사용 가능 여부를 통제한다. 사용 중지와 기존 기록 삭제를 분리하여 과거 추적을 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.17-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-MASTER-VALUES",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.17.BP2",
+     "name": "구조·공유 자산 검토",
+     "definition": "SW 구조·사양·제어점과 공유 자산의 생산자 및 소비 Feature를 대조하여 변경 영향을 식별한다. 플랫폼 조회와 외부 PLM·ALM 원천 수정의 책임을 구분한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.17-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ASSET-TRACE",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.17.BP3",
+     "name": "사전 품질 점검",
+     "definition": "데이터 사전 점검과 추적 커버리지에서 후속 업무를 막는 오류를 식별하고 원소유자에게 인계한다. 링크 존재 여부와 의미 일관성을 구분하여 점검 결과를 기록한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.17-A03"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-DATA-QUALITY",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.17.BP4",
+     "name": "외부 연계 대사",
+     "definition": "ALM·JIRA·GitLab 등 연계의 대기·실패·충돌을 원소유자 규칙으로 조정하고 양측 결과를 대사한다. 외부 반영 요청과 실제 반영 완료를 별도 증거로 확인한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.17-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-INTEGRATION-RECON",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.17.BP5",
+     "name": "생산·Legacy 대사",
+     "definition": "공장·Legacy 시스템의 주문·사양·코딩과 SDV 기준을 대사하고 원천 식별자와 변환 결과를 보존한다. 단순 변환 계획이나 전송 성공을 차량 적용 완료로 보고하지 않는다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.17-A05"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-INTEGRATION-RECON",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    }
+   ],
+   "rules": [],
+   "entry": [
+    "외부 원천 시스템과 데이터 소유자 및 식별자 체계가 식별되어 있다"
+   ],
+   "exit": [
+    "적용 기준과 미해결 품질 항목이 후속 등록·설계·출고 업무에 인계된다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-MASTER-VALUES",
+     "name": "기준 값 관리 기록",
+     "en": "Reference Value Maintenance",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "판매국·지역·차종·트림 코드와 상위 관계",
+      "등록/사용 중지 사유·영향 기록과 새 선택지 제외"
+     ]
+    },
+    {
+     "key": "WP-ASSET-TRACE",
+     "name": "구조·공유 자산 추적",
+     "en": "Structure and Shared Asset Trace",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "ECU·SW·Function·Feature·제어점·UPG 연결",
+      "공유 자산 영향 범위·EO 변경 근거·누락 관계"
+     ]
+    },
+    {
+     "key": "WP-DATA-QUALITY",
+     "name": "데이터 사전 점검",
+     "en": "Data Precheck Result",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "점검 범위·오류·경고와 원천 소유자",
+      "수정 또는 예외 사유·재점검 결과"
+     ]
+    },
+    {
+     "key": "WP-INTEGRATION-RECON",
+     "name": "연계·대사 처리 기록",
+     "en": "Integration Reconciliation",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "연계 시스템·주소 참조·변환 규칙 버전",
+      "보낸/받은 함·충돌·거부·재시도 결과와 원천 책임"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.17-A01",
+     "name": "차량·시장 기준 관리",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PLM"
+      ],
+      "A": "R-PLM",
+      "C": [
+       "R-FO",
+       "R-REG"
+      ],
+      "I": [
+       "R-INT"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-MASTER-VALUES"
+     ],
+     "steps": [
+      "원천 코드와 상위 판매국·차종 및 중복 여부를 확인한다",
+      "근거에 따라 기준 값을 등록하거나 사용 중지한다",
+      "사용 중지의 기존 기록 보존과 신규 선택지 제외를 확인한다"
+     ],
+     "checks": [
+      "하위 기준 값이 올바른 상위 코드에 연결된다",
+      "기존 차량·Feature 이력을 소급 삭제하지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "createReferenceValue",
+       "retireReferenceValue"
+      ],
+      "screens": [
+       "/master/reference-values"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.17-A02"
+     ]
+    },
+    {
+     "id": "FPW.17-A02",
+     "name": "구조·공유 자산 검토",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-ARC"
+      ],
+      "A": "R-ARC",
+      "C": [
+       "R-INT",
+       "R-PLM"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-MASTER-VALUES"
+     ],
+     "outputs": [
+      "WP-ASSET-TRACE"
+     ],
+     "steps": [
+      "ECU·SW·Function·Feature와 UPG 및 제어점 연결을 조회한다",
+      "공유 자산을 사용하는 Feature와 EO 변경의 영향 범위를 대조한다",
+      "누락·불일치와 설계 또는 원천 시스템의 변경 요청을 기록한다"
+     ],
+     "checks": [
+      "공유 자산 한 곳의 변경이 영향을 주는 Feature를 식별한다",
+      "조회 결과를 원천 구조의 변경 완료로 간주하지 않는다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/master/taxonomy",
+       "/master/upg",
+       "/master/structure",
+       "/features/shared-assets",
+       "/change/eo"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.17-A03"
+     ]
+    },
+    {
+     "id": "FPW.17-A03",
+     "name": "사전 품질 점검",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-PLM",
+       "R-ARC"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-ASSET-TRACE"
+     ],
+     "outputs": [
+      "WP-DATA-QUALITY"
+     ],
+     "steps": [
+      "등록·설계·출고에 사용할 데이터 범위를 식별한다",
+      "사전 점검과 추적 커버리지에서 오류·누락·경고를 확인한다",
+      "원천 담당자에게 수정을 요청하고 재점검 결과 또는 승인된 보류 근거를 남긴다"
+     ],
+     "checks": [
+      "점검 범위와 미해결 오류의 담당자가 있다",
+      "커버리지 비율만으로 설계 일관성이나 안전 승인을 대신하지 않는다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/precheck",
+       "/trace/coverage"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.17-A04",
+     "name": "외부 연계 대사",
+     "trigger": "연계 실패·충돌 또는 정기 대사",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-INT"
+      ],
+      "A": "R-INT",
+      "C": [
+       "R-ARC",
+       "R-REL"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-DATA-QUALITY"
+     ],
+     "outputs": [
+      "WP-INTEGRATION-RECON"
+     ],
+     "steps": [
+      "원천 소유자 규칙과 외부 요구·변경·배포 식별자 연결을 확인한다",
+      "보낸 함·받은 함·충돌과 거부 원인을 대조한다",
+      "허용된 재전송 또는 충돌 처리를 실행하고 실제 반영 결과를 확인한다"
+     ],
+     "checks": [
+      "외부 상태를 플랫폼 Guard를 우회하여 덮어쓰지 않는다",
+      "재전송 요청과 외부 반영 완료를 구분한다"
+     ],
+     "platform": {
+      "actions": [
+       "resolveExtConflict",
+       "drainExtSync"
+      ],
+      "screens": [
+       "/integration/connectors"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    },
+    {
+     "id": "FPW.17-A05",
+     "name": "생산·Legacy 대사",
+     "trigger": "공장 인수·Legacy 연계",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-PLM",
+       "R-INT"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-MASTER-VALUES",
+      "WP-DATA-QUALITY"
+     ],
+     "outputs": [
+      "WP-INTEGRATION-RECON"
+     ],
+     "steps": [
+      "대상 공장·차량과 옵션 코드 및 변환 규칙을 확인한다",
+      "허용된 동기화·주문 가져오기 또는 코딩 변환을 수행한다",
+      "출고 구성·수신 상태와 실패 사유를 대조해 현장 담당자에게 인계한다"
+     ],
+     "checks": [
+      "Legacy 경로가 F2 이상 제한을 우회하지 않는다",
+      "변환 계획과 실차 적용 결과를 구분한다"
+     ],
+     "platform": {
+      "actions": [
+       "runSync",
+       "importPlantOrders",
+       "translateLegacy"
+      ],
+      "screens": [
+       "/integration/sync",
+       "/integration/legacy",
+       "/field",
+       "/baselines/eol"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1086,
+    "height": 392,
+    "lanes": [
+     {
+      "role": "R-PLM",
+      "label": "기준정보 담당",
+      "x": 0,
+      "y": 0,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-ARC",
+      "label": "아키텍트",
+      "x": 0,
+      "y": 98,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-INT",
+      "label": "통합 조직",
+      "x": 0,
+      "y": 196,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "role": "R-OPS",
+      "label": "운영 조직",
+      "x": 0,
+      "y": 294,
+      "w": 1086,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.17-A01",
+      "kind": "action",
+      "label": "차량·시장 기준 관리",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A02",
+      "kind": "action",
+      "label": "구조·공유 자산 검토",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A03",
+      "kind": "action",
+      "label": "사전 품질 점검",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A04",
+      "kind": "action",
+      "label": "외부 연계 대사",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A05",
+      "kind": "action",
+      "label": "생산·Legacy 대사",
+      "x": 198,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-S2",
+      "kind": "start",
+      "label": "연계 실패·충돌 또는 정기 대사",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-S3",
+      "kind": "start",
+      "label": "공장 인수·Legacy 연계",
+      "x": 146,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.17-S1",
+      "to": "FPW.17-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-S2",
+      "to": "FPW.17-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-S3",
+      "to": "FPW.17-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        343
+       ],
+       [
+        198,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A01",
+      "to": "FPW.17-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A02",
+      "to": "FPW.17-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A03",
+      "to": "FPW.17-E1",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        960,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A04",
+      "to": "FPW.17-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        400,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A05",
+      "to": "FPW.17-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        343
+       ],
+       [
+        400,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1086,
+    "height": 392,
+    "lanes": [
+     {
+      "department": "DEP-PLM",
+      "label": "PLM·기준정보팀",
+      "x": 0,
+      "y": 0,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-SE",
+      "label": "시스템엔지니어링팀",
+      "x": 0,
+      "y": 98,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-INT",
+      "label": "SW통합·릴리스팀",
+      "x": 0,
+      "y": 196,
+      "w": 1086,
+      "h": 98
+     },
+     {
+      "department": "DEP-OPS",
+      "label": "OTA·서비스운영팀",
+      "x": 0,
+      "y": 294,
+      "w": 1086,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.17-A01",
+      "kind": "action",
+      "label": "차량·시장 기준 관리",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A02",
+      "kind": "action",
+      "label": "구조·공유 자산 검토",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A03",
+      "kind": "action",
+      "label": "사전 품질 점검",
+      "x": 758,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A04",
+      "kind": "action",
+      "label": "외부 연계 대사",
+      "x": 198,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-A05",
+      "kind": "action",
+      "label": "생산·Legacy 대사",
+      "x": 198,
+      "y": 310,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.17-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-S2",
+      "kind": "start",
+      "label": "연계 실패·충돌 또는 정기 대사",
+      "x": 146,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-S3",
+      "kind": "start",
+      "label": "공장 인수·Legacy 연계",
+      "x": 146,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 960,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-E2",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.17-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 334,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.17-S1",
+      "to": "FPW.17-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-S2",
+      "to": "FPW.17-A04",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        245
+       ],
+       [
+        198,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-S3",
+      "to": "FPW.17-A05",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        343
+       ],
+       [
+        198,
+        343
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A01",
+      "to": "FPW.17-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A02",
+      "to": "FPW.17-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        245
+       ],
+       [
+        758,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A03",
+      "to": "FPW.17-E1",
+      "kind": "end",
+      "points": [
+       [
+        946,
+        245
+       ],
+       [
+        960,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A04",
+      "to": "FPW.17-E2",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        245
+       ],
+       [
+        400,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.17-A05",
+      "to": "FPW.17-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        343
+       ],
+       [
+        400,
+        343
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   }
+  },
+  {
+   "id": "FPW.18",
+   "name": "운영 분석·상품 개선",
+   "en": "Operational Analytics and Product Improvement",
+   "group": "지원",
+   "gates": [],
+   "ref": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
+   "purpose": "허용된 목적·범주·보존 범위 안에서 운영 및 체험 데이터를 해석하여 상품·품질 개선 가설을 도출하고, 편향·불확실성과 책임자를 명시한 후속 변경으로 인계한다.",
+   "outcomes": [
+    {
+     "id": "O1",
+     "text": "분석 목적·모집단·기간·데이터 범주와 개인정보 처리 근거가 검토된다."
+    },
+    {
+     "id": "O2",
+     "text": "품질·사용·체험 전환 지표가 분모와 결측을 포함해 재현 가능한 근거로 분석된다."
+    },
+    {
+     "id": "O3",
+     "text": "개선 가설과 위험·검증 방법이 담당 부서에 인계되고 승인된 별도 변경 절차로 연결된다."
+    }
+   ],
+   "basePractices": [
+    {
+     "id": "FPW.18.BP1",
+     "name": "분석 목적·데이터 검토",
+     "definition": "분석 질문과 필요한 최소 데이터를 정하고 개인정보 처리 목적·보존·이전 제한을 관계 담당자와 검토한다. 이 업무 정의 자체를 개인정보 동의나 법무 승인으로 간주하지 않는다.",
+     "notes": [
+      "DPO·법무의 검토는 플랫폼 밖 증거를 참조한다. 데모 조회는 고객 동의 획득이나 실제 외부 데이터 수신의 증거가 아니다."
+     ],
+     "activityIds": [
+      "FPW.18-A01"
+     ],
+     "outcomes": [
+      "O1"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-ANALYSIS-SCOPE",
+       "outcomes": [
+        "O1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.18.BP2",
+     "name": "운영·품질 데이터 분석",
+     "definition": "운영 데이터와 차량군별 품질 신호를 분석하여 이상과 개선 기회를 도출한다. 미수신·지연·누락을 정상 0건과 구분하고 분석 조건 및 출처를 보존한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.18-A02"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-OPS-ANALYSIS",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.18.BP3",
+     "name": "체험·전환 분석",
+     "definition": "체험의 제안·수락·거절·만료·구매 전환을 구분하여 상품별·집단별 지표를 해석한다. 추천이나 전환율을 자동 출시 승인으로 사용하지 않고 편향과 불확실성을 기록한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.18-A03"
+     ],
+     "outcomes": [
+      "O2"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-OPS-ANALYSIS",
+       "outcomes": [
+        "O2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "FPW.18.BP4",
+     "name": "개선 과제 인계",
+     "definition": "분석 결과를 검증 가능한 개선 가설로 정리하고 기존 Feature·정책·상품 변경 절차에 인계한다. 안전·보안·규정 검토와 승인 범위를 그대로 유지한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.18-A04"
+     ],
+     "outcomes": [
+      "O3"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-IMPROVEMENT-HANDOFF",
+       "outcomes": [
+        "O3"
+       ]
+      }
+     ]
+    }
+   ],
+   "rules": [],
+   "entry": [
+    "운영·체험 데이터의 출처와 접근 권한이 식별되어 있다"
+   ],
+   "exit": [
+    "분석 결과·한계와 후속 책임자가 기록된다",
+    "가설이 곧바로 안전 분류·정책 또는 상품 승인으로 반영되지 않는다"
+   ],
+   "workProducts": [
+    {
+     "key": "WP-ANALYSIS-SCOPE",
+     "name": "분석 목적·데이터 검토",
+     "en": "Analysis Purpose and Data Review",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "목적·모집단·기간·데이터 범주와 처리 근거",
+      "가명화·접근·보존 및 국외 이전 검토와 미확정 사항"
+     ]
+    },
+    {
+     "key": "WP-OPS-ANALYSIS",
+     "name": "운영·전환 분석 결과",
+     "en": "Operations and Conversion Analysis",
+     "kind": "output",
+     "retained": false,
+     "content": [
+      "쿼리·기간·분모·누락·출처와 결과",
+      "품질·사용·체험 수락/전환 지표와 해석 한계"
+     ]
+    },
+    {
+     "key": "WP-IMPROVEMENT-HANDOFF",
+     "name": "상품·품질 개선 인계",
+     "en": "Improvement Handover",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "가설·우선순위·고객/안전/보안 영향",
+      "담당 부서·검증 방법·후속 Feature/정책/상품 요청 참조"
+     ]
+    }
+   ],
+   "activities": [
+    {
+     "id": "FPW.18-A01",
+     "name": "분석 목적·데이터 검토",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O1"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PDA"
+      ],
+      "A": "R-PDA",
+      "C": [
+       "R-DPO",
+       "R-LEG",
+       "R-OPS"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [],
+     "outputs": [
+      "WP-ANALYSIS-SCOPE"
+     ],
+     "steps": [
+      "분석하려는 질문·대상 집단·기간과 필요한 데이터 범주를 정한다",
+      "DPO·법무와 목적 적합성·가명화·보존 및 국외 이전 근거를 검토한다",
+      "확인되지 않은 이용 목적과 접근 제한을 기록하고 허용된 데이터만 요청한다"
+     ],
+     "checks": [
+      "접근 가능하다는 이유만으로 새로운 이용 목적을 허용하지 않는다",
+      "외부 검토의 담당자와 근거가 식별된다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/data/workbench",
+       "/biz/trials"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.18-A02"
+     ]
+    },
+    {
+     "id": "FPW.18-A02",
+     "name": "운영·품질 데이터 분석",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-QA",
+       "R-TST"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-ANALYSIS-SCOPE"
+     ],
+     "outputs": [
+      "WP-OPS-ANALYSIS"
+     ],
+     "steps": [
+      "허용된 데이터 범위와 수집 지연·결측을 확인한다",
+      "차량군·기간별 운영 지표와 품질 사건을 분석한다",
+      "분모·쿼리·출처 및 불확실성을 기록해 품질 담당자에게 인계한다"
+     ],
+     "checks": [
+      "수신 없음과 정상 0건을 구분한다",
+      "차량 회신과 실제 적용 근거를 구분한다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/data/workbench",
+       "/ops/telemetry",
+       "/fleet/map",
+       "/fleet/vehicles",
+       "/fleet/vehicles/:vin"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.18-A03"
+     ]
+    },
+    {
+     "id": "FPW.18-A03",
+     "name": "체험·전환 분석",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-PDA"
+      ],
+      "A": "R-PDA",
+      "C": [
+       "R-PO",
+       "R-DPO"
+      ],
+      "I": [
+       "R-FO"
+      ]
+     },
+     "inputs": [
+      "WP-ANALYSIS-SCOPE"
+     ],
+     "outputs": [
+      "WP-OPS-ANALYSIS"
+     ],
+     "steps": [
+      "상품·제안 출처·기간과 집단별 분모를 확인한다",
+      "수락·거절·만료·구매 전환 지표와 차이를 분석한다",
+      "선택 편향·결측과 재현 조건을 적어 개선 가설을 만든다"
+     ],
+     "checks": [
+      "제안 수와 수락 수 및 구매 수를 혼동하지 않는다",
+      "상관관계만으로 인과 효과를 확정하지 않는다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/biz/trials",
+       "/products",
+       "/entitlements"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": [
+      "FPW.18-A04"
+     ]
+    },
+    {
+     "id": "FPW.18-A04",
+     "name": "개선 과제 인계",
+     "trigger": null,
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O3"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-FO"
+      ],
+      "A": "R-FO",
+      "C": [
+       "R-PDA",
+       "R-QA",
+       "R-SM",
+       "R-CSM"
+      ],
+      "I": [
+       "R-PO"
+      ]
+     },
+     "inputs": [
+      "WP-OPS-ANALYSIS"
+     ],
+     "outputs": [
+      "WP-IMPROVEMENT-HANDOFF"
+     ],
+     "steps": [
+      "분석 근거와 고객·안전·보안 영향 및 우선순위를 검토한다",
+      "검증 방법과 담당 부서를 정하고 Feature·정책·상품의 후속 변경 요청에 연결한다",
+      "기존 Gate와 독립 승인 경로가 유지되는지 확인하고 결과를 추적한다"
+     ],
+     "checks": [
+      "분석 결과만으로 승인·배포·활성화하지 않는다",
+      "개선 과제와 근거 및 책임자가 연결된다"
+     ],
+     "platform": {
+      "actions": [],
+      "screens": [
+       "/data/workbench",
+       "/products"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
+    }
+   ],
+   "layout": {
+    "width": 1366,
+    "height": 294,
+    "lanes": [
+     {
+      "role": "R-PDA",
+      "label": "상품 기획",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-OPS",
+      "label": "운영 조직",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "role": "R-FO",
+      "label": "Feature Owner",
+      "x": 0,
+      "y": 196,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.18-A01",
+      "kind": "action",
+      "label": "분석 목적·데이터 검토",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-A03",
+      "kind": "action",
+      "label": "체험·전환 분석",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-A02",
+      "kind": "action",
+      "label": "운영·품질 데이터 분석",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-A04",
+      "kind": "action",
+      "label": "개선 과제 인계",
+      "x": 1038,
+      "y": 212,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.18-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 236,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.18-S1",
+      "to": "FPW.18-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A01",
+      "to": "FPW.18-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A02",
+      "to": "FPW.18-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A03",
+      "to": "FPW.18-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1026,
+        49
+       ],
+       [
+        1026,
+        245
+       ],
+       [
+        1038,
+        245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A04",
+      "to": "FPW.18-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        245
+       ],
+       [
+        1240,
+        245
+       ]
+      ]
+     }
+    ],
+    "joins": []
+   },
+   "departmentLayout": {
+    "width": 1366,
+    "height": 196,
+    "lanes": [
+     {
+      "department": "DEP-PDP",
+      "label": "상품기획팀",
+      "x": 0,
+      "y": 0,
+      "w": 1366,
+      "h": 98
+     },
+     {
+      "department": "DEP-OPS",
+      "label": "OTA·서비스운영팀",
+      "x": 0,
+      "y": 98,
+      "w": 1366,
+      "h": 98
+     }
+    ],
+    "nodes": [
+     {
+      "id": "FPW.18-A01",
+      "kind": "action",
+      "label": "분석 목적·데이터 검토",
+      "x": 198,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-A03",
+      "kind": "action",
+      "label": "체험·전환 분석",
+      "x": 758,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-A04",
+      "kind": "action",
+      "label": "개선 과제 인계",
+      "x": 1038,
+      "y": 16,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-A02",
+      "kind": "action",
+      "label": "운영·품질 데이터 분석",
+      "x": 478,
+      "y": 114,
+      "w": 188,
+      "h": 66
+     },
+     {
+      "id": "FPW.18-S1",
+      "kind": "start",
+      "label": "시작",
+      "x": 146,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.18-E1",
+      "kind": "end",
+      "label": "종료",
+      "x": 1240,
+      "y": 40,
+      "w": 18,
+      "h": 18
+     }
+    ],
+    "edges": [
+     {
+      "from": "FPW.18-S1",
+      "to": "FPW.18-A01",
+      "kind": "start",
+      "points": [
+       [
+        164,
+        49
+       ],
+       [
+        198,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A01",
+      "to": "FPW.18-A02",
+      "kind": "flow",
+      "points": [
+       [
+        386,
+        49
+       ],
+       [
+        466,
+        49
+       ],
+       [
+        466,
+        147
+       ],
+       [
+        478,
+        147
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A02",
+      "to": "FPW.18-A03",
+      "kind": "flow",
+      "points": [
+       [
+        666,
+        147
+       ],
+       [
+        746,
+        147
+       ],
+       [
+        746,
+        49
+       ],
+       [
+        758,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A03",
+      "to": "FPW.18-A04",
+      "kind": "flow",
+      "points": [
+       [
+        946,
+        49
+       ],
+       [
+        1038,
+        49
+       ]
+      ]
+     },
+     {
+      "from": "FPW.18-A04",
+      "to": "FPW.18-E1",
+      "kind": "end",
+      "points": [
+       [
+        1226,
+        49
+       ],
+       [
+        1240,
+        49
        ]
       ]
      }

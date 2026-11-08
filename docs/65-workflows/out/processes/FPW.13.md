@@ -3,12 +3,12 @@ id: WF-FPW-13
 type: workflow
 title: "규정·Compliance Profile 관리 / Regulatory & Compliance Profile Management"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
   depends_on: []
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -102,3 +102,54 @@ flowchart LR
 - O2 시장별 Compliance Profile이 정의되고 모든 정책·명령이 그 버전을 기록한다.
 - O3 분기마다 표준·법규 개정이 점검되어 Profile이 갱신된다.
 - O4 원격 종료·복원 절차가 시스템 설명 문서에 운영 절차와 같게 적힌다.
+
+## 6. 업무 수행 정의(Base Practices)
+
+업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.
+
+### FPW.13.BP1 표준 판 고정
+
+프로젝트가 적용할 표준의 판과 적용 범위를 결정하여 Safety Plan에 고정한다. 참고 초안과 승인된 판정 기준을 구분하고 법규·보안 담당자가 같은 기준을 사용하도록 공유한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.13-A01
+
+### FPW.13.BP2 Compliance Profile 정의
+
+시장별 적용 규정·의무 기능·필수 근거·판정 파라미터를 버전 있는 Profile로 정의한다. 발효·국내 도입·최종 법문 확인 결과를 기록하고 생성된 정책·명령의 기준 판과 연결한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.13-A02
+
+### FPW.13.BP3 분기 법규 감시·Profile 갱신
+
+정기적으로 표준·법규 변화를 확인하여 현재 Profile과의 차이를 평가한다. 변경 또는 무변경의 근거를 남기고 영향 기능·담당·해소 기한을 후속 검토에 인계한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.13-A03
+
+### FPW.13.BP4 원격 종료 시스템 설명 작성
+
+원격 종료·복원의 사유·승인·해제·시장별 운영 방법을 시스템 설명으로 정리한다. 실제 운영 절차와 드릴 결과를 대조하여 문서와 운용의 불일치를 해소한다.
+
+- 기여 성과: O4
+- 연결 활동: FPW.13-A04
+
+### BP × 성과
+
+| BP | O1 | O2 | O3 | O4 |
+|---|---|---|---|---|
+| FPW.13.BP1 | ● | – | – | – |
+| FPW.13.BP2 | – | ● | – | – |
+| FPW.13.BP3 | – | – | ● | – |
+| FPW.13.BP4 | – | – | – | ● |
+
+### 출력 근거 × 성과
+
+모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
+
+| 산출물 | O1 | O2 | O3 | O4 | 근거 BP |
+|---|---|---|---|---|---|
+| WP-STANDARD-EDITIONS | ● | – | – | – | FPW.13.BP1 |
+| WP-COMPLIANCE-PROFILE | – | ● | ● | – | FPW.13.BP2, FPW.13.BP3 |
+| WP-SYSTEM-DESCRIPTION | – | – | – | ● | FPW.13.BP4 |

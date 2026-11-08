@@ -3,14 +3,16 @@ id: WF-DEP-DPO
 type: workflow
 title: "개인정보보호팀 R&R / Data Protection Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
   depends_on:
     - WF-FPW-12
+    - WF-FPW-16
+    - WF-FPW-18
     - WF-ROLE-DPO
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -27,7 +29,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 1 · 책임 1 · 협의 4 · 통보 0 (활동 5개)
+수행 2 · 책임 2 · 협의 9 · 통보 0 (활동 11개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -36,14 +38,20 @@ last_updated: 2026-11-05
 | FPW.12-A04 EU 데이터 접근 요청 처리 | FPW.12 운영 데이터·데이터 보호 | C (데이터 보호 담당) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 데이터 접근 요청·계약 근거 기록 `WP-DATA-ACCESS` | `/admin/data` | 2차 초안 |
 | FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | R·A (데이터 보호 담당) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
 | FPW.12-A05 보존 기간 경과 데이터 삭제 | FPW.12 운영 데이터·데이터 보호 | C (데이터 보호 담당) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 보존·삭제 기록 `WP-RETENTION-LOG` | `/admin/data` | 2차 초안 |
+| FPW.12-A06 처리 목적·근거 검토 | FPW.12 운영 데이터·데이터 보호 | R·A (데이터 보호 담당) | – → 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` | `/admin/data` | 2차 초안 |
+| FPW.12-A07 정보주체 요청 접수 | FPW.12 운영 데이터·데이터 보호 | C (데이터 보호 담당) | 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` → 정보주체 처리 요청 `WP-PRIVACY-REQ` | `/admin/data` | 2차 초안 |
+| FPW.12-A08 정보주체 독립 처리 | FPW.12 운영 데이터·데이터 보호 | C (데이터 보호 담당) | 정보주체 처리 요청 `WP-PRIVACY-REQ` → 정보주체 처리 결과 `WP-PRIVACY-RESULT` | `/admin/data` | 2차 초안 |
+| FPW.16-A04 백업·복구 점검 | FPW.16 플랫폼 접근·운영·복구 | C (데이터 보호 담당) | 플랫폼 운영 점검 `WP-PLATFORM-OPS` → 백업·복구 점검 기록 `WP-RECOVERY-DRILL` | `/admin/settings` | 2차 초안 |
+| FPW.18-A01 분석 목적·데이터 검토 | FPW.18 운영 분석·상품 개선 | C (데이터 보호 담당) | – → 분석 목적·데이터 검토 `WP-ANALYSIS-SCOPE` | `/data/workbench`, `/biz/trials` | 2차 초안 |
+| FPW.18-A03 체험·전환 분석 | FPW.18 운영 분석·상품 개선 | C (데이터 보호 담당) | 분석 목적·데이터 검토 `WP-ANALYSIS-SCOPE` → 운영·전환 분석 결과 `WP-OPS-ANALYSIS` | `/biz/trials`, `/products`, `/entitlements` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
 | 방향 | 보내는 활동 | 받는 활동 | 상대 부서 | 넘기는 산출물 | 범위 |
 |---|---|---|---|---|---|
-| – | – | – | 인계 없음(부서 안에서 끝남) | – | – |
+| 보냄 | FPW.12-A06 처리 목적·근거 검토 | FPW.12-A07 정보주체 요청 접수 | 차량사이버보안팀 | 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` | 2차 초안 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/integration/openfeature`
-- 참조 화면(협의·통보): `/ops/safety-kpi`, `/admin/data`
+- 주 업무 화면: `/integration/openfeature`, `/admin/data`
+- 참조 화면(협의·통보): `/ops/safety-kpi`, `/admin/settings`, `/data/workbench`, `/biz/trials`, `/products`, `/entitlements`

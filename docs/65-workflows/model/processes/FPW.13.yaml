@@ -107,3 +107,56 @@ process:
         - 운영 조직이 드릴 결과로 실제 운영과 문서가 같은지 확인한다
       checks:
         - 시스템 설명과 FPW.8 운영 절차의 승인자·기준이 일치한다
+
+  base_practices:
+    - id: FPW.13.BP1
+      name: 표준 판 고정
+      definition_ko: 프로젝트가 적용할 표준의 판과 적용 범위를 결정하여 Safety Plan에 고정한다. 참고 초안과 승인된 판정 기준을 구분하고 법규·보안 담당자가 같은
+        기준을 사용하도록 공유한다.
+      notes: []
+      activity_ids:
+        - FPW.13-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-STANDARD-EDITIONS
+          outcomes:
+            - O1
+    - id: FPW.13.BP2
+      name: Compliance Profile 정의
+      definition_ko: 시장별 적용 규정·의무 기능·필수 근거·판정 파라미터를 버전 있는 Profile로 정의한다. 발효·국내 도입·최종 법문 확인 결과를 기록하고 생성된
+        정책·명령의 기준 판과 연결한다.
+      notes: []
+      activity_ids:
+        - FPW.13-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-COMPLIANCE-PROFILE
+          outcomes:
+            - O2
+    - id: FPW.13.BP3
+      name: 분기 법규 감시·Profile 갱신
+      definition_ko: 정기적으로 표준·법규 변화를 확인하여 현재 Profile과의 차이를 평가한다. 변경 또는 무변경의 근거를 남기고 영향 기능·담당·해소 기한을 후속 검토에
+        인계한다.
+      notes: []
+      activity_ids:
+        - FPW.13-A03
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-COMPLIANCE-PROFILE
+          outcomes:
+            - O3
+    - id: FPW.13.BP4
+      name: 원격 종료 시스템 설명 작성
+      definition_ko: 원격 종료·복원의 사유·승인·해제·시장별 운영 방법을 시스템 설명으로 정리한다. 실제 운영 절차와 드릴 결과를 대조하여 문서와 운용의 불일치를 해소한다.
+      notes: []
+      activity_ids:
+        - FPW.13-A04
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-SYSTEM-DESCRIPTION
+          outcomes:
+            - O4

@@ -3,7 +3,7 @@ id: WF-ROLE-REG
 type: workflow
 title: "법규 담당 업무 절차서 / Regulatory Owner Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -18,7 +18,9 @@ traces:
     - WF-FPW-12
     - WF-FPW-13
     - WF-FPW-14
-last_updated: 2026-11-05
+    - WF-FPW-16
+    - WF-FPW-17
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -163,6 +165,8 @@ last_updated: 2026-11-05
 - FPW.12-A03 중국 데이터 현지 처리·이전 심사 (협의)
 - FPW.13-A01 표준 판 고정 (협의)
 - FPW.14-A05 출처 정기 점검 (협의)
+- FPW.16-A02 부재 소유자 이관 (협의)
+- FPW.17-A01 차량·시장 기준 관리 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

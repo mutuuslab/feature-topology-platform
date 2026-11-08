@@ -3,6 +3,7 @@
 // Feature DB를 맡는 부서(기준정보 승인·발행, 시스템엔지니어링 검토)는 변경 요청 대기열(검토 대기·발행 대기)을 함께 본다 —
 // 핵심 메시지는 확정 대기 하나 그대로, 대기열은 보조 패널(3초 ①).
 import { Link } from 'react-router-dom';
+import { workspaceMarker } from './workspaceMarker';
 import { BaselineRequestStatus, type DepartmentSummary, type RefChangeStatus } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { departments as D } from '../../copy/departments';
@@ -83,7 +84,7 @@ export default function ConsoleHome({ dept }: { dept: DepartmentSummary }) {
   const n = reqs.data?.items.length ?? 0;
   const blCount = bls.data?.items.length ?? 0;
   return (
-    <div className="ds-screen ws ws--console" data-workspace-home="console">
+    <div className="ds-screen ws ws--console" {...workspaceMarker('console')}>
       <PageHeader
         codes={C.eyebrow}
         title={C.title(dept.name)}

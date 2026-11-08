@@ -20,6 +20,8 @@ import { ActivityCards, ProcessCriteria, ProcessLead, WorkProductCards } from '.
 import { ProcessFlowView } from './flow/ProcessFlow';
 import { personasOf, RoleFlows } from './flow/RoleFlows';
 import { ValueChainMap } from './flow/ValueChainMap';
+import { ReferenceModel, ProcessReference } from './ReferenceModel';
+import { workflowReference as W } from '../../copy/workflowReference';
 import './procedures.css';
 
 const Loading = () => (
@@ -38,6 +40,8 @@ function useMe(doc: WorkflowDoc) {
 const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':') && screenShipped(s));
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
+  const [sp] = useSearchParams();
+  const reference = (sp.get('view') ?? 'reference') === 'reference';
   const { role, roleIds } = useMe(doc);
   const { isDone, toggle, doneCount, doneIds, status: progressStatus, error: progressError } = useProgress(role);
   const inbox = useProcedureInbox(role);
@@ -63,21 +67,21 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
   return (
     <div className="ds-screen">
       <PageHeader
-        title={P.title}
-        lead={P.lead}
-        message={mine.length ? { tone: 'neutral', value: mine.length, text: P.mine.key } : { tone: 'neutral', text: P.mine.none }}
+        title={reference ? W.tab : P.title}
+        lead={reference ? W.lead : P.lead}
+        message={reference ? { tone: 'neutral', value: doc.processes.length, text: W.processKey } : mine.length ? { tone: 'neutral', value: mine.length, text: P.mine.key } : { tone: 'neutral', text: P.mine.none }}
       />
-      {(progressStatus === 'loading' || inbox.status === 'loading') && (
+      {!reference && (progressStatus === 'loading' || inbox.status === 'loading') && (
         <p className="ds-field__hint" data-state="loading" role="status">
           {P.loading}
         </p>
       )}
-      {(progressError || inbox.error) && (
+      {!reference && (progressError || inbox.error) && (
         <p className="ds-error" data-state="error" role="alert">
           {progressError || inbox.error}
         </p>
       )}
-      {reviews.length > 0 && (
+      {!reference && reviews.length > 0 && (
         <Panel title={P.inbox.title} eyebrow={P.inbox.hint}>
           <ul className="pr-inbox">
             {reviews.map((i) => (
@@ -95,6 +99,7 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
       <Tabs
         param="view"
         tabs={[
+          { key: 'reference', label: W.tab },
           { key: 'flow', label: F.hub.flow },
           { key: 'roles', label: F.hub.roles },
           { key: 'map', label: F.hub.map },
@@ -102,7 +107,7 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
         ]}
       >
         {(view) =>
-          view === 'flow' ? (
+          view === 'reference' ? <ReferenceModel doc={doc} /> : view === 'flow' ? (
             <Panel title={F.mine.title} eyebrow={P.mine.progress(done, mine.length)}>
               <MyWorkFlow doc={doc} />
             </Panel>
@@ -219,6 +224,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
   const { roleIds } = useMe(doc);
   const { statuses } = useFlowStatuses(doc);
   const [sp, setSp] = useSearchParams();
+  const reference = sp.get('docview') === 'reference';
   const sel = p.activities.find((a) => a.id === sp.get('a')) ?? null;
   const detailRef = useRef<HTMLDivElement | null>(null);
   const picked = useRef(false);
@@ -251,6 +257,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
         codes={p.ref}
         title={p.name}
         message={
+          reference ? { tone: 'neutral', value: p.basePractices?.length ?? 0, text: W.practiceKey, action: back } :
           // ?role= 담당자를 강조해 왔으면 핵심 메시지도 그 담당자 기준(내 역할 문장이 강조와 어긋나지 않게)
           focus
             ? nFocus
@@ -261,6 +268,12 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
               : { tone: 'neutral', text: P.mine.none, action: back }
         }
       />
+      <nav className="wr-view" aria-label={W.tab}>
+        <Link to={{ search: `?docview=reference${sp.get('dept') ? `&dept=${encodeURIComponent(sp.get('dept')!)}` : ''}`, hash: sel ? `#${p.basePractices?.find((bp) => bp.activityIds.includes(sel.id))?.id ?? ''}` : '' }} aria-current={reference ? 'page' : undefined}>{W.definition}</Link>
+        <Link to={{ search: focus ? `?role=${focus}` : '' }} aria-current={!reference ? 'page' : undefined}>{W.execution}</Link>
+        <Link to="/procedures?view=reference">{W.back}</Link>
+      </nav>
+      {reference ? <ProcessReference doc={doc} process={p} /> : <>
       <Panel title={P.detail.flow} eyebrow={P.detail.pick}>
         <ProcessLead doc={doc} process={p} />
         <p className="pr-purpose">{p.purpose}</p>
@@ -296,6 +309,7 @@ function Detail({ doc, p }: { doc: WorkflowDoc; p: WorkflowProcess }) {
         <WorkProductCards doc={doc} process={p} onSelect={select} />
       </section>
       <Matrix doc={doc} p={p} />
+      </>}
     </div>
   );
 }

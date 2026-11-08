@@ -8,6 +8,8 @@ export interface SsoUser {
   name: string | null;
   email: string | null;
   roles: Role[];
+  /** Optional server-verified workspace context; it does not grant roles. */
+  department?: string;
 }
 
 export type SsoStatus = 'loading' | 'authed' | 'anon';

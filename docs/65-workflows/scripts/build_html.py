@@ -321,6 +321,28 @@ def raci_matrix(m, p) -> str:
     return f'<table class="raci-m"><thead><tr><th>활동</th>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table>'
 
 
+def reference_html(m, p) -> str:
+    from reference_model import evidence_rows
+    practices = p.get('base_practices', [])
+    if not practices:
+        return ''
+    cards = []
+    for bp in practices:
+        notes = ''.join(f'<li>참고 {n}: {E(note)}</li>' for n, note in enumerate(bp.get('notes', []), 1))
+        acts = ', '.join(act_link(m, aid) for aid in bp['activity_ids'])
+        cards.append(f'<article id="{E(bp["id"])}"><h4>{E(bp["id"])} {E(bp["name"])}</h4>'
+                     f'<p>{E(bp["definition_ko"])}</p><p>기여 성과: {E(", ".join(bp["outcomes"]))} · 연결 활동: {acts}</p><ul>{notes}</ul></article>')
+    ids = [o['id'] for o in p['outcomes']]
+    head = ''.join(f'<th>{E(oid)}</th>' for oid in ids)
+    def cells(links):
+        return ''.join('<td>' + ('●' if oid in links else '–') + '</td>' for oid in ids)
+    bprows = ''.join(f'<tr><th>{E(bp["id"])}</th>{cells(bp["outcomes"])}</tr>' for bp in practices)
+    wprows = ''.join(f'<tr><th>{wp_link(m, row["key"])}</th>{cells(row["outcomes"])}</tr>' for row in evidence_rows(p))
+    return ('<h3>업무 수행 정의(Base Practices)</h3><p>업무 정의 초안이다. 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.</p>'
+            + ''.join(cards) + f'<h4>BP × 성과</h4><table><thead><tr><th>BP</th>{head}</tr></thead><tbody>{bprows}</tbody></table>'
+            + f'<h4>출력 근거 × 성과</h4><p>명시된 연결만 표시한다. 실제 산출물 확보나 승인 완료를 뜻하지 않는다.</p><table><thead><tr><th>산출물</th>{head}</tr></thead><tbody>{wprows}</tbody></table>')
+
+
 def section_process(m, p, num) -> str:
     ins = []
     for a in p["activities"]:
@@ -335,6 +357,7 @@ def section_process(m, p, num) -> str:
                     for r in p.get("rules", []))
     return f"""<section class="proc" id="{E(p['id'])}"><h2>{num}. {E(p['id'])} {E(p['name_ko'])} <small>{E(p['name'])}</small></h2>
 <p class="lead">{lead}</p><p>{E(p['purpose_ko'])}</p>
+{reference_html(m, p)}
 <div class="flowwrap">{svg_workflow(m, p)}</div>
 <h3>활동</h3>{''.join(activity_card(m, a) for a in p['activities'])}
 <h3>산출물</h3><div class="grid">{''.join(wp_card(m, p, wp) for wp in p['work_products'])}</div>

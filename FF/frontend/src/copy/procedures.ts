@@ -1,10 +1,11 @@
 // 업무 절차 화면 문구 — ko.ts와 분리(docs/65-workflows 모델이 원천, 활동·단계 문장은 모델 그대로 보인다).
 import { procedureDisplay } from './procedure-display';
+import { procedurePanel } from './procedure-panel';
 export const procedures = {
   title: '업무 절차',
   lead: '담당자별로 누가 언제 무엇을 하는지 — 표준 보고서 v1.1의 역할·Gate 기준 절차입니다.',
-  loading: '업무 절차를 불러오는 중입니다.',
-  loadFail: '업무 절차를 불러오지 못했습니다. 새로고침 후 다시 시도하세요.',
+  loading: procedurePanel.loading,
+  loadFail: procedurePanel.loadFail,
   notFound: '요청한 업무 절차를 찾을 수 없습니다. 목록에서 다시 골라주세요.',
   display: procedureDisplay,
   groups: '생애주기 단계',
@@ -66,13 +67,7 @@ export const procedures = {
     sla: 'SLA 기한',
     slaValue: (h: number) => `${h}시간`,
   },
-  panel: {
-    button: '이 화면의 업무 절차',
-    title: '이 화면의 업무 절차',
-    none: '이 화면에 연결된 업무 절차가 없습니다.',
-    mineFirst: '내 역할 활동이 먼저 보입니다.',
-    openProcess: '절차 전체 보기',
-  },
+  panel: procedurePanel,
   inbox: {
     title: '내 차례',
     hint: '앞 활동이 끝나 지금 할 수 있는 활동입니다.',

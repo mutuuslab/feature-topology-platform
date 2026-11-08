@@ -1,0 +1,1310 @@
+// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.
+import type { WorkflowProcess } from '../rules/workflows';
+export const PROCESS: WorkflowProcess = {
+ "id": "FPW.5",
+ "name": "검증·V&V",
+ "en": "Verification & Validation",
+ "group": "생애주기",
+ "gates": [
+  "G5"
+ ],
+ "ref": "표준 보고서 12장(시험), 6.1절 G5, 6.3절 독립성",
+ "purpose": "Feature Version이 안전요구와 비활성화 동작을 충족한다는 객관적 Evidence를 만들고, 그 Evidence를 Feature Version에 연결해 독립 V&V가 G5를 판정하게 한다.",
+ "outcomes": [
+  {
+   "id": "O1",
+   "text": "참조 ASIL에 맞는 독립성 수준과 검증 범위가 정해진다."
+  },
+  {
+   "id": "O2",
+   "text": "시나리오·허용 조합·통합 가정이 정의되고 Version으로 관리된다."
+  },
+  {
+   "id": "O3",
+   "text": "비활성화 등급별 동작·결함 주입·장악 가정 시험이 수행된다."
+  },
+  {
+   "id": "O4",
+   "text": "재현 정보를 갖춘 시험 Evidence가 Feature Version과 연결되어 G5 판정을 받는다."
+  }
+ ],
+ "basePractices": [
+  {
+   "id": "FPW.5.BP1",
+   "name": "독립성 수준·검증 계획 확정",
+   "definition": "안전 분류와 참조 ASIL에 맞추어 확인 조치의 독립성과 검증 범위를 계획한다. 수행 주체·시험 수준·판정 기준을 합의하여 결과를 평가할 일관된 기준을 마련한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.5-A01"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-VV-PLAN",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.5.BP2",
+   "name": "시나리오·허용 조합 정의",
+   "definition": "기능·ODD·의존 관계에서 정상 및 거부 시나리오와 허용 조합을 정의한다. 시나리오 판과 시험 범위를 관리하고 시뮬레이션으로 판단할 수 없는 항목의 대체 검증을 계획한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.5-A02"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-TEST-SPEC",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.5.BP3",
+   "name": "통합 시험·SEooC 가정 확인",
+   "definition": "협력사 사용 가정과 실제 차량 SW 구성을 비교하여 통합 적합성을 확인한다. 불일치의 조치와 추가 시험을 정하고 통합 빌드·변경 기록을 결과에 연결한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.5-A03"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-INTEGRATION-REC",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.5.BP4",
+   "name": "비활성화·결함 주입 시험 수행",
+   "definition": "명세된 상황과 결함을 단위·HIL·차량 시험에 적용하여 안전 종료와 거부 동작을 확인한다. 실행 환경·실패·재현 정보를 보존하고 시뮬레이션과 실차 근거의 범위를 구분한다.",
+   "notes": [
+    "가상 실행 결과는 정의된 TMS 제출과 판정 절차를 거쳐야 하며 실차 승인을 대신하지 않는다."
+   ],
+   "activityIds": [
+    "FPW.5-A04"
+   ],
+   "outcomes": [
+    "O3"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-TEST-RESULT",
+     "outcomes": [
+      "O3"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.5.BP5",
+   "name": "Flag 코드 연결 확인",
+   "definition": "정의된 Flag와 실제 코드·스캔·외부 정책 도구의 상태를 대조한다. 불일치의 조치 또는 기한 있는 예외를 추적하고 출시 관문이 사용하는 최신 결과를 확인한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.5-A07"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-FLAG-RECON-RESULT",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.5.BP6",
+   "name": "시험 Evidence 연결·TMS 제출",
+   "definition": "시험 명세·결과·재현 정보를 Feature Version과 양방향으로 연결한다. 시험관리 연계로 결과를 제출하고 빠진 시험이나 잘못 연결된 Version을 확인하여 판정 근거를 완성한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.5-A05"
+   ],
+   "outcomes": [
+    "O4"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-G5-EVIDENCE",
+     "outcomes": [
+      "O4"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.5.BP7",
+   "name": "G5 V&V 판정",
+   "definition": "검증 계획의 범위·독립성·판정 기준을 실제 제출 결과와 비교한다. 미해결 결함과 잔여 위험의 검토 근거를 포함하여 독립 판정하고 필요한 재시험을 인계한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.5-A06"
+   ],
+   "outcomes": [
+    "O4"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-G5-DECISION",
+     "outcomes": [
+      "O4"
+     ]
+    }
+   ]
+  }
+ ],
+ "rules": [
+  "FFG-LCY-007",
+  "FFG-TST-001",
+  "FFG-TST-003",
+  "FFG-TST-004",
+  "FFG-TST-005",
+  "FFG-TST-006",
+  "FFG-TST-007",
+  "FFG-TST-009",
+  "FFG-TST-011",
+  "FFG-ADS-009",
+  "FFG-VEH-012",
+  "FFG-LCY-001",
+  "FFG-LCY-002"
+ ],
+ "entry": [
+  "G4 설계 판정이 PASS(또는 기한이 있는 CONDITIONAL PASS)이고 정책·Control Point가 확정되었다",
+  "안전요구가 Feature Version에 추적 연결되어 있다"
+ ],
+ "exit": [
+  "모든 필수 시험이 TMS를 거쳐 Feature Version에 연결되었다",
+  "미해결 결함이 없거나 잔여 위험이 Safety Manager에게 수용되었다",
+  "G5 Decision Record가 독립 V&V 서명으로 남았다"
+ ],
+ "workProducts": [
+  {
+   "key": "WP-VV-PLAN",
+   "name": "검증 계획(독립성 수준)",
+   "en": "Verification Plan",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "참조 ASIL과 확인 조치별 독립성 수준",
+    "시험 수준(단위·HIL·차량)과 판정 기준",
+    "시뮬레이션 도구 사용 범위와 도구 분류"
+   ]
+  },
+  {
+   "key": "WP-TEST-SPEC",
+   "name": "시험 명세(시나리오·허용 조합)",
+   "en": "Test Specification",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "시나리오·ODD 정의와 Version",
+    "Topology 의존·충돌로 정한 허용 조합과 covering array, 부정 시험",
+    "결함 주입·LPC 장악 가정 시험 항목"
+   ]
+  },
+  {
+   "key": "WP-INTEGRATION-REC",
+   "name": "통합 검증 기록",
+   "en": "Integration Verification Record",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "협력사 SEooC 사용 가정과 통합 대상의 대조 결과",
+    "CI/CD 변경 기록(IF-13)과 통합 빌드 식별"
+   ]
+  },
+  {
+   "key": "WP-TEST-RESULT",
+   "name": "시험 결과",
+   "en": "Test Results",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "등급별 시나리오(작동 중·비작동 중·운전자 개입·전원 주기) 결과",
+    "결함 주입별 수렴 상태와 기대 결과 대조",
+    "가상검증(CARLA) 실행 결과와 재현 정보"
+   ]
+  },
+  {
+   "key": "WP-G5-EVIDENCE",
+   "name": "G5 시험 Evidence 묶음",
+   "en": "G5 Test Evidence",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "TMS에 제출된 시험 명세·결과와 Feature ID·Version 연결",
+    "시험 재현 정보(환경·도구·입력·Version)"
+   ]
+  },
+  {
+   "key": "WP-G5-DECISION",
+   "name": "G5 Decision Record",
+   "en": "G5 Decision Record",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "판정과 근거 Evidence ID, 독립 V&V 서명",
+    "미해결 결함과 잔여 위험 수용 근거"
+   ]
+  },
+  {
+   "key": "WP-FLAG-RECON-RESULT",
+   "name": "Flag 코드 대사·예외 확인 기록",
+   "en": "Flag 코드 대사·예외 확인 기록",
+   "kind": "output",
+   "retained": true,
+   "content": [
+    "대상 Version·검사 판·스캔 해시",
+    "불일치 항목과 조치 결과",
+    "예외가 있으면 범위·결정·만료 참조"
+   ]
+  }
+ ],
+ "activities": [
+  {
+   "id": "FPW.5-A01",
+   "name": "독립성 수준·검증 계획 확정",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [
+    "FFG-LCY-007"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-TST",
+     "R-QA"
+    ],
+    "I": [
+     "R-FO",
+     "R-INT"
+    ]
+   },
+   "inputs": [
+    "WP-G4-DECISION",
+    "WP-SAFETY-PROFILE",
+    "WP-SAFETY-REQ"
+   ],
+   "outputs": [
+    "WP-VV-PLAN"
+   ],
+   "steps": [
+    "안전 분류와 안전요구에서 참조 ASIL을 확인한다",
+    "확인 검토·감사·평가의 독립성 수준을 참조 ASIL 기준으로 정하고, 시험·검토의 독립성은 Safety Plan에 따로 적는다",
+    "시험 수준별 범위와 판정 기준을 시험 조직·품질 조직과 합의한다"
+   ],
+   "checks": [
+    "확인 조치마다 독립성 수준과 수행 주체가 지정되었다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.5-A02",
+    "FPW.5-A03"
+   ]
+  },
+  {
+   "id": "FPW.5-A02",
+   "name": "시나리오·허용 조합 정의",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-TST-003",
+    "FFG-TST-006",
+    "FFG-TST-007"
+   ],
+   "raci": {
+    "R": [
+     "R-TST"
+    ],
+    "A": "R-TST",
+    "C": [
+     "R-ARC",
+     "R-SM"
+    ],
+    "I": [
+     "R-INT"
+    ]
+   },
+   "inputs": [
+    "WP-VV-PLAN",
+    "WP-FEAT-SCOPE"
+   ],
+   "outputs": [
+    "WP-TEST-SPEC"
+   ],
+   "steps": [
+    "시나리오와 ODD를 정의하고 Version을 붙인다",
+    "Topology의 의존·충돌 관계로 허용 조합을 정하고, 안전 관련 Flag가 상호작용하면 3-way 이상 covering array를 만든다",
+    "허용되지 않는 조합에는 거부를 확인하는 부정 시험을 넣는다",
+    "시뮬레이션 결과를 판정 근거로 쓸 경우 도구 분류와, 시뮬레이션이 판정하지 못하는 항목의 실차·HIL 대체 시험을 정한다"
+   ],
+   "checks": [
+    "모든 시나리오에 Version이 있고 허용 조합 정의가 Topology와 일치한다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/arch/topology",
+     "/validations"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.5-A04"
+   ]
+  },
+  {
+   "id": "FPW.5-A03",
+   "name": "통합 시험·SEooC 가정 확인",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-VEH-012"
+   ],
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-ARC",
+     "R-TST",
+     "R-SM"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-VV-PLAN",
+    "WP-INTAKE-RESULT"
+   ],
+   "outputs": [
+    "WP-INTEGRATION-REC"
+   ],
+   "steps": [
+    "협력사가 문서화한 SEooC 사용 가정을 통합 대상 차량 SW 구성과 대조한다",
+    "가정이 맞지 않는 항목은 협력사와 아키텍트에게 넘기고 통합 시험 항목으로 추가한다",
+    "통합 빌드와 변경 기록을 CI/CD에서 플랫폼으로 등록한다"
+   ],
+   "checks": [
+    "모든 SEooC 가정이 충족 또는 조치 중으로 기록되었다"
+   ],
+   "platform": {
+    "actions": [
+     "registerChangeRecord"
+    ],
+    "screens": [
+     "/master/artifacts"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.5-A07"
+   ]
+  },
+  {
+   "id": "FPW.5-A04",
+   "name": "비활성화·결함 주입 시험 수행",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O3"
+   ],
+   "rules": [
+    "FFG-TST-001",
+    "FFG-TST-004",
+    "FFG-TST-005",
+    "FFG-TST-011"
+   ],
+   "raci": {
+    "R": [
+     "R-TST"
+    ],
+    "A": "R-TST",
+    "C": [
+     "R-INT",
+     "R-SM"
+    ],
+    "I": [
+     "R-QA",
+     "R-FO"
+    ]
+   },
+   "inputs": [
+    "WP-TEST-SPEC",
+    "WP-INTEGRATION-REC",
+    "WP-POLICY"
+   ],
+   "outputs": [
+    "WP-TEST-RESULT"
+   ],
+   "steps": [
+    "F2 이상 Feature의 비활성화 등급별 동작을 단위·HIL·차량 수준에서 작동 중·비작동 중·운전자 개입·전원 주기 상황으로 시험한다",
+    "저장 장치 손상, 쓰기 실패, 비트 반전, 신뢰 시간 상실, HSM 오류를 주입하고 Safe State 수렴을 확인한다",
+    "LPC가 장악되었다고 가정한 위조 프레임·변조 요청·위조 상태 보고가 Guard와 플랫폼에서 거부되는지 확인한다",
+    "ADS 기능이면 원격 종료 시나리오(인계 성공·실패 후 MRC·ODD 이탈)를 HIL과 시험장에서 수행한다",
+    "정책을 CARLA 가상 차량에 적용해 시나리오를 실행하되, 결과는 TMS 제출 전까지 G5 근거로 쓰지 않는다"
+   ],
+   "checks": [
+    "시험 명세의 모든 항목에 결과가 있고 실패 항목은 결함으로 등록되었다"
+   ],
+   "platform": {
+    "actions": [
+     "runVirtual"
+    ],
+    "screens": [
+     "/validations/virtual"
+    ],
+    "gates": [],
+    "anchor": "virtual-run",
+    "ui": {
+     "fields": [],
+     "buttons": [
+      "runVirtual"
+     ]
+    }
+   },
+   "slaHours": 24,
+   "next": [
+    "FPW.5-A05"
+   ]
+  },
+  {
+   "id": "FPW.5-A07",
+   "name": "Flag 코드 연결 확인",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-TST"
+    ],
+    "I": [
+     "R-FO",
+     "R-REL"
+    ]
+   },
+   "inputs": [
+    "WP-INTEGRATION-REC"
+   ],
+   "outputs": [
+    "WP-FLAG-RECON-RESULT"
+   ],
+   "steps": [
+    "어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다",
+    "미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다",
+    "해소할 수 없으면 사유와 만료일로 출시 차단 해제를 요청한다"
+   ],
+   "checks": [
+    "출시 관문의 Flag 코드 연결 판정이 통과 또는 승인된 해제다"
+   ],
+   "platform": {
+    "actions": [
+     "rescanFlagRepository",
+     "requestFlagGateWaiver"
+    ],
+    "screens": [
+     "/flag-code/reconcile",
+     "/integration/code-scans"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.5-A04"
+   ]
+  },
+  {
+   "id": "FPW.5-A05",
+   "name": "시험 Evidence 연결·TMS 제출",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O4"
+   ],
+   "rules": [
+    "FFG-TST-009",
+    "FFG-ADS-009"
+   ],
+   "raci": {
+    "R": [
+     "R-TST"
+    ],
+    "A": "R-TST",
+    "C": [
+     "R-INT"
+    ],
+    "I": [
+     "R-QA",
+     "R-SM"
+    ]
+   },
+   "inputs": [
+    "WP-TEST-RESULT",
+    "WP-TEST-SPEC"
+   ],
+   "outputs": [
+    "WP-G5-EVIDENCE"
+   ],
+   "steps": [
+    "시험 명세와 결과를 시험관리 도구에서 Feature ID·Version과 연결한다",
+    "결과마다 환경·도구 Version·입력·시나리오 Version 같은 재현 정보를 넣는다",
+    "TMS 연계(IF-09)로 플랫폼 검증 이력에 제출하고 연결되지 않은 시험이 없는지 확인한다"
+   ],
+   "checks": [
+    "제출한 모든 시험이 Feature Version에 연결되고 재현 정보가 비어 있지 않다"
+   ],
+   "platform": {
+    "actions": [
+     "submitTms"
+    ],
+    "screens": [
+     "/verify/evidence",
+     "/verify/safety-case"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.5-A06"
+   ]
+  },
+  {
+   "id": "FPW.5-A06",
+   "name": "G5 V&V 판정",
+   "trigger": null,
+   "gateDecision": "G5",
+   "independentOf": [
+    "FPW.5-A04",
+    "FPW.5-A03"
+   ],
+   "outcomes": [
+    "O4"
+   ],
+   "rules": [
+    "FFG-LCY-001",
+    "FFG-LCY-002"
+   ],
+   "raci": {
+    "R": [
+     "R-QA"
+    ],
+    "A": "R-TST",
+    "C": [
+     "R-SM"
+    ],
+    "I": [
+     "R-FO",
+     "R-REL",
+     "R-ARC"
+    ]
+   },
+   "inputs": [
+    "WP-G5-EVIDENCE",
+    "WP-VV-PLAN"
+   ],
+   "outputs": [
+    "WP-G5-DECISION"
+   ],
+   "steps": [
+    "검증 계획의 판정 기준과 제출된 Evidence를 대조하고, 연결되지 않은 시험이나 빠진 항목이 있으면 FAIL로 판정한다",
+    "미해결 결함의 잔여 위험을 Safety Manager와 검토해 수용 여부를 기록한다",
+    "Gate G5(Verification)·G6(Supplier)를 개인 서명으로 판정 등록한다",
+    "FAIL이면 결함 목록을 통합·시험 조직에 돌려보내 재시험을 요청한다"
+   ],
+   "checks": [
+    "판정자가 시험 수행·통합 담당과 다른 조직이다",
+    "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다"
+   ],
+   "platform": {
+    "actions": [
+     "judgeGate"
+    ],
+    "screens": [
+     "/verify/evidence",
+     "/admin/approval"
+    ],
+    "gates": [
+     "G5",
+     "G6"
+    ],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  }
+ ],
+ "layout": {
+  "width": 1926,
+  "height": 392,
+  "lanes": [
+   {
+    "role": "R-SM",
+    "label": "Safety Manager",
+    "x": 0,
+    "y": 0,
+    "w": 1926,
+    "h": 98
+   },
+   {
+    "role": "R-TST",
+    "label": "시험 조직",
+    "x": 0,
+    "y": 98,
+    "w": 1926,
+    "h": 98
+   },
+   {
+    "role": "R-INT",
+    "label": "통합 조직",
+    "x": 0,
+    "y": 196,
+    "w": 1926,
+    "h": 98
+   },
+   {
+    "role": "R-QA",
+    "label": "품질 조직",
+    "x": 0,
+    "y": 294,
+    "w": 1926,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.5-A01",
+    "kind": "action",
+    "label": "독립성 수준·검증 계획 확정",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A02",
+    "kind": "action",
+    "label": "시나리오·허용 조합 정의",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A04",
+    "kind": "action",
+    "label": "비활성화·결함 주입 시험 수행",
+    "x": 1038,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A05",
+    "kind": "action",
+    "label": "시험 Evidence 연결·TMS 제출",
+    "x": 1318,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A03",
+    "kind": "action",
+    "label": "통합 시험·SEooC 가정 확인",
+    "x": 478,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A07",
+    "kind": "action",
+    "label": "Flag 코드 연결 확인",
+    "x": 758,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A06",
+    "kind": "action",
+    "label": "G5 V&V 판정",
+    "x": 1598,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.5-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 1800,
+    "y": 334,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.5-S1",
+    "to": "FPW.5-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A01",
+    "to": "FPW.5-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A01",
+    "to": "FPW.5-A03",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      245
+     ],
+     [
+      478,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A02",
+    "to": "FPW.5-A04",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      1038,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A03",
+    "to": "FPW.5-A07",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      245
+     ],
+     [
+      758,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A04",
+    "to": "FPW.5-A05",
+    "kind": "flow",
+    "points": [
+     [
+      1226,
+      147
+     ],
+     [
+      1318,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A07",
+    "to": "FPW.5-A04",
+    "kind": "flow",
+    "points": [
+     [
+      946,
+      245
+     ],
+     [
+      1026,
+      245
+     ],
+     [
+      1026,
+      147
+     ],
+     [
+      1038,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A05",
+    "to": "FPW.5-A06",
+    "kind": "flow",
+    "points": [
+     [
+      1506,
+      147
+     ],
+     [
+      1586,
+      147
+     ],
+     [
+      1586,
+      343
+     ],
+     [
+      1598,
+      343
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A06",
+    "to": "FPW.5-E1",
+    "kind": "end",
+    "points": [
+     [
+      1786,
+      343
+     ],
+     [
+      1800,
+      343
+     ]
+    ]
+   }
+  ],
+  "joins": [
+   [
+    1026,
+    147
+   ]
+  ]
+ },
+ "departmentLayout": {
+  "width": 1926,
+  "height": 392,
+  "lanes": [
+   {
+    "department": "DEP-FS",
+    "label": "기능안전팀",
+    "x": 0,
+    "y": 0,
+    "w": 1926,
+    "h": 98
+   },
+   {
+    "department": "DEP-VAL",
+    "label": "시험·검증팀",
+    "x": 0,
+    "y": 98,
+    "w": 1926,
+    "h": 98
+   },
+   {
+    "department": "DEP-INT",
+    "label": "SW통합·릴리스팀",
+    "x": 0,
+    "y": 196,
+    "w": 1926,
+    "h": 98
+   },
+   {
+    "department": "DEP-QA",
+    "label": "품질팀",
+    "x": 0,
+    "y": 294,
+    "w": 1926,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.5-A01",
+    "kind": "action",
+    "label": "독립성 수준·검증 계획 확정",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A02",
+    "kind": "action",
+    "label": "시나리오·허용 조합 정의",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A04",
+    "kind": "action",
+    "label": "비활성화·결함 주입 시험 수행",
+    "x": 1038,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A05",
+    "kind": "action",
+    "label": "시험 Evidence 연결·TMS 제출",
+    "x": 1318,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A03",
+    "kind": "action",
+    "label": "통합 시험·SEooC 가정 확인",
+    "x": 478,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A07",
+    "kind": "action",
+    "label": "Flag 코드 연결 확인",
+    "x": 758,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-A06",
+    "kind": "action",
+    "label": "G5 V&V 판정",
+    "x": 1598,
+    "y": 310,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.5-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.5-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 1800,
+    "y": 334,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.5-S1",
+    "to": "FPW.5-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A01",
+    "to": "FPW.5-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A01",
+    "to": "FPW.5-A03",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      245
+     ],
+     [
+      478,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A02",
+    "to": "FPW.5-A04",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      1038,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A03",
+    "to": "FPW.5-A07",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      245
+     ],
+     [
+      758,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A04",
+    "to": "FPW.5-A05",
+    "kind": "flow",
+    "points": [
+     [
+      1226,
+      147
+     ],
+     [
+      1318,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A07",
+    "to": "FPW.5-A04",
+    "kind": "flow",
+    "points": [
+     [
+      946,
+      245
+     ],
+     [
+      1026,
+      245
+     ],
+     [
+      1026,
+      147
+     ],
+     [
+      1038,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A05",
+    "to": "FPW.5-A06",
+    "kind": "flow",
+    "points": [
+     [
+      1506,
+      147
+     ],
+     [
+      1586,
+      147
+     ],
+     [
+      1586,
+      343
+     ],
+     [
+      1598,
+      343
+     ]
+    ]
+   },
+   {
+    "from": "FPW.5-A06",
+    "to": "FPW.5-E1",
+    "kind": "end",
+    "points": [
+     [
+      1786,
+      343
+     ],
+     [
+      1800,
+      343
+     ]
+    ]
+   }
+  ],
+  "joins": [
+   [
+    1026,
+    147
+   ]
+  ]
+ }
+};

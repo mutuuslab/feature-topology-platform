@@ -3,7 +3,7 @@ id: WF-ROLE-LEG
 type: workflow
 title: "법무 업무 절차서 / Legal Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -14,7 +14,8 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
-last_updated: 2026-11-05
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -55,8 +56,11 @@ last_updated: 2026-11-05
 - FPW.10-A02 DIA·CIA 체결 (협의)
 - FPW.12-A04 EU 데이터 접근 요청 처리 (협의)
 - FPW.12-A02 평가 컨텍스트 개인정보 검토 (협의)
+- FPW.12-A06 처리 목적·근거 검토 (협의)
+- FPW.12-A07 정보주체 요청 접수 (협의)
 - FPW.13-A02 Compliance Profile 정의 (협의)
 - FPW.13-A03 분기 법규 감시·Profile 갱신 (협의)
+- FPW.18-A01 분석 목적·데이터 검토 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

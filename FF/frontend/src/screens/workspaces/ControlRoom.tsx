@@ -1,10 +1,12 @@
 // ④ 관제실(OTA·서비스운영·IT인프라·보안운영) — 셸 전체가 어두운 관제 톤. 핵심 메시지 = 진행 중인 안전 차단 수(0이면 회색),
 // 그 옆에 크게 긴급 차단 요청. 숫자 띠(연결·끊김·이상 징후·차단) → 차량 상태 표 · 최근 이상 징후 · 내 업무.
 import { Link } from 'react-router-dom';
+import { workspaceMarker } from './workspaceMarker';
+import { workspaceData as W } from '../../copy/workspace-data';
 import type { DepartmentSummary, FeatureHealthResponse } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
 import { departments as D } from '../../copy/departments';
-import { AsyncView, DataTable, PageHeader, Panel } from '../../design';
+import { AsyncView, Button, DataTable, PageHeader, Panel } from '../../design';
 import { isSafetyKill } from '../home/dashboard/catalog';
 import { when } from '../shared';
 import { MyWork, useDeptDoc } from './common';
@@ -34,24 +36,27 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
   // 운영 점검(Closed loop) — 조치 필요 점검 결과(Data Lake 4축 판정, TL-UI16)
   const health = useApi<FeatureHealthResponse>('featureHealth', {}, { retry: false });
   const d = useDeptDoc(dept);
-  const rows = fleet.data?.items ?? [];
+  const fleetKnown = !fleet.isError && Array.isArray(fleet.data?.items);
+  const anomaliesKnown = !anms.isError && Array.isArray(anms.data?.items);
+  const killsKnown = !kills.isError && Array.isArray(kills.data?.items);
+  const rows = fleetKnown ? fleet.data!.items : [];
   const online = rows.filter((r) => r.link === 'ONLINE').length;
-  const open = (anms.data?.items ?? []).filter((a) => a.status !== 'CLOSED' && a.status !== 'DISMISSED');
-  const active = (kills.data?.items ?? []).filter(isSafetyKill).length;
+  const open = (anomaliesKnown ? anms.data!.items : []).filter((a) => a.status !== 'CLOSED' && a.status !== 'DISMISSED');
+  const active = (killsKnown ? kills.data!.items : []).filter(isSafetyKill).length;
   const tiles: { k: string; v: number | string; tone: 'ok' | 'warn' | 'danger' | 'neutral'; to: string }[] = [
-    { k: C.online, v: fleet.isPending ? '—' : online, tone: 'ok', to: '/fleet/live' },
-    { k: C.offline, v: fleet.isPending ? '—' : rows.length - online, tone: 'warn', to: '/fleet/live' },
-    { k: C.anomalies, v: anms.isPending ? '—' : open.length, tone: 'warn', to: '/ops/anomalies' },
+    { k: C.online, v: fleetKnown ? online : W.unknown, tone: 'ok', to: '/fleet/live' },
+    { k: C.offline, v: fleetKnown ? rows.length - online : W.unknown, tone: 'warn', to: '/fleet/live' },
+    { k: C.anomalies, v: anomaliesKnown ? open.length : W.unknown, tone: 'warn', to: '/ops/anomalies' },
     ...(health.data?.connected ? [{ k: C.findings, v: health.data.findings.filter((f) => f.status !== 'CLOSED' && f.severity === 'ACTION').length, tone: 'danger' as const, to: '/ops/feature-health' }] : []),
   ];
   return (
-    <div className="ds-screen ws ws--control" data-workspace-home="control">
+    <div className="ds-screen ws ws--control" {...workspaceMarker('control')}>
       <PageHeader
         codes={C.eyebrow}
         title={C.title(dept.name)}
         lead={C.lead}
         // 0건도 숫자로 — 관제실은 '지금 몇 건'이 첫 질문이다(0이면 회색)
-        message={kills.isPending ? { tone: 'neutral', value: '—', text: C.keyKill(0).text } : { tone: active ? 'danger' : 'neutral', ...C.keyKill(active) }}
+        message={!killsKnown ? { tone: kills.isError ? 'warn' : 'neutral', value: W.unknown, text: kills.isError ? W.unavailable : C.keyKill(0).text } : { tone: active ? 'danger' : 'neutral', ...C.keyKill(active) }}
         actions={
           <div className="ws-kill">
             <Link className="ds-btn ds-btn--danger ws-kill__btn" to="/ops/kill">
@@ -61,6 +66,8 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
           </div>
         }
       />
+      {kills.isError && <AsyncView state={asyncState(kills)} error={kills.error} onRetry={() => kills.refetch()} />}
+      {kills.isSuccess && !killsKnown && <div><p role="alert">{W.badResponse}</p><Button onClick={() => void kills.refetch()}>{W.retry}</Button></div>}
       <ul className="ws-tiles" aria-label={C.eyebrow}>
         {tiles.map((t) => (
           <li key={t.k} data-tone={t.v === 0 || t.v === '—' ? 'neutral' : t.tone}>
@@ -73,7 +80,7 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
       </ul>
       <div className="ws-split ws-split--wide">
         <Panel title={C.fleet} actions={<Link to="/fleet/map">{C.fleetMap} →</Link>}>
-          <AsyncView state={asyncState(fleet, !rows.length)} onRetry={() => fleet.refetch()} rows={6}>
+          <AsyncView state={asyncState(fleet, !rows.length)} error={fleet.error} onRetry={() => fleet.refetch()} rows={6}>
             <DataTable
               caption={C.fleet}
               rows={rows}
@@ -99,7 +106,7 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
         </Panel>
         <div className="ws-stack">
           <Panel title={C.feed} actions={<Link to="/ops/anomalies">{D.home.open} →</Link>}>
-            <AsyncView state={asyncState(anms, !open.length)} onRetry={() => anms.refetch()} empty={{ title: C.noAnomaly }} rows={4}>
+            <AsyncView state={asyncState(anms, !open.length)} error={anms.error} onRetry={() => anms.refetch()} empty={{ title: C.noAnomaly }} rows={4}>
               <ul className="ws-feed">
                 {open.slice(0, 8).map((a) => (
                   <li key={a.anomalyId} data-severity={a.severity}>

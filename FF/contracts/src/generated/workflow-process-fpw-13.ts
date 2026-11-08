@@ -1,0 +1,794 @@
+// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.
+import type { WorkflowProcess } from '../rules/workflows';
+export const PROCESS: WorkflowProcess = {
+ "id": "FPW.13",
+ "name": "규정·Compliance Profile 관리",
+ "en": "Regulatory & Compliance Profile Management",
+ "group": "지원",
+ "gates": [],
+ "ref": "표준 보고서 2장(규정·표준 관리), 3장(ADS 규정), 7.10절(거버넌스)",
+ "purpose": "프로젝트가 따를 표준 판을 고정하고, 시장별 적용 법규·필수 Evidence·게이트 파라미터를 버전 관리되는 Compliance Profile로 운영하며, 원격 종료 절차를 시스템 설명 문서에 운영 절차와 같은 내용으로 적는다.",
+ "outcomes": [
+  {
+   "id": "O1",
+   "text": "ISO 26262·21448·21434의 판이 프로젝트 단위로 고정된다."
+  },
+  {
+   "id": "O2",
+   "text": "시장별 Compliance Profile이 정의되고 모든 정책·명령이 그 버전을 기록한다."
+  },
+  {
+   "id": "O3",
+   "text": "분기마다 표준·법규 개정이 점검되어 Profile이 갱신된다."
+  },
+  {
+   "id": "O4",
+   "text": "원격 종료·복원 절차가 시스템 설명 문서에 운영 절차와 같게 적힌다."
+  }
+ ],
+ "basePractices": [
+  {
+   "id": "FPW.13.BP1",
+   "name": "표준 판 고정",
+   "definition": "프로젝트가 적용할 표준의 판과 적용 범위를 결정하여 Safety Plan에 고정한다. 참고 초안과 승인된 판정 기준을 구분하고 법규·보안 담당자가 같은 기준을 사용하도록 공유한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.13-A01"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-STANDARD-EDITIONS",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.13.BP2",
+   "name": "Compliance Profile 정의",
+   "definition": "시장별 적용 규정·의무 기능·필수 근거·판정 파라미터를 버전 있는 Profile로 정의한다. 발효·국내 도입·최종 법문 확인 결과를 기록하고 생성된 정책·명령의 기준 판과 연결한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.13-A02"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-COMPLIANCE-PROFILE",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.13.BP3",
+   "name": "분기 법규 감시·Profile 갱신",
+   "definition": "정기적으로 표준·법규 변화를 확인하여 현재 Profile과의 차이를 평가한다. 변경 또는 무변경의 근거를 남기고 영향 기능·담당·해소 기한을 후속 검토에 인계한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.13-A03"
+   ],
+   "outcomes": [
+    "O3"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-COMPLIANCE-PROFILE",
+     "outcomes": [
+      "O3"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.13.BP4",
+   "name": "원격 종료 시스템 설명 작성",
+   "definition": "원격 종료·복원의 사유·승인·해제·시장별 운영 방법을 시스템 설명으로 정리한다. 실제 운영 절차와 드릴 결과를 대조하여 문서와 운용의 불일치를 해소한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.13-A04"
+   ],
+   "outcomes": [
+    "O4"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-SYSTEM-DESCRIPTION",
+     "outcomes": [
+      "O4"
+     ]
+    }
+   ]
+  }
+ ],
+ "rules": [
+  "FFG-GEN-002",
+  "FFG-GEN-001",
+  "FFG-ADS-001",
+  "FFG-GEN-004",
+  "FFG-ADS-006"
+ ],
+ "entry": [
+  "프로젝트의 대상 시장과 차종이 정해졌다"
+ ],
+ "exit": [
+  "표준 판·Compliance Profile·시스템 설명이 최신 버전으로 승인되어 있다"
+ ],
+ "workProducts": [
+  {
+   "key": "WP-REG-SOURCES",
+   "name": "법규·표준 원문",
+   "en": "Regulations & Standards Sources",
+   "kind": "input",
+   "retained": false,
+   "content": [
+    "시장별 법규 최종 법문과 발효·적용일",
+    "표준 판과 개정 예고"
+   ]
+  },
+  {
+   "key": "WP-STANDARD-EDITIONS",
+   "name": "표준 판 고정 기록(Safety Plan)",
+   "en": "Fixed Standard Editions",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "ISO 26262·ISO 21448·ISO/SAE 21434의 적용 판",
+    "정식 발행 전 개정 요구를 Gate 판정 기준에서 뺀다는 표시"
+   ]
+  },
+  {
+   "key": "WP-COMPLIANCE-PROFILE",
+   "name": "시장별 Compliance Profile",
+   "en": "Compliance Profile",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터",
+    "ADS 규정의 국내 도입·발효 상태와 최종 법문 대조 결과",
+    "Profile 버전과 갱신 이력, '검증 필요' 항목과 해소 기한"
+   ]
+  },
+  {
+   "key": "WP-SYSTEM-DESCRIPTION",
+   "name": "원격 종료 시스템 설명",
+   "en": "Remote Termination System Description",
+   "kind": "output",
+   "retained": true,
+   "content": [
+    "원격 종료·복원 방법과 발동 사유·승인자·긴급 권한·해제 기준",
+    "시장별 차이와 운영 절차(FPW.8)와의 대응"
+   ]
+  }
+ ],
+ "activities": [
+  {
+   "id": "FPW.13-A01",
+   "name": "표준 판 고정",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [
+    "FFG-GEN-002"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-CSM",
+     "R-REG"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-REG-SOURCES"
+   ],
+   "outputs": [
+    "WP-STANDARD-EDITIONS"
+   ],
+   "steps": [
+    "프로젝트가 따를 ISO 26262·ISO 21448·ISO/SAE 21434의 판을 정해 Safety Plan에 적는다",
+    "정식 발행 전 개정판의 요구는 참고로만 두고 Gate 판정 기준에서 뺀다",
+    "고정한 판을 법규 담당과 CSM에게 알려 Profile과 CSMS에 맞춘다"
+   ],
+   "checks": [
+    "Safety Plan에 세 표준의 적용 판이 적혀 있다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.13-A02"
+   ]
+  },
+  {
+   "id": "FPW.13-A02",
+   "name": "Compliance Profile 정의",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-GEN-001",
+    "FFG-ADS-001"
+   ],
+   "raci": {
+    "R": [
+     "R-REG"
+    ],
+    "A": "R-REG",
+    "C": [
+     "R-SM",
+     "R-CSM",
+     "R-LEG"
+    ],
+    "I": [
+     "R-FO",
+     "R-OPS"
+    ]
+   },
+   "inputs": [
+    "WP-STANDARD-EDITIONS",
+    "WP-REG-SOURCES"
+   ],
+   "outputs": [
+    "WP-COMPLIANCE-PROFILE"
+   ],
+   "steps": [
+    "시장별 적용 법규·의무 기능·필수 Evidence·게이트 파라미터를 Profile로 정의하고 버전을 붙인다",
+    "ADS 관련 시장은 UN 규정·GTR의 국내 도입·발효 상태를 따로 적고, 제안문 조항은 최종 법문과 대조한 뒤에만 기준으로 쓴다",
+    "정책과 명령이 생성 시점의 Profile 버전을 기록하는지 플랫폼 컴플라이언스 화면에서 확인한다"
+   ],
+   "checks": [
+    "대상 시장마다 Profile 버전이 있고 ADS 조항의 대조 결과가 있다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/verify/compliance"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.13-A04"
+   ]
+  },
+  {
+   "id": "FPW.13-A03",
+   "name": "분기 법규 감시·Profile 갱신",
+   "trigger": "분기 정기 점검",
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O3"
+   ],
+   "rules": [
+    "FFG-GEN-004"
+   ],
+   "raci": {
+    "R": [
+     "R-REG",
+     "R-SM",
+     "R-CSM"
+    ],
+    "A": "R-REG",
+    "C": [
+     "R-LEG"
+    ],
+    "I": [
+     "R-FO",
+     "R-OPS",
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-REG-SOURCES",
+    "WP-COMPLIANCE-PROFILE"
+   ],
+   "outputs": [
+    "WP-COMPLIANCE-PROFILE"
+   ],
+   "steps": [
+    "법규 담당·Safety Manager·CSM이 분기마다 표준·법규 개정을 각자 범위에서 점검한다",
+    "개정 사항을 Profile 새 버전에 반영하고 영향 받는 Feature를 Feature Owner에게 알린다",
+    "검증이 필요하다고 표시된 항목은 해당 시장 SOP 전까지 해소 기한과 담당을 정한다"
+   ],
+   "checks": [
+    "분기 점검 기록과 Profile 새 버전(또는 무변경 확인)이 있다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/verify/compliance",
+     "/trace/ads"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  },
+  {
+   "id": "FPW.13-A04",
+   "name": "원격 종료 시스템 설명 작성",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O4"
+   ],
+   "rules": [
+    "FFG-ADS-006"
+   ],
+   "raci": {
+    "R": [
+     "R-REG",
+     "R-OPS"
+    ],
+    "A": "R-REG",
+    "C": [
+     "R-SM",
+     "R-CSM"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-COMPLIANCE-PROFILE",
+    "WP-DRILL-REPORT"
+   ],
+   "outputs": [
+    "WP-SYSTEM-DESCRIPTION"
+   ],
+   "steps": [
+    "원격 종료·복원 방법을 시스템 설명 문서에 적는다",
+    "발동 사유·승인자·긴급 권한·해제 기준·시장별 차이를 운영 절차(FPW.8)와 같은 내용으로 맞춘다",
+    "운영 조직이 드릴 결과로 실제 운영과 문서가 같은지 확인한다"
+   ],
+   "checks": [
+    "시스템 설명과 FPW.8 운영 절차의 승인자·기준이 일치한다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  }
+ ],
+ "layout": {
+  "width": 1086,
+  "height": 196,
+  "lanes": [
+   {
+    "role": "R-SM",
+    "label": "Safety Manager",
+    "x": 0,
+    "y": 0,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "role": "R-REG",
+    "label": "법규 담당",
+    "x": 0,
+    "y": 98,
+    "w": 1086,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.13-A01",
+    "kind": "action",
+    "label": "표준 판 고정",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-A02",
+    "kind": "action",
+    "label": "Compliance Profile 정의",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-A03",
+    "kind": "action",
+    "label": "분기 법규 감시·Profile 갱신",
+    "x": 198,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-A04",
+    "kind": "action",
+    "label": "원격 종료 시스템 설명 작성",
+    "x": 758,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.13-S2",
+    "kind": "start",
+    "label": "분기 정기 점검",
+    "x": 146,
+    "y": 138,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.13-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 400,
+    "y": 138,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.13-E2",
+    "kind": "end",
+    "label": "종료",
+    "x": 960,
+    "y": 138,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.13-S1",
+    "to": "FPW.13-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-S2",
+    "to": "FPW.13-A03",
+    "kind": "trigger",
+    "points": [
+     [
+      164,
+      147
+     ],
+     [
+      198,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A01",
+    "to": "FPW.13-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A02",
+    "to": "FPW.13-A04",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      758,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A03",
+    "to": "FPW.13-E1",
+    "kind": "end",
+    "points": [
+     [
+      386,
+      147
+     ],
+     [
+      400,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A04",
+    "to": "FPW.13-E2",
+    "kind": "end",
+    "points": [
+     [
+      946,
+      147
+     ],
+     [
+      960,
+      147
+     ]
+    ]
+   }
+  ],
+  "joins": []
+ },
+ "departmentLayout": {
+  "width": 1086,
+  "height": 196,
+  "lanes": [
+   {
+    "department": "DEP-FS",
+    "label": "기능안전팀",
+    "x": 0,
+    "y": 0,
+    "w": 1086,
+    "h": 98
+   },
+   {
+    "department": "DEP-HOM",
+    "label": "법규인증팀",
+    "x": 0,
+    "y": 98,
+    "w": 1086,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.13-A01",
+    "kind": "action",
+    "label": "표준 판 고정",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-A02",
+    "kind": "action",
+    "label": "Compliance Profile 정의",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-A03",
+    "kind": "action",
+    "label": "분기 법규 감시·Profile 갱신",
+    "x": 198,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-A04",
+    "kind": "action",
+    "label": "원격 종료 시스템 설명 작성",
+    "x": 758,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.13-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.13-S2",
+    "kind": "start",
+    "label": "분기 정기 점검",
+    "x": 146,
+    "y": 138,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.13-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 400,
+    "y": 138,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.13-E2",
+    "kind": "end",
+    "label": "종료",
+    "x": 960,
+    "y": 138,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.13-S1",
+    "to": "FPW.13-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-S2",
+    "to": "FPW.13-A03",
+    "kind": "trigger",
+    "points": [
+     [
+      164,
+      147
+     ],
+     [
+      198,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A01",
+    "to": "FPW.13-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A02",
+    "to": "FPW.13-A04",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      758,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A03",
+    "to": "FPW.13-E1",
+    "kind": "end",
+    "points": [
+     [
+      386,
+      147
+     ],
+     [
+      400,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.13-A04",
+    "to": "FPW.13-E2",
+    "kind": "end",
+    "points": [
+     [
+      946,
+      147
+     ],
+     [
+      960,
+      147
+     ]
+    ]
+   }
+  ],
+  "joins": []
+ }
+};

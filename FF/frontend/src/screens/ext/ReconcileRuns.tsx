@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 외부 연계 — 주기 대사 실행 기록(80-50 §4.5). 증분(최근 변경)·전체(Epic 기대값) 대사의 훑은 수·반영·충돌·오류와 처리 내용.
 import type { ReconcileRunRow } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -39,7 +40,7 @@ export function ReconcileRunsPanel() {
             { key: 'at', header: R.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.startedAt)}</span> },
             { key: 'k', header: R.col.kind, cell: (r) => R.kind[r.kind] },
             { key: 's', header: R.col.system, cell: (r) => extSync.system[r.system] },
-            { key: 'n', header: R.col.scanned, cell: (r) => r.scanned.toLocaleString('ko-KR'), align: 'right' },
+            { key: 'n', header: R.col.scanned, cell: (r) => r.scanned.toLocaleString(uiLocaleTag()), align: 'right' },
             { key: 'a', header: R.col.applied, cell: (r) => r.applied, align: 'right' },
             { key: 'c', header: R.col.conflicts, cell: (r) => <span style={r.conflicts ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{r.conflicts}</span>, align: 'right' },
             { key: 'e', header: R.col.errors, cell: (r) => <span style={r.errors ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{r.errors}</span>, align: 'right' },

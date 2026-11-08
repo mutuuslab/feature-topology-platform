@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /ops/feature-health — Feature 운영 점검(Closed loop 허브, TL-UI16) · /ops/feature-health/:findingId — 점검 결과 상세(TL-UI17).
 // 운영 중인 Feature 버전 × 4축(동작·문제·개선·위험) 판정과 점검 결과. 판단 불가는 정상과 나눠 보인다(80-70 9.1).
 // 상세: 근거 지표 스냅샷(신선도)·담당·기한·조치 연결·효과 기준·조치 전후 비교와 상태 흐름(감지 → 분석 중 → 조치 중 → 효과 확인 중 → 닫힘/다시 열림).
@@ -208,7 +209,7 @@ export function FindingScreen() {
                     { key: 'n', header: F.col.indicator, cell: (i) => <span style={{ fontWeight: i.name === f.cause ? 700 : 400 }}>{L.indicator[i.name]}</span> },
                     { key: 'c', header: F.col.current, cell: (i) => <span className="ds-mono">{L.value(i.name, i.current)}</span>, align: 'right' },
                     { key: 'p', header: F.col.previous, cell: (i) => <span className="ds-mono">{L.value(i.name, i.previous)}</span>, align: 'right' },
-                    { key: 's', header: F.col.sample, cell: (i) => <span className="ds-mono">{i.sampleVehicles?.toLocaleString('ko-KR') ?? '—'}</span>, align: 'right' },
+                    { key: 's', header: F.col.sample, cell: (i) => <span className="ds-mono">{i.sampleVehicles?.toLocaleString(uiLocaleTag()) ?? '—'}</span>, align: 'right' },
                     { key: 'j', header: F.col.judge, cell: (i) => <HealthBadge state={judgeIndicator(i)} /> },
                   ]}
                 />
@@ -249,7 +250,7 @@ export function FindingScreen() {
                       { k: F.effectCol.target, v: <span className="ds-mono">{L.value(f.effect.indicator, f.effect.target)}</span>, note: L.indicator[f.effect.indicator] },
                       { k: F.effectCol.before, v: <span className="ds-mono">{L.value(f.effect.indicator, f.effect.before)}</span> },
                       { k: F.effectCol.after, v: <span className="ds-mono">{L.value(f.effect.indicator, f.effect.after)}</span>, note: f.effect.ci ? `${F.effectCol.ci} ${L.value(f.effect.indicator, f.effect.ci[0])} ~ ${L.value(f.effect.indicator, f.effect.ci[1])}` : undefined },
-                      { k: F.effectCol.samples, v: <span className="ds-mono">{f.effect.samples?.toLocaleString('ko-KR') ?? '—'}</span> },
+                      { k: F.effectCol.samples, v: <span className="ds-mono">{f.effect.samples?.toLocaleString(uiLocaleTag()) ?? '—'}</span> },
                       { k: F.effectCol.met, v: <HealthBadge state={f.effect.met === true ? 'OK' : f.effect.met === false ? 'ACTION' : 'UNKNOWN'} title={f.effect.met === true ? F.met.yes : f.effect.met === false ? F.met.no : F.met.pending} />, note: f.effect.met === true ? F.met.yes : f.effect.met === false ? F.met.no : F.met.pending },
                     ]}
                   />

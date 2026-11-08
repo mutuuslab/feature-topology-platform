@@ -19,6 +19,7 @@ const loaders = {
   'lists': () => import('./en/lists'),
   'login': () => import('./en/login'),
   'p10': () => import('./en/p10'),
+  'planning': () => import('./en/planning'),
   'procedure-display': () => import('./en/procedure-display'),
   'procedure-panel': () => import('./en/procedure-panel'),
   'procedureFlow': () => import('./en/procedureFlow'),
@@ -31,6 +32,7 @@ const loaders = {
   'status-labels': () => import('./en/status-labels'),
   'unsaved': () => import('./en/unsaved'),
   'workflow-execution': () => import('./en/workflow-execution'),
+  'workflow-metadata': () => import('./en/workflow-metadata'),
   'workflowReference': () => import('./en/workflowReference'),
   'workspace-studio': () => import('./en/workspace-studio'),
 };

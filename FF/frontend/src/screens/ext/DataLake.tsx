@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /integration/datalake — Data Lake 연계(TL-UI10, 80-70 6장 10). 외부 시스템 화면: Lake가 주인인 데이터 계약·모델을 FF가 읽어 보이고,
 // FF가 주인인 것(모델 사용 승인 — 2인·직무 분리, 라벨 보내기)을 다룬다. 핵심 메시지: "데이터 계약 N건 지연" 또는 "모두 기준 안".
 import { FreshnessChip } from '../../design/freshness';
@@ -167,8 +168,8 @@ function LabelsTab() {
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
             <KeyValue
               rows={[
-                { k: B.ffSeq, v: <span className="ds-mono">{d.ffSeq.toLocaleString('ko-KR')}</span> },
-                { k: B.lakeCursor, v: <span className="ds-mono">{d.lakeCursor.toLocaleString('ko-KR')}</span> },
+                { k: B.ffSeq, v: <span className="ds-mono">{d.ffSeq.toLocaleString(uiLocaleTag())}</span> },
+                { k: B.lakeCursor, v: <span className="ds-mono">{d.lakeCursor.toLocaleString(uiLocaleTag())}</span> },
                 { k: B.backlog, v: <span className="ds-mono">{d.backlog}</span> },
                 { k: B.excluded, v: d.excluded.join(' · ') },
               ]}
@@ -180,7 +181,7 @@ function LabelsTab() {
               columns={[
                 { key: 'k', header: B.col.kind, cell: (r) => <span className="ds-mono">{r.kind}</span> },
                 { key: 't', header: B.col.title, cell: (r) => r.title },
-                { key: 's', header: B.col.sent, cell: (r) => <span className="ds-mono">{r.sent.toLocaleString('ko-KR')}</span>, align: 'right', sort: (r) => r.sent },
+                { key: 's', header: B.col.sent, cell: (r) => <span className="ds-mono">{r.sent.toLocaleString(uiLocaleTag())}</span>, align: 'right', sort: (r) => r.sent },
                 { key: 'l', header: B.col.last, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.lastAt)}</span> },
               ]}
             />

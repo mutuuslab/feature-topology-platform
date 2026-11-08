@@ -2,6 +2,10 @@ import { localizedCopy } from '../locale/runtime';
 // 데이터 신선도 칩 문구(TL-UI01) — 디자인 키트에 실리므로 짧게 둔다. 화면 문구는 copy/lake.ts.
 export const freshness = /* @__PURE__ */ localizedCopy('freshness.freshness', {
   now: '방금 적재',
+  justNow: '방금',
+  minutesAgo: (n: number) => `${n}분 전`,
+  hoursAgo: (n: number) => `${n}시간 전`,
+  daysAgo: (n: number) => `${n}일 전`,
   lag: (t: string) => `${t} 지연`,
   hold: '판단 보류',
   unknown: '적재 기록 없음',

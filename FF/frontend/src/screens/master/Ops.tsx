@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 import { master as masterCopy } from '../../copy/master';
 // 운영·관리 v2 화면 (P10-C4) — /ops/telemetry 운영 데이터·이벤트, /supplier/portal 협력사 이관, /admin/security 보안·인증서,
 // /admin/settings 설정, /verify/compliance 컴플라이언스(보고서 v1.1 규칙 추적), /change/eo SW EO. 모두 기존 API·계약 데이터를 읽는다.
@@ -461,7 +462,7 @@ export function SettingsScreen() {
               <KeyValue
                 rows={[
                   { k: 'seed', v: <span className="ds-mono">{h.seed ?? '—'}</span> },
-                  ...Object.entries(h.counts).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{v.toLocaleString('ko-KR')}</span> })),
+                  ...Object.entries(h.counts).map(([k, v]) => ({ k: <span className="ds-mono">{k}</span>, v: <span className="ds-mono">{v.toLocaleString(uiLocaleTag())}</span> })),
                 ]}
               />
             )}

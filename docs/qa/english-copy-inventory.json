@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 81,
-  "requiredLeaves": 8898,
+  "requiredLeaves": 8903,
   "modules": [
     {
       "module": "ads-change",
@@ -22014,6 +22014,12 @@
           "kind": "function",
           "text": "(currency: string) => `천 ${currency}`",
           "sourceHash": "0aad506462e74475a74d61019c9d03eca124641695a4f6afb29d055d061114a6"
+        },
+        {
+          "path": "formatters.formatters.vehicles",
+          "kind": "function",
+          "text": "(n: number) => `${n.toLocaleString('ko-KR')}대`",
+          "sourceHash": "b504fe47f68700ad171196769409c3cb2956fed4d2834a6e43474b99c1ac061d"
         }
       ],
       "connectedExports": [
@@ -22029,6 +22035,30 @@
           "kind": "text",
           "text": "방금 적재",
           "sourceHash": "bb67150c316de79d948baa3a7dae218deed2b658f4e102b67ce4c89fa1163884"
+        },
+        {
+          "path": "freshness.freshness.justNow",
+          "kind": "text",
+          "text": "방금",
+          "sourceHash": "2fd9e7d411752b4601d9d8a4131e1b8cfe244fb97c3e545e0b1df02d82b6c983"
+        },
+        {
+          "path": "freshness.freshness.minutesAgo",
+          "kind": "function",
+          "text": "(n: number) => `${n}분 전`",
+          "sourceHash": "12e628a97ae5cb6b58edd07a8e85185bf90a19b64cf6222e1e52015831f23353"
+        },
+        {
+          "path": "freshness.freshness.hoursAgo",
+          "kind": "function",
+          "text": "(n: number) => `${n}시간 전`",
+          "sourceHash": "2c78604a8f6386f36aa00fb6d258e211be6545bdd3b770b8b91c3d49c21d3fc0"
+        },
+        {
+          "path": "freshness.freshness.daysAgo",
+          "kind": "function",
+          "text": "(n: number) => `${n}일 전`",
+          "sourceHash": "943a5c9a9e749e5c40f24c4d94f879275a475744837186c83b45a08557bded50"
         },
         {
           "path": "freshness.freshness.lag",

@@ -58,4 +58,5 @@ export default {
   '/insights/business': 'Business metrics (legacy URL)', '/insights/reports': 'Reports (legacy URL)', '/cost': 'Cost (legacy URL)', '/_design': 'Design system',
   '/consults/:id': 'Consultation request', '/trace/coverage': 'Traceability coverage', '/baselines/eol': 'As-built shipment configuration checks',
   '/ops/ota-installs': 'OTA installation stages', '/deployments/campaigns/:id': 'Delivery campaign',
+  '/supplier/deliveries': 'Supplier handoff',
 };

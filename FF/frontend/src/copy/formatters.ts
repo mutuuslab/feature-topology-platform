@@ -10,4 +10,5 @@ export const formatters = /* @__PURE__ */ localizedCopy('formatters.formatters',
   won: (amount: string) => `${amount}원`,
   millionWon: '백만원',
   thousandCurrency: (currency: string) => `천 ${currency}`,
+  vehicles: (n: number) => `${n.toLocaleString('ko-KR')}대`,
 });

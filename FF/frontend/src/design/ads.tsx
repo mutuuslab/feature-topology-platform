@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../locale/runtime';
 // ADS·UNECE·Orca 공용 부품 — 6축 상태·배타 구간·관측 신선도·판정 사유·막힌 행동(설계 harness/ads/ux.json components).
 // 화면에서 직접 가져온다(import from '../../design/ads') — 첫 화면 묶음에 들어가지 않게 barrel(index.ts)에 넣지 않는다.
 import { useState, type CSSProperties, type ReactNode } from 'react';
@@ -66,7 +67,7 @@ export function StageCounts({
             <>
               <span className="ads-stages__swatch" data-tone={s.tone ?? 'neutral'} aria-hidden />
               <span className="ads-stages__label">{s.label}</span>
-              <b className="ads-stages__count">{s.count.toLocaleString('ko-KR')}</b>
+              <b className="ads-stages__count">{s.count.toLocaleString(uiLocaleTag())}</b>
               <span className="ads-stages__pct">{`${pct}%`}</span>
               {s.note ? <span className="ads-stages__note">{s.note}</span> : null}
             </>

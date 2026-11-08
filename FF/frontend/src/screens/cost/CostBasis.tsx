@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /procurement/sw-cost/basis — 계수·단가 표 버전(D-COST-8). 목록은 모두, 표 내용(단가)은 산정 역할만(서버가 403).
 // 원가 기준 관리자는 최신 발행 표를 복사해 자주 바뀌는 값(사내 단가·월 환산 일수·환율·부가세·공통 비율)을 고친 초안을 만들고 발행한다.
 // 발행해도 승인된 과제의 결과는 그대로 — 작성 중 과제는 '최신 계수 표로 맞추기'로 옮긴다.
@@ -119,8 +120,8 @@ function BasisContent({ version, prev }: { version: string; prev: string | null 
                 rows={[
                   { k: T.miscRows.daysPerMonth, v: b.rates.daysPerMonth },
                   { k: T.miscRows.vat, v: pct(b.vat) },
-                  { k: T.miscRows.fx, v: b.benchmark.fx.toLocaleString('ko-KR') },
-                  { k: T.miscRows.anchor, v: `€ ${b.benchmark.anchorEur.toLocaleString('ko-KR')}` },
+                  { k: T.miscRows.fx, v: b.benchmark.fx.toLocaleString(uiLocaleTag()) },
+                  { k: T.miscRows.anchor, v: `€ ${b.benchmark.anchorEur.toLocaleString(uiLocaleTag())}` },
                   { k: T.miscRows.pm, v: pct(b.commonPct.pm) },
                   { k: T.miscRows.scm, v: pct(b.commonPct.scm) },
                   { k: T.miscRows.pi, v: pct(b.commonPct.pi) },

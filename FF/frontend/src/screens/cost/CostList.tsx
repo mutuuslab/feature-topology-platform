@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /procurement/sw-cost — 산정 과제 목록(20-94 §9). 핵심 메시지 = 승인된 과제의 총개발비 합계(산정 역할) 또는 총 공수 합계(그 밖의 역할).
 // 목록은 탐색판 — 왼쪽 담은 기능 분류(도메인 › 컴포넌트)·계수 표 버전 트리, 오른쪽 다중 선택 필터(상태·국가·차종·ASIL·T-shirt), 가운데 지금 조건의 요약 + 표.
 // 필터 값은 서버가 과제마다 모은 적용 범위(scope) — 화면은 contracts facetFilter로 거르고 센다(트리·필터 수·요약·표가 같은 과제 집합).
@@ -119,11 +120,11 @@ export function SwCostScreen() {
   const okRows = rows.filter((p) => p.status === 'APPROVED' && p.totals);
   const allMm = rows.reduce((s, p) => s + (p.totals?.totalMm ?? 0), 0);
   const metrics = [
-    { key: 'projects', label: E.m.projects, value: rows.length.toLocaleString('ko-KR'), hint: E.m.projectsHint(items.length), lead: true },
-    { key: 'approved', label: E.m.approved, value: okRows.length.toLocaleString('ko-KR') },
+    { key: 'projects', label: E.m.projects, value: rows.length.toLocaleString(uiLocaleTag()), hint: E.m.projectsHint(items.length), lead: true },
+    { key: 'approved', label: E.m.approved, value: okRows.length.toLocaleString(uiLocaleTag()) },
     { key: 'allMm', label: E.m.allMm, value: mm(allMm), hint: E.m.unitMm },
-    { key: 'features', label: E.m.features, value: rows.reduce((s, p) => s + p.featureCount, 0).toLocaleString('ko-KR'), hint: E.m.featuresHint },
-    { key: 'stale', label: E.m.stale, value: rows.filter((p) => p.basisStale).length.toLocaleString('ko-KR') },
+    { key: 'features', label: E.m.features, value: rows.reduce((s, p) => s + p.featureCount, 0).toLocaleString(uiLocaleTag()), hint: E.m.featuresHint },
+    { key: 'stale', label: E.m.stale, value: rows.filter((p) => p.basisStale).length.toLocaleString(uiLocaleTag()) },
   ];
 
   const columns = [

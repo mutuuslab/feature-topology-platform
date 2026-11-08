@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { ROUTES, routeUrl, snapshotFile } from '@ff/contracts';
 import { WORKFLOW_EXECUTION_MODEL as M } from '../../../contracts/src/generated/workflow-execution-model';
 import { AppProvider } from '../store';
 import { WorkflowWorkScreen } from '../screens/procedures/WorkCases';
+import { changeUiLanguage, __resetLocaleForTest } from '../locale/runtime';
 vi.hoisted(()=>{vi.stubEnv('VITE_DATA_MODE','static');});
 
 const A='FPW.18-A01',WP='WP-ANALYSIS-SCOPE';
@@ -23,7 +24,7 @@ beforeEach(async()=>{
   vi.stubGlobal('fetch',vi.fn(async(input:string)=>{const v=snapshots[String(input).replace(/^\//,'')];return v?new Response(JSON.stringify(v),{headers:{'Content-Type':'application/json'}}):new Response('<!doctype html>',{headers:{'Content-Type':'text/html'}});}));
   sim=await import('../api/sim');engine=await import('../api/sim/engine');
 });
-afterEach(()=>{cleanup();engine?.__resetSimForTest();vi.unstubAllEnvs();vi.unstubAllGlobals();localStorage.clear();});
+afterEach(()=>{cleanup();engine?.__resetSimForTest();vi.unstubAllEnvs();vi.unstubAllGlobals();localStorage.clear();__resetLocaleForTest();});
 const create=()=>run('createWorkflowCase',{processId:'FPW.18',title:'분석 범위 검토',targetRef:'FEAT-00022@1.0.0'});
 const fields=()=>Object.fromEntries(M.processes.find(p=>p.id==='FPW.18')!.products.find(w=>w.key===WP)!.content.map((_,i)=>[String(i),`분석 근거 ${i}`]));
 const artifact=(id:string,version:number,references:string[])=>run('createWorkflowArtifact',{version,activityId:A,productKey:WP,fields:fields(),references,files:[],reason:'범위 작성'},'commerce',{id});
@@ -33,6 +34,27 @@ function mount(path:string,role='commerce'){
   return render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}><MemoryRouter initialEntries={[path]}><AppProvider><WorkflowWorkScreen/></AppProvider></MemoryRouter></QueryClientProvider>);
 }
 describe('실제 업무 건과 정적 시연의 권한·제출·인계',()=>{
+  it('영문 WP 입력도 숫자 필드키로 저장하며 언어 변경은 작성내용과 원천 승인을 바꾸지 않는다',async()=>{
+    const {item}=await create();localStorage.setItem('fp.state.v2',JSON.stringify({role:'commerce',lang:'en'}));
+    await changeUiLanguage('en');
+    // mount intentionally keeps the requested language so its initial preference cannot cancel EN.
+    render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}><MemoryRouter initialEntries={[`/procedures/work?case=${item.caseId}`]}><AppProvider><WorkflowWorkScreen/></AppProvider></MemoryRouter></QueryClientProvider>);
+    const first=await screen.findByRole('textbox',{name:'Purpose, population, period, data categories and processing basis',exact:true});
+    fireEvent.change(first,{target:{value:'작성자가 작성한 원문 0'}});
+    fireEvent.change(screen.getByRole('textbox',{name:'Pseudonymization, access, retention and cross-border transfer review, including unresolved matters',exact:true}),{target:{value:'작성자가 작성한 원문 1'}});
+    await act(async()=>{await changeUiLanguage('ko');});
+    expect(screen.getByRole('textbox',{name:M.processes.find(p=>p.id==='FPW.18')!.products.find(p=>p.key===WP)!.content[0],exact:true})).toBe(first);
+    expect(first).toHaveValue('작성자가 작성한 원문 0');
+    await act(async()=>{await changeUiLanguage('en');});
+    fireEvent.change(screen.getByRole('textbox',{name:/^Evidence references/}),{target:{value:'DOC-EN-01'}});
+    fireEvent.change(screen.getByLabelText('Reason for creation or revision'),{target:{value:'원문 작성 사유'}});
+    fireEvent.click(screen.getByRole('button',{name:'Save new version'}));
+    await screen.findAllByText('Workflow case version 2');
+    const saved=(await run('workflowCase',undefined,'commerce',{id:item.caseId})).item;
+    expect(saved.artifacts[0].fields).toEqual({'0':'작성자가 작성한 원문 0','1':'작성자가 작성한 원문 1'});
+    expect(saved.activities[A]).toBeUndefined();
+    expect(saved.artifacts[0].references).toEqual(['DOC-EN-01']);
+  });
   it('필수 근거와412 충돌을 서버와 같은 규칙으로 거부하며 독립 검토·철회를 보존한다',async()=>{
     const {item}=await create(),id=item.caseId;
     await artifact(id,1,[]);

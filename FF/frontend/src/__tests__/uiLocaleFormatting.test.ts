@@ -4,10 +4,21 @@ import { formatCount, formatExact } from '../design/format';
 import { localTime, personOf, remaining } from '../data/people';
 import { displayRoleLabel, permMatrix, roleKeyOf } from '../data/refdata';
 import { money, moneyKey } from '../screens/cost/common';
+import { fmtAt, relAgo } from '../design/freshness';
 
 afterEach(() => __resetLocaleForTest());
 
 describe('localized display preserves business values', () => {
+  it('relative-time boundaries retain the same minute, hour and day calculations in either language', async () => {
+    const now=Date.parse('2026-11-09T12:00:00Z');
+    const ago=(ms:number)=>new Date(now-ms).toISOString();
+    expect([0,60_000,3_600_000,172_800_000].map(ms=>relAgo(ago(ms),now))).toEqual(['방금','1분 전','1시간 전','2일 전']);
+    const stamp=fmtAt(ago(3_600_000));
+    await changeUiLanguage('en');
+    expect([0,60_000,3_600_000,172_800_000].map(ms=>relAgo(ago(ms),now))).toEqual(['Just now','1 min ago','1 hr ago','2 days ago']);
+    expect(fmtAt(ago(3_600_000))).toBe(stamp);
+    expect(relAgo(null,now)).toBe('—');
+  });
   it('uses English quantity and duration units while retaining exact values and deadline decisions', async () => {
     const due = '2026-11-09T10:20:00Z';
     const now = Date.parse('2026-11-09T09:00:00Z');

@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /master/feature-db/:refId — 기준 행 상세(30-95 §5.1·§5.2·§8.3). 식별·분류 경로·03b 정의·특성·규모·근거·별칭·관계,
 // 이 행을 쓰는 Feature, 컴포넌트의 세부기능 후보(읽기 전용), 상태에 따른 사용 규칙, 변경 요청 작성(자동 점검 결과를 바로 보인다).
 // 벤치마크 €는 서버가 산정 역할에만 준다 — 응답에 있을 때만 그린다.
@@ -195,7 +196,7 @@ function Benchmark({ r }: { r: RefRowView }) {
       ) : (
       <KeyValue
         rows={[
-          { k: T.f.benchmarkEur, v: r.benchmarkEur != null ? <span className="ds-mono">{r.benchmarkEur.toLocaleString('ko-KR')}</span> : T.none },
+          { k: T.f.benchmarkEur, v: r.benchmarkEur != null ? <span className="ds-mono">{r.benchmarkEur.toLocaleString(uiLocaleTag())}</span> : T.none },
           { k: T.f.kearneyNote, v: r.kearneyNote || T.none },
         ]}
       />

@@ -7,4 +7,5 @@ export default {
   'formatters.won': (amount: string) => `KRW ${amount}`,
   'formatters.millionWon': 'million KRW',
   'formatters.thousandCurrency': (currency: string) => `thousand ${currency}`,
+  'formatters.vehicles': (n: number) => `${n.toLocaleString('en-US')} vehicles`,
 };

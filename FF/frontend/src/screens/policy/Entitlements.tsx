@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /entitlements — 사용 권한·체험권 (D01-05 · 구매 전환 D05-04). 체험권은 차량마다 따로: 제안(14일) → 수락(30일 ON) → 만료·거절·구매 전환.
 // 체험권 차량 목록은 상태·성향 필터와 쪽 나눔, 합성 모집단(통계용 가상 데이터)은 표시해서 구분한다.
 import { lazy, Suspense, useState, type CSSProperties } from 'react';
@@ -140,7 +141,7 @@ export function EntitlementsScreen() {
         codes="D01-05 · ENTITLEMENT · D05-04 BILLING"
         title={E.title}
         lead={onOrders ? OR.lead : E.lead}
-        message={onOrders ? ordersMessage(orders.data) : { tone: 'neutral', value: active == null ? '—' : active.toLocaleString('ko-KR'), text: E.key }}
+        message={onOrders ? ordersMessage(orders.data) : { tone: 'neutral', value: active == null ? '—' : active.toLocaleString(uiLocaleTag()), text: E.key }}
         actions={
           <div style={{ display: 'flex', gap: 'var(--sp-3)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <Select label={W.trial.product} value={catalogId} disabled={products.isPending || !choices.length} onChange={(e) => setSp((x) => (x.set('catalog', e.target.value), x), { replace: true })}>
@@ -197,11 +198,11 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
         <Segmented label={T.source} options={(['ALL', 'FLEET', 'SYNTHETIC'] as const).map((v) => ({ value: v, label: T.sources[v] }))} value={source} onChange={(v) => reset(() => setSource(v))} />
         <Select label={T.state} value={state} onChange={(e) => reset(() => setState(e.target.value))}>
           <option value="">
-            {T.any} {data ? `(${total.toLocaleString('ko-KR')})` : ''}
+            {T.any} {data ? `(${total.toLocaleString(uiLocaleTag())})` : ''}
           </option>
           {TRIAL_STATES.map((s) => (
             <option key={s} value={s}>
-              {T.states[s]} ({(data?.byState[s] ?? 0).toLocaleString('ko-KR')})
+              {T.states[s]} ({(data?.byState[s] ?? 0).toLocaleString(uiLocaleTag())})
             </option>
           ))}
         </Select>

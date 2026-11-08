@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../../locale/runtime';
 // 홈 'Feature 적용 현황' — 고른 Flag의 차량 점 지도(Canvas, 점 하나 = 차량 한 대)·단계 깔때기·회신 시각 되감기.
 // 값은 서버 요약(operationSummary.adoption)의 차량별 상태·단계·회신 시각 그대로다(contracts rules/operation-adoption). 지연 묶음 — 홈 첫 화면 번들에 넣지 않는다.
 // 시연 데이터(브라우저 시뮬)의 차량 회신 이벤트는 같은 이벤트 버스를 구독만 한다 — 도착한 차량 점에 고리를 한 번 그리고 요약을 다시 읽는다.
@@ -262,7 +263,7 @@ function Rewind({ flag, t, setT }: { flag: AdoptionFlag; t: number | null; setT:
   }, [flag, end, targets]);
   const now = t ?? end;
   const t0 = flag.t0 ? Date.parse(flag.t0) : NaN;
-  const clock = Number.isFinite(t0) ? new Date(t0 + now * 100).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+  const clock = Number.isFinite(t0) ? new Date(t0 + now * 100).toLocaleTimeString(uiLocaleTag(), { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
   return (
     <div className="ad-rewind">
       <div className="ad-rewind__head">

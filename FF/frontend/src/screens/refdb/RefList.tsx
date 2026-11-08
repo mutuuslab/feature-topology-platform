@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /master/feature-db — Feature DB 목록(30-95 §4·§8.4). 머리: 발행본 행 수(+요청 중) + 발행 대기 pill, 품질 지표 한 줄(KPI 타일 줄 대신).
 // 목록은 탐색판 — 왼쪽 분류(도메인 › 컴포넌트)·근거 출처 트리, 가운데 지금 조건의 요약 수치 + 표, 오른쪽 다중 선택 필터(ASIL·수명주기·SW 계층·T-shirt·차종·지역).
 // 트리·필터 수·요약은 같은 행 집합에서 서버(또는 정적 데모의 화면 검색)가 contracts exploreRefs로 센다.
@@ -20,7 +21,7 @@ import './ref-explorer.css';
 export const REF_PAGE_SIZE = 50;
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
-const nf = (n: number) => n.toLocaleString('ko-KR');
+const nf = (n: number) => n.toLocaleString(uiLocaleTag());
 
 /** 지금 조건의 목록 조회 질의 — 빈 값은 보내지 않는다(정적 데모 스냅샷과 같은 URL) */
 export function refListQuery(f: { q?: string; domain?: string; component?: string; status?: string; page?: number; source?: string }) {

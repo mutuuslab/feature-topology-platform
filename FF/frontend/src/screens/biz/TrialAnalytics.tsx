@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /biz/trials — 체험 전환 분석 (D05-06 사업 지표). 제안 → 수락 → 구매 깔때기, 성향 차원별 수락률·구매 전환율, 주별 추이.
 // 조건(데이터 원천·나눠 보기)은 차트 위 한 줄, 모든 차트·표가 같은 조각을 본다. 다시 읽는 동안 이전 그림을 흐리게 유지한다.
 import { FreshnessChip } from '../../design/freshness';
@@ -51,7 +52,7 @@ interface Analytics {
   trend: { week: string; offered: number; accepted: number; converted: number }[];
 }
 
-const nf = (n: number) => n.toLocaleString('ko-KR');
+const nf = (n: number) => n.toLocaleString(uiLocaleTag());
 
 export function TrialAnalyticsScreen() {
   const [source, setSource] = useState<TrialSource>('ALL');
@@ -193,7 +194,7 @@ function LakeTrialPanel() {
           rowKey={(u) => u.band}
           columns={[
             { key: 'b', header: R.col.band, cell: (u) => u.band },
-            { key: 'v', header: R.col.vehicles, cell: (u) => <span className="ds-mono">{u.vehicles.toLocaleString('ko-KR')}</span>, align: 'right' },
+            { key: 'v', header: R.col.vehicles, cell: (u) => <span className="ds-mono">{u.vehicles.toLocaleString(uiLocaleTag())}</span>, align: 'right' },
             { key: 'c', header: R.col.conversion, cell: (u) => <span className="ds-nowrap" style={{ display: 'inline-flex', gap: 'var(--sp-2)', alignItems: 'center' }}><span className="ds-mono">{LK.pct(u.conversion)}</span><span aria-hidden style={{ display: 'inline-block', width: 80 }}><span className="lk-bar" style={{ width: `${(u.conversion / max) * 100}%` }} /></span></span> },
           ]}
         />
@@ -205,7 +206,7 @@ function LakeTrialPanel() {
               rowKey={(t) => t.segment}
               columns={[
                 { key: 's', header: R.targetCol.segment, cell: (t) => t.segment },
-                { key: 'v', header: R.targetCol.vehicles, cell: (t) => <span className="ds-mono">{t.vehicles.toLocaleString('ko-KR')}</span>, align: 'right' },
+                { key: 'v', header: R.targetCol.vehicles, cell: (t) => <span className="ds-mono">{t.vehicles.toLocaleString(uiLocaleTag())}</span>, align: 'right' },
                 { key: 'p', header: R.targetCol.propensity, cell: (t) => <span className="ds-mono">{LK.pct(t.propensity, 0)}</span>, align: 'right' },
               ]}
             />

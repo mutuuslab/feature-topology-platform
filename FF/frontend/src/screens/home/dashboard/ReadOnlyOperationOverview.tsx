@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
+import { uiLocaleTag } from '../../../locale/runtime';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { DATA_CATEGORY_ACCESS } from '@ff/contracts';
@@ -38,7 +39,16 @@ const syncRows = (v: unknown) => array<OperationSync>(v, (r) => text(r.at) && ob
 const summaryOf = (v: unknown): OperationSummary | undefined => object(v) && Number.isSafeInteger(v.total) && typeof v.readbacks === 'boolean' && [v.rows, v.countryGroups, v.modelGroups, v.points, v.recent, v.preparationIssues, v.publications, v.countries, v.models, v.flags].every(Array.isArray) && v.rows.every((r: Raw) => object(r) && object(r.runtime) && text(r.runtime.vin) && Array.isArray(r.flags)) ? v as OperationSummary : undefined;
 // 시각 형식기는 하나만 — toLocaleString(옵션)은 부를 때마다 형식기를 새로 만들어 점·행이 많으면 느렸다
 let stampFormat: Intl.DateTimeFormat | undefined;
-const stamp = (at: string | undefined) => at && Number.isFinite(Date.parse(at)) ? (stampFormat ??= new Intl.DateTimeFormat('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })).format(new Date(at)) : O.unspecified;
+let stampLocale: string | undefined;
+const stamp = (at: string | undefined) => {
+  if (!at || !Number.isFinite(Date.parse(at))) return O.unspecified;
+  const locale = uiLocaleTag();
+  if (!stampFormat || stampLocale !== locale) {
+    stampFormat = new Intl.DateTimeFormat(locale, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    stampLocale = locale;
+  }
+  return stampFormat.format(new Date(at));
+};
 
 function TimeDistribution({ points, recent, ready }: { points: OperationTimelinePoint[]; recent: OperationEvent[]; ready: OperationReady }) {
   const times = points.map((p) => p.time), min = Math.min(...times), max = Math.max(...times);

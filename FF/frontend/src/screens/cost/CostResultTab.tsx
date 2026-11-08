@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 산정 결과 탭 — 엑셀 01_대시보드: 원가 구성, 신뢰수준별 금액, AACE 추정 범위, 벤치마크 대비, 입력 품질, 산정 경로.
 // 금액 칸은 서버가 산정 역할에만 준다 — 없으면 공수만 보인다. 금액은 과제 통화로 환산 표시(D-COST-10).
 import { costActual as A, costResult as T } from '../../copy/cost';
@@ -94,7 +95,7 @@ export function CostResultTab({ d }: { d: CostDetailResponse }) {
             <Panel title={T.bench}>
               <KeyValue
                 rows={[
-                  { k: T.benchRows.eur, v: `€ ${Math.round(r.benchmark.eur).toLocaleString('ko-KR')}` },
+                  { k: T.benchRows.eur, v: `€ ${Math.round(r.benchmark.eur).toLocaleString(uiLocaleTag())}` },
                   { k: T.benchRows.krw, v: $(r.benchmark.krw) },
                   { k: T.benchRows.gap, v: pct(r.benchmark.gap) },
                 ]}

@@ -1,5 +1,9 @@
 export default {
   'freshness.now': 'Just ingested',
+  'freshness.justNow': 'Just now',
+  'freshness.minutesAgo': (n: number) => `${n} min ago`,
+  'freshness.hoursAgo': (n: number) => `${n} hr ago`,
+  'freshness.daysAgo': (n: number) => `${n} day${n === 1 ? '' : 's'} ago`,
   'freshness.lag': (t: string) => `${t} behind`,
   'freshness.hold': 'Judgment on hold',
   'freshness.unknown': 'No ingestion record',

@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../locale/runtime';
 // 목록 탐색판 — 왼쪽 분류·출처 트리, 가운데 요약 수치 + 표, 오른쪽 다중 선택 필터(참고: 스프레드시트 BI 작업판).
 // 트리·필터·요약은 모두 같은 행 집합에서 센 값을 받는다(화면이 수를 만들지 않는다). Feature DB 목록·개발비 산정 목록이 쓴다.
 import { useId, useState, type ReactNode } from 'react';
@@ -47,7 +48,7 @@ export interface WorkbookMetric {
   lead?: boolean;
 }
 
-const nf = (n: number | undefined) => (n === undefined ? '' : n.toLocaleString('ko-KR'));
+const nf = (n: number | undefined) => (n === undefined ? '' : n.toLocaleString(uiLocaleTag()));
 
 function TreeItems({ items, depth }: { items: WorkbookTreeItem[]; depth: number }) {
   return (

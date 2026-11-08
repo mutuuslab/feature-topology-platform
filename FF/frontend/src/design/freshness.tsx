@@ -22,11 +22,11 @@ export function relAgo(at: string | null | undefined, now: number = Date.now()):
   if (!at) return '—';
   const ms = Math.max(0, now - Date.parse(at));
   const m = Math.round(ms / 60_000);
-  if (m < 1) return '방금';
-  if (m < 60) return `${m}분 전`;
+  if (m < 1) return C.justNow;
+  if (m < 60) return C.minutesAgo(m);
   const h = Math.round(m / 60);
-  if (h < 48) return `${h}시간 전`;
-  return `${Math.round(h / 24)}일 전`;
+  if (h < 48) return C.hoursAgo(h);
+  return C.daysAgo(Math.round(h / 24));
 }
 
 /** 절대 시각(KST, 월-일 시:분) */

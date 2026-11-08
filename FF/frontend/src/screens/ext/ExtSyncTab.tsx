@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 외부 연계 — 양방향 탭(GitLab·JIRA·codeBeamer). 시스템별 연결·주인 규칙·충돌(사람이 고름)·받은 변경·보내기 실패,
 // 그리고 모의 연결일 때 "외부에서 바꿔 보기"(실제 webhook과 같은 경로로 들어온다).
 import { useState } from 'react';
@@ -65,7 +66,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
               // IF 번호는 툴팁·설명 모드로(UX3-01). 로고가 이름을 보이고, 이름 글자는 화면 읽기용으로만 둔다.
               { key: 's', header: X.col.system, cell: (r) => { const brand = brandSystem(r.system); return <strong title={r.ifId}>{brand && <ExtBrandLogo system={brand} height={18} decorative className="ext-brand-logo--inline" />}<span className={brand ? 'ds-sr' : undefined}>{extSync.system[r.system]}</span><ExplainCodes codes={[r.ifId]} /></strong>; } },
               { key: 'm', header: X.col.mode, cell: (r) => extSync.mode[shownMode(r.mode, seamless)] ?? r.mode },
-              { key: 'l', header: X.col.links, cell: (r) => r.links.toLocaleString('ko-KR'), align: 'right' },
+              { key: 'l', header: X.col.links, cell: (r) => r.links.toLocaleString(uiLocaleTag()), align: 'right' },
               { key: 'p', header: X.col.pending, cell: (r) => r.pending, align: 'right' },
               { key: 'f', header: X.col.failed, cell: (r) => <span style={r.failed ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{r.failed}</span>, align: 'right' },
               { key: 'c', header: X.col.conflicts, cell: (r) => <span style={r.conflicts ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{r.conflicts}</span>, align: 'right' },

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import type { WorkflowArtifact, WorkflowArtifactBody, WorkflowCaseDetail, WorkflowHandoffBody, WorkflowRoleGrant, WorkflowSourceObservation, WorkflowSourceView } from '@ff/contracts';
+import type { WorkflowArtifact, WorkflowArtifactBody, WorkflowCaseDetail, WorkflowDoc, WorkflowHandoffBody, WorkflowRoleGrant, WorkflowSourceObservation, WorkflowSourceView } from '@ff/contracts';
 import { WORKFLOW_ARTIFACT_REQUEST_MAX, workflowArtifactRequestBytes } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { workflowExecution as T } from '../../copy/workflow-execution';
@@ -37,7 +37,7 @@ export function WorkflowWorkScreen() {
       </Panel>
       {id?<AsyncView state={asyncState(selected)} error={selected.error} onRetry={()=>selected.refetch()}>{selected.data&&doc&&doc!=='fail'&&<CaseWork key={id} detail={selected.data} doc={doc} identity={identity.data} reload={()=>selected.refetch()} />}</AsyncView>:<p>{T.chooseCase}</p>}
     </div>
-    {identity.data?.canAssign&&<RoleAssignments identity={identity.data} />}
+    {identity.data?.canAssign&&<RoleAssignments identity={identity.data} doc={doc&&doc!=='fail'?doc:undefined} />}
     {creating&&<Drawer open title={T.newCase} onClose={()=>setCreating(false)}><div className="ds-stack">
       <Field label={T.process}><select aria-label={T.process} className="ds-input" value={form.processId} onChange={e=>setForm({...form,processId:e.target.value})}><option value="">{T.process}</option>{processes.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></Field>
       <Field label={T.caseTitle}><input className="ds-input" value={form.title} maxLength={200} onChange={e=>setForm({...form,title:e.target.value})}/></Field>
@@ -120,14 +120,15 @@ function ArtifactView({artifact:v,name,content}:{artifact:WorkflowArtifact;name:
   return <article className="wf-artifact"><h4>{name} · {T.version(v.revision)}</h4><small>{personName(v.by)} · {localTime(v.at)}</small><dl>{content.map((label,i)=><div key={i}><dt>{label}</dt><dd>{v.fields[String(i)]||'—'}</dd></div>)}</dl><ul>{v.references.map((r,i)=><li key={i}>{/^https:\/\//.test(r)||r.startsWith('/')&&!r.startsWith('//')?<a href={r} target="_blank" rel="noreferrer">{r}</a>:r}</li>)}</ul>{v.files.map((f,i)=><div key={i}><Button variant="ghost" onClick={()=>download(f)}>{T.download} · {f.name}</Button><small>{f.bytes} bytes · SHA-256 {f.sha256}</small></div>)}</article>;
 }
 
-function RoleAssignments({identity}:{identity:Identity}) {
+function RoleAssignments({identity,doc}:{identity:Identity;doc?:WorkflowDoc}) {
+  const roleName=(id:string)=>doc?.roles.find(role=>role.id===id)?.name??identity.roles.find(role=>role.id===id)?.name??id;
   const grants=useApi<{items:WorkflowRoleGrant[]}>('workflowRoleGrants'),accounts=useApi<{items:{id:string;state:string}[]}>('workflowAssignableAccounts');
   const mutate=useApiMutation('setWorkflowRoleGrant',INVALIDATE),[f,set]=useState({accountId:'',roleId:'',reason:''});
   return <Panel title={T.grants}><p>{T.grantHint}</p><div className="ds-stack">
     <Field label={T.account}><select aria-label={T.account} className="ds-input" value={f.accountId} onChange={e=>set({...f,accountId:e.target.value})}><option value="">{T.account}</option>{accounts.data?.items.filter(a=>a.state==='ACTIVE').map(a=><option value={a.id} key={a.id}>{personName(a.id)}</option>)}</select></Field>
-    <Field label={T.role}><select aria-label={T.role} className="ds-input" value={f.roleId} onChange={e=>set({...f,roleId:e.target.value})}><option value="">{T.role}</option>{identity.roles.map(r=><option value={r.id} key={r.id}>{r.name}</option>)}</select></Field>
+    <Field label={T.role}><select aria-label={T.role} className="ds-input" value={f.roleId} onChange={e=>set({...f,roleId:e.target.value})}><option value="">{T.role}</option>{identity.roles.map(r=><option value={r.id} key={r.id}>{roleName(r.id)}</option>)}</select></Field>
     <Field label={T.grantReason}><input className="ds-input" value={f.reason} onChange={e=>set({...f,reason:e.target.value})}/></Field>
     <div className="wf-case__actions">{[true,false].map(active=><Button key={String(active)} disabled={!f.accountId||!f.roleId||f.reason.trim().length<2||mutate.isPending} onClick={()=>mutate.mutate({body:{...f,active}})}>{active?T.grant:T.revoke}</Button>)}</div><ErrorNote error={mutate.error}/>
-    <h3>{T.currentGrants}</h3><AsyncView state={asyncState(grants,!grants.data?.items.length)} error={grants.error} onRetry={()=>grants.refetch()} empty={{title:T.noGrants}}><ul>{grants.data?.items.map(g=><li key={g.id}>{personName(g.accountId)} · {identity.roles.find(r=>r.id===g.roleId)?.name??g.roleId} · {g.active?T.active:T.inactive} · {g.reason}{g.active&&<Button variant="ghost" disabled={f.reason.trim().length<2||mutate.isPending} onClick={()=>mutate.mutate({body:{accountId:g.accountId,roleId:g.roleId,active:false,reason:f.reason}})}>{T.revoke}</Button>}</li>)}</ul></AsyncView>
+    <h3>{T.currentGrants}</h3><AsyncView state={asyncState(grants,!grants.data?.items.length)} error={grants.error} onRetry={()=>grants.refetch()} empty={{title:T.noGrants}}><ul>{grants.data?.items.map(g=><li key={g.id}>{personName(g.accountId)} · {roleName(g.roleId)} · {g.active?T.active:T.inactive} · {g.reason}{g.active&&<Button variant="ghost" disabled={f.reason.trim().length<2||mutate.isPending} onClick={()=>mutate.mutate({body:{accountId:g.accountId,roleId:g.roleId,active:false,reason:f.reason}})}>{T.revoke}</Button>}</li>)}</ul></AsyncView>
   </div></Panel>;
 }

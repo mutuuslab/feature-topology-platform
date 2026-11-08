@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 계수 표 화면의 교정 제안·실적 오차(C4, 20-94 §6.6) — 산정 역할만(벤치마크 € 포함, 서버가 403).
 // 포인트당 € 제안값은 06_교정 표본의 기하평균. 적용은 원가 기준 관리자가 '제안값으로 초안'을 만들어 발행할 때만(C4 사용자 결정).
 // 실적 오차는 승인된 과제 전체의 기준 행 실적(승인 뒤 입력 포함)을 모아 컴포넌트별로 보인다.
@@ -26,7 +27,7 @@ interface CalibrationResponse {
   };
 }
 
-const eur = (x: number, digits = 0) => `€ ${x.toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+const eur = (x: number, digits = 0) => `€ ${x.toLocaleString(uiLocaleTag(), { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
 /** 제안값을 초안 칸에 넣을 때 — 소수 첫째 자리(엑셀 표시와 같게) */
 export const suggestionForDraft = (x: number) => Math.round(x * 10) / 10;
 

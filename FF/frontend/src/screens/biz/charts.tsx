@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 체험 전환 분석 차트 — 라이브러리 없이 SVG. 규칙(dataviz): 막대 ≤24px·끝 4px 둥글게·기준선 쪽 각지게, 선 2px, 끝점 r4 + 2px 면 테두리,
 // 격자 1px 실선, 글자는 글자 색(계열 색은 표지에만), 2계열 이상은 범례, 값은 선택적으로 표기, 마우스·키보드 모두 같은 툴팁.
 // 색은 tokens.css --viz-1..3 (제안·수락·구매 고정 순서).
@@ -8,7 +9,7 @@ import { formatCount } from '../../design/format';
 export const STAGE_COLOR = { offered: 'var(--viz-1)', accepted: 'var(--viz-2)', converted: 'var(--viz-3)' } as const;
 export type Stage = keyof typeof STAGE_COLOR;
 
-const nf = (n: number) => n.toLocaleString('ko-KR');
+const nf = (n: number) => n.toLocaleString(uiLocaleTag());
 export const pct = (r: number | null) => (r === null ? '—' : `${(r * 100).toFixed(1)}%`);
 
 /** 포인터의 svg 기준 x — SVG 자식 요소의 offsetX는 브라우저마다 기준이 달라 쓰지 않는다 */

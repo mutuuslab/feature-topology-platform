@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -21,10 +22,10 @@ function readLocal(owner: string): LocalQueries {
     return { owner, saved: Array.isArray(value.saved) ? value.saved.filter((entry: unknown) => validView(entry) && typeof (entry as SavedView).id === 'string' && typeof (entry as SavedView).name === 'string').slice(0, 20) : [], history: Array.isArray(value.history) ? value.history.filter((entry: unknown) => validView(entry) && typeof (entry as QueryHistory).id === 'string' && typeof (entry as QueryHistory).at === 'string' && ['SUCCESS', 'ERROR', 'FORBIDDEN'].includes((entry as QueryHistory).result)).slice(0, 30) : [], unavailable: false };
   } catch { return { ...emptyLocal(owner), unavailable: true }; }
 }
-const date = (value: string | number) => new Date(value).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+const date = (value: string | number) => new Date(value).toLocaleString(uiLocaleTag(), { timeZone: 'Asia/Seoul' });
 function cell(value: CellValue | undefined, column?: Column) {
   if (value === null || value === undefined || value === '') return T.emptyCell;
-  if (typeof value === 'number') return value.toLocaleString('ko-KR', { maximumFractionDigits: column?.kind === 'money' ? 0 : 6 });
+  if (typeof value === 'number') return value.toLocaleString(uiLocaleTag(), { maximumFractionDigits: column?.kind === 'money' ? 0 : 6 });
   return column?.kind === 'date' && Number.isFinite(Date.parse(String(value))) ? date(String(value)) : String(value);
 }
 

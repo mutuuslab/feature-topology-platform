@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 데이터·규제 기록 — Data Lake 탭(TL-UI12, 80-70 6장 11). 받는 데이터의 근거(동의·법령)·보존·가명 처리, 보내는 라벨 목록, CN 국외 이전 보류.
 import type { DataContractRow, LabelFeedResponse } from '@ff/contracts';
 import { asyncState, useApi } from '../../api/hooks';
@@ -43,7 +44,7 @@ export function LakeData() {
                 columns={[
                   { key: 'k', header: L.datalake.labels.col.kind, cell: (r) => <span className="ds-mono">{r.kind}</span> },
                   { key: 't', header: L.datalake.labels.col.title, cell: (r) => r.title },
-                  { key: 's', header: L.datalake.labels.col.sent, cell: (r) => <span className="ds-mono">{r.sent.toLocaleString('ko-KR')}</span>, align: 'right' },
+                  { key: 's', header: L.datalake.labels.col.sent, cell: (r) => <span className="ds-mono">{r.sent.toLocaleString(uiLocaleTag())}</span>, align: 'right' },
                 ]}
               />
             </AsyncView>

@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // Feature 상세 '평가 운영' 탭(D04-03, 기능명세서 B5) — 이 Feature의 flag가 앱(OFREP)·차량 SDK·Unleash Edge에서 평가된 횟수를
 // 일 단위로: 평가·활성·비활성·Safe Default·오류, 분기값별, 평가 경로별, 애플리케이션·환경별, flag별. 상세 화면에서 지연 로드한다.
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { evaluations as E } from '../../copy/records';
 import { AsyncView, DataTable, Kpi, Panel, Segmented } from '../../design';
 import './evaluations.css';
 
-const n = (v: number) => v.toLocaleString('ko-KR');
+const n = (v: number) => v.toLocaleString(uiLocaleTag());
 
 /** 일별 막대 — 활성(on)과 그 밖(비활성·Safe Default·오류) 비율, 값은 글자로도 */
 function DailyBars({ s }: { s: FeatureEvaluationStats }) {

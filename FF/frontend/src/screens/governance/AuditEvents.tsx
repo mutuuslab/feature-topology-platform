@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /audit — 감사 이력(D01-10) · /events — Platform 이벤트(D04-04, SSE 실시간) (v2)
 // 감사 화면 보강(W5 P5-6·P5-10): 대상 앞부분 검색(targetPrefix, ?prefix=)·행위 필터(action)·행위 한글 이름·전후 값,
 // 해시 체인 카드(상태·검증한 기록·마지막 검증 시각·DB 밖 고정점·다시 검증). 헤드라인은 체인 판정이 먼저, 실패 기록 수는 상태 표시로.
@@ -150,7 +151,7 @@ function ChainCard({ c, checkedAt, busy, rechecked, onRecheck }: { c: ChainRepor
       <KeyValue
         rows={[
           { k: H.state, v: <span data-chain-ok={c.ok ? 'true' : 'false'} data-rechecked={rechecked && !busy ? 'true' : undefined}>{c.ok ? H.ok : H.broken}</span> },
-          { k: H.verified, v: <span className="ds-mono">{c.verified.toLocaleString('ko-KR')}</span> },
+          { k: H.verified, v: <span className="ds-mono">{c.verified.toLocaleString(uiLocaleTag())}</span> },
           { k: H.checkedAt, v: <span data-chain-checked>{when(checkedAt)}</span> },
           { k: H.anchor, v: a?.failing ? <span data-anchor="failing" className="ds-tag ds-tag--warn">{H.anchorFailing(when(a.failing.at))}</span> : <span data-anchor={a?.configured ? 'on' : 'off'}>{a?.configured ? H.anchorOn(a.checked, when(a.lastAt)) : H.anchorOff}</span> },
         ]}

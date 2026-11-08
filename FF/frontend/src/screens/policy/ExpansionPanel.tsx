@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // 정책 상세 '확대 판정' 패널(통합 D-INT-4 — TL-UI02·UI03 Canary 관측 + ADS-UI11 축별 근거 + FFG-LCY-009 단계 기준을 패널 하나로).
 // 위: 판정(서버 judgeExpansion — 단계 조정 거부와 같은 판정)과 판정 사유(출처·막음/알림), 단계 기준(효력 범위·Canary 관측 기간·열린 이상 징후·진행 중 차단),
 // 가운데: 축별 근거(차량 보고 Active 노출량·미확인 분리·감시 지표·조합별 근거·동결), 아래: 적용군·대조군 추이와 상대위험, 모델 ③ 점수(권고),
@@ -7,6 +8,7 @@ import { CANARY_METRICS, DEFAULT_ABORT, type CanaryMetric, type CanaryObservatio
 import { useApi, useApiMutation } from '../../api/hooks';
 import { adsChange } from '../../copy/ads-change';
 import { ko } from '../../copy/ko';
+import { formatters } from '../../copy/formatters';
 import { lake as L } from '../../copy/lake';
 import { personName } from '../../data/people';
 import { Button, DataTable, Drawer, ErrorNote, Field, Panel, SummaryLine, VerdictBadge } from '../../design';
@@ -89,9 +91,9 @@ function EvidenceSection({ v }: { v: ExpansionView }) {
       </h3>
       <SummaryLine
         items={[
-          { k: E.active, v: `${v.vehicleActive.toLocaleString('ko-KR')}대` },
-          { k: E.unconfirmed, v: `${v.unconfirmed.toLocaleString('ko-KR')}대` },
-          { k: E.allowed, v: `${v.policyAllowed.toLocaleString('ko-KR')}대` },
+          { k: E.active, v: formatters.vehicles(v.vehicleActive) },
+          { k: E.unconfirmed, v: formatters.vehicles(v.unconfirmed) },
+          { k: E.allowed, v: formatters.vehicles(v.policyAllowed) },
         ]}
       />
       <StageCounts
@@ -143,10 +145,10 @@ function EvidenceSection({ v }: { v: ExpansionView }) {
                 return (
                   <tr key={c.comboId} data-combo={cv}>
                     <th scope="row">{c.comboId}</th>
-                    <td className="ads-mono">{c.vehicleActive.toLocaleString('ko-KR')}</td>
-                    <td className="ads-mono">{c.usageConfirmed.toLocaleString('ko-KR')}</td>
+                    <td className="ads-mono">{c.vehicleActive.toLocaleString(uiLocaleTag())}</td>
+                    <td className="ads-mono">{c.usageConfirmed.toLocaleString(uiLocaleTag())}</td>
                     <td className="ads-mono">{c.errors}</td>
-                    <td className="ads-mono">{`${c.samples.toLocaleString('ko-KR')} / ${c.minSamples.toLocaleString('ko-KR')}`}</td>
+                    <td className="ads-mono">{`${c.samples.toLocaleString(uiLocaleTag())} / ${c.minSamples.toLocaleString(uiLocaleTag())}`}</td>
                     <td>{E.hours(c.windowHours)}</td>
                     <td>
                       <VerdictReason tone={cv === 'OK' ? 'ok' : cv === 'ALERT' ? 'danger' : 'warn'} label={E.comboVerdict[cv]} />

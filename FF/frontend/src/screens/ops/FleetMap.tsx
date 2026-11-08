@@ -1,3 +1,4 @@
+import { uiLocaleTag } from '../../locale/runtime';
 // /fleet/map — 전세계 차량 지도 (D02-03). 차량마다 위치·구독 상태·기능 활성(차단·미확인 포함)을 지도와 표로 보여 준다.
 // 위치는 데모 모의값·약 1 km(D5 결정 전 잠정 기본값). 정밀 위치는 한 대 상세에서만 열리고 열람마다 감사된다.
 // 데모 Fleet 위치는 5초마다, 상태는 SSE(차단·배포·회신·체험) 변경 때 바로 새로 고친다. 모든 값은 백엔드 응답 그대로다.
@@ -384,7 +385,7 @@ export function FleetMapScreen() {
   const sampled = clusters.reduce((t, c) => t + c.sample, 0);
   // 안내 문구는 지금 보이는 범위 기준 — 국가 요약(전체)과 다르다
   const inView = clusters.reduce((t, c) => t + c.count, 0);
-  const count = (pred: (v: FleetMapVehicle) => boolean) => items.filter(pred).length.toLocaleString('ko-KR');
+  const count = (pred: (v: FleetMapVehicle) => boolean) => items.filter(pred).length.toLocaleString(uiLocaleTag());
   const demoItems = useMemo(() => (demo.data?.items ?? []).filter((v) => (!country || v.country === country) && (!model || v.vehicleModel === model)), [demo.data, country, model]);
   // 주의 차량 — 긴급 차단 먼저, 위치가 있는 차량 먼저. 핵심 메시지 행동과 고르기 전 오른쪽 칸(상위 목록)이 같은 순서를 쓴다
   const attention = useMemo(() => {
@@ -529,7 +530,7 @@ export function FleetMapScreen() {
                   }))}
                 />
               }
-              eyebrow={`${synData ? O.represented(represented) : `${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString('ko-KR')}`}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
+              eyebrow={`${synData ? O.represented(represented) : `${F.kpi.located} ${count((v) => !!v.position)}/${items.length.toLocaleString(uiLocaleTag())}`}${demo.data ? ` · ${F.updated(when(demo.data.generatedAt))}` : ''}`}
             >
               {controls}
               {(country || model) && (

@@ -8,6 +8,7 @@ import { ko } from '../../copy/ko';
 import { ExportButtons, PeriodFilter, type Period } from '../governance/AuditTools';
 import { planning as W } from '../../copy/planning';
 import { whyDisabled, AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, Field, IdChip, KeyValue, PageHeader, Panel, SummaryLine, Toolbar, VerdictBadge, Icon } from '../../design';
+import './policy-list.css';
 import { PolicyEdit } from '../features/VersionEdit';
 import { usePermission, when } from '../shared';
 import { PolicyCrPanel } from './PolicyCr';
@@ -98,7 +99,7 @@ export function PolicyList() {
           onOpen={(r) => nav(`/policies/${r.policyId}`)}
           initialSort={{ key: 'id', dir: 'desc' }}
           columns={[
-            { key: 'id', header: C.id, cell: (r) => <IdChip id={r.policyId} to={`/policies/${r.policyId}`} />, sort: (r) => r.policyId },
+            { key: 'id', header: C.id, cell: (r) => <span className="policy-id-cell"><IdChip id={r.policyId} to={`/policies/${r.policyId}`} /><span className="policy-id-cell__status"><VerdictBadge value={STATUS_VERDICT[r.status] ?? '미판정'} label={r.status} /></span></span>, sort: (r) => r.policyId },
             { key: 'flag', header: C.flag, cell: (r) => <span className="ds-mono">{r.flagKey}</span>, sort: (r) => r.flagKey },
             { key: 'f', header: C.feature, cell: (r) => <IdChip id={r.featureId} version={r.featureVersion} to={`/features/${r.featureId}/${r.featureVersion}`} copy={false} /> },
             { key: 'cp', header: C.cp, cell: (r) => <span className="ds-tag">{r.controlPoint}</span> },

@@ -1,9 +1,8 @@
 # Cloudflare Pages 공개 조회용 데모 배포 (GitHub Actions 러너에서 빌드→직접 업로드).
 # verify 게이트를 통과한 커밋만 배포한다. FF/는 npm workspaces — 설치는 FF 루트에서.
 name: Deploy to Cloudflare Pages
+# 검증된 브랜치를 골라 수동 게시한다. main push로 구버전이 공개본을 덮었던 회귀를 막는다.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 jobs:
   verify:

@@ -7,6 +7,17 @@ import { join } from 'node:path';
 import { FF } from './lib.ts';
 import { assertBudget, assertNoLocalLeaks, deploySeedEnv, staticDirs, withLock } from './static-build.ts';
 
+// 이전 main의 앱이 push로 공개본을 덮었던 회귀를 막는다. 검증한 브랜치에서 수동으로만 게시한다.
+test('웹 게시 workflow는 수동 실행만 허용한다', () => {
+  for (const name of ['cloudflare.yml', 'pages.yml']) {
+    const yaml = readFileSync(join(FF, '..', '.github', 'workflows', name), 'utf8');
+    const triggers = yaml.match(/^on:\s*\r?\n([\s\S]*?)(?=^\S)/m)?.[1];
+    assert.ok(triggers, `${name}: 게시 트리거가 명시되어야 한다`);
+    assert.match(triggers, /^\s+workflow_dispatch:/m, `${name}: 수동 실행 필요`);
+    assert.doesNotMatch(triggers, /^\s+(?:push|pull_request|schedule|workflow_run):/m, `${name}: 자동 게시 금지`);
+  }
+});
+
 test('배포 시드 — cloudflare.yml의 snapshot:api 앞 환경 변수를 그대로 읽는다(공개본 전시 시드)', () => {
   const env = deploySeedEnv(readFileSync(join(FF, '..', '.github', 'workflows', 'cloudflare.yml'), 'utf8'));
   assert.equal(env.FF_SHOWCASE, '1');

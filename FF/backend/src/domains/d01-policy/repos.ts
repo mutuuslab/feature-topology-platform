@@ -122,7 +122,15 @@ export class FeatureRepo {
   }
   nextFeatureId(): string {
     const r = this.db.get<{ m: number | null }>("SELECT max(CAST(substr(feature_id, 6) AS INTEGER)) AS m FROM feature_version");
-    return `FEAT-${pad((r?.m ?? 0) + 1, 5)}`;
+    // 지운 초안의 ID는 다시 주지 않는다(P10 초안 삭제 묘비, FFG-CODE-020)
+    const t = this.db.get<{ m: number | null }>("SELECT max(CAST(substr(record_id, 6, 5) AS INTEGER)) AS m FROM deletion_tombstone WHERE entity = 'feature-version'");
+    return `FEAT-${pad(Math.max(r?.m ?? 0, t?.m ?? 0) + 1, 5)}`;
+  }
+  /** 초안 Version 삭제(P10 B2) — 판정·묘비·감사는 DraftDeletionService가 같은 트랜잭션에서 */
+  delete(featureId: string, version: string) {
+    this.rev++;
+    this.cache = null;
+    this.db.run('DELETE FROM feature_version WHERE feature_id = ? AND version = ?', featureId, version);
   }
   /** 같은 적용 범위(국가·차종·트림)의 같은·유사 명칭 Feature — 중복 등록 방지 */
   similar(name: string, country: string, vehicleModel: string, trim: string): FeatureVersionRow[] {
@@ -266,7 +274,13 @@ export class TopologyRepo {
   }
   nextId(): string {
     const r = this.db.get<{ m: number | null }>('SELECT max(CAST(substr(dependency_id, 5) AS INTEGER)) AS m FROM dependency');
-    return `DEP-${pad((r?.m ?? 0) + 1, 5)}`;
+    // 지운 초안 관계의 ID는 다시 주지 않는다(P10 초안 삭제 묘비)
+    const t = this.db.get<{ m: number | null }>("SELECT max(CAST(substr(record_id, 5) AS INTEGER)) AS m FROM deletion_tombstone WHERE entity = 'feature-relation'");
+    return `DEP-${pad(Math.max(r?.m ?? 0, t?.m ?? 0) + 1, 5)}`;
+  }
+  /** 초안 관계 삭제(P10 B2) */
+  delete(dependencyId: string) {
+    this.db.run('DELETE FROM dependency WHERE dependency_id = ?', dependencyId);
   }
   allFunctions(): FeatureFunctionRow[] {
     return parse<FeatureFunctionRow>(this.db.all('SELECT doc FROM feature_function'));

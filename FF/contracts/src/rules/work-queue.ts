@@ -3,7 +3,7 @@
 import { GATE_META, GATES, type GateId, type Lifecycle } from '../enums';
 
 type Gates = Partial<Record<string, string | null | undefined>>;
-const pass = (gates: Gates, ids: readonly GateId[]) => ids.every((g) => gates[g] === 'PASS');
+const pass = (gates: Gates, ids: readonly GateId[]) => ids.every((g) => gates[g] === 'PASS' || gates[g] === 'N/A');
 
 /** 정의 승인 대기 — PROPOSED이고 G1~G3이 모두 PASS(정의 승인 전이 조건의 Gate 몫) */
 export const DEFINITION_GATES: readonly GateId[] = ['G1', 'G2', 'G3'];
@@ -14,7 +14,7 @@ export const SIGNOFF_GATES: readonly GateId[] = ['G8', 'G9'];
 export const signoffReady = (f: { lifecycle: string; gates: Gates }, signed: boolean) => f.lifecycle === 'VERIFIED' && pass(f.gates, SIGNOFF_GATES) && !signed;
 
 /** 지금 단계에서 판정을 기다리는 Gate — 그 Lifecycle 단계의 Gate 중 PASS가 아닌 것(APPROVED는 Gate 없음) */
-export const pendingGates = (lifecycle: Lifecycle | string, gates: Gates): GateId[] => GATES.filter((g) => GATE_META[g].stage === lifecycle && gates[g] !== 'PASS');
+export const pendingGates = (lifecycle: Lifecycle | string, gates: Gates): GateId[] => GATES.filter((g) => GATE_META[g].stage === lifecycle && gates[g] !== 'PASS' && gates[g] !== 'N/A');
 
 export interface WorkQueueFeature {
   featureId: string;

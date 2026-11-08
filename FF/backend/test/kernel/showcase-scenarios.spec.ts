@@ -110,8 +110,11 @@ describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', (
       const added = allDependencies.filter((d) => marker.dependencies.includes(d.dependencyId));
       expect(added).toHaveLength(30);
       expect(new Set(added.map((d) => d.type))).toEqual(new Set(['REQUIRES', 'EXCLUDES']));
-      expect(new Set(added.map((d) => d.verdict))).toEqual(new Set(['PASS', 'FAIL', 'CONDITIONAL', '미판정']));
-      expect(added.filter((d) => d.verdict === 'FAIL').every((d) => d.rationale.includes('필수 선행 단계 미달'))).toBe(true);
+      // REQUIRES 대상이 출시 전이면 정의 승인이 G1 자동 검사로 막혀(P10, FR-REG-005-001) '승인 뒤 선행 단계 미달 FAIL'은 더 생기지 않는다 — 그 원천은 승인 대기로 남는다
+      expect(new Set(added.map((d) => d.verdict))).toEqual(new Set(['PASS', 'CONDITIONAL', '미판정']));
+      // 승인된 원천의 REQUIRES 대상은 모두 출시된 Feature다
+      const approvedRequires = added.filter((d) => d.type === 'REQUIRES' && b.get(FeatureRepo).get(d.sourceFeatureId, d.sourceVersion)?.lifecycle !== 'PROPOSED');
+      expect(approvedRequires.every((d) => d.targetVersion && b.get(FeatureRepo).get(d.targetFeatureId, d.targetVersion)?.lifecycle === 'RELEASED')).toBe(true);
       expect(db.all<{ action: string; result: string }>("SELECT action, result FROM audit WHERE correlation_id = 'seed:showcase-scenarios'")).toEqual(expect.arrayContaining([expect.objectContaining({ action: 'DEPENDENCY_CREATE', result: 'FAILED' }), expect.objectContaining({ action: 'FEATURE_UPDATE', result: 'ALLOWED' })]));
       const demo = b.get(DemoActivitySeeder), clock = b.get(Clock);
       for (let i = 0; i < 8 && !(await Promise.race([demo.continuation!.then(() => true), new Promise((r) => setTimeout(() => r(false), 30))])); i++) {

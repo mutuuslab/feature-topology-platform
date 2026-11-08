@@ -33,7 +33,7 @@ describe('검토함 대기열·다음 담당자 알림 (W2)', () => {
 
   let created: { featureId: string; version: string };
   it('P2-3 정의 승인 대기 — PROPOSED에서 G1~G3이 PASS면 작성자·요청 시각과 함께 대기열에, 하나라도 비면 빠진다', async () => {
-    const c = (await http().post('/api/features').set(AUTHOR).send(withRef({ name: 'W2 대기열 시험 Feature', description: '정의 승인 대기열', requirementIds: ['REQ-W2-001'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS기획팀', asil: 'QM', controlPoints: ['Flag'] })).expect(201)).body;
+    const c = (await http().post('/api/features').set(AUTHOR).send(withRef({ name: 'W2 대기열 시험 Feature', description: '정의 승인 대기열', requirementIds: ['REQ-W2-001'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })).expect(201)).body;
     created = { featureId: c.featureId, version: c.version };
     const has = async () => (await http().get('/api/work-queues').expect(200)).body.definitions.find((x: any) => x.featureId === c.featureId);
     await judge(c.featureId, c.version, 'G1');

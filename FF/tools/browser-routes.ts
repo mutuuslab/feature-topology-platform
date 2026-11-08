@@ -5,8 +5,9 @@
 // 개발 서버·단위 시험은 설명을 그대로 둔다(시험이 설명 문구를 검사한다).
 import ts from 'typescript';
 
-export function browserRouteSource(source: string, opts: { dropSummary?: boolean } = {}): string {
-  const dropped = new Set(['body', ...(opts.dropSummary ? ['summary'] : [])]);
+export function browserRouteSource(source: string, opts: { dropSummary?: boolean; dropSample?: boolean } = {}): string {
+  // sample은 서버 준수 검사용 질의 예시이며 routeUrl·브라우저 권한 검사에는 쓰지 않는다.
+  const dropped = new Set(['body', ...(opts.dropSummary ? ['summary'] : []), ...(opts.dropSample ? ['sample'] : [])]);
   const file = ts.createSourceFile('routes.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   let found = false;
   const transformed = ts.transform(file, [(context) => (root) => {

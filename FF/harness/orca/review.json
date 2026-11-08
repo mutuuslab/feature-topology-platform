@@ -284,7 +284,7 @@
       "current": "ODD·시장·Variant 확대는 재-HARA 요청을 열어 G3 이후 PASS를 막고 ODD 축소는 새 Version으로 강제한다.",
       "evidence": [
         "contracts/src/rules/rehara.ts:3",
-        "backend/src/domains/d01-policy/topology/gate.service.ts:154",
+        "backend/src/domains/d01-policy/topology/gate.service.ts:171",
         "contracts/src/rules/odd-restriction.ts:38"
       ],
       "tests": [
@@ -425,8 +425,8 @@
       "current": "범위 확대(ODD 포함) 시 재-HARA가 열려 G3~G9 PASS를 보류한다.",
       "evidence": [
         "contracts/src/rules/rehara.ts:3",
-        "backend/src/domains/d01-policy/topology/gate.service.ts:154",
-        "contracts/src/rules/lifecycle.ts:169"
+        "backend/src/domains/d01-policy/topology/gate.service.ts:171",
+        "contracts/src/rules/lifecycle.ts:182"
       ],
       "tests": [
         "backend/test/d06/rehara.spec.ts",

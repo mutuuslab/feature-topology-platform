@@ -368,6 +368,7 @@
       "tested": [
         "contracts/src/rules/gate-decision.test.ts",
         "backend/test/d01/gate-decision.spec.ts",
+        "backend/test/d01/gate-go-trust.spec.ts",
         "backend/test/d06/hsm.spec.ts",
         "frontend/src/__tests__/screensV2.test.tsx"
       ]

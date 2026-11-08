@@ -258,6 +258,7 @@ export const ko = {
     REVIEW: '검토 중',
     UNJUDGED: '미판정',
     FAIL: 'FAIL',
+    NA: '해당 없음',
   },
   lifecycle: {
     PROPOSED: '제안',

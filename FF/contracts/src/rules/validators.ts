@@ -186,7 +186,7 @@ export function validateQuality(i: ValidationInput): ValidatorResult {
 export function validateSafetyTrace(i: ValidationInput): ValidatorResult {
   const f: ValidatorResult['findings'] = [];
   if (!i.feature.requirementIds.length) f.push({ result: 'FAIL', message: 'Requirement ID 연결 없음' });
-  if (i.gates.G2 !== 'PASS') f.push({ result: 'CONDITIONAL', message: `G2 Requirement Gate ${i.gates.G2 ?? '미판정'}` });
+  if (i.gates.G2 !== 'PASS' && i.gates.G2 !== 'N/A') f.push({ result: 'CONDITIONAL', message: `G2 Requirement Gate ${i.gates.G2 ?? '미판정'}` });
   if (i.feature.asil !== 'QM' && i.gates.G7 !== 'PASS') f.push({ result: 'CONDITIONAL', message: `ASIL ${i.feature.asil}: G7 Safety/Security Gate ${i.gates.G7 ?? '미판정'}` });
   return done('D06-07', '안전 요구사항 추적', f, `요구사항 ${i.feature.requirementIds.join(', ')} 추적`);
 }

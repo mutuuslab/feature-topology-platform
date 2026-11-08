@@ -59,12 +59,18 @@ test('지원하지 않는 표 모양을 조용히 건너뛰지 않는다', () =>
 test('실제 모든 경로의 메타데이터와 URL·스냅샷 이름은 서버 계약과 같다', () => {
   const require = createRequire(join(FF, 'contracts', 'dist', 'index.js'));
   const server = require('./routes.js');
-  const source = browserRouteSource(readFileSync(join(FF, 'contracts', 'src', 'routes.ts'), 'utf8'));
+  for (const production of [false, true]) {
+  const source = browserRouteSource(readFileSync(join(FF, 'contracts', 'src', 'routes.ts'), 'utf8'), { dropSummary: production, dropSample: production });
   const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
   const exports: Record<string, any> = {};
   runInNewContext(outputText, { exports, require });
   const plain = (value: unknown) => JSON.parse(JSON.stringify(value));
-  assert.deepEqual(plain(exports.ROUTES), plain(server.ROUTES.map(({ body, ...meta }: any) => meta)));
+  const expected = server.ROUTES.map(({ body, ...meta }: any) => {
+    if (!production) return meta;
+    const { summary, sample, ...runtime } = meta;
+    return runtime;
+  });
+  assert.deepEqual(plain(exports.ROUTES), plain(expected), production ? 'production metadata' : 'development metadata');
   assert.deepEqual(plain(exports.REFDB_CHANGE_REQUESTERS), plain(server.REFDB_CHANGE_REQUESTERS));
   for (const route of server.ROUTES) {
     const params = Object.fromEntries([...route.path.matchAll(/:(\w+)/g)].map((m: RegExpMatchArray) => [m[1], '값 /?']));
@@ -73,5 +79,6 @@ test('실제 모든 경로의 메타데이터와 URL·스냅샷 이름은 서버
     assert.equal(exports.routeUrl(route.name, params, query), url, route.name);
     assert.equal(exports.snapshotFile(url), server.snapshotFile(url), route.name);
     if (route.requiredQuery?.length) assert.throws(() => exports.routeUrl(route.name, params), /필수 질의/);
+  }
   }
 });

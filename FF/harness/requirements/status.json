@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 293,
-      "부분": 203,
-      "미구현": 91,
+      "구현": 297,
+      "부분": 205,
+      "미구현": 85,
       "범위 밖": 41
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 131,
-        "부분": 57,
-        "미구현": 40,
+        "구현": 135,
+        "부분": 59,
+        "미구현": 34,
         "범위 밖": 11
       },
       {
@@ -59,13 +59,27 @@
         "범위 밖": 1
       }
     ],
-    "traced": 140,
+    "traced": 169,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 0,
     "specIssues": 3
   },
   "traces": {
+    "FR-REG-001-013": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-draft.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
+    },
+    "FR-REG-001-014": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-draft.service.ts"
+      ],
+      "tested": []
+    },
     "FR-REG-002-008": {
       "implemented": [
         "contracts/src/rules/lifecycle.ts"
@@ -83,6 +97,48 @@
         "contracts/src/rules/requirements-defects.test.ts"
       ]
     },
+    "FR-REG-002-010": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/gate-p10.test.ts",
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
+    },
+    "FR-REG-002-011": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-002-013": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts",
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-002-014": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
+    },
+    "FR-REG-002-015": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-002-016": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": []
+    },
     "FR-REG-002-019": {
       "implemented": [
         "backend/src/domains/d01-policy/policy-store/policy.service.ts"
@@ -90,6 +146,104 @@
       "tested": [
         "backend/test/requirements/defects.spec.ts"
       ]
+    },
+    "FR-REG-003-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
+    },
+    "FR-REG-003-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-004-002": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/baseline.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-004-003": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/baseline.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-004-004": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/baseline.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-001": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/gate-p10.test.ts",
+        "backend/test/d01/lifecycle-p10.spec.ts",
+        "backend/test/kernel/showcase-scenarios.spec.ts"
+      ]
+    },
+    "FR-REG-005-002": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-004": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-006": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-007": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-008": {
+      "implemented": [
+        "contracts/src/rules/gate-outcome.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/gate-p10.test.ts",
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
+    },
+    "FR-REG-005-009": {
+      "implemented": [
+        "contracts/src/rules/gate-outcome.ts",
+        "backend/src/domains/d01-policy/topology/gate.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-011": {
+      "implemented": [
+        "contracts/src/schemas/api.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/gate-p10.test.ts",
+        "backend/test/d01/analysis-evidence.spec.ts",
+        "backend/test/d01/registry.spec.ts"
+      ]
+    },
+    "FR-REG-005-013": {
+      "implemented": [
+        "contracts/src/rules/gate-outcome.ts"
+      ],
+      "tested": []
     },
     "FR-REG-005-014": {
       "implemented": [
@@ -99,11 +253,56 @@
         "contracts/src/rules/notification.test.ts"
       ]
     },
+    "FR-REG-005-015": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/lifecycle.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-016": {
+      "implemented": [
+        "backend/src/domains/d01-policy/topology/gate.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-017": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts",
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/gate-p10.test.ts",
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
+    },
+    "FR-REG-005-018": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts",
+        "backend/src/domains/d01-policy/registry/feature-p10.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-REG-005-020": {
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
+      "tested": [
+        "backend/test/d01/policy.spec.ts"
+      ]
+    },
     "FR-DEP-001-001": {
       "implemented": [
         "contracts/src/rules/topology.ts"
       ],
       "tested": []
+    },
+    "FR-DEP-001-005": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/feature-draft.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/lifecycle-p10.spec.ts"
+      ]
     },
     "FR-DEP-002-004": {
       "implemented": [
@@ -322,6 +521,14 @@
         "contracts/src/rules/policy-version.ts"
       ],
       "tested": []
+    },
+    "FR-PVER-003-001": {
+      "implemented": [
+        "contracts/src/rules/policy-stage.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/gate-p10.test.ts"
+      ]
     },
     "FR-CON-001-003": {
       "implemented": [

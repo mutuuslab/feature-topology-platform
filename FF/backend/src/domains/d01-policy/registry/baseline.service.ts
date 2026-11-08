@@ -8,6 +8,10 @@ import {
   LIFECYCLE_RANK,
   snapshotContent,
   snapshotDiff,
+  changeItems,
+  changeSetSummary,
+  compareBaselines,
+  type BaselineChangeSet,
   type BaselineDecisionBody,
   type BaselineRequestBody,
   type BomItemRow,
@@ -74,6 +78,30 @@ export class BaselineService implements OnModuleInit {
     };
   }
 
+  /** @req FR-REG-004-002 — Feature ID의 Baseline 목록과 내용(없는 Feature는 NOT_FOUND, Baseline이 없으면 빈 목록) */
+  forFeature(featureId: string) {
+    if (!this.features.versions(featureId).length) throw new DomainError('NOT_FOUND', `${featureId}은(는) 등록되지 않은 Feature입니다.`);
+    return { featureId, items: this.baselines.forFeature(featureId).map((b) => ({ ...b, verified: contentHash(b.snapshot) === b.contentHash, products: this.products.usingBaseline(b.baselineId).map((p) => `${p.catalogId}@${p.version}`) })) };
+  }
+
+  /** @req FR-REG-004-003 — 임의 두 Baseline 비교 → 변경 항목(유형·영역·항목) */
+  compare(left: string | undefined, right: string | undefined) {
+    if (!left || !right) throw new DomainError('VALIDATION', '비교할 두 Baseline(left·right)을 고르세요.', { field: !left ? 'left' : 'right' });
+    const a = this.baselines.get(left);
+    const b = this.baselines.get(right);
+    if (!a) throw new DomainError('NOT_FOUND', `${left}을(를) 찾을 수 없습니다.`);
+    if (!b) throw new DomainError('NOT_FOUND', `${right}을(를) 찾을 수 없습니다.`);
+    const items = compareBaselines(a.snapshot, b.snapshot);
+    const ref = (x: BaselineRecord) => ({ baselineId: x.baselineId, featureId: x.featureId, version: x.version, contentHash: x.contentHash, approvedAt: x.approvedAt });
+    return { left: ref(a), right: ref(b), sameFeature: a.featureId === b.featureId, items, summary: changeSetSummary(items) };
+  }
+
+  /** @req FR-REG-004-004 — Baseline 확정 때 남긴 ChangeSet(변경 유형·영역·항목·일시), Feature별 */
+  changesets(featureId?: string): BaselineChangeSet[] {
+    const rows = featureId ? this.db.all<{ doc: string }>('SELECT doc FROM baseline_changeset WHERE feature_id = ? ORDER BY at, changeset_id', featureId) : this.db.all<{ doc: string }>('SELECT doc FROM baseline_changeset ORDER BY at, changeset_id');
+    return rows.map((r) => JSON.parse(r.doc));
+  }
+
   private previous(featureId: string, version: string): BaselineRecord | undefined {
     return this.baselines
       .forFeature(featureId)
@@ -116,7 +144,8 @@ export class BaselineService implements OnModuleInit {
     }
 
     const latest = Object.values(this.gates.latest(featureId, version));
-    const open = latest.filter((g) => g!.status !== 'PASS');
+    // 승인된 N/A(해당 없음)는 열린 판정이 아니다
+    const open = latest.filter((g) => g!.status !== 'PASS' && g!.status !== 'N/A');
     items.push({ id: 'GATES', label: 'Gate Record PASS, 열린 CONDITIONAL 없음', state: open.length ? 'FAIL' : 'PASS', detail: open.length ? open.map((g) => `${g!.gate} ${g!.status}`).join(', ') : `${latest.length}건 PASS` });
 
     const prev = this.previous(featureId, version);
@@ -201,6 +230,12 @@ export class BaselineService implements OnModuleInit {
         delete missing.baselineId;
         this.features.update({ ...f, baselineId, _missing: missing });
         decided.baselineId = baselineId;
+        // ChangeSet — 직전 Baseline 대비 변경 유형·영역·항목·일시(추가만)
+        const prev = this.previous(f.featureId, f.version);
+        const items = changeItems(prev ? snapshotContent(prev.snapshot) : null, snapshotContent(snapshot));
+        const n = (this.db.get<{ n: number }>('SELECT count(*) AS n FROM baseline_changeset')?.n ?? 0) + 1;
+        const cs: BaselineChangeSet = { changesetId: `BCS-${String(n).padStart(5, '0')}`, featureId: f.featureId, fromBaselineId: prev?.baselineId ?? null, fromVersion: prev?.version ?? null, toBaselineId: baselineId, toVersion: f.version, at: decided.decidedAt!, by: actor.id, items, summary: changeSetSummary(items) };
+        this.db.run('INSERT INTO baseline_changeset (changeset_id, feature_id, from_baseline, to_baseline, at, doc) VALUES (?, ?, ?, ?, ?, ?)', cs.changesetId, cs.featureId, cs.fromBaselineId, cs.toBaselineId, cs.at, JSON.stringify(cs));
       }
       this.baselines.decide(decided);
       this.audit.record(actor, action, target, { before: { status: 'PENDING' }, after: { status: decided.status, baselineId: decided.baselineId, contentHash: baseline?.contentHash }, reason: body.reason, componentId: 'D01-01' });

@@ -33,6 +33,13 @@ import { AdsExpansionService } from './staged-rollout/ads-expansion.service';
 import { PolicyExpansionController, PolicyExpansionService } from './staged-rollout/expansion.service';
 import { TargetingService } from './targeting/targeting.service';
 import { GateService } from './topology/gate.service';
+import { GateCheckService } from './topology/gate-check.service';
+import { GateNaController, GateNaDecisionController, GateNaService } from './topology/gate-na.service';
+import { FeatureRetireRepo, FeatureReviewRepo } from './registry/feature-p10.repo';
+import { FeatureP10Controller, FeatureP10Service, FeatureRetireController } from './registry/feature-p10.service';
+import { ReleaseCandidateController, ReleaseCandidateService } from './registry/release-candidate.service';
+import { PolicyStageController } from './policy-store/policy-stage.controller';
+import { FeatureDraftController, FeatureDraftService } from './registry/feature-draft.service';
 import { TopologyController } from './topology/topology.controller';
 import { TopologyService } from './topology/topology.service';
 import { AnalysisEvidenceController, AnalysisEvidenceService } from './topology/analysis-evidence.service';
@@ -51,7 +58,7 @@ import { TraceSources } from '../../adapters/if-mocks/trace-sources';
 
 @Module({
   imports: [TrustModule],
-  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController, PolicyExpansionController, TraceLinkController],
+  controllers: [MasterDataController, AuditHistoryController, AuditExportController, ValidationExportController, SafetyProfileController, ReleaseSignoffController, RetirementController, RegistryController, BaselineController, TopologyController, CatalogController, WorkQueueController, AnalysisEvidenceController, FlagSourceController, CanaryController, PleController, PleFeatureController, PolicyExpansionController, TraceLinkController, GateNaController, GateNaDecisionController, FeatureP10Controller, FeatureRetireController, ReleaseCandidateController, PolicyStageController, FeatureDraftController],
   providers: [MasterDataService, RetirementService,
     KillRepo,
     VirtualRunRepo, // 가상검증(CARLA) 기록 — 검증기·Gate 판정이 함께 읽는다
@@ -85,6 +92,8 @@ import { TraceSources } from '../../adapters/if-mocks/trace-sources';
     PleSeed,
     // Feature 추적 연결·관계 경고(P3) — 요구·설계 요소·인터페이스·Test Case·OTA 연결, excludes 동시 활성화, 변경 영향의 차량·정책·OTA
     TraceLinkRepo, TraceSources, TraceLinkService, RelationGuardService,
+    // Lifecycle·Gate 보강(P10) — 자동 검사·N/A·반려·즉시 폐기·변경 이력·출시 후보 통합 스냅샷
+    GateCheckService, GateNaService, FeatureReviewRepo, FeatureRetireRepo, FeatureP10Service, ReleaseCandidateService, FeatureDraftService,
   ],
   exports: [SafetyProfileService, KILL_STATE, KillRepo, VirtualRunRepo, IfCallRepo, PolicyRepo, FleetRepo, EntitlementService, TrialExpiryService, TargetingService, ActivationService, StagedRolloutService, CanaryService, FeatureRepo, GateRepo, TopologyRepo, BaselineRepo, ProductRepo, LifecycleService, RegistryService, BaselineService, GateService, GateDecisionService, ReharaRepo, TopologyService, CatalogService, FlagCodeStore, FlagCoverageService, TraceLinkRepo, TraceLinkService],
 })

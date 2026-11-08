@@ -68,6 +68,10 @@ import { CreateLegacyLinkBody, CreateLegacyRuleBody, DeleteLegacyLinkBody, LEGAC
 import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
+import { GateNaDecisionBody, GateNaRequestBody } from './rules/gate-outcome';
+import { FEATURE_REJECTERS, FEATURE_RETIRE_APPROVERS, FEATURE_RETIRE_REQUESTERS, GATE_NA_APPROVERS, GATE_NA_REQUESTERS } from './rules/lifecycle-gate-roles';
+import { DeleteDraftBody } from './rules/draft-deletion';
+import { RejectFeatureBody, RetireDecisionBody, RetireFeatureBody } from './rules/feature-retire';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
 
 const EmptyBody = z.object({}).strict();
@@ -638,6 +642,25 @@ export const ROUTES: RouteDef[] = [
   { name: 'shadowEnvelope', method: 'GET', path: '/api/experiments/:id/shadow-envelope', summary: 'Shadow 정책 봉투(출력·활성화·설치 권한 없음)', component: 'D01-07' },
   { name: 'supportDrills', method: 'GET', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 기록', component: 'D01-01' },
   { name: 'runSupportDrill', method: 'POST', path: '/api/features/:id/versions/:ver/support-drills', summary: '지원 종료·서버 교체 연습 실행', component: 'D01-01', roles: ['RELEASE_MANAGER', 'SAFETY_OFFICER'], body: SupportDrillBody },
+  // Lifecycle·Gate·즉시 폐기·Baseline 보강(P10) — Gate 해당 없음(N/A)·반려·재작업 기록·즉시 폐기·변경 이력·Baseline 비교·ChangeSet·출시 후보 통합 스냅샷
+  { name: 'gateNaRequests', method: 'GET', path: '/api/features/:id/versions/:ver/gate-na-requests', summary: 'Gate 해당 없음(N/A) 요청 목록 — 사유·요청자·승인자·결과', component: 'D01-02' },
+  { name: 'requestGateNa', method: 'POST', path: '/api/features/:id/versions/:ver/gate-na-requests', summary: 'Gate 해당 없음(N/A) 요청 — 사유 필수, G1·G4·G9와 QM 아닌 G2·G7은 불가', component: 'D01-02', roles: GATE_NA_REQUESTERS, body: GateNaRequestBody },
+  { name: 'decideGateNa', method: 'POST', path: '/api/gate-na-requests/:rid/decision', summary: 'Gate 해당 없음 승인·반려 — 요청자 외 기능안전 담당자, 승인하면 N/A Gate 기록(승인자 서명)', component: 'D01-02', roles: GATE_NA_APPROVERS, body: GateNaDecisionBody },
+  { name: 'featureHistory', method: 'GET', path: '/api/features/:id/history', summary: 'Feature 변경 이력 — 변경자·기간·변경 항목·Version 필터(없는 Feature는 404)', component: 'D01-01', query: ['actorId', 'from', 'to', 'item', 'version'] },
+  { name: 'featureReviews', method: 'GET', path: '/api/features/:id/reviews', summary: '정의 승인 반려·검증 재작업 기록 — 사유·이슈 항목·재작업 사유·일시', component: 'D01-01', query: ['version'] },
+  { name: 'rejectFeature', method: 'POST', path: '/api/features/:id/versions/:ver/rejection', summary: '정의 승인 반려 — PROPOSED 유지, 반려 사유·이슈 항목·재작업 사유(작성자는 불가)', component: 'D01-01', roles: FEATURE_REJECTERS, body: RejectFeatureBody },
+  { name: 'requestFeatureRetire', method: 'POST', path: '/api/features/:id/versions/:ver/retire-requests', summary: 'Feature 즉시 폐기 요청 — 어느 단계든, 사유 필수', component: 'D01-01', roles: FEATURE_RETIRE_REQUESTERS, body: RetireFeatureBody },
+  { name: 'featureRetireRequests', method: 'GET', path: '/api/feature-retire-requests', summary: 'Feature 즉시 폐기 요청 목록 — 사유·요청자·승인자·상태', component: 'D01-01', query: ['featureId', 'status'] },
+  { name: 'decideFeatureRetire', method: 'POST', path: '/api/feature-retire-requests/:rid/decision', summary: 'Feature 즉시 폐기 승인·반려 — 요청자·작성자 제외, 출시된 Version은 Flag Retirement 완료 필요', component: 'D01-01', roles: FEATURE_RETIRE_APPROVERS, body: RetireDecisionBody },
+  { name: 'featureBaselines', method: 'GET', path: '/api/features/:id/baselines', summary: 'Feature의 BOM Baseline 목록·내용·해시 검증(없는 Feature는 404)', component: 'D01-01' },
+  { name: 'compareBaselines', method: 'GET', path: '/api/baselines/compare', summary: '두 BOM Baseline 비교 — 변경 유형·영역·항목', component: 'D01-01', query: ['left', 'right'], requiredQuery: ['left', 'right'], sample: { left: 'BL-00001', right: 'BL-00028' } },
+  { name: 'baselineChangesets', method: 'GET', path: '/api/baselines/changesets', summary: 'BOM Baseline ChangeSet — 확정마다 직전 대비 변경 유형·영역·항목·일시', component: 'D01-01', query: ['featureId'] },
+  { name: 'releaseCandidate', method: 'GET', path: '/api/features/:id/versions/:ver/release-candidate', summary: '출시 후보 통합 스냅샷 — 출시 승인 시점 Feature·요구·Variant·정책·Test Evidence, 해시 검증', component: 'D01-01' },
+  { name: 'releaseCandidates', method: 'GET', path: '/api/release-candidates', summary: '출시 후보 통합 스냅샷 목록', component: 'D01-01', query: ['featureId'] },
+  { name: 'deleteFeatureDraft', method: 'DELETE', path: '/api/features/:id/versions/:ver', summary: '초안 Feature Version 삭제 — 작성자, 승인 이력·참조(정책·상품·관계·Gate 판정·분석 근거 등)가 있으면 409와 폐기 안내, 지운 ID는 다시 쓰지 않음', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: DeleteDraftBody },
+  { name: 'deleteRelationDraft', method: 'DELETE', path: '/api/dependencies/:id', summary: '초안 관계 삭제 — 원천이 PROPOSED인 관계만, 원천 관계 목록에서도 뺀다', component: 'D01-02', roles: ['FEATURE_AUTHOR', 'VARIANT_OWNER'], body: DeleteDraftBody },
+  { name: 'deletedDrafts', method: 'GET', path: '/api/deleted-drafts', summary: '지운 초안 묘비 — 대상·ID·삭제자·일시·사유(ID 재사용 금지)', component: 'D01-01', query: ['entity'] },
+  { name: 'policyStages', method: 'GET', path: '/api/policy-stages', summary: '정책 생애주기 값(Draft·Review·Approved·Deployed·Monitored) 대응표·단계별 정책', component: 'D01-06', query: ['stage', 'featureId'] },
   // F0 — 계정 상태·소유자 이관(D-GAP-1·B13). 시스템 관리자는 기록 내용을 고치지 않는다
   { name: 'accounts', method: 'GET', path: '/api/accounts', summary: '계정 상태 — 사용 중·비활성·없는 계정·확인 불가, 마지막 상태 기록(사유)', component: 'D06-09' },
   { name: 'deactivateAccount', method: 'POST', path: '/api/accounts/:id/deactivate', summary: '계정 비활성 기록 — 시스템 관리자, 사유 필수(자기 계정 제외)', component: 'D06-09', roles: SYSTEM_ADMIN_ROLES, body: AccountStatusBody },

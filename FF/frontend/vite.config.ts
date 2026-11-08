@@ -38,7 +38,7 @@ export default defineConfig({
     },
     transform(code, id) {
       if (!id.replace(/\\/g, '/').endsWith('/contracts/src/routes.ts')) return;
-      return { code: browserRouteSource(code, { dropSummary }), map: null };
+      return { code: browserRouteSource(code, { dropSummary, dropSample: dropSummary }), map: null };
     },
   }, react()],
   resolve: {

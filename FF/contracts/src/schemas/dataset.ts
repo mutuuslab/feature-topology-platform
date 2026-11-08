@@ -99,7 +99,8 @@ export const GateRecordRow = z.object({
   country: z.string(),
   gate: GateId,
   gateName: z.string(),
-  inputResult: GateResult,
+  /** N/A — 해당 없음 요청이 승인되어 남은 기록(rules/gate-outcome.ts, P10) */
+  inputResult: z.union([GateResult, z.literal('N/A')]),
   rationale: z.string(),
   evidenceRef: z.string().nullable(),
   judgeRole: z.string(),

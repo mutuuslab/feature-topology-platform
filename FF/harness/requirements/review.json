@@ -133,14 +133,14 @@
       "gap": "—"
     },
     "FR-REG-001-013": {
-      "verdict": "미구현",
-      "evidence": "삭제 API 없음. 설계는 퇴역(RETIRED)·ID 재사용 금지(FFG-CODE-020)",
-      "gap": "**설계와 충돌** — '삭제'를 '퇴역/폐기'로 재정의하거나, PROPOSED 미참조 초안만 삭제 허용으로 한정 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
+      "verdict": "부분",
+      "evidence": "D2(b) 적용: backend/src/domains/d01-policy/registry/feature-draft.service.ts deleteFeature — 작성자·PROPOSED·과거 승인 없음·정책/상품/관계/Gate/분석/검토/추적 참조 없음 확인, 공용 DraftDeletionService 묘비·감사·ID 재사용 방지. backend/test/d01/lifecycle-p10.spec.ts 초안 삭제/권한/승인/참조 회귀.",
+      "gap": "삭제 API는 Feature Version 단위이며 FeatureDetail에 삭제 요청·확인·실패 안내 UI가 아직 없음. 승인 뒤에는 폐기/미사용 표시로 보존한다."
     },
     "FR-REG-001-014": {
       "verdict": "부분",
-      "evidence": "삭제 자체가 없어 사실상 충족",
-      "gap": "삭제를 도입하면 RELEASED·정책·상품·CP 참조 검사 필요 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
+      "evidence": "backend/src/domains/d01-policy/registry/feature-draft.service.ts featureFacts/deleteFeature 및 kernel/draft-deletion.ts — 승인 전 초안만 삭제, 과거 승인·참조 409, 작성자/RBAC 403. backend/test/d01/lifecycle-p10.spec.ts 삭제 거부와 묘비 회귀.",
+      "gap": "Web 삭제 작업 흐름/대체 안내 연결은 FR-REG-001-013과 함께 남음."
     },
     "FR-REG-002-001": {
       "verdict": "구현",
@@ -208,19 +208,19 @@
       "gap": "이슈 항목(구조화)·재작업 사유 별도 필드 없음"
     },
     "FR-REG-002-014": {
-      "verdict": "미구현",
-      "evidence": "RETIRED는 DEPRECATED에서만 (`lifecycle.ts:34`)",
-      "gap": "모든 단계 → RETIRED 폐기 전이 규칙"
+      "verdict": "구현",
+      "evidence": "backend/src/domains/d01-policy/registry/feature-p10.service.ts requestRetire/decideRetire → lifecycle.applyRetire: 어느 단계든 요청, 다른 승인자 승인 후 RETIRED. 배포 중 Flag/미완료 Flag Retirement는 관문 거부. frontend/src/screens/features/LifecyclePanels.tsx RetireAction 요청·승인 화면. backend/test/d01/lifecycle-p10.spec.ts 즉시 폐기·배포 중 거부; frontend/src/__tests__/lifecycleGateP10.test.tsx.",
+      "gap": "원문 description의 Retired를 적용한다(원문 output의 Deprecated 표기는 description/설계 표10과 불일치)."
     },
     "FR-REG-002-015": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "폐기 사유·요청자·승인자 기록"
+      "verdict": "구현",
+      "evidence": "backend/src/domains/d01-policy/registry/feature-p10.service.ts FeatureRetireRequest에 reason/requestedBy/decidedBy/시각/결정 사유 보존, Lifecycle 전이 감사에 요청자·승인자 기록. frontend/src/screens/features/LifecyclePanels.tsx RetireAction 대기·이력 표시. backend/test/d01/lifecycle-p10.spec.ts 요청/승인/감사 내용 단언.",
+      "gap": ""
     },
     "FR-REG-002-016": {
-      "verdict": "미구현",
-      "evidence": "(Flag Retirement 승인은 별도: `registry/retirement.service.ts`)",
-      "gap": "폐기 승인자 확인(직무 분리 포함)"
+      "verdict": "구현",
+      "evidence": "contracts/src/rules/feature-retire.ts immediateRetireBlockers 승인 역할·요청자/작성자 직무분리·현재 상태/Flag Retirement 검사, backend feature-p10.service.ts 서버 강제. backend/test/d01/lifecycle-p10.spec.ts 요청자·작성자 승인 403과 타 승인자 성공; contracts/src/rules/gate-p10.test.ts.",
+      "gap": ""
     },
     "FR-REG-002-017": {
       "verdict": "구현",
@@ -348,9 +348,9 @@
       "gap": "—"
     },
     "FR-REG-005-013": {
-      "verdict": "미구현",
-      "evidence": "N/A 상태 없음",
-      "gap": "N/A 판정·사유·승인자"
+      "verdict": "구현",
+      "evidence": "backend/src/domains/d01-policy/topology/gate-na.service.ts 사유 있는 N/A 요청·다른 기능안전 담당자 승인, 승인자 서명 GateRecord 및 요청/결정 사유·시각 보존. frontend/src/screens/features/GateOutcomePanel.tsx 요청/승인/반려/이력. backend/test/d01/lifecycle-p10.spec.ts 자기 승인 403·다른 담당자 N/A 서명; contracts/src/rules/gate-p10.test.ts 및 frontend/src/__tests__/lifecycleGateP10.test.tsx.",
+      "gap": ""
     },
     "FR-REG-005-014": {
       "verdict": "구현",
@@ -543,9 +543,9 @@
       "gap": "—"
     },
     "FR-DEP-001-005": {
-      "verdict": "미구현",
-      "evidence": "삭제 API 없음; 원천 PROPOSED만 변경, 이후 새 Version",
-      "gap": "초안 단계 관계 삭제 — 결정 D2(b) 확정: 승인 전 초안만 삭제(승인 이력·다른 기록의 참조 없음, 삭제 사실 감사·ID 재사용 금지 묘비), 승인 뒤는 폐기·미사용 표시 — 공용 규칙 F0, 도메인 적용 P10"
+      "verdict": "부분",
+      "evidence": "backend/src/domains/d01-policy/registry/feature-draft.service.ts deleteRelation — 원천 PROPOSED, 과거 Gate 승인 이력 및 다른 Feature Version의 관계 참조 검사, 원천 dependencyIds 정리·묘비·감사. backend/test/d01/lifecycle-p10.spec.ts 정상 삭제, p10-integration-regressions.spec.ts 과거 PASS 후 FAIL·다른 Version 참조 409 회귀.",
+      "gap": "요구 원문 area=Web. 관계 조회/Topology 화면에 삭제·확인·참조 차단 안내 UI가 아직 없음. Backend API만으로 Web 요구 전체 구현으로 판정하지 않는다."
     },
     "FR-DEP-002-001": {
       "verdict": "구현",

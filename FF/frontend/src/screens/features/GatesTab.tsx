@@ -5,7 +5,7 @@
 //  · 판정 입력은 Gate마다 따로 — 앞 Gate 저장이 다음 Gate에 쓰던 입력을 지우지 않는다(P3-10). 오류 상자에 내부 코드를 붙이지 않는다
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { gateEvidenceBlockers, gateEvidenceInputOf, gateStageBlocker, procedureGatesFor, procedureGateText, ROUTES, type AnalysisView, type GateId, type GateResult, type Lifecycle } from '@ff/contracts';
+import { gateEvidenceBlockers, gateEvidenceInputOf, gateStageBlocker, procedureGatesFor, procedureGateText, ROUTES, type AnalysisView, type Asil, type GateId, type GateResult, type Lifecycle } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { actorFor } from '../../api/actor';
 import { analysis as A } from '../../copy/analysis';
@@ -13,6 +13,8 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, Field, GateBadge, GateRail, Icon, Panel, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { analysisViewOf, AsilDeviationBlock } from './AnalysisPanel';
+import { GateChecks, GateNaSection, GoNoGoBar, type GateOutcomeView } from './GateOutcomePanel';
+import { lcGate } from '../../copy/lifecycle-gate';
 import type { GateView } from '../types';
 
 const T = ko.detail;
@@ -31,7 +33,7 @@ const EMPTY: Form = { inputResult: 'PASS', rationale: '', evidenceRef: '', asilR
 export const evidenceHref = (ref: string, featureId: string) => `/verify/evidence?ref=${encodeURIComponent(ref)}&feature=${encodeURIComponent(featureId)}`;
 
 export function GatesTab({ id, ver }: { id: string; ver: string }) {
-  const q = useApi<GateView & { lifecycle?: Lifecycle }>('gates', { params: { id, ver } });
+  const q = useApi<GateView & GateOutcomeView & { lifecycle?: Lifecycle }>('gates', { params: { id, ver } });
   const an = useApi<AnalysisView>('analysisEvidence', { params: { id, ver } });
   const [selected, setSelected] = useState<GateId>('G1');
   const perm = usePermission(JUDGE_ROLES);
@@ -55,7 +57,8 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
   const needs = av ? gateEvidenceBlockers(gateEvidenceInputOf(av, selected, form.inputResult, form.asilReviewed)) : [];
   const procedure = procedureGatesFor(selected);
   const short = form.rationale.trim().length < 2;
-  const noEvidence = form.inputResult === 'PASS' && !form.evidenceRef.trim();
+  // 판정마다 근거 1건 이상(FR-REG-005-011) — PASS만이 아니다
+  const noEvidence = !form.evidenceRef.trim();
   const blocked = whyDisabled([!perm.ok, perm.hint], [stage, stage?.reason], [analysisUnavailable, analysisReason], [needs.length > 0, A.gate.needs], [noEvidence, T.evidenceHint], [short, ko.why.reason]);
   const submitted = selected;
   return (
@@ -77,6 +80,7 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
             </ul>
           </section>
         )}
+        <GoNoGoBar v={q.data?.goNoGo} />
         <GateRail statuses={statuses} onSelect={setSelected} tours={{ G5: 'gate-g5' }} />
         {g && (
           <div className="ds-split">
@@ -90,6 +94,7 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
                   {g.decision.reason ? ` — ${g.decision.reason}` : ''}
                 </p>
               )}
+              <GateChecks checks={(q.data?.checks ?? []).filter((c) => c.gate === selected)} />
               <h3 className="ds-eyebrow" style={{ margin: '0 0 var(--sp-2)' }}>{T.history}</h3>
               <DataTable
                 caption={T.history}
@@ -169,7 +174,7 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
                     <option value="FAIL">FAIL</option>
                   </select>
                 </Field>
-                <Field label={T.evidence} hint={T.evidenceHint}>
+                <Field label={T.evidence} hint={lcGate.evidenceAll}>
                   <input className="ds-input ds-input--mono" value={form.evidenceRef} onChange={(e) => setForm({ evidenceRef: e.target.value })} />
                 </Field>
                 <Field label={ko.page.reason}>
@@ -195,6 +200,11 @@ export function GatesTab({ id, ver }: { id: string; ver: string }) {
                 </Button>
               </form>
             </Panel>
+            {av && lifecycle && (
+              <Panel title={lcGate.na.title} id="gate-na-panel">
+                <GateNaSection id={id} ver={ver} gate={selected} asil={av.asil as Asil} requests={q.data?.naRequests ?? []} readOnly={lifecycle === 'RELEASED' || lifecycle === 'DEPRECATED' || lifecycle === 'RETIRED'} />
+              </Panel>
+            )}
           </div>
         )}
       </div>

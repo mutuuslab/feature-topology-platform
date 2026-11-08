@@ -51,6 +51,26 @@ describe('Gate Decision Record (FFG-LCY-001)', () => {
     expect(JSON.stringify(audit)).toContain(d.signature.kid);
   });
 
+  it('서명 누락·변조된 N/A도 실제 정의 승인 전이는 막는다 — 422 GATE_UNSIGNED', async () => {
+    const repo = app.get(GateRepo);
+    const db = app.get<Db>(DB);
+    const prev = (await gatesOf()).find((g: any) => g.gate === 'G3').latest as GateRecordRow;
+    repo.insert({ ...prev, gateRecordId: repo.nextId('G3'), inputResult: 'N/A', status: 'N/A', rationale: '서명 없는 해당 없음' });
+    const missing = (await approve().expect(422)).body.error.details.blockers;
+    expect(missing).toContainEqual(expect.objectContaining({ code: 'GATE_UNSIGNED', ref: 'G3' }));
+    expect((await gatesOf()).find((g: any) => g.gate === 'G3').decision.state).toBe('MISSING');
+    await judge('G3');
+    const signed = (await gatesOf()).find((g: any) => g.gate === 'G3').latest as GateRecordRow;
+    try {
+      db.run('UPDATE gate_record SET doc = ? WHERE gate_record_id = ?', JSON.stringify({ ...signed, inputResult: 'N/A', status: 'N/A' }), signed.gateRecordId);
+      const invalid = (await approve().expect(422)).body.error.details.blockers;
+      expect(invalid).toContainEqual(expect.objectContaining({ code: 'GATE_UNSIGNED', ref: 'G3' }));
+      expect((await gatesOf()).find((g: any) => g.gate === 'G3').decision.state).toBe('INVALID');
+    } finally {
+      db.run('UPDATE gate_record SET doc = ? WHERE gate_record_id = ?', JSON.stringify(signed), signed.gateRecordId);
+    }
+  });
+
   it('판정을 거치지 않고 넣은 Gate PASS(결정 기록 없음)로는 전이하지 않는다 — 422 GATE_UNSIGNED, 감사 FAILED', async () => {
     const repo = app.get(GateRepo);
     const prev = (await gatesOf()).find((g: any) => g.gate === 'G3').latest as GateRecordRow;

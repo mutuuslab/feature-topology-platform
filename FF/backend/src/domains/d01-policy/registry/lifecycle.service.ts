@@ -6,6 +6,8 @@ import {
   evaluateTransition,
   nextTransitions,
   ROLE_LABEL,
+  GATE_META,
+  type GateRecordRow,
   type Blocker,
   type FeatureVersionRow,
   type GateStatus,
@@ -28,6 +30,11 @@ import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 import { FeatureRefLinker, type RefWarning } from './feature-refs';
 import { ReleaseSignoffService } from './release-signoff.service';
 import { adsTransitionBlockers } from './ads-release-guard';
+import { GateCheckService } from '../topology/gate-check.service';
+import { FeatureRetireRepo, FeatureReviewRepo } from './feature-p10.repo';
+import { ReleaseCandidateService } from './release-candidate.service';
+import { Clock } from '../../../kernel/clock';
+import type { IssueItem } from '@ff/contracts';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -58,6 +65,11 @@ export class LifecycleService {
     private readonly refdb: RefdbRepository,
     private readonly refs: FeatureRefLinker,
     private readonly flagCode: FlagCoverageService,
+    private readonly gateChecks: GateCheckService,
+    private readonly retire: FeatureRetireRepo,
+    private readonly reviews: FeatureReviewRepo,
+    private readonly releaseCandidates: ReleaseCandidateService,
+    private readonly clock: Clock,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -69,7 +81,7 @@ export class LifecycleService {
   context(f: FeatureVersionRow, extra: Partial<TransitionContext> = {}): TransitionContext {
     const latest = this.gates.latest(f.featureId, f.version);
     const latestGates = Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r!.status])) as Partial<Record<string, GateStatus>>;
-    return {
+    const ctx: TransitionContext = {
       latestGates,
       // FFG-LCY-001 — 서명된 Decision Record가 없는 Gate PASS는 전이 근거가 아니다
       unsignedGates: this.decisions.unsigned(f.featureId, f.version),
@@ -87,8 +99,15 @@ export class LifecycleService {
       refAsilRepOf: (refId) => this.refdb.getRef(refId)?.asilRep,
       // 20-97 §3.4 — 출시(VERIFIED→RELEASED) 전이만 Flag 코드 연결을 본다(연결 저장소가 없으면 통과)
       flagCodeGate: f.lifecycle === 'VERIFIED' ? this.flagCode.gate(f.featureId, f.version) : null,
-      ...extra,
+      // P10 — Retired 전이 관문(출시된 적 있는 Version)
+      retirementGate: f.lifecycle === 'RELEASED' || f.lifecycle === 'DEPRECATED' ? this.retire.retirementFacts(f.featureId, f.version) : undefined,
     };
+    // P10 — Gate 자동 검사(정의 승인 G1·G3 · 검증 완료 G4·G5 · 출시 G8·G9). 읽을 때 한 번만 모은다(자동 전이 검사가 전이 없는 단계마다 모으지 않게)
+    if (['PROPOSED', 'DEVELOPING', 'VERIFIED'].includes(f.lifecycle)) {
+      let cache: TransitionContext['gateChecks'];
+      Object.defineProperty(ctx, 'gateChecks', { enumerable: true, configurable: true, get: () => (cache ??= this.gateChecks.checks(f)) });
+    }
+    return Object.assign(ctx, extra);
   }
 
   /** 현재 상태에서 가능한 전이와 각각의 막힌 사유 (화면의 스테퍼·버튼 상태) */
@@ -99,7 +118,8 @@ export class LifecycleService {
       auto: r.auto,
       roles: r.roles.map((x) => ROLE_LABEL[x]),
       // ADS-BE16 — 분류 대상 Version은 미분류·상태 책임자 미지정이면 전이를 막는다
-      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to)],
+      // 미리보기는 사유·이슈 항목이 채워진 것으로 본다(입력은 전이 때 받는다)
+      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview', issues: [{ item: 'preview', detail: '' }] } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to)],
     }));
   }
 
@@ -114,9 +134,9 @@ export class LifecycleService {
   }
 
   /** 사람이 실행하는 전이 — 기준 행 경고가 있으면 응답에 warnings를 붙인다 */
-  transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string): FeatureVersionRow & { warnings?: RefWarning[] } {
+  transition(actor: Actor, featureId: string, version: string, to: Lifecycle, reason: string, issues: IssueItem[] = []): FeatureVersionRow & { warnings?: RefWarning[] } {
     const f = this.require(featureId, version);
-    const evaluated = evaluateTransition(f, to, this.context(f, { actor, reason }));
+    const evaluated = evaluateTransition(f, to, this.context(f, { actor, reason, issues }));
     const rule = evaluated.rule;
     const blockers = evaluated.rule ? [...evaluated.blockers, ...adsTransitionBlockers(this.db, f, to)] : evaluated.blockers;
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
@@ -134,9 +154,40 @@ export class LifecycleService {
     const warnings = this.refWarnings(f, to);
     return this.db.tx(() => {
       const next = this.apply(actor, f, to, reason);
+      // @req FR-REG-002-013 — 검증 이슈로 되돌림: 이슈 항목·재작업 사유(전이 사유)·판정 일시를 재작업 기록으로
+      if (f.lifecycle === 'VERIFIED' && to === 'DEVELOPING') {
+        const review = this.recordReview(actor, f, 'REWORK', 'DEVELOPING', reason, issues, reason);
+        this.resetReworkGates(actor, next, review.recordId, reason);
+      }
       const cur = this.autoAdvance(next, actor.correlationId);
       return warnings.length ? { ...cur, warnings } : cur;
     });
+  }
+
+  /** 재작업 이전 검증·출시 판정은 이력으로 남기고 재판정을 기다린다. 같은 tx 안에서만 호출. */
+  private resetReworkGates(actor: Actor, f: FeatureVersionRow, reviewId: string, reason: string) {
+    const latest = this.gates.latest(f.featureId, f.version);
+    for (const gate of ['G4', 'G5', 'G6', 'G7', 'G8', 'G9'] as const) {
+      const prev = latest[gate];
+      const record: GateRecordRow = {
+        gateRecordId: this.gates.nextId(gate), featureId: f.featureId, featureVersion: f.version,
+        country: f.country, gate, gateName: GATE_META[gate].name,
+        inputResult: 'CONDITIONAL', status: '검토 중',
+        rationale: `재작업 후 재판정 대기 — ${reason}`, evidenceRef: reviewId,
+        judgeRole: GATE_META[gate].judgeRole, judgedAt: this.clock.kst(),
+        gateStageLifecycle: GATE_META[gate].stage, currentLifecycle: f.lifecycle,
+        transitionNote: `재작업 ${reviewId}${prev ? ` — 이전 ${prev.gateRecordId}(${prev.status}) 이력 보존` : ''}`,
+        _missing: {},
+      };
+      this.gates.insert(record);
+      const decision = this.decisions.sign(record, { id: actor.id, role: actor.role }, 'PLATFORM');
+      this.audit.record(actor, `GATE_REWORK_RESET ${gate}`, `${f.featureId}@${f.version}#${gate}`, {
+        before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null,
+        after: { gateRecordId: record.gateRecordId, status: record.status, reviewId, decisionKid: decision.signature.kid },
+        reason, componentId: 'D01-02',
+      });
+      this.events.publish('gate.judged', `${f.featureId}@${f.version}`, { gateRecordId: record.gateRecordId, gate, status: record.status, by: actor.id }, { componentId: 'D01-02', correlationId: actor.correlationId });
+    }
   }
 
   /** 자동 전이를 조건이 허락하는 만큼 연쇄 적용한다. 반드시 tx 안에서 호출. */
@@ -150,6 +201,20 @@ export class LifecycleService {
     return cur;
   }
 
+  /** 반려·재작업 기록(추가만) — 감사·이벤트와 함께. 반드시 tx 안에서 */
+  recordReview(actor: Actor, f: FeatureVersionRow, kind: 'REJECT' | 'REWORK', to: Lifecycle, reason: string, issues: IssueItem[], reworkReason: string) {
+    const rec = { recordId: this.reviews.nextId(), featureId: f.featureId, version: f.version, kind, from: f.lifecycle, to, reason, issues, reworkReason, by: actor.id, role: actor.role, at: this.clock.iso() };
+    this.reviews.insert(rec);
+    this.audit.record(actor, kind === 'REJECT' ? 'FEATURE_REJECT' : 'FEATURE_REWORK', `${f.featureId}@${f.version}`, { after: { recordId: rec.recordId, issues, reworkReason }, reason, componentId: 'D01-01' });
+    this.events.publish(kind === 'REJECT' ? 'feature.rejected' : 'feature.rework', `${f.featureId}@${f.version}`, { featureId: f.featureId, version: f.version, recordId: rec.recordId, by: actor.id, issues: issues.length }, { componentId: 'D01-01', correlationId: actor.correlationId });
+    return rec;
+  }
+
+  /** 즉시 폐기 승인 뒤 RETIRED 적용(표 10 밖의 전이 — 요청·승인 기록이 근거). 반드시 tx 안에서 */
+  applyRetire(actor: Actor, f: FeatureVersionRow, reason: string): FeatureVersionRow {
+    return this.apply(actor, f, 'RETIRED', reason);
+  }
+
   private apply(actor: Actor, f: FeatureVersionRow, to: Lifecycle, reason: string): FeatureVersionRow {
     const next: FeatureVersionRow = { ...f, lifecycle: to };
     this.features.update(next);
@@ -160,9 +225,11 @@ export class LifecycleService {
     }
     // 원천 Lifecycle이 바뀌면 관계 판정이 달라질 수 있다 (예: 승인되면 미판정 → PASS)
     this.topologyService.rejudgeOutgoing(next, actor.correlationId);
+    // @req FR-REG-005-015 — 출시 승인 시점의 Feature·요구·Variant·정책·Test Evidence 통합 스냅샷(같은 트랜잭션)
+    const rc = to === 'RELEASED' ? this.releaseCandidates.create(actor, next, reason) : null;
     const target = `${f.featureId}@${f.version}`;
     const refWarnings = this.refWarnings(f, to);
-    this.audit.record(actor, `FEATURE_TRANSITION ${f.lifecycle}→${to}`, target, { before: { lifecycle: f.lifecycle }, after: { lifecycle: to, ...(refWarnings.length ? { refWarnings } : {}) }, reason, componentId: 'D01-01' });
+    this.audit.record(actor, `FEATURE_TRANSITION ${f.lifecycle}→${to}`, target, { before: { lifecycle: f.lifecycle }, after: { lifecycle: to, ...(refWarnings.length ? { refWarnings } : {}), ...(rc ? { releaseCandidate: rc.rcbId, contentHash: rc.contentHash } : {}) }, reason, componentId: 'D01-01' });
     this.events.publish(
       'feature.lifecycle.changed',
       target,

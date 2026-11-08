@@ -304,7 +304,9 @@ export class RegistryService {
     const scopeChange = SCOPE_KEYS.filter((k) => k in (body.changes as object));
     if (scopeChange.length) throw new DomainError('VALIDATION', '국가·차종·트림이 바뀌면 새 Feature ID로 등록해야 합니다.', { fields: scopeChange });
     if (base.lifecycle === 'RETIRED') throw new DomainError('GUARD_FAILED', 'RETIRED Feature에서는 새 Version을 만들 수 없습니다.');
-    const latest = this.features.versions(featureId).at(-1)!.version;
+    // 지운 초안 Version 번호도 다시 쓰지 않는다(P10 초안 삭제 묘비) — 남은 Version과 묘비 중 가장 높은 것에서 올린다
+    const deleted = this.db.all<{ record_id: string }>("SELECT record_id FROM deletion_tombstone WHERE entity = 'feature-version' AND record_id LIKE ? || '@%'", featureId).map((r) => r.record_id.split('@')[1]);
+    const latest = [this.features.versions(featureId).at(-1)!.version, ...deleted].sort(compareVersion).at(-1)!;
     const version = bumpVersion(latest, body.bump);
     // 변이 프로필(26580)은 Feature 문서 밖 — 떼어 두었다가 새 Version에 잇는다
     const { variability, ...rest } = body.changes as typeof body.changes & { variability?: FeatureVariability };

@@ -37,6 +37,12 @@ export interface Prefill {
   tags: string;
 }
 
+/** Keep authored input even before the first reference is selected; only blanks or unchanged previous defaults are replaced. */
+export function preserveEditedPrefill(current: { name: string; description: string; asil: string; tags: string }, previous: Prefill | null, next: Prefill, asilTouched = false) {
+  const keep = (key: 'name' | 'description' | 'tags') => current[key].trim() && (!previous || current[key] !== previous[key]) ? current[key] : next[key];
+  return { name: keep('name'), description: keep('description'), tags: keep('tags'), asil: previous ? current.asil !== previous.asil ? current.asil : next.asil : asilTouched ? current.asil : next.asil };
+}
+
 const uniq = (xs: string[]) => [...new Set(xs)];
 /** 쉼표 목록 → 값 배열(빈 값 제거) */
 export const list = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean);

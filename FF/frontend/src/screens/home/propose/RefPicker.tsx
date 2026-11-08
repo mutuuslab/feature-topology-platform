@@ -252,7 +252,7 @@ export function RefPicker({
         </h3>
         {/* 빈 결과는 한 문장(제목 + 다음 행동) — 기본 제목과 겹쳐 두 번 말하던 것(P1-8) */}
         <AsyncView state={asyncState(search, rows.length === 0)} error={search.error} onRetry={() => search.refetch()} empty={{ title: PM.noResultTitle, body: PM.noResultBody }}>
-          {compact ? <ul className="propose-result-list" aria-label={P.results}>
+          {compact ? <ul className="propose-result-list" aria-label={P.results} tabIndex={0}>
             {rows.map((r) => <li key={r.refId} className="propose-result" aria-labelledby={`ref-result-${r.refId}`}>
               <span className="ds-mono">{r.refId}</span>
               <h4 id={`ref-result-${r.refId}`}>{r.nameKo}</h4>

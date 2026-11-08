@@ -253,6 +253,7 @@ workflows:
     WF-DEP-LEG: "법무팀 R&R 문서"
     WF-DEP-DPO: "개인정보보호팀 R&R 문서"
   quality_reviews:
+    TC-FEATURE-PRD-20261108: "Feature PRD 문서형 등록과2000자 본문 왕복 검증"
     TC-MOBILE-UX-20261108: "모바일 등록 선택·정책 상태·탭 이동 UX 검증"
     TC-FEATURE-REGISTRATION-UX-20261108: "Feature 등록 선택·적용 범위·최종 검토 UX 검증"
   proposals:

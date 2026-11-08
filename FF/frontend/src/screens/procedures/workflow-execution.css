@@ -5,6 +5,8 @@
 .wf-cases a[aria-current='page'] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
 .wf-cases small { color: var(--muted); }
 .wf-case { display: grid; gap: var(--sp-4); }
+.wf-case .ds-field { min-width: 0; }
+.wf-case input[type='file'] { min-width: 0; width: 100%; max-width: 100%; }
 .wf-case__identity { border-bottom: 1px solid var(--line); padding-bottom: var(--sp-3); }
 .wf-case__identity h2 { margin: 0 0 var(--sp-2); }
 .wf-case__identity p { margin: var(--sp-1) 0; overflow-wrap: anywhere; }

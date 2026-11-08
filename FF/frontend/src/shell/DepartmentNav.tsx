@@ -32,6 +32,7 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
   const loc = useLocation();
   const menu = useMemo(() => departmentMenu(dept), [dept]);
   const rnr = loc.pathname === '/procedures/roles' && new URLSearchParams(loc.search).get('view') === 'dept';
+  const work = loc.pathname === '/procedures/work';
   const dashboard = loc.pathname === '/' ? new URLSearchParams(loc.search).get('dashboard') : null;
   // 가로 메뉴의 '더 보기'는 본문 위에 뜬다 — 화면을 옮기면 닫고 Esc로도 닫는다
   const more = useRef<HTMLDetailsElement>(null);
@@ -75,7 +76,7 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
           </NavLink>
         </li>
         <li>
-          <NavLink to="/procedures" className={() => (!rnr && loc.pathname.startsWith('/procedures') ? 'active' : '')} aria-label={procCount ? `${D.nav.procedures} — 내 차례 ${procCount}건` : undefined}>
+          <NavLink to="/procedures" className={() => (!rnr && !work && loc.pathname.startsWith('/procedures') ? 'active' : '')} aria-label={procCount ? `${D.nav.procedures} — 내 차례 ${procCount}건` : undefined}>
             <Icon name="layers" size={16} />
             {D.nav.procedures}
             {procCount > 0 && (

@@ -12,8 +12,8 @@ const procs = WORKFLOWS.processes;
 const graphOf = (p: (typeof procs)[number]) => buildProcessGraph(p, wpInfoOf(WORKFLOWS));
 const layoutOf = (p: (typeof procs)[number]) => layoutFlow(graphOf(p), PROCESS_LAYOUT);
 
-describe('흐름도 배치 — 14개 절차 전부', () => {
-  it('절차는 14개다', () => expect(procs.length).toBe(14));
+describe('흐름도 배치 — 18개 절차 전부', () => {
+  it('절차는 18개다', () => expect(procs.length).toBe(18));
 
   for (const p of procs) {
     describe(p.id, () => {
@@ -140,7 +140,7 @@ describe('흐름도 배치 — 14개 절차 전부', () => {
     // 2026-11-06 외부 연계 활동(FPW.3-A06 연계 동기화·충돌 해결, FPW.4-A06 정책 근거 CR 연결)을 next 사슬에 넣어 254 → 256.
     // 같은 날 Flag 코드 연결 활동 6개(20-97 §6)를 각 절차 흐름에 이어 붙이고 FPW.8 평가 이상 확인(A12)을 이상 징후 사건(A01) 앞 시작으로 두어
     // 254 → 247(FPW.5 +2 · FPW.7 +1 새 레인 R-REQ · FPW.9 +1 · FPW.8 −11). 두 변경을 합친 실측 249(247 + 외부 연계 2), 상한은 257 → 250으로 내린다
-    expect(total).toBeLessThanOrEqual(250);
+    expect(total,JSON.stringify(procs.map(p=>({id:p.id,crossings:crossings(layoutOf(p))})))).toBeLessThanOrEqual(250);
   });
 });
 
@@ -204,9 +204,9 @@ describe('내 업무 흐름 배치 — 데모 역할 9개 전부', () => {
 
 describe('전체 지도 배치', () => {
   for (const w of [900, 1100, 1366, 1600]) {
-    it(`폭 ${w}: 14칸 겹침 0, 폭 안에 들어가고, 생애주기 화살표가 차례로 잇는다`, () => {
+    it(`폭 ${w}: 18칸 겹침 0, 폭 안에 들어가고, 생애주기 화살표가 차례로 잇는다`, () => {
       const l = layoutValueChain(WORKFLOWS.processes, w);
-      expect(l.boxes.length).toBe(14);
+      expect(l.boxes.length).toBe(18);
       for (let i = 0; i < l.boxes.length; i++)
         for (let j = i + 1; j < l.boxes.length; j++) {
           const a = l.boxes[i];

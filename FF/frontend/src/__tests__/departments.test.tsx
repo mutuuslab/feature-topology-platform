@@ -84,6 +84,17 @@ describe('부서 메뉴', () => {
       expect([...m.primary, ...m.reference].some((x) => x.to === '/' || x.to === '/procedures')).toBe(false);
     }
   });
+  it('업무 건 화면에서는 업무 절차 링크를 중복 강조하지 않는다',async()=>{
+    mount({role:'viewer',department:'DEP-PUR'},'/procedures/work');
+    const nav=await screen.findByRole('navigation',{name:'구매팀 메뉴'});
+    expect(within(nav).getByRole('link',{name:'업무 건·산출물'})).toHaveClass('active');
+    expect(within(nav).getByRole('link',{name:/^업무 절차/})).not.toHaveClass('active');
+  });
+  it('실제 구성·검증·추적·개인정보 업무를 외부 연계로 잘못 묶지 않는다',()=>{
+    const paths=['/baselines','/variant-conditions','/validations','/trace/design','/admin/data','/admin/security','/field'];
+    const groups=departmentMenuGroups(paths.map(to=>({to,title:to,screens:[to]})));
+    expect(Object.fromEntries(groups.flatMap(g=>g.items.map(i=>[i.to,g.key])))).toEqual({'/baselines':'configuration','/variant-conditions':'configuration','/validations':'verification','/trace/design':'trace','/admin/data':'privacy','/admin/security':'security','/field':'production'});
+  });
 
   it('활동 화면 패턴은 메뉴가 있는 가장 가까운 상위 화면으로 올라간다', () => {
     expect(menuRouteOf('/features/:id/:ver')?.menu).toBe('/features');

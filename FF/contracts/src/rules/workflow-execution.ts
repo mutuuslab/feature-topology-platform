@@ -47,6 +47,9 @@ export function submitWorkflowActivity(model: WorkflowExecutionModel,item: Workf
   for (const h of item.handoffs) if (h.toActivityId === a.id) lastHandoffs.set(h.fromActivityId,h);
   const unreceived = [...lastHandoffs.values()].filter((h) => h.status !== 'ACCEPTED');
   if (unreceived.length) fail('GUARD_FAILED','받은 인계를 수락한 뒤 검토를 요청하세요.');
+  const crossRole=predecessors.filter(p=>!p.raci.R.some(r=>a.raci.R.includes(r)));
+  const missingReceipts=crossRole.filter(p=>lastHandoffs.get(p.id)?.status!=='ACCEPTED');
+  if(missingReceipts.length)fail('GUARD_FAILED','다른 수행 역할에서 넘어오는 업무는 실제 인수 확인을 마친 뒤 검토를 요청하세요.',{activities:missingReceipts.map(p=>p.id)});
   const versions = latestWorkflowArtifacts(item,a.id);
   const missing: string[] = [];
   for (const key of a.outputs) {

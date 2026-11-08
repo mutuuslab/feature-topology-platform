@@ -27,6 +27,7 @@ export class WorkflowExecutionService {
     }
   }
   grants(actor:Actor): WorkflowRoleGrant[] {
+    this.active(actor);
     const rows = this.db.all<GrantRow>('SELECT * FROM workflow_role_grant ORDER BY id');
     const latest = new Map<string,GrantRow>();
     for (const row of rows) latest.set(`${row.account_id}|${row.role_id}`,row);
@@ -38,7 +39,7 @@ export class WorkflowExecutionService {
     const native = authModeOf() === 'demo' && actor.id.startsWith('usr-') ? MODEL.personas[actor.id.slice(4)] ?? [] : MODEL.roles.filter((r) => r.platformRoles.some((p) => permissions.includes(p as never))).map((r) => r.id);
     return [...new Set([...native,...this.grants(actor).filter((g) => g.active && g.accountId === actor.id).map((g) => g.roleId)])];
   }
-  identity(actor:Actor) { return {accountId:actor.id,accountState:this.accounts.state(actor.id),roleIds:this.roleIds(actor),roles:MODEL.roles,canAssign:actor.role === 'SYSTEM_ADMIN'}; }
+  identity(actor:Actor) { const accountState=this.accounts.state(actor.id);return {accountId:actor.id,accountState,roleIds:this.roleIds(actor),roles:MODEL.roles,canAssign:accountState==='ACTIVE'&&actor.role === 'SYSTEM_ADMIN'}; }
   assignableAccounts(actor:Actor) {
     this.active(actor);
     if(actor.role!=='SYSTEM_ADMIN')throw new DomainError('FORBIDDEN','업무 역할 배정 대상은 시스템 관리자만 조회할 수 있습니다.');
@@ -79,10 +80,12 @@ export class WorkflowExecutionService {
     return item.createdBy === actor.id || relevant.some((a) => [...a.raci.R,a.raci.A,...a.raci.C,...a.raci.I].some((r) => roles.includes(r)));
   }
   list(actor:Actor) {
+    this.active(actor);
     const items = this.db.all<CaseRow>('SELECT * FROM workflow_case ORDER BY updated_at DESC,case_id').map((r) => JSON.parse(r.doc) as WorkflowCase).filter((c) => this.canRead(actor,c));
     return {items:items.map(({artifacts,activities,handoffs,...c}) => ({...c,artifactCount:artifacts.length,submitted:Object.values(activities).filter((a) => a.status === 'SUBMITTED').length,accepted:Object.values(activities).filter((a) => a.status === 'ACCEPTED').length,handoffs:handoffs.filter((h) => h.status === 'OFFERED').length}))};
   }
   detail(actor:Actor,id:string): WorkflowCaseDetail {
+    this.active(actor);
     const item = this.item(id);
     if (!this.canRead(actor,item)) throw new DomainError('FORBIDDEN','이 업무 건의 담당·검토·협의 역할이 아닙니다.');
     const history = this.db.all<{id:number;case_id:string;version:number;action:string;by_actor:string;at:string;detail:string}>('SELECT * FROM workflow_case_history WHERE case_id=? ORDER BY id',id).map((r):WorkflowCaseHistory => ({id:r.id,caseId:r.case_id,version:r.version,action:r.action,by:r.by_actor,at:r.at,detail:JSON.parse(r.detail)}));
@@ -91,9 +94,15 @@ export class WorkflowExecutionService {
   create(actor:Actor,body:CreateWorkflowCaseBody) {
     this.active(actor);
     const process = MODEL.processes.find((p) => p.id === body.processId);
-    if (!process) throw new DomainError('VALIDATION','업무 모델에 없는 절차입니다.');
+    if (!process) {
+      this.audit.failed(actor,'WORKFLOW_CASE_CREATE',body.targetRef,'업무 모델에 없는 절차',COMPONENT);
+      throw new DomainError('VALIDATION','업무 모델에 없는 절차입니다.');
+    }
     const roles = this.roleIds(actor);
-    if (!process.activities.some((a) => [...a.raci.R,a.raci.A].some((r) => roles.includes(r)))) throw new DomainError('FORBIDDEN','이 절차를 수행·책임지는 역할로 배정되지 않았습니다.');
+    if (!process.activities.some((a) => [...a.raci.R,a.raci.A].some((r) => roles.includes(r)))) {
+      this.audit.denied(actor,'WORKFLOW_CASE_CREATE',body.targetRef,'절차 수행·책임 역할 미배정',COMPONENT);
+      throw new DomainError('FORBIDDEN','이 절차를 수행·책임지는 역할로 배정되지 않았습니다.');
+    }
     const at=this.clock.iso(), caseId=`WFC-${randomUUID()}`;
     const item:WorkflowCase={caseId,processId:body.processId,title:body.title,targetRef:body.targetRef,version:1,createdBy:actor.id,createdAt:at,updatedAt:at,activities:{},artifacts:[],handoffs:[]};
     this.db.tx(() => {
@@ -131,7 +140,7 @@ export class WorkflowExecutionService {
       if (error instanceof DomainError) {
         if (error.code === 'FORBIDDEN') this.audit.denied(actor,action,id,error.message,COMPONENT);
         else this.audit.failed(actor,action,id,error.message,COMPONENT);
-      }
+      } else this.audit.failed(actor,action,id,'업무 변경을 저장하지 못했습니다.',COMPONENT);
       throw error;
     }
     return this.detail(actor,id);

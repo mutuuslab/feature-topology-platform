@@ -74,10 +74,20 @@ describe('실제 업무 건과 정적 시연의 권한·제출·인계',()=>{
   it('조회자는 자신에게 배정되지 않은 절차를 만들 수 없으며 관리자 배정 UI가 나타나지 않는다',async()=>{
     mount('/procedures/work','viewer');
     await screen.findByRole('heading',{name:'업무 건·산출물'});
+    expect(screen.queryByText('usr-viewer')).toBeNull();
     await waitFor(()=>expect((screen.getByRole('button',{name:'업무 건 만들기'}) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByRole('button',{name:'업무 건 만들기'}));
     const select=screen.getByLabelText('업무 절차') as HTMLSelectElement;
     expect([...select.options].some(o=>o.value==='FPW.18')).toBe(false);
     expect(screen.queryByRole('heading',{name:'업무 역할 배정'})).toBeNull();
+  });
+  it('담당 역할의 활동을 먼저 선택하고 다른 역할의 산출물 입력은 읽기 전용이다',async()=>{
+    const {item}=await create();mount(`/procedures/work?case=${item.caseId}`,'operator');
+    const activity=await screen.findByRole('combobox',{name:'처리할 활동'});
+    expect((activity as HTMLSelectElement).value).toBe('FPW.18-A02');
+    fireEvent.change(activity,{target:{value:A}});
+    const label=M.processes.find(p=>p.id==='FPW.18')!.products.find(p=>p.key===WP)!.content[0];
+    expect((screen.getByRole('textbox',{name:label,exact:true}) as HTMLTextAreaElement).readOnly).toBe(true);
+    expect((document.querySelector('input[type=file]') as HTMLInputElement).disabled).toBe(true);
   });
 });

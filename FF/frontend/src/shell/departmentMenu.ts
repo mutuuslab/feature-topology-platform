@@ -22,17 +22,22 @@ export function departmentMenuGroups(items: readonly DeptMenuItem[]): DeptMenuGr
   const category = (to: string): DeptMenuGroup['key'] => {
     if (to.startsWith('/procurement/')) return 'cost';
     if (to.startsWith('/supplier/')) return 'supplier';
-    if (to.startsWith('/consults') || to === '/admin/approval') return 'consultation';
+    if (to.startsWith('/consults') || to.startsWith('/change/') || to === '/admin/approval') return 'consultation';
+    if (to === '/admin/data') return 'privacy';
+    if (to === '/admin/security') return 'security';
+    if (to.startsWith('/trace')) return 'trace';
+    if (to === '/field' || to === '/baselines/eol' || to.startsWith('/plants')) return 'production';
+    if (to === '/ops/collection' || to === '/integration/datalake') return 'data';
     if (to === '/data/workbench' || to === '/biz/trials' || to.startsWith('/experiments')) return 'analysis';
     if (to.startsWith('/feature') || to.startsWith('/planning')) return 'feature';
-    if (to.startsWith('/arch') || to.startsWith('/variants') || to.startsWith('/support') || to.startsWith('/integration/openfeature') || to.startsWith('/integration/code-repositories')) return 'configuration';
+    if (to.startsWith('/arch') || to.startsWith('/variant') || to.startsWith('/baselines') || to.startsWith('/config') || to.startsWith('/flag-code') || to.startsWith('/support') || to.startsWith('/integration/openfeature') || to.startsWith('/integration/code-repositories')) return 'configuration';
     if (to.startsWith('/master')) return 'master';
-    if (to.startsWith('/verify') || to.startsWith('/scenarios') || to.startsWith('/analysis')) return 'verification';
-    if (to.startsWith('/policies') || to.startsWith('/deployments')) return 'release';
+    if (to.startsWith('/verify') || to.startsWith('/validations') || to.startsWith('/precheck') || to.startsWith('/scenarios') || to.startsWith('/analysis')) return 'verification';
+    if (to.startsWith('/policies') || to.startsWith('/deployments') || to.startsWith('/activation') || to.startsWith('/flag-retirements')) return 'release';
     if (to.startsWith('/products') || to.startsWith('/entitlements') || to.startsWith('/orders')) return 'product';
-    if (to.startsWith('/fleet') || to.startsWith('/ops')) return 'monitoring';
+    if (to.startsWith('/fleet') || to.startsWith('/ops') || to.startsWith('/quality') || to.startsWith('/notifications') || to === '/events') return 'monitoring';
     if (to.startsWith('/audit') || to.startsWith('/reports')) return 'assurance';
-    if (to.startsWith('/admin/settings') || to.startsWith('/admin/iam') || to.startsWith('/admin/security') || to === '/_design') return 'settings';
+    if (to.startsWith('/admin/settings') || to.startsWith('/admin/iam') || to === '/_design') return 'settings';
     return 'integration';
   };
   const groups = new Map<DeptMenuGroup['key'], DeptMenuGroup>();

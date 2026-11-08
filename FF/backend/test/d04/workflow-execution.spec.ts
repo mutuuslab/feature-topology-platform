@@ -1,10 +1,11 @@
 import type { INestApplication } from '@nestjs/common';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { WORKFLOW_EXECUTION_MODEL as M } from '../../src/generated/workflow-execution-model';
 import { DB, type Db } from '../../src/kernel/db';
 import { canonicalJson } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { WorkflowExecutionService } from '../../src/workflows/workflow-execution.service';
+import { EventService } from '../../src/kernel/event.service';
 import { actor, bootApp } from '../helpers';
 
 const SYS=actor('usr-sysadmin','SYSTEM_ADMIN'), AUTHOR=actor('usr-commerce','PRODUCT_AUTHOR'), REVIEWER=actor('usr-integrator','IMPLEMENTER'), OPS=actor('usr-operator','OPERATOR');
@@ -39,10 +40,14 @@ describe('업무 건·산출물·독립 검토·인계',()=>{
     const first=await create(),second=await create();
     expect(first.item.caseId).not.toBe(second.item.caseId);
     await http().post('/api/workflow/cases').set(REVIEWER).send({processId:'FPW.18',title:'권한 없는 분석',targetRef:'OTHER'}).expect(403);
+    expect(db.get<{n:number}>("SELECT COUNT(*) AS n FROM audit WHERE actor_id='usr-integrator' AND action='WORKFLOW_CASE_CREATE' AND result='DENIED'")!.n).toBeGreaterThan(0);
     await grant(true,'unknown-actor').expect(422);
     await http().post('/api/workflow/cases').set(actor('unknown-actor','PRODUCT_AUTHOR')).send({processId:'FPW.18',title:'없는 계정',targetRef:'OTHER'}).expect(403);
     await http().post('/api/accounts/usr-integrator/deactivate').set(SYS).send({reason:'퇴사 처리 시험'}).expect(201);
     await grant(true).expect(422);
+    await http().get('/api/workflow/cases').set(REVIEWER).expect(403);
+    await http().get('/api/workflow/roles').set(REVIEWER).expect(403);
+    await http().get('/api/workflow/cases').set(actor('unknown-actor','AUDITOR')).expect(403);
     await http().post('/api/accounts/usr-integrator/reactivate').set(SYS).send({reason:'재활성 처리 시험'}).expect(201);
     await grant(true).expect(201);
     await grant(false).expect(201);
@@ -57,6 +62,17 @@ describe('업무 건·산출물·독립 검토·인계',()=>{
     const fixed=(await artifact(id,2,['DOC-ANALYSIS-01']).expect(201)).body;
     expect(fixed.item.artifacts).toHaveLength(2);
     expect(fixed.item.artifacts[0].references).toEqual([]);
+  });
+  it('서로 다른 실제 담당자가 같은 버전에 동시에 저장하면 한 건만 보존하고 다른 요청은412다',async()=>{
+    const d=await create(),id=d.item.caseId,second=actor('usr-productowner','PRODUCT_APPROVER');
+    const body={version:1,activityId:A,productKey:WP,fields:fields(),references:['DOC-CONCURRENT-B'],files:[],reason:'두 번째 담당자 작성'};
+    await http().post('/api/workflow/roles').set(SYS).send({accountId:'usr-productowner',roleId:'R-PDA',active:true,reason:'같은 분석 업무 공동 담당'}).expect(201);
+    const results=await Promise.all([artifact(id,1,['DOC-CONCURRENT-A']),http().post(`/api/workflow/cases/${id}/artifacts`).set(second).send(body)]);
+    expect(results.map(r=>r.status).sort()).toEqual([201,412]);
+    const saved=(await http().get(`/api/workflow/cases/${id}`).set(AUTHOR).expect(200)).body;
+    expect(saved.item).toMatchObject({version:2});expect(saved.item.artifacts).toHaveLength(1);
+    expect(saved.history.filter((h:any)=>h.action==='WORKFLOW_ARTIFACT_CREATE')).toHaveLength(1);
+    await http().post('/api/workflow/roles').set(SYS).send({accountId:'usr-productowner',roleId:'R-PDA',active:false,reason:'공동 담당 시험 배정 철회'}).expect(201);
   });
   it('자기 결과의 독립 검토를 막고 명시 역할 철회 후 기존 건의 쓰기도 거부한다',async()=>{
     const d=await create(),id=d.item.caseId;await artifact(id,1,['DOC-02']).expect(201);
@@ -93,6 +109,34 @@ describe('업무 건·산출물·독립 검토·인계',()=>{
     await http().post(`/api/workflow/cases/${id}/artifacts`).set(AUTHOR).send({version:1,activityId:A,productKey:'WP-NOPE',fields:{},references:['DOC-05'],files:[],reason:'잘못된 산출물'}).expect(400);
     expect((await http().get(`/api/workflow/cases/${id}`).set(AUTHOR).expect(200)).body.item.version).toBe(1);
     expect(db.get<{n:number}>('SELECT COUNT(*) AS n FROM gate_record')?.n).toBe(before);
+  });
+  it('다른 수행 역할의 앞 활동이 수락되어도 실제 인수 전에는 다음 활동의 제출이 막힌다',async()=>{
+    const d=await create(),id=d.item.caseId;await artifact(id,1,['DOC-HANDOFF-REQUIRED']).expect(201);
+    await http().post(`/api/workflow/cases/${id}/activities/${A}/submit`).set(AUTHOR).send({version:2,note:'검토 요청'}).expect(201);await grant(true).expect(201);
+    await http().post(`/api/workflow/cases/${id}/activities/${A}/review`).set(REVIEWER).send({version:3,decision:'ACCEPT',reason:'독립 검토 확인'}).expect(201);
+    const process=M.processes.find(p=>p.id==='FPW.18')!,wp=process.products.find(p=>p.key===process.activities.find(a=>a.id===NEXT)!.outputs[0])!;
+    await http().post(`/api/workflow/cases/${id}/artifacts`).set(OPS).send({version:4,activityId:NEXT,productKey:wp.key,fields:Object.fromEntries(wp.content.map((_,i)=>[String(i),`운영 분석 ${i}`])),references:['DOC-OPS-RESULT'],files:[],reason:'다음 담당자 분석 초안'}).expect(201);
+    const submit=(version:number)=>http().post(`/api/workflow/cases/${id}/activities/${NEXT}/submit`).set(OPS).send({version,note:'분석 독립 검토 요청'});
+    expect((await submit(5).expect(422)).body.error.message).toContain('실제 인수');
+    const offered=(await http().post(`/api/workflow/cases/${id}/handoffs`).set(AUTHOR).send({version:5,requestKey:'required-handoff-001',fromActivityId:A,toActivityId:NEXT,note:'운영 분석 담당 인계'}).expect(201)).body;
+    await submit(6).expect(422);
+    await http().post(`/api/workflow/cases/${id}/handoffs/${offered.item.handoffs[0].handoffId}/receive`).set(OPS).send({version:6,decision:'ACCEPT',reason:'내용과 범위 실제 인수'}).expect(201);
+    expect((await submit(7).expect(201)).body.item.activities[NEXT].status).toBe('SUBMITTED');
+  });
+  it('인계 이벤트 저장 실패는 건·인계·성공 이력을 함께 롤백하고 같은 요청 재시도는 한 번만 저장한다',async()=>{
+    const d=await create(),id=d.item.caseId;await artifact(id,1,['DOC-DELIVERY-RETRY']).expect(201);
+    await http().post(`/api/workflow/cases/${id}/activities/${A}/submit`).set(AUTHOR).send({version:2,note:'검토 요청'}).expect(201);await grant(true).expect(201);
+    await http().post(`/api/workflow/cases/${id}/activities/${A}/review`).set(REVIEWER).send({version:3,decision:'ACCEPT',reason:'독립 검토 확인'}).expect(201);
+    const body={version:4,requestKey:'handoff-outbox-failure',fromActivityId:A,toActivityId:NEXT,note:'다음 담당자에게 전달'};
+    const spy=vi.spyOn(app.get(EventService),'publish').mockImplementationOnce(()=>{throw new Error('test outbox persistence failure');});
+    try{await http().post(`/api/workflow/cases/${id}/handoffs`).set(AUTHOR).send(body).expect(500);}finally{spy.mockRestore();}
+    const after=(await http().get(`/api/workflow/cases/${id}`).set(AUTHOR).expect(200)).body;
+    expect(after.item).toMatchObject({version:4,handoffs:[]});
+    expect(after.history.filter((h:any)=>h.action==='WORKFLOW_HANDOFF_OFFER')).toEqual([]);
+    expect(db.get<{n:number}>("SELECT COUNT(*) AS n FROM audit WHERE target=? AND action='WORKFLOW_HANDOFF_OFFER' AND result='FAILED'",id)!.n).toBe(1);
+    const retry=(await http().post(`/api/workflow/cases/${id}/handoffs`).set(AUTHOR).send(body).expect(201)).body;
+    const again=(await http().post(`/api/workflow/cases/${id}/handoffs`).set(AUTHOR).send(body).expect(201)).body;
+    expect(retry.item.handoffs).toHaveLength(1);expect(again.history).toEqual(retry.history);
   });
   it('OIDC 배정 대상은 실제 세션에서 확인한 활성 계정이며 부서나 임의 계정 이름은 권한을 만들지 않는다',()=>{
     const prior=process.env.FF_AUTH;

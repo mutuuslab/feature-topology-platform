@@ -158,6 +158,7 @@ async function summaryOf(ctx: SimReadContext, f: Row, latestVersion: string) {
     asil: f.asil,
     tags: f.tags,
     controlPoints: f.controlPoints,
+      taxonomyLevel: f.taxonomyLevel ?? 'L2',
     featureRefCount: (f.featureRefs ?? []).length,
     gates: Object.fromEntries(Object.entries(g).map(([k, r]) => [k, (r as any).status])),
   };
@@ -644,6 +645,7 @@ registerSimReader('listFeatures', async (ctx) => {
     .filter((f) => !q.lifecycle || f.lifecycle === q.lifecycle)
     .filter((f) => !q.country || f.country === q.country)
     .filter((f) => !q.vehicleModel || f.vehicleModel === q.vehicleModel)
+    .filter((f) => !q.taxonomyLevel || (f.taxonomyLevel ?? 'L2') === q.taxonomyLevel)
     .filter((f) => !latestOnly || f.isLatest)
     .filter((f) => !needle || [f.featureId, f.name, f.ownerId, ...(f.tags ?? [])].some((s: string) => String(s ?? '').toLowerCase().includes(needle)));
   const count = (k: string) => {

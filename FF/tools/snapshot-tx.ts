@@ -1,11 +1,12 @@
 // 정적 데모 스냅샷 — 분류 계층 L0~L5·적용 지역 코드·브랜드별 정책(TX)의 새 GET 경로. tools/snapshot-api.ts main()이 묶음 함수들 뒤에서 한 줄로 부른다(통합 때 연결):
-//   await snapshotTx(save, { features: all.items });
-// 질의 키 순서는 화면과 같게(정적 파일 이름이 이 순서에 의존). 정적 모드는 쓰기 칸(노드 관리·조건 수정)을 숨기므로 그 조회는 뜨지 않는다.
+//   await snapshotTx(save, { features: all.items, policies: policies.items });
+// Browser-local editing derives filtered reads from these complete source snapshots.
 type Save = (name: string, params?: Record<string, string>, query?: Record<string, unknown>, headers?: Record<string, string>) => Promise<any>;
 
 export interface SnapshotTxContext {
   /** Feature Version 목록 — 상세 '분류 경로' 탭은 Feature ID로 읽는다 */
   features: { featureId: string }[];
+  policies: { policyId: string }[];
 }
 
 const LEVELS = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5'];
@@ -25,5 +26,6 @@ export async function snapshotTx(save: Save, ctx: SnapshotTxContext) {
   // 브랜드·권역별 정책
   await save('brands');
   await save('globalScopes');
+  for (const policy of ctx.policies) await save('policyGlobalScope', { id: policy.policyId });
   for (const brand of BRANDS) await save('brandPolicies', { brand });
 }

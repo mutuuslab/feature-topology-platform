@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { FeaturePlacement, TaxonomyLevelCode, TaxonomyTreeNode } from '../../../../contracts/src/schemas/taxonomy-tree';
 import { TAXONOMY_PLACEMENT_ROLES } from '../../../../contracts/src/rules/taxonomy-tree';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { taxonomyCopy as T } from '../../copy/taxonomy-levels';
 import { AsyncView, Button, ErrorNote, Field, Panel, Select, SummaryLine } from '../../design';
@@ -58,7 +57,7 @@ export default function TaxonomyTab({ id }: { id: string }) {
               <Link to="/master/taxonomy/levels">{F.toTree}</Link>
             </p>
           </Panel>
-          {!STATIC_MODE && <PlaceForm d={d} />}
+          <PlaceForm d={d} />
         </div>
       )}
     </AsyncView>

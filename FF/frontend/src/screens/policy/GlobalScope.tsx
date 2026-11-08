@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BRAND_LABEL, BRANDS, type Brand, type PolicyGlobalScope } from '../../../../contracts/src/schemas/global-scope';
-import { GLOBAL_SCOPE_AUTHOR_ROLES } from '../../../../contracts/src/rules/global-scope';
+import { canEditGlobalScope, GLOBAL_SCOPE_AUTHOR_ROLES } from '../../../../contracts/src/rules/global-scope';
 import { REGION_CODE_TABLE, regionCodeLabel, type RegionCodeRow } from '../../../../contracts/src/rules/region-code';
-import { actorFor } from '../../api/actor';
-import { STATIC_MODE } from '../../api/client';
+import { actorFor, rolesFor } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { brandCopy as B, regionCopy as R } from '../../copy/taxonomy-levels';
 import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, Tabs } from '../../design';
@@ -38,7 +37,7 @@ export default function GlobalScopeScreen() {
             tabs={[
               { key: 'brands', label: B.title, count: total.data?.total },
               { key: 'codes', label: R.title, count: REGION_CODE_TABLE.length },
-              ...(STATIC_MODE ? [] : [{ key: 'edit', label: B.form.title }]),
+              { key: 'edit', label: B.form.title },
             ]}
           >
             {(tab) => (tab === 'codes' ? <RegionCodesPanel /> : tab === 'edit' ? <ScopeForm /> : <BrandPanel brands={brands.data!} />)}
@@ -144,7 +143,7 @@ function ScopeForm() {
   const update = useApiMutation<ScopeView>('updatePolicyGlobalScope', INVALIDATE);
   const m = exists ? update : create;
   const owner = cur.data?.ownerId ?? '';
-  const isOwner = !!owner && actorFor(role).id === owner;
+  const isOwner = canEditGlobalScope({ id: actorFor(role).id, roles: rolesFor(role) }, { ownerId: owner }).ok;
   const toggle = <T extends string>(xs: T[], x: T) => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
   const F = B.form;
   const body = { brands, regionCodes: codes, complianceRuleIds: rules.split(/[,\s]+/).map((x) => x.trim()).filter(Boolean), reason: reason.trim() };

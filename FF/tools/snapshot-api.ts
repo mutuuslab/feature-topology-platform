@@ -15,6 +15,7 @@ import { snapshotP2 } from './snapshot-p2.ts';
 import { snapshotP3 } from './snapshot-p3.ts';
 import { snapshotP5 } from './snapshot-p5.ts';
 import { snapshotP10 } from './snapshot-p10.ts';
+import { snapshotTx } from './snapshot-tx.ts';
 import { snapshotWorkflow } from './snapshot-workflow.ts';
 
 const require = createRequire(import.meta.url);
@@ -704,6 +705,7 @@ async function main() {
   await snapshotP2(save, { contracts });
   await snapshotP3(save, { features: all.items });
   await snapshotP10(save, { features: all.items });
+  await snapshotTx(save, { features: all.items, policies: policies.items });
 
   // 운영 지표 탭 — Prometheus 텍스트(스냅샷을 찍는 동안 받은 요청)를 JSON으로 감싸 둔다. 마지막에 받아야 위 조회가 모두 들어간다
   const metricsUrl = routeUrl('healthMetrics');

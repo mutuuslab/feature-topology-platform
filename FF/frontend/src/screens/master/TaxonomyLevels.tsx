@@ -5,7 +5,6 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TAXONOMY_LEVELS, type TaxonomyLevelCode, type TaxonomyTreeNode, type TaxonomyTreeView } from '../../../../contracts/src/schemas/taxonomy-tree';
 import { TAXONOMY_EDITOR_ROLES } from '../../../../contracts/src/rules/taxonomy-tree';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { taxonomyCopy as T } from '../../copy/taxonomy-levels';
 import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, SummaryLine, Tabs } from '../../design';
@@ -46,7 +45,7 @@ export default function TaxonomyLevelsScreen() {
             tabs={[
               { key: 'classify', label: T.tabs.classify },
               { key: 'tree', label: T.tabs.tree, count: nodes },
-              ...(STATIC_MODE ? [] : [{ key: 'manage', label: T.tabs.manage }]),
+              { key: 'manage', label: T.tabs.manage },
             ]}
           >
             {(tab) => (tab === 'tree' ? <TreePanel /> : tab === 'manage' ? <ManagePanel /> : <ClassifyPanel levels={d} />)}

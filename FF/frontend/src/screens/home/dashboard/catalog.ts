@@ -32,7 +32,7 @@ export interface GadgetTypeDef {
 export const SOURCE_APIS: Record<string, string[]> = {
   features: ['listFeatures'],
   policies: ['listPolicies'],
-  myReviews: ['baselineRequests', 'listPolicies', 'listProducts', 'workQueues', 'killRequests', 'killPostReviews', 'listRefChanges', 'extConflicts', 'lakeModels', 'featureHealth', 'canaryOverview'],
+  myReviews: ['baselineRequests', 'listPolicies', 'listProducts', 'workQueues', 'killRequests', 'killPostReviews', 'listRefChanges', 'extConflicts', 'lakeModels', 'featureHealth', 'canaryOverview', 'almRejudge'],
   kills: ['killRequests'],
   anomalies: ['anomalies'],
   audit: ['audit'],

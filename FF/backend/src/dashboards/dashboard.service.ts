@@ -4,7 +4,7 @@
 //  · 겹친 저장: If-Match(버전, ETag "n") 또는 본문 version이 지금 버전과 다르면 412 — 화면이 최신 판을 다시 읽는다
 //  · 재전송: Idempotency-Key는 커널 가로채기(IdempotencyInterceptor)가 처리한다(같은 키·같은 본문 → 처음 응답)
 //  · 즐겨찾기(별)는 보는 사람별 — 소유자는 dashboard.favourite, 공유받은 사람은 dashboard_star
-import { Body, Controller, Delete, Get, Headers, HttpCode, Inject, Injectable, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, HttpCode, Inject, Injectable, Param, Post, Put, Query, Req, Res } from '@nestjs/common';
 import {
   canViewDashboard,
   DashboardBoard,
@@ -16,7 +16,7 @@ import {
   type DashboardView,
   type Role,
 } from '@ff/contracts';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../kernel/actor';
 import { AuditService } from '../kernel/audit.service';
@@ -24,6 +24,8 @@ import { Clock } from '../kernel/clock';
 import { DB, type Db } from '../kernel/db';
 import { DomainError } from '../kernel/errors';
 import { ZodPipe } from '../kernel/zod.pipe';
+import { AuthService } from '../kernel/auth/auth.service';
+import { checkDashboardDepartment, dashboardAdmin, dashboardContext, type DashboardActor } from './dashboard-context';
 
 interface Row {
   id: string;
@@ -31,6 +33,7 @@ interface Row {
   name: string;
   layout: string;
   shared_roles: string;
+  department_id: string | null;
   version: number;
   favourite: number;
   created_at: string;
@@ -64,37 +67,38 @@ export class DashboardService {
     return !!this.db.get('SELECT 1 FROM dashboard_star WHERE actor_id = ? AND dashboard_id = ?', actor.id, id);
   }
 
-  private view(r: Row, actor: Actor): DashboardView {
-    const mine = r.owner_id === actor.id;
+  private view(r: Row, actor: DashboardActor): DashboardView {
+    const mine = r.owner_id === actor.id || !!r.department_id && dashboardAdmin(actor);
     return {
       id: r.id,
       name: r.name,
       ownerId: r.owner_id,
       sharedRoles: JSON.parse(r.shared_roles) as Role[],
+      ...(r.department_id ? { departmentId: r.department_id } : {}),
       version: r.version,
       createdAt: r.created_at,
       updatedAt: r.updated_at,
-      favourite: mine ? !!r.favourite : this.starred(actor, r.id),
+      favourite: r.owner_id === actor.id ? !!r.favourite : this.starred(actor, r.id),
       mine,
       board: DashboardBoard.parse(JSON.parse(r.layout)),
     };
   }
 
-  private visible(r: Row, actor: Actor) {
-    return canViewDashboard({ ownerId: r.owner_id, sharedRoles: JSON.parse(r.shared_roles) as string[] }, { id: actor.id, roles: rolesOf(actor) });
+  private visible(r: Row, actor: DashboardActor) {
+    return canViewDashboard({ ownerId: r.owner_id, sharedRoles: JSON.parse(r.shared_roles) as string[], departmentId: r.department_id }, { id: actor.id, roles: rolesOf(actor), departmentId: actor.departmentId });
   }
 
   /** 볼 수 있는 판 — 없거나 볼 수 없으면 404(남의 판이 있는지 알리지 않는다) */
-  private row(actor: Actor, id: string): Row {
+  private row(actor: DashboardActor, id: string): Row {
     const r = this.db.get<Row>('SELECT * FROM dashboard WHERE id = ?', id);
     if (!r || !this.visible(r, actor)) throw new DomainError('NOT_FOUND', '대시보드를 찾을 수 없습니다. 지워졌거나 공유가 풀렸을 수 있습니다.', { id });
     return r;
   }
 
   /** 소유자만 — 공유받은 판은 볼 수만 있다 */
-  private owned(actor: Actor, id: string): Row {
+  private owned(actor: DashboardActor, id: string): Row {
     const r = this.row(actor, id);
-    if (r.owner_id !== actor.id) throw new DomainError('FORBIDDEN', '다른 사람의 대시보드는 바꿀 수 없습니다. 사본을 만들어 고치세요.', { id, ownerId: r.owner_id });
+    if (r.owner_id !== actor.id && !(r.department_id && dashboardAdmin(actor))) throw new DomainError('FORBIDDEN', '다른 사람의 대시보드는 바꿀 수 없습니다. 사본을 만들어 고치세요.', { id, ownerId: r.owner_id });
     return r;
   }
 
@@ -104,7 +108,7 @@ export class DashboardService {
     if (version !== r.version) throw new DomainError('PRECONDITION_FAILED', '다른 곳에서 이 대시보드가 바뀌었습니다. 최신 판을 다시 불러와 주세요.', { version: r.version, updatedAt: r.updated_at });
   }
 
-  list(actor: Actor): { items: DashboardView[] } {
+  list(actor: DashboardActor): { items: DashboardView[] } {
     const rows = this.db.all<Row>('SELECT * FROM dashboard ORDER BY updated_at DESC, id');
     const items = rows.filter((r) => this.visible(r, actor)).map((r) => this.view(r, actor));
     // 내 판 먼저, 그다음 공유받은 판 — 같은 무리 안에서는 최근에 바뀐 것부터
@@ -112,11 +116,16 @@ export class DashboardService {
     return { items };
   }
 
-  get(actor: Actor, id: string): DashboardView {
+  get(actor: DashboardActor, id: string): DashboardView {
     return this.view(this.row(actor, id), actor);
   }
 
-  create(actor: Actor, body: DashboardCreateBody): DashboardView {
+  create(actor: DashboardActor, body: DashboardCreateBody): DashboardView {
+    if (body.departmentId) {
+      checkDashboardDepartment(body.departmentId);
+      if (!dashboardAdmin(actor)) throw new DomainError('FORBIDDEN', '부서 공통판은 시스템 관리자가 만듭니다. 개인 대시보드는 누구나 만들 수 있습니다.');
+      if (body.sharedRoles.length) throw new DomainError('VALIDATION', '부서 공통판은 해당 부서에만 공유합니다. 역할 공유와 함께 지정할 수 없습니다.');
+    }
     return this.db.tx(() => {
       const n = this.db.get<{ n: number }>('SELECT COUNT(*) AS n FROM dashboard WHERE owner_id = ?', actor.id)?.n ?? 0;
       if (n >= MAX_PER_OWNER) throw new DomainError('CONFLICT', `대시보드는 한 사람이 ${MAX_PER_OWNER}개까지 만들 수 있습니다. 쓰지 않는 판을 지우세요.`);
@@ -124,23 +133,25 @@ export class DashboardService {
       const at = this.clock.iso();
       const shared = [...new Set(body.sharedRoles)];
       this.db.run(
-        'INSERT INTO dashboard (id, owner_id, name, layout, shared_roles, version, favourite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 1, 0, ?, ?)',
+        'INSERT INTO dashboard (id, owner_id, name, layout, shared_roles, department_id, version, favourite, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?, ?)',
         id,
         actor.id,
         body.name,
         JSON.stringify(body.board),
         JSON.stringify(shared),
+        body.departmentId ?? null,
         at,
         at,
       );
-      this.audit.record(actor, 'DASHBOARD_CREATE', id, { after: { name: body.name, sharedRoles: shared, gadgets: body.board.columns.flat().length }, componentId: COMPONENT });
+      this.audit.record(actor, 'DASHBOARD_CREATE', id, { after: { name: body.name, sharedRoles: shared, departmentId: body.departmentId, gadgets: body.board.columns.flat().length }, componentId: COMPONENT });
       return this.get(actor, id);
     });
   }
 
-  update(actor: Actor, id: string, body: DashboardUpdateBody, ifMatch: number | null): DashboardView {
+  update(actor: DashboardActor, id: string, body: DashboardUpdateBody, ifMatch: number | null): DashboardView {
     return this.db.tx(() => {
       const r = this.owned(actor, id);
+      if (r.department_id && body.sharedRoles?.length) throw new DomainError('VALIDATION', '부서 공통판은 다른 역할에 공유할 수 없습니다.');
       this.expect(r, ifMatch ?? body.version);
       const name = body.name ?? r.name;
       const layout = body.board ? JSON.stringify(body.board) : r.layout;
@@ -160,10 +171,11 @@ export class DashboardService {
     });
   }
 
-  remove(actor: Actor, id: string, ifMatch: number | null, body: { version?: number }) {
+  remove(actor: DashboardActor, id: string, ifMatch: number | null, body: { version?: number }) {
     return this.db.tx(() => {
       const r = this.owned(actor, id);
       this.expect(r, ifMatch ?? body.version);
+      if (this.db.get('SELECT 1 FROM dashboard_department_default WHERE dashboard_id = ?', id)) throw new DomainError('CONFLICT', '부서 기본판으로 사용 중입니다. 먼저 기본판 배정을 바꾸세요.');
       this.db.run('DELETE FROM dashboard WHERE id = ? AND version = ?', id, r.version);
       this.db.run('DELETE FROM dashboard_star WHERE dashboard_id = ?', id);
       this.audit.record(actor, 'DASHBOARD_DELETE', id, { before: { name: r.name, version: r.version }, componentId: COMPONENT });
@@ -172,7 +184,7 @@ export class DashboardService {
   }
 
   /** 별 — 보는 사람별. 버전을 올리지 않는다(판 내용이 아니다) */
-  favourite(actor: Actor, id: string, favourite: boolean): DashboardView {
+  favourite(actor: DashboardActor, id: string, favourite: boolean): DashboardView {
     return this.db.tx(() => {
       const r = this.row(actor, id);
       if (r.owner_id === actor.id) this.db.run('UPDATE dashboard SET favourite = ? WHERE id = ?', favourite ? 1 : 0, id);
@@ -185,16 +197,16 @@ export class DashboardService {
 
 @Controller('api/dashboards')
 export class DashboardController {
-  constructor(private readonly dashboards: DashboardService) {}
+  constructor(private readonly dashboards: DashboardService, private readonly auth: AuthService) {}
 
   @Get()
-  list(@CurrentActor() actor: Actor) {
-    return this.dashboards.list(actor);
+  async list(@CurrentActor() actor: Actor, @Req() req: Request, @Query('department') department?: string) {
+    return this.dashboards.list(await dashboardContext(this.auth, req, actor, department));
   }
 
   @Get(':id')
-  get(@CurrentActor() actor: Actor, @Param('id') id: string, @Res({ passthrough: true }) res: Response) {
-    const d = this.dashboards.get(actor, id);
+  async get(@CurrentActor() actor: Actor, @Req() req: Request, @Param('id') id: string, @Res({ passthrough: true }) res: Response, @Query('department') department?: string) {
+    const d = this.dashboards.get(await dashboardContext(this.auth, req, actor, department), id);
     res.setHeader('ETag', `"${d.version}"`);
     return d;
   }
@@ -202,8 +214,8 @@ export class DashboardController {
   @Post()
   @Roles(...HUMAN_ROLES)
   @AuditAction('DASHBOARD_CREATE')
-  create(@CurrentActor() actor: Actor, @Body(new ZodPipe(DashboardCreateBody)) body: DashboardCreateBody, @Res({ passthrough: true }) res: Response) {
-    const d = this.dashboards.create(actor, body);
+  async create(@CurrentActor() actor: Actor, @Req() req: Request, @Body(new ZodPipe(DashboardCreateBody)) body: DashboardCreateBody, @Res({ passthrough: true }) res: Response) {
+    const d = this.dashboards.create(await dashboardContext(this.auth, req, actor), body);
     res.setHeader('ETag', `"${d.version}"`);
     return d;
   }
@@ -211,8 +223,8 @@ export class DashboardController {
   @Put(':id')
   @Roles(...HUMAN_ROLES)
   @AuditAction('DASHBOARD_UPDATE')
-  update(@CurrentActor() actor: Actor, @Param('id') id: string, @Headers('if-match') ifMatch: string | undefined, @Body(new ZodPipe(DashboardUpdateBody)) body: DashboardUpdateBody, @Res({ passthrough: true }) res: Response) {
-    const d = this.dashboards.update(actor, id, body, ifMatchVersion(ifMatch));
+  async update(@CurrentActor() actor: Actor, @Req() req: Request, @Param('id') id: string, @Headers('if-match') ifMatch: string | undefined, @Body(new ZodPipe(DashboardUpdateBody)) body: DashboardUpdateBody, @Res({ passthrough: true }) res: Response) {
+    const d = this.dashboards.update(await dashboardContext(this.auth, req, actor), id, body, ifMatchVersion(ifMatch));
     res.setHeader('ETag', `"${d.version}"`);
     return d;
   }
@@ -221,13 +233,13 @@ export class DashboardController {
   @HttpCode(200)
   @Roles(...HUMAN_ROLES)
   @AuditAction('DASHBOARD_DELETE')
-  remove(@CurrentActor() actor: Actor, @Param('id') id: string, @Headers('if-match') ifMatch: string | undefined, @Body(new ZodPipe(DashboardDeleteBody)) body: { version?: number }) {
-    return this.dashboards.remove(actor, id, ifMatchVersion(ifMatch), body ?? {});
+  async remove(@CurrentActor() actor: Actor, @Req() req: Request, @Param('id') id: string, @Headers('if-match') ifMatch: string | undefined, @Body(new ZodPipe(DashboardDeleteBody)) body: { version?: number }) {
+    return this.dashboards.remove(await dashboardContext(this.auth, req, actor), id, ifMatchVersion(ifMatch), body ?? {});
   }
 
   @Put(':id/favourite')
   @Roles(...HUMAN_ROLES)
-  favourite(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(DashboardFavouriteBody)) body: { favourite: boolean }) {
-    return this.dashboards.favourite(actor, id, body.favourite);
+  async favourite(@CurrentActor() actor: Actor, @Req() req: Request, @Param('id') id: string, @Body(new ZodPipe(DashboardFavouriteBody)) body: { favourite: boolean }, @Query('department') department?: string) {
+    return this.dashboards.favourite(await dashboardContext(this.auth, req, actor, department), id, body.favourite);
   }
 }

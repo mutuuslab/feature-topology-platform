@@ -17,6 +17,8 @@ export const DEPARTMENT_IDS: readonly string[] = DEPARTMENTS.departments.map((d)
 /** 부서의 업무 절차 역할(R-PUR …) */
 export const departmentRoles = (deptId: string): readonly string[] => DEPARTMENTS.departments.find((d) => d.id === deptId)?.roles ?? [];
 export const departmentName = (deptId: string): string => DEPARTMENTS.departments.find((d) => d.id === deptId)?.name ?? deptId;
+/** Demo membership comes from the same generated department model, never a role-name guess. */
+export const departmentPersonas = (deptId: string): readonly string[] => DEPARTMENTS.departments.find((d) => d.id === deptId)?.personas ?? [];
 
 const PortalDept = z.string().refine((d) => CONSULT_DEPARTMENTS.includes(d), { message: '검토 포털 부서(구매·법무·개인정보보호)만 협의 요청을 받습니다.' });
 const AnyDept = z.string().refine((d) => DEPARTMENT_IDS.includes(d), { message: '업무 절차 모델의 부서가 아닙니다.' });

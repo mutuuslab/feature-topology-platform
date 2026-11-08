@@ -83,6 +83,7 @@
     "192_deletion_tombstone": "a1db14e132ccca303592c9e27ca96db73a9236ee5b3b7bea7ed1a537e934a59a",
     "193_account_owner_transfer": "4658cf7d7e87288aee80e3ff77db15590c2a7c4b4b7fbe1688a2ebbcc09f93d2",
     "241_p10_lifecycle_gate": "d1698344ac0b296f0aa09005d5c3baad1ea15eb0251b10310adfb1b4a5785a45",
-    "401_oidc_department_context": "7594d81f09846c5fff4fc1a49531916bf560fc2c8455f949804a116e85ba37b4"
+    "401_oidc_department_context": "7594d81f09846c5fff4fc1a49531916bf560fc2c8455f949804a116e85ba37b4",
+    "402_department_dashboards": "76de5e6a5bf3be40382792d7f92eb28b9788b5b407d1dc713afc1061d30be0c5"
   }
 }

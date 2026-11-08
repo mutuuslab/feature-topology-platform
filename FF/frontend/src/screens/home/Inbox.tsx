@@ -4,7 +4,7 @@
 // W2(담당자 E2E P2-3·P3-6): 정의 승인·Feature DB 검토·Release Sign-off·출시·배포·Gate 판정·사후 검토 대기열을 더하고, 급한 순서·기한·
 // 사람 이름·한국 시각으로 보인다. 대기열 조건은 contracts(rules/work-queue), 부서·순서는 ./queues.
 import { lazy, Suspense, useMemo, useState, type CSSProperties } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postReviewBlocker, refChangeDutyBlocker, reportRolesOf, type CanaryOverviewResponse, type FeatureHealthResponse, type LakeModelRow, type Role, type UnclassifiedView, type WorkQueues } from '@ff/contracts';
 import { adsChange } from '../../copy/ads-change';
 import { actorFor, rolesFor } from '../../api/actor';
@@ -275,8 +275,9 @@ const WorkspaceHome = lazy(() => import('../workspaces/WorkspaceHome'));
 
 export function HomeScreen() {
   const { department } = useAppShell();
+  const [query] = useSearchParams();
   const dept = departmentById(department);
-  if (dept && WorkspaceHome)
+  if (dept && WorkspaceHome && !['department', 'role'].includes(query.get('dashboard') ?? ''))
     return (
       <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>
         <WorkspaceHome key={dept.id} dept={dept} />

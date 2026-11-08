@@ -1245,6 +1245,14 @@ a.jd-btn {
 }
 
 /* 좁은 창 — 한 열로, 디렉터리는 판 아래 */
+.jd-department { border-block: 1px solid var(--line); padding-block: var(--sp-3); display: grid; gap: var(--sp-2); }
+.jd-department__head, .jd-department nav, .jd-department__actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3); }
+.jd-department__head { justify-content: space-between; }
+.jd-department h2 { margin: 0; font-size: var(--fs-md); }
+.jd-department p { margin: 0; }
+.jd-department__admin { max-width: 52rem; }
+.jd-department__admin > summary { cursor: pointer; color: var(--accent); }
+.jd-department__admin > * + * { margin-top: var(--sp-3); }
 @media (max-width: 1100px) {
   .jd-board,
   .jd-board[data-layout='2L'],

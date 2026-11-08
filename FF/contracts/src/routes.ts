@@ -53,7 +53,7 @@ import { ConcludeExperimentBody, CreateExperimentBody, CreateIncidentBody, Field
 import { z } from 'zod';
 import { VexStatement } from './rules/sbom';
 import { LinkChangeRequestBody, MockExtActionBody, MockExtCreateBody, ResolveConflictBody } from './rules/ext-sync';
-import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, DashboardUpdateBody } from './schemas/dashboard';
+import { DashboardCreateBody, DashboardDeleteBody, DashboardFavouriteBody, DashboardUpdateBody, DashboardDepartmentDefaultBody } from './schemas/dashboard';
 import { CreateRefChangeBody, DecideRefChangeBody, PublishRefReleaseBody, RecordSourceReviewBody, RequestRefAddBody, ReviewRefChangeBody } from './schemas/refdb';
 import { AnswerConsultationBody, CreateConsultationBody } from './schemas/consult';
 import { G7SignoffBody, HaraBody, HomologationBody, SotifBody, TaraBody } from './rules/gate-evidence';
@@ -521,6 +521,8 @@ export const ROUTES: RouteDef[] = [
   { name: 'updateDashboard', method: 'PUT', path: '/api/dashboards/:id', summary: '대시보드 바꾸기 — 이름·판·공유 역할, 소유자만, If-Match 버전이 다르면 412', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardUpdateBody },
   { name: 'deleteDashboard', method: 'DELETE', path: '/api/dashboards/:id', summary: '대시보드 지우기 — 소유자만, If-Match 버전', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardDeleteBody },
   { name: 'favouriteDashboard', method: 'PUT', path: '/api/dashboards/:id/favourite', summary: '대시보드 즐겨찾기(별) — 보는 사람별', component: 'KERNEL', roles: HUMAN_ROLES, body: DashboardFavouriteBody },
+  { name: 'getDepartmentDashboardDefault', method: 'GET', path: '/api/dashboard-departments/:departmentId', summary: '검증된 소속 부서의 공통·역할 기본 대시보드 배정', component: 'KERNEL', personal: true },
+  { name: 'setDepartmentDashboardDefault', method: 'PUT', path: '/api/dashboard-departments/:departmentId', summary: '부서 기본 대시보드 배정 — 시스템 관리자, 버전 충돌 검사', component: 'KERNEL', roles: ['SYSTEM_ADMIN'], body: DashboardDepartmentDefaultBody },
   // 검토함 대기열(W2) — 정의 승인(PROPOSED·G1~G3 PASS)·Release Sign-off 대기·출시 가능·Gate 판정 대기·안전 분류 확정, 요청 시각 포함
   { name: 'workQueues', method: 'GET', path: '/api/work-queues', summary: '검토함 대기열 — 정의 승인·Release Sign-off·출시 가능·Gate 판정·안전 분류 확정 대기(요청 시각·작성자)', component: 'D01-01' },
   // 검토 포털 협의 요청(W5, P5-1) — 요청 부서가 구매·법무·개인정보보호에 의견을 구하고, 포털 부서가 동의·보완·반대 의견을 남긴다(감사 CONSULT_*)

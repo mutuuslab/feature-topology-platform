@@ -26,12 +26,13 @@ export const dashboard = {
     /** 주요 행동 — Feature 등록 마법사(20-60 §6) */
     register: '새 Feature 등록',
     refreshed: (min: number) => (min < 1 ? '방금 새로 고침' : `${min}분 전 새로 고침`),
-    owner: { me: '내 대시보드', system: '모든 역할의 기본 대시보드', of: (id: string) => `소유자 ${id}` },
+    owner: { me: '내 대시보드', system: '현재 역할의 기본 대시보드', of: (id: string) => `소유자 ${id}` },
     shareState: { none: '공유 안 함', to: (roles: string) => `공유: ${roles}` },
     localNote: '대시보드 배치는 이 브라우저에 저장됩니다',
     saving: '저장 중…',
     saved: '저장됨',
     saveFailed: '대시보드를 저장하지 못했습니다',
+    assignedDelete: '부서 기본판으로 사용 중입니다. 먼저 기본판 배정을 바꾸세요.',
 
     // ── 편집 모드 ──
     editing: '대시보드 편집 중',

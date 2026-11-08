@@ -20678,6 +20678,11 @@
                     },
                     "maxItems": 20,
                     "default": []
+                  },
+                  "departmentId": {
+                    "type": "string",
+                    "maxLength": 24,
+                    "pattern": "^DEP-[A-Z]+$"
                   }
                 },
                 "required": [
@@ -21047,6 +21052,107 @@
                 },
                 "required": [
                   "favourite"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/dashboard-departments/{departmentId}": {
+      "get": {
+        "summary": "검증된 소속 부서의 공통·역할 기본 대시보드 배정",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "getDepartmentDashboardDefault",
+        "parameters": [
+          {
+            "name": "departmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "부서 기본 대시보드 배정 — 시스템 관리자, 버전 충돌 검사",
+        "tags": [
+          "KERNEL"
+        ],
+        "operationId": "setDepartmentDashboardDefault",
+        "description": "허용 역할: 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "departmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "ROLE",
+                      "DEPARTMENT"
+                    ]
+                  },
+                  "dashboardId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^[A-Za-z0-9_-]{1,48}$"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "mode",
+                  "dashboardId",
+                  "version"
                 ],
                 "additionalProperties": false
               }

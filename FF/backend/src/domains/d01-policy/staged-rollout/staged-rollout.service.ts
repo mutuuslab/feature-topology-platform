@@ -2,7 +2,7 @@
 // 보고서 v1.1 FFG-LCY-009: 효력을 넓히는 사람 ≠ 배포한 사람, F2 이상은 Canary(≤ 5%)에서 시작해 관측 기간(24 h)·중단 기준(열린 기능·보안
 // 이상 징후, 진행 중 차단)을 판정한 뒤 넓힌다(contracts judgeStageChange). 판정은 감사·이벤트에 남는다.
 import { Inject, Injectable } from '@nestjs/common';
-import { cohortBucket, effectiveBasisPoints, evaluateFlag, judgeStageChange, stopCriteriaCheck, type Entitlement, type FlagResult, type Policy, type RolloutStageBody } from '@ff/contracts';
+import { cohortBucket, effectiveBasisPoints, evaluateFlag, exceptionActive, judgeStageChange, stopCriteriaCheck, type Entitlement, type ExceptionPolicy, type FlagResult, type Policy, type RolloutStageBody } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -12,6 +12,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { FleetRepo, PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, ProductRepo } from '../repos';
+import { GateDecisionService } from '../topology/gate-decision.service';
 import { PolicyExpansionService } from './expansion.service';
 
 
@@ -25,6 +26,7 @@ export class StagedRolloutService {
     private readonly events: EventService,
     private readonly clock: Clock,
     private readonly expansion: PolicyExpansionService,
+    private readonly decisions: GateDecisionService,
   ) {}
 
   /**
@@ -47,6 +49,27 @@ export class StagedRolloutService {
       throw new DomainError('GUARD_FAILED', msg, { exceptionScope: p.exceptionScope });
     }
     const current = effectiveBasisPoints(p);
+    // 재개도 효력 확대다. 이전 배포의 cap만으로 만료·회수된 예외나 신뢰를 잃은 Gate를 다시 적용하지 않는다. 줄이기·멈추기는 항상 가능하다.
+    if (body.basisPoints > current) {
+      const unsigned = Object.entries(this.decisions.unsigned(p.featureId, p.featureVersion));
+      if (unsigned.length) {
+        const message = 'Gate 결정의 서명·무결성을 확인할 수 없습니다 — 판정 근거를 확인한 뒤 다시 넓히세요.';
+        this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, message, 'D01-08');
+        throw new DomainError('GUARD_FAILED', message, { rule: 'FFG-LCY-001', blockers: unsigned.map(([ref, reason]) => ({ code: 'GATE_UNSIGNED', message: reason, ref })) });
+      }
+      if (p.exceptionScope) {
+        const inactive = p.exceptionScope.exceptionIds.filter((id) => {
+          const row = this.db.get<{ doc: string }>('SELECT doc FROM exception_policy WHERE exception_id = ?', id);
+          const e = row ? JSON.parse(row.doc) as ExceptionPolicy : null;
+          return !e || !exceptionActive(e, this.clock.iso()) || e.featureId !== p.featureId || e.featureVersion !== p.featureVersion || (e.policyId !== null && e.policyId !== p.policyId);
+        });
+        if (!p.exceptionScope.exceptionIds.length || inactive.length) {
+          const message = '배포에 사용한 예외가 더 이상 유효하지 않습니다 — 유효한 근거로 다시 배포한 뒤 넓히세요.';
+          this.audit.failed(actor, 'ROLLOUT_STAGE', policyId, message, 'D01-08');
+          throw new DomainError('GUARD_FAILED', message, { code: 'EXCEPTION_INACTIVE', exceptionIds: inactive });
+        }
+      }
+    }
     // 단계 기준 사실(안전 분류·관측 시작·열린 이상 징후·진행 중 차단)과 확대 판정 근거(Canary 신선도·사전 등록 중단 기준, 축별 근거) — 정책 상세 패널과 같은 사실·
     // 같은 규칙(judgeExpansion, 통합 D-INT-4). 근거는 넓힐 때만 읽는다. 모델 점수는 넣지 않는다(INV-17)
     const { fClass, since, openAnomalies, activeKills } = this.expansion.stageFacts(p);

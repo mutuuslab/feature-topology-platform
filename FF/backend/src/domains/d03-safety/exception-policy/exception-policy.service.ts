@@ -42,6 +42,7 @@ import { Scheduler } from '../../../kernel/scheduler';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { PolicyRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo, GateRepo } from '../../d01-policy/repos';
+import { GateDecisionService } from '../../d01-policy/topology/gate-decision.service';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
 
 const SYSTEM: Actor = { id: 'system:exception', role: 'SYSTEM', correlationId: 'exception-expiry' };
@@ -113,6 +114,7 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     private readonly policies: PolicyRepo,
     private readonly features: FeatureRepo,
     private readonly gates: GateRepo,
+    private readonly decisions: GateDecisionService,
     private readonly secureDeploy: SecureDeployService,
     private readonly audit: AuditService,
     private readonly events: EventService,
@@ -309,7 +311,9 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     const now = this.now();
     let n = 0;
     for (const e of this.repo.all().filter((x) => x.status === 'ACTIVE')) {
-      if (e.kind === 'GATE_PENDING' && e.gates.every((g) => this.latestGates(e.featureId, e.featureVersion)[g] === 'PASS')) {
+      // PASS 문자열만으로 제한을 풀지 않는다. unsigned()는 현재 기록과 서명·키를 검증하고
+      // decisionUsable(SIGNED/IMPORTED)만 허용한다. 손상된 근거가 있으면 만료 원복은 그대로 수행한다.
+      if (e.kind === 'GATE_PENDING' && e.gates.every((g) => this.latestGates(e.featureId, e.featureVersion)[g] === 'PASS') && !Object.keys(this.decisions.unsigned(e.featureId, e.featureVersion)).length) {
         this.db.tx(() => this.complete(e));
         n++;
       } else if (exceptionDue(e, now)) {
@@ -382,8 +386,14 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     return this.releaseFor(p);
   }
 
-  private releaseFor(p: Pick<Policy, 'featureId' | 'featureVersion' | 'oddRestriction'>): ReleaseGateDecision {
+  private releaseFor(p: Pick<Policy, 'featureId' | 'featureVersion' | 'oddRestriction'>): ReleaseGateDecision & { unsignedGates?: Partial<Record<GateId, string>> } {
     const f = this.features.get(p.featureId, p.featureVersion);
+    const unsignedGates = this.decisions.unsigned(p.featureId, p.featureVersion);
+    const untrusted = Object.keys(unsignedGates) as GateId[];
+    if (untrusted.length) {
+      // 단순 PENDING으로 바꾸면 승인된 예외가 다시 덮을 수 있다. 서명·무결성은 예외로 우회할 수 없다.
+      return { allowed: false, shadowOnly: true, cap: 0, restriction: null, exceptionIds: [], pendingGates: untrusted, unsignedGates, message: `${untrusted.join('·')} 판정의 서명된 근거를 확인할 수 없습니다 — 올바른 근거로 다시 판정한 뒤 배포하세요.` };
+    }
     return releaseGateDecision({ featureId: p.featureId, featureVersion: p.featureVersion, lifecycle: f?.lifecycle ?? '미등록', latestGates: this.latestGates(p.featureId, p.featureVersion), exceptions: this.repo.all(), now: this.now(), narrowing: !!p.oddRestriction });
   }
 
@@ -404,7 +414,9 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
       assertRelease: () => {
         if (release.allowed) return;
         this.audit.failed(actor, 'POLICY_DEPLOY', p.policyId, release.message, 'D03-02');
-        throw new DomainError('GUARD_FAILED', release.message, { rule: 'FR-RDD-001-006', blockers: [{ code: 'PRE_RELEASE_SHADOW_ONLY', message: release.message, ref: release.pendingGates.join(',') }], release });
+        const unsigned = Object.entries(release.unsignedGates ?? {});
+        const blockers = unsigned.length ? unsigned.map(([ref, message]) => ({ code: 'GATE_UNSIGNED', message, ref })) : [{ code: 'PRE_RELEASE_SHADOW_ONLY', message: release.message, ref: release.pendingGates.join(',') }];
+        throw new DomainError('GUARD_FAILED', release.message, { rule: unsigned.length ? 'FFG-LCY-001' : 'FR-RDD-001-006', blockers, release });
       },
       waive: (check, err) => {
         const ruleIds = check === 'COMPLIANCE_RULE' ? (((err as DomainError | undefined)?.details as { findings?: { ruleId?: string }[] } | undefined)?.findings ?? []).map((x) => x.ruleId).filter((x): x is string => !!x) : undefined;

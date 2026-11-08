@@ -44,4 +44,15 @@ API 응답 유실/일시 오류는 성공을 추측하지 않는다. 다시 GET�
 
 첫 프로덕션 Chromium 실행에서 API 응답 유실 후 native OPEN 재조회 자체는 성공했지만 coverage 갱신이 재개 버튼을 제거하면서 확인 문구가 같이 사라졌다. 검증된 성공은 전역 상태 토스트에도 남겨 화면 상태가 바뀐 뒤 확인할 수 있게 보완했다. 보완 후 수동 재개10시험 PASS. native 알림 SSE는 지속 연결이므로 브라우저의 networkidle만 기다리면 끝나지 않는다. 제한된 idle 확인 뒤 실제 PR 요청/상태 DOM을 기다리는 방식으로 검증한다.
 
+## 최종 프로덕션 브라우저 증거
+
+프런트 원천 `488c27214dd1f1a3c76241efb47924ea1425a99c`의 `dist-github-recovery-20261109-r3`와 native `e129327e`의 독립 메모리 API를 실제 Chromium으로 연결했다(두 커밋 사이 backend 차이는 없고 UI 알림/QA만 추가). API9606·UI9607·시험 제어9608은 기존 사용자 서버와 별개였다. 회사 데이터/운영 GitHub 대신 기존 App/JWT HTTP 데모를 사용했다. 제어 경로는 수동 시험 runner에만 있고 제품에는 추가하지 않았다.
+
+- FAILED 재개, 최근PLANNED 차단, 오래된PLANNED 기존PR 회복, **native POST가201로 완료된 뒤 브라우저 응답만 끊기**와 GET회복, 영어 읽기계정 차단을 확인했다.
+- 최종 브라우저의 실제POST3건 모두 같은 repoId/Feature/version·Flag2개를 유지했다. native 보존 브랜치SHA 동일, 실제생성PR1개, 전체 보존 데모의 refs POST1회·pulls POST2회(초기503 포함). 자동 force·merge·새회사연결 없음.
+- 1366/390px 가로넘침0, pageerror0. 모바일 재개 안내·버튼과 회복 토스트 스크린샷을 실제로 열어 확인했다. 의도한 응답 끊김은 별도 고장 주입이며 HTTP 오류0이라고 주장하지 않는다.
+- 첫 임시 runner의240초 제한 종료는 증명 완료로 세지 않았고, 재실행 runner가 최종1/1 PASS를 확인했다. 프런트 프로덕션 build PASS. 전체 플랫폼/정적 corpus 예산/Publish 검증은 이 작업 범위가 아니다.
+
+키트 증거: `C:/project/2026-09-23_FF_IMP/out/github-recovery-20261109/`의 `browser.py`, `browser-results.json`, `native-results.json`, `native-browser-runner.spec.ts`, `build-r3.log`, `planned-stale-390.png`, `response-recovered-390.png`, `viewer-en-390.png`. runner는 필요할 때 분리 WT의 `backend/test/d01/`에 복사해 같은 backend Vitest 설정으로 실행하는 수동 증명용이다. 제품 자동 시험에 포함하지 않는다. 임시 native 서버는 runner 종료 시 닫았으며 사용자9543/API9570·다른 작업의9580은 건드리지 않았다.
+
 계약 대조: [GitHub 정확한 ref 조회](https://docs.github.com/en/rest/git/refs#get-a-reference), [open PR head/base 필터](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests), [커밋 비교](https://docs.github.com/en/rest/commits/commits#compare-two-commits). 이 검증은 기존 데모의 실제 HTTP 실행이며 회사 운영 GitHub 검증·전체 플랫폼 하네스·Publish 완료 판정이 아니다.

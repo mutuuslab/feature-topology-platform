@@ -32,4 +32,7 @@ export default {
   "ota.retryBody": "Resubmit with the same job ID (idempotency key). If the OTA server already accepted it, it returns the same job, preventing duplicate delivery.",
   "ota.cancel": "Cancel job",
   "ota.cancelBody": "Cancel only vehicles not yet reached by delivery. Use restoration or rollback for vehicles that have already applied it.",
+  "ota.reconcile": "Reconcile with OTA server",
+  "ota.reconcileHint": "If delivery notices are missing after OTA acceptance, query the job to fill per-vehicle delivery facts. Vehicle results still determine actual application.",
+  "ota.reconcileBody": "Query this job's current state at the OTA server and fill only previously unrecorded vehicle delivery facts. Recorded terminal outcomes remain unchanged.",
 };

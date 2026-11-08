@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 85,
-  "requiredLeaves": 9178,
+  "moduleCount": 86,
+  "requiredLeaves": 9206,
   "modules": [
     {
       "module": "ads-change",
@@ -38080,6 +38080,24 @@
           "kind": "text",
           "text": "아직 전달하지 않은 차량만 취소합니다. 이미 적용한 차량은 복원·이전 상태 복구로 되돌리세요.",
           "sourceHash": "e1b50552245e2f4d5247acaab05828d5fe83ce3282f3b75886938fd1a58a07d7"
+        },
+        {
+          "path": "ota.ota.reconcile",
+          "kind": "text",
+          "text": "OTA 서버 조회로 맞추기",
+          "sourceHash": "28dcf346db1a4c3bbc4a259ece534735f8f54bce353d64cc746ead95acc4839b"
+        },
+        {
+          "path": "ota.ota.reconcileHint",
+          "kind": "text",
+          "text": "OTA 서버가 접수한 뒤 전달 통보가 오지 않으면, 작업 조회로 차량별 전달 사실을 채웁니다. 적용 확인은 그대로 차량 결과가 정합니다.",
+          "sourceHash": "68a464990a21e6791e025b21c57a3456c7ef8e02d06e854d94c9b64ea8739652"
+        },
+        {
+          "path": "ota.ota.reconcileBody",
+          "kind": "text",
+          "text": "OTA 서버에 이 작업의 현재 상태를 묻고, 아직 기록하지 않은 차량별 전달 사실만 채웁니다. 이미 기록한 끝 결과는 바꾸지 않습니다.",
+          "sourceHash": "7ca8d6935e84e783b0385e053f90d7ce8b2fa22ff10cb78242ee1b6a72c1f5f7"
         }
       ],
       "connectedExports": [
@@ -53557,6 +53575,166 @@
       ],
       "connectedExports": [
         "unsaved"
+      ],
+      "unresolvedCopyReferences": []
+    },
+    {
+      "module": "vehicle-cache",
+      "file": "FF/frontend/src/copy/vehicle-cache.ts",
+      "leaves": [
+        {
+          "path": "vehicle-cache.vehicleCache.title",
+          "kind": "text",
+          "text": "차량 정책 캐시",
+          "sourceHash": "a5525fe6290aebe9dd808b2ea77faeb02f289b9a942a5df3a2dcee7dac895421"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.lead",
+          "kind": "text",
+          "text": "쓰기 전에 서명·무결성·유효 기간을 다시 봅니다. 손상되면 직전 캐시, 없으면 안전 기본값.",
+          "sourceHash": "2d5339a9f172b4a404a440cfdf258d836c28d33829900f77772cb1cb54eb2e28"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.caption",
+          "kind": "text",
+          "text": "정책별 캐시 상태",
+          "sourceHash": "31f1a156c809605c7cabac5b6f7e1ea83cace42105c2bcfceb66f9548851096e"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.col.status",
+          "kind": "text",
+          "text": "캐시 상태",
+          "sourceHash": "173fb750d5073a20f91ade1f6bb7e0c7302b973b63fb75c957b9478d9a4de6d1"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.col.validUntil",
+          "kind": "text",
+          "text": "유효 기간",
+          "sourceHash": "5072a1fa63b0df68f92bc6f2dda5f8d6042a094c85a5bdcbcc5aa073cd18ebaa"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.col.use",
+          "kind": "text",
+          "text": "평가에 쓴 캐시",
+          "sourceHash": "45c4288de1705bb08c23616a52ae1cc1d9e55ce04905bf259358f896a967fec2"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.col.reason",
+          "kind": "text",
+          "text": "사유",
+          "sourceHash": "ab9442a23e772cce670320f5d60fb8e84f94b845c859d2f7691c7d052aeabb99"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.status.VALID",
+          "kind": "text",
+          "text": "정상",
+          "sourceHash": "35688a85f0be1c636cd83847b4bbb23350a19d0c185f3ed7ee86684a01467352"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.status.EXPIRED",
+          "kind": "text",
+          "text": "유효 기간 지남",
+          "sourceHash": "4c49622e9a6d783455a3138c93d6b0d68f316bbe2548750b8034f022ba33cf65"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.status.UNVERIFIED",
+          "kind": "text",
+          "text": "서명·기한 확인 필요",
+          "sourceHash": "06a7b90c1f3a54d0b9975ff07bf1f563eea0a3f38d9a5193335f5dee1e719fde"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.status.SIGNATURE_INVALID",
+          "kind": "text",
+          "text": "서명 불일치",
+          "sourceHash": "b3989b242c336d87dac6fcc636c8f1ee492df56a62175c47ec915e92179fc00a"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.status.INTEGRITY_MISMATCH",
+          "kind": "text",
+          "text": "무결성 위반",
+          "sourceHash": "02ab9303484c117ef73ff8eee3d51d420258867eb34693527e2bf90a171f6f25"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.use.CURRENT",
+          "kind": "text",
+          "text": "현재 캐시",
+          "sourceHash": "83b114e46af6cf865e1906df4f589381d4c3765fb8ba802172b8bda04af74457"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.use.PREVIOUS",
+          "kind": "text",
+          "text": "직전 정상 캐시",
+          "sourceHash": "7e8efea736177347d95c1e37b0be115dc66dfea814914922164995029879da1c"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.use.SAFE_DEFAULT",
+          "kind": "text",
+          "text": "안전 기본값",
+          "sourceHash": "36965ac9949d63330932b3b268c5bfd7a079e807b3f9675e094df377c8baaaa0"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.reason.CACHE_EXPIRED",
+          "kind": "text",
+          "text": "정책 캐시 유효 기간이 지났습니다",
+          "sourceHash": "d230ac5d11af8915da359a00351e433832c05c60cfdf25ae5aadd6d9661c3d3f"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.reason.CACHE_MISSING",
+          "kind": "text",
+          "text": "받은 정책이 없습니다",
+          "sourceHash": "2df05ce85b5fd0c12eb58e21a3c14d695c7fbea25c3feea8fc30e89891873f6e"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.reason.CACHE_REACQUIRE_REQUIRED",
+          "kind": "text",
+          "text": "서명된 정책과 유효 기간을 확인할 수 없습니다 — 정책을 다시 받으세요",
+          "sourceHash": "577438bc7ea32ec91c7aa51138a5e9c6be32c6c7546b1c059b1a9a0edcc77ec1"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.reason.CACHE_SIGNATURE_INVALID",
+          "kind": "text",
+          "text": "저장된 정책의 서명이 맞지 않습니다",
+          "sourceHash": "d848742d300486353a33c20ee31d9fa72d9da72879e5fe160afac2cca401b656"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.reason.CACHE_INTEGRITY_MISMATCH",
+          "kind": "text",
+          "text": "저장된 정책의 무결성 값이 다시 계산한 값과 다릅니다",
+          "sourceHash": "38571fff8134505813781f1cf81f64b799aac8f5193b39e84707854d9e6a10a5"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.reason.EVALUATION_ERROR",
+          "kind": "text",
+          "text": "정책 평가 중 오류가 났습니다",
+          "sourceHash": "d71e8f5e87438ad69d7125387251450e8df7d5643542e96ad80e50830d7f393d"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.integrityAlert",
+          "kind": "function",
+          "text": "(n: number) => `무결성 위반 캐시 ${n}건 — 차량이 이 캐시를 쓰지 않았습니다.`",
+          "sourceHash": "d58fd16faa9376b7d2acdd2816b1965edf7124efef267903d31e56b67e8e350c"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.attention",
+          "kind": "function",
+          "text": "(n: number) => `확인이 필요한 캐시 ${n}건 — 사유와 사용 중인 캐시를 확인해 주세요.`",
+          "sourceHash": "52f030c07000993af427ba91e0771b3479ba8b19b3fb23b7f975a47bf7f7fa22"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.ok",
+          "kind": "text",
+          "text": "모든 정책 캐시가 정상입니다.",
+          "sourceHash": "48fa7728bdc1e2878f6fe41388c21dcf4a0696a921df2329d1a56b014586fb7b"
+        },
+        {
+          "path": "vehicle-cache.vehicleCache.killHistory",
+          "kind": "text",
+          "text": "차량 쪽 차단·복원 이력",
+          "sourceHash": "441963b88e762ee8cf49faa703bdb3bd259f934aa3c19fb0097ac74a275c2651"
+        }
+      ],
+      "connectedExports": [
+        "vehicleCache"
       ],
       "unresolvedCopyReferences": []
     },

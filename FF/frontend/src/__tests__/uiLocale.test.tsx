@@ -15,10 +15,24 @@ import { DEPARTMENTS } from '../data/departments';
 import { procedures } from '../copy/procedures';
 import { QUEUE_LABEL, QUEUE_ROLE } from '../copy/inbox';
 import { StatusBadge } from '../screens/flag-code/badge';
+import { vehicleCache } from '../copy/vehicle-cache';
+import { ota } from '../copy/ota';
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); __resetLocaleForTest(); });
 
 describe('reactive UI language catalogues', () => {
+  it('translates cache trust and OTA reconciliation guidance without changing status keys', async () => {
+    const before = { statuses:Object.keys(vehicleCache.status), uses:Object.keys(vehicleCache.use), reasons:Object.keys(vehicleCache.reason) };
+    const korean = vehicleCache.status.UNVERIFIED;
+    await changeUiLanguage('en');
+    expect(vehicleCache.status.UNVERIFIED).toBe('Signature/expiry verification required');
+    expect(vehicleCache.reason.CACHE_REACQUIRE_REQUIRED).toContain('retrieve the policy again');
+    expect(vehicleCache.integrityAlert(2)).toContain('2 integrity violations');
+    expect(ota.reconcileBody).toContain('Recorded terminal outcomes remain unchanged');
+    expect({statuses:Object.keys(vehicleCache.status),uses:Object.keys(vehicleCache.use),reasons:Object.keys(vehicleCache.reason)}).toEqual(before);
+    await changeUiLanguage('ko');
+    expect(vehicleCache.status.UNVERIFIED).toBe(korean);
+  });
   it('coverage badges translate display captions while retaining the canonical status and release-block severity', async () => {
     const {container}=render(<StatusBadge status="NO_CODE" severity="BLOCKER"/>);
     expect(screen.getByText('코드 없음')).toBeTruthy();

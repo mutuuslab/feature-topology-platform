@@ -78,6 +78,7 @@ const loaders = {
   'topology-motion': () => import('./en/topology-motion'),
   'trace-links': () => import('./en/trace-links'),
   'unsaved': () => import('./en/unsaved'),
+  'vehicle-cache': () => import('./en/vehicle-cache'),
   'virtual': () => import('./en/virtual'),
   'work-product': () => import('./en/work-product'),
   'workbench': () => import('./en/workbench'),

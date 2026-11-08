@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9178,
-  "translated": 9178,
+  "required": 9206,
+  "translated": 9206,
   "modules": [
     {
       "module": "ads-change",
@@ -535,13 +535,13 @@
     {
       "module": "ota",
       "source": "FF/frontend/src/copy/ota.ts",
-      "required": 32,
-      "translated": 32,
+      "required": 35,
+      "translated": 35,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "d261cab54ebabea59baf0d5a828384542770951d90dc00aa4f0ea0a2dc8ff734"
+      "sourceHash": "ecabb1b0089d8db0af70901dfa27a25885eeebc3a3dd2f0f759302e3004adf1d"
     },
     {
       "module": "p10",
@@ -839,6 +839,17 @@
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
       "sourceHash": "7c43661037e31a61cd8ec3243f65aced50926c2ca22c4fa6e3a4f4d8512d2279"
+    },
+    {
+      "module": "vehicle-cache",
+      "source": "FF/frontend/src/copy/vehicle-cache.ts",
+      "required": 25,
+      "translated": 25,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "b87080cedd312f011fef12f9c48dd021a97626df5e5acc0b972194548741d32f"
     },
     {
       "module": "virtual",

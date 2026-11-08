@@ -1,5 +1,6 @@
+import { localizedCopy } from '../locale/runtime';
 // 차량 정책 캐시 문구(P9) — 차량 런타임 화면 '기록' 탭. 규칙: contracts/src/rules/policy-cache.ts
-export const vehicleCache = {
+export const vehicleCache = /* @__PURE__ */ localizedCopy('vehicle-cache.vehicleCache', {
   title: '차량 정책 캐시',
   lead: '쓰기 전에 서명·무결성·유효 기간을 다시 봅니다. 손상되면 직전 캐시, 없으면 안전 기본값.',
   caption: '정책별 캐시 상태',
@@ -19,4 +20,4 @@ export const vehicleCache = {
   attention: (n: number) => `확인이 필요한 캐시 ${n}건 — 사유와 사용 중인 캐시를 확인해 주세요.`,
   ok: '모든 정책 캐시가 정상입니다.',
   killHistory: '차량 쪽 차단·복원 이력',
-};
+});

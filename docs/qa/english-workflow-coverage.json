@@ -2,8 +2,8 @@
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
   "total": 1802,
-  "missing": 725,
-  "translated": 712,
+  "missing": 340,
+  "translated": 1097,
   "sourceEnglish": 365,
   "duplicate": [],
   "unknown": [],
@@ -18,6 +18,12 @@
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-1.ts",
       "entries": 87,
       "sourceFingerprint": "0d354148f4a819e9b2da4f1791a3aab3827655e474f7674245e4a86d8e0aa032",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-10.ts",
+      "entries": 74,
+      "sourceFingerprint": "7306ccddaa8bdd6d245318ca6dbf72cd1ddba54fc8ed570bd1acee3e4fdee8e2",
       "status": "MATCH"
     },
     {
@@ -54,6 +60,24 @@
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-6.ts",
       "entries": 63,
       "sourceFingerprint": "b3a18a503f24f823460e522839fc6d5f580c01ef695623073d8fd26b92c7619a",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-7.ts",
+      "entries": 110,
+      "sourceFingerprint": "f87e6f8ea2819f73c499df9e585708fc766bed0b708bb8b99074d64f9f1d50c2",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-8.ts",
+      "entries": 148,
+      "sourceFingerprint": "a348264845d97c1612b6c8068e89f86136aa2c1b2b6b462261361adae05ad006",
+      "status": "MATCH"
+    },
+    {
+      "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-9.ts",
+      "entries": 53,
+      "sourceFingerprint": "c34f58a115e7041c8b8eeab8aee7c6c75cd92ee73d2026a3ec45f934f94459db",
       "status": "MATCH"
     }
   ],
@@ -4563,71 +4587,71 @@
       "key": "FPW.7.ref",
       "source": "표준 보고서 6.1절 G7, 6장 FFG-LCY-009·010, 12장 FFG-TST-010, 14장(SOTIF), 3장(ADS Safety Case), 5장 FFG-CLS-006",
       "sourceHash": "7cf4d28573136fd5547c238b78b7d6c73bfdfdf699186638a205887881ac34b4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report section 6.1 G7, chapter 6 FFG-LCY-009/010, chapter 12 FFG-TST-010, chapter 14 (SOTIF), chapter 3 (ADS Safety Case), chapter 5 FFG-CLS-006"
     },
     {
       "key": "FPW.7.purpose",
       "source": "배포된 Feature Version을 차량 안에서 효력을 내도록 허가한다. SOTIF 출시 기준과 Safety Case 독립 검토, Canary·Shadow 판정 기준, 상품 구성 승인, 형식승인·사용자 고지 조건을 확인한 뒤 Canary Cohort부터 단계적으로 넓힌다.",
       "sourceHash": "d6464ea82ec1785005e7e9da79e31951880624eff8c82ec37e0c395030be9ca8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Authorize a deployed Feature Version to take effect onboard. Check SOTIF release criteria, independent Safety Case review, Canary/Shadow decision criteria, product configuration approval, type approval and user notices, then expand from the Canary Cohort in stages."
     },
     {
       "key": "FPW.7.O1.text",
       "source": "Canary·Shadow 판정 기준과 실험 계획이 안전 등급에 맞게 정해진다.",
       "sourceHash": "dba92ec5fc6336cf72d55e34a9660a6618c958796044adb41178485bd3b6810b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Canary/Shadow decision criteria and experiment plans match the safety classification."
     },
     {
       "key": "FPW.7.O2.text",
       "source": "SOTIF 출시 근거와 Safety Case가 정리되고 편향 없는 검토자가 검토한다.",
       "sourceHash": "c42347df4971cb80c0a200d0e4f76f36b3fce08f2591f946c2f46f963f796c14",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "SOTIF release evidence and the Safety Case are prepared and reviewed by an impartial reviewer."
     },
     {
       "key": "FPW.7.O3.text",
       "source": "상품 구성이 작성자와 다른 승인자에게 승인되고 고객 출시는 다시 다른 승인자가 승인한다.",
       "sourceHash": "ecbc73f4de6a7bfb3aecb4e3da359817bee3b807811fdb472999b3f4baff8672",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Product configuration is approved by someone other than its author; customer release is approved by another person again."
     },
     {
       "key": "FPW.7.O4.text",
       "source": "형식승인·사용자 고지 조건을 확인한 G7 판정과 출시 전이가 남는다.",
       "sourceHash": "37ab68567bb6692628cb5ab3af8bf105d248d5b3fd9182ee8b14531b4f746cd9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The G7 decision checks type approval and user notices, and the release transition is recorded."
     },
     {
       "key": "FPW.7.O5.text",
       "source": "효력이 Canary Cohort부터 관측 기준을 만족할 때만 넓어진다.",
       "sourceHash": "43e19ae0ae2f9284c69fda07b9e3797bcc0cca8ac53e3960f43d21087155eae7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Effectiveness expands from the Canary Cohort only when observation criteria are met."
     },
     {
       "key": "FPW.7.entry.0",
       "source": "G6 배포가 끝나 서버에 정책이 게시되었다(차량 내 효력 없음)",
       "sourceHash": "837de928a4b97380f8d677fd75c96c847f4338a8bbb5bacc182b574724ffdab8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment is complete and the policy is published on the server (no onboard effect)"
     },
     {
       "key": "FPW.7.exit.0",
       "source": "G7 판정과 VERIFIED→RELEASED 전이가 남았다",
       "sourceHash": "e9ed4b8002e61b60cd496cd93e10cf95d42b73b6efae359fb4c7b8b6c57dd2db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The G7 decision and VERIFIED→RELEASED transition are recorded"
     },
     {
       "key": "FPW.7.exit.1",
       "source": "Canary 관측 결과에 따라 확대 또는 중단 결정이 기록되었다",
       "sourceHash": "586f92d6a8d492c1cb1e9084b78fb4eaa566b4738d61da796b7d8164807355cf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Expansion or suspension is recorded based on Canary observations"
     },
     {
       "key": "FPW.7.WP-CANARY-PLAN.name",
@@ -4640,15 +4664,15 @@
       "key": "FPW.7.WP-CANARY-PLAN.content.0",
       "source": "Cohort별 차량 수·관측 기간·허용 차이·중단 기준",
       "sourceHash": "16948f5e709f0344b63d4c847d4e39a9207b2ffa0a34b7559e01de15a4010694",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Vehicles, observation period, permitted differences and stop criteria for each Cohort"
     },
     {
       "key": "FPW.7.WP-CANARY-PLAN.content.1",
       "source": "Shadow 출력이 제어기에 전달되지 않는다는 확인",
       "sourceHash": "480376c8b6b557634b5a339b134a980b4b7e39feb7888e300d50b81c11971abf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirmation that Shadow output does not reach the controller"
     },
     {
       "key": "FPW.7.WP-EXPERIMENT-PLAN.name",
@@ -4661,15 +4685,15 @@
       "key": "FPW.7.WP-EXPERIMENT-PLAN.content.0",
       "source": "실험 목적·지표·기간과 대상 Cohort",
       "sourceHash": "efbac240ab678e9f52449535d5949cff4861afa1d408d20f9963a2319105b40e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Experiment objective, metrics, duration and target Cohort"
     },
     {
       "key": "FPW.7.WP-EXPERIMENT-PLAN.content.1",
       "source": "F2 이상이면 Shadow 방식과 비간섭 입증 근거",
       "sourceHash": "70c5577c212f67945590ad226ff12175bab8919a13e9b51a2fc6d22ffb178f59",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Shadow method and non-interference evidence for F2 or higher"
     },
     {
       "key": "FPW.7.WP-SAFETY-CASE.name",
@@ -4682,15 +4706,15 @@
       "key": "FPW.7.WP-SAFETY-CASE.content.0",
       "source": "주장·논거·증거와 고유 식별자(규칙 ID·시험 ID 재사용)",
       "sourceHash": "747399653f4894bd227b2d91abb68e23ba9ae3249d53dc9da0b766f520241b7e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Claims, arguments, evidence and unique identifiers (reuse rule IDs and test IDs)"
     },
     {
       "key": "FPW.7.WP-SAFETY-CASE.content.1",
       "source": "ISO 21448 출시 기준 충족 근거와 잔여 위험",
       "sourceHash": "b43b0151789eee03d7216b9739c365b8f245cb2bf113e44f88ed71215e3e9488",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Evidence of meeting ISO 21448 release criteria and residual risks"
     },
     {
       "key": "FPW.7.WP-SC-REVIEW.name",
@@ -4703,15 +4727,15 @@
       "key": "FPW.7.WP-SC-REVIEW.content.0",
       "source": "검토자 자격·검토 기간·대상 Version(Safety Case·도구·ADS)",
       "sourceHash": "fb5b4ae7690827e12d469a594f86a01ee042ffedfe278e16b4bad19aebba92b5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reviewer qualifications, review period and target Versions (Safety Case, tools, ADS)"
     },
     {
       "key": "FPW.7.WP-SC-REVIEW.content.1",
       "source": "검토 방법·재현한 증거·공백과 불확실 영역·개선 조치",
       "sourceHash": "60d63a1c60a4be289ed6d18daac3b7c5d7e24c20bbddfbc05432632f7fb9f10a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review method, reproduced evidence, gaps, uncertainties and corrective actions"
     },
     {
       "key": "FPW.7.WP-PRODUCT.name",
@@ -4724,15 +4748,15 @@
       "key": "FPW.7.WP-PRODUCT.content.0",
       "source": "상품에 포함되는 Feature와 판매 방식(구독·구매·체험)",
       "sourceHash": "8c39b1d5cc092c5a1edd33682c2032485feb75e2eb9e623dbb394ac16a3952ad",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Included Features and sales model (subscription, purchase, trial)"
     },
     {
       "key": "FPW.7.WP-PRODUCT.content.1",
       "source": "구성 검증 결과와 체험 제안 조건",
       "sourceHash": "c3a66daa7bafa588e1c6b1dedad0615e62ea2b02147475e767e8dfc656a6a9f6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Configuration validation results and trial offer conditions"
     },
     {
       "key": "FPW.7.WP-PRODUCT-APPROVAL.name",
@@ -4745,8 +4769,8 @@
       "key": "FPW.7.WP-PRODUCT-APPROVAL.content.0",
       "source": "구성 승인자(상품 작성자와 다른 사람)와 시각",
       "sourceHash": "9003a458097be87121db89393094076b9b380664f69b727a2956a47757a03d8e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Configuration approver (distinct from product author) and time"
     },
     {
       "key": "FPW.7.WP-ACTIVATION-PRECHECK.name",
@@ -4759,15 +4783,15 @@
       "key": "FPW.7.WP-ACTIVATION-PRECHECK.content.0",
       "source": "형식승인 기관 결정 여부와 근거",
       "sourceHash": "418fdcf0fffe199831749cfd047446f59ad2cbd9127beadf29120eb16ef43dbb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Type-approval authority decision and supporting evidence"
     },
     {
       "key": "FPW.7.WP-ACTIVATION-PRECHECK.content.1",
       "source": "시장별 사용자 고지·확인 준비와 '작동 중이 아닐 때 효력' 조건",
       "sourceHash": "bc8f14fddc308540bff00ca15e3d9a473ca50b0b8323cc2147fea56c6ede6067",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Market-specific user notice/acknowledgment readiness and the condition to take effect only while the function is not operating"
     },
     {
       "key": "FPW.7.WP-G7-DECISION.name",
@@ -4780,15 +4804,15 @@
       "key": "FPW.7.WP-G7-DECISION.content.0",
       "source": "출시·활성화 판정과 근거 Evidence ID(SOTIF·Safety Case·Canary 기준)",
       "sourceHash": "e415d19b5d4d00232d2e5d91f67526441ccbcccd19dbc11f442aa6c03bcabed8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Release/activation decision and supporting Evidence IDs (SOTIF, Safety Case, Canary criteria)"
     },
     {
       "key": "FPW.7.WP-G7-DECISION.content.1",
       "source": "Safety Manager 판정 서명, Feature Owner 출시 책임 확인",
       "sourceHash": "c5423cd1a70142ca9e87a3be360f8767da9d004bc82cb7ee425dc715816728b1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety Manager decision signature and Feature Owner release accountability confirmation"
     },
     {
       "key": "FPW.7.WP-RELEASE-SIGNOFF.name",
@@ -4801,15 +4825,15 @@
       "key": "FPW.7.WP-RELEASE-SIGNOFF.content.0",
       "source": "Feature Owner 개인 서명·서명 시각·소유 조직",
       "sourceHash": "db87f880ce69b1f6920d5585e5091e76948383cdf1f4d268d3ff17b2bee797a9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Feature Owner personal signature, signing time and owning organization"
     },
     {
       "key": "FPW.7.WP-RELEASE-SIGNOFF.content.1",
       "source": "서명 시점의 G8·G9 판정 기록 ID(다시 판정되면 효력 없음)",
       "sourceHash": "8a032d948495f7b3472b32dc1e8b1d5edbb564da069b877d6e363da8675a5720",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G8/G9 decision record IDs at signing (invalidated by a new decision)"
     },
     {
       "key": "FPW.7.WP-RELEASE-RECORD.name",
@@ -4822,8 +4846,8 @@
       "key": "FPW.7.WP-RELEASE-RECORD.content.0",
       "source": "VERIFIED→RELEASED 전이 시각과 수행자",
       "sourceHash": "67eecb58fe463aee484822f32b684899f79947b37ad2f167e893dfc54a94dc03",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "VERIFIED→RELEASED transition time and actor"
     },
     {
       "key": "FPW.7.WP-PRODUCT-RELEASE.name",
@@ -4836,8 +4860,8 @@
       "key": "FPW.7.WP-PRODUCT-RELEASE.content.0",
       "source": "고객 출시 승인자(구성 승인자와 다른 사람)와 시각",
       "sourceHash": "3b10aeaeb2c9c0c8fae4c6f97ac2b57c299e4bb96630bf4e9e7a12da23b28f93",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Customer release approver (distinct from configuration approver) and time"
     },
     {
       "key": "FPW.7.WP-ROLLOUT-RECORD.name",
@@ -4850,15 +4874,15 @@
       "key": "FPW.7.WP-ROLLOUT-RECORD.content.0",
       "source": "Cohort 단계별 적용 시각·관측 결과",
       "sourceHash": "4dd7fed39735737eee95f0ac06cf094602c4088ef6dc392aa3026edada3fb3f1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Application time and observations for each Cohort stage"
     },
     {
       "key": "FPW.7.WP-ROLLOUT-RECORD.content.1",
       "source": "확대·중단 결정과 근거",
       "sourceHash": "102a5a4b9996811ce5f44c2025de07d412d95e1a296d4e0c29b87e848016945c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Expansion/suspension decision and evidence"
     },
     {
       "key": "FPW.7.WP-FLAG-WAIVER.name",
@@ -4871,15 +4895,15 @@
       "key": "FPW.7.WP-FLAG-WAIVER.content.0",
       "source": "해제 대상 Flag·요청 당시 대사 상태·사유·만료",
       "sourceHash": "c3f65a4e4806a56a252eafb5cce8e234aa64e152486c97bb5f1464b63aa5a6c3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Flag, reconciliation status at request, reason and expiry"
     },
     {
       "key": "FPW.7.WP-FLAG-WAIVER.content.1",
       "source": "요청자와 다른 결정자의 개인 서명·시각(F2 이상은 Safety Manager 포함)",
       "sourceHash": "6b20da219bed0180b84fbbbda7200d64d641dd460b5f6425df00c5f53ded8b11",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Personal signature and time of a decision maker distinct from the requester (including Safety Manager for F2 or higher)"
     },
     {
       "key": "FPW.7-A01.name",
@@ -4892,29 +4916,29 @@
       "key": "FPW.7-A01.steps.0",
       "source": "F2 이상 Feature는 Canary Cohort에서 시작하도록 단계별 차량 수와 관측 기간을 정한다",
       "sourceHash": "3c19be19a97d4bcd0539542f1e73cc97f692ee75e9af40bdc585762739318a0d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For F2 or higher, define vehicle counts and observation periods for a staged rollout beginning with a Canary Cohort"
     },
     {
       "key": "FPW.7-A01.steps.1",
       "source": "단계마다 허용 차이와 중단 기준을 사전에 적고 Safety Manager와 합의한다",
       "sourceHash": "8859eb9bf145225d906ad72742c5953d60cd404432addc406c62f8ef09aa9b9c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Document permitted differences and stop criteria for every stage in advance and agree with the Safety Manager"
     },
     {
       "key": "FPW.7-A01.steps.2",
       "source": "Shadow를 쓰면 출력이 제어기로 가지 않는 구성인지 시험 조직과 확인한다",
       "sourceHash": "bbd8c5979bac331a35aeb73c5fdc3b184cd274bba696845abc89f6864d2c49e2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "When using Shadow, confirm with the test organization that output cannot reach the controller"
     },
     {
       "key": "FPW.7-A01.checks.0",
       "source": "모든 단계에 관측 기간·허용 차이·중단 기준이 있다",
       "sourceHash": "cb7d125604d30be2fbae22d4d2f53422bd73891eb6b3cd9121aa832b78455e04",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every stage has an observation period, permitted differences and stop criteria"
     },
     {
       "key": "FPW.7-A13.name",
@@ -4927,29 +4951,29 @@
       "key": "FPW.7-A13.steps.0",
       "source": "해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다",
       "sourceHash": "32f3881144a99f758d6619d58d9a16e830b5b40eb91091c2aae6f83e0990971d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check the waiver reason, expiry and reconciliation status at request"
     },
     {
       "key": "FPW.7-A13.steps.1",
       "source": "F2 이상이면 Safety Manager의 의견을 받는다",
       "sourceHash": "7524c7a0b971b867bf17937040f4229b311fa95447b25673a0c1f3d14b4728f3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Obtain Safety Manager input for F2 or higher"
     },
     {
       "key": "FPW.7-A13.steps.2",
       "source": "개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다",
       "sourceHash": "c82eff8a7c03d654b6a237a064658bfdd6cf7e22de46c1935d68953ce39b0ef2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approve or reject with a personal signature and confirm the block returns after expiry"
     },
     {
       "key": "FPW.7-A13.checks.0",
       "source": "요청자와 결정자가 다른 사람이다",
       "sourceHash": "8bb18e233a794dc301ab7fbe71c69ce773a6ba46cfa103b277a2663c6791c467",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requester and decision maker are different people"
     },
     {
       "key": "FPW.7-A02.name",
@@ -4962,36 +4986,36 @@
       "key": "FPW.7-A02.trigger",
       "source": "출시 효과를 실험으로 비교해야 할 때",
       "sourceHash": "45482566a9c7e1c7559ccef3ac1bb3442be00f8cf5d6d6df452f3c77689d6efd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "When release effects need experimental comparison"
     },
     {
       "key": "FPW.7-A02.steps.0",
       "source": "실험 목적·지표·기간·Cohort를 정한다",
       "sourceHash": "cc3a17a0f15e33979f960158689caefb160150a70b330505404f7fc231a3100f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define the experiment objective, metrics, duration and Cohort"
     },
     {
       "key": "FPW.7-A02.steps.1",
       "source": "F2 이상 Feature면 Experiment Flag 대신 Shadow 방식으로 바꾸고 비간섭 입증 계획을 붙인다",
       "sourceHash": "6886c3b90884c5fd032d479af0f7f680f8e8f6e98213da132fc4e84817a4e982",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For F2 or higher, use Shadow instead of an Experiment Flag and attach a non-interference demonstration plan"
     },
     {
       "key": "FPW.7-A02.steps.2",
       "source": "실험을 등록하고 Release Manager에게 시작 시점을 알린다",
       "sourceHash": "f087ea45b03a4a348863028002ca73b01ec0b90e497927422eeb5c3ab3cf1730",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Register the experiment and notify the Release Manager of its start time"
     },
     {
       "key": "FPW.7-A02.checks.0",
       "source": "F2 이상 Feature에 Experiment Flag 실험이 등록되지 않았다",
       "sourceHash": "1a251df841be38b0d1d4ac78af4faddb55afcdca55a6219508ff98dd8bc26a23",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "No Experiment Flag experiment is registered for an F2-or-higher Feature"
     },
     {
       "key": "FPW.7-A03.name",
@@ -5004,36 +5028,36 @@
       "key": "FPW.7-A03.trigger",
       "source": "G6 배포 완료",
       "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-A03.steps.0",
       "source": "F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다",
       "sourceHash": "e7440b90c44c5abf712d29197e2298d4ad24a3dd4f1c00b773782290890f29db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Prepare ISO 21448 release-criteria evidence and residual risks for F2-or-higher Features"
     },
     {
       "key": "FPW.7-A03.steps.1",
       "source": "Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다",
       "sourceHash": "81904e30a33e6a9091b424c8a0a8aa3fa5b1c1a9f1aa5253bc3935da6be6f5d4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Attach arguments to each Safety Case claim and evidence to each argument, identified by rule IDs and test IDs"
     },
     {
       "key": "FPW.7-A03.steps.2",
       "source": "정리한 Safety Case를 독립 검토에 넘긴다",
       "sourceHash": "2dfe3d454e452737674d54c48769f7cdf8117980a3b92075b8dc564a9efb6abd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Submit the prepared Safety Case for independent review"
     },
     {
       "key": "FPW.7-A03.checks.0",
       "source": "모든 주장에 논거와 증거가 하나 이상 있다",
       "sourceHash": "7d95c558b5afbf9d5d856578ebcbdb28318af57f204b74a06ab807a7879ff3ac",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every claim has at least one argument and supporting evidence"
     },
     {
       "key": "FPW.7-A04.name",
@@ -5046,29 +5070,29 @@
       "key": "FPW.7-A04.steps.0",
       "source": "Safety Case를 만들지 않은 검토자가 검토 자격과 대상 Version(Safety Case·도구·ADS)을 기록한다",
       "sourceHash": "48454306d2466621e8e4aa04ab9b3d53b4f6d3212a80347cc4973559bbd97192",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A reviewer who did not author the Safety Case records qualifications and target Versions (Safety Case, tools, ADS)"
     },
     {
       "key": "FPW.7-A04.steps.1",
       "source": "증거 일부를 다시 실행해 재현하고, 공백과 불확실한 영역을 적는다",
       "sourceHash": "e6be3a725defe0e0dc13429e92ee7f9877eea668e9fe4c3b6b23e979c4a10b7e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Rerun selected evidence to reproduce it and document gaps and uncertain areas"
     },
     {
       "key": "FPW.7-A04.steps.2",
       "source": "발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다",
       "sourceHash": "85182c8e865173715106cb67f133e88b058ff4c7854f7c95ef134a8c2376aa7c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record corrective actions and owners for findings, then hand them to the Safety Manager"
     },
     {
       "key": "FPW.7-A04.checks.0",
       "source": "검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다",
       "sourceHash": "b8765d88901cc4b5b50e807cb3c0d2bd5e75fe522dd74f8d930d7b1483582c91",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The review records qualifications, period, Versions, method, reproduced evidence and gaps"
     },
     {
       "key": "FPW.7-A05.name",
@@ -5081,43 +5105,43 @@
       "key": "FPW.7-A05.trigger",
       "source": "G6 배포 완료",
       "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-A05.steps.0",
       "source": "상품에 넣을 Feature와 판매 방식을 정해 상품을 등록한다",
       "sourceHash": "d1f31c158329dbf802a792ce1d40aa69d2b1cd5ceabb397825a62b449f4324bd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Select included Features and sales models and register the product"
     },
     {
       "key": "FPW.7-A05.steps.1",
       "source": "구성 검증으로 Feature 간 의존·배타 충돌이 없는지 확인한다. PASS일 때 등록하고, FAIL은 결과를 확인한 뒤 초안으로만 등록한다",
       "sourceHash": "f51b8f275475b9b9eb6fca4a443fc769e1cdb28f1de096cdfda42f18eda9c551",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Validate Feature dependency/exclusion conflicts. Register on PASS; on FAIL, inspect results and register only a draft"
     },
     {
       "key": "FPW.7-A05.steps.2",
       "source": "Bill-of-Features 점검으로 카탈로그 제약(기준 행 선행·배타, 하위 feature의 상위, 대안 중복)을 보고, 제품 구성기로 켜질 Flag·SW를 미리 본다",
       "sourceHash": "a9a44058c06597a1e2de714f0563657205471d0578c130ccf85c07dfa78108a8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Inspect Bill-of-Features catalog constraints (baseline prerequisites/exclusions, parents of child Features, duplicate alternatives), and preview enabled Flags/SW in the configurator"
     },
     {
       "key": "FPW.7-A05.steps.3",
       "source": "체험 제안 조건(대상·기간)을 정한다. 대상은 범위 안 고객 차량만이고 시뮬레이터 차량은 뺀다",
       "sourceHash": "a671324f17c3c05b22a14d30ea328553506017b0bb87fcd5947d4d78d0474ae1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define trial offer targets and duration. Include only customer vehicles within scope; exclude simulator vehicles"
     },
     {
       "key": "FPW.7-A05.checks.0",
       "source": "구성 검증 결과에 충돌이 없다",
       "sourceHash": "66833cbcfee3c93cdb70f2aae654ae4e4d41792f826021ddd87ead1a60076670",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Configuration validation reports no conflicts"
     },
     {
       "key": "FPW.7-A06.name",
@@ -5130,43 +5154,43 @@
       "key": "FPW.7-A06.steps.0",
       "source": "상품 작성자가 아닌 상품 Owner가 구성과 판매 조건을 검토한다",
       "sourceHash": "cc67bda3663281bb2979e73da42fa63dff443a4d4fe1a4ec228fd31030243cdb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A product Owner distinct from the author reviews configuration and sales terms"
     },
     {
       "key": "FPW.7-A06.steps.1",
       "source": "상품 화면의 Bill-of-Features에서 카탈로그 제약 위반을 확인한다 — 위반이 있으면 구성 승인이 막히므로 작성자에게 구성 보완을 돌려보낸다",
       "sourceHash": "dd63e176a7655d89bfead1701e51806486801c57170143d0cb240a7f3741564c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check Bill-of-Features catalog violations on the product screen. Violations block configuration approval; return the configuration to its author for correction"
     },
     {
       "key": "FPW.7-A06.steps.2",
       "source": "승인하면 구성 승인 전이를 하고, 반려하면 사유를 남긴다",
       "sourceHash": "e6054b8c57fea90428d00c0a3f80d0182e5ff4585d9ac0e992eb048bda1ea965",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Apply the configuration approval transition when approved; record a reason when rejected"
     },
     {
       "key": "FPW.7-A06.steps.3",
       "source": "고객 출시 승인은 구성 승인자와 다른 사람이 하도록 승인 후보를 지정한다",
       "sourceHash": "d73071b2bc2e21f5c08ac98ca64610ce5d4bd56df1c4784d5f9dcad006727ce8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Nominate customer release approvers distinct from the configuration approver"
     },
     {
       "key": "FPW.7-A06.checks.0",
       "source": "구성 승인자가 상품 작성자와 다르다",
       "sourceHash": "f9fd7019e4439c05a9e681dc85650a20bedd81840c57bcb18db523cacebdf8be",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Configuration approver and product author are different people"
     },
     {
       "key": "FPW.7-A06.checks.1",
       "source": "카탈로그 제약 위반(선행·배타·대안 중복)이 없다",
       "sourceHash": "88de04d21f980c3316614736469d406b58a5bbcfbe6ec8f9db2801b4891400f9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "There are no catalog constraint violations (prerequisites, exclusions, duplicate alternatives)"
     },
     {
       "key": "FPW.7-A07.name",
@@ -5179,36 +5203,36 @@
       "key": "FPW.7-A07.trigger",
       "source": "G6 배포 완료",
       "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-A07.steps.0",
       "source": "형식승인 영향이 있는 변경이면 승인 기관의 개정·확장 결정이 나왔는지 확인한다",
       "sourceHash": "e433a6b2520106fcf110177159a0f6f35e1db0e2c6a42f0b626e305c4e763866",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For changes affecting type approval, confirm the authority has issued its amendment/extension decision"
     },
     {
       "key": "FPW.7-A07.steps.1",
       "source": "시장 Profile이 요구하는 사용자 고지·확인 문구와 절차가 준비되었는지 확인한다",
       "sourceHash": "eaa9d9da9e156e21cb77d4457ad8d22f9fecd9499ad8fee402668a3d4d74b00e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm user notice/acknowledgment wording and procedures required by the market Profile are ready"
     },
     {
       "key": "FPW.7-A07.steps.2",
       "source": "F2 이상 Feature의 활성화가 기능 작동 중이 아닐 때만 효력을 내는지 확인한다",
       "sourceHash": "64de7158d370696190a766929bc6e09b868a5157e40b7c07d25a9523f2336c12",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm activation of F2-or-higher Features takes effect only while the function is not operating"
     },
     {
       "key": "FPW.7-A07.checks.0",
       "source": "활성화 조건 확인서에 기관 결정·고지 준비·효력 조건이 모두 있다",
       "sourceHash": "31491cbca5782b63b8a8572268b7fd627aaf9e924a058cb58aa26d90cf65f2f2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The activation precheck includes the authority decision, notice readiness and effectiveness conditions"
     },
     {
       "key": "FPW.7-A08.name",
@@ -5221,29 +5245,29 @@
       "key": "FPW.7-A08.steps.0",
       "source": "SOTIF 출시 근거·Safety Case 검토·Canary 기준·활성화 조건이 모두 있는지 확인하고 하나라도 없으면 FAIL로 판정한다",
       "sourceHash": "98f3c0a786886e9c2b6a7fb1dc967b1f38b06c3e41d7a645f29ae2f82acd8f9a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check SOTIF release evidence, Safety Case review, Canary criteria and activation conditions; decide FAIL if any are missing"
     },
     {
       "key": "FPW.7-A08.steps.1",
       "source": "AI·ML 모델을 쓰는 Feature면 데이터·모델 수명주기 요구를 확인하고 모델 교체가 새 Version으로 관리되는지 본다",
       "sourceHash": "e416d5d58c7adc6695200ae9222718e2c164f5bd4ed778978e87a6e8f3c3e77d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For AI/ML Features, check data/model lifecycle requirements and that model replacements are managed as new Versions"
     },
     {
       "key": "FPW.7-A08.steps.2",
       "source": "Safety Manager가 Operations Gate에 판정을 등록하고, Feature Owner에게 Release Sign-off를 요청한다",
       "sourceHash": "0e76baae75e0aa230aa68f877d3a2caeaf072e2406f18a5f7c028d7dec92d0c9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Safety Manager records the Operations Gate decision and requests Feature Owner Release Sign-off"
     },
     {
       "key": "FPW.7-A08.checks.0",
       "source": "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
       "sourceHash": "454a7e0dd6f31b0d4775128462461d164541dce8cc791d8ecb8165aed6a0176b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Decision Record includes the decision, supporting Evidence, decision-maker role and time"
     },
     {
       "key": "FPW.7-A12.name",
@@ -5256,29 +5280,29 @@
       "key": "FPW.7-A12.steps.0",
       "source": "G8·G9 판정과 Safety Case 검토·Canary 기준을 확인한다",
       "sourceHash": "f7c8e448907940a935478903a3ad601111f06cf03a0e44fcaf30935a3079c1c6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check G8/G9 decisions, Safety Case review and Canary criteria"
     },
     {
       "key": "FPW.7-A12.steps.1",
       "source": "Feature 상세에서 사유를 적고 개인 서명으로 출시 책임을 확인한다",
       "sourceHash": "ff2c5ea659e06b3de9b67a49cd29bb1bb80ddbd244d59d1d64267e056fca2ec3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Enter a reason in Feature details and personally sign to confirm release accountability"
     },
     {
       "key": "FPW.7-A12.steps.2",
       "source": "G8·G9가 다시 판정되면 이전 서명은 효력이 없으므로 다시 서명한다",
       "sourceHash": "b5a11990fd352364fea6b3c7f8a48cd33b1f47b1e5a6a59bd4107b85611953e3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Sign again after a new G8/G9 decision, because the previous signature is no longer valid"
     },
     {
       "key": "FPW.7-A12.checks.0",
       "source": "서명이 현재 G8·G9 판정 기록에 묶여 유효하다",
       "sourceHash": "9acf77e168df944b12c812a518b8baf09b15e9e476a499b3244d33cc83e331db",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The signature is valid and bound to current G8/G9 decision records"
     },
     {
       "key": "FPW.7-A09.name",
@@ -5291,29 +5315,29 @@
       "key": "FPW.7-A09.steps.0",
       "source": "OTA·Operations Gate PASS와 유효한 Release Sign-off를 확인하고 Lifecycle을 VERIFIED에서 RELEASED로 전이한다",
       "sourceHash": "75fdc13191f6db9c0eb5ccfa3da1ff6f38d8299ebbe13088f7092dff373054ff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check OTA/Operations Gate PASS and valid Release Sign-off, then transition the Lifecycle from VERIFIED to RELEASED"
     },
     {
       "key": "FPW.7-A09.steps.1",
       "source": "전이 결과를 운영 조직과 상품 Owner에게 알린다",
       "sourceHash": "32c76c16286b965ac764527486bfa9555209444e64cfb882ad3ace81dc9b0bbd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Notify operations and the product Owner of the transition result"
     },
     {
       "key": "FPW.7-A09.steps.2",
       "source": "판정이 FAIL이면 개발 단계로 되돌리는 전이를 하고 사유를 남긴다",
       "sourceHash": "8bb05d5e144f7c481863aa6b8b180101b25c235ca347b99b79d90b436872d43a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "On FAIL, transition back to development and record the reason"
     },
     {
       "key": "FPW.7-A09.checks.0",
       "source": "Feature Version이 RELEASED이고 전이 수행자가 기록되었다",
       "sourceHash": "a77fdf589d9185767c240aaa5f229e87c7bcbc7753afc1f84ac039fae4731beb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Version is RELEASED and the transition actor is recorded"
     },
     {
       "key": "FPW.7-A10.name",
@@ -5326,36 +5350,36 @@
       "key": "FPW.7-A10.steps.0",
       "source": "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다",
       "sourceHash": "e8341f7b9704bb4dc73338ece42cb597e16a30d4b56513f5f73bdeb9aed91273",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A product Owner distinct from the configuration approver approves customer release. In the demo, approver approves configuration and productowner approves customer release"
     },
     {
       "key": "FPW.7-A10.steps.1",
       "source": "구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다",
       "sourceHash": "b47a6da32106e0f78ca15a14b1a3bb2774787150011363b1164e768308f4983d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The UI disables release approval for the configuration approver and explains why; the server also rejects approval by the same person"
     },
     {
       "key": "FPW.7-A10.steps.2",
       "source": "출시한 상품은 상세에서 체험 제안으로 이어진다",
       "sourceHash": "784893f654e3111a7884113cbdb68bc09629b6b11ce471836b7f5d112119da6d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Released products link from their details to trial offers"
     },
     {
       "key": "FPW.7-A10.steps.3",
       "source": "출시 승인 결과를 상품 기획과 운영 조직에 알린다",
       "sourceHash": "28ad70015aff4f293c1de2d48dd1d668d5d7ef2ce429e74ef0a6e93e9fa757b7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Notify product planning and operations of the release approval result"
     },
     {
       "key": "FPW.7-A10.checks.0",
       "source": "고객 출시 승인자가 구성 승인자와 다르다",
       "sourceHash": "1d0274631ffb5848b4f77def95435b51c145b0b8b475b86ebc4e2fe5321d5305",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Customer release approver and configuration approver are different people"
     },
     {
       "key": "FPW.7-A11.name",
@@ -5368,29 +5392,29 @@
       "key": "FPW.7-A11.steps.0",
       "source": "승인 범위 안에서 Canary Cohort부터 활성화를 적용한다",
       "sourceHash": "f0cc62d51dccc3b80680ff4e2465163a31c0fa67a207f2cd20850001ae66eb8b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Apply activation within the approved scope, beginning with the Canary Cohort"
     },
     {
       "key": "FPW.7-A11.steps.1",
       "source": "관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
       "sourceHash": "eeae5c6568f1061a9e9b189ea4d907d873aa5f761db4ee1e7cfb4fa555264c17",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Monitor stop criteria throughout the observation period and expand to the next Cohort only when criteria are met"
     },
     {
       "key": "FPW.7-A11.steps.2",
       "source": "중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다",
       "sourceHash": "195a04ce52f59b36ae798abd9e3f774d6a04a32895d1eac39eb83ca83dc92a5d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "When stop criteria are met, halt expansion and hand over to anomaly response (FPW.8)"
     },
     {
       "key": "FPW.7-A11.checks.0",
       "source": "단계마다 관측 결과와 확대·중단 결정이 기록되었다",
       "sourceHash": "045129636debed28cfb70275e63874103bbfbc7a746a1ce7b9904fe6b6b0286c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each stage records observations and the expansion/suspension decision"
     },
     {
       "key": "FPW.7.BP1.name",
@@ -5403,8 +5427,8 @@
       "key": "FPW.7.BP1.definition",
       "source": "안전 분류와 배포 범위를 기준으로 Canary 단계·관측 기간·중단 기준을 사전에 정한다. 단계 간 확대 조건을 합의하고 Shadow의 비간섭 검증 범위를 명시한다.",
       "sourceHash": "ed511a152632d1ff0a9d7e970fd4b05f01345b53e3196720c178fba7d6c72552",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define Canary stages, observation periods and stop criteria in advance based on safety classification and deployment scope. Agree on expansion conditions between stages and specify the scope of Shadow non-interference verification."
     },
     {
       "key": "FPW.7.BP2.name",
@@ -5417,8 +5441,8 @@
       "key": "FPW.7.BP2.definition",
       "source": "출시 차단 해제 요청의 현재 불일치·범위·근거·만료를 검토한다. 요청자와 다른 결정자가 제한된 예외를 승인하거나 반려하고 만료 뒤 원래 차단이 다시 적용되는지 확인한다.",
       "sourceHash": "5ce5f79c3badf9841520e5ab81f8ddd72ed59f9022885ac659f316bd36ef6f19",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review current mismatches, scope, evidence and expiry of release-block waiver requests. A decision maker distinct from the requester approves or rejects the limited exception and confirms the original block returns after expiry."
     },
     {
       "key": "FPW.7.BP3.name",
@@ -5431,8 +5455,8 @@
       "key": "FPW.7.BP3.definition",
       "source": "확인할 효과와 지표·대상·기간을 정하여 실험을 계획한다. 안전 관련 기능에 허용되는 방식과 비간섭 근거를 확인하고 승인 범위 내 실행 시점을 관계자와 맞춘다.",
       "sourceHash": "3c1b49b2666a3513138b783d2f763911813dc7ec2d864a4b4bef8db7c1549dea",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Plan experiments with objectives, metrics, targets and duration. Confirm permitted methods and non-interference evidence for safety-related Features, and coordinate execution timing within the approved scope."
     },
     {
       "key": "FPW.7.BP4.name",
@@ -5445,8 +5469,8 @@
       "key": "FPW.7.BP4.definition",
       "source": "안전 주장과 잔여 위험을 현재 Version의 분석·검증 근거에 연결한다. 주장·논거·증거의 공백을 확인할 수 있도록 Safety Case를 구성하고 독립 검토에 넘긴다.",
       "sourceHash": "1d4d11a24b95fe8bd7b693ec4814d79166a83270187b488148fdb6f6d5b7297c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Link safety claims and residual risks to current-Version analysis and verification evidence. Structure the Safety Case to expose gaps between claims, arguments and evidence, then submit it for independent review."
     },
     {
       "key": "FPW.7.BP5.name",
@@ -5459,8 +5483,8 @@
       "key": "FPW.7.BP5.definition",
       "source": "적격한 독립 검토자가 Safety Case의 주장과 증거를 검토하고 일부 근거를 재현한다. 적용 범위·불확실성·발견 사항과 조치 책임을 기록하여 출시 판단에 제공한다.",
       "sourceHash": "1b8c98ef57e609961aac81facd29edd4b9209d625d948d9993e041b828e339c4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A qualified independent reviewer assesses Safety Case claims and evidence and reproduces selected evidence. Record applicability, uncertainties, findings and action owners to support release decisions."
     },
     {
       "key": "FPW.7.BP6.name",
@@ -5473,8 +5497,8 @@
       "key": "FPW.7.BP6.definition",
       "source": "판매할 기능·구성·조건을 상품으로 정의하고 의존·배타·카탈로그 제약을 검증한다. 적합한 차량의 체험 범위를 계획하고 검증되지 않은 구성은 초안으로 구분한다.",
       "sourceHash": "d3226b0ce94faef7f542fb908375d2fca06d8dea0a67d7083f03d8ae00528a0a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define sellable Features, configurations and terms as products and validate dependencies, exclusions and catalog constraints. Plan trials for eligible vehicles and distinguish unvalidated configurations as drafts."
     },
     {
       "key": "FPW.7.BP7.name",
@@ -5487,8 +5511,8 @@
       "key": "FPW.7.BP7.definition",
       "source": "상품 작성과 분리된 책임자가 구성·판매 조건·카탈로그 제약을 검토한다. 구성 승인 또는 반려의 사유를 남기고 고객 출시 승인과의 사람 분리를 유지한다.",
       "sourceHash": "c6b22e73a97ddff5792829e5b1e6c60a1f3040c10baa13936e19677cbc58ad6f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A responsible person separate from the product author reviews configuration, sales terms and catalog constraints. Record approval/rejection reasons and preserve separation from the customer release approver."
     },
     {
       "key": "FPW.7.BP8.name",
@@ -5501,8 +5525,8 @@
       "key": "FPW.7.BP8.definition",
       "source": "기관 결정과 시장별 고지·효력 조건이 활성화 범위에 맞는지 확인한다. 기능 작동 중 변경이 허용되지 않는 조건을 명시하여 출시·활성화 판단에 제공한다.",
       "sourceHash": "a2aee9539f243411113c5cf1ce0a9b18c9e40ca772950407905a4e8fe5407328",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm authority decisions, market-specific notices and effectiveness conditions match the activation scope. Specify conditions prohibiting changes while the function operates to support release/activation decisions."
     },
     {
       "key": "FPW.7.BP9.name",
@@ -5515,8 +5539,8 @@
       "key": "FPW.7.BP9.definition",
       "source": "Safety Case 검토·Canary 기준·고지·활성화 조건을 모아 출시 준비를 판단한다. AI·모델을 포함한 변경 관리 근거를 확인하고 필요한 Gate 판정과 출시 책임 확인을 인계한다.",
       "sourceHash": "03360607224a382116586afb8c76bafe3af9880004d3c38d842be2c3611948cd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess release readiness using Safety Case review, Canary criteria, notices and activation conditions. Check change-management evidence including AI/models, then hand over required Gate decisions and release accountability confirmation."
     },
     {
       "key": "FPW.7.BP10.name",
@@ -5529,8 +5553,8 @@
       "key": "FPW.7.BP10.definition",
       "source": "현재 Gate 판정과 안전 근거·Canary 계획을 확인한 Feature 책임자가 출시 책임을 명시적으로 확인한다. 서명을 당시 판정 기록에 묶고 근거 판정이 바뀌면 서명의 효력을 다시 확인한다.",
       "sourceHash": "33147dd70869d282cf95c9b5abd9ce6efeeff5e502c3a9b5142a9fadf2ca9a38",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Owner explicitly confirms release accountability after checking current Gate decisions, safety evidence and the Canary plan. Bind the signature to those decision records and reassess its validity if decisions change."
     },
     {
       "key": "FPW.7.BP11.name",
@@ -5543,8 +5567,8 @@
       "key": "FPW.7.BP11.definition",
       "source": "현재 OTA·운영 판정과 유효한 출시 책임 서명을 확인하여 출시 전이를 수행한다. 수행자·시각·결과를 기록하고 실패 또는 보완이 필요한 경우 해당 개발·검토 단계로 인계한다.",
       "sourceHash": "04fdddee5deefcdb0adb9eec760bd4e97658f85c528aa2ff999d2ec4d8e4623b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Perform the release transition after checking current OTA/Operations decisions and valid release accountability sign-off. Record actor, time and result; hand failures or required corrections back to development/review."
     },
     {
       "key": "FPW.7.BP12.name",
@@ -5557,8 +5581,8 @@
       "key": "FPW.7.BP12.definition",
       "source": "구성 승인과 구분된 책임자가 고객 제공 준비와 상품 출시 조건을 검토한다. 고객 출시 결정을 기록하고 상품기획·운영에 제공 범위와 후속 체험 절차를 전달한다.",
       "sourceHash": "9b4e252965137da47a1e7131a784934b16aebece6f2b472d585a4940eff5b506",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A responsible person distinct from the configuration approver reviews customer delivery readiness and product release conditions. Record the customer release decision and hand scope and trial follow-up to product planning and operations."
     },
     {
       "key": "FPW.7.BP13.name",
@@ -5571,8 +5595,8 @@
       "key": "FPW.7.BP13.definition",
       "source": "승인된 Canary 범위에서 활성화를 시작하고 단계별 관측 결과를 평가한다. 사전 조건을 만족할 때만 확대하며 중단 기준에 해당하면 확대를 멈추고 이상 대응으로 인계한다.",
       "sourceHash": "98e3c842aa17182cfe065b1741a59274e22707d45bbf2f3eead9bc9f45657ac9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Start activation within the approved Canary scope and evaluate observations at each stage. Expand only when prerequisites are met; halt expansion and hand over to anomaly response on stop criteria."
     },
     {
       "key": "FPW.7-S1.label",
@@ -5585,29 +5609,29 @@
       "key": "FPW.7-S2.label",
       "source": "출시 효과를 실험으로 비교해야 할 때",
       "sourceHash": "45482566a9c7e1c7559ccef3ac1bb3442be00f8cf5d6d6df452f3c77689d6efd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "When release effects need experimental comparison"
     },
     {
       "key": "FPW.7-S3.label",
       "source": "G6 배포 완료",
       "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-S4.label",
       "source": "G6 배포 완료",
       "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-S5.label",
       "source": "G6 배포 완료",
       "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-E1.label",
@@ -5634,92 +5658,92 @@
       "key": "FPW.8.ref",
       "source": "표준 보고서 7장(비활성화·복원), 8.x FFG-PLT-005·016, 14장 FFG-SEC-003·004, 6.1절 G8",
       "sourceHash": "0fee011b7302e95fdb4fe1fbe9bd6ae899b95231a39c00a62f2ce223de81f862",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report chapter 7 (deactivation/restoration), section 8.x FFG-PLT-005/016, chapter 14 FFG-SEC-003/004, section 6.1 G8"
     },
     {
       "key": "FPW.8.purpose",
       "source": "출시된 Feature를 운행 중 감시하고, 이상 징후가 안전·보안·법규 위험으로 확인되면 2인 승인을 거친 긴급 차단을 발행해 차량별 적용을 확인한 뒤, 원인을 해소하고 다른 승인자의 승인으로 단계적으로 복원한다. 정책 복구가 필요하면 복구 기준·전 범위·독립 승인을 재검증하여 롤백하고 차량별 적용과 미회신을 추적한다.",
       "sourceHash": "b3b53a0b229654469eb0a1f9d117a88178dfdd4bc41c39686274feb5d80482a7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Monitor released Features in operation. When anomalies are confirmed as safety, security or regulatory risks, issue an emergency block with two-person approval and verify per-vehicle application. Resolve the cause, then restore in stages with different approvers. For policy rollback, revalidate the recovery baseline, full scope and independent approval, and track application and missing responses per vehicle."
     },
     {
       "key": "FPW.8.O1.text",
       "source": "운행 중 이상 징후가 접수·확인되고 차단 필요성과 범위가 판단된다.",
       "sourceHash": "4d07f8c4e33ba9e06fc435e33edf40c50b8ab40ac03f066035dadcf9693acf67",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational anomalies are received and verified, and blocking need and scope are assessed."
     },
     {
       "key": "FPW.8.O2.text",
       "source": "긴급 차단이 리콜·봉쇄 근거와 서로 다른 2인의 승인을 갖춰 발행된다.",
       "sourceHash": "c25f0cb6744a28c35c928c98ae733edc685e70af22517ff857e37055ce3df80b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Emergency blocks are issued with recall/containment evidence and two distinct approvals."
     },
     {
       "key": "FPW.8.O3.text",
       "source": "차량별 차단 전달·적용이 추적되고 미적용 차량이 후속 조치로 넘어간다.",
       "sourceHash": "09b45cc3e1f02301947937de28aeafcc28263e30717e52dfa24efb8f98ed598d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Block delivery and application are tracked per vehicle; unapplied vehicles enter follow-up."
     },
     {
       "key": "FPW.8.O4.text",
       "source": "긴급 권한 사용이 24시간 안에 독립 검토된다.",
       "sourceHash": "a0d8a5e2180f88ace35a0943ab986583c92f1b789feb3812543a20515183fea6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Emergency authority use receives independent review within 24 hours."
     },
     {
       "key": "FPW.8.O5.text",
       "source": "원인 해소 뒤 차단 승인자와 다른 승인자의 승인으로 단계적으로 복원된다.",
       "sourceHash": "61721688b8b8cf7a46f3233375450d2c61b4d5dbc908582e4cdcc2c2cdaf0e6f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "After cause resolution, restoration proceeds in stages with approvers distinct from the block approvers."
     },
     {
       "key": "FPW.8.O6.text",
       "source": "정기 드릴로 차단·복원 능력이 측정되고 G8 운영 판정이 남는다.",
       "sourceHash": "6ab3e7b6fcbf225016b71d55aaf7d174d40708874bf8f1c3b1263ddd282282e2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Regular drills measure blocking/restoration capability and retain the G8 operational decision."
     },
     {
       "key": "FPW.8.O7.text",
       "source": "정책 롤백의 복구 기준·범위·독립 승인·실행 재검증과 차량별 적용·미회신 결과가 추적된다.",
       "sourceHash": "46c5c03c233d11d679034bcfbe6223b5e494521382fd714edde9022ae6a18e9a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Policy rollback tracks recovery baseline, scope, independent approval, execution revalidation and per-vehicle application/missing responses."
     },
     {
       "key": "FPW.8.entry.0",
       "source": "Feature Version이 RELEASED이고 운행 중 감시 지표와 경보 기준이 등록되어 있다",
       "sourceHash": "3c63e37e3d55ddb9ee46a3a92d6ac3416795d36e4765b9181b0db9c8a472839d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Feature Version is RELEASED and operational monitoring metrics and alert thresholds are registered"
     },
     {
       "key": "FPW.8.entry.1",
       "source": "차단·복원 승인 후보자의 개인 서명 수단이 발급되어 있다",
       "sourceHash": "f6a53426582ffaf55a933fd1650e9798b1b8816ce3f3be70a1470fe3e20a88bc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Personal signing credentials are issued to candidate block/restoration approvers"
     },
     {
       "key": "FPW.8.exit.0",
       "source": "발행한 차단마다 차량별 적용 결과·사후 검토·복원 또는 유지 결정이 기록되었다",
       "sourceHash": "58bd200a3f1dbc1674834545b4e26307946e7b30653549ab995e3864d2f34cc9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each issued block records per-vehicle application, post-review and the restore/retain decision"
     },
     {
       "key": "FPW.8.exit.1",
       "source": "분기 드릴 결과와 G8 운영 판정이 남았다",
       "sourceHash": "efd3aaef6abe243fb0cfe0ea28ab5b4075bbaa264bea9804e1e1f777d70bc788",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Quarterly drill results and the G8 operational decision are recorded"
     },
     {
       "key": "FPW.8.WP-ANOMALY-CASE.name",
@@ -5732,15 +5756,15 @@
       "key": "FPW.8.WP-ANOMALY-CASE.content.0",
       "source": "이상 징후 출처(운행 지표·장애·VOC·SOTIF 트리거)와 대상 Feature Version",
       "sourceHash": "c14cae43e8fb561f58e07e4197083cc012ce8a4517748a78971a921082416fb8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Anomaly source (operational metrics, incidents, VOC, SOTIF triggers) and target Feature Version"
     },
     {
       "key": "FPW.8.WP-ANOMALY-CASE.content.1",
       "source": "영향 차량 수·지역·Variant와 확인 결과",
       "sourceHash": "ab95092787364dd12bda6b9840379f05df8124290d415d480b0cb93e01c38c6a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Affected vehicle count, regions, Variants and verification results"
     },
     {
       "key": "FPW.8.WP-KILL-PLAN.name",
@@ -5753,22 +5777,22 @@
       "key": "FPW.8.WP-KILL-PLAN.content.0",
       "source": "사유 분류(SAFETY·SECURITY·REGULATORY·COMMERCIAL·OPERATIONAL)와 유효 등급",
       "sourceHash": "e1d4d146231de72910ff973c72a4aaa46914731360ac9af3ef6e9c2734736ba7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reason category (SAFETY, SECURITY, REGULATORY, COMMERCIAL, OPERATIONAL) and effective class"
     },
     {
       "key": "FPW.8.WP-KILL-PLAN.content.1",
       "source": "대상 범위와 24시간 누적 상한 대조 결과",
       "sourceHash": "141fd07e4d16c600a8fd6509cf231e346878d58571000e8d38c03d813b7b5996",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target scope and comparison with the 24-hour cumulative cap"
     },
     {
       "key": "FPW.8.WP-KILL-PLAN.content.2",
       "source": "대량 원격 종료 계획(단계·순서) 적용 여부",
       "sourceHash": "f196f8f20ba704adb7ab00820963f2b919150479dc0e6756a9619de280420007",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Applicability of the mass remote termination plan (stages and sequence)"
     },
     {
       "key": "FPW.8.WP-RECALL-BASIS.name",
@@ -5781,15 +5805,15 @@
       "key": "FPW.8.WP-RECALL-BASIS.content.0",
       "source": "리콜 번호 또는 봉쇄 결정 근거와 시장",
       "sourceHash": "3e14e9a1b830b09ed3389047e3415e338ecc7fdc496b1c97f733d99633c5be75",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Recall number or containment decision evidence and market"
     },
     {
       "key": "FPW.8.WP-RECALL-BASIS.content.1",
       "source": "시장별 보고 기한과 보고 책임자",
       "sourceHash": "b84683389109e5a746dc4d962610c976ee60e8956d2b9016587f63577163ecba",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Market-specific reporting deadlines and responsible persons"
     },
     {
       "key": "FPW.8.WP-KILL-REQ.name",
@@ -5802,15 +5826,15 @@
       "key": "FPW.8.WP-KILL-REQ.content.0",
       "source": "대상 Feature Version·차량 범위·사유 분류와 리콜·봉쇄 근거 참조",
       "sourceHash": "af200cca50e01607f08819a9d195cd65a68d2a8ad85430b951d4862556919545",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Feature Version, vehicle scope, reason category and recall/containment evidence reference"
     },
     {
       "key": "FPW.8.WP-KILL-REQ.content.1",
       "source": "요청자와 요청 시각",
       "sourceHash": "55132a9685e852ce39d9d8963b20a090f12512cff74cb9890e594a330a8f4d98",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requester and request time"
     },
     {
       "key": "FPW.8.WP-KILL-DECISION.name",
@@ -5823,15 +5847,15 @@
       "key": "FPW.8.WP-KILL-DECISION.content.0",
       "source": "서로 다른 승인자 2명의 개인 서명과 역할",
       "sourceHash": "238365112b6a1c27233397384b96d2ec02255cb3dbb75be109ab84eade958c9a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Personal signatures and roles of two distinct approvers"
     },
     {
       "key": "FPW.8.WP-KILL-DECISION.content.1",
       "source": "게이트 판정(등급·대상 상한) 결과와 발행 명령 ID",
       "sourceHash": "9ebd43914e19d082dac53a6117db4250eeaab837e70f05380dd0990f1aacbee5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Gate result (class and target cap) and issued command ID"
     },
     {
       "key": "FPW.8.WP-KILL-TRACE.name",
@@ -5844,22 +5868,22 @@
       "key": "FPW.8.WP-KILL-TRACE.content.0",
       "source": "차량별 전달·적용 상태(유효한 상태 보고와 영속 저장 확인 기준)",
       "sourceHash": "eb86f525c676e6bd25005c8931e35d003a969516d60be807fbe7352249c19f60",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Per-vehicle delivery/application status based on valid status reports and confirmed persistent storage"
     },
     {
       "key": "FPW.8.WP-KILL-TRACE.content.1",
       "source": "기한 초과 미적용 차량과 연결된 이상 징후 건",
       "sourceHash": "77512e38b545edd805394b010acc5d4a602da9b9d7c67a6f1c6546fbc186a1ac",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Overdue unapplied vehicles and linked anomaly cases"
     },
     {
       "key": "FPW.8.WP-KILL-TRACE.content.2",
       "source": "대기 상한 초과 경보와 상위 대응 기록",
       "sourceHash": "ed9212ee2c830ff69f638f2db30326d0c7a53b9cb06722732fd78b4db0fb771b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Wait-limit alerts and escalation records"
     },
     {
       "key": "FPW.8.WP-POST-REVIEW.name",
@@ -5872,15 +5896,15 @@
       "key": "FPW.8.WP-POST-REVIEW.content.0",
       "source": "검토자(요청자·승인자 제외)와 검토 시각(24시간 이내)",
       "sourceHash": "77309ef359474c23578404edccd831e97c9e684bd9493b0e66e27670534d5c3f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reviewer (excluding requester/approvers) and review time (within 24 hours)"
     },
     {
       "key": "FPW.8.WP-POST-REVIEW.content.1",
       "source": "사유·범위·절차 준수 판단과 개선 조치",
       "sourceHash": "4482bd8fcfa2c4b629f50d8881add3f92bd1437fa2a8bf3f8459600dc0ce0282",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assessment of reason, scope and procedural compliance, plus improvements"
     },
     {
       "key": "FPW.8.WP-RESTORE-REQ.name",
@@ -5893,15 +5917,15 @@
       "key": "FPW.8.WP-RESTORE-REQ.content.0",
       "source": "원인 분석·수정 내용과 재검증 Evidence 참조",
       "sourceHash": "dc2b19b04f00bcf243e5a393d5a7c6c01c9d9a65a830aaed352a769beafa5bb7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cause analysis, corrections and revalidation Evidence references"
     },
     {
       "key": "FPW.8.WP-RESTORE-REQ.content.1",
       "source": "복원 대상 범위와 Canary Cohort",
       "sourceHash": "d6f0ec28ea85138490488a209f2f01cce1d407d6a85d579b3c78b478f3fe27a8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Restoration scope and Canary Cohort"
     },
     {
       "key": "FPW.8.WP-RESTORE-DECISION.name",
@@ -5914,15 +5938,15 @@
       "key": "FPW.8.WP-RESTORE-DECISION.content.0",
       "source": "차단 승인자와 겹치지 않는 승인자 2명의 개인 서명",
       "sourceHash": "18b3464f8bef2983a94215f90b80f0ad5f2d5d300f67ad871a25582880b26efb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Personal signatures of two approvers who did not approve the block"
     },
     {
       "key": "FPW.8.WP-RESTORE-DECISION.content.1",
       "source": "게이트 판정과 복원 게시 ID",
       "sourceHash": "8ac4235fd8ae9796a2f99bde4690bc94ac3c1e24f01d6dc740153881fa72c4b3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Gate decision and restoration publication ID"
     },
     {
       "key": "FPW.8.WP-RESTORE-ROLLOUT.name",
@@ -5935,15 +5959,15 @@
       "key": "FPW.8.WP-RESTORE-ROLLOUT.content.0",
       "source": "Cohort 단계별 확대 시각과 관측 결과",
       "sourceHash": "a1c1cef6f09e07de168c8cc5b52be739856da0afc81f704ec8c1e4c5eef7a2b3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Expansion time and observations for each Cohort stage"
     },
     {
       "key": "FPW.8.WP-RESTORE-ROLLOUT.content.1",
       "source": "중단 기준 충족 여부와 재차단 여부",
       "sourceHash": "e04ac0ab7dc5dbcb2984bae589dee47d6a9e3198959c68bce1d50b0f2cf7bbae",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Whether stop criteria were met and blocking was reapplied"
     },
     {
       "key": "FPW.8.WP-DRILL-REPORT.name",
@@ -5956,15 +5980,15 @@
       "key": "FPW.8.WP-DRILL-REPORT.content.0",
       "source": "시험 Cohort의 전달 시간·적용률·보고 정확도",
       "sourceHash": "5d33572ba8c52ac0a46a501a8868042eb4bc0acb0b27d08e1f0a012285fab086",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Test Cohort delivery time, application rate and reporting accuracy"
     },
     {
       "key": "FPW.8.WP-DRILL-REPORT.content.1",
       "source": "분기 운영 점검 결과와 G8 판정 서명",
       "sourceHash": "b5771889eae3e28e3cbc289f17fdf7c645951164d81f1f5f3a447f646110241b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Quarterly operational review results and G8 decision signature"
     },
     {
       "key": "FPW.8.WP-FLAG-EVAL-INVESTIGATION.name",
@@ -5977,22 +6001,22 @@
       "key": "FPW.8.WP-FLAG-EVAL-INVESTIGATION.content.0",
       "source": "영향 Flag·Version·차량과 관측 기간",
       "sourceHash": "1ad52505c490021ddcb642678524b5579f07f93d64f9bd9b0aa2a3cd2f39e548",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Affected Flags, Versions, vehicles and observation period"
     },
     {
       "key": "FPW.8.WP-FLAG-EVAL-INVESTIGATION.content.1",
       "source": "폴백·서명·평가 오류와 대조한 게시본·회신",
       "sourceHash": "aaa5559ba80f67477ef8dce3e00da754ad46a3b529c26485cefa4c214ffb9dd2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Fallback, signature and evaluation errors compared with publications and responses"
     },
     {
       "key": "FPW.8.WP-FLAG-EVAL-INVESTIGATION.content.2",
       "source": "원인·조치·차단 또는 재배포 인계",
       "sourceHash": "652ed3e23613e419a72c08338139284b40489873f7ee9d39dab8e9b3a45d9eeb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cause, actions and block/redeployment handoff"
     },
     {
       "key": "FPW.8.WP-RBK-REQ.name",
@@ -6005,15 +6029,15 @@
       "key": "FPW.8.WP-RBK-REQ.content.0",
       "source": "현재 배포 ID·복구 정책 버전·전 범위·수동 사유 또는 자동 조건",
       "sourceHash": "76b7632a221c574dab6400ec09d88fb9e28ec2043e93597eb272b9e46fdbc738",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Current deployment ID, recovery policy Version, full scope, and manual reason or automatic conditions"
     },
     {
       "key": "FPW.8.WP-RBK-REQ.content.1",
       "source": "미리보기 검증과 지정 승인대상자",
       "sourceHash": "e3315a36534293c774b5ab10d7dd9af44ed7dda2e942099348448cdb8828a59f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Preview validation and designated approver"
     },
     {
       "key": "FPW.8.WP-RBK-DEC.name",
@@ -6026,15 +6050,15 @@
       "key": "FPW.8.WP-RBK-DEC.content.0",
       "source": "지정 승인대상자와 요청자 분리",
       "sourceHash": "5f9c3ef1206bdf259fb968b95d874794b2d7d4ea1e142f93881b9e6c967ba6b5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Separation of designated approver and requester"
     },
     {
       "key": "FPW.8.WP-RBK-DEC.content.1",
       "source": "승인/반려 사유·범위·복구 기준 및 판정 시각",
       "sourceHash": "bce5872d5a9953f51e4e12c81dd9fe20c83686735ac97087f4be3e43778d6ae2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approval/rejection reason, scope, recovery baseline and decision time"
     },
     {
       "key": "FPW.8.WP-RBK-EXEC.name",
@@ -6047,15 +6071,15 @@
       "key": "FPW.8.WP-RBK-EXEC.content.0",
       "source": "실행 직전 재검증·실행자·현재 배포 변화 확인",
       "sourceHash": "9bcf67ab1e5a29a3a312a4b66e5fc30ece6b0365ca62d9f104fbfb99134af836",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Pre-execution revalidation, actor and current-deployment change check"
     },
     {
       "key": "FPW.8.WP-RBK-EXEC.content.1",
       "source": "새 서명 게시본 ID·전송·실패 및 원본 배포 연결",
       "sourceHash": "f3f23d87aa92fb7fe4a400cf5fbf9e8eb39908dec8ce098b7174f8d226167524",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "New signed publication ID, delivery/failures and link to original deployment"
     },
     {
       "key": "FPW.8.WP-RBK-CLOSE.name",
@@ -6068,15 +6092,15 @@
       "key": "FPW.8.WP-RBK-CLOSE.content.0",
       "source": "대상 분모·차량별 ACK/READBACK·적용·거부·미회신",
       "sourceHash": "fe991d3992e59d0c3888f7d4d01a682f4a600809576a78296b9c2a4739d96be6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target denominator and per-vehicle ACK/READBACK, application, rejection and missing responses"
     },
     {
       "key": "FPW.8.WP-RBK-CLOSE.content.1",
       "source": "재시도·기한초과·완료 또는 미해결 인계 근거",
       "sourceHash": "d81df36412ccbb9a1b27009cbc0e91d8cdf519026ce78de842a4a1aa03871e71",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retries, timeouts, completion or unresolved handoff evidence"
     },
     {
       "key": "FPW.8-A12.name",
@@ -6089,36 +6113,36 @@
       "key": "FPW.8-A12.trigger",
       "source": "평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다",
       "sourceHash": "d818198de4ac6073e00f6d70705e8bba916a03184b3c530abd8426245d86522e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Default fallbacks or signature errors increase in evaluation monitoring"
     },
     {
       "key": "FPW.8-A12.steps.0",
       "source": "평가 모니터링에서 기본값 폴백·서명 오류·오류 수가 늘어난 Flag를 찾는다",
       "sourceHash": "9787928aaad2256154847638ff3bd43e8920f778923f3e3b8e6956fa172f2249",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify Flags with increasing default fallbacks, signature errors or error counts"
     },
     {
       "key": "FPW.8-A12.steps.1",
       "source": "차량 회신과 게시본을 대조해 원인이 배포·서명·차량 중 어디인지 가른다",
       "sourceHash": "fc8d114735d2375607ce4637c2960ec81de91d7143265c51052122eb146fd3c5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare vehicle responses with publications to distinguish deployment, signature and vehicle causes"
     },
     {
       "key": "FPW.8-A12.steps.2",
       "source": "필요하면 긴급 차단 또는 재배포 절차로 넘긴다",
       "sourceHash": "ddce0d6a35558a80539edc46368d5fb46113e3cb3992392d4f1ef6c4929ffe40",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand over to emergency blocking or redeployment when necessary"
     },
     {
       "key": "FPW.8-A12.checks.0",
       "source": "폴백 급증 Flag마다 원인과 조치가 기록됐다",
       "sourceHash": "54c23dbf394571918dd3336ef95ec25074395527ba0e5338c294520b34cc59cc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every Flag with a fallback spike has a recorded cause and action"
     },
     {
       "key": "FPW.8-A01.name",
@@ -6131,64 +6155,64 @@
       "key": "FPW.8-A01.trigger",
       "source": "운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견",
       "sourceHash": "afedb4ed494c05b50534e3cab49fcbd727d5eb83b0a486f6a5f3e1266754d6d1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational alert, incident/VOC intake, or SOTIF trigger discovery"
     },
     {
       "key": "FPW.8-A01.steps.0",
       "source": "운행 중 감시 지표와 장애·VOC를 확인해 이상 징후 건을 연다",
       "sourceHash": "f880bc598d20f96c39998944a31aa6f0fbbb53824750c1989c069aec22d5ef04",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review operational metrics and incident/VOC reports and open an anomaly case"
     },
     {
       "key": "FPW.8-A01.steps.1",
       "source": "대상 Feature Version과 영향 차량 범위를 Fleet 적용 현황에서 확인한다",
       "sourceHash": "ece3962fa08c2eb3ca9da4b170cca7d5b63f52a882368885406f0830da44c02b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm the target Feature Version and affected vehicles in Fleet application status"
     },
     {
       "key": "FPW.8-A01.steps.2",
       "source": "안전·보안 영향이 의심되면 즉시 Safety Manager(보안은 CSM)에게 넘긴다",
       "sourceHash": "faacd6fb2f8f08c376925651daeefe07efafd43db46df56c83d00ac369843837",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Immediately escalate suspected safety/security impacts to the Safety Manager (CSM for security)"
     },
     {
       "key": "FPW.8-A01.steps.3",
       "source": "확인 결과 이상이 아니면 사유를 남기고 이상 건을 기각한다",
       "sourceHash": "de551af88ef00fef2cafdd1b5cda0f0a1f21fb6202a784e471764289263d047e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "If verification finds no anomaly, dismiss the case with a reason"
     },
     {
       "key": "FPW.8-A01.steps.4",
       "source": "운영 점검(동작·문제·개선·위험 4축)의 조치 필요 점검 결과를 확인하고 조치 연결·효과 확인까지 이어 간다",
       "sourceHash": "f1b2dc57d537395a99c4ce23f8848a2afe3a95da45d92f6ab86d2897417c5bd2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review operational findings requiring action across behavior, problems, improvements and risks; connect actions and verify effectiveness"
     },
     {
       "key": "FPW.8-A01.steps.5",
       "source": "Data Lake 지표가 신선도 기준을 넘으면 그 지표로 판단하지 않고 데이터 계약·수집 정책을 확인한다",
       "sourceHash": "d943338d11063e54b83d47edd6d94c8d1eb35bd37aeccc4c3d3f8132bf8ec925",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not decide using Data Lake metrics beyond freshness limits; inspect the data contract and collection policy"
     },
     {
       "key": "FPW.8-A01.checks.0",
       "source": "이상 징후 건에 출처·대상 Version·영향 범위가 기록되었다",
       "sourceHash": "b3d526cfd9f66eb16246ea2675b238811ad26ccd43d26ab5854bbf7f590489ea",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The anomaly case records source, target Version and affected scope"
     },
     {
       "key": "FPW.8-A01.checks.1",
       "source": "기한이 지난 조치 필요 점검 결과가 담당자 검토함에 있다",
       "sourceHash": "84bd42758b7871669ec1b4649d69aa7b903a19328848f6f1f28a23df93288fd2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Overdue findings requiring action are in the responsible person's review inbox"
     },
     {
       "key": "FPW.8-A02.name",
@@ -6201,36 +6225,36 @@
       "key": "FPW.8-A02.steps.0",
       "source": "사유를 분류하고 Feature의 설계 비활성화 등급에서 유효 등급을 정한다",
       "sourceHash": "7d986f221f023681712bb9655cb4c749c2e6bbbc07dacd2878b49b841c96f941",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Classify the reason and derive the effective class from the Feature's designed deactivation class"
     },
     {
       "key": "FPW.8-A02.steps.1",
       "source": "대상 범위를 24시간 누적 상한과 대조하고, 넘으면 CSM 추가 승인과 단계적 실행을 계획한다",
       "sourceHash": "8b44dea46232a06f0efe492acc9d33a7f8a11474c71bd16d795230e1abe56485",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare target scope with the 24-hour cumulative cap; if exceeded, plan additional CSM approval and staged execution"
     },
     {
       "key": "FPW.8-A02.steps.2",
       "source": "ADS 기능이나 대량 대상이면 대량 원격 종료 계획에 따라 단계와 순서를 정한다",
       "sourceHash": "64b37b896be274f1af76df7dca5ab95f5e0d6b2739208f65dc6cb59dec0c2bbc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For ADS Features or large target groups, define stages and sequence using the mass remote termination plan"
     },
     {
       "key": "FPW.8-A02.steps.3",
       "source": "게이트 미리보기로 요청이 판정을 통과할지 확인한다",
       "sourceHash": "a983cb0a241dfb606c6c8e348432e2fb947f2766ba408267c4ad68568123a4d7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Use Gate preview to check whether the request will pass"
     },
     {
       "key": "FPW.8-A02.checks.0",
       "source": "사유 분류·유효 등급·범위·누적 상한 대조가 차단 판단서에 있다",
       "sourceHash": "3c09db39832a0346ad185319b0a6043805ae6e7a916d17f454e7e2035170f14d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The block assessment includes reason category, effective class, scope and cumulative-cap comparison"
     },
     {
       "key": "FPW.8-A03.name",
@@ -6243,29 +6267,29 @@
       "key": "FPW.8-A03.steps.0",
       "source": "결함을 완화하는 F2 이상 안전 차단이면 시장별 리콜 번호나 봉쇄 결정 근거를 확보한다",
       "sourceHash": "143a3b06ec564d3860ccdeba85b59a5489e868c234c9f63b0148b83e89eae928",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For F2-or-higher safety blocking that mitigates a defect, obtain market-specific recall numbers or containment evidence"
     },
     {
       "key": "FPW.8-A03.steps.1",
       "source": "시장별 보고 기한을 정하고 보고 책임자를 지정한다",
       "sourceHash": "7305ea6203a88e263371653438bd1169fa698cf866c719a0228e723fc654ace7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define market reporting deadlines and assign responsible persons"
     },
     {
       "key": "FPW.8-A03.steps.2",
       "source": "근거 ID를 운영 조직에 넘겨 차단 요청에 붙이게 한다",
       "sourceHash": "a8394b765772e5667531539b04a413190ba644a47309d19993874e3d227ed164",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Give evidence IDs to operations for attachment to the block request"
     },
     {
       "key": "FPW.8-A03.checks.0",
       "source": "안전 차단 요청에 붙일 리콜·봉쇄 근거 ID가 있다(근거가 없으면 게이트가 차단한다)",
       "sourceHash": "ec05783f2fafd3bab8b850b95834b29ce7c35ec7bf93b96c34106585babc324a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Recall/containment evidence IDs are available for the safety block request (the Gate blocks missing evidence)"
     },
     {
       "key": "FPW.8-A04.name",
@@ -6278,29 +6302,29 @@
       "key": "FPW.8-A04.steps.0",
       "source": "긴급 차단 화면에서 대상·범위·사유를 입력하고 확인 문구를 직접 입력해 요청한다",
       "sourceHash": "64eed9e4bf50d612deae9c7619d7839b9304a35b6b148930a553026679c0623c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Enter targets, scope and reason on the emergency block screen and type the confirmation phrase to request"
     },
     {
       "key": "FPW.8-A04.steps.1",
       "source": "리콜·봉쇄 근거 ID를 요청에 붙인다",
       "sourceHash": "6a95ec0e59622d1692a5b6dab7e8057ed5550081373f70ac6f06d0bf8a9538f9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Attach recall/containment evidence IDs"
     },
     {
       "key": "FPW.8-A04.steps.2",
       "source": "요청자는 같은 명령의 승인자로 지정하지 않는다",
       "sourceHash": "761802616079e473ceeda08e96d08779c4567a46633bce5f3d25151c1b989bd8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not nominate the requester as an approver of the same command"
     },
     {
       "key": "FPW.8-A04.checks.0",
       "source": "요청이 접수되어 승인 대기 상태가 되었다",
       "sourceHash": "b00357881e035b8e20a099caf0f4ce893a78025ccb9d8a743a476868452b94cd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The request is accepted and awaiting approval"
     },
     {
       "key": "FPW.8-A05.name",
@@ -6313,29 +6337,29 @@
       "key": "FPW.8-A05.steps.0",
       "source": "승인자 2명이 각자 개인 서명으로 승인한다. F2 이상 안전·보안 차단에는 Safety Manager가 반드시 포함된다",
       "sourceHash": "9d6e6a306ab059f3c633fa6515af5c8783a8d029e99ede72e3f18f14c71dc75a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Two approvers each sign personally. F2-or-higher safety/security blocks must include the Safety Manager"
     },
     {
       "key": "FPW.8-A05.steps.1",
       "source": "누적 상한을 넘는 요청이면 Safety Manager와 CSM이 함께 승인한다",
       "sourceHash": "a7792b42075546321c602496a23011722637088d8a85fd4594f25be02d3ec399",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requests exceeding the cumulative cap require both Safety Manager and CSM approval"
     },
     {
       "key": "FPW.8-A05.steps.2",
       "source": "두 번째 승인 뒤 게이트 판정 결과와 발행 명령 ID를 확인한다",
       "sourceHash": "9074af718e3435630b43313cd036151b268bf362f556ff2a923cbcc6ca09ffe9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "After the second approval, check the Gate result and issued command ID"
     },
     {
       "key": "FPW.8-A05.checks.0",
       "source": "서로 다른 2명의 승인 서명이 있고 요청자는 승인자에 없다",
       "sourceHash": "b232dbfe1c7006d45c09464e507fd050049549c6472af44d9b2ed8fa828a5255",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Two distinct signatures exist and the requester is not an approver"
     },
     {
       "key": "FPW.8-A07.name",
@@ -6348,29 +6372,29 @@
       "key": "FPW.8-A07.steps.0",
       "source": "차단 발행 후 24시간 안에 요청자·승인자가 아닌 검토자가 사유·범위·절차 준수를 검토한다",
       "sourceHash": "e5696bdfc4e87332a507b3d2cc91ad9009b00266065204d680cb60a569c616a3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Within 24 hours of issuance, a reviewer who neither requested nor approved the block checks reason, scope and procedural compliance"
     },
     {
       "key": "FPW.8-A07.steps.1",
       "source": "검토 결과와 개선 조치를 사후 검토 기록으로 한 번 남긴다",
       "sourceHash": "575515b5348916bff0c00c3e9b39a9bebd6cb9b96cc30e66f809b6e3aac66e9c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record review results and improvements once in the post-review record"
     },
     {
       "key": "FPW.8-A07.steps.2",
       "source": "미흡 사항은 품질 조직이 개선 과제로 등록한다",
       "sourceHash": "3d0bbe2cb76c18aa336225fa667cff07aa372c2c79105e06a62ff86becf9c3c2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Quality registers deficiencies as improvement tasks"
     },
     {
       "key": "FPW.8-A07.checks.0",
       "source": "검토 기록이 24시간 안에 있고 검토자가 요청자·승인자와 다르다",
       "sourceHash": "1fdef4bf999beedd1ecf9fdc6e72f2608fcf37d889a42e6b77cecf39ceb7fc29",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The review is within 24 hours and the reviewer differs from requester and approvers"
     },
     {
       "key": "FPW.8-A06.name",
@@ -6383,29 +6407,29 @@
       "key": "FPW.8-A06.steps.0",
       "source": "차량별 전달·적용 상태를 유효한 상태 보고와 영속 저장 확인으로만 '적용'으로 본다",
       "sourceHash": "0d6a24472706d73b057580c6d5ebd67d426e01177580ff5fafac916bbfb4aea4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Count a vehicle as applied only with valid status reporting and confirmed persistent storage"
     },
     {
       "key": "FPW.8-A06.steps.1",
       "source": "기한 안에 적용되지 않은 차량은 이상 징후 건으로 넘긴다",
       "sourceHash": "aa45d6f2edef14aa235bf8e731304010aebbbaba553c50e320cd86ed4045e246",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Refer vehicles not applied by the deadline to anomaly cases"
     },
     {
       "key": "FPW.8-A06.steps.2",
       "source": "대기 상한 초과 경보가 오면 Safety Manager가 상위 대응을 정한다",
       "sourceHash": "727cad10dd3268c4f7d4a8ff01e4c1402b68f655018c790b98d93b7d9ca3811e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "On wait-limit alerts, the Safety Manager determines escalation"
     },
     {
       "key": "FPW.8-A06.checks.0",
       "source": "기한 초과 미적용 차량마다 연결된 이상 징후 건이 있다",
       "sourceHash": "19b1c883d5610246a3e837bb31953e12f2cf941fe367ad3f92b62c35b3d0dd5f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every overdue unapplied vehicle has a linked anomaly case"
     },
     {
       "key": "FPW.8-A08.name",
@@ -6418,36 +6442,36 @@
       "key": "FPW.8-A08.trigger",
       "source": "원인 수정과 재검증 Evidence 확보",
       "sourceHash": "8fa49f6ef87ca9e76bef55cf19446eadf9e8d1be530f355a05faa2d811f1d552",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Cause corrected and revalidation Evidence available"
     },
     {
       "key": "FPW.8-A08.steps.0",
       "source": "원인 분석과 수정(정책·SW·운행 조건 축소)을 마치고 재검증 Evidence가 G5 근거로 제출되었는지 확인한다",
       "sourceHash": "e3900032e8970a3ccd0543bbf77fa3a24f8435ac1fc61591fccd3073ebfa8d8c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Complete cause analysis and corrections (policy, SW, restricted operating conditions), and confirm revalidation Evidence is submitted for G5"
     },
     {
       "key": "FPW.8-A08.steps.1",
       "source": "복원 범위와 시작 Canary Cohort를 정해 복원을 요청한다",
       "sourceHash": "5ed226e1fa896094bd04b15594dfda7b3ea5a574f6ccc3883e40e9f58df75d00",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define restoration scope and initial Canary Cohort and request restoration"
     },
     {
       "key": "FPW.8-A08.steps.2",
       "source": "직전 차단 승인자를 복원 승인 후보에서 뺀다",
       "sourceHash": "4e373b2c0d04056b69ecd1fd54b2ea83361f93847e366235d861d7a20fa0e26d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Exclude previous block approvers from restoration candidates"
     },
     {
       "key": "FPW.8-A08.checks.0",
       "source": "복원 요청에 재검증 Evidence 참조와 Canary Cohort가 있다",
       "sourceHash": "ffa8f6c3a7d085fac05d75d4064067a61b17fa4e7d6a661fe9459d4cc089ea8f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The restoration request references revalidation Evidence and a Canary Cohort"
     },
     {
       "key": "FPW.8-A09.name",
@@ -6460,29 +6484,29 @@
       "key": "FPW.8-A09.steps.0",
       "source": "직전 차단을 승인하지 않은 승인자 2명이 개인 서명으로 승인한다. F2 이상은 Safety Manager가 포함된다",
       "sourceHash": "0015a5fbdfb9946f133c2e2cdf7e40d54624d72ef6a04e10d28f659472c041bb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Two approvers who did not approve the previous block sign personally; include the Safety Manager for F2 or higher"
     },
     {
       "key": "FPW.8-A09.steps.1",
       "source": "플랫폼 감사 원장이 차단 승인자와의 중복을 판정하므로 거부되면 다른 승인자로 다시 승인한다",
       "sourceHash": "280682c4ba5226fbdd46bccb2282325fc7241ed53f11ed3f4bb3916346457321",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The audit ledger checks overlap with block approvers; if rejected, obtain approval from a different person"
     },
     {
       "key": "FPW.8-A09.steps.2",
       "source": "두 번째 승인 뒤 게이트 판정과 복원 게시 ID를 확인한다",
       "sourceHash": "a9c5f121e0d2c47b3275adbb1d51924bce8e9ac00b479a7dabdd47244e4f15ba",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "After the second approval, check the Gate decision and restoration publication ID"
     },
     {
       "key": "FPW.8-A09.checks.0",
       "source": "복원 승인자 중 직전 차단 승인자가 없다",
       "sourceHash": "3b80d5835bdfa274ab369c093a2d807285b45d849052bcec807bfd8fedb7381b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "No restoration approver approved the previous block"
     },
     {
       "key": "FPW.8-A10.name",
@@ -6495,29 +6519,29 @@
       "key": "FPW.8-A10.steps.0",
       "source": "Canary Cohort부터 차단 해제를 적용하고 차량이 INACTIVE 상태로 복귀했는지 확인한다. 재활성화는 정상 활성화 Guard·ODD·자체 시험 조건을 별도로 확인한다",
       "sourceHash": "0501a8161d470d73401e821fd693896e13face5c53aa85e482901b7287f03903",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Lift blocking from the Canary Cohort and confirm vehicles return to INACTIVE. Separately check normal activation Guards, ODD and self-test prerequisites before reactivation"
     },
     {
       "key": "FPW.8-A10.steps.1",
       "source": "사전에 정한 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
       "sourceHash": "d3ee43aea647c437f282e4c219ce4ee9997db06185ee993de88b8f7504c68190",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Monitor stop criteria for the predefined observation period and expand only when criteria are satisfied"
     },
     {
       "key": "FPW.8-A10.steps.2",
       "source": "이상이 보이면 확대를 멈추고 다시 차단 판단(A02)으로 넘긴다",
       "sourceHash": "7a99e0f68852de70debdafe74eef71f9a6f546aabb00c858ec3c3d34d8cf4647",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "On anomalies, stop expansion and return to block assessment (A02)"
     },
     {
       "key": "FPW.8-A10.checks.0",
       "source": "단계마다 관측 결과와 확대·중단 결정이 기록되었다",
       "sourceHash": "045129636debed28cfb70275e63874103bbfbc7a746a1ce7b9904fe6b6b0286c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Each stage records observations and the expansion/suspension decision"
     },
     {
       "key": "FPW.8-A11.name",
@@ -6530,36 +6554,36 @@
       "key": "FPW.8-A11.trigger",
       "source": "분기 정기 일정",
       "sourceHash": "16e6a5e261eef1dc94d43dfb91dcd6b69b30d57ba394bc1979db8d7f183677f8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled quarterly review"
     },
     {
       "key": "FPW.8-A11.steps.0",
       "source": "시험 Cohort로 차단·복원 드릴을 수행해 전달 시간·적용률·보고 정확도를 잰다",
       "sourceHash": "b0d5b14d911bcf1fc46bffbc66a5103731beecca6257c5250309dde7b6a78301",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Run blocking/restoration drills with a test Cohort and measure delivery time, application rate and reporting accuracy"
     },
     {
       "key": "FPW.8-A11.steps.1",
       "source": "분기 차단 건의 추적표·사후 검토 결과와 드릴 결과를 묶어 운영 상태를 점검한다",
       "sourceHash": "e0468eff4a0dca7b948f8970a45d176cd9a6506a480c02e8e15bf4532b97f08f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review operations using quarterly block traces, post-reviews and drill results"
     },
     {
       "key": "FPW.8-A11.steps.2",
       "source": "Safety Manager·품질 조직의 의견을 받아 G8 운영 판정을 남긴다",
       "sourceHash": "dd9e55721eec7b9af58e6ea7866bee8ab53da67ef11921a0a941bff8e52ae232",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Obtain Safety Manager/Quality input and record the G8 operational decision"
     },
     {
       "key": "FPW.8-A11.checks.0",
       "source": "분기마다 드릴 결과와 G8 판정이 있다",
       "sourceHash": "29c8450e7c98f04eee9f3af5f932c19040566bb062ec0ec41bc87e01b9b2914a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every quarter has drill results and a G8 decision"
     },
     {
       "key": "FPW.8-A13.name",
@@ -6572,43 +6596,43 @@
       "key": "FPW.8-A13.trigger",
       "source": "정책 복구 필요 또는 자동 복구 계획 수립",
       "sourceHash": "9ca69481ce143d99a7610856c4df56e1afbbeac462a144cc718a63cb7654dc9a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Policy recovery needed or automatic recovery plan preparation"
     },
     {
       "key": "FPW.8-A13.steps.0",
       "source": "현재 배포 ID와 같은 flag의 이전 배포 정책 및 복구 가능 근거를 확인한다",
       "sourceHash": "c42c768f268769e4971efe8bc938db0877e5c8ffac73e4252909bb59ac3690eb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check the current deployment ID, a previously deployed policy for the same flag and recovery eligibility evidence"
     },
     {
       "key": "FPW.8-A13.steps.1",
       "source": "전 대상 범위와 사유 또는 자동 조건을 정해 미리보기를 검증한다",
       "sourceHash": "ea3d3b6977f316860d674b609015082efd318fe63e4431e19f0f6803981fc2c9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Define full target scope and reason or automatic conditions, then validate the preview"
     },
     {
       "key": "FPW.8-A13.steps.2",
       "source": "지정 승인대상자를 넣어 요청 또는 계획을 만들고 기준 배포를 고정한다",
       "sourceHash": "6ecdf7f3ad6a0e15dc516db8c262d9135af977668c24518452a97dace5630e14",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Create the request/plan with a designated approver and pin the baseline deployment"
     },
     {
       "key": "FPW.8-A13.checks.0",
       "source": "현재 배포가 바뀌면 낡은 요청으로 실행하지 않는다",
       "sourceHash": "adaa297d686f6b5e1727e910447b4dd5a4dead90d167f3a4359c48d1b2734a70",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not execute an outdated request after the current deployment changes"
     },
     {
       "key": "FPW.8-A13.checks.1",
       "source": "정책 전 범위를 덮지 못하거나 SW 버전 실행 위임이 미확정이면 보류한다",
       "sourceHash": "b07dca61e0063e52a9b70ee8776657e14b31acee132e10e79d082133ebac1291",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hold if the full policy scope is not covered or SW Version execution delegation is unconfirmed"
     },
     {
       "key": "FPW.8-A14.name",
@@ -6621,36 +6645,36 @@
       "key": "FPW.8-A14.steps.0",
       "source": "자신이 지정 승인대상자이며 요청자와 다른 사람인지 확인한다",
       "sourceHash": "fe5fd964d7fb4248be7fcc9e80a86f95a9b99db69af178106346ab6e43e469d3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm you are the designated approver and distinct from the requester"
     },
     {
       "key": "FPW.8-A14.steps.1",
       "source": "복구 기준·적용 범위·조건과 안전 영향을 검토한다",
       "sourceHash": "c2a1359a9ab60c064f68f5f2ef699471e9d0516905b21fcc8c0ebea56b80957a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review recovery baseline, scope, conditions and safety impact"
     },
     {
       "key": "FPW.8-A14.steps.2",
       "source": "사유를 남겨 승인 또는 반려하고 후속 실행자에게 결과를 알린다",
       "sourceHash": "aadf47a6d7e2f540cfb9195f185283c0cb60918d0fe866b2603c04e78f21bef6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approve or reject with a reason and notify the subsequent executor"
     },
     {
       "key": "FPW.8-A14.checks.0",
       "source": "요청자 자기 승인과 지정되지 않은 사람의 승인이 차단된다",
       "sourceHash": "4aa5e84c59764bccbfd5e4fd05f5a3a5b337be9e8fc470a23bc480006742e4ac",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Requester self-approval and approval by non-designated people are blocked"
     },
     {
       "key": "FPW.8-A14.checks.1",
       "source": "자동 계획 승인도 승인된 조건·범위를 넘지 않는다",
       "sourceHash": "51e3486b1aa66169ad170ef66cba91ea2ffa49918428bc834e50ea00b1af37b0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Automatic-plan approval also stays within approved conditions and scope"
     },
     {
       "key": "FPW.8-A15.name",
@@ -6663,36 +6687,36 @@
       "key": "FPW.8-A15.steps.0",
       "source": "승인된 요청 또는 계획과 현재 배포의 일치 여부를 확인한다",
       "sourceHash": "65ce6deaad2d261c004ee7ebb4c2fb4ccd5bbfd65dc61fb7b8e8ca8bf20f8089",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check the approved request/plan still matches the current deployment"
     },
     {
       "key": "FPW.8-A15.steps.1",
       "source": "복구 기준의 검증·운영 승인·서명·현재 적용 가능성을 다시 확인한다",
       "sourceHash": "6163931ceb732e8dd5d0407d6faca508ea1d33ec75170c235c5bd1a474bad612",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Recheck recovery-baseline validation, operations approval, signature and current applicability"
     },
     {
       "key": "FPW.8-A15.steps.2",
       "source": "허용된 실행을 수행하고 새 게시본 및 실행 이력을 연결한다",
       "sourceHash": "5e224b95e26f116c98d03b266e511d67f99a9704fb5aebbe6d0d92706dc2184f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Perform the permitted execution and link the new publication and execution history"
     },
     {
       "key": "FPW.8-A15.checks.0",
       "source": "승인 후 상태·키·기준이 달라지면 재검증에서 차단된다",
       "sourceHash": "4fa9e18edbda2a02ae71ec11c5704ac9bc01b260bd6253ca3afd1b8b4a01f02d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Revalidation blocks changes to state, keys or baseline since approval"
     },
     {
       "key": "FPW.8-A15.checks.1",
       "source": "실행 응답을 차량 적용 완료로 간주하지 않는다",
       "sourceHash": "4250123d24033a90980d105cbcc442629485fb47bab65f38db04c2966b5cee7d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not treat an execution response as completed onboard application"
     },
     {
       "key": "FPW.8-A16.name",
@@ -6705,36 +6729,36 @@
       "key": "FPW.8-A16.steps.0",
       "source": "현재 롤백 게시본과 대상 차량 분모를 고정한다",
       "sourceHash": "34c421bb6d4672208bc6139812f06de8075cbb4583e1d9bb1b41f2326282eafd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Pin the current rollback publication and target vehicle denominator"
     },
     {
       "key": "FPW.8-A16.steps.1",
       "source": "차량별 수신·적용·거부·기한초과를 확인하고 허용된 재시도를 수행한다",
       "sourceHash": "d877653df8031346e7a9a292ee0bad73c01969821e86abbf3e8ac83ac91e952b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check receipt, application, rejection and timeout per vehicle and perform permitted retries"
     },
     {
       "key": "FPW.8-A16.steps.2",
       "source": "모든 적용 완료 또는 미해결 차량·위험·담당자를 기록해 인계한다",
       "sourceHash": "a3c220a2c5c8ac5f225b6c0effcb7ca82a779ced5f829c1b93ab028ed570334e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record all-applied completion or unresolved vehicles, risks and owners for handoff"
     },
     {
       "key": "FPW.8-A16.checks.0",
       "source": "수신 ACK와 적용 READBACK을 구분한다",
       "sourceHash": "d2c31729909d7af71995bc98baaa0c649ee979243ba209d54b43ad90c057fe8a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish receipt ACK from application READBACK"
     },
     {
       "key": "FPW.8-A16.checks.1",
       "source": "누락 데이터는 대상 0 또는 성공으로 표시하지 않는다",
       "sourceHash": "2d9c2be3d6d547457490dfd996d7f1204131136c1859539f5b6c45d7b19d0228",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Do not display missing data as zero targets or success"
     },
     {
       "key": "FPW.8.BP1.name",
@@ -6747,8 +6771,8 @@
       "key": "FPW.8.BP1.definition",
       "source": "평가 오류·기본값 폴백·서명 이상을 식별하여 코드·배포·차량 회신과 대조한다. 원인·영향·조치를 기록하고 필요한 차단 또는 재배포 판단에 근거를 제공한다.",
       "sourceHash": "9752dfe99caebc25644231beb143e92a203237ee6a89e18c9965b1b0eff71fba",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify evaluation errors, default fallbacks and signature anomalies and compare them with code, deployments and vehicle responses. Record cause, impact and actions to support block or redeployment decisions."
     },
     {
       "key": "FPW.8.BP2.name",
@@ -6761,8 +6785,8 @@
       "key": "FPW.8.BP2.definition",
       "source": "운행 관측·경보·VOC에서 이상 징후와 영향 기능·차량을 식별한다. 데이터 신선도와 사실의 범위를 확인하고 조사·조치·효과 확인 또는 기각의 근거와 책임을 추적한다.",
       "sourceHash": "e317a03f509d925387f8dcd049e65662995c121e79ee22e5083cd6ff7daa7080",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify anomalies and affected Features/vehicles from operational observations, alerts and VOC. Check freshness and factual scope; track evidence and accountability for investigation, action, effectiveness or dismissal."
     },
     {
       "key": "FPW.8.BP3.name",
@@ -6775,8 +6799,8 @@
       "key": "FPW.8.BP3.definition",
       "source": "이상 징후의 사유와 설계된 종료 동작에 따라 차단 필요성과 유효 범위를 판단한다. 누적 상한·대량 종료 계획과 게이트 결과를 확인하여 승인에 필요한 차단 계획을 마련한다.",
       "sourceHash": "c75e094663d475d50a8cb9f7f27e5258414d84d4b378fd56655d1b5ee282deee",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess blocking need and effective scope from the anomaly reason and designed termination behavior. Check cumulative caps, mass termination plans and Gate results to prepare an approvable block plan."
     },
     {
       "key": "FPW.8.BP4.name",
@@ -6789,8 +6813,8 @@
       "key": "FPW.8.BP4.definition",
       "source": "안전 차단의 근거가 되는 리콜·봉쇄 결정과 시장별 보고 책임·기한을 확인한다. 검증 가능한 근거 ID를 요청 담당자에게 전달하고 불충분한 근거는 보완하도록 한다.",
       "sourceHash": "1da5398096bbb061d2ba6fda4891897d4a5a5e45a876f1eebf9e909b6d4a7a9e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check recall/containment decisions supporting safety blocks and market reporting responsibilities/deadlines. Give verifiable evidence IDs to the requester and require insufficient evidence to be corrected."
     },
     {
       "key": "FPW.8.BP5.name",
@@ -6803,8 +6827,8 @@
       "key": "FPW.8.BP5.definition",
       "source": "확정한 대상·사유·범위와 리콜 또는 봉쇄 근거를 갖추어 긴급 차단을 요청한다. 명시적 확인과 요청·승인자 분리를 유지하며 승인 대기 결과를 확인한다.",
       "sourceHash": "14bc377117f977d347fd26f06afe7d0b2a9d9011194e21c70c5805b634e1508b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Request emergency blocking with confirmed targets, reason, scope and recall/containment evidence. Preserve explicit confirmation and requester/approver separation, and check the pending result."
     },
     {
       "key": "FPW.8.BP6.name",
@@ -6817,8 +6841,8 @@
       "key": "FPW.8.BP6.definition",
       "source": "필요한 역할의 서로 다른 승인자가 차단의 근거·범위·상한을 독립적으로 검토한다. 개인 서명을 수집하고 최종 게이트와 발행 명령을 확인하여 승인과 발행의 연결을 보존한다.",
       "sourceHash": "b0e935fc3ee069da82d87c777a4dee35074ff72fc88eac59b735f8df4019ba55",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinct approvers with required roles independently review block evidence, scope and caps. Collect personal signatures and check the final Gate and issued command to preserve the approval-to-issuance link."
     },
     {
       "key": "FPW.8.BP7.name",
@@ -6831,8 +6855,8 @@
       "key": "FPW.8.BP7.definition",
       "source": "긴급 권한 사용의 사유·범위·절차 준수를 요청·승인에 참여하지 않은 검토자가 기한 내 확인한다. 개선 항목과 책임을 한 번의 독립 검토 기록으로 보존한다.",
       "sourceHash": "6abc79abb5ed83c6ff9e106c668698081cdca366bd4e11b55b0e1a208facc0ab",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A reviewer uninvolved in request/approval checks emergency authority reason, scope and procedural compliance within the deadline. Retain improvements and accountability in one independent review record."
     },
     {
       "key": "FPW.8.BP8.name",
@@ -6845,15 +6869,15 @@
       "key": "FPW.8.BP8.definition",
       "source": "게시 명령의 전달과 실제 차량 적용을 유효한 보고 근거로 구분하여 추적한다. 기한 초과·불일치 차량을 식별하고 연결된 이상 건과 상위 대응 결정을 관리한다.",
       "sourceHash": "2d66eec9280bbf7f75fd711e7be7637e243527be806ab18eb517e20a5c6a0dda",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Track published command delivery separately from actual onboard application using valid reports. Identify overdue or mismatched vehicles and manage linked anomalies and escalation decisions."
     },
     {
       "key": "FPW.8.BP8.notes.0",
       "source": "전송 수락이나 OTA 전달 통보만으로 차량의 적용 완료를 선언하지 않는다.",
       "sourceHash": "b20db00dcefe35f46bcee605919c5c5600e72e566f5a74cb7f5df8f13bbc3240",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transmission acceptance or OTA delivery notice alone does not establish completed onboard application."
     },
     {
       "key": "FPW.8.BP9.name",
@@ -6866,8 +6890,8 @@
       "key": "FPW.8.BP9.definition",
       "source": "원인을 조치하고 재검증 근거를 확보한 뒤 차단 해제 범위와 관측 단계를 요청한다. 이전 차단 승인자와의 분리를 유지하고 복원 승인에 필요한 근거와 Cohort를 명시한다.",
       "sourceHash": "86e349179361eefa0002bed77293c8af641bae96ab367a8445aed85ce62d804c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "After resolving causes and obtaining revalidation evidence, request unblock scope and observation stages. Maintain separation from previous block approvers and specify restoration evidence and Cohorts."
     },
     {
       "key": "FPW.8.BP10.name",
@@ -6880,8 +6904,8 @@
       "key": "FPW.8.BP10.definition",
       "source": "직전 차단 승인에 참여하지 않은 승인자들이 복원 근거·범위·재검증을 독립적으로 검토한다. 요구되는 서명과 게이트를 만족한 복원 게시본을 확인하고 판단을 보존한다.",
       "sourceHash": "8910805a9ef79a9de340aea2ae099385210a8ebe517e79185d4438fb3071b683",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approvers uninvolved in the previous block independently review restoration evidence, scope and revalidation. Confirm the restoration publication satisfies required signatures/Gates and retain the decision."
     },
     {
       "key": "FPW.8.BP11.name",
@@ -6894,15 +6918,15 @@
       "key": "FPW.8.BP11.definition",
       "source": "승인 범위의 차단 해제를 Canary부터 적용하고 회신과 관측 결과를 확인한다. 정상 활성화는 차량 자체 시험·ODD·Guard의 별도 조건에 따르며 관측 기준을 만족할 때만 복원 범위를 넓힌다.",
       "sourceHash": "c0d8c32c7e139bdf79d73a1c367bdebe958044a159ab1e49b326df9f24b4cc4b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Apply approved unblocking from Canary and inspect responses and observations. Normal activation separately requires onboard self-tests, ODD and Guards; expand restoration only when observation criteria are met."
     },
     {
       "key": "FPW.8.BP11.notes.0",
       "source": "복원 명령의 차단 해제(INACTIVE)는 기능을 즉시 ACTIVE로 만드는 명령이 아니다.",
       "sourceHash": "a1b123590422bc1be6b74ccb3273e4f68f0676deb91851ccd330ebc45e571eff",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A restoration command lifting a block (INACTIVE) does not immediately make the Feature ACTIVE."
     },
     {
       "key": "FPW.8.BP12.name",
@@ -6915,8 +6939,8 @@
       "key": "FPW.8.BP12.definition",
       "source": "시험 범위에서 차단·복원 드릴을 수행하여 전달·적용·보고의 정확성을 확인한다. 분기 운영 근거와 독립 검토 의견을 모아 개선 사항과 운영 판정을 기록한다.",
       "sourceHash": "79103de6458d382113b4d02f0069cd6ad154a8c605a4207a44c85301539cf5ec",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Run blocking/restoration drills within the test scope to verify delivery, application and report accuracy. Combine quarterly operational evidence and independent review input to record improvements and the operational decision."
     },
     {
       "key": "FPW.8.BP13.name",
@@ -6929,8 +6953,8 @@
       "key": "FPW.8.BP13.definition",
       "source": "현재 배포와 복구 기준 정책을 식별하고 대상 전 범위·조건·승인대상자를 가진 롤백 요청 또는 계획을 작성한다. 긴급 차단 해제와 정책 버전 복구를 구분하며 SW 바이너리 롤백을 임의 실행하지 않는다.",
       "sourceHash": "4347b2823edef66855913bca6e213becd919b0311423175cd465910c02ce8525",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify current deployment and recovery-baseline policy and prepare a rollback request/plan with full scope, conditions and designated approver. Distinguish unblocking from policy Version recovery; do not arbitrarily roll back SW binaries."
     },
     {
       "key": "FPW.8.BP14.name",
@@ -6943,8 +6967,8 @@
       "key": "FPW.8.BP14.definition",
       "source": "요청자와 다른 지정 승인대상자가 복구 기준·범위·조건을 검토하여 승인 또는 반려한다. 조직 역할의 참여만으로 승인되지 않으며 해당 요청의 실제 승인 이력을 확인한다.",
       "sourceHash": "07f4bde117ce18f2c155ab9ab85c52e90121c5e316e3051a9433a1dd1db6d4da",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A designated approver distinct from the requester reviews recovery baseline, scope and conditions, then approves or rejects. Organizational role participation alone is not approval; verify actual request approval history."
     },
     {
       "key": "FPW.8.BP15.name",
@@ -6957,15 +6981,15 @@
       "key": "FPW.8.BP15.definition",
       "source": "승인된 수동 요청을 실행하거나 승인된 자동 계획의 조건 충족 실행을 확인한다. 실행 직전의 현재 배포·검증·운영 승인·서명과 적용 가능성을 재확인하고 새 서명 게시본을 원본 배포에 연결한다.",
       "sourceHash": "35607ff9723e1991a66d17284d235ada0ca6d691a8fa86f15d7f9838a32eca16",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Execute an approved manual request or confirm condition-triggered execution of an approved automatic plan. Recheck current deployment, validation, operations approval, signature and applicability immediately before execution; link the new signed publication to the original deployment."
     },
     {
       "key": "FPW.8.BP15.notes.0",
       "source": "자동 실행은 기존 서버의 승인 계획·조건 판정 경로에 따른다. 업무 체크를 완료해도 자동 롤백이 발생하지 않는다.",
       "sourceHash": "4fa07ace370b0d76168a4c881efb37af07bf7e91bd288403078f5ff772edb021",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Automatic execution follows existing server paths for approved plans and condition evaluation. Completing a workflow check does not trigger automatic rollback."
     },
     {
       "key": "FPW.8.BP16.name",
@@ -6978,8 +7002,8 @@
       "key": "FPW.8.BP16.definition",
       "source": "새 롤백 게시본의 동일 대상 집합을 기준으로 전달과 실제 적용을 구분해 추적한다. 거부·미회신·기한초과는 재시도 및 미해결 위험으로 남기고 운영 화면의 성공 표지만으로 종결하지 않는다.",
       "sourceHash": "54b56e7d53a6688bc2951b14dfbf99f2c701283272b1fab7e4f8f31d65f17c4b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Track delivery separately from actual application for the same target set of the new rollback publication. Retain rejection, missing responses and timeouts for retry and unresolved-risk handling; do not close solely from operational success badges."
     },
     {
       "key": "FPW.8-S1.label",
@@ -6992,22 +7016,22 @@
       "key": "FPW.8-S2.label",
       "source": "운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견",
       "sourceHash": "afedb4ed494c05b50534e3cab49fcbd727d5eb83b0a486f6a5f3e1266754d6d1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational alert, incident/VOC intake, or SOTIF trigger discovery"
     },
     {
       "key": "FPW.8-S3.label",
       "source": "분기 정기 일정",
       "sourceHash": "16e6a5e261eef1dc94d43dfb91dcd6b69b30d57ba394bc1979db8d7f183677f8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scheduled quarterly review"
     },
     {
       "key": "FPW.8-S4.label",
       "source": "정책 복구 필요 또는 자동 복구 계획 수립",
       "sourceHash": "9ca69481ce143d99a7610856c4df56e1afbbeac462a144cc718a63cb7654dc9a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Policy recovery needed or automatic recovery plan preparation"
     },
     {
       "key": "FPW.8-E1.label",
@@ -7048,57 +7072,57 @@
       "key": "FPW.9.ref",
       "source": "표준 보고서 6.5절(Retirement), 5장 FFG-CLS-008, 6장 FFG-LCY-011, 14장 FFG-SOT-003, 3장 FFG-ADS-010",
       "sourceHash": "186af655a11220c24034d300876dd95066c92c85a94e1f7f94d819cc7a238e4f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report section 6.5 (Retirement), chapter 5 FFG-CLS-008, chapter 6 FFG-LCY-011, chapter 14 FFG-SOT-003, chapter 3 FFG-ADS-010"
     },
     {
       "key": "FPW.9.purpose",
       "source": "운영 중 드러난 이상·복원 결과를 품질 피드백으로 되돌려 시나리오와 다음 Version에 반영하고, 만료되었거나 대체된 Flag를 승인된 Retirement 절차로 처리해 코드·설정·시험을 정리한다.",
       "sourceHash": "ec07bdbf9356abce977b592e962f531796090b55c54cf9784bf6fb5272e307d6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Feed operational anomalies and restoration results back into quality improvements, scenarios and subsequent Versions. Process expired or replaced Flags through approved Retirement to remove their code, configuration and tests."
     },
     {
       "key": "FPW.9.O1.text",
       "source": "운영 결과와 새 트리거 조건이 품질 피드백으로 수용되어 시나리오와 다음 Version에 반영된다.",
       "sourceHash": "398d37f8e9dfcfe33b00a2cc361c5c4013b76274295897e97424e73fe781c9f4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Operational results and new triggering conditions are accepted as quality feedback and reflected in scenarios and subsequent Versions."
     },
     {
       "key": "FPW.9.O2.text",
       "source": "Flag Retirement가 요청자와 다른 승인자의 승인을 받는다.",
       "sourceHash": "90da633708e729cf598889f984b96a59694fb648fba552ff18fcb5c36eed0430",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Flag Retirement is approved by someone distinct from the requester."
     },
     {
       "key": "FPW.9.O3.text",
       "source": "Retirement 대상 Flag의 코드·설정·시험이 기한 안에 삭제되고 Lifecycle이 종료된다.",
       "sourceHash": "cfc0990e2e65527a88de0af47cb802e27b99409676a37bbb9f347c3d36eb40a1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retiring Flag code, configuration and tests are removed within the deadline and the Lifecycle is closed."
     },
     {
       "key": "FPW.9.entry.0",
       "source": "분기 드릴·복원 결과 또는 Flag 만료 알림이 있다",
       "sourceHash": "f9e9373f9247546213e8d07990d0de80a5231ce5aa1d58a8857618f994719d68",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Quarterly drill/restoration results or Flag expiry notifications exist"
     },
     {
       "key": "FPW.9.exit.0",
       "source": "수용한 품질 피드백이 시나리오 저장소와 개선 과제에 연결되었다",
       "sourceHash": "30c83ea1f889601c3399fa1a4f44ce1afc8b52842f792cf48e0594507daaad1c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Accepted quality feedback links to the scenario repository and improvement tasks"
     },
     {
       "key": "FPW.9.exit.1",
       "source": "Retirement된 Flag의 삭제 단계가 모두 기록되고 Lifecycle이 RETIRED가 되었다",
       "sourceHash": "453e10abc871aa515f13da7421acf0e38c03c00423c97b11fa8b00684eb1a97a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All removal stages are recorded and the Lifecycle is RETIRED"
     },
     {
       "key": "FPW.9.WP-QUALITY-FEEDBACK.name",
@@ -7111,15 +7135,15 @@
       "key": "FPW.9.WP-QUALITY-FEEDBACK.content.0",
       "source": "이상·복원·드릴에서 나온 개선 항목과 담당",
       "sourceHash": "6e3fe6cfd5df9083b607e37d5dbb506999f72fe365d37210494be9d1fdb90e71",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Improvements and owners from anomalies, restoration and drills"
     },
     {
       "key": "FPW.9.WP-QUALITY-FEEDBACK.content.1",
       "source": "시나리오 저장소에 추가한 트리거 조건과 재평가 대상",
       "sourceHash": "2bb29c4e4cd3bfce30f14059fc4d0cb43fcbe7af5b0f0d6fa805bbfdc47c1187",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Triggering conditions added to the scenario repository and reassessment targets"
     },
     {
       "key": "FPW.9.WP-RETIRE-REQ.name",
@@ -7132,15 +7156,15 @@
       "key": "FPW.9.WP-RETIRE-REQ.content.0",
       "source": "Retirement 사유(만료·대체·폐기)와 다음 정기 릴리스 예정일",
       "sourceHash": "4958b4664308548c5a9d2cff2ee579d020beeb60cc7aebf564b7c852685d04fb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retirement reason (expiry, replacement, discontinuation) and next scheduled release date"
     },
     {
       "key": "FPW.9.WP-RETIRE-REQ.content.1",
       "source": "영향 받는 차량·Variant와 구 Version 잔존 여부",
       "sourceHash": "cc32c09bffb82def894c931ea302d9e14539627132c2fe0b27ddd4223c1c44ef",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Affected vehicles/Variants and remaining old Versions"
     },
     {
       "key": "FPW.9.WP-RETIRE-APPROVAL.name",
@@ -7153,15 +7177,15 @@
       "key": "FPW.9.WP-RETIRE-APPROVAL.content.0",
       "source": "승인자(F2 이상은 Safety Manager 포함)와 시각",
       "sourceHash": "7cd31eb7ff6e11ddb763c07f0f5ff0e26f086b276e7b4c3b0bedb4f98a1e787d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approver (including Safety Manager for F2 or higher) and time"
     },
     {
       "key": "FPW.9.WP-RETIRE-APPROVAL.content.1",
       "source": "삭제 기한(승인 후 6개월 또는 다음 정기 릴리스 중 이른 시점)",
       "sourceHash": "9de819c609e149cae609ba6d1ebcc1898a9134b9b22c4109caeae2e610dcee61",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Removal deadline (earlier of six months after approval or the next scheduled release)"
     },
     {
       "key": "FPW.9.WP-RETIRE-LOG.name",
@@ -7174,15 +7198,15 @@
       "key": "FPW.9.WP-RETIRE-LOG.content.0",
       "source": "코드·설정·시험 삭제 단계별 완료 시각",
       "sourceHash": "495c3ecc0388bcf42c137f4fd973cfcb5591178d239c8f8b44768bf457509103",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Completion times for code, configuration and test removal stages"
     },
     {
       "key": "FPW.9.WP-RETIRE-LOG.content.1",
       "source": "상태 보고로 확인한 구 Version 잔존 차량 수",
       "sourceHash": "6c3007e7e44049895be632fd2561b368daaf7656699ae20a7bfe3ab1a71cecdd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Vehicles retaining old Versions, confirmed by status reports"
     },
     {
       "key": "FPW.9.WP-RETIRE-CLOSE.name",
@@ -7195,15 +7219,15 @@
       "key": "FPW.9.WP-RETIRE-CLOSE.content.0",
       "source": "DEPRECATED·RETIRED 전이 시각",
       "sourceHash": "c4d9065aa3838805df13c35f0c2a6443b54fd168bc238f68e32059de2a39af6c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "DEPRECATED/RETIRED transition times"
     },
     {
       "key": "FPW.9.WP-RETIRE-CLOSE.content.1",
       "source": "Flag ID 재사용 금지 표시와 Catalog 퇴역 결과",
       "sourceHash": "89b21ab9098c0ae51f5fbe48c830af7d4aa9cf815828bca5e8f12f602487c7a2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Flag ID non-reuse marking and Catalog retirement result"
     },
     {
       "key": "FPW.9.WP-FLAG-REMOVAL-SCAN.name",
@@ -7216,22 +7240,22 @@
       "key": "FPW.9.WP-FLAG-REMOVAL-SCAN.content.0",
       "source": "Retirement 승인·제거 PR·병합 참조",
       "sourceHash": "046080a44c7d09186a01f83ebcfe3ad85bc6e9035564eef626ddde8ccecf5e72",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retirement approval, removal PR and merge references"
     },
     {
       "key": "FPW.9.WP-FLAG-REMOVAL-SCAN.content.1",
       "source": "최종 값 분기 검토와 정적 분석 결과",
       "sourceHash": "71af4300c83587639fc76571d7d64d3f1d9415b26777873b2e9881316e31e1a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Final-value branch review and static analysis results"
     },
     {
       "key": "FPW.9.WP-FLAG-REMOVAL-SCAN.content.2",
       "source": "참조 잔존 수·마지막 스캔·수행자와 시각",
       "sourceHash": "1c09d896447e1038bc1c0254c38e6006125dee06b536287e7d57fb86d8182248",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Remaining references, latest scan, actor and time"
     },
     {
       "key": "FPW.9-A01.name",
@@ -7244,29 +7268,29 @@
       "key": "FPW.9-A01.steps.0",
       "source": "분기 드릴·복원 관측·이상 징후 결과에서 개선 항목을 추린다",
       "sourceHash": "bafeb8ce37681a05f35ad7b2cefa94a7391af98525525813ebaa2ec68a73e484",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify improvements from quarterly drills, restoration observations and anomalies"
     },
     {
       "key": "FPW.9-A01.steps.1",
       "source": "텔레메트리와 사고 데이터에서 찾은 트리거 조건·오용을 시험 조직에 넘겨 시나리오 저장소에 추가하게 한다",
       "sourceHash": "32a46b25dd41bcd7aafe616d6b38cafa82c811f7bf06e1573e57e22b4743940c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Send triggering conditions and misuse found in telemetry/incident data to testing for inclusion in the scenario repository"
     },
     {
       "key": "FPW.9-A01.steps.2",
       "source": "품질 피드백을 수용하고 다음 Version 개선 과제로 Feature Owner에게 연결한다",
       "sourceHash": "20df4bb906fb5fef68f1503cc84a39ca9f908a482aac0b533dbe45441b33226e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Accept quality feedback and link next-Version improvement tasks to the Feature Owner"
     },
     {
       "key": "FPW.9-A01.checks.0",
       "source": "수용한 피드백마다 담당과 반영 대상(시나리오·Version)이 있다",
       "sourceHash": "67da78498dd0e3d02be65cb1126f13ab7f973f0be042506938b7856d9ad262a6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every accepted feedback item has an owner and target scenario/Version"
     },
     {
       "key": "FPW.9-A02.name",
@@ -7279,36 +7303,36 @@
       "key": "FPW.9-A02.trigger",
       "source": "Flag 만료 30일 전 알림, 기능 대체·폐기 결정",
       "sourceHash": "20e4cc2af5d2c4d95b2de101ccd0f7b203581db5ea5f68ce2ecb6d315b4f03ce",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "30-day Flag expiry notice or Feature replacement/discontinuation decision"
     },
     {
       "key": "FPW.9-A02.steps.0",
       "source": "만료 알림을 받은 Release·Experiment Flag의 연장 또는 Retirement를 정한다",
       "sourceHash": "0551e9e98c5298f648a31816dc8849b54d341f47700804216cd822625757a748",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decide whether to extend or retire Release/Experiment Flags after expiry notification"
     },
     {
       "key": "FPW.9-A02.steps.1",
       "source": "Retirement면 사유·영향 차량·다음 정기 릴리스 예정일을 적어 요청한다",
       "sourceHash": "79635f0bd026ffeacde34f41d4002ba0240c7470f677a81e4e1fdbeefa076b66",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For Retirement, request with reason, affected vehicles and next scheduled release date"
     },
     {
       "key": "FPW.9-A02.steps.2",
       "source": "구 Version이 남은 차량이 있는지 Fleet 적용 현황으로 확인해 요청에 붙인다",
       "sourceHash": "24848edfcc9b1039c1ef0a838798e60e81660f48ad0bf6cf33a9d0475c7a48d0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check Fleet application status for vehicles retaining old Versions and attach the results"
     },
     {
       "key": "FPW.9-A02.checks.0",
       "source": "Retirement 요청에 사유와 영향 범위가 있다",
       "sourceHash": "bc7c4305dce8228be532c8844f6295d6979653c6671836f8506ad428b7d674b4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Retirement request includes reason and affected scope"
     },
     {
       "key": "FPW.9-A03.name",
@@ -7321,29 +7345,29 @@
       "key": "FPW.9-A03.steps.0",
       "source": "요청자가 아닌 요구 Owner가 Retirement를 승인하고, F2 이상이면 Safety Manager도 승인한다",
       "sourceHash": "eb888ce010bbd9e7ffebf157720fbea1282c9f6e8a8b4ddbdd17c0015a95f8f1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A requirements Owner distinct from the requester approves Retirement; F2 or higher also requires Safety Manager approval"
     },
     {
       "key": "FPW.9-A03.steps.1",
       "source": "ADS Feature를 폐기하는 경우 영구 비활성화·명령 키 폐기·Catalog 퇴역을 승인 조건으로 단다",
       "sourceHash": "f528d9abcc36f71ed0c379637d8f4f4242033db77effb450d4fe6b2bafd8bddd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "For ADS retirement, require permanent deactivation, command-key revocation and Catalog retirement"
     },
     {
       "key": "FPW.9-A03.steps.2",
       "source": "승인 후 삭제 기한을 정해 Feature Owner와 통합 조직에 알린다",
       "sourceHash": "799aaa14bb55df658dbfd7ab8266d16bc41544fefd6cc63203b44b590be231f3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Set the removal deadline after approval and notify the Feature Owner and integration organization"
     },
     {
       "key": "FPW.9-A03.checks.0",
       "source": "승인자가 요청자와 다르고 F2 이상에 Safety Manager 승인이 있다",
       "sourceHash": "35f5b084d2ae242ed176e884bb0483d0a49ea9ee661075a55364ae3b074d23a0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Approver differs from requester, and F2 or higher has Safety Manager approval"
     },
     {
       "key": "FPW.9-A04.name",
@@ -7356,29 +7380,29 @@
       "key": "FPW.9-A04.steps.0",
       "source": "삭제 기한 안에 해당 Flag의 차량 SW 코드·설정·시험을 지우도록 통합 조직과 계획을 세운다",
       "sourceHash": "b6cde8a30312dec53767891152e2986090f91cc33a980ec02cbe24bc36e55a6e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Plan removal of onboard SW code, configuration and tests with integration before the deadline"
     },
     {
       "key": "FPW.9-A04.steps.1",
       "source": "단계마다 완료 조건을 확인하고 Retirement 단계로 기록한다",
       "sourceHash": "16ae1d7d58ab71dd7da0e57e89bb7eff659aa04401ef5efee097f309c7f11ebe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify each stage's completion criteria and record it as a Retirement stage"
     },
     {
       "key": "FPW.9-A04.steps.2",
       "source": "구 Version이 남은 차량은 상태 보고로 잔존이 0이 된 것을 확인한 뒤 마지막 단계를 닫는다",
       "sourceHash": "0052f5dfb6f8ffad9bed90c278f33bf91757d4b9b5d9d8f1142839cc67c34ebe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Close the final stage only after status reports confirm zero vehicles retain the old Version"
     },
     {
       "key": "FPW.9-A04.checks.0",
       "source": "Retirement 단계가 순서대로 모두 기록되고 잔존 차량이 0이다",
       "sourceHash": "9c3231b5c25b2d7a1c3deed468e41baf31adba475a4d417051b4bc6e363bdcd4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All Retirement stages are recorded in order and zero vehicles retain the old Version"
     },
     {
       "key": "FPW.9-A06.name",
@@ -7391,29 +7415,29 @@
       "key": "FPW.9-A06.steps.0",
       "source": "Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다",
       "sourceHash": "53aefcd5f003a23f6bb9edccae435679639f45f7479bb14b3a2e4e7b0b744b82",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Open a removal PR for the approved Flag in Flag lifecycle management"
     },
     {
       "key": "FPW.9-A06.steps.1",
       "source": "최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다",
       "sourceHash": "46689ab61704522914631cc774b20a23790ec82d2b60347d67fe563c16f53549",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Keep only the final-value branch, merge and confirm healthy reconciliation (zero code references)"
     },
     {
       "key": "FPW.9-A06.steps.2",
       "source": "4단계 기록에 정적 분석 근거로 마지막 스캔을 남긴다",
       "sourceHash": "6b8c6ad1789635995f653d82a8442289e74455004ff2bac02ad126087e9cc899",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Retain the latest scan as static-analysis evidence in the four-stage record"
     },
     {
       "key": "FPW.9-A06.checks.0",
       "source": "제거 PR 병합 뒤 스캔에서 해당 Flag 참조가 0건이다",
       "sourceHash": "8854b7b5a416829ef5fdb7ddaef6976347c8c77a97b3bc1bb6bc51ee4ab5cdce",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The post-merge scan finds zero references to the Flag"
     },
     {
       "key": "FPW.9-A05.name",
@@ -7426,29 +7450,29 @@
       "key": "FPW.9-A05.steps.0",
       "source": "Feature Version을 DEPRECATED로 전이해 신규 사용을 막는다",
       "sourceHash": "30ab882da3076860a47f95029c964b242cb2d024761fcea5082d5c3b8e021c7a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transition the Feature Version to DEPRECATED to prevent new use"
     },
     {
       "key": "FPW.9-A05.steps.1",
       "source": "Retirement 단계가 모두 끝나면 RETIRED로 전이한다",
       "sourceHash": "acbb91b2c16e4daa79b8594577905c09cd7995c0dbdf3c948cf07444ad396818",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Transition to RETIRED after all Retirement stages complete"
     },
     {
       "key": "FPW.9-A05.steps.2",
       "source": "Flag ID를 재사용 금지로 남기고 상품 Owner에게 Catalog 반영을 알린다",
       "sourceHash": "2adea5dcf9449c62bccc5e30fb2cf77fd68b1eff65e4d241d05400b47e35075b",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Mark the Flag ID as non-reusable and notify the product Owner to update the Catalog"
     },
     {
       "key": "FPW.9-A05.checks.0",
       "source": "Lifecycle이 RETIRED이고 Flag ID 재사용 금지 표시가 있다",
       "sourceHash": "5670e192960f453fe11f3840731a6b95cecf02d8b2ab1cb766cd610cafa7ca24",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The Lifecycle is RETIRED and the Flag ID is marked non-reusable"
     },
     {
       "key": "FPW.9.BP1.name",
@@ -7461,8 +7485,8 @@
       "key": "FPW.9.BP1.definition",
       "source": "드릴·복원 관측·이상 조사 결과에서 반복 문제와 개선 항목을 식별한다. 수용한 피드백을 담당자·후속 Version·시험 시나리오에 연결하여 반영과 효과를 추적한다.",
       "sourceHash": "2eb22a7a199f0e5753003925db89c874d55ba84d290f3a5472fa84bfaad4900e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Identify recurring problems and improvements from drills, restoration observations and anomaly investigations. Link accepted feedback to owners, subsequent Versions and test scenarios to track incorporation and effectiveness."
     },
     {
       "key": "FPW.9.BP2.name",
@@ -7475,8 +7499,8 @@
       "key": "FPW.9.BP2.definition",
       "source": "만료가 다가오거나 종료할 Flag의 연장 또는 Retirement 필요성을 검토한다. 영향 차량·구 Version 잔존과 예정 릴리스를 확인하고 종료 사유와 범위를 명시한 요청을 제출한다.",
       "sourceHash": "e364c14e58b0d2e75a8f6eb252cb49e1ab3cb056c061f4c7669db4d86629944a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess extension or Retirement for expiring or discontinued Flags. Check affected vehicles, retained old Versions and planned releases; submit a request specifying reason and scope."
     },
     {
       "key": "FPW.9.BP3.name",
@@ -7489,8 +7513,8 @@
       "key": "FPW.9.BP3.definition",
       "source": "요청자와 구분된 책임자가 영향·안전 조건과 종료 계획을 검토한다. 필요한 독립 승인을 확보하고 삭제 기한·조건과 후속 책임을 통합·기획에 인계한다.",
       "sourceHash": "8f31330d24f0757eebe4e75941fce77fb1af1c7fffd6a5b6ce7dea9f25f21947",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "A responsible person distinct from the requester reviews impact, safety conditions and retirement plans. Obtain required independent approval and hand deadlines, conditions and follow-up ownership to integration/planning."
     },
     {
       "key": "FPW.9.BP4.name",
@@ -7503,8 +7527,8 @@
       "key": "FPW.9.BP4.definition",
       "source": "승인된 Retirement 범위의 코드·설정·시험 제거와 차량 잔존을 단계별로 확인한다. 각 단계의 근거를 기록하고 잔존 및 후속 조건이 해소되어야 종료 단계를 닫는다.",
       "sourceHash": "5762ac3f10419b95e0cee69cd4937403a619652fc8536246241483a45aac36fb",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check approved code, configuration and test removal and remaining vehicles stage by stage. Record evidence and close the final stage only after remaining vehicles and follow-up conditions are resolved."
     },
     {
       "key": "FPW.9.BP5.name",
@@ -7517,8 +7541,8 @@
       "key": "FPW.9.BP5.definition",
       "source": "승인된 Flag 제거 변경을 검토하고 최종 값 분기와 병합 결과를 확인한다. 정적 분석·대사 결과를 보존하여 코드 참조가 제거되었는지 판단한다.",
       "sourceHash": "5a6fa35f9464bfddc65d60244e2ef0ed0ad0fe71abd17ad61c6697397235cec3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review approved Flag-removal changes and verify the final-value branch and merge. Retain static-analysis/reconciliation evidence to determine whether code references were removed."
     },
     {
       "key": "FPW.9.BP6.name",
@@ -7531,8 +7555,8 @@
       "key": "FPW.9.BP6.definition",
       "source": "신규 사용 중지와 최종 종료의 조건을 구분하여 Lifecycle을 전이한다. Retirement 근거·수행 기록·ID 재사용 금지를 보존하고 상품 구성에 종료 사실을 반영하도록 전달한다.",
       "sourceHash": "a17493d9e1689eefa32f935eb174e1fb025d8d5d88f03305cd09deaf4b4c3af5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Distinguish stopping new use from final retirement when transitioning the Lifecycle. Preserve Retirement evidence, execution records and ID non-reuse; notify product configuration owners of retirement."
     },
     {
       "key": "FPW.9-S1.label",
@@ -7545,8 +7569,8 @@
       "key": "FPW.9-S2.label",
       "source": "Flag 만료 30일 전 알림, 기능 대체·폐기 결정",
       "sourceHash": "20e4cc2af5d2c4d95b2de101ccd0f7b203581db5ea5f68ce2ecb6d315b4f03ce",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "30-day Flag expiry notice or Feature replacement/discontinuation decision"
     },
     {
       "key": "FPW.9-E1.label",
@@ -7580,71 +7604,71 @@
       "key": "FPW.10.ref",
       "source": "표준 보고서 16장(ASPICE 평가), 17장(협력사), 9.11절 FFG-VEH-016, 14·15장(원산지)",
       "sourceHash": "d698881bc5a545e9cdd98cdae6f0f6db45e40104ab77eaca513f5165b1ab7b2d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Standards report chapter 16 (ASPICE assessment), chapter 17 (suppliers), section 9.11 FFG-VEH-016, chapters 14/15 (origin)"
     },
     {
       "key": "FPW.10.purpose",
       "source": "Feature Flag 관련 SW·서비스를 공급하는 협력사를 계약 전에 평가하고, 보고서 요구를 DIA·CIA에 넣어 계약한 뒤, Gate별 납품물을 OEM 환경에서 독립적으로 입고 검사해 통합과 V&V의 입력으로 넘긴다.",
       "sourceHash": "4b71eb90805b53b24f8f642a3e6f6402226930e275451fa8b4793d858567c175",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess suppliers of Feature Flag SW/services before contracting. Incorporate report requirements into DIA/CIA contracts, then independently inspect Gate deliverables in the OEM environment before handing them to integration and V&V."
     },
     {
       "key": "FPW.10.O1.text",
       "source": "협력사 역량(ASPICE·사이버보안·SMS)이 계약 전에 확인된다.",
       "sourceHash": "d3214624441e3c58700f2e14347f9b631b629a08dec1b0ac1c2d2d1b2193fa5a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Supplier capabilities (ASPICE, cybersecurity, SMS) are checked before contracting."
     },
     {
       "key": "FPW.10.O2.text",
       "source": "DIA·CIA에 보고서 Version·RASIC·납품물·통지 기한·안전 정보 제공 의무가 들어간다.",
       "sourceHash": "c6ce927ae4543f10e16ba332f6007b7be390a84411ecafe9c2f8073c659b55a0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "DIA/CIA include report Version, RASIC, deliverables, notification deadlines and safety-information obligations."
     },
     {
       "key": "FPW.10.O3.text",
       "source": "기존 구현을 재사용하면 차이가 진단되어 G2에 보고된다.",
       "sourceHash": "14cfd33bf5d69d6faaaa6ae0c5c44cfdf5dfa77e28332a7ed15de3dec6e6e5d0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Reused implementation gaps are assessed and reported to G2."
     },
     {
       "key": "FPW.10.O4.text",
       "source": "납품물이 독립성이 보장된 확인 조치와 OEM 입고 검사로 판정된다.",
       "sourceHash": "5bb20e58873a8b2b2033020c26b886a2e4253ed2770e735fc6fa2a69258cd101",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Deliverables are assessed through independent confirmation measures and OEM intake inspection."
     },
     {
       "key": "FPW.10.O5.text",
       "source": "공급망 원산지와 EOL 프로비저닝이 기록·검증된다.",
       "sourceHash": "727410e18393a91a6c7fd069aca01360d508fa817b1b5653fac79834556cbc2d",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Supply-chain origin and EOL provisioning are recorded and verified."
     },
     {
       "key": "FPW.10.entry.0",
       "source": "Feature Flag 관련 SW·서비스의 외부 조달이 결정되었다",
       "sourceHash": "988c937d1b5bd00c8e259aeb0813de2990c20396c75773dcf7f41181d7d32b6f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "External procurement of Feature Flag SW/services is decided"
     },
     {
       "key": "FPW.10.exit.0",
       "source": "계약(DIA·CIA)이 체결되고 납품물이 Gate별 합격 기준으로 판정되었다",
       "sourceHash": "f0d0d30efa6996865f12f940cf6d3c7d5815b6fe9dabb55ad8fdce9e21d015b1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "DIA/CIA contracts are signed and deliverables assessed against Gate-specific acceptance criteria"
     },
     {
       "key": "FPW.10.exit.1",
       "source": "원산지 속성과 EOL 프로비저닝 검증이 기록되었다",
       "sourceHash": "3d51eaf48217ea8f20838e284f509036d7a14fe2dbb24bd4500647cb6ea5e81f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Origin attributes and EOL provisioning verification are recorded"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-CANDIDATE.name",
@@ -7657,15 +7681,15 @@
       "key": "FPW.10.WP-SUPPLIER-CANDIDATE.content.0",
       "source": "후보 협력사와 공급할 SW·서비스 범위(LPC, Safety Guard, 시험 도구, 운영 서비스)",
       "sourceHash": "c66160e9b0de731327777cac92a4f33630c40609b545bf5804332a7f394531bf",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Candidate suppliers and SW/service scope (LPC, Safety Guard, test tools, operational services)"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-CANDIDATE.content.1",
       "source": "ADS 관련 여부와 대상 시장",
       "sourceHash": "fa0f62946e6924b69facbef5d4f5855efd94bb9b5d83b4794cef39ff07cdbcf4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ADS applicability and target markets"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-ASSESS.name",
@@ -7678,15 +7702,15 @@
       "key": "FPW.10.WP-SUPPLIER-ASSESS.content.0",
       "source": "ASPICE·사이버보안 평가 결과와 Feature Flag 특화 평가 질문 결과",
       "sourceHash": "8b3f1d07996c158474b7379d719f8416994f5a7369593db29b585e85dfa50e8e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ASPICE/cybersecurity assessments and Feature Flag-specific assessment responses"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-ASSESS.content.1",
       "source": "ADS 협력사의 SMS 역량 평가, 부족 항목의 개선 계획과 기한",
       "sourceHash": "d394b84cb29ddc6fc3ddb0a242ab06f722ef2975dda5de0de094543c800caf3a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "ADS supplier SMS assessment and deficiency improvement plans/deadlines"
     },
     {
       "key": "FPW.10.WP-DIA.name",
@@ -7699,22 +7723,22 @@
       "key": "FPW.10.WP-DIA.content.0",
       "source": "인용한 보고서 Version과 적용 장, RASIC, Gate별 납품물",
       "sourceHash": "6692c7ac0422e974d204a0d23b4a3691dea83cf4aa64656d8b1ae3d5861873cd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Referenced report Version, applicable chapters, RASIC and Gate deliverables"
     },
     {
       "key": "FPW.10.WP-DIA.content.1",
       "source": "시간 예산 부속서, 결함·변경 통지 기한, 현장 지원 SLA",
       "sourceHash": "947939c55d74ea3faf35910f0b40cc584e7e4e343bd059494042fca5bce43f1c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Timing-budget annex, defect/change notification deadlines and field-support SLA"
     },
     {
       "key": "FPW.10.WP-DIA.content.2",
       "source": "당국 보고·리콜 판단을 위한 안전 정보 제공 범위와 기한",
       "sourceHash": "10cdacaff0ace22aaa2f0915040f026aa6afea5adf77b35fbe780733e8bc84b1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Scope and deadlines for safety information supporting authority reports and recall decisions"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-DIFF.name",
@@ -7727,15 +7751,15 @@
       "key": "FPW.10.WP-SUPPLIER-DIFF.content.0",
       "source": "재사용·인수한 Feature Flag 구현과 보고서 요구의 차이",
       "sourceHash": "e53f0cf2691b64de6693acfcb93cc30fd802fe2e8848cf1d26842ddeb2c9ab0e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Gaps between reused/acquired Feature Flag implementation and report requirements"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-DIFF.content.1",
       "source": "차이별 위험과 보완 계획",
       "sourceHash": "e13664ad6f424683bf12d324635fd4835f3ebfc57bf7fc4a7c32148eac899157",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Risk and remediation plan for each gap"
     },
     {
       "key": "FPW.10.WP-CONFIRMATION-PLAN.name",
@@ -7748,15 +7772,15 @@
       "key": "FPW.10.WP-CONFIRMATION-PLAN.content.0",
       "source": "협력사 범위의 확인 검토·감사·기능안전 평가와 수행자",
       "sourceHash": "7a13c6eeff92df3105901a9f05d9dde3c720130ccd0d1abca15ad98671e652e2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Supplier-scope confirmation reviews, audits, functional safety assessments and performers"
     },
     {
       "key": "FPW.10.WP-CONFIRMATION-PLAN.content.1",
       "source": "수행자 독립성 수준과 근거",
       "sourceHash": "13691c15b1c0861a56c75de836ac77e5203cbfd26bd1a4df385cb2dd2a7adb11",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Performer independence level and evidence"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-RELEASE-PACKAGE.name",
@@ -7769,29 +7793,29 @@
       "key": "FPW.10.WP-SUPPLIER-RELEASE-PACKAGE.content.0",
       "source": "대상 Feature Version·패키지 버전·협력사 Function·SW Component·ECU 매핑",
       "sourceHash": "32f5ebf828ebb59e34467596a39136ddc58e9aae6c5903c95571c3a9f26b7116",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Target Feature Version, package Version, supplier Function/SW Component/ECU mapping"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-RELEASE-PACKAGE.content.1",
       "source": "API 계약·개발 문서·매핑·지원 범위·차량 조건·진단·안전 보안·SDK Stub Mock·시험 근거·변경 안내의 필수 10항목",
       "sourceHash": "ac95e1705c3f70ef190f62816640a209567abab4e9e0ebf249f6b37d2805e166",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Ten required items: API contract, development documents, mappings, support scope, vehicle conditions, diagnostics, safety/security, SDK/Stub/Mock, test evidence and change notices"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-RELEASE-PACKAGE.content.2",
       "source": "외부 출처와 서버 보관 본문·SHA-256·대상 manifest·제출자·제출 시각",
       "sourceHash": "1cc2a2be63bfd24fedfb65b2a38ea8b4a3b8ffde6ffe35a5d2cf90c5e5151da2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "External source, server-retained body, SHA-256, target manifest, submitter and submission time"
     },
     {
       "key": "FPW.10.WP-SUPPLIER-RELEASE-PACKAGE.content.3",
       "source": "OEM 환경 재실행 보고서와 안전 사용 가정",
       "sourceHash": "10b8057e5e52002e85b8d78f26e38dc7c6a3a3efffb77a33aa0ee420d0c4d3d4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "OEM rerun report and assumptions of safe use"
     },
     {
       "key": "FPW.10.WP-INTAKE-RESULT.name",
@@ -7804,22 +7828,22 @@
       "key": "FPW.10.WP-INTAKE-RESULT.content.0",
       "source": "검사 항목(IN-01~IN-12)별 OEM 환경 재실행 결과",
       "sourceHash": "aa453ab9f991fc3dbbe5384626618b859ec5658bc1a60320a1e91e613db813a2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "OEM rerun results for inspection items IN-01 through IN-12"
     },
     {
       "key": "FPW.10.WP-INTAKE-RESULT.content.1",
       "source": "Gate별 합격 판정과 Supplier Gate 기록",
       "sourceHash": "a658efb83f6aa503dfb8a9afcdeb060cd0a0909cee0102069741353e6455edda",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Gate-specific acceptance decisions and Supplier Gate records"
     },
     {
       "key": "FPW.10.WP-INTAKE-RESULT.content.2",
       "source": "Safety Manual 사용 가정(AoU) 목록",
       "sourceHash": "efcd10f3d9755d0c284a8e30b9bdb18f48b3a2769ca9f2de1f09535572bd063c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Safety Manual assumptions of use (AoU)"
     },
     {
       "key": "FPW.10.WP-ORIGIN-RECORD.name",
@@ -7832,15 +7856,15 @@
       "key": "FPW.10.WP-ORIGIN-RECORD.content.0",
       "source": "구성요소별 개발 주체·국가·소유·통제 속성(SBOM 연계)",
       "sourceHash": "305b394d488575655f72179d0aeb6487f8250bc0eb10772e926e520f2b1d22a1",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Developer, country, ownership and control attributes by component (linked to SBOM)"
     },
     {
       "key": "FPW.10.WP-ORIGIN-RECORD.content.1",
       "source": "미국 시장 적합성 선언 근거와 10년 보존 위치",
       "sourceHash": "73db723bb16e631d24ea281eb8ec5420fa01d1d921b4be3127cdd55efa7f4812",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "US-market conformity declaration evidence and ten-year retention location"
     },
     {
       "key": "FPW.10.WP-EOL-RECORD.name",
@@ -7853,15 +7877,15 @@
       "key": "FPW.10.WP-EOL-RECORD.content.0",
       "source": "Feature별 초기 기록 쓰기와 프로비저닝 표식 설정 결과",
       "sourceHash": "6369d15da168a7d555ab23cd81b2f80d7033326759c08a84a8383766688ab87f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Per-Feature initial record writes and provisioning marker results"
     },
     {
       "key": "FPW.10.WP-EOL-RECORD.content.1",
       "source": "표식이 있는 ECU의 기록 누락 시 동작 확인 결과",
       "sourceHash": "3e30b0e2971550f28211e65c18d965fe0ebd8610c225b3e2717b7722c59e65b3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Behavior when a marked ECU has no record"
     },
     {
       "key": "FPW.10-A01.name",
@@ -7874,29 +7898,29 @@
       "key": "FPW.10-A01.steps.0",
       "source": "후보 협력사의 ASPICE·사이버보안 평가 결과를 계약 전에 받아 확인한다",
       "sourceHash": "2febe55aafaba0b2252df94ff4649fcf32d523911e709aa5debb1cf234d79810",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Obtain and review candidate ASPICE/cybersecurity assessments before contracting"
     },
     {
       "key": "FPW.10-A01.steps.1",
       "source": "평가 계획에 Feature Flag 특화 평가 질문을 넣고 결과를 기록한다",
       "sourceHash": "72e15c8eb57aa187d27a549ec59a21ee97b5a751d45aa68ea922c1f98d411cb7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Include Feature Flag-specific questions in the assessment plan and record results"
     },
     {
       "key": "FPW.10-A01.steps.2",
       "source": "ADS 관련 협력사는 SMS 역량 평가를 추가하고, 부족하면 개선 계획과 기한을 합의한다",
       "sourceHash": "84f1d2e3e32d59140ec42c0c69f1ec60c20cace2f4859600622f724f2b46c13c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Add SMS assessment for ADS suppliers; agree deficiency improvement plans and deadlines"
     },
     {
       "key": "FPW.10-A01.checks.0",
       "source": "계약 전에 평가 결과와 부족 항목의 개선 계획이 있다",
       "sourceHash": "c3badc380586f091c318b424f9021ecab4dcab3c5cfee43185589f8931d88a93",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assessment results and deficiency plans exist before contracting"
     },
     {
       "key": "FPW.10-A02.name",
@@ -7909,29 +7933,29 @@
       "key": "FPW.10-A02.steps.0",
       "source": "DIA·CIA에 보고서 Version과 적용 장, RASIC, Gate별 납품물, 시간 예산 부속서, 통지 기한, 현장 지원 SLA를 넣는다",
       "sourceHash": "177a821de3a1143abe67a816e69b16bf463380bdf314310ac50ff997e7f762dd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Include report Version/chapters, RASIC, Gate deliverables, timing-budget annex, notification deadlines and field-support SLA in DIA/CIA"
     },
     {
       "key": "FPW.10-A02.steps.1",
       "source": "법규 담당이 당국 보고·리콜 판단·사건 조사에 필요한 안전 정보의 제공 범위와 기한을 정해 넣는다",
       "sourceHash": "39a2afce4fd7971d34976f5d6a2fe0ffe4fddac35f67aff3699516004cdf71c4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Regulatory staff specify safety-information scope and deadlines for authority reporting, recall decisions and incident investigations"
     },
     {
       "key": "FPW.10-A02.steps.2",
       "source": "법무가 계약 조항을 검토하고 구매가 체결한다",
       "sourceHash": "fa67f15765da9cf04622bead19a0d2df069850c0ac41c9c7650af3ba0a26e1a9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Legal reviews the clauses and Procurement signs the contract"
     },
     {
       "key": "FPW.10-A02.checks.0",
       "source": "일곱 항목과 안전 정보 제공 조항이 모두 계약에 있다",
       "sourceHash": "d9483d343ee0219c519a6c4c89a3b969d317114823ef4ec11b9d46370c8fe373",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All seven items and safety-information provision clauses are in the contract"
     },
     {
       "key": "FPW.10-A03.name",
@@ -7944,29 +7968,29 @@
       "key": "FPW.10-A03.steps.0",
       "source": "협력사 범위의 확인 검토·감사·기능안전 평가를 계획한다",
       "sourceHash": "87b20d5f8917dd34d5f134e03e109375aa78cb0324dd1b3a60a21a46d6e27a97",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Plan supplier confirmation reviews, audits and functional safety assessments"
     },
     {
       "key": "FPW.10-A03.steps.1",
       "source": "참조 ASIL에 맞는 독립성 수준을 만족하는 수행자를 지정한다",
       "sourceHash": "d116d56ea1d4cece965693df06e724849e9e73f4843a5bd41af448d66f59b43c",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assign performers satisfying the independence level for the reference ASIL"
     },
     {
       "key": "FPW.10-A03.steps.2",
       "source": "협력사 자체 선언만으로 승인하지 않도록 확인 결과를 입고 판정의 조건으로 건다",
       "sourceHash": "6736f22560261841f0b34fab1f1a4b8acaf90f759eb0f8f730b3a67bc6510b2f",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Require confirmation results for intake decisions so supplier self-declarations alone cannot establish approval"
     },
     {
       "key": "FPW.10-A03.checks.0",
       "source": "확인 조치마다 독립성을 만족하는 수행자가 지정되었다",
       "sourceHash": "76884b5cf931ea5599a06da996b0b360b7f801a1e88eed3134a123a300b379e0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Every confirmation measure has a performer meeting independence requirements"
     },
     {
       "key": "FPW.10-A04.name",
@@ -7979,29 +8003,29 @@
       "key": "FPW.10-A04.steps.0",
       "source": "텔레매틱스·OTA·Feature Flag SW 구성요소의 개발 주체와 원산지를 SBOM과 함께 받는다",
       "sourceHash": "804ddde8d59436c39e96c01bcad52ff24bf943f8a887db858b6dabe59906fccd",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Obtain developers and origins of telematics, OTA and Feature Flag SW components with the SBOM"
     },
     {
       "key": "FPW.10-A04.steps.1",
       "source": "미국 시장 차량의 해당 구성요소는 개발 주체·국가·소유·통제 속성을 SBOM에 기록한다",
       "sourceHash": "7a85aae83d3a04f9f28e9541a6a530d47d8835090be87535868832991b9a4a85",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record developer, country, ownership and control attributes in the SBOM for applicable US-market components"
     },
     {
       "key": "FPW.10-A04.steps.2",
       "source": "적합성 선언 근거로 10년 보존 위치를 지정한다",
       "sourceHash": "99d8afc4b0251aba8970c2b49607fd0e18073285797a5675bf92f85fd8f06efe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Specify a ten-year retention location for conformity-declaration evidence"
     },
     {
       "key": "FPW.10-A04.checks.0",
       "source": "대상 구성요소 모두에 원산지 속성이 있다",
       "sourceHash": "522eef81df8ddde527263de05c826c6dadfe290df08dfca2b1a3de10d8facc6e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All target components have origin attributes"
     },
     {
       "key": "FPW.10-A05.name",
@@ -8014,36 +8038,36 @@
       "key": "FPW.10-A05.trigger",
       "source": "기존 Feature Flag 구현의 재사용·인수 결정",
       "sourceHash": "5fd333d08043f9ed5c975715d409886488e621f7b0c90844e7c92ccbed73f2d7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision to reuse or acquire an existing Feature Flag implementation"
     },
     {
       "key": "FPW.10-A05.steps.0",
       "source": "재사용·인수할 구현을 보고서 요구와 대조하는 진단을 수행한다",
       "sourceHash": "c307762144f3f06feff9f7d05090d0de50574939d59676ba2c459c2081c26abc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Assess the reused/acquired implementation against report requirements"
     },
     {
       "key": "FPW.10-A05.steps.1",
       "source": "차이마다 위험과 보완 계획을 정리한다",
       "sourceHash": "53c419062ca0f68c8dddedb2bd3549555edbf590191037616f7e8647b43ed7b2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Document risks and remediation plans for every gap"
     },
     {
       "key": "FPW.10-A05.steps.2",
       "source": "차이 보고를 Safety Manager에게 넘겨 G2 영향 분석에 넣게 한다",
       "sourceHash": "86b9c3cdd70f1d2283ad3a369e9af048172026f9dab88d42b02647be9b1b8aa2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Send the gap report to the Safety Manager for G2 impact analysis"
     },
     {
       "key": "FPW.10-A05.checks.0",
       "source": "차이 보고가 G2 영향 분석의 입력으로 등록되었다",
       "sourceHash": "61a032a3536030d2a0b0dd5511339202b95c6d48d7479c2cbcce312f85ec4172",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "The gap report is registered as G2 impact-analysis input"
     },
     {
       "key": "FPW.10-A06.name",
@@ -8056,64 +8080,64 @@
       "key": "FPW.10-A06.steps.0",
       "source": "대상 Feature Version의 협력사 기능·SW Component 매핑과 필수 10항목을 협력사 이관 포털에서 확인한다",
       "sourceHash": "2b1ca8f290cc9a5fa4c91462d014c2ff97673e7b1c3640a36b368e9a20abc28a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check target-Version supplier Function/SW Component mappings and the ten required items in the supplier transfer portal"
     },
     {
       "key": "FPW.10-A06.steps.1",
       "source": "서버 보관 본문의 체크섬·대상 manifest·메타데이터를 대조하고 본문 없이 신고만 받은 산출물은 검수 보류로 남긴다",
       "sourceHash": "12066df529fa63212ca359c933cf61a6f6eccc1c4b905ee582da3ef60be4b9e6",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare server-retained body checksums, target manifest and metadata; hold declared artifacts without bodies"
     },
     {
       "key": "FPW.10-A06.steps.2",
       "source": "입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다",
       "sourceHash": "32edbdbed3dc258631ee082223731fdf6a6be918476587702256671dc76115b2",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Rerun inspection items in the OEM environment; reinspect every item for corrected deliveries"
     },
     {
       "key": "FPW.10-A06.steps.3",
       "source": "Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다",
       "sourceHash": "5fe028fc33552aee7093b6505b7b388031ae9020121430fcffd92be0aa1de616",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Hand Safety Manual assumptions of use to integration"
     },
     {
       "key": "FPW.10-A06.steps.4",
       "source": "현재 검수 기준으로 10항목을 확인하고 작성·제출·검수 요청자와 다른 검수자가 항목별 결과와 의견을 기록한다",
       "sourceHash": "9fbfb02d1259ae683788d87187bb69748d26f641eacabbd15a757bf478dcfeb5",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Check all ten items against current criteria. A reviewer distinct from author, submitter and inspection requester records item-level results and comments"
     },
     {
       "key": "FPW.10-A06.steps.5",
       "source": "현재 유효한 패키지만 Supplier Gate 합격 근거로 쓰고 기준 개정 뒤에는 이전 판정 기록을 보존하면서 전이를 보류한다",
       "sourceHash": "4121eee2b43bc03e13f80fa1a73e75df7fadc452dfe8afcf95c2bb900aff5692",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Use only currently valid packages for Supplier Gate acceptance; after criteria revisions, retain past decisions and hold transitions"
     },
     {
       "key": "FPW.10-A06.checks.0",
       "source": "필수 10항목 본문이 확인되고 모든 검사 항목의 OEM 환경 재실행 결과가 있다",
       "sourceHash": "009cd0480753adeff7d424cf2b76c23a89c8cecd9162d667cb5f00e47e230c31",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "All ten bodies are verified and every inspection item has OEM rerun results"
     },
     {
       "key": "FPW.10-A06.checks.1",
       "source": "작성·제출·요청자와 다른 검수자의 항목별 결과·현재 기준 개정·의견이 있다",
       "sourceHash": "877eb8ab74eb244e2228f66854cdc5f4921efb620e988a09827130ef470702f3",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "An independent reviewer records item results, current criteria revision and comments"
     },
     {
       "key": "FPW.10-A06.checks.2",
       "source": "현재 검수 근거와 Supplier Gate 판정이 연결되고 근거 변경 시 전이가 보류된다",
       "sourceHash": "65a507b2fdf37e82b856f4cbafb933adc270fdd59a8ab2e8f3ab540bc4c547d8",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Current inspection evidence links to the Supplier Gate decision; evidence changes hold transitions"
     },
     {
       "key": "FPW.10-A07.name",
@@ -8126,29 +8150,29 @@
       "key": "FPW.10-A07.steps.0",
       "source": "EOL에서 인증된 진단 세션으로 Feature별 초기 기록을 쓰고 지울 수 없는 프로비저닝 표식을 설정한다",
       "sourceHash": "1e428d199f342a3b46fff7f180296fb2247e1448266c8b93f591100205ed7aa0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "At EOL, write per-Feature initial records through an authenticated diagnostic session and set an indelible provisioning marker"
     },
     {
       "key": "FPW.10-A07.steps.1",
       "source": "표식이 있는 ECU에서 기록이 없을 때 첫 시동으로 보지 않는지 확인한다",
       "sourceHash": "a7203a6894ffb8723e8409b598ab8a3bee5ade6191d4127d08672993ff4838e0",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Confirm missing records on marked ECUs are not treated as first startup"
     },
     {
       "key": "FPW.10-A07.steps.2",
       "source": "결과를 생산 기준정보와 함께 기록한다",
       "sourceHash": "7b7a87251aaebfb82cb08c2581f5d02bb2b0bb9cb82da62212bed60e9902dfd4",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Record results with production reference data"
     },
     {
       "key": "FPW.10-A07.checks.0",
       "source": "대상 ECU 모두 표식과 초기 기록이 확인되었다",
       "sourceHash": "60abe72f7b9493f0bbe69a08006333705e367160ea3e7712a447685538a843c9",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Markers and initial records are verified on all target ECUs"
     },
     {
       "key": "FPW.10.BP1.name",
@@ -8161,8 +8185,8 @@
       "key": "FPW.10.BP1.definition",
       "source": "후보 협력사의 공급 범위와 평가 근거를 계약 전에 검토한다. 안전·보안·개발 역량의 부족 사항을 식별하고 개선 책임과 기한을 합의하여 계약 판단에 제공한다.",
       "sourceHash": "69bfbee52cdab74d0b56c71c9dd9c4b61e18655b50ba2dafc992ec1b930a716a",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Review candidate supplier scope and assessment evidence before contracting. Identify safety, security and development capability gaps and agree improvement owners and deadlines to support contracting decisions."
     },
     {
       "key": "FPW.10.BP2.name",
@@ -8175,8 +8199,8 @@
       "key": "FPW.10.BP2.definition",
       "source": "역할 분담·납품물·시간 예산·통지·현장 지원과 안전 정보 제공 조건을 계약에 명시한다. 법무 검토를 거쳐 책임 있는 구매 조직이 체결하고 후속 이행의 기준을 공유한다.",
       "sourceHash": "4e4f025297d4d899056c835653d779f8502fbb028ad129217af5f48a58c1d5dc",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Specify responsibilities, deliverables, timing budgets, notifications, field support and safety-information terms in the contract. Obtain Legal review and Procurement signature and share the baseline for subsequent fulfillment."
     },
     {
       "key": "FPW.10.BP3.name",
@@ -8189,8 +8213,8 @@
       "key": "FPW.10.BP3.definition",
       "source": "협력사 범위에서 필요한 확인 조치와 독립성 수준을 계획한다. 수행자를 지정하고 자체 선언과 OEM의 확인 결과를 구분하여 입고 판정의 조건을 마련한다.",
       "sourceHash": "3f864034adc9e933444493ae4f2897bcd6ffcec073882354f44618eca768defe",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Plan required supplier confirmation measures and independence levels. Assign performers, distinguish supplier declarations from OEM confirmation, and establish intake decision conditions."
     },
     {
       "key": "FPW.10.BP4.name",
@@ -8203,8 +8227,8 @@
       "key": "FPW.10.BP4.definition",
       "source": "공급 구성요소의 개발 주체·국가·소유·통제 속성을 SBOM과 연결하여 관리한다. 적용 시장의 판단 근거와 보존 책임을 식별해 추적 가능한 원산지 기록을 유지한다.",
       "sourceHash": "055d28d28b352a3c41ff6dfef3cfde681b4cdd91a5f53e2854427ed393696c90",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Manage component developer, country, ownership and control attributes linked to SBOM. Identify applicable-market decision evidence and retention responsibility to preserve traceable origin records."
     },
     {
       "key": "FPW.10.BP5.name",
@@ -8217,8 +8241,8 @@
       "key": "FPW.10.BP5.definition",
       "source": "재사용 또는 인수할 구현을 적용 요구와 비교하여 차이·위험·보완 계획을 식별한다. 분석 결과를 안전 영향 판단의 입력으로 전달하고 재사용 범위의 가정을 보존한다.",
       "sourceHash": "1b85c84bf8b961fb2ac918814efcc4174ee9297f4ea2c4c049e7f626d9684f08",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Compare reused/acquired implementation with applicable requirements to identify gaps, risks and remediation plans. Supply analysis to safety-impact decisions and preserve reuse assumptions."
     },
     {
       "key": "FPW.10.BP6.name",
@@ -8231,8 +8255,8 @@
       "key": "FPW.10.BP6.definition",
       "source": "계약된 Gate 납품물과 사용 가정을 OEM 환경에서 확인한다. 수정 납품의 재검사와 합격 기준을 적용하여 결과를 기록하고 통합 담당자에게 사용 가정을 인계한다.",
       "sourceHash": "8008f168a598744beec4a092333ede3f42c966d78819e898805cbc191f51ad18",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify contracted Gate deliverables and assumptions of use in the OEM environment. Apply reinspection and acceptance criteria to corrected deliveries, record results and hand assumptions to integration."
     },
     {
       "key": "FPW.10.BP7.name",
@@ -8245,8 +8269,8 @@
       "key": "FPW.10.BP7.definition",
       "source": "출고 구성의 초기 기록과 프로비저닝 표식이 의도한 장치에 남았는지 검증한다. 누락 기록을 정상 첫 시동으로 취급하지 않는지 확인하고 생산 기준정보와 결과를 연결한다.",
       "sourceHash": "856274809d74fbffd8f735b77cdb23ffdf269240ddc1dbb960538e6704769c1e",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Verify initial production records and provisioning markers remain on intended devices. Confirm missing records are not treated as normal first startup; link results to production reference data."
     },
     {
       "key": "FPW.10-S1.label",
@@ -8259,8 +8283,8 @@
       "key": "FPW.10-S2.label",
       "source": "기존 Feature Flag 구현의 재사용·인수 결정",
       "sourceHash": "5fd333d08043f9ed5c975715d409886488e621f7b0c90844e7c92ccbed73f2d7",
-      "status": "MISSING",
-      "english": null
+      "status": "TRANSLATED",
+      "english": "Decision to reuse or acquire an existing Feature Flag implementation"
     },
     {
       "key": "FPW.10-E1.label",

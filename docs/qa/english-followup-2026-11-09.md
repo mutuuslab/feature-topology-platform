@@ -45,3 +45,5 @@ root 2aa42b0b를 동기화하고 SW 전달 최초68개, 등록/제품라인204�
 업무 메타데이터 후속: FPW.3(안전요구·추적·정의승인)63개와 FPW.4(설계·정책·독립검토)69개를 추가했다. 현재1,800개 중 번역579/원천영어365/미번역856, 여섯 사전 fingerprint MATCH·unknown/duplicate0. 외부상태가 플랫폼 승인 가드를 우회하지 않는다는 원천 경계와 원격 Kill이 FTTI 내 안전기제를 대체하지 않는다는 문장을 보존한다.
 
 root 543c449b 원천으로 최신 SW 상세32개(총100개)와 FPW.5 V&V/G5 70개, FPW.6 Baseline/SUMS/서명배포 63개를 추가했다. copy는 9,178/9,178개, 타입9,276entry 불일치0. 업무 메타데이터1,802개 중 번역712/원천영어365/미번역725, 여덟 사전 fingerprint MATCH·unknown/duplicate0이다. G6 SW 업로드·패키지 생성과 RELEASE_MANAGER 독립심사를 구분하고, G6 서버 배포가 G7 차량 유효화를 뜻하지 않는 원천 의미를 보존했다. 새 계약 dist로 FE 타입과 SW/업무/언어 3파일20시험 PASS (`out/english-software-final-copy-tests.log`).
+
+상세 절차 FPW.7 출시110, FPW.8 이상·차단·복원/롤백148, FPW.9 품질·퇴역53, FPW.10 협력사74 = 385개를 추가했다. 업무 메타데이터1,802개 중 번역1,097/원천영어365/미번역340이며 모든 사전 fingerprint MATCH·unknown/duplicate0이다. source543의 승인자 분리·G6/G7 구분·차량 ACK/READBACK·현행 검수 기준·원문 승인 의미를 보존했다. FE 타입과 관련 언어/업무2파일11시험 PASS. 새 협력사 사전은 최종 묶음에서 다시 로더 검사한다.

@@ -1,4 +1,4 @@
-// 드로어·파괴적 액션 확인 — Esc로 닫고, 열릴 때 첫 입력으로 초점을 옮기고, 닫히면 원래 자리로 돌려준다.
+// 드로어·파괴적 액션 확인 — Esc로 닫고, 열릴 때 표시된 컨트롤로 초점을 옮기고, 닫히면 원래 자리로 돌려준다.
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ko } from '../copy/ko';
@@ -6,22 +6,41 @@ import { unsaved as U } from '../copy/unsaved';
 import { useUnsavedGuard } from './unsaved';
 import { Button } from './primitives';
 
+function tabStops(root: HTMLElement): HTMLElement[] {
+  return [...root.querySelectorAll<HTMLElement>('a[href], area[href], button, input, select, textarea, summary, [tabindex], [contenteditable="true"]')].filter((el) => {
+    if (el.tabIndex < 0 || el.matches(':disabled') || el.closest('[hidden], [inert]')) return false;
+    if (![...el.getClientRects()].some((r) => r.width > 0 && r.height > 0)) return false;
+    for (let at: HTMLElement | null = el; at; at = at.parentElement) {
+      const style = getComputedStyle(at);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+    }
+    return true;
+  }).sort((a, b) => (a.tabIndex || Number.MAX_SAFE_INTEGER) - (b.tabIndex || Number.MAX_SAFE_INTEGER));
+}
+
 function useOverlay(open: boolean, onClose: () => void) {
   const box = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  useEffect(() => { close.current = onClose; }, [onClose]);
   useEffect(() => {
     if (!open) return;
     const prev = document.activeElement as HTMLElement | null;
-    const t = window.setTimeout(() => box.current?.querySelector<HTMLElement>('input, button, [tabindex]')?.focus(), 0);
+    const t = window.setTimeout(() => {
+      const root = box.current;
+      const top = [...document.querySelectorAll('[aria-modal="true"]')].at(-1);
+      if (root && top === root) (tabStops(root)[0] ?? root).focus();
+    }, 0);
     const onKey = (e: KeyboardEvent) => {
       // 창이 겹치면(요청 Drawer 위의 확인 창) 맨 위 창만 닫는다 — 아래 창의 입력이 함께 사라지지 않게
       const top = [...document.querySelectorAll('[aria-modal="true"]')].at(-1);
       if (box.current && top && top !== box.current) return;
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); close.current(); }
       if (e.key === 'Tab' && box.current) {
-        const f = [...box.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])')];
-        if (!f.length) return;
+        const f = tabStops(box.current);
+        if (!f.length) { e.preventDefault(); box.current.focus(); return; }
         const [first, last] = [f[0], f[f.length - 1]];
-        if (e.shiftKey && document.activeElement === first) (e.preventDefault(), last.focus());
+        if (!f.includes(document.activeElement as HTMLElement)) (e.preventDefault(), (e.shiftKey ? last : first).focus());
+        else if (e.shiftKey && document.activeElement === first) (e.preventDefault(), last.focus());
         else if (!e.shiftKey && document.activeElement === last) (e.preventDefault(), first.focus());
       }
     };
@@ -29,9 +48,9 @@ function useOverlay(open: boolean, onClose: () => void) {
     return () => {
       window.clearTimeout(t);
       document.removeEventListener('keydown', onKey);
-      prev?.focus?.();
+      if (prev?.isConnected) prev.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
   return box;
 }
 
@@ -52,7 +71,7 @@ export function Drawer({ open, title, onClose, children, dirty = false }: { open
   return createPortal(
     <>
       <div className="ds-scrim" onClick={close} />
-      <div className="ds-drawer" role="dialog" aria-modal="true" aria-labelledby={id} ref={box}>
+      <div className="ds-drawer" role="dialog" aria-modal="true" aria-labelledby={id} tabIndex={-1} ref={box}>
         <header className="ds-drawer__head">
           <h2 id={id}>{title}</h2>
           <Button variant="ghost" icon="close" aria-label={ko.action.close} onClick={close} />
@@ -103,7 +122,7 @@ export function DangerConfirm({ open, title, body, confirmWord, actionLabel, onC
   return createPortal(
     <>
       <div className="ds-scrim" onClick={onClose} />
-      <div className="ds-modal ds-modal--danger" role="alertdialog" aria-modal="true" aria-labelledby={id} ref={box}>
+      <div className="ds-modal ds-modal--danger" role="alertdialog" aria-modal="true" aria-labelledby={id} tabIndex={-1} ref={box}>
         <header className="ds-modal__head">
           <h2 id={id}>{title}</h2>
         </header>

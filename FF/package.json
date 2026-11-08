@@ -18,6 +18,8 @@
     "lint:spacing": "node tools/lint-spacing.ts",
     "lint:copy": "node tools/lint-copy.ts",
     "ratchet": "node tools/ratchet.ts",
+    "test:hygiene": "node tools/test-hygiene.ts",
+    "flaky": "node tools/flaky.ts",
     "conformance": "node tools/conformance.ts",
     "progress": "node tools/progress.ts",
     "build:contracts": "npm run build -w @ff/contracts",
@@ -55,14 +57,23 @@
     "siblings": "node tools/siblings.ts",
     "integration:status": "node tools/integration-status.ts",
     "ext:check": "node tools/ext-check.ts",
+    "ota:reference": "node tools/ota-reference/server.ts",
+    "ota:conformance": "node tools/ota-reference/conformance.ts",
+    "readiness": "node tools/readiness.ts",
+    "test:pg": "node tools/test-pg.ts",
+    "migrations:lock": "node tools/migrations-lock.ts --update",
+    "evidence:remap": "node tools/evidence-remap.ts",
     "unleash:up": "docker compose -f docker/unleash/docker-compose.yml up -d",
     "unleash:down": "docker compose -f docker/unleash/docker-compose.yml down",
     "unleash:logs": "docker compose -f docker/unleash/docker-compose.yml logs -f web"
   },
   "devDependencies": {
-    "@asteasolutions/zod-to-openapi": "^7.3.4",
+    "@asteasolutions/zod-to-openapi": "^9.1.0",
     "jsdom": "^25.0.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
-  "type": "module"
+  "type": "module",
+  "overrides": {
+    "multer": "^2.5.0"
+  }
 }

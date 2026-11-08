@@ -4,8 +4,8 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 194,
-      "부분": 257,
+      "구현": 199,
+      "부분": 252,
       "미구현": 172,
       "범위 밖": 5
     },
@@ -13,16 +13,16 @@
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 96,
-        "부분": 79,
+        "구현": 99,
+        "부분": 76,
         "미구현": 61,
         "범위 밖": 3
       },
       {
         "sheet": "02_차량 런타임 실행",
         "leaves": 81,
-        "구현": 15,
-        "부분": 49,
+        "구현": 17,
+        "부분": 47,
         "미구현": 15,
         "범위 밖": 2
       },
@@ -59,27 +59,34 @@
         "범위 밖": 0
       }
     ],
-    "traced": 40,
+    "traced": 45,
     "untracedImplemented": 155,
-    "defects": 5,
+    "defects": 0,
     "decisionsPending": 9,
     "specIssues": 3
   },
   "traces": {
     "FR-REG-002-008": {
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
       "tested": [
+        "contracts/src/rules/lifecycle.test.ts",
         "contracts/src/rules/requirements-defects.test.ts"
       ]
     },
     "FR-REG-002-009": {
-      "implemented": [],
+      "implemented": [
+        "contracts/src/rules/lifecycle.ts"
+      ],
       "tested": [
         "contracts/src/rules/requirements-defects.test.ts"
       ]
     },
     "FR-REG-002-019": {
-      "implemented": [],
+      "implemented": [
+        "backend/src/domains/d01-policy/policy-store/policy.service.ts"
+      ],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
       ]
@@ -135,13 +142,17 @@
       "tested": []
     },
     "FR-RTE-001-004": {
-      "implemented": [],
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
+      ],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
       ]
     },
     "FR-RTE-005-001": {
-      "implemented": [],
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
+      ],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
       ]
@@ -354,21 +365,5 @@
       ]
     }
   },
-  "probes": {
-    "FR-REG-002-008": [
-      "contracts/src/rules/requirements-defects.test.ts"
-    ],
-    "FR-REG-002-009": [
-      "contracts/src/rules/requirements-defects.test.ts"
-    ],
-    "FR-RTE-005-001": [
-      "backend/test/requirements/defects.spec.ts"
-    ],
-    "FR-RTE-001-004": [
-      "backend/test/requirements/defects.spec.ts"
-    ],
-    "FR-REG-002-019": [
-      "backend/test/requirements/defects.spec.ts"
-    ]
-  }
+  "probes": {}
 }

@@ -73,7 +73,7 @@ function Requests() {
       )}
       <AsyncView
         state={asyncState(all, rows.length === 0)}
-        error={all.error?.message}
+        error={all.error}
         onRetry={() => all.refetch()}
         empty={{ title: T.emptyRequests, action: <Button onClick={showBaselines}>{T.viewBaselines}</Button> }}
         // 대기 필터가 비면 핵심 메시지 "확정 승인 대기가 없습니다"와 같은 말이다 — 확정·반려를 고른 경우에만 빈 상자(UX3-09)
@@ -111,7 +111,7 @@ function RequestDrawer({ requestId, onClose }: { requestId: string | null; onClo
   const run = (decision: 'APPROVE' | 'REJECT') => decide.mutate({ params: { rid: requestId! }, body: { decision, reason } }, { onSuccess: () => setReason('') });
   return (
     <Drawer open={!!requestId} title={requestId ?? ''} onClose={onClose}>
-      <AsyncView state={asyncState(q)} error={q.error?.message}>
+      <AsyncView state={asyncState(q)} error={q.error}>
         {r && (
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
             <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -162,7 +162,7 @@ function Baselines() {
   const q = useApi<{ items: (BaselineRecord & { products: string[] })[] }>('baselines');
   const rows = q.data?.items ?? [];
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={T.tabBaselines}
         rows={rows}

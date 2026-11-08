@@ -667,6 +667,7 @@
         "contracts/src/rules/kill-v2.test.ts",
         "contracts/src/rules/policy-gate.test.ts",
         "contracts/src/rules/security-events.test.ts",
+        "backend/test/ads/defects.spec.ts",
         "backend/test/d03/kill-v2.spec.ts",
         "backend/test/d03/policy-gate.spec.ts",
         "backend/test/d06/hsm.spec.ts",

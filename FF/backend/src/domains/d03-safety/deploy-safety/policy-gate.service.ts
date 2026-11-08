@@ -4,7 +4,7 @@
 import { Body, Controller, Get, Inject, Injectable, Param, Post } from '@nestjs/common';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { profileFinding, type ProfileFinding } from '@ff/contracts';
+import { approvalSigProblems, commandApprovalSubject, jcs, profileFinding, type ProfileFinding } from '@ff/contracts';
 import { DEFAULT_GATE_POLICY, gateVerdict, type GateFeature, type GateLedger, type GateRegistry, type GateVerdict, type KillCommandV2 } from '@ff/contracts';
 import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
@@ -15,6 +15,7 @@ import { DomainError } from '../../../kernel/errors';
 import { EventService } from '../../../kernel/event.service';
 import { FeatureRepo } from '../../d01-policy/repos';
 import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.service';
+import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 
 /** 커밋된 원장 시드(보고서 예시 ledger) — repo 루트 기준 */
 const FIXTURE = join(__dirname, '..', '..', '..', '..', '..', 'data', 'fixtures', 'safety', 'command-ledger.json');
@@ -47,6 +48,7 @@ export class PolicyGateService {
     private readonly profiles: SafetyProfileService,
     private readonly audit: AuditService,
     private readonly events: EventService,
+    private readonly hsm: HsmService,
   ) {}
 
   onModuleInit() {
@@ -122,6 +124,10 @@ export class PolicyGateService {
   /**
    * 판정만 — 원장은 바꾸지 않는다. 보고서 패키지 게이트와 같은 규칙(gateVerdict, Python 대조) 뒤에 플랫폼 규칙 FFG-GEN-003(시장 Profile)을 붙인다.
    * 판정에 쓴 Compliance Profile 버전을 함께 돌려준다(FFG-GEN-001 — 명령 기록).
+   * FFP-F059·D-RD-5 — 승인 서명은 길이만 보지 않는다(FFG-PLT-005 판정에 더한다): 정준 64바이트 표기·승인자별 다른 값에 더해,
+   * 모든 승인 칸을 그 승인자의 등록된 공개키로 검증한다 — 서명 대상은 명령에서 다시 만든다(commandApprovalSubject: 기능·요청·사유·
+   * 차량 집합·승인자·역할·서명 시각). 플랫폼이 발행한 명령이든 외부에서 낸 명령이든 같다. 키 미등록·검증 실패·대상 불일치·
+   * 발행 시각과 동떨어진 서명 시각은 FAIL.
    */
   preview(cmd: unknown): GateVerdict & { profiles?: ProfileFinding['profiles'] } {
     const c = cmd as { feature?: { id?: unknown; version?: unknown }; target?: { market?: unknown }; request?: unknown } | null;
@@ -132,8 +138,31 @@ export class PolicyGateService {
     if (v.result === 'SCHEMA_FAIL') return v;
     const feat = registry.features[id];
     const p = profileFinding({ market: String(c?.target?.market ?? ''), request: String(c?.request ?? ''), fClass: feat?.f_class ?? null, adsFeature: !!feat?.ads_feature });
-    const findings = [...v.findings, { rule: p.rule, ok: p.ok, message: p.detail }];
+    const sig = this.approvalProblems(cmd as KillCommandV2);
+    const base = v.findings.map((x) => (x.rule === 'FFG-PLT-005' && sig.length ? { ...x, ok: false, message: `${x.message} — ${sig.join('; ')}` } : x));
+    const findings = [...base, { rule: p.rule, ok: p.ok, message: p.detail }];
     return { ...v, findings, result: findings.every((x) => x.ok) ? 'PASS' : 'FAIL', profiles: p.profiles };
+  }
+
+  /** 승인 서명 문제 — 형식(정준·승인자별), 등록된 승인자 키 검증(대상 집합 결속), 서명 시각(발행 시각 앞뒤 허용 범위) */
+  private approvalProblems(cmd: KillCommandV2): string[] {
+    const approvals = Array.isArray(cmd?.approvals) ? cmd.approvals : [];
+    const out = approvalSigProblems(approvals);
+    const issued = Date.parse(cmd.validity.not_before);
+    const skewMs = DEFAULT_GATE_POLICY.max_clock_skew_seconds * 1000;
+    const oldestMs = DEFAULT_GATE_POLICY.max_command_ttl_hours * 3600_000;
+    for (const a of approvals) {
+      if (!this.hsm.hasApproverKey(a.approver_id)) {
+        out.push(`${a.approver_id}: 등록된 승인자 키가 없습니다 — 승인자 키를 먼저 등록해야 합니다`);
+        continue;
+      }
+      if (!this.hsm.verifyApproval(a.approver_id, jcs(commandApprovalSubject(cmd, a)), a.approval_sig ?? ''))
+        out.push(`${a.approver_id}: 승인 서명이 등록된 키로 검증되지 않거나 이 명령의 대상(기능·요청·사유·차량 ${cmd.scope.vehicle_ids.length}대·승인 칸)에 대한 서명이 아닙니다`);
+      const signed = Date.parse(a.signed_at);
+      if (signed > issued + skewMs) out.push(`${a.approver_id}: 승인 시각이 명령 발효 시각보다 뒤입니다`);
+      else if (signed < issued - oldestMs) out.push(`${a.approver_id}: 승인 시각이 명령 발효 시각보다 ${DEFAULT_GATE_POLICY.max_command_ttl_hours}시간 넘게 앞섭니다(오래된 승인)`);
+    }
+    return out;
   }
 
   /**

@@ -20,6 +20,7 @@ import { ReadbackBus } from '../../d04-ops/telemetry-ingest/telemetry.service';
 import { PkiService } from '../pki-kms/pki.service';
 import { PublicationRepo } from './publication.repo';
 import { SbomService } from '../vuln-monitor/sbom.service';
+import { OtaJobRepo } from '../../../adapters/ota/ota-job.repo';
 
 const OTA_TIMEOUT_MS = Number(process.env.PUBLICATION_TIMEOUT_MS ?? 8000);
 const EMERGENCY_TIMEOUT_MS = Number(process.env.KILL_TIMEOUT_MS ?? 5000);
@@ -52,6 +53,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     private readonly bus: ReadbackBus,
     private readonly policies: PolicyRepo,
     private readonly sbom: SbomService,
+    private readonly otaJobs: OtaJobRepo,
   ) {}
 
   onModuleInit() {
@@ -60,6 +62,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
 
   /** 모든 모듈 초기화(정책 시드 포함)가 끝난 뒤 */
   onApplicationBootstrap() {
+    // 재시작 복구(출시 준비 RD-OPS-06) — 회신 기한은 프로세스 타이머라 재시작하면 사라진다.
+    // 아직 닫히지 않은 전달(DISPATCHED) 게시본의 남은 기한을 다시 건다(이미 지났으면 바로 닫는다).
+    for (const pub of this.repo.list({ status: 'DISPATCHED' }).filter((x) => !x.closedAt)) this.armClose(pub);
     // 부팅 동기화 — 배포(DEPLOYED) 상태인데 게시본이 없는 정책(시드·이전 버전 데이터)을 서명해 차량에 보낸다.
     // 이게 없으면 서버는 배포 중이라고 판단하는데 차량은 정책을 받은 적이 없다. FF_BOOT_PUBLISH=0 으로 끈다.
     if (process.env.FF_BOOT_PUBLISH === '0') return;
@@ -97,8 +102,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     return this.create('KILL', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: k.version === 2 ? endState(k.reasonCategory ?? 'SAFETY') : legacyMode(k) }, applyWithinMs);
   }
 
+  /** v2 복원의 수렴 상태는 INACTIVE — 해제는 활성화가 아니다(FFP-F036). 레거시 v1 복원은 flag 평가 재개(ACTIVE) 그대로 */
   publishRestore(k: KillRequest, actor: Actor, applyWithinMs = 0) {
-    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: 'ACTIVE' }, applyWithinMs);
+    return this.create('RESTORE', actor, { featureId: k.featureId, featureVersion: k.featureVersion, flagKey: null, policy: null, kill: { killId: k.killId, safeMode: legacyMode(k), featureIds: k.featureIds }, targets: k.vins, desired: k.version === 2 ? 'INACTIVE' : 'ACTIVE' }, applyWithinMs);
   }
 
   /** 서명된 게시본 생성 — 호출자의 트랜잭션 안에서 기록하고, 커밋된 뒤에만 내보낸다 */
@@ -146,8 +152,13 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       this.repo.update(next);
       this.events.publish('publication.dispatched', id, { publicationId: id, kind: pub.kind, campaignId: r.campaignId, channel: pub.channel, unreachable: r.unreachable, ackOnly: r.ackOnly }, { componentId: 'D04-01' });
     });
-    this.scheduler.after(Math.max(0, new Date(pub.deadlineAt).getTime() - this.clock.now().getTime()), () => this.close(id));
+    this.armClose(pub);
     this.recompute(id);
+  }
+
+  /** 회신 기한에 닫기 — 남은 시간만큼(지났으면 바로) */
+  private armClose(pub: Publication) {
+    this.scheduler.after(Math.max(0, new Date(pub.deadlineAt).getTime() - this.clock.now().getTime()), () => this.close(pub.publicationId));
   }
 
   private evaluate(pub: Publication) {
@@ -182,7 +193,11 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       desired: pub.payload.desired,
     });
     // 차량이 거부한 회신은 거부 사유를 그대로 보인다 (서명 불일치·재전송)
-    const nodes = agg.nodes.map((n) => (n.state === 'UNKNOWN' && rejected.has(n.nodeId) ? { ...n, reason: `REJECTED:${rejected.get(n.nodeId)}` } : n));
+    // OTA 서버 전달 기록(IF-05 webhook)은 차량 회신이 없을 때 사유로만 보인다(OTA:NO_RESPONSE 등) — 끝 상태는 차량 회신(차량 → Lake → FF)이 정한다(80-45 §7.5)
+    const ota = this.otaJobs.outcomes(pub.publicationId);
+    const nodes = agg.nodes.map((n) =>
+      n.state !== 'UNKNOWN' ? n : rejected.has(n.nodeId) ? { ...n, reason: `REJECTED:${rejected.get(n.nodeId)}` } : n.reason === 'NO_REPORT' && ota.has(n.nodeId) ? { ...n, reason: `OTA:${ota.get(n.nodeId)}` } : n,
+    );
     return { required, agg: { ...agg, nodes } };
   }
 
@@ -223,6 +238,8 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
       verification: this.pki.verify(publication.payload, publication.signature, undefined, PUBLICATION_KEY_PURPOSE[publication.kind]),
       readbacks: this.repo.readbacks({ publicationId: id }),
       calls: this.pipeline.calls({ key: id }),
+      // OTA 서버 전달(IF-05, 채널 ota) — 전달 상태(전달 실패·재시도 대기 포함)·차량별 결과. 다른 채널이면 null
+      delivery: this.otaJobs.view(this.otaJobs.forPublication(id)),
     };
   }
 }

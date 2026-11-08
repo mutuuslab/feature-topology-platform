@@ -1,5 +1,5 @@
-// /notifications 알림 센터 — 받은 알림(안 읽음·범주 거르기, 읽음 처리, 관련 화면 열기) + 메일 알림 설정 + 모의 메일 발송 기록.
-// 받는 사람 판정·제외(요청자·직무 분리)·메일 잠금(승인 요청·긴급 차단)은 서버와 같은 contracts 규칙(D04-04).
+// /notifications 알림 센터 — 받은 알림(안 읽음·범주 거르기, 읽음 처리, 관련 화면 열기)과 받는 방법 안내.
+// 채널은 화면 알림만(사용자 결정 D-RD-7) — 끄는 설정이 없다. 받는 사람 판정·제외(요청자·직무 분리)는 서버와 같은 contracts 규칙(D04-04).
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NOTIFICATION_CATEGORIES, NOTIFICATION_CATEGORY_LABEL, type NotificationCategory } from '@ff/contracts';
@@ -7,26 +7,10 @@ import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, PageHeader, Panel, Segmented, Select } from '../../design';
+import { AsyncView, Button, ErrorNote, PageHeader, Panel, Segmented, Select } from '../../design';
 import { NOTIFY_EVENTS, SeverityBadge, t16, type Inbox, type InboxItem } from '../../shell/NotificationBell';
 
 const N = ko.notify;
-
-interface Prefs {
-  userId: string;
-  email: Record<NotificationCategory, boolean>;
-  locked: NotificationCategory[];
-  address: string | null;
-}
-interface Email {
-  id: string;
-  notificationId: string;
-  userId: string;
-  address: string;
-  subject: string;
-  status: string;
-  at: string;
-}
 
 function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: boolean }) {
   return (
@@ -62,63 +46,12 @@ function Row({ n, onRead, busy }: { n: InboxItem; onRead: () => void; busy: bool
   );
 }
 
-function EmailPrefs() {
-  const q = useApi<Prefs>('notificationPrefs', {}, { enabled: !STATIC_MODE });
-  const save = useApiMutation<Prefs>('saveNotificationPrefs', ['notificationPrefs']);
-  const p = q.data;
-  const toggle = (c: NotificationCategory, on: boolean) => p && save.mutate({ body: { email: { ...p.email, [c]: on } } });
+/** 받는 방법 — 화면 알림만, 끄는 설정 없음(승인 요청·긴급 차단도 항상 남는다) */
+function ChannelNote() {
   return (
-    <Panel title={N.prefs.title} id="ntf-prefs">
-      <p className="ntf-lead">{N.prefs.lead}</p>
-      <AsyncView state={STATIC_MODE ? 'empty' : asyncState(q)} empty={{ body: N.staticNote }} onRetry={() => q.refetch()} rows={3}>
-        {p && (
-          <>
-            <p>
-              {N.prefs.address} <span className="ds-mono">{p.address ?? '—'}</span>
-            </p>
-            <ul className="ntf-prefs">
-              {NOTIFICATION_CATEGORIES.map((c) => {
-                const locked = p.locked.includes(c);
-                return (
-                  <li key={c}>
-                    <label>
-                      <input type="checkbox" checked={p.email[c]} disabled={locked || save.isPending} onChange={(e) => toggle(c, e.target.checked)} />
-                      {NOTIFICATION_CATEGORY_LABEL[c]}
-                    </label>
-                    {locked && <span className="ds-tag">{N.prefs.locked}</span>}
-                  </li>
-                );
-              })}
-            </ul>
-            {save.isSuccess && <p role="status">{N.prefs.saved}</p>}
-            <ErrorNote error={save.error} />
-          </>
-        )}
-      </AsyncView>
-    </Panel>
-  );
-}
-
-function EmailLog() {
-  const q = useApi<{ items: Email[] }>('notificationEmails', {}, { enabled: !STATIC_MODE });
-  usePlatformEvents(NOTIFY_EVENTS, ['notificationEmails']);
-  const rows = q.data?.items ?? [];
-  return (
-    <Panel title={N.emails.title} id="ntf-emails">
-      <p className="ntf-lead">{N.emails.lead}</p>
-      <AsyncView state={STATIC_MODE ? 'empty' : asyncState(q, rows.length === 0)} empty={{ body: STATIC_MODE ? N.staticNote : N.emails.empty }} onRetry={() => q.refetch()} rows={3}>
-        <DataTable
-          caption={N.emails.title}
-          rows={rows}
-          rowKey={(r) => r.id}
-          maxHeight="320px"
-          columns={[
-            { key: 'at', header: N.emails.col.at, cell: (r) => <span className="ds-mono">{t16(r.at)}</span>, sort: (r) => r.at },
-            { key: 'subject', header: N.emails.col.subject, cell: (r) => r.subject },
-            { key: 'status', header: N.emails.col.status, cell: (r) => r.status },
-          ]}
-        />
-      </AsyncView>
+    <Panel title={N.channel.title} id="ntf-channel">
+      <p className="ntf-lead">{N.channel.lead}</p>
+      <p className="ds-field__hint">{N.channel.note}</p>
     </Panel>
   );
 }
@@ -186,8 +119,7 @@ export function NotificationsScreen() {
           </AsyncView>
         </Panel>
         <div className="ntf-side">
-          <EmailPrefs />
-          <EmailLog />
+          <ChannelNote />
         </div>
       </div>
     </>

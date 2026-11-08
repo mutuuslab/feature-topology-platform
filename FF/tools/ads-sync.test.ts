@@ -86,9 +86,12 @@ test('오류 주입 — 선행 항목이 더 뒤 단계에 있거나, 같은 DB 
 
 test('오류 주입 — 결함 기록에 고칠 [결함] 설계 항목이 없거나, 단계 완료 조건의 결함 수가 항목 수와 다르면 잡는다', { skip: !existsSync(REVIEW) || !existsSync(DESIGN) }, () => {
   const c = readJson<AdsCatalog>(CATALOG);
-  const r = readJson<AdsReview>(REVIEW);
   const d = readJson<Design>(DESIGN);
-  const [k] = Object.entries(r.requirements).find(([, v]) => v.defect)!;
+  // 커밋된 판정에 열린 결함이 없으면(모두 고침 — 2026-10-24 RD-FN-01) [결함] 설계 항목이 맡는 요건 하나에 결함 기록을 주입한다
+  const base = readJson<AdsReview>(REVIEW);
+  const open = Object.entries(base.requirements).find(([, v]) => v.defect)?.[0];
+  const k = open ?? d.items.find((i) => i.defect && i.req.length)!.req[0];
+  const r: AdsReview = open ? base : { ...base, requirements: { ...base.requirements, [k]: { ...base.requirements[k], defect: { probe: 'backend/test/ads/defects.spec.ts' } } } };
   const fixer = d.items.find((i) => i.defect && i.req.includes(k))!;
   const noFix = { ...d, items: d.items.map((i) => (i.id === fixer.id ? { ...i, req: i.req.filter((q) => q !== k) } : i)) };
   assert.match(designProblems(c, r, noFix).join('\n'), new RegExp(`${k} 결함을 고치는`));

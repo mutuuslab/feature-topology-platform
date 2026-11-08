@@ -53,6 +53,23 @@ export class StatusIngestService implements OnModuleInit {
     });
   }
 
+  /**
+   * 재시작 복구(출시 준비 RD-OPS-06) — 기한 감시는 프로세스 타이머라 재시작하면 사라진다.
+   * 걸려 있는(ACTIVE) v2 차단마다 마지막 명령 발급 시각부터 남은 기한을 다시 건다(이미 지났으면 바로 확인).
+   * 이미 지연을 알린 차단(kill.overdue 이벤트가 있는 것)은 다시 알리지 않는다.
+   */
+  onApplicationBootstrap() {
+    const rows = this.db.all<{ kill_id: string; issued: string }>('SELECT kill_id, max(created_at) AS issued FROM kill_command GROUP BY kill_id');
+    for (const r of rows) {
+      const k = this.kill(r.kill_id);
+      if (!k || k.version !== 2 || k.status !== 'ACTIVE') continue;
+      if (this.db.get("SELECT 1 FROM events WHERE type = 'kill.overdue' AND aggregate = ? LIMIT 1", r.kill_id)) continue;
+      const due = this.expectedMs(k) + OVERDUE_MARGIN_MS;
+      const left = due - (this.clock.now().getTime() - new Date(r.issued).getTime());
+      this.scheduler.after(Math.max(0, left), () => this.checkOverdue(r.kill_id, due));
+    }
+  }
+
   private kill(killId: string): KillRequest | null {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM kill_request WHERE kill_id = ?', killId);
     return r ? (JSON.parse(r.doc) as KillRequest) : null;

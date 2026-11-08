@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/incident.schema.json",
+  "title": "incident v1 — 현장 장애·VOC 접수",
+  "description": "FF 원천: incident 표(D04-05, contracts rules/ext.ts Incident) · 이벤트 incident.received·incident.sotif.triggered. summary(접수 글)·접수자는 보내지 않는다(결정 U-6). 차량은 봉투 vehicle(가명), Feature는 봉투 feature(없으면 null).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["incident_id", "source", "category", "severity", "occurred_at", "received_at", "sotif_trigger", "status", "anomaly_id"],
+  "properties": {
+    "incident_id": { "type": "string", "minLength": 1, "maxLength": 40 },
+    "source": { "enum": ["FIELD", "VOC", "DEALER"] },
+    "category": { "enum": ["UNEXPECTED_ACTIVATION", "NO_ACTIVATION", "PERFORMANCE", "HMI", "OTHER"] },
+    "severity": { "enum": ["INFO", "WARNING", "CRITICAL"] },
+    "occurred_at": { "description": "신고에 없으면 null(미상) — 받은 시각으로 채우지 않는다(ORCA-HT06)", "type": ["string", "null"], "format": "date-time" },
+    "received_at": { "type": "string", "format": "date-time" },
+    "sotif_trigger": { "type": "boolean" },
+    "status": { "enum": ["OPEN", "LINKED", "CLOSED"] },
+    "anomaly_id": { "type": ["string", "null"], "pattern": "^ANM-[0-9]{5}$" }
+  }
+}

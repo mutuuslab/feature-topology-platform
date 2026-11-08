@@ -47,7 +47,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
       <Panel title={X.summary} id="sync-systems">
-        <AsyncView state={asyncState(s)} error={s.error?.message} onRetry={() => s.refetch()}>
+        <AsyncView state={asyncState(s)} error={s.error} onRetry={() => s.refetch()}>
           <DataTable
             caption={X.summary}
             rows={s.data?.items ?? []}
@@ -69,7 +69,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
       </Panel>
 
       <Panel title={X.conflicts} id="sync-conflicts">
-        <AsyncView state={asyncState(conflicts)} error={conflicts.error?.message} onRetry={() => conflicts.refetch()}>
+        <AsyncView state={asyncState(conflicts)} error={conflicts.error} onRetry={() => conflicts.refetch()}>
           {(conflicts.data?.items ?? []).length ? <ConflictTable rows={conflicts.data!.items} /> : <p className="ds-field__hint">{X.noConflicts}</p>}
         </AsyncView>
       </Panel>
@@ -77,7 +77,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
       <Panel title={X.inbox} id="sync-inbox">
           <AsyncView
             state={asyncState(inbox, !(inbox.data?.items ?? []).some((r) => r.key !== '-'))}
-            error={inbox.error?.message}
+            error={inbox.error}
             onRetry={() => inbox.refetch()}
             emptyHidden={quiet}
             empty={{ title: X.inboxEmpty, body: X.inboxEmptyBody }}
@@ -99,7 +99,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
       </Panel>
       {(failed.data?.items ?? []).length > 0 && (
         <Panel title={X.outbox} id="sync-failed">
-          <AsyncView state={asyncState(failed)} error={failed.error?.message} onRetry={() => failed.refetch()}>
+          <AsyncView state={asyncState(failed)} error={failed.error} onRetry={() => failed.refetch()}>
             {(failed.data?.items ?? []).length ? (
               <DataTable
                 caption={X.outbox}

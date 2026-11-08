@@ -1,4 +1,4 @@
-// 로그인 화면 문구 — 아이디·비밀번호는 데모 고정값(auth.ts)이고 화면에는 안내만 보여 준다.
+// 로그인 화면 문구 — 데모 빌드는 아이디·비밀번호(데모 고정값, auth-demo.ts), 운영 빌드(VITE_AUTH=oidc)는 회사 계정 SSO 버튼(sso).
 export const login = {
   eyebrow: 'Feature Platform · FF',
   title: '차를 판매한 뒤에도,\n기능에 대한 약속은 계속된다',
@@ -18,6 +18,13 @@ export const login = {
     email: 'tobiaskim@mutuus-lab.com',
   },
   logout: '로그아웃',
+  sso: {
+    title: '회사 계정으로 로그인',
+    hint: '사내 계정(SSO)으로 들어갑니다. 역할은 회사 계정의 그룹에서 정해집니다.',
+    button: '회사 계정(SSO)으로 로그인',
+    footer: 'Feature Platform · 회사 계정(SSO) 로그인',
+    loading: '로그인 상태를 확인하고 있습니다…',
+  },
   visual: {
     eyebrow: 'WORK PROCEDURE / FEATURE → GATE → FLEET',
     title: '업무 절차가\n시스템을 움직입니다',

@@ -1,4 +1,4 @@
-# 품질 게이트 — FF/ 에서 npm run verify (contracts·backend·frontend 타입/테스트, 토큰·문구 lint 래칫, 42 컴포넌트 준수, 빌드).
+# 품질 게이트 — FF/ 에서 npm run verify (contracts·backend·frontend 타입/테스트, 토큰·문구 lint 래칫, 42 컴포넌트 준수, 빌드, 부하 시험 light, e2e 3엔진).
 # 시각 회귀(verify:full)는 OS별 렌더 차이로 로컬 Windows에서만 돌린다.
 name: Verify
 on:
@@ -20,6 +20,10 @@ jobs:
           cache: npm
           cache-dependency-path: FF/package-lock.json
       - run: npm ci
+      # 운영 의존성 취약점 — high 이상이 하나라도 있으면 실패(출시 준비 RD-SEC-14)
+      - name: 운영 의존성 취약점 검사
+        run: npm audit --omit=dev --audit-level=high
+      # chromium은 전체 e2e, firefox·webkit은 핵심 흐름 스모크(e2e/tests/browsers.spec.ts, 출시 준비 RD-P2-03)
       - name: Playwright 브라우저 (e2e가 있을 때)
-        run: if [ -f e2e/playwright.config.ts ]; then npx playwright install --with-deps chromium; fi
+        run: if [ -f e2e/playwright.config.ts ]; then npx playwright install --with-deps chromium firefox webkit; fi
       - run: npm run verify

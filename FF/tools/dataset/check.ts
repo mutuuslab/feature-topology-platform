@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { FF, readJson } from '../lib.ts';
 import { importWorkbook, serialize, sha256 } from './import-lib.ts';
 import { buildProfiles, PROFILES, serializeProfiles } from './safety-infer.ts';
+import { unguardedRequiredQueries } from './static-queries.ts';
 
 const OUT = join(FF, 'data', 'fixtures', 'v0.81');
 const SOURCE = join(FF, 'data', 'source', 'feature_dataset_v0.81.xlsx');
@@ -34,9 +35,13 @@ if (existsSync(SOURCE)) {
 if (!existsSync(PROFILES)) errors.push('data/fixtures/safety/profiles.json 없음 — node tools/dataset/safety-infer.ts');
 else if (lf(readFileSync(PROFILES, 'utf8')) !== serializeProfiles(buildProfiles())) errors.push('safety/profiles.json이 재생성 결과와 다름 — node tools/dataset/safety-infer.ts 후 커밋(손으로 고치지 않는다)');
 
+// 정적 데모·실서버 조회 — 필수 질의(requiredQuery)가 있는 조회는 값이 준비될 때까지 enabled로 막는다(빈 값 요청 = 없는 스냅샷·400)
+const unguarded = unguardedRequiredQueries();
+for (const u of unguarded) errors.push(`${u.file}:${u.line} — '${u.route}' 조회에 enabled가 없다(필수 질의가 비어 있을 때 요청이 나간다 — contracts requiredQuery)`);
+
 console.log('data:check');
 if (errors.length) {
   for (const e of errors) console.error('  ✕ ' + e);
   process.exit(1);
 }
-console.log(`  ✓ 픽스처 ${Object.keys(manifest.files).length}종 · manifest·재적재 일치 (경고 ${manifest.warnings.count}건) · 안전 프로파일 재생성 일치`);
+console.log(`  ✓ 픽스처 ${Object.keys(manifest.files).length}종 · manifest·재적재 일치 (경고 ${manifest.warnings.count}건) · 안전 프로파일 재생성 일치 · 필수 질의 조회는 모두 enabled로 막힘`);

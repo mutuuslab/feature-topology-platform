@@ -140,7 +140,7 @@ export function AnomalyScreen() {
         value={status}
         onChange={(v) => setStatus(v as typeof status)}
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: A.empty }} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: A.empty }} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={A.title}
           rows={rows}
@@ -198,7 +198,7 @@ export function FeedbackScreen() {
           return !q.data ? { tone: 'neutral', value: '—', text: FB.key.open } : rows.length === 0 ? { tone: 'neutral', value: 0, text: FB.key.none } : open ? { tone: 'warn', value: open, text: FB.key.open } : { tone: 'ok', text: FB.key.clean };
         })()}
       />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={FB.title}
           rows={rows}

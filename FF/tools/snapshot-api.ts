@@ -4,20 +4,36 @@
 import { spawn } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { createServer } from 'node:net';
 import { dirname, join } from 'node:path';
 import { FF } from './lib.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
 
-const PORT = Number(process.env.SNAPSHOT_PORT ?? 9199); // 8000 금지
-const BASE = `http://localhost:${PORT}`;
+/** 비어 있는 포트 — OS가 고른다. 고정 포트(예전 9199)는 여러 작업 폴더의 e2e:static이 함께 돌면 다른 폴더의 백엔드(다른 커밋·다른 데이터)에서 스냅샷을 받았다 */
+async function freePort(): Promise<number> {
+  return new Promise((ok, fail) => {
+    const s = createServer();
+    s.once('error', fail);
+    s.listen(0, '127.0.0.1', () => {
+      const port = (s.address() as { port: number }).port;
+      s.close(() => ok(port));
+    });
+  });
+}
+
+const PORT = process.env.SNAPSHOT_PORT ? Number(process.env.SNAPSHOT_PORT) : await freePort(); // 8000 금지
+const BASE = `http://127.0.0.1:${PORT}`;
 const OUT = join(FF, 'frontend', 'public');
 
 const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', join(FF, 'backend', 'dist', 'main.js')], {
   env: { ...process.env, PORT: String(PORT), FF_DB: ':memory:', FF_SEED: 'v0.81' },
   stdio: 'ignore',
 });
+// 우리 백엔드가 먼저 끝나면(포트 충돌 등) 다른 서버에 묻지 않고 바로 멈춘다
+let serverExit: number | null = null;
+server.once('exit', (code) => (serverExit = code ?? -1));
 
 // 역할이 걸린 조회(보안 이벤트·Data Act·차량 상태 등)는 그 경로가 허용하는 첫 역할로 받는다 — 정적 데모는 읽기 전용 공개본이다
 async function get<T = any>(url: string, name?: string, headers?: Record<string, string>): Promise<T> {
@@ -28,11 +44,13 @@ async function get<T = any>(url: string, name?: string, headers?: Record<string,
 }
 
 async function main() {
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; ; i++) {
+    if (serverExit !== null) throw new Error(`스냅샷용 백엔드가 시작하지 못했습니다(종료 ${serverExit}, 포트 ${PORT})`);
     try {
       await get('/api/health');
       break;
-    } catch {
+    } catch (e) {
+      if (i >= 120) throw new Error(`스냅샷용 백엔드가 응답하지 않습니다(포트 ${PORT}): ${(e as Error).message}`);
       await new Promise((r) => setTimeout(r, 500));
     }
   }
@@ -51,6 +69,8 @@ async function main() {
   // 공통
   await save('health');
   await save('components');
+  // 외부 연결 상태 — 모의 연계 표시(RD-UX-04). 정적 데모는 모든 연결이 모의다
+  await save('systemConnections');
   await save('precheck');
   await save('events', {}, { limit: 500 });
   await save('audit', {}, { limit: 500 });
@@ -102,12 +122,17 @@ async function main() {
     // 정책 상세의 버전 이력 — 목록과 변경 이력(버전 내용은 행을 열 때 읽으므로 개정본마다)
     const revs = await save('policyRevisions', { id: p.policyId });
     await save('policyChanges', { id: p.policyId });
+    // 정책 상세의 배포 이력·되돌리기(RD-FN-02) — 정적 데모는 읽기 전용이라 이력만
+    await save('policyHistory', { id: p.policyId });
     for (const r of revs.items) await save('policyRevision', { id: p.policyId, revision: String(r.revision) });
   }
   await save('validations');
   await save('entitlements');
+  // 고객 기준 값(RD-OPS-03) — 사용 권한 성향 필터·차종·판매국 기준 값 화면. 개인정보 목록(RD-P2-05) — 데이터·규제 기록의 개인정보 탭
+  await save('referenceValues');
+  await save('privacyInventory');
   // 체험권 차량 목록(상태별 첫 쪽)·체험 전환 분석(나눠 보기 기준별) — 화면과 같은 질의 함수로 키를 맞춘다
-  for (const source of ['ALL', 'DEMO', 'SYNTHETIC'] as const) {
+  for (const source of ['ALL', 'FLEET', 'SYNTHETIC'] as const) {
     for (const state of ['', ...TRIAL_STATES]) await save('trials', {}, trialListQuery({ catalogId: 'CAT-00019', source, state }));
     for (const groupBy of ['', ...SEGMENT_DIMENSIONS]) {
       await save('trialAnalytics', {}, trialAnalyticsQuery({ catalogId: 'CAT-00019', source, groupBy }));
@@ -116,6 +141,8 @@ async function main() {
     }
   }
   const vehicles = await save('vehicles');
+  // 대시보드 차량 가젯 — 수만 읽는다(limit=1 + total·sample)
+  await save('vehicles', {}, { limit: 1 });
   const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];
   for (const v of vehicles.items) for (const flagKey of flagKeys) await save('activationDecide', {}, { vin: v.vin, flagKey });
   // 배포·차단 전달 (PoC ④⑥) — 부팅 동기화 게시본이 차량에 닿은 뒤의 상태를 찍는다
@@ -123,9 +150,9 @@ async function main() {
   await save('fleetRuntime');
   // 전세계 차량 지도(D02-03) — 정적 데모는 찍은 시점 위치로 멈춰 있다(5초 갱신 없음)
   await save('fleetPopulation');
-  const fm = await save('fleetMap', {}, { source: 'DEMO' });
-  for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'DEMO', flagKey });
-  for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'DEMO', catalogId: c.catalogId });
+  const fm = await save('fleetMap', {}, { source: 'FLEET' });
+  for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'FLEET', flagKey });
+  for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'FLEET', catalogId: c.catalogId });
   const fs = await save('fleetMap', {}, { source: 'SYNTHETIC' });
   for (const c of fs.catalogs) await save('fleetMap', {}, { source: 'SYNTHETIC', catalogId: c.catalogId });
   for (const v of fm.items) await save('fleetMapVehicle', { vin: v.vin });

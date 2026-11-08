@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ffp/datalake/if15/vehicle-message.schema.json",
+  "title": "차량 서명 메시지 v1 (ff.vehicle.msg/1) — 차량 → Lake → FF 중계",
+  "description": "차량이 예전에 FF로 직접 보내던 보고(상태 보고 v2·전달 확인·차량 보고)를 Lake로 보낼 때의 형식. 본문 원문 바이트(body_b64)와 차량 서명(auth.mac, FFV1-MSG)이 Lake를 지나 FF까지 바뀌지 않고 간다 — FF가 차량 키로 직접 검증한다(Lake는 신뢰 경계가 아니다). 차량 식별은 VIN이 아니라 차량 가명. 본문 형식: STATUS_REPORT = status_report v2(부록 D), INBOX_ACK = VehicleDeliveryAck, VEHICLE_REPORT = VehicleReportBody(contracts). 설계: 80-75 3장·4장.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "message_id", "pseudonym", "kind", "ref", "auth", "body_b64", "body_sha256"],
+  "properties": {
+    "schema": { "const": "ff.vehicle.msg/1" },
+    "message_id": { "description": "<가명>:<nonce> — Lake·FF 멱등 키(차량이 같은 메시지를 다시 보내면 같은 값)", "type": "string", "pattern": "^[a-f0-9]{16,64}:[A-Za-z0-9_-]{16,64}$" },
+    "pseudonym": { "description": "차량 가명 sha256('ffp-pseudonym|'+VIN) 앞 16자 — 차량이 계산한다. FF는 이것으로 VIN·차량 키를 찾는다", "type": "string", "pattern": "^[a-f0-9]{16,64}$" },
+    "kind": { "enum": ["STATUS_REPORT", "INBOX_ACK", "VEHICLE_REPORT"] },
+    "ref": { "description": "INBOX_ACK일 때 전달 ID(deliveryId), 그 밖에는 null. 서명에 묶인다", "type": ["string", "null"], "maxLength": 80 },
+    "auth": {
+      "description": "FFV1-MSG 서명 — AES-CMAC-128(요청 키 K_r, 정규 문자열 'FFV1-MSG\\n<kind>\\n<ref 또는 ->\\n<pseudonym>\\n<key_epoch>\\n<timestamp>\\n<nonce>\\n<body_sha256>'). FFV1-REQ와 머리말이 달라 서로 옮겨 쓸 수 없다",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scheme", "key_epoch", "timestamp", "nonce", "mac"],
+      "properties": {
+        "scheme": { "const": "FFV1-MSG" },
+        "key_epoch": { "type": "integer", "minimum": 1, "maximum": 999999999 },
+        "timestamp": { "description": "차량 시계 유닉스 시각(ms, 10진 문자열 — 서명한 글자 그대로)", "type": "string", "pattern": "^\\d{10,16}$" },
+        "nonce": { "type": "string", "pattern": "^[A-Za-z0-9_-]{16,64}$" },
+        "mac": { "description": "16바이트 태그 base64url 22자", "type": "string", "pattern": "^[A-Za-z0-9_-]{22}$" }
+      }
+    },
+    "body_b64": { "description": "본문 원문 바이트 base64(표준, 패딩 있음). 최대 64 KiB 원문", "type": "string", "pattern": "^[A-Za-z0-9+/]*={0,2}$", "maxLength": 87384 },
+    "body_sha256": { "description": "원문 바이트 SHA-256 소문자 hex — 서명에 들어간 값", "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "if": { "properties": { "kind": { "const": "INBOX_ACK" } } },
+  "then": { "properties": { "ref": { "type": "string", "minLength": 1 } } },
+  "else": { "properties": { "ref": { "type": "null" } } }
+}

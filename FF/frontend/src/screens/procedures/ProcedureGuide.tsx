@@ -50,8 +50,8 @@ export function ProcedureGuide({ doc, process, activity, onClose }: { doc: Workf
       <aside className="pr-guide" role="dialog" aria-labelledby={headingId}>
         <header className="pr-guide__head">
           <div>
-            <div className="ds-eyebrow">{G.eyebrow} · {process.id}</div>
-            <h2 id={headingId}>{activity.id} {activity.name}</h2>
+            <div className="ds-eyebrow">{G.eyebrow} · {process.name}</div>
+            <h2 id={headingId}>{activity.name}</h2>
           </div>
           <Button variant="ghost" icon="close" aria-label={ko.action.close} title={ko.action.close} onClick={onClose} />
         </header>

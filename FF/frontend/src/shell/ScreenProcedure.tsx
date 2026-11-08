@@ -34,15 +34,15 @@ export default function ScreenProcedure({ onClose }: { onClose: () => void }) {
         list.map(({ process, activity: a, k }) => (
           <section key={a.id} className="pr-panel-item" aria-label={a.name}>
             <h3>
-              <span className="ds-mono">{a.id}</span> {a.name} <RaciBadge k={k} />
+              {a.name} <RaciBadge k={k} />
             </h3>
             <p className="ds-field__hint">
-              {process.id} {process.name} · <Link to={`/procedures/${process.id}?a=${a.id}`} onClick={onClose}>{P.panel.openProcess}</Link>
+              {process.name} · <Link to={`/procedures/${process.id}?a=${a.id}`} onClick={onClose}>{P.panel.openProcess}</Link>
             </p>
             {a.platform.anchor && (
               <Button
                 icon="target"
-                aria-label={`${a.id} ${P.guide.eyebrow}`}
+                aria-label={`${a.name} ${P.guide.eyebrow}`}
                 onClick={() => {
                   onClose();
                   procedureGuideStore.open(a.id, process.id);

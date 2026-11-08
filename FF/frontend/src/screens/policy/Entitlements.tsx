@@ -2,11 +2,13 @@
 // 체험권 차량 목록은 상태·성향 필터와 쪽 나눔, 합성 모집단(통계용 가상 데이터)은 표시해서 구분한다.
 import { useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, regionsOf, TRIAL_COUNTRIES, TRIAL_PAGE_SIZE, TRIAL_STATES, trialListQuery, type SegmentDimension, type TrialSource } from '@ff/contracts';
+import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, referenceCodes, TRIAL_PAGE_SIZE, TRIAL_STATES, trialListQuery, type ReferenceValue, type SegmentDimension, type TrialSource } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
+import { useConnectionLabel } from '../../api/connections';
+import { connections as CN } from '../../copy/connections';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { AsyncView, Button, ConnectionBadge, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { usePermission } from '../shared';
 
 const E = ko.entitlement;
@@ -37,7 +39,7 @@ export interface GrantRow {
   convertedAt: string | null;
   convertedPlan: string | null;
   fromTrial: string | null;
-  source: 'DEMO' | 'SYNTHETIC';
+  source: 'PRODUCTION' | 'DEMO' | 'SYNTHETIC';
   note: string | null;
   profile?: Profile | null;
 }
@@ -65,9 +67,10 @@ export function TrialState({ state }: { state: string }) {
 /** 표에서는 월-일만(전체 날짜는 title) — 1366·1536에서 처리 버튼까지 한 화면에 */
 const md = (ymd: string | null) => (ymd ? ymd.slice(5) : '—');
 
-const SEGMENTS: { dim: SegmentDimension; options: (seg: Partial<Record<SegmentDimension, string>>) => readonly string[] }[] = [
-  { dim: 'country', options: () => TRIAL_COUNTRIES },
-  { dim: 'region', options: (s) => (s.country ? regionsOf(s.country) : []) },
+/** 성향 필터 — 판매국·지역은 이 설치에 등록된 고객 기준 값(RD-OPS-03, 데모 목록이 아니다), 나머지는 가명 구간값 */
+const SEGMENTS: { dim: SegmentDimension; options: (seg: Partial<Record<SegmentDimension, string>>, refs: readonly ReferenceValue[] | undefined) => readonly string[] }[] = [
+  { dim: 'country', options: (_s, refs) => referenceCodes(refs, 'COUNTRY') },
+  { dim: 'region', options: (s, refs) => (s.country ? referenceCodes(refs, 'REGION', s.country) : []) },
   { dim: 'ageBand', options: () => AGE_BANDS },
   { dim: 'drivingStyle', options: () => DRIVING_STYLES },
   { dim: 'adasUsage', options: () => ADAS_USAGE },
@@ -99,12 +102,14 @@ function TrialVehicles() {
   const catalogId = 'CAT-00019';
   const query = trialListQuery({ catalogId, source, state, segment, q, page });
   const list = useApi<TrialPage>('trials', { query }, { placeholderData: (prev) => prev });
+  const refs = useApi<{ items: ReferenceValue[] }>('referenceValues');
   const perm = usePermission(['OPERATOR', 'SYSTEM']);
   const invalidate = ['trials', 'entitlements', 'trialAnalytics', 'activationDecide', 'events', 'audit'];
   const accept = useApiMutation('acceptTrial', invalidate);
   const decline = useApiMutation('declineTrial', invalidate);
   const purchase = useApiMutation('purchaseTrial', invalidate);
   const busy = accept.isPending || decline.isPending || purchase.isPending;
+  const billing = useConnectionLabel('billing');
   const data = list.data;
   const rows = data?.items ?? [];
   const reset = (f: () => void) => (f(), setPage(1));
@@ -113,7 +118,7 @@ function TrialVehicles() {
   return (
     <>
       <Toolbar label={T.filters}>
-        <Segmented label={T.source} options={(['ALL', 'DEMO', 'SYNTHETIC'] as const).map((v) => ({ value: v, label: T.sources[v] }))} value={source} onChange={(v) => reset(() => setSource(v))} />
+        <Segmented label={T.source} options={(['ALL', 'FLEET', 'SYNTHETIC'] as const).map((v) => ({ value: v, label: T.sources[v] }))} value={source} onChange={(v) => reset(() => setSource(v))} />
         <Select label={T.state} value={state} onChange={(e) => reset(() => setState(e.target.value))}>
           <option value="">
             {T.any} {data ? `(${total.toLocaleString('ko-KR')})` : ''}
@@ -125,7 +130,7 @@ function TrialVehicles() {
           ))}
         </Select>
         {SEGMENTS.map(({ dim, options }) => {
-          const opts = options(segment);
+          const opts = options(segment, refs.data?.items);
           if (!opts.length) return null;
           return (
             <Select key={dim} label={T.dims[dim]} value={segment[dim] ?? ''} disabled={STATIC_MODE} onChange={(e) => reset(() => setSegment((s) => ({ ...s, [dim]: e.target.value || undefined, ...(dim === 'country' ? { region: undefined } : {}) })))}>
@@ -143,9 +148,15 @@ function TrialVehicles() {
           <input className="ds-input ds-input--mono" value={q} disabled={STATIC_MODE} onChange={(e) => reset(() => setQ(e.target.value))} />
         </label>
       </Toolbar>
-      {source !== 'DEMO' && <p className="ds-field__hint">{T.syntheticNote}</p>}
+      {source !== 'FLEET' && <p className="ds-field__hint">{T.syntheticNote}</p>}
+      {/* 과금 시스템이 실제로 연결되기 전에는 구매 결과가 실제 결제가 아니다(RD-UX-04) */}
+      {billing !== 'none' && (
+        <p className="ds-field__hint" data-connection-note="billing">
+          <ConnectionBadge state={billing} system={CN.system.billing} /> {billing === 'mock' ? CN.hint.mock(CN.system.billing) : CN.hint.disconnected(CN.system.billing)}
+        </p>
+      )}
       <ErrorNote error={accept.error ?? decline.error ?? purchase.error} />
-      <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: T.empty }} error={list.error?.message} onRetry={() => list.refetch()}>
+      <AsyncView state={asyncState(list, rows.length === 0)} empty={{ title: T.empty }} error={list.error} onRetry={() => list.refetch()}>
         <div style={{ opacity: list.isPlaceholderData ? 0.6 : 1 }}>
           <DataTable
             caption={E.tabs.trials}
@@ -159,7 +170,7 @@ function TrialVehicles() {
                 header: C.vin,
                 cell: (r) => (
                   <span className="ds-mono ds-nowrap">
-                    {r.source === 'DEMO' ? <Link to={`/fleet/vehicles/${encodeURIComponent(r.vin)}`}>{r.vin}</Link> : r.vin}
+                    {r.source !== 'SYNTHETIC' ? <Link to={`/fleet/vehicles/${encodeURIComponent(r.vin)}`}>{r.vin}</Link> : r.vin}
                     {r.source === 'SYNTHETIC' && <span className="ds-tag" style={{ marginLeft: 'var(--sp-1)' }}>{T.synthetic}</span>}
                   </span>
                 ),
@@ -169,7 +180,7 @@ function TrialVehicles() {
                 key: 'act',
                 header: '',
                 cell: (r) => {
-                  if (r.source !== 'DEMO') return null;
+                  if (r.source === 'SYNTHETIC') return null;
                   const dis = !perm.ok || busy || STATIC_MODE;
                   if (r.state === 'OFFERED')
                     return (
@@ -184,7 +195,7 @@ function TrialVehicles() {
                     );
                   if (r.acceptedAt && (r.state === 'ACTIVE' || r.state === 'EXPIRED'))
                     return (
-                      <Button disabled={dis} title={perm.hint} style={{ whiteSpace: 'nowrap' }} onClick={() => purchase.mutate({ params: { grantId: r.grantId }, body: { plan: '구독' } })}>
+                      <Button disabled={dis || billing === 'disconnected'} title={billing === 'disconnected' ? CN.billing.blocked : perm.hint} style={{ whiteSpace: 'nowrap' }} onClick={() => purchase.mutate({ params: { grantId: r.grantId }, body: { plan: '구독' } })}>
                         {T.purchase}
                       </Button>
                     );
@@ -269,7 +280,7 @@ function GrantsTable() {
   const rows = q.data?.items ?? [];
   const C = E.col;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={E.tabs.grants}
         rows={rows}

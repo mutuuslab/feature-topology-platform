@@ -108,13 +108,23 @@ describe('UX3-09 빈 상자 생략', () => {
 
   const SIM = { available: true, mode: 'auto', simulator: 'CARLA', host: '127.0.0.1', port: 2100, server: { version: '0.9.16', map: 'Town04', synchronous: false, vehicles: 0, foreignVehicles: 0 }, runner: 'r', python: 'py', reason: null, queue: { running: 0, waiting: 0 } };
   const COMBO = { featureId: 'FEAT-00022', group: ['FEAT-00022'], safetyFlags: ['FEAT-00022'], strength: 1, requestedStrength: 1, basis: 'b', array: { factors: ['FEAT-00022'], strength: 1, rows: [[true]], tuples: 1, covered: 1, infeasible: 0 }, negatives: [] };
-  const sim = (status: unknown): Handler => (url) => (url.startsWith('/api/sim/status') ? { body: status } : url.startsWith('/api/virtual-validations/combinations') ? { body: COMBO } : undefined);
+  // 가상검증 키트 Feature가 등록된 설치(데모) — 빈 설치는 아래 RD-OPS-02 시험
+  const KIT = { body: { items: [{ featureId: 'FEAT-00022', version: '1.0.0' }] } };
+  const sim = (status: unknown): Handler => (url) => (url.startsWith('/api/sim/status') ? { body: status } : url.startsWith('/api/virtual-validations/combinations') ? { body: COMBO } : url.startsWith('/api/features') ? KIT : undefined);
 
   it('⑩ CARLA 가상검증: 실행 기록이 없으면 핵심 메시지만 — 서버 미연결(warn)이면 빈 상자는 그대로', async () => {
     handler = sim(SIM);
     wrap('/validations/virtual', <VirtualValidationScreen />, 'quality');
     expect(await screen.findByText('차량 내 감지 실행 기록이 아직 없습니다')).toBeTruthy();
     await emptyHidden();
+  });
+
+  it('빈 설치(RD-OPS-02): 가상검증 키트 Feature가 없으면 시나리오·조합 대신 안내하고, 없는 Feature를 조회하지 않는다', async () => {
+    const seen: string[] = [];
+    handler = (url) => (seen.push(url), url.startsWith('/api/sim/status') ? { body: SIM } : undefined);
+    wrap('/validations/virtual', <VirtualValidationScreen />, 'quality');
+    expect(await screen.findByText('가상검증 시나리오가 연결된 Feature가 아직 없습니다')).toBeTruthy();
+    expect(seen.some((u) => u.startsWith('/api/virtual-validations/combinations'))).toBe(false);
   });
 
   it('⑩ CARLA 가상검증: 서버 미연결이면 핵심 메시지가 "없습니다"가 아니므로 빈 상자를 보인다', async () => {

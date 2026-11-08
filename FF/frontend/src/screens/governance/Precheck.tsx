@@ -34,7 +34,7 @@ export default function Precheck() {
               : { tone: 'ok', text: T.key.clean }
         }
       />
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
             <SummaryLine items={[{ k: 'PASS', v: d.summary.PASS }, { k: T.quality, v: d.summary.dataQualityFindings }]} />

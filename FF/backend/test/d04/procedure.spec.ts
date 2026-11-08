@@ -2,6 +2,8 @@
 // 준비 조건(앞 활동 완료)과 역할(R·A) 검사를 실제 모델(FPW.1)로 확인한다.
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { jcs } from '@ff/contracts';
+import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
 import { Clock } from '../../src/kernel/clock';
 import { DB, type Db } from '../../src/kernel/db';
 import { ProcedureService } from '../../src/workflows/procedure.service';
@@ -48,8 +50,8 @@ describe('업무 절차 활동 완료 (서버 저장·검토함)', () => {
     expect((await http().get(`/api/audit?target=${A02}&result=FAILED`).expect(200)).body.items.length).toBeGreaterThan(0);
   });
 
-  it('내 역할(R·A)이 아니면 403이고 감사에 DENIED로 남는다', async () => {
-    const r = await complete(A01, OPERATOR).expect(403);
+  it.each([false, true])('서명 선택(%s)과 무관하게 내 역할(R·A)이 아니면 403이고 감사에 DENIED로 남는다', async (sign) => {
+    const r = await complete(A01, OPERATOR, { sign }).expect(403);
     expect(r.body.error.message).toMatch(/내 역할/);
     expect((await http().get(`/api/audit?target=${A01}&result=DENIED`).expect(200)).body.items.length).toBeGreaterThan(0);
   });
@@ -106,6 +108,35 @@ describe('업무 절차 활동 완료 (서버 저장·검토함)', () => {
     expect((await http().get('/api/events?type=procedure.activity.overdue').expect(200)).body.items.length).toBe(1);
   });
 
+  it('다른 사람의 유효한 서명으로 바꿔도 완료 담당자의 서명으로 인정하지 않는다', async () => {
+    const item = (await state().expect(200)).body.items.find((i: any) => i.activityId === A01);
+    const { signature, signatureValid: _valid, ...base } = item;
+    const approval = app.get(HsmService).approve('usr-steward', jcs(base));
+    const substituted = { ...signature, kid: approval.kid, signedBy: 'usr-steward', value: approval.value };
+    db.run('UPDATE procedure_completion SET signature_doc = ? WHERE activity_id = ? AND undone_at IS NULL', JSON.stringify(substituted), A01);
+    try {
+      const s = (await state().expect(200)).body;
+      expect(s.items.find((i: any) => i.activityId === A01).signatureValid).toBe(false);
+    } finally {
+      db.run('UPDATE procedure_completion SET signature_doc = ? WHERE activity_id = ? AND undone_at IS NULL', JSON.stringify(signature), A01);
+    }
+  });
+
+  it.each([
+    ['signedAt', '2026-10-18T00:00:00.000Z'],
+    ['digest', '0'.repeat(64)],
+  ])('서명 표시 정보 %s가 완료 본문과 다르면 무효로 표시한다', async (field, value) => {
+    const item = (await state().expect(200)).body.items.find((i: any) => i.activityId === A01);
+    const signature = item.signature;
+    db.run('UPDATE procedure_completion SET signature_doc = ? WHERE activity_id = ? AND undone_at IS NULL', JSON.stringify({ ...signature, [field]: value }), A01);
+    try {
+      const s = (await state().expect(200)).body;
+      expect(s.items.find((i: any) => i.activityId === A01).signatureValid).toBe(false);
+    } finally {
+      db.run('UPDATE procedure_completion SET signature_doc = ? WHERE activity_id = ? AND undone_at IS NULL', JSON.stringify(signature), A01);
+    }
+  });
+
   it('서명 대상 본문이 바뀌면 서명이 무효로 검증된다', async () => {
     db.run('UPDATE procedure_completion SET note = ? WHERE activity_id = ? AND undone_at IS NULL', '변조된 메모', A01);
     const s = (await state().expect(200)).body;
@@ -121,5 +152,12 @@ describe('업무 절차 활동 완료 (서버 저장·검토함)', () => {
     const r = (await inbox(AUTHOR).expect(200)).body;
     expect(r.items).toContainEqual(expect.objectContaining({ activityId: A01, kind: 'TODO' }));
     expect(r.summary.done).toBe(0);
+  });
+
+  it('서명 없이 완료해도 저장되며 응답과 조회의 서명·검증 결과는 null이다', async () => {
+    const r = await complete(A01, AUTHOR, { sign: false }).expect(201);
+    expect(r.body.completion).toMatchObject({ activityId: A01, signature: null, signatureValid: null });
+    const s = (await state().expect(200)).body;
+    expect(s.items.find((i: any) => i.activityId === A01)).toMatchObject({ signature: null, signatureValid: null });
   });
 });

@@ -22,7 +22,7 @@ describe('종료·복원 시간 기록 (FFG-ADS-007)', () => {
     for (const k of ['FF_SCHEDULER', 'GLEO_MODE']) delete process.env[k];
   });
 
-  it('차단 → DISABLED → 복원 → 다음 시동 ACTIVE: 차량마다 네 시각(+MRC 해당 없음)과 명령 ID, 원격 Kill, EDR 정합 상태', async () => {
+  it('차단 → DISABLED → 복원 → 다음 시동 차단 해제(INACTIVE): 차량마다 네 시각(+MRC 해당 없음)과 명령 ID, 원격 Kill, EDR 정합 상태', async () => {
     const http = b.http;
     const k = await killV2(http, { featureId: 'FEAT-00022', featureVersion: '1.0.0', vins: ['ego-01', 'lead-01'], reason: '시간 기록 시험', confirm: 'FEAT-00022' });
     advance(8_000); // DC2 인계 4 s + 램프 3 s

@@ -14,6 +14,7 @@ import { EventService } from '../../../kernel/event.service';
 import { ZodPipe } from '../../../kernel/zod.pipe';
 import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 import { FeatureRepo, GateRepo } from '../repos';
+import { ReharaRepo } from '../topology/rehara.repo';
 
 const ACTION = 'RELEASE_SIGNOFF';
 
@@ -28,6 +29,7 @@ export class ReleaseSignoffService {
     private readonly features: FeatureRepo,
     private readonly gates: GateRepo,
     private readonly hsm: HsmService,
+    private readonly rehara: ReharaRepo,
   ) {}
 
   /** 현재 G8·G9 최신 판정 기록 ID — 둘 다 PASS일 때만 */
@@ -78,6 +80,9 @@ export class ReleaseSignoffService {
     if (f.lifecycle !== 'VERIFIED') return fail(`${f.lifecycle} 상태에서는 Release Sign-off를 할 수 없습니다 — VERIFIED에서 출시 전에 서명합니다.`, 'GUARD_FAILED');
     const gates = this.passedGates(featureId, version);
     if (typeof gates === 'string') return fail(gates, 'GUARD_FAILED');
+    // FFP-F007 — 영향 검토(재-HARA) 미완료 변경은 서명 단계로 승격하지 않는다
+    const open = this.rehara.open(featureId, version);
+    if (open.length) return fail(`재-HARA 요청 ${open.map((r) => `${r.requestId}(${r.condition})`).join(', ')}이 열려 있습니다 — 영향 검토(G2 재판정)를 마친 뒤 서명합니다.`, 'GUARD_FAILED');
     if (this.view(featureId, version).valid) return fail('현재 G8·G9 판정에 대한 Release Sign-off가 이미 있습니다.', 'CONFLICT');
     const unsigned: ReleaseSignoff = {
       featureId,

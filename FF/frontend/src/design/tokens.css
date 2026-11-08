@@ -127,6 +127,41 @@
   /* 종이 결 — 아주 옅은 계측 격자 */
   --grid-dot: rgba(21, 23, 27, 0.045);
 
+  /* 업무 절차 흐름도 — 절차서 표기(UML 활동도: 제어 흐름 남색 · 객체 흐름 황동 점선 · 산출물 문서) */
+  --pd-navy: #1f3a5f;
+  --pd-blue: #2f6db5;
+  --pd-gold: #8a6d1f;
+  --pd-object: #a8862f;
+  --pd-act: #ffffff;
+  --pd-act-hover: #eaf3ff;
+  --pd-doc: #fff7e0;
+  --pd-doc-hover: #fff0c2;
+  --pd-doc-line: #c9a34a;
+  --pd-ext: #f1f1f1;
+  --pd-ext-line: #7f8893;
+  --pd-lane: #fbfcfe;
+  --pd-lane-line: #d3dde9;
+  --pd-lane-io: #fffdf8;
+  --pd-lane-io-line: #e3d8bd;
+  --pd-lane-head: #e3ecf7;
+  --pd-lane-head-line: #b9cbe2;
+  --pd-trigger: #a3461f;
+  --pd-trigger-soft: #fff1e8;
+  --pd-raci-r: #2f6db5;
+  --pd-raci-a: #b3261e;
+  --pd-raci-c: #1d7a46;
+  --pd-raci-i: #6b7480;
+  --pd-raci-r-soft: #dceafa;
+  --pd-raci-a-soft: #fbe1df;
+  --pd-raci-c-soft: #e2f3e8;
+  --pd-raci-i-soft: #f1f2f4;
+  --pd-card-io: #f7f9fc;
+  --pd-chip: #eef2f7;
+  --pd-head: #eef3f9;
+  --pd-act-line: #3c76b9;
+  --pd-card-line: #d5dce6;
+  --pd-muted: #5d6b7c;
+
 }
 
 /* 파생 토큰 — 다른 토큰을 참조하므로 각 테마 범위(관제실 영역·다크·시연)에서 다시 선언해야
@@ -233,6 +268,39 @@
   --e-3: 0 18px 48px rgba(0, 0, 0, 0.6);
   --scrim: rgba(0, 0, 0, 0.55);
   --grid-dot: rgba(235, 233, 226, 0.04);
+  --pd-navy: #9fbbe0;
+  --pd-blue: #7fb0ec;
+  --pd-gold: #e2c26f;
+  --pd-object: #c9a94f;
+  --pd-act: #18202b;
+  --pd-act-hover: #1f2c3d;
+  --pd-doc: #2e2614;
+  --pd-doc-hover: #3a3018;
+  --pd-doc-line: #b8973f;
+  --pd-ext: #23272e;
+  --pd-ext-line: #8a939e;
+  --pd-lane: #14181e;
+  --pd-lane-line: #2c3644;
+  --pd-lane-io: #17150f;
+  --pd-lane-io-line: #3d3626;
+  --pd-lane-head: #1c2737;
+  --pd-lane-head-line: #34465f;
+  --pd-trigger: #f0a07a;
+  --pd-trigger-soft: #2f1f17;
+  --pd-raci-r: #3f7fcc;
+  --pd-raci-a: #c8463c;
+  --pd-raci-c: #2f8f5a;
+  --pd-raci-i: #6f7987;
+  --pd-raci-r-soft: #1d2d44;
+  --pd-raci-a-soft: #3a1f1d;
+  --pd-raci-c-soft: #1b3326;
+  --pd-raci-i-soft: #23262b;
+  --pd-card-io: #1a1f27;
+  --pd-chip: #232a34;
+  --pd-head: #1c2430;
+  --pd-act-line: #6a9ad6;
+  --pd-card-line: #2e3846;
+  --pd-muted: #9aa7b6;
   color-scheme: dark;
 }
 

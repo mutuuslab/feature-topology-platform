@@ -72,13 +72,14 @@ for (const m of SCREENS) {
   });
 }
 
-// 첫 화면 시간 예산 — 주소 이동부터 h1과 데이터(ready)가 보일 때까지 (빌드본 preview 기준, harness/budgets.json)
+// 첫 화면 시간 예산 — 주소 이동부터 h1과 데이터(ready 또는 비어 있음 empty)가 보일 때까지 (빌드본 preview 기준, harness/budgets.json)
+// empty도 다 읽은 상태다 — /ops/kill은 걸린 차단이 없으면 empty라, ready만 받으면 다른 시험이 차단을 먼저 만들었는지에 따라 흔들렸다(2026-10-24)
 for (const url of ['/features', '/features/FEAT-00022/1.0.0', '/products', '/ops/kill', '/fleet/live']) {
   test(`첫 화면 ${url} ≤ ${BUDGET.firstScreenMs}ms`, async ({ page }) => {
     const t0 = Date.now();
     await page.goto(url, { waitUntil: 'commit' });
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-    await expect(page.locator('[data-state="ready"]').first()).toBeVisible();
+    await expect(page.locator('[data-state="ready"], [data-state="empty"]').first()).toBeVisible();
     expect(Date.now() - t0).toBeLessThanOrEqual(BUDGET.firstScreenMs);
   });
 }

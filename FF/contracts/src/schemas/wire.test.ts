@@ -8,21 +8,21 @@ const killSchema = loadGuide('schema/kill_command.v2.schema.json');
 const statusSchema = loadGuide('schema/status_report.v2.schema.json');
 const ex = (name: string) => loadGuide(`schema/examples/${name}`);
 
-/** zod 래퍼(optional·nullable·effects)를 벗긴다 */
-function unwrap(t: z.ZodTypeAny): z.ZodTypeAny {
-  if (t instanceof z.ZodOptional || t instanceof z.ZodNullable) return unwrap(t.unwrap());
-  if (t instanceof z.ZodEffects) return unwrap(t.innerType());
+/** zod 래퍼(optional·nullable·pipe)를 벗긴다 — zod 4는 refine이 감싸지 않고 같은 스키마의 검사로 붙는다 */
+function unwrap(t: z.ZodType): z.ZodType {
+  if (t instanceof z.ZodOptional || t instanceof z.ZodNullable) return unwrap(t.unwrap() as z.ZodType);
+  if (t instanceof z.ZodPipe) return unwrap(t.in as z.ZodType);
   return t;
 }
-const isOptional = (t: z.ZodTypeAny): boolean => (t instanceof z.ZodEffects ? isOptional(t.innerType()) : t.isOptional());
+const isOptional = (t: z.ZodType): boolean => t.safeParse(undefined).success;
 
 /** JSON Schema 노드와 zod 노드의 필드·필수·enum·const를 재귀 비교 — 차이를 "경로: 내용"으로 */
-function diff(js: any, zt: z.ZodTypeAny, path = ''): string[] {
+function diff(js: any, zt: z.ZodType, path = ''): string[] {
   const out: string[] = [];
   const t = unwrap(zt);
   if (js.properties) {
     if (!(t instanceof z.ZodObject)) return [`${path}: object가 아님`];
-    const shape = t.shape as Record<string, z.ZodTypeAny>;
+    const shape = t.shape as Record<string, z.ZodType>;
     const req = new Set<string>(js.required ?? []);
     for (const k of Object.keys(js.properties)) {
       if (!shape[k]) out.push(`${path}/${k}: zod에 없음`);
@@ -32,14 +32,14 @@ function diff(js: any, zt: z.ZodTypeAny, path = ''): string[] {
       }
     }
     for (const k of Object.keys(shape)) if (!js.properties[k]) out.push(`${path}/${k}: JSON Schema에 없음`);
-    if (js.additionalProperties === false && t._def.unknownKeys !== 'strict') out.push(`${path}: strict 아님(additionalProperties false)`);
+    if (js.additionalProperties === false && !(t._zod.def.catchall instanceof z.ZodNever)) out.push(`${path}: strict 아님(additionalProperties false)`);
   }
   if (js.enum) {
     const zEnum = t instanceof z.ZodEnum ? [...t.options] : null;
     if (JSON.stringify(zEnum) !== JSON.stringify(js.enum)) out.push(`${path}: enum 다름`);
   }
   if (js.const !== undefined && !(t instanceof z.ZodLiteral && t.value === js.const)) out.push(`${path}: const 다름`);
-  if (js.items && t instanceof z.ZodArray) out.push(...diff(js.items, t.element, `${path}[]`));
+  if (js.items && t instanceof z.ZodArray) out.push(...diff(js.items, t.element as z.ZodType, `${path}[]`));
   return out;
 }
 

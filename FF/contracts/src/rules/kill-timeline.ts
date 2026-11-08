@@ -58,7 +58,8 @@ export function killTimeline(vin: string, commands: TimelineCommand[], reports: 
   const acc = deR.find((r) => r.vehicle_seq === de?.vehicleSeq && r.request_result === 'ACCEPTED');
   const done = deR.find((r) => END_STATES.includes(r.state));
   const racc = reR.find((r) => r.vehicle_seq === re?.vehicleSeq && r.request_result === 'ACCEPTED');
-  const eff = reR.find((r) => r.state === 'ACTIVE' && r.request_result !== 'REJECTED');
+  // 복원 효력 = 차단이 풀린 첫 보고(INACTIVE — 해제는 활성화가 아니다, FFP-F036). 뒤이은 활성화의 ACTIVE도 해제를 뜻한다
+  const eff = reR.find((r) => (r.state === 'INACTIVE' || r.state === 'ACTIVE') && r.request_result !== 'REJECTED');
   const t: KillTimeline = {
     vin,
     deactivate: de ? { commandId: de.commandId, accepted: acc ? point(acc) : null, completed: done ? point(done) : null, mrc: null, mrcApplicable: opts.adsFeature } : null,

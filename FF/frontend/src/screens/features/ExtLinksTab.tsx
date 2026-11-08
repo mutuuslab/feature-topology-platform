@@ -83,7 +83,7 @@ export function ExtLinksTab({ id, ver }: { id: string; ver: string }) {
     { key: 's', header: X.col.status, cell: (r: ExtLink) => r.status },
   ];
   return (
-    <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
       {t && (
         <div style={{ display: 'grid', gap: 'var(--sp-4)' }} data-testid="ext-links">
           <ul className="ds-check" aria-label={X.chain}>

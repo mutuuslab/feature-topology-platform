@@ -52,6 +52,7 @@ import { ChangeRecordService } from '../../../d04-ops/pipeline-link/change-recor
 import { ExtAdapters, modeOf, PLATFORM_USER, type RemoteItem, type WriteResult } from './adapters';
 import { ExtSyncRepo, type ConflictRow, type InboxRow, type OutboxJob, type OutboxOp } from './ext-sync.repo';
 import { extUrl, MockExtStore } from './mock-ext.store';
+import { isProduction } from '../../../../kernel/runtime-config';
 import { applyExtLiveConfig } from './live-config';
 import { deliveryIdOf, hmac, normalize, verifyWebhook } from './normalize';
 
@@ -105,7 +106,8 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
   }
 
   onApplicationBootstrap() {
-    if (process.env.FF_EXT_SYNC_SEED !== '0' && this.repo.itemCount() === 0) this.seed();
+    // 운영 모드는 예시 항목을 넣지 않는다(출시 준비 RD-OPS-01)
+    if ((process.env.FF_EXT_SYNC_SEED ?? (isProduction() ? '0' : '1')) !== '0' && this.repo.itemCount() === 0) this.seed();
     if (!this.scheduler.manual && process.env.FF_EXT_SYNC_DRAIN !== 'off') {
       const tick = () => {
         void this.drain().finally(() => this.scheduler.after(DRAIN_MS, tick));

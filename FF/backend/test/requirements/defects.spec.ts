@@ -1,5 +1,5 @@
-// 기능명세서 결함 기록 — harness/requirements/review.json의 defects와 짝을 이룬다(tools/requirements.ts가 맞춰 본다).
-// it.fails: 결함이 그대로면 통과한다. 고치면 이 시험이 실패한다 → it(으로 바꾸고, review.json 결함 목록에서 빼고, 판정을 갱신한다.
+// 기능명세서 결함 기록 → 회귀 시험. readiness: RD-FN-01 — 여기 결함 3건은 모두 고쳤다(it.fails → it, harness/requirements/review.json defects에서 뺐다).
+// 새 결함을 찾으면 it.fails로 기록하고 review.json defects에 짝을 넣는다(tools/requirements.ts가 맞춰 본다).
 // 시험마다 앱을 새로 띄운다 — 한 결함의 재현 단계(Feature 사용 중단 등)가 다른 결함 기록에 새지 않게.
 Object.assign(process.env, { FF_SCHEDULER: 'manual', GLEO_MODE: 'internal', CARLA_RUNNER: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-req-')) });
 import { afterAll, describe, expect, it } from 'vitest';
@@ -27,7 +27,7 @@ describe('기능명세서 결함 기록 — 차량 런타임·정책 배포', ()
     for (const k of ['FF_SCHEDULER', 'GLEO_MODE', 'CARLA_RUNNER', 'FF_EVIDENCE_DIR']) delete process.env[k];
   });
 
-  it.fails('FR-RTE-005-001 차량 측 평가도 지원 조건을 본다 — SW 미달 차량(KMH-NX4-0002)에 구독이 생겨도 서버·차량 모두 OFF(어긋남 없음)', async () => {
+  it('FR-RTE-005-001 차량 측 평가도 지원 조건을 본다 — SW 미달 차량(KMH-NX4-0002)에 구독이 생겨도 서버·차량 모두 OFF(어긋남 없음)', async () => {
     const { app, http } = await boot();
     try {
       // 체험 제안은 이제 SW 미달 차량을 거른다(skipped) — 구독은 판정 이전부터 있던 것(외부 결제·SW 다운그레이드 전 구독)으로 넣는다
@@ -45,7 +45,7 @@ describe('기능명세서 결함 기록 — 차량 런타임·정책 배포', ()
     }
   });
 
-  it.fails('FR-RTE-001-004 차량은 자기 VIN이 대상에 없는 정책 게시본을 거부하고 기록한다', async () => {
+  it('FR-RTE-001-004 차량은 자기 VIN이 대상에 없는 정책 게시본을 거부하고 기록한다', async () => {
     const { app, http } = await boot();
     try {
       const pubs = (await http().get('/api/publications?kind=POLICY').expect(200)).body.items;
@@ -68,7 +68,7 @@ describe('기능명세서 결함 기록 — 차량 런타임·정책 배포', ()
     }
   });
 
-  it.fails('FR-REG-002-019 사용 중단(DEPRECATED)된 Feature의 정책은 승인돼 있어도 배포되지 않는다', async () => {
+  it('FR-REG-002-019 사용 중단(DEPRECATED)된 Feature의 정책은 승인돼 있어도 배포되지 않는다', async () => {
     const { app, http } = await boot();
     try {
       const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: '1.0.0', controlPoint: 'Parameter', flagKey: 'care_00022_param', description: '감속 요청 파라미터 r2', safeDefault: false, entitlementCatalogId: 'CAT-00019' }).expect(201);

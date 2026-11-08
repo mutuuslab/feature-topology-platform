@@ -8,6 +8,8 @@ import { ACTIVATION_LABEL, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL } from '
 import { ko } from '../../copy/ko';
 import { CAR_PIXEL_RATIO, carIconName, carImage } from './carIcon';
 import { formatCount } from '../../design/format';
+// maplibre-gl 6은 작업자(worker)를 자기 묶음 옆의 maplibre-gl-worker.mjs에서 찾는다 — 번들러가 옮기지 않으므로 파일로 내보내 주소를 알려 준다
+import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 
 const F = ko.fleetMap;
 export const MAP_STYLE_URL: string = import.meta.env.VITE_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/positron';
@@ -89,7 +91,7 @@ function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens) {
         properties: {
           vin: v.vin,
           short: v.label ? v.vin : '',
-          demo: v.source === 'DEMO',
+          demo: v.source !== 'SYNTHETIC',
           region: v.position!.precision === 'REGION',
           stale: v.stale,
           color: cssVar(el, stateVar(v, lens)),
@@ -193,8 +195,10 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
     let m: any;
     (async () => {
       const el = host.current;
-      const [{ default: ml }, { style, fallback: fb }] = await Promise.all([import('maplibre-gl'), loadStyle(el), import('maplibre-gl/dist/maplibre-gl.css')]);
+      // maplibre-gl 6은 ESM 이름 내보내기만 있다(기본 내보내기 없음) — 모듈 이름 공간을 그대로 쓴다
+      const [ml, { style, fallback: fb }] = await Promise.all([import('maplibre-gl'), loadStyle(el), import('maplibre-gl/dist/maplibre-gl.css')]);
       if (dead || !host.current) return;
+      ml.setWorkerUrl(mapWorkerUrl);
       setFallback(fb);
       m = new ml.Map({
         container: host.current,

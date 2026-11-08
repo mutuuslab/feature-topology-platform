@@ -2,7 +2,7 @@
 //   제안(OFFERED, 14일 안에 수락) → 수락(ACTIVE, 수락일부터 30일 기능 ON) → 만료 / 거절 / 구매 전환(CONVERTED, 과금 연계 D05-04가 부른다).
 // 상태·유효 판단은 contracts/rules/trial.ts grantState 한 곳 — 저장된 상태가 ACTIVE여도 기간이 지나면 OFF.
 import { Inject, Injectable } from '@nestjs/common';
-import { addDays, grantState, inService, SEGMENT_DIMENSIONS, TRIAL_DAYS, variantRow, type Entitlement, type OfferTrialsBody, type TrialState, type VehicleProfile } from '@ff/contracts';
+import { addDays, asSourceFilter, grantState, inService, SEGMENT_DIMENSIONS, TRIAL_DAYS, variantRow, type Entitlement, type OfferTrialsBody, type SourceFilter, type TrialState, type VehicleProfile } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -14,8 +14,9 @@ import { FleetRepo, PolicyRepo } from '../policy-repos';
 import { BaselineRepo, FeatureRepo, ProductRepo } from '../repos';
 
 export type GrantView = Entitlement & { state: TrialState; effective: boolean; daysLeft: number | null };
-export type Source = 'DEMO' | 'SYNTHETIC' | 'ALL';
-export const asSource = (s?: string): Source => (s === 'SYNTHETIC' || s === 'ALL' ? s : 'DEMO');
+/** 출처 고르기 — FLEET(등록 차량: 운영 PRODUCTION + 시연 DEMO, 기본)·ALL·PRODUCTION·DEMO·SYNTHETIC (contracts reference-data.ts, RD-OPS-03) */
+export type Source = SourceFilter;
+export const asSource = (s?: string): Source => asSourceFilter(s);
 
 export interface TrialQuery {
   catalogId?: string;
@@ -84,8 +85,9 @@ export class EntitlementService {
     const byState: Record<string, number> = {};
     for (const r of scoped) byState[r.state] = (byState[r.state] ?? 0) + 1;
     const filtered = q.state ? scoped.filter((r) => r.state === q.state) : scoped;
-    // 데모 차량이 먼저, 그다음 최근 제안 순
-    filtered.sort((a, b) => (a.source === b.source ? (b.offeredAt ?? b.validFrom).localeCompare(a.offeredAt ?? a.validFrom) || a.grantId.localeCompare(b.grantId) : a.source === 'DEMO' ? -1 : 1));
+    // 등록 차량(운영·시연)이 먼저, 합성 모집단은 뒤, 그다음 최근 제안 순
+    const rank = (s: Entitlement['source']) => (s === 'SYNTHETIC' ? 1 : 0);
+    filtered.sort((a, b) => rank(a.source) - rank(b.source) || (b.offeredAt ?? b.validFrom).localeCompare(a.offeredAt ?? a.validFrom) || a.grantId.localeCompare(b.grantId));
     const pageSize = Math.min(Math.max(q.pageSize ?? 50, 1), 200);
     const page = Math.max(q.page ?? 1, 1);
     return { today, total: filtered.length, page, pageSize, byState, items: filtered.slice((page - 1) * pageSize, page * pageSize) };
@@ -137,7 +139,8 @@ export class EntitlementService {
           convertedAt: null,
           convertedPlan: null,
           fromTrial: null,
-          source: sample ? 'SYNTHETIC' : 'DEMO',
+          // 출처 — 표본은 SYNTHETIC(가중 집계), 고객 차량(Fleet PRODUCTION)은 PRODUCTION, 시연 차량은 DEMO(RD-OPS-03)
+          source: sample ? 'SYNTHETIC' : registered?.fleet === 'PRODUCTION' ? 'PRODUCTION' : 'DEMO',
           note: body.note ?? null,
           noticeId: null,
           noticeAt: null,

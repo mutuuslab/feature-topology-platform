@@ -2,6 +2,9 @@
 // 결제가 확인되면 같은 트랜잭션에서 체험을 CONVERTED로, 새 구독·구매 권한을 만든다(D01-05).
 import { Body, Controller, HttpCode, Inject, Injectable, Param, Post } from '@nestjs/common';
 import { PurchaseTrialBody } from '@ff/contracts';
+import { connectionStatuses } from '../../../kernel/connections';
+import { DomainError } from '../../../kernel/errors';
+import { isProduction } from '../../../kernel/runtime-config';
 import { IfCallRepo } from '../../../adapters/if-call/if-call.repo';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { PlatformComponent } from '../../../kernel/components';
@@ -27,6 +30,9 @@ export class BillingService {
   ) {}
 
   purchase(actor: Actor, grantId: string, plan: '구독' | '구매') {
+    // 운영 모드에서 과금 연결이 실제가 아니면 결제를 만들지 않는다 — 모의 결제가 실제 구독·구매처럼 남지 않게(출시 준비 RD-UX-04)
+    const billing = connectionStatuses(process.env).find((c) => c.key === 'billing');
+    if (isProduction() && billing?.mode !== 'live') throw new DomainError('GUARD_FAILED', '과금 시스템이 아직 연결되지 않아 구독·구매를 처리할 수 없습니다. 연결 설정 뒤 다시 시도하세요.', { connection: 'billing', mode: billing?.mode });
     const trial = this.entitlements.convertible(actor, grantId);
     return this.db.tx(() => {
       const order = this.ifCalls.call<BillingOrder>('BILLING', `${grantId}:${plan}`, { vin: trial.vin, catalogId: trial.catalogId, plan }, () => ({

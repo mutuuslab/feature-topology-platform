@@ -4,8 +4,12 @@
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { STATIC_MODE } from '../../api/client';
+import { connectionLabel, useConnections } from '../../api/connections';
+import type { ConnectionStatus } from '@ff/contracts';
+import { connections as CN } from '../../copy/connections';
 import { ko } from '../../copy/ko';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, ExplainCodes, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
+import { useDefaultFeature } from '../../data/first-run';
+import { AsyncView, Button, ConnectionBadge, DataTable, Drawer, ErrorNote, ExplainCodes, PageHeader, Panel, Select, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { ComponentList, usePermission } from '../shared';
 import { extSync } from '../../copy/ext-sync';
 import { ExtSyncTab } from './ExtSyncTab';
@@ -48,7 +52,9 @@ function SystemsTab() {
   const rows = q.data?.items ?? [];
   const C = G.col;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <>
+    <ConnectionsPanel />
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable
         caption={G.tabs.systems}
         rows={rows}
@@ -65,13 +71,44 @@ function SystemsTab() {
         ]}
       />
     </AsyncView>
+    </>
+  );
+}
+
+/** 외부 연결 상태(RD-UX-04) — 과금·OTA·Data Lake 중 실제 연결이 아닌 것(알림 메일 채널은 없다, D-RD-7). 연결되면 상태가 '연결됨' */
+function ConnectionsPanel() {
+  const q = useConnections();
+  const rows = q.data?.items ?? [];
+  const P = CN.panel;
+  return (
+    <Panel title={P.title} id="connections">
+      <p className="ds-field__hint">{P.lead}</p>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={2}>
+        <DataTable<ConnectionStatus>
+          caption={P.title}
+          rows={rows}
+          rowKey={(r) => r.key}
+          columns={[
+            { key: 's', header: P.col.system, cell: (r) => CN.system[r.key] },
+            { key: 'u', header: P.col.use, cell: (r) => CN.use[r.key] },
+            { key: 'st', header: P.col.state, cell: (r) => { const l = connectionLabel(r, q.data?.mode); return l === 'none' ? P.live : <ConnectionBadge state={l} system={CN.system[r.key]} />; } },
+          ]}
+        />
+      </AsyncView>
+    </Panel>
   );
 }
 
 function AlmTab() {
-  const [featureId, setF] = useState('FEAT-00022');
-  const [version, setV] = useState('1.0.0');
-  const q = useApi<{ items: { reqId: string; title: string; status: string; tracedGate: string; baseline: string | null }[] }>('almRequirements', { query: { featureId, version } });
+  // 기본 대상 — 예시 Feature가 있으면 그것, 없으면 첫 Feature, 하나도 없으면(빈 설치) 빈 상태(출시 준비 RD-OPS-02)
+  const [picked, setPicked] = useState<{ f?: string; v?: string }>({});
+  const fallback = useDefaultFeature({ featureId: 'FEAT-00022', version: '1.0.0' }, picked.f === undefined);
+  const featureId = picked.f ?? fallback?.featureId ?? '';
+  const version = picked.v ?? fallback?.version ?? '';
+  const none = picked.f === undefined && fallback === null;
+  const setF = (f: string) => setPicked((x) => ({ v: version, ...x, f }));
+  const setV = (v: string) => setPicked((x) => ({ f: featureId, ...x, v }));
+  const q = useApi<{ items: { reqId: string; title: string; status: string; tracedGate: string; baseline: string | null }[] }>('almRequirements', { query: { featureId, version } }, { enabled: !!featureId && !!version });
   const rows = q.data?.items ?? [];
   const C = G.reqCol;
   return (
@@ -86,7 +123,7 @@ function AlmTab() {
           <input className="ds-input ds-input--mono" value={version} onChange={(e) => setV(e.target.value.trim())} disabled={STATIC_MODE} style={{ width: 80 }} />
         </label>
       </Toolbar>
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={none ? 'empty' : asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} empty={none ? { title: ko.state.noFeatureTitle, body: ko.state.noFeatureBody } : undefined}>
         <DataTable caption={G.tabs.alm} rows={rows} rowKey={(r) => r.reqId} columns={[
           { key: 'i', header: C.id, cell: (r) => <span className="ds-mono">{r.reqId}</span> },
           { key: 't', header: C.title, cell: (r) => r.title },
@@ -104,7 +141,7 @@ function SupplierTab() {
   const rows = q.data?.items ?? [];
   const C = G.supCol;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable caption={G.tabs.supplier} rows={rows} rowKey={(r) => `${r.swId}@${r.version}`} maxHeight="62vh" columns={[
         { key: 's', header: C.sw, cell: (r) => <span className="ds-mono ds-nowrap">{r.swId}</span>, sort: (r) => r.swId },
         { key: 'v', header: C.version, cell: (r) => <span className="ds-mono">{r.version}</span> },
@@ -122,7 +159,7 @@ function OtelTab() {
   const rows = q.data?.items ?? [];
   const C = G.spanCol;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: G.noSpans }} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} empty={{ title: G.noSpans }} error={q.error} onRetry={() => q.refetch()}>
       <DataTable caption={G.tabs.otel} rows={rows} rowKey={(r) => r.spanId} maxHeight="62vh" columns={[
         { key: 'n', header: C.name, cell: (r) => <span className="ds-mono ds-nowrap">{r.name}</span> },
         { key: 'a', header: C.at, cell: (r) => <span className="ds-mono ds-nowrap" style={{ fontSize: 'var(--fs-xs)' }}>{r.startTime.slice(11, 23)}</span> },
@@ -138,7 +175,7 @@ function CallsTab() {
   const rows = q.data?.items ?? [];
   const C = G.callCol;
   return (
-    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+    <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
       <DataTable caption={G.tabs.calls} rows={rows} rowKey={(r) => `${r.ifId}:${r.key}`} maxHeight="62vh" columns={[
         { key: 'i', header: C.if, cell: (r) => <span className="ds-mono">{r.ifId}</span>, sort: (r) => r.ifId },
         { key: 'k', header: C.key, cell: (r) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{r.key}</span> },
@@ -197,7 +234,7 @@ export function DataSyncScreen() {
         })()}
       />
       <ErrorNote error={run.error} />
-      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error?.message} onRetry={() => q.refetch()}>
+      <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable
           caption={S.title}
           rows={rows}
@@ -279,7 +316,7 @@ export function LegacyScreen() {
         })()}
       />
       <Panel title={L.mappings}>
-        <AsyncView state={asyncState(maps)} error={maps.error?.message} onRetry={() => maps.refetch()}>
+        <AsyncView state={asyncState(maps)} error={maps.error} onRetry={() => maps.refetch()}>
           <DataTable caption={L.mappings} rows={maps.data?.items ?? []} rowKey={(r) => r.legacyCode} columns={[
             { key: 'c', header: C.code, cell: (r) => <span className="ds-mono ds-nowrap">{r.legacyCode}</span> },
             { key: 's', header: C.system, cell: (r) => <span className="ds-mono ds-nowrap">{r.system}</span> },
@@ -303,7 +340,7 @@ export function LegacyScreen() {
       >
         <ErrorNote error={imp.error} />
         {imp.data && imp.data.unresolved.length > 0 && <p className="ds-stale" role="status">{`${L.unresolved}: ${imp.data.unresolved.join(', ')}`}</p>}
-        <AsyncView state={asyncState(orders, orderRows.length === 0)} empty={{ title: L.noOrders }} error={orders.error?.message} onRetry={() => orders.refetch()}>
+        <AsyncView state={asyncState(orders, orderRows.length === 0)} empty={{ title: L.noOrders }} error={orders.error} onRetry={() => orders.refetch()}>
           <DataTable caption={L.orders} rows={orderRows} rowKey={(r) => r.orderId} columns={[
             { key: 'o', header: C.order, cell: (r) => <span className="ds-mono ds-nowrap">{r.orderId}</span> },
             { key: 'p', header: C.plant, cell: (r) => <span className="ds-nowrap">{`${r.plant} · ${r.market}`}</span> },
@@ -324,7 +361,9 @@ function LegacySdvPanel() {
   const tr = useApiMutation<{ supported: boolean; reason: string | null; fClass: string; commands: { unit: string; did: string; value: string; note: string }[] }>('translateLegacy', ['audit']);
   const vs = v.data?.items ?? [];
   const [vin, setVin] = useState('');
-  const [featureId, setF] = useState('FEAT-00024');
+  const [typedF, setF] = useState<string | null>(null);
+  const fallbackF = useDefaultFeature({ featureId: 'FEAT-00024', version: '' }, typedF === null);
+  const featureId = typedF ?? fallbackF?.featureId ?? '';
   const [enable, setEnable] = useState(true);
   const pick = vin || vs[0]?.vin || '';
   const C = L.cmdCol;

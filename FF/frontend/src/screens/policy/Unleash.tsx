@@ -59,7 +59,7 @@ export function UnleashPanel({ policyId, deployed }: { policyId: string; deploye
         </div>
       }
     >
-      <AsyncView state={asyncState(q)} error={q.error?.message} onRetry={() => q.refetch()} rows={3}>
+      <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()} rows={3}>
         {d && (
           <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
             <p className="ds-field__hint">{U.lead}</p>
@@ -104,7 +104,7 @@ export function UnleashPanel({ policyId, deployed }: { policyId: string; deploye
               />
             )}
             {check && (
-              <AsyncView state={asyncState(ev)} error={ev.error?.message} onRetry={() => ev.refetch()} rows={3}>
+              <AsyncView state={asyncState(ev)} error={ev.error} onRetry={() => ev.refetch()} rows={3}>
                 {ev.data && (
                   <>
                     <p className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>

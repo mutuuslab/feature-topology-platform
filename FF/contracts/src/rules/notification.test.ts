@@ -1,6 +1,7 @@
 // 수신자 지정 알림 규칙 — 이벤트마다 명세서가 요구하는 내용 항목·수신자·제외 계정을 고정한다.
 import { describe, expect, it } from 'vitest';
-import { accountKeys, accountOf, emailEnabled, NOTIFICATION_ACCOUNTS, NOTIFICATION_RULES, receives, type NotificationContext } from './notification';
+import * as N from './notification';
+import { accountKeys, accountOf, NOTIFICATION_ACCOUNTS, NOTIFICATION_RULES, receives, type NotificationContext } from './notification';
 
 const feature = { featureId: 'FEAT-00022', version: '1.0.0', name: '전방 거리 경고', ownerId: 'ADAS기획팀' };
 const ev = (type: string, payload: Record<string, unknown>, aggregate = 'X'): NotificationContext['event'] => ({ seq: 1, type, at: '2026-10-17T01:00:00.000Z', aggregate, payload });
@@ -78,16 +79,15 @@ describe('알림 규칙 — 내용 항목과 수신자', () => {
   });
 });
 
-describe('수신 계정·이메일', () => {
+describe('수신 계정·채널', () => {
   it('계정 키 — 개인·역할·팀(Feature 설계 계정은 모든 Owner 팀)', () => {
     expect(accountKeys(accountOf('usr-author'))).toEqual(['user:usr-author', 'role:FEATURE_AUTHOR', 'team:*']);
     expect(accountOf('someone', 'OPERATOR').roles).toEqual(['OPERATOR']);
   });
 
-  it('승인 요청·긴급은 이메일을 끌 수 없고, 나머지는 범주별 설정(기본값)', () => {
-    expect(emailEnabled({ category: 'APPROVAL', severity: 'INFO' }, { APPROVAL: false })).toBe(true);
-    expect(emailEnabled({ category: 'OPS', severity: 'CRITICAL' }, { OPS: false })).toBe(true);
-    expect(emailEnabled({ category: 'GATE', severity: 'INFO' }, null)).toBe(false);
-    expect(emailEnabled({ category: 'GATE', severity: 'INFO' }, { GATE: true })).toBe(true);
+  it('채널은 화면 알림만(D-RD-7) — 계정에 메일 주소가 없고 메일 설정·발송 규칙이 없다', () => {
+    for (const a of NOTIFICATION_ACCOUNTS) expect(a).not.toHaveProperty('email');
+    expect(accountOf('someone')).not.toHaveProperty('email');
+    expect(Object.keys(N).filter((k) => /email|prefs/i.test(k))).toEqual([]);
   });
 });

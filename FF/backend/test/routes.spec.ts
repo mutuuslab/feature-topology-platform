@@ -5,7 +5,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootApp } from './helpers';
 
 function nestRoutes(app: INestApplication): string[] {
-  const router = app.getHttpAdapter().getInstance()._router;
+  // express 5는 app.router(express 4는 app._router)
+  const express = app.getHttpAdapter().getInstance();
+  const router = express.router ?? express._router;
   const out: string[] = [];
   for (const layer of router.stack) {
     if (!layer.route) continue;

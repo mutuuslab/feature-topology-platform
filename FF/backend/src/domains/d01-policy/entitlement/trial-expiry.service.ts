@@ -6,7 +6,7 @@
 // 대상은 데모 원천(DEMO) 체험권 — 합성 모집단(SYNTHETIC)은 통계용이라 차량이 없다.
 // 부팅 때 한 번 + 24시간마다. FF_SCHEDULER=manual(시험)이면 타이머 없이 sweep()을 직접 부르고, FF_TRIAL_SWEEP=off면 돌지 않는다.
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { fRank, isSampleVin, noticeOf, trialSweepPlan, type Entitlement, type FClass } from '@ff/contracts';
+import { fRank, isSampleVin, noticeOf, trialSweepIncludes, trialSweepPlan, type Entitlement, type FClass } from '@ff/contracts';
 import type { Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { Clock } from '../../../kernel/clock';
@@ -60,8 +60,8 @@ export class TrialExpiryService implements OnApplicationBootstrap {
   sweep(today = this.clock.kst().slice(0, 10)) {
     const notices: TrialNoticePayload[] = [];
     const expired: TrialExpiredPayload[] = [];
-    // 데모 권한 + 5년 운영 표본 권한(실제 경로로 제안·수락된 것). 통계용 합성 시드(SYN-…)는 과거 기록이라 sweep하지 않는다
-    for (const g of this.fleet.activeGrants().filter((x) => x.source === 'DEMO' || isSampleVin(x.vin))) {
+    // 고객 권한(PRODUCTION)·데모 권한 + 5년 운영 표본 권한(실제 경로로 제안·수락된 것). 통계용 합성 시드(SYN-…)는 과거 기록이라 sweep하지 않는다(RD-OPS-03 — 예전에는 DEMO만 보아 고객 권한이 만료되지 않았다)
+    for (const g of this.fleet.activeGrants().filter((x) => trialSweepIncludes(x.source, isSampleVin(x.vin)))) {
       const plan = trialSweepPlan(g, today);
       if (plan === 'NOTICE') notices.push(this.notice(g));
       else if (plan === 'EXPIRE') expired.push(this.expire(g));

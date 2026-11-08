@@ -1,7 +1,8 @@
 // 정책·검증 이력·차량·사용 권한 저장소 (키 열 + doc JSON)
 import { Inject, Injectable } from '@nestjs/common';
-import { canonicalJson, PolicySpec, policySpecOf, type Entitlement, type Policy, type PolicyRevision, type PolicyRevisionKind, type Vehicle, type VehicleProfile } from '@ff/contracts';
+import { canonicalJson, PolicySpec, policySpecOf, sourcesOf, type Entitlement, type Policy, type PolicyRevision, type PolicyRevisionKind, type SourceFilter, type Vehicle, type VehicleProfile } from '@ff/contracts';
 import { createHash } from 'node:crypto';
+import { vehiclePseudonym } from '../../kernel/crypto';
 import { DB, type Db } from '../../kernel/db';
 import type { ValidatorResult } from '@ff/contracts';
 
@@ -195,10 +196,48 @@ export class FleetRepo {
     this.db.run('INSERT INTO vehicle_profile (vin, source, doc) VALUES (?, ?, ?)', p.vin, p.source, JSON.stringify(p));
   }
   insertVehicle(v: Vehicle) {
+    this.pseudonyms = null;
     this.db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
+  }
+  /** 가명 → VIN 표(차량이 늘 때만 다시 만든다, 트랜잭션 안에서는 만들지 않는다) — OFREP·GLEO가 요청마다 전 차량의 가명을 해시하던 것
+   *  (차량 10만 대에서 요청당 해시 10만 번, 출시 준비 RD-P2-01). VIN은 바뀌지 않으므로 가명도 바뀌지 않는다 */
+  private pseudonyms: Map<string, string> | null = null;
+  vinByPseudonym(pseudonym: string): string | undefined {
+    if (this.pseudonyms) return this.pseudonyms.get(pseudonym);
+    const map = new Map<string, string>();
+    for (const { vin } of this.db.all<{ vin: string }>('SELECT vin FROM vehicle')) map.set(vehiclePseudonym(vin), vin);
+    if (!this.db.inTransaction) this.pseudonyms = map;
+    return map.get(pseudonym);
   }
   vehicles(): Vehicle[] {
     return parse<Vehicle>(this.db.all('SELECT doc FROM vehicle ORDER BY vin'));
+  }
+  /** 적용 범위(국가·차종·트림)가 맞는 차량만 — 전체를 읽어 거르지 않는다(식 색인 vehicle_scope, 마이그레이션 070) */
+  vehiclesInScope(scopes: { country: string; vehicleModel: string; trim: string }[]): Vehicle[] {
+    const uniq = [...new Map(scopes.map((s) => [`${s.country}|${s.vehicleModel}|${s.trim}`, s])).values()];
+    if (!uniq.length) return [];
+    const where = uniq.map(() => "(json_extract(doc, '$.country') = ? AND json_extract(doc, '$.vehicleModel') = ? AND json_extract(doc, '$.trim') = ?)").join(' OR ');
+    return parse<Vehicle>(this.db.all(`SELECT doc FROM vehicle WHERE ${where} ORDER BY vin`, ...uniq.flatMap((s) => [s.country, s.vehicleModel, s.trim])));
+  }
+  /** 지정한 차량만(없는 VIN은 빠진다), VIN 순 */
+  vehiclesByVin(vins: string[]): Vehicle[] {
+    const ids = [...new Set(vins)];
+    const out: Vehicle[] = [];
+    for (let i = 0; i < ids.length; i += 500) {
+      const chunk = ids.slice(i, i + 500);
+      out.push(...parse<Vehicle>(this.db.all(`SELECT doc FROM vehicle WHERE vin IN (${chunk.map(() => '?').join(',')})`, ...chunk)));
+    }
+    return out.sort((a, b) => (a.vin < b.vin ? -1 : a.vin > b.vin ? 1 : 0));
+  }
+  /** 차량 한 페이지(VIN 순, after 다음부터) — 목록 화면·가젯이 전체를 받지 않게 */
+  vehiclePage(limit: number, after?: string): Vehicle[] {
+    return after ? parse<Vehicle>(this.db.all('SELECT doc FROM vehicle WHERE vin > ? ORDER BY vin LIMIT ?', after, limit)) : parse<Vehicle>(this.db.all('SELECT doc FROM vehicle ORDER BY vin LIMIT ?', limit));
+  }
+  vehicleCounts(): { total: number; sample: number } {
+    // 둘 다 색인만 센다(vehicle_scope·vehicle_fleet) — 문서를 풀지 않는다
+    const total = this.db.get<{ n: number }>('SELECT count(*) AS n FROM vehicle')!.n;
+    const sample = this.db.get<{ n: number }>("SELECT count(*) AS n FROM vehicle WHERE json_extract(doc, '$.fleet') = 'SAMPLE'")!.n;
+    return { total, sample };
   }
   vehicle(vin: string): Vehicle | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM vehicle WHERE vin = ?', vin);
@@ -207,15 +246,17 @@ export class FleetRepo {
   updateVehicle(v: Vehicle) {
     this.db.run('UPDATE vehicle SET doc = ? WHERE vin = ?', JSON.stringify(v), v.vin);
   }
-  /** 차량을 지정하면 그 차량의 전부, 아니면 데모 권한만(합성 모집단은 통계·목록 화면에서 따로 고른다) */
-  grants(vin?: string, source: 'DEMO' | 'SYNTHETIC' | 'ALL' = 'DEMO'): Entitlement[] {
+  /** 차량을 지정하면 그 차량의 전부, 아니면 고른 출처만 — 기본 FLEET = 등록 차량(운영 + 시연) 권한. 합성 모집단은 통계·목록 화면에서 따로 고른다(RD-OPS-03) */
+  grants(vin?: string, source: SourceFilter = 'FLEET'): Entitlement[] {
     if (vin) return parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE vin = ? ORDER BY grant_id', vin));
-    return source === 'ALL' ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id')) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE source = ? ORDER BY grant_id', source));
+    const xs = sourcesOf(source);
+    return xs ? parse<Entitlement>(this.db.all(`SELECT doc FROM entitlement WHERE source IN (${xs.map(() => '?').join(', ')}) ORDER BY grant_id`, ...xs)) : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement ORDER BY grant_id'));
   }
-  grantsForCatalog(catalogId: string, source: 'DEMO' | 'SYNTHETIC' | 'ALL'): Entitlement[] {
-    return source === 'ALL'
-      ? parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? ORDER BY grant_id', catalogId))
-      : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? AND source = ? ORDER BY grant_id', catalogId, source));
+  grantsForCatalog(catalogId: string, source: SourceFilter): Entitlement[] {
+    const xs = sourcesOf(source);
+    return xs
+      ? parse<Entitlement>(this.db.all(`SELECT doc FROM entitlement WHERE catalog_id = ? AND source IN (${xs.map(() => '?').join(', ')}) ORDER BY grant_id`, catalogId, ...xs))
+      : parse<Entitlement>(this.db.all('SELECT doc FROM entitlement WHERE catalog_id = ? ORDER BY grant_id', catalogId));
   }
   insertGrant(e: Entitlement) {
     this.rev++;

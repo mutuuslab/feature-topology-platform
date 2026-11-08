@@ -1,4 +1,5 @@
 import { scheduleOtaObservation } from '../p9';
+import { gxActiveKills, gxForDeploy, gxStageGuard } from '../gx-deploy';
 // 시연 흐름 — 정책 운영(D01-06 정책·D06-04 검증·D01-08 단계 배포·D03-04 롤백·D06-12 이상 대응·D06-09 사후 검토·D06-03 가상검증·IF-04 Unleash).
 // 서버 policy.service·staged-rollout·rollback.service·anomaly.service·post-review·virtual-validation·unleash-sync와 같은 순서·규칙(contracts 순수 규칙):
 //  작성(DRAFT) → 분야별 검증 8종(runValidators → deploySafety) → 승인(publishCheck — 작성자≠승인자·해시·GO) → 배포(이전 배포본 RETIRED,
@@ -290,7 +291,7 @@ async function allPublications(ctx: SimReadContext): Promise<any[]> {
 const latestPublication = (pubs: any[], policyId: string) =>
   pubs.filter((x) => x.kind === 'POLICY' && x.payload?.policy?.policyId === policyId).sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.publicationId.localeCompare(a.publicationId))[0];
 
-async function publishPolicy(ctx: SimWriteContext, policy: any) {
+export async function publishPolicy(ctx: SimWriteContext, policy: any) {
   const d = await featureDetail(ctx, policy.featureId, policy.featureVersion);
   const f = d?.feature;
   const vehicles = await vehiclesOf(ctx);
@@ -556,12 +557,17 @@ registerSimHandler('deployPolicy', async (ctx) => {
   const p = await requirePolicy(ctx, id);
   if (p.status !== 'APPROVED') ctx.fail('GUARD_FAILED', `승인된(APPROVED) 정책만 배포할 수 있습니다 (현재 ${p.status}).`, undefined, { action: 'POLICY_DEPLOY', target: id, reason: `${p.status} 정책 배포 시도`, componentId: 'D01-06' });
   if (p.contentHash !== (await policyHash(p))) ctx.fail('GUARD_FAILED', '승인 이후 정책 내용이 바뀌었습니다 (해시 불일치).');
+  const kills = await gxActiveKills(ctx, p.featureId);
+  if (kills.length) ctx.fail('GUARD_FAILED', '활성 긴급 차단 중에는 새 정책을 배포할 수 없습니다.', { kills: kills.map((k: any) => k.killId) });
   const d = await featureDetail(ctx, p.featureId, p.featureVersion);
   const lc = d?.feature?.lifecycle;
   if (!(lc && LIFECYCLE_RANK[lc as keyof typeof LIFECYCLE_RANK] >= LIFECYCLE_RANK.APPROVED && !['DEPRECATED', 'RETIRED'].includes(lc)))
     ctx.fail('GUARD_FAILED', `${lc ?? '미등록'} Feature의 정책은 배포할 수 없습니다 (APPROVED~RELEASED).`, { rule: 'FR-REG-002-019', lifecycle: lc ?? '미등록' }, { action: 'POLICY_DEPLOY', target: id, reason: `${p.featureId}@${p.featureVersion} ${lc ?? '미등록'} Feature — 배포 차단`, componentId: 'D01-06' });
   const odd = await oddFindings(ctx, p);
   if (odd.length) ctx.fail('GUARD_FAILED', odd.map((x) => x.message).join(' · '), { rule: 'FFG-SOT-002', findings: odd }, { action: 'POLICY_DEPLOY', target: id, reason: odd.map((x) => x.message).join(' · '), componentId: 'D01-06' });
+  const input = await validationInput(ctx, p);
+  if (!input) ctx.fail('GUARD_FAILED', '배포 검증의 Feature 원천이 없습니다.');
+  const gx = await gxForDeploy(ctx, p, input!);
   const prev = deployedOf(await allPolicies(ctx), p.flagKey);
   if (prev && prev.policyId !== p.policyId) {
     ctx.put(POL, prev.policyId, { ...prev, status: 'RETIRED' });
@@ -571,7 +577,9 @@ registerSimHandler('deployPolicy', async (ctx) => {
   const fClass = await fClassOf(ctx, p.featureId, p.featureVersion);
   const canary = deployStartBasisPoints(fClass, effectiveBasisPoints({ ...p, stageBasisPoints: null }));
   const now = ctx.iso();
-  const next = { ...p, status: 'DEPLOYED', deployedBy: ctx.actor.id, deployedAt: now, ...(canary != null ? { stageBasisPoints: canary, stagedAt: now } : { stageBasisPoints: null, stagedAt: null }) };
+  const cap = gx.cap();
+  const start = cap != null ? Math.min(canary ?? effectiveBasisPoints({ ...p, stageBasisPoints: null }), cap) : canary;
+  const next = await gx.apply({ ...p, status: 'DEPLOYED', deployedBy: ctx.actor.id, deployedAt: now, ...(start != null ? { stageBasisPoints: start, stagedAt: now } : { stageBasisPoints: null, stagedAt: null }) }, prev);
   ctx.put(POL, id, next);
   ctx.audit({ action: 'POLICY_DEPLOY', target: id, before: { status: 'APPROVED' }, after: { status: 'DEPLOYED', contentHash: p.contentHash, stage: next.stageBasisPoints, fClass }, reason, componentId: 'D01-06' });
   const pub = await publishPolicy(ctx, next);
@@ -587,7 +595,7 @@ async function openAnomaliesOf(ctx: SimReadContext, featureId: string) {
     .sort();
 }
 async function activeKillsOf(ctx: SimReadContext, featureId: string) {
-  return ((await readOr<{ items: any[] }>(ctx, 'killRequests'))?.items ?? []).filter((k) => k.status === 'ACTIVE' && k.featureId === featureId).map((k) => k.killId);
+  return (await gxActiveKills(ctx, featureId)).map((k: any) => k.killId);
 }
 
 registerSimHandler('stageRollout', async (ctx) => {
@@ -595,13 +603,14 @@ registerSimHandler('stageRollout', async (ctx) => {
   const body = ctx.req.body;
   const p = await requirePolicy(ctx, id);
   if (p.status !== 'DEPLOYED') ctx.fail('GUARD_FAILED', `배포된 정책만 단계를 바꿀 수 있습니다 (현재 ${p.status}).`);
+  await gxStageGuard(ctx, p, body.basisPoints);
   const ceiling = effectiveBasisPoints({ ...p, stageBasisPoints: null });
   if (body.basisPoints > ceiling)
     ctx.fail('GUARD_FAILED', `승인된 배포 범위(${ceiling / 100}%)를 넘을 수 없습니다 — 정책을 새로 승인받으세요.`, undefined, { action: 'ROLLOUT_STAGE', target: id, reason: `승인 범위 ${ceiling / 100}% 초과 요청 ${body.basisPoints / 100}%`, componentId: 'D01-08' });
   const current = effectiveBasisPoints(p);
   const fClass = await fClassOf(ctx, p.featureId, p.featureVersion);
   const since = p.stagedAt ?? p.deployedAt ?? p.approvedAt ?? p.createdAt;
-  const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: ctx.iso(), actorId: ctx.actor.id, deployedBy: p.deployedBy ?? null, openAnomalies: await openAnomaliesOf(ctx, p.featureId), activeKills: await activeKillsOf(ctx, p.featureId) });
+  const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: ctx.iso(), actorId: ctx.actor.id, deployedBy: p.deployedBy ?? null, openAnomalies: body.basisPoints === 0 ? [] : await openAnomaliesOf(ctx, p.featureId), activeKills: body.basisPoints === 0 ? [] : await activeKillsOf(ctx, p.featureId) });
   if (!j.ok) {
     const msg = j.blockers.map((b) => b.message).join('; ');
     ctx.fail(j.blockers.some((b) => b.code === 'SAME_AS_DEPLOYER') ? 'SEPARATION_OF_DUTY' : 'GUARD_FAILED', `단계를 넓힐 수 없습니다: ${msg}`, { judgement: j }, { action: 'ROLLOUT_STAGE', target: id, reason: msg, componentId: 'D01-08' });

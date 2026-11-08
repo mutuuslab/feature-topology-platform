@@ -93,6 +93,7 @@ import { z } from 'zod';
 import { registerSimHandler, registerSimReader } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
 import { demoSign } from './kill';
+import { signLocalGate } from '../gate-signatures';
 
 // ─── 컬렉션·키 ─────────────────────────────────────────────
 const FEATURE = 'regFeature'; // `${id}@${ver}` → { row, meta }
@@ -735,6 +736,8 @@ registerSimReader('gates', async (ctx) => {
         stage: GATE_META[g].stage,
         latest: last.record,
         decision: { state: 'SIGNED', reason: null, provenance: 'PLATFORM', kid: last.decision.signature.kid, approver: last.decision.payload.approver, signedAt: last.decision.signedAt },
+        decisionRecord: last.decision,
+        decisionSource: 'LOCAL_SIMULATION',
         status: last.record.status,
         evidence: evidenceOf(last.record),
         history: [...(b?.history ?? []), ...ms.map((x) => ({ ...x.record, decision: 'SIGNED' }))],
@@ -1209,7 +1212,7 @@ registerSimHandler(
       _missing: {},
     };
     const payload = decisionPayload(record as any, { id: ctx.actor.id, role: ctx.actor.role }, 'PLATFORM', f.baselineId ?? null);
-    const decision = { payload, signature: { alg: 'EdDSA' as const, kid: GATE_KID, value: await demoSign(GATE_KID, jcs(payload)) }, signedAt: ctx.iso() };
+    const decision = await signLocalGate(ctx, payload);
     const log = ctx.state<Record<string, GateEntry[]>>('regGates', () => ({}));
     log[key] = [...(log[key] ?? []), { record, decision }];
     // G2 재판정 PASS가 열린 재-HARA 요청을 닫는다
@@ -1219,7 +1222,7 @@ registerSimHandler(
         closed[key] = [...(closed[key] ?? []), x.requestId];
         ctx.audit({ action: 'REHARA_RESOLVE', target: key, before: { requestId: x.requestId, status: 'OPEN' }, after: { status: 'RESOLVED', gateRecordId: record.gateRecordId }, componentId: 'D01-02' });
       }
-    ctx.audit({ action, target, before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null, after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: GATE_KID, ...(deviation ? { asilReasonReviewed: { from: deviation.from, to: deviation.to } } : {}) }, reason: body.rationale, componentId: 'D01-02' });
+    ctx.audit({ action, target, before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null, after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: decision.signature.kid, signatureSource: 'LOCAL_SIMULATION', ...(deviation ? { asilReasonReviewed: { from: deviation.from, to: deviation.to } } : {}) }, reason: body.rationale, componentId: 'D01-02' });
     ctx.emit('gate.judged', key, { gateRecordId: record.gateRecordId, gate: record.gate, status: record.status, by: ctx.actor.id }, { componentId: 'D01-02', notify: notifyFeature(f) });
     const feature = await autoAdvance(ctx, e);
     return { record, feature: feature.row };

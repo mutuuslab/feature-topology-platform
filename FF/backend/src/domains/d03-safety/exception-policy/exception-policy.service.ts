@@ -328,7 +328,13 @@ export class ExceptionPolicyService implements OnApplicationBootstrap {
     const now = this.now();
     for (const a of e.applications) {
       const p = this.policies.get(a.policyId);
-      if (p?.exceptionScope?.exceptionIds.includes(e.exceptionId)) this.policies.update({ ...p, exceptionScope: null });
+      if (p?.exceptionScope?.exceptionIds.includes(e.exceptionId)) {
+        // A trusted Gate completion removes only that Gate waiver. Other applied waivers
+        // retain their own cap and application history so expiry/revocation still reverts.
+        const remaining = p.exceptionScope.exceptionIds.filter((id) => id !== e.exceptionId).map((id) => this.repo.get(id)).filter((other): other is ExceptionPolicy => !!other && exceptionActive(other, now));
+        const narrow = remaining.reduce<ExceptionPolicy | null>((best, other) => !best || RESTRICTION_CAP_BP[other.restriction] < RESTRICTION_CAP_BP[best.restriction] ? other : best, null);
+        this.policies.update({ ...p, exceptionScope: narrow ? { exceptionIds: remaining.map((other) => other.exceptionId).sort(), restriction: narrow.restriction as 'LIMITED' | 'PILOT', capBasisPoints: RESTRICTION_CAP_BP[narrow.restriction] } : null });
+      }
     }
     const next: ExceptionPolicy = { ...e, status: 'COMPLETED', closedAt: now };
     this.repo.save(next);

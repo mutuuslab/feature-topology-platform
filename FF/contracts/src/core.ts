@@ -109,6 +109,7 @@ export * from './schemas/flag-source';
 export * from './schemas/flag-code';
 export * from './rules/flag-coverage';
 export * from './rules/flag-scaffold';
+export * from './rules/exception-sources';
 export * from './rules/unleash-snapshot';
 export * from './rules/telemetry-metrics';
 export * from './schemas/ops-observation';

@@ -47,6 +47,8 @@ const bodies = new Map<string, ZodTypeAny>();
 const readers = new Map<string, SimReader>();
 const views = new Map<string, SimView>();
 const tasks = new Map<string, SimTaskHandler>();
+/** Explicit GX expiry housekeeping only. Ordinary GET readers remain pure. */
+const preflights = new Map<string, SimTaskHandler[]>();
 const BY_NAME = new Map<string, RouteDef>(ROUTES.map((r) => [r.name, r]));
 
 /** 쓰기 경로(routes.ts name) 핸들러 — 응답 본문을 돌려주거나 ctx.fail로 서버와 같은 오류. body는 그 경로의 contracts 스키마(서버 ZodPipe와 같은 검증) */
@@ -73,6 +75,12 @@ export function registerSimView(name: string, view: SimView) {
 /** ctx.later(ms, kind, args)로 예약하는 작업 */
 export function registerSimTask(kind: string, fn: SimTaskHandler) {
   tasks.set(kind, fn);
+}
+export function registerSimExpiryPreflight(names: readonly string[], fn: SimTaskHandler) {
+  for (const name of names) {
+    if (!BY_NAME.has(name)) throw new Error(`시연 만료 정리: 경로가 없습니다 — ${name}`);
+    preflights.set(name, [...(preflights.get(name) ?? []), fn]);
+  }
 }
 /** 이벤트 구독(서버 events.stream 구독과 같다) — 같은 쓰기 안에서 이어 실행되고 함께 반영된다. 'publication.'처럼 점으로 끝나면 접두어 */
 export type SimListener = (ctx: SimWriteContext, event: PlatformEvent) => void | Promise<void>;
@@ -510,7 +518,7 @@ async function commit(original: SimOverlay, st: Staged, audits: SimAudit[]) {
 
 const emptyStaged = (): Staged => ({ entities: [], audit: [], failAudit: [], events: [], notifications: [], tasks: [], reads: [], data: {}, seq: {} });
 
-async function run(o: SimOverlay, req: SimRequest, actor: SimActor, fn: (ctx: SimWriteContext) => unknown): Promise<unknown> {
+async function run(o: SimOverlay, req: SimRequest, actor: SimActor, fn: (ctx: SimWriteContext) => unknown, expiryOnly = false): Promise<unknown> {
   await seed(o);
   const st = emptyStaged();
   const ctx = writeContext(o, req, actor, st);
@@ -518,6 +526,9 @@ async function run(o: SimOverlay, req: SimRequest, actor: SimActor, fn: (ctx: Si
     const out = await fn(ctx);
     // 구독자 — 구독자가 낸 이벤트의 구독자까지 같은 반영에
     while (st.hooks?.length) await st.hooks.shift()!();
+    // A clean expiry lookup must not persist or invalidate queries again. Otherwise
+    // policy-list refetches would continually trigger themselves and race other tabs.
+    if (expiryOnly && !st.entities.length && !st.audit.length && !st.failAudit.length && !st.events.length && !st.notifications.length && !st.tasks.length && !st.reads.length && !Object.keys(st.data).length && !Object.keys(st.seq).length && !st.binaryIds?.length) return out === undefined ? null : structuredClone(out);
     await commit(o, st, [...st.failAudit, ...st.audit]);
     return out === undefined ? null : structuredClone(out);
   } catch (e) {
@@ -555,6 +566,7 @@ async function write(o: SimOverlay, req: SimRequest, actor: SimActor): Promise<u
       if (!r.success) throw new SimError('VALIDATION', '입력값을 확인하세요.', r.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })));
       req = { ...req, body: r.data };
     }
+    for (const preflight of preflights.get(req.name) ?? []) await run(o, req, SYSTEM, (ctx) => preflight(ctx, {}), true);
     const h = handlers.get(req.name);
     return run(o, req, actor, h ?? simUnhandled);
   });
@@ -590,7 +602,10 @@ export async function simCall<T>(route: RouteDef, url: string, opts: CallOptions
   const req: SimRequest = { name: route.name, route, url, params: opts.params ?? {}, query: queryOf(url), body: opts.body };
   const actor = simActor(route, opts);
   try {
-    return (route.method === 'GET' && !downloadHandlers.has(route.name) ? await serial(() => readRoute(o, req, actor)) : await write(o, req, actor)) as T;
+    return (route.method === 'GET' && !downloadHandlers.has(route.name) ? await serial(async () => {
+      for (const preflight of preflights.get(req.name) ?? []) await run(o, req, SYSTEM, (ctx) => preflight(ctx, {}), true);
+      return readRoute(o, req, actor);
+    }) : await write(o, req, actor)) as T;
   } catch (e) {
     if (e instanceof SimError) throw asApiError(e);
     throw e;

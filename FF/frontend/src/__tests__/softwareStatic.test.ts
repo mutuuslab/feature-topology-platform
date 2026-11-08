@@ -23,7 +23,7 @@ beforeEach(async()=>{
  set('softwarePackages',{items:[p]});set('softwareDownloadHistory',{items:[]},{id:ID});
  set('auditChain',{head:`software-tests-${++sequence}`,verified:0});set('events',{items:[]});set('audit',{items:[]});
  set('listPolicies',{items:[policy]});set('policyDetail',{policy},{id:policy.policyId});
- set('vehicles',{items:[vehicle]});set('killRequests',{items:[]});
+ set('vehicles',{items:[vehicle]});set('killRequests',{items:[]});set('exceptionPolicies',{items:[]});
  set('listFeatures',{items:[f]}, {},{latestOnly:false});set('featureDetail',{feature:f,meta:{createdBy:'usr-author'},gates:{},versions:[{version:V,lifecycle:'APPROVED'}],trace:[],dependencies:{outgoing:[],incoming:[]},functions:[],products:[],transitions:[]},{id:F,ver:V});
  sources.set('/api-snapshot/software-demo-index.json',{schema:'ff.software-demo-capture.v1',items:[capture]});
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>{

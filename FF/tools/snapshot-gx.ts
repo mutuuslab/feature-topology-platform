@@ -11,6 +11,9 @@ export interface SnapshotGxContext {
 export async function snapshotGx(save: Save, ctx: SnapshotGxContext): Promise<{ exceptions: number; panels: number }> {
   const list = (await save('exceptionPolicies')) as { items: { exceptionId: string }[] };
   for (const e of list.items) await save('exceptionPolicy', { id: e.exceptionId });
+  // Signed read facts bind revision/hash and expire. Keys and raw Gate decisions are
+  // captured by the existing pkiKeys and Feature gates loops in snapshot-api.
+  for (const p of ctx.policies) await save('policyExceptionSources', { id: p.policyId });
   const shown = ctx.policies.filter((p) => p.status === 'APPROVED' || p.status === 'DEPLOYED');
   const versions = new Set<string>();
   for (const p of shown) {

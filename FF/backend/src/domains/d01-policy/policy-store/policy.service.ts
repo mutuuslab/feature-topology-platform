@@ -23,6 +23,9 @@ import { AdsPublishGate } from '../../d02-runtime/variant-conditions/ads-publish
 import { ExceptionPolicyService } from '../../d03-safety/exception-policy/exception-policy.service';
 import { KILL_STATE, type KillState } from '../activation/kill-state';
 import { activationBlockedMessage } from '@ff/contracts';
+import { createHash } from 'node:crypto';
+import { GX_SOURCE_SCHEMA, GX_SOURCE_TTL_MS, gxFeatureFacts, jcs, type ExceptionDeploySources, type ExceptionDeploySourcesPayload } from '@ff/contracts';
+import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 
 /** 같은 사람이 같은 정책을 다시 조회해도 이 시간 안이면 조회 감사를 한 번만 남긴다(화면 재조회·새로고침 잡음) */
 const VIEW_AUDIT_WINDOW_MS = 10 * 60_000;
@@ -49,7 +52,19 @@ export class PolicyService implements OnModuleInit {
     private readonly adsGate: AdsPublishGate,
     private readonly exceptions: ExceptionPolicyService,
     @Inject(KILL_STATE) private readonly kills: KillState,
+    private readonly sourceAttestation: HsmService,
   ) {}
+
+  /** Attested public read facts, not an approval. Original native deployment predicates are unchanged. */
+  exceptionSources(id: string): ExceptionDeploySources {
+    const p = this.policies.get(id);
+    if (!p) throw new DomainError('NOT_FOUND', `${id} 정책을 찾을 수 없습니다.`);
+    const f = this.features.get(p.featureId, p.featureVersion);
+    if (!f) throw new DomainError('NOT_FOUND', '정책의 Feature Version을 찾을 수 없습니다.');
+    const facts = { policy: { policyId: p.policyId, revision: p.revision, contentHash: p.contentHash, featureId: p.featureId, featureVersion: p.featureVersion, flagKey: p.flagKey }, feature: gxFeatureFacts(f), compliance: this.safety.exceptionSources(p), flagCode: { connected: this.flagCode.connected(), row: this.flagCode.detail(p.flagKey).row }, ads: this.adsGate.exceptionSources(p.featureId, p.featureVersion, this.secureDeploy.targetsFor(p.featureId, p.featureVersion)) };
+    const payload: ExceptionDeploySourcesPayload = { schema: GX_SOURCE_SCHEMA, observedAt: this.clock.iso(), validUntil: new Date(this.clock.now().getTime() + GX_SOURCE_TTL_MS).toISOString(), sourceRevision: 'sha256:' + createHash('sha256').update(jcs(facts)).digest('hex'), ...facts };
+    return { payload, signature: this.sourceAttestation.signDetached('gate', jcs(payload)) };
+  }
 
   /**
    * PoC 시나리오 시드 — FEAT-00022(전방 안전거리 3단계, F2) Control Point 2개의 배포 정책 (체험권 CAT-00019 필요)

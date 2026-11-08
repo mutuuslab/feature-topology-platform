@@ -9,9 +9,10 @@ import { UnleashGateway } from '../../../adapters/unleash/unleash.client';
 import { UnleashController, UnleashSyncService } from './unleash-sync.service';
 import { UnleashAutoSyncService } from './unleash-auto-sync.service';
 import { ExceptionPolicyModule } from '../../d03-safety/exception-policy/exception-policy.module';
+import { TrustModule } from '../../d06-qsec/pki-kms/trust.module';
 
 @Module({
-  imports: [D01PolicyModule, D06QsecModule, DeliveryModule, ExceptionPolicyModule],
+  imports: [D01PolicyModule, D06QsecModule, DeliveryModule, ExceptionPolicyModule, TrustModule],
   controllers: [PolicyController, RuntimeController, UnleashController],
   providers: [PolicyService, UnleashGateway, UnleashSyncService, UnleashAutoSyncService],
   exports: [PolicyService, UnleashSyncService],

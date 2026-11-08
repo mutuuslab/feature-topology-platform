@@ -17,6 +17,7 @@ import { snapshotP3 } from './snapshot-p3.ts';
 import { snapshotP5 } from './snapshot-p5.ts';
 import { snapshotP10 } from './snapshot-p10.ts';
 import { snapshotTx } from './snapshot-tx.ts';
+import { snapshotGx } from './snapshot-gx.ts';
 import { snapshotWorkflow } from './snapshot-workflow.ts';
 import { snapshotAc } from './snapshot-ac.ts';
 import { snapshotW } from './snapshot-w.ts';
@@ -446,6 +447,7 @@ async function main() {
   }
   // 정책·검증·사용 권한·활성화 판단 (PoC ②③) — ActivationScreen은 차량 × 배포 flagKey 조합을 모두 묻는다
   const policies = await save('listPolicies');
+  await snapshotGx(save, { policies: policies.items });
   await save('listPolicies', {}, { status: 'DEPLOYED' });
   await save('listPolicies', {}, { status: 'APPROVED' });
   for (const p of policies.items) {

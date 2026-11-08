@@ -277,6 +277,7 @@ export const ROUTES: RouteDef[] = [
 
   // 정책 저장·버전 관리 (D01-06) · 검증 이력 (D06-04) · 단계 배포 (D01-08)
   { name: 'listPolicies', method: 'GET', path: '/api/policies', summary: '정책 목록', component: 'D01-06', query: ['featureId', 'status', 'flagKey'] },
+  { name: 'policyExceptionSources', method: 'GET', path: '/api/policies/:id/exception-sources', summary: '예외 배포 재평가 공개 사실·원천판·시각·서명', component: 'D03-02' },
   { name: 'featureFlags', method: 'GET', path: '/api/feature-flags', summary: 'Feature Flag와 코드 사용처·배포 확인', component: 'D01-06', query: ['featureId', 'version'] },
   { name: 'listFlagSources', method: 'GET', path: '/api/flag-sources', summary: '소스 스냅샷 가져오기 이력', component: 'D01-06' },
   { name: 'importFlagSources', method: 'POST', path: '/api/flag-sources', summary: '개발자·CI 소스 스냅샷 가져오기', component: 'D01-06', roles: ['IMPLEMENTER'], body: FlagSourceManifest },

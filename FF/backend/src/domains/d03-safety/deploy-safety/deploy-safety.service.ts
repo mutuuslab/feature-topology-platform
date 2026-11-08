@@ -38,6 +38,11 @@ export class DeploySafetyService {
     return new DomainError('GUARD_FAILED', `배포 시점 컴플라이언스 룰을 충족하지 않습니다 — 새 정책으로 다시 검증·승인하세요: ${msg}`, { findings: view.unmet, checkId: view.checkId });
   }
 
+  /** Same registry facts as complianceAtDeploy, without recording a check or changing a decision. */
+  exceptionSources(policy: Policy) {
+    return this.rules.registryFor(this.validation.input(policy).feature, this.clock.iso());
+  }
+
   decide(results: ValidatorResult[]) {
     return deploySafety(results);
   }

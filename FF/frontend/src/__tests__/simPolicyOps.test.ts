@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES, routeUrl } from '@ff/contracts';
+import { gxLegacyFacts } from './fixtures/gx-legacy-facts';
 
 // 스냅샷 묶음 — 정적 배포본 스냅샷(public/api-snapshot, 빌드 산출물이라 저장소 밖) 중 이 시험이 읽는 파일만 담았다.
 // 스냅샷을 새로 찍은 뒤 다시 담기: SIM_FIXTURE_REFRESH=1 npx vitest run src/__tests__/simPolicyOps.test.ts
@@ -24,7 +25,8 @@ const json = (v: unknown) => new Response(JSON.stringify(v), { headers: { 'Conte
 const html = () => new Response('<!doctype html>', { headers: { 'Content-Type': 'text/html' } });
 /** 정적 사이트와 같은 파일 — 배포본 스냅샷 그대로 */
 const snapshotFetch = async (u: string) => {
-  const v = load(decodeURIComponent(u.replace(/^\//, '')));
+  const path = decodeURIComponent(u.replace(/^\//, ''));
+  const v = gxLegacyFacts(path, load(path), load);
   return v === undefined ? html() : json(v);
 };
 const snap = (name: string) => structuredClone(load(`api-snapshot/${name}.json`)) as any;

@@ -98,6 +98,11 @@ export class AdsPublishGate {
     return [...this.compileBlockers(p), ...this.candidates(p.featureId, p.featureVersion, vins).blockers];
   }
 
+  /** Read facts for offline re-evaluation; does not grant approval or alter publishing. */
+  exceptionSources(featureId: string, version: string, vins: string[]) {
+    return { settings: this.settings(featureId, version), profile: this.approvedProfile(featureId, version), classification: this.classification(featureId, version), sets: this.sets(featureId, version), baselines: this.baselines(featureId, version), fClass: this.safety(featureId, version)?.fClass ?? null, enforced: this.isAdsFeature(featureId, version), vehicles: vins.map((vin) => ({ vin, country: this.fleet.vehicle(vin)?.country ?? '', report: this.report(vin) })) };
+  }
+
   /** 지금 차량 키 epoch(HSM) — 복구 후보 메타데이터 재검증 기준 */
   keyEpoch(): number {
     return this.db.get<{ e: number | null }>("SELECT max(epoch) AS e FROM hsm_secret WHERE name = 'vehicle_root'")?.e ?? 1;

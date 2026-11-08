@@ -77,6 +77,8 @@ export class GateService {
         latest: latest[g] ?? null,
         /** FFG-LCY-001 — 최신 기록의 Decision Record 서명 상태 */
         decision: decisions[g] ?? null,
+        /** Public signed bytes for offline verification; never a replacement for the native decision view. */
+        decisionRecord: latest[g] ? this.decisions.get(latest[g]!.gateRecordId) : null,
         /** 레코드 없음 = 미판정 (Registry 표시 '미발급') */
         status: latest[g]?.status ?? '미판정',
         /** 명세 4상태(PASS·PENDING·FAIL·N/A), 미판정은 null — FR-REG-005-008 */

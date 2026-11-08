@@ -43,6 +43,11 @@ export class PolicyController {
     return this.policies.detail(id, actor);
   }
 
+  @Get(':id/exception-sources')
+  exceptionSources(@Param('id') id: string) {
+    return this.policies.exceptionSources(id);
+  }
+
   @Patch(':id')
   @Roles('FEATURE_AUTHOR', 'IMPLEMENTER')
   @AuditAction('POLICY_UPDATE')

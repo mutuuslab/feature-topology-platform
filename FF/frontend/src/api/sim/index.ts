@@ -19,6 +19,7 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/taxonomy'),
   () => import('./handlers/software'),
   () => import('./p9'),
+  () => import('./gx'),
 ];
 setSimHandlerLoader(() => Promise.all(HANDLERS.map((load) => load())));
 

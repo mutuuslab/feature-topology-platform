@@ -9,11 +9,13 @@ import { BillingController, BillingService } from './billing/billing.controller'
 import { BizMetricsController, BizMetricsService } from './biz-metrics/biz-metrics.controller';
 import { DataActController, DataActService } from './api-gateway/data-act.service';
 import { DemoSdkKeySeeder, OfrepSdkKeyGuard } from './api-gateway/ofrep-sdk-key';
+import { SupplierController } from './supplier/supplier.controller';
+import { SupplierService } from './supplier/supplier.service';
 
 @Module({
   imports: [D01PolicyModule, IntegrationErrorModule],
-  controllers: [OfrepController, OpenFeatureController, BillingController, BizMetricsController, DataActController],
-  providers: [OtelExporter, OfrepService, OpenFeatureGovService, BillingService, BizMetricsService, DataActService, OfrepSdkKeyGuard, DemoSdkKeySeeder],
-  exports: [OfrepService],
+  controllers: [OfrepController, OpenFeatureController, BillingController, BizMetricsController, DataActController, SupplierController],
+  providers: [OtelExporter, OfrepService, OpenFeatureGovService, BillingService, BizMetricsService, DataActService, OfrepSdkKeyGuard, DemoSdkKeySeeder, SupplierService],
+  exports: [OfrepService, SupplierService],
 })
 export class D05ExtModule {}

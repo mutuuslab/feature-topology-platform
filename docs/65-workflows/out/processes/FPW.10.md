@@ -57,7 +57,7 @@ flowchart LR
 | FPW.10-A03 | 확인 조치 독립성 지정 | R Safety Manager · A Safety Manager · C 품질 조직 · I 구매 | WP-DIA | WP-CONFIRMATION-PLAN | 플랫폼 밖 | FFG-SUP-014 |
 | FPW.10-A04 | 공급망 원산지 속성 관리 | R 구매 · A 구매 · C CSM, 법규 담당 · I 통합 조직 | WP-DIA | WP-ORIGIN-RECORD | 플랫폼 밖 | FFG-SEC-006, FFG-SBOM-007 |
 | FPW.10-A05 | 기존 구현 진단 | R 품질 조직 · A 품질 조직 · C 아키텍트, 통합 조직 · I Safety Manager | WP-SUPPLIER-ASSESS | WP-SUPPLIER-DIFF | 플랫폼 밖 | FFG-SUP-016 |
-| FPW.10-A06 | Gate별 납품물 입고 검사 | R 품질 조직, 시험 조직 · A 품질 조직 · C 통합 조직, Safety Manager · I 구매 | WP-DIA, WP-CONFIRMATION-PLAN | WP-INTAKE-RESULT | `judgeGate`, `/supplier/portal` | FFG-SUP-008, FFG-SUP-009, FFG-SUP-006 |
+| FPW.10-A06 | Gate별 납품물 입고 검사 | R 품질 조직, 시험 조직 · A 품질 조직 · C 통합 조직, Safety Manager · I 구매 | WP-DIA, WP-CONFIRMATION-PLAN, WP-SUPPLIER-RELEASE-PACKAGE | WP-INTAKE-RESULT | `createSupplierCriteria`, `reviewSupplierPackage`, `judgeGate`, `/supplier/portal` | FFG-SUP-008, FFG-SUP-009, FFG-SUP-006 |
 | FPW.10-A07 | EOL 프로비저닝 검증 | R 통합 조직 · A 통합 조직 · C 시험 조직, 기준정보 담당 · I 품질 조직 | WP-INTAKE-RESULT | WP-EOL-RECORD | 플랫폼 밖 | FFG-VEH-016 |
 
 ### 수행 절차와 완료 기준
@@ -104,14 +104,17 @@ flowchart LR
 - [ ] 차이 보고가 G2 영향 분석의 입력으로 등록되었다
 
 #### FPW.10-A06 Gate별 납품물 입고 검사
-1. 협력사가 정한 형식으로 낸 Gate별 납품물을 협력사 이관 포털에서 받는다
-2. 입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다
-3. Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다
-4. 합격 기준으로 판정해 Supplier Gate 기록에 남긴다
+1. 대상 Feature Version의 협력사 기능·SW Component 매핑과 필수 10항목을 협력사 이관 포털에서 확인한다
+2. 서버 보관 본문의 체크섬·대상 manifest·메타데이터를 대조하고 본문 없이 신고만 받은 산출물은 검수 보류로 남긴다
+3. 입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다
+4. Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다
+5. 현재 검수 기준으로 10항목을 확인하고 작성·제출·검수 요청자와 다른 검수자가 항목별 결과와 의견을 기록한다
+6. 현재 유효한 패키지만 Supplier Gate 합격 근거로 쓰고 기준 개정 뒤에는 이전 판정 기록을 보존하면서 전이를 보류한다
 
 완료 기준:
-- [ ] 모든 검사 항목이 OEM 환경에서 재실행되었다
-- [ ] 판정 결과가 Supplier Gate 기록에 있다
+- [ ] 필수 10항목 본문이 확인되고 모든 검사 항목의 OEM 환경 재실행 결과가 있다
+- [ ] 작성·제출·요청자와 다른 검수자의 항목별 결과·현재 기준 개정·의견이 있다
+- [ ] 현재 검수 근거와 Supplier Gate 판정이 연결되고 근거 변경 시 전이가 보류된다
 
 #### FPW.10-A07 EOL 프로비저닝 검증
 1. EOL에서 인증된 진단 세션으로 Feature별 초기 기록을 쓰고 지울 수 없는 프로비저닝 표식을 설정한다
@@ -130,6 +133,7 @@ flowchart LR
 | WP-DIA | DIA·CIA 계약 부속서 | 산출 | 인용한 보고서 Version과 적용 장, RASIC, Gate별 납품물; 시간 예산 부속서, 결함·변경 통지 기한, 현장 지원 SLA; 당국 보고·리콜 판단을 위한 안전 정보 제공 범위와 기한 |
 | WP-SUPPLIER-DIFF | 기존 구현 차이 보고 | 산출 | 재사용·인수한 Feature Flag 구현과 보고서 요구의 차이; 차이별 위험과 보완 계획 |
 | WP-CONFIRMATION-PLAN | 확인 조치 계획 | 산출 | 협력사 범위의 확인 검토·감사·기능안전 평가와 수행자; 수행자 독립성 수준과 근거 |
+| WP-SUPPLIER-RELEASE-PACKAGE | 협력사 릴리스 패키지 | 입력 (협력사·통합 조직) | 대상 Feature Version·패키지 버전·협력사 Function·SW Component·ECU 매핑; API 계약·개발 문서·매핑·지원 범위·차량 조건·진단·안전 보안·SDK Stub Mock·시험 근거·변경 안내의 필수 10항목; 외부 출처와 서버 보관 본문·SHA-256·대상 manifest·제출자·제출 시각; OEM 환경 재실행 보고서와 안전 사용 가정 |
 | WP-INTAKE-RESULT | 입고 검사 결과 | 산출 | 검사 항목(IN-01~IN-12)별 OEM 환경 재실행 결과; Gate별 합격 판정과 Supplier Gate 기록; Safety Manual 사용 가정(AoU) 목록 |
 | WP-ORIGIN-RECORD | 공급망 원산지 기록 | 산출 | 구성요소별 개발 주체·국가·소유·통제 속성(SBOM 연계); 미국 시장 적합성 선언 근거와 10년 보존 위치 |
 | WP-EOL-RECORD | EOL 프로비저닝 검증 기록 | 산출 | Feature별 초기 기록 쓰기와 프로비저닝 표식 설정 결과; 표식이 있는 ECU의 기록 누락 시 동작 확인 결과 |

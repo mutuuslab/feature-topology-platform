@@ -69,6 +69,7 @@ import { SendSettlementBody, SETTLEMENT_SENDERS } from './rules/settlement';
 import { CreateTestEvidenceBody, CreateTraceLinkBody, UnlinkTraceLinkBody } from './schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_LINK_ROLES } from './rules/trace-link';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
+import { AddSupplierSwcBody, CreateSupplierCriteriaBody, CreateSupplierMappingBody, CreateSupplierPackageBody, ReviewSupplierPackageBody, SubmitSupplierArtifactBody, SubmitSupplierPackageBody } from './schemas/supplier';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -643,6 +644,20 @@ export const ROUTES: RouteDef[] = [
   { name: 'deactivateAccount', method: 'POST', path: '/api/accounts/:id/deactivate', summary: '계정 비활성 기록 — 시스템 관리자, 사유 필수(자기 계정 제외)', component: 'D06-09', roles: SYSTEM_ADMIN_ROLES, body: AccountStatusBody },
   { name: 'reactivateAccount', method: 'POST', path: '/api/accounts/:id/reactivate', summary: '계정 재활성 — 비활성인 계정만, 사유 필수', component: 'D06-09', roles: SYSTEM_ADMIN_ROLES, body: AccountStatusBody },
   { name: 'transferComplianceRuleOwner', method: 'POST', path: '/api/compliance-rules/:id/owner-transfer', summary: '컴플라이언스 룰 소유자 이관 — 시스템 관리자, 소유자 계정이 없거나 비활성일 때만(내용·버전·상태는 그대로)', component: 'D03-01', roles: SYSTEM_ADMIN_ROLES, body: TransferOwnerBody },
+  // P13 협력사 패키지 — 본문은 서버 보관 API로 취득, 출처 URI만으로 검수 합격 불가
+  { name: 'supplierMappings', method: 'GET', path: '/api/supplier-mappings', summary: 'OEM Feature·협력사 Function·SW Component 매핑', component: 'D05-01', query: ['featureId'] },
+  { name: 'createSupplierMapping', method: 'POST', path: '/api/supplier-mappings', summary: '협력사 기능 매핑 등록', component: 'D05-01', roles: ['IMPLEMENTER', 'FEATURE_AUTHOR'], body: CreateSupplierMappingBody },
+  { name: 'addSupplierSwc', method: 'POST', path: '/api/supplier-mappings/:id/swcs', summary: '동일 공급사 SW·ECU 연결', component: 'D05-01', roles: ['IMPLEMENTER', 'FEATURE_AUTHOR'], body: AddSupplierSwcBody },
+  { name: 'supplierPackages', method: 'GET', path: '/api/supplier-packages', summary: 'Feature Version별 협력사 패키지 목록', component: 'D05-01', query: ['featureId', 'featureVersion', 'supplier'] },
+  { name: 'supplierPackage', method: 'GET', path: '/api/supplier-packages/:id', summary: '협력사 산출물·무결성·기준·검수 이력', component: 'D05-01' },
+  { name: 'createSupplierPackage', method: 'POST', path: '/api/supplier-packages', summary: '버전별 협력사 패키지 작성', component: 'D05-01', roles: ['IMPLEMENTER'], body: CreateSupplierPackageBody },
+  { name: 'submitSupplierArtifact', method: 'POST', path: '/api/supplier-packages/:id/artifacts', summary: '산출물 본문·manifest·체크섬 검증 및 추가 보관', component: 'D05-01', roles: ['IMPLEMENTER'], body: SubmitSupplierArtifactBody },
+  { name: 'supplierArtifactContent', method: 'GET', path: '/api/supplier-artifacts/:id/content', summary: '서버 보관 산출물 본문 다시 취득', component: 'D05-01' },
+  { name: 'submitSupplierPackage', method: 'POST', path: '/api/supplier-packages/:id/submit', summary: '필수 10항목 검수 요청', component: 'D05-01', roles: ['IMPLEMENTER'], body: SubmitSupplierPackageBody },
+  { name: 'reviewSupplierPackage', method: 'POST', path: '/api/supplier-packages/:id/reviews', summary: '독립 검수자의 항목별 합격·보완 결정', component: 'D05-01', roles: ['GATE_JUDGE'], body: ReviewSupplierPackageBody },
+  { name: 'supplierCriteria', method: 'GET', path: '/api/supplier-criteria', summary: 'Feature별 검수 기준 개정 이력', component: 'D05-01', query: ['featureId'], requiredQuery: ['featureId'], sample: { featureId: 'FEAT-00010' } },
+  { name: 'createSupplierCriteria', method: 'POST', path: '/api/supplier-criteria', summary: '검수 기준 새 개정 등록', component: 'D05-01', roles: ['GATE_JUDGE'], body: CreateSupplierCriteriaBody },
+  { name: 'supplierGate', method: 'GET', path: '/api/features/:id/versions/:ver/supplier-gate', summary: 'G6 협력사 검수 대상·승인 패키지·막힘 사유', component: 'D05-01' },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

@@ -2710,6 +2710,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "/supplier/portal"
    ],
    "actions": [
+    "createSupplierCriteria",
+    "reviewSupplierPackage",
     "judgeGate"
    ],
    "anchor": null,

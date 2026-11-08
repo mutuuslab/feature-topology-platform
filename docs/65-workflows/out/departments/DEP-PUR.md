@@ -42,7 +42,7 @@ last_updated: 2026-11-05
 | FPW.10-A02 DIA·CIA 체결 | FPW.10 협력사 관리 | R·A (구매) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → DIA·CIA 계약 부속서 `WP-DIA` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A03 확인 조치 독립성 지정 | FPW.10 협력사 관리 | I (구매) | DIA·CIA 계약 부속서 `WP-DIA` → 확인 조치 계획 `WP-CONFIRMATION-PLAN` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A04 공급망 원산지 속성 관리 | FPW.10 협력사 관리 | R·A (구매) | DIA·CIA 계약 부속서 `WP-DIA` → 공급망 원산지 기록 `WP-ORIGIN-RECORD` | 플랫폼 밖 | 2차 초안 |
-| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | I (구매) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
+| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | I (구매) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN`, 협력사 릴리스 패키지 `WP-SUPPLIER-RELEASE-PACKAGE` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
 | FPW.11-A06 OSS 라이선스·보안 프로그램 운영 | FPW.11 보안·키·취약점 관리 | C (구매) | 공급망 원산지 기록 `WP-ORIGIN-RECORD` → OSS 관리 프로그램 기록 `WP-OSS-PROGRAM` | 플랫폼 밖 | 2차 초안 |
 
 ## 2. 부서 간 인계

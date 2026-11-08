@@ -59,7 +59,7 @@ last_updated: 2026-11-05
 | FPW.9-A01 운영 결과 품질 피드백 수용 | FPW.9 사후 검토·Flag Retirement | C (시험 조직) | 드릴 결과·G8 판정 `WP-DRILL-REPORT`, 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` → 품질 피드백 기록 `WP-QUALITY-FEEDBACK` | `/quality/feedback` | 1차 |
 | FPW.9-A04 코드·설정·시험 삭제 기록 | FPW.9 사후 검토·Flag Retirement | C (시험 조직) | Retirement 승인 기록 `WP-RETIRE-APPROVAL` → Retirement 단계 기록 `WP-RETIRE-LOG` | `/flag-retirements` | 1차 |
 | FPW.9-A06 Flag 제거 PR 병합 | FPW.9 사후 검토·Flag Retirement | C (시험 조직) | Retirement 단계 기록 `WP-RETIRE-LOG` → – | `/flag-code/lifecycle`, `/flag-retirements` | 1차 |
-| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | R (시험 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
+| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | R (시험 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN`, 협력사 릴리스 패키지 `WP-SUPPLIER-RELEASE-PACKAGE` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
 | FPW.10-A07 EOL 프로비저닝 검증 | FPW.10 협력사 관리 | C (시험 조직) | 입고 검사 결과 `WP-INTAKE-RESULT` → EOL 프로비저닝 검증 기록 `WP-EOL-RECORD` | 플랫폼 밖 | 2차 초안 |
 
 ## 2. 부서 간 인계

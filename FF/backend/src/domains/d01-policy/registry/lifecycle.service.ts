@@ -28,6 +28,7 @@ import { FlagCoverageService } from '../flag-code/flag-coverage.service';
 import { FeatureRefLinker, type RefWarning } from './feature-refs';
 import { ReleaseSignoffService } from './release-signoff.service';
 import { adsTransitionBlockers } from './ads-release-guard';
+import { supplierGateFacts } from '../../d05-ext/supplier/supplier-gate';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -69,6 +70,8 @@ export class LifecycleService {
   context(f: FeatureVersionRow, extra: Partial<TransitionContext> = {}): TransitionContext {
     const latest = this.gates.latest(f.featureId, f.version);
     const latestGates = Object.fromEntries(Object.entries(latest).map(([g, r]) => [g, r!.status])) as Partial<Record<string, GateStatus>>;
+    // 원 Gate 기록·서명은 보존한다. 이후 기준 개정/근거 이상이 있으면 현재 G6 근거만 보류한다.
+    if (latestGates.G6 === 'PASS' && (f.lifecycle === 'DEVELOPING' || f.lifecycle === 'VERIFIED') && supplierGateFacts(this.db, f).blockers.length) latestGates.G6 = '검토 중';
     return {
       latestGates,
       // FFG-LCY-001 — 서명된 Decision Record가 없는 Gate PASS는 전이 근거가 아니다
@@ -99,7 +102,7 @@ export class LifecycleService {
       auto: r.auto,
       roles: r.roles.map((x) => ROLE_LABEL[x]),
       // ADS-BE16 — 분류 대상 Version은 미분류·상태 책임자 미지정이면 전이를 막는다
-      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to)],
+      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview' } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to), ...this.supplierBlockers(f, r.to)],
     }));
   }
 
@@ -118,7 +121,7 @@ export class LifecycleService {
     const f = this.require(featureId, version);
     const evaluated = evaluateTransition(f, to, this.context(f, { actor, reason }));
     const rule = evaluated.rule;
-    const blockers = evaluated.rule ? [...evaluated.blockers, ...adsTransitionBlockers(this.db, f, to)] : evaluated.blockers;
+    const blockers = evaluated.rule ? [...evaluated.blockers, ...adsTransitionBlockers(this.db, f, to), ...this.supplierBlockers(f, to)] : evaluated.blockers;
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
     const target = `${featureId}@${version}`;
     if (rule?.auto && actor.role !== 'SYSTEM') {
@@ -145,9 +148,15 @@ export class LifecycleService {
     for (let i = 0; i < 4; i++) {
       const rule = autoTransition(cur, this.context(cur));
       if (!rule) break;
+      if (this.supplierBlockers(cur, rule.to).length) break;
       cur = this.apply(SYSTEM_ACTOR(correlationId), cur, rule.to, `자동 전이: ${rule.ko}`);
     }
     return cur;
+  }
+
+  private supplierBlockers(f: FeatureVersionRow, to: Lifecycle): Blocker[] {
+    if (to !== 'VERIFIED' && to !== 'RELEASED') return [];
+    return supplierGateFacts(this.db, f).blockers.map((message) => ({ code: 'GATE_NOT_PASSED', ref: 'G6', message: `협력사 검수 근거 보류: ${message}` }));
   }
 
   private apply(actor: Actor, f: FeatureVersionRow, to: Lifecycle, reason: string): FeatureVersionRow {

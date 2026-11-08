@@ -70,7 +70,7 @@ last_updated: 2026-11-05
 | FPW.10-A02 DIA·CIA 체결 | FPW.10 협력사 관리 | C (품질 조직) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → DIA·CIA 계약 부속서 `WP-DIA` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A03 확인 조치 독립성 지정 | FPW.10 협력사 관리 | C (품질 조직) | DIA·CIA 계약 부속서 `WP-DIA` → 확인 조치 계획 `WP-CONFIRMATION-PLAN` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A05 기존 구현 진단 | FPW.10 협력사 관리 | R·A (품질 조직) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` | 플랫폼 밖 | 2차 초안 |
-| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | R·A (품질 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
+| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | R·A (품질 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN`, 협력사 릴리스 패키지 `WP-SUPPLIER-RELEASE-PACKAGE` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
 | FPW.10-A07 EOL 프로비저닝 검증 | FPW.10 협력사 관리 | I (품질 조직) | 입고 검사 결과 `WP-INTAKE-RESULT` → EOL 프로비저닝 검증 기록 `WP-EOL-RECORD` | 플랫폼 밖 | 2차 초안 |
 | FPW.11-A05 CSMS Evidence·R155 보고 | FPW.11 보안·키·취약점 관리 | I (품질 조직) | HARA·TARA 결과 `WP-HARA-TARA`, VEX 판정·대응 결정 `WP-VEX-DECISION`, 키 사고 대응 기록 `WP-KEY-INCIDENT` → CSMS Evidence·R155 보고 `WP-CSMS-EVIDENCE` | 플랫폼 밖 | 2차 초안 |
 | FPW.12-A01 운행 감시 지표·경보 기준 기록 | FPW.12 운영 데이터·데이터 보호 | I (품질 조직) | Safety Case·SOTIF 출시 근거 `WP-SAFETY-CASE` → 운행 감시 지표·경보 기준 `WP-KPI-PLAN` | `/ops/safety-kpi` | 2차 초안 |

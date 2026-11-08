@@ -95,7 +95,7 @@ last_updated: 2026-11-05
 | FPW.10-A02 DIA·CIA 체결 | FPW.10 협력사 관리 | C (Safety Manager) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → DIA·CIA 계약 부속서 `WP-DIA` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A03 확인 조치 독립성 지정 | FPW.10 협력사 관리 | R·A (Safety Manager) | DIA·CIA 계약 부속서 `WP-DIA` → 확인 조치 계획 `WP-CONFIRMATION-PLAN` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A05 기존 구현 진단 | FPW.10 협력사 관리 | I (Safety Manager) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` | 플랫폼 밖 | 2차 초안 |
-| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | C (Safety Manager) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
+| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | C (Safety Manager) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN`, 협력사 릴리스 패키지 `WP-SUPPLIER-RELEASE-PACKAGE` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11 보안·키·취약점 관리 | C (Safety Manager) | HARA·TARA 결과 `WP-HARA-TARA` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A02 키 교체 플랫폼 기록 | FPW.11 보안·키·취약점 관리 | C (Safety Manager) | 서명 키 대장 `WP-KEY-REGISTER` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A03 키 유출 대응·epoch 상향 | FPW.11 보안·키·취약점 관리 | C (Safety Manager) | 서명 키 대장 `WP-KEY-REGISTER` → 키 사고 대응 기록 `WP-KEY-INCIDENT` | `/admin/security` | 2차 초안 |

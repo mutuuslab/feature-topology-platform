@@ -17727,6 +17727,19 @@ export const WORKFLOWS: WorkflowDoc = {
      ]
     },
     {
+     "key": "WP-SUPPLIER-RELEASE-PACKAGE",
+     "name": "협력사 릴리스 패키지",
+     "en": "Supplier API Release Package",
+     "kind": "input",
+     "retained": false,
+     "content": [
+      "대상 Feature Version·패키지 버전·협력사 Function·SW Component·ECU 매핑",
+      "API 계약·개발 문서·매핑·지원 범위·차량 조건·진단·안전 보안·SDK Stub Mock·시험 근거·변경 안내의 필수 10항목",
+      "외부 출처와 서버 보관 본문·SHA-256·대상 manifest·제출자·제출 시각",
+      "OEM 환경 재실행 보고서와 안전 사용 가정"
+     ]
+    },
+    {
      "key": "WP-INTAKE-RESULT",
      "name": "입고 검사 결과",
      "en": "Incoming Inspection Result",
@@ -18067,23 +18080,29 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "inputs": [
       "WP-DIA",
-      "WP-CONFIRMATION-PLAN"
+      "WP-CONFIRMATION-PLAN",
+      "WP-SUPPLIER-RELEASE-PACKAGE"
      ],
      "outputs": [
       "WP-INTAKE-RESULT"
      ],
      "steps": [
-      "협력사가 정한 형식으로 낸 Gate별 납품물을 협력사 이관 포털에서 받는다",
+      "대상 Feature Version의 협력사 기능·SW Component 매핑과 필수 10항목을 협력사 이관 포털에서 확인한다",
+      "서버 보관 본문의 체크섬·대상 manifest·메타데이터를 대조하고 본문 없이 신고만 받은 산출물은 검수 보류로 남긴다",
       "입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다",
       "Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다",
-      "합격 기준으로 판정해 Supplier Gate 기록에 남긴다"
+      "현재 검수 기준으로 10항목을 확인하고 작성·제출·검수 요청자와 다른 검수자가 항목별 결과와 의견을 기록한다",
+      "현재 유효한 패키지만 Supplier Gate 합격 근거로 쓰고 기준 개정 뒤에는 이전 판정 기록을 보존하면서 전이를 보류한다"
      ],
      "checks": [
-      "모든 검사 항목이 OEM 환경에서 재실행되었다",
-      "판정 결과가 Supplier Gate 기록에 있다"
+      "필수 10항목 본문이 확인되고 모든 검사 항목의 OEM 환경 재실행 결과가 있다",
+      "작성·제출·요청자와 다른 검수자의 항목별 결과·현재 기준 개정·의견이 있다",
+      "현재 검수 근거와 Supplier Gate 판정이 연결되고 근거 변경 시 전이가 보류된다"
      ],
      "platform": {
       "actions": [
+       "createSupplierCriteria",
+       "reviewSupplierPackage",
        "judgeGate"
       ],
       "screens": [

@@ -42,6 +42,7 @@ export function renderLazyModules(doc: JsonDoc): Record<string, string> {
   const generated = '// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.\n';
   const { processes, ...header } = doc;
   const modules: Record<string, string> = {
+    'workflow-index.ts': generated + "import type { WorkflowIndexDoc } from '../rules/workflows';\n" + `export const WORKFLOW_INDEX: WorkflowIndexDoc = ${JSON.stringify(indexOf(doc), null, 1)};\n`,
     'workflow-header.ts': generated + "import type { WorkflowDoc } from '../rules/workflows';\n" + `export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = ${JSON.stringify(header, null, 1)};\n`,
     'workflow-loader.ts': generated + "import type { WorkflowDoc } from '../rules/workflows';\nimport { WORKFLOW_HEADER } from './workflow-header';\n" +
       `export async function loadWorkflowDocument(): Promise<WorkflowDoc> {\n const modules = await Promise.all([\n${names.map((n) => `  import('./${n}'),`).join('\n')}\n ]);\n return { ...WORKFLOW_HEADER, processes: modules.map((m) => m.PROCESS) };\n}\n`,

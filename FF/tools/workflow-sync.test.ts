@@ -37,7 +37,9 @@ test('분할 지연 데이터는 전체 모델을 손실 없이 재구성한다 
   const json = (source: string) => JSON.parse(source.slice(source.indexOf(' = ') + 3).trim().replace(/;$/, ''));
   const reconstructed = { ...json(modules['workflow-header.ts']), processes: doc.processes.map((p: { id: string }) => json(modules[`workflow-process-${p.id.toLowerCase().replace('.', '-')}.ts`])) };
   assert.deepEqual(reconstructed, doc);
-  assert.equal(Object.keys(modules).length, doc.processes.length + 2);
+  assert.equal(Object.keys(modules).length, doc.processes.length + 3);
+  assert.deepEqual(json(modules['workflow-index.ts']), workflowIndexOf(doc));
+  assert.doesNotMatch(modules['workflow-index.ts'], /basePractices|definition|workProducts/);
   assert.equal((modules['workflow-loader.ts'].match(/import\('\.\/workflow-process-/g) ?? []).length, doc.processes.length);
   assert.doesNotMatch(modules['workflow-loader.ts'], /generated\/workflows|https?:|[A-Z]:\\/);
 });

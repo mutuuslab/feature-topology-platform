@@ -7,10 +7,12 @@ let loading: Promise<WorkflowDoc> | undefined;
 export const loadWorkflows = (): Promise<WorkflowDoc> => (loading ??= import('../../../contracts/src/generated/workflow-loader').then((m) => m.loadWorkflowDocument()).then(displayWorkflows));
 
 /** null = 불러오는 중, 'fail' = 실패 */
-export function useWorkflows(): WorkflowDoc | null | 'fail' {
+export function useWorkflowResource() {
   const [doc, setDoc] = useState<WorkflowDoc | null | 'fail'>(null);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let live = true;
+    setDoc(null);
     loadWorkflows().then(
       (d) => live && setDoc(d),
       () => {
@@ -21,6 +23,11 @@ export function useWorkflows(): WorkflowDoc | null | 'fail' {
     return () => {
       live = false;
     };
-  }, []);
-  return doc;
+  }, [attempt]);
+  return { doc, retry: () => { loading = undefined; setAttempt((n) => n + 1); } };
+}
+
+/** Existing consumers keep the same read-only document contract. */
+export function useWorkflows(): WorkflowDoc | null | 'fail' {
+  return useWorkflowResource().doc;
 }

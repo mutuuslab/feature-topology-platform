@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { activitiesForScreen, raciOf } from '@ff/contracts';
 import { procedures as P } from '../copy/procedures';
-import { useWorkflows } from '../data/workflows';
+import { useWorkflowResource } from '../data/workflows';
 import { Button, Drawer } from '../design';
 import { ActivityBody, RaciBadge } from '../screens/procedures/ActivityView';
 import { routeOf } from '../routes';
@@ -14,8 +14,9 @@ import { procedureGuideStore } from './procedureGuide';
 export default function ScreenProcedure({ onClose }: { onClose: () => void }) {
   const loc = useLocation();
   const { role } = useAppShell();
-  const doc = useWorkflows();
-  const pattern = routeOf(loc.pathname)?.path ?? loc.pathname;
+  const { doc, retry } = useWorkflowResource();
+  const route = routeOf(loc.pathname);
+  const pattern = route?.path ?? loc.pathname;
   const roleIds = doc && doc !== 'fail' ? (doc.personas[role] ?? []) : [];
   const weight = (k: string | null) => (k === 'R' || k === 'A' ? 0 : 1);
   const list =
@@ -26,10 +27,12 @@ export default function ScreenProcedure({ onClose }: { onClose: () => void }) {
       : [];
   return (
     <Drawer open title={P.panel.title} onClose={onClose}>
-      {doc === null && <p className="ds-field__hint">{P.loading}</p>}
-      {doc === 'fail' && <p className="ds-stale">{P.loadFail}</p>}
-      {doc && doc !== 'fail' && list.length === 0 && <p className="ds-field__hint">{P.panel.none}</p>}
-      {list.length > 0 && <p className="ds-field__hint">{P.panel.mineFirst}</p>}
+      <p>{P.panel.context(route?.title ?? loc.pathname)}</p>
+      <p><Link to="/procedures?view=reference" onClick={onClose}>{P.panel.all}</Link></p>
+      {doc === null && <p className="ds-field__hint" role="status">{P.loading}</p>}
+      {doc === 'fail' && <div role="alert"><p className="ds-stale">{P.loadFail}</p><Button onClick={retry}>{P.panel.retry}</Button></div>}
+      {doc && doc !== 'fail' && list.length === 0 && <div role="status"><p>{P.panel.none}</p><p className="ds-field__hint">{P.panel.noMapping}</p></div>}
+      {list.length > 0 && <p className="ds-field__hint">{P.panel.count(list.length)} · {P.panel.mineFirst}</p>}
       {doc && doc !== 'fail' &&
         list.map(({ process, activity: a, k }) => (
           <section key={a.id} className="pr-panel-item" aria-label={a.name}>
@@ -39,6 +42,8 @@ export default function ScreenProcedure({ onClose }: { onClose: () => void }) {
             <p className="ds-field__hint">
               {process.name} · <Link to={`/procedures/${process.id}?a=${a.id}`} onClick={onClose}>{P.panel.openProcess}</Link>
             </p>
+            <h4>{P.detail.purpose}</h4>
+            <p>{process.purpose}</p>
             {a.platform.anchor && (
               <Button
                 icon="target"

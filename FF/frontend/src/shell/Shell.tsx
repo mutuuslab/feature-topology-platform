@@ -7,7 +7,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNo
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
-import { procedures } from '../copy/procedures';
+import { procedurePanel } from '../copy/procedure-panel';
+import { ScreenProcedureHost } from './ScreenProcedureHost';
 import { sim as SIM } from '../copy/sim';
 import { DEMO_EXTRAS, OIDC_AUTH } from '../auth-mode';
 import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
@@ -33,7 +34,6 @@ import { useProcedureSummary } from '../data/procedureProgress';
 import './shell.css';
 
 // 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
-const ScreenProcedure = lazy(() => import('./ScreenProcedure'));
 // 공개 시연 사이트 — 이 브라우저의 시연 데이터를 처음 상태로(누를 때만 불러온다, 20-60)
 const DemoReset = lazy(() => import('./DemoReset'));
 
@@ -214,7 +214,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
           ) : (
             <DepartmentSwitcher department={department} role={role} onDepartment={changeDepartment} onRole={(r) => (dept ? dispatch({ t: 'ROLE', role: r }) : changeRole(r))} />
           )}
-          <Button variant="ghost" icon="layers" aria-label={procedures.panel.button} title={procedures.panel.button} onClick={() => setProcOpen(true)} />
+          <Button variant="ghost" icon="layers" aria-label={procedurePanel.button} title={procedurePanel.button} onClick={() => setProcOpen(true)} />
           <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
           <Button variant="ghost" icon={motion.running ? 'pause' : 'play'} aria-pressed={motion.running} aria-label={ko.shell.motion} title={ko.shell.motion} onClick={() => motion.setLive(!motion.live)} />
@@ -336,9 +336,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
       <RuleDrawerHost />
       <UnsavedPrompt />
       {procOpen && (
-        <Suspense fallback={null}>
-          <ScreenProcedure onClose={() => setProcOpen(false)} />
-        </Suspense>
+        <ScreenProcedureHost onClose={() => setProcOpen(false)} />
       )}
       {resetOpen && (
         <Suspense fallback={null}>

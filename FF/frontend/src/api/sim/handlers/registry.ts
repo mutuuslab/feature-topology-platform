@@ -82,7 +82,6 @@ import {
   TransitionBody,
   UpdateDraftBody,
   validateNewDependency,
-  workflowIndexOf,
   type AnalysisKind,
   type FeatureVersionRow,
   type GateId,
@@ -908,8 +907,8 @@ registerSimReader('listRefs', async (ctx) => {
 let indexP: Promise<{ index: WorkflowIndexDoc; preds: ReturnType<typeof predecessorsOf> }> | null = null;
 /** 업무 절차 색인 — 절차 묶음을 불러올 때 한 번(서버 WORKFLOW_INDEX와 같은 원천 docs/65-workflows) */
 const workflowIndex = () =>
-  (indexP ??= import('../../../../../contracts/src/generated/workflows').then((m) => {
-    const index = workflowIndexOf(m.WORKFLOWS);
+  (indexP ??= import('../../../../../contracts/src/generated/workflow-index').then((m) => {
+    const index = m.WORKFLOW_INDEX;
     return { index, preds: predecessorsOf(index) };
   }));
 type Completion = Record<string, any>;

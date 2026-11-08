@@ -7,6 +7,15 @@ import { randomUUID } from 'node:crypto';
 import { pipeline } from 'node:stream/promises';
 import { createGunzip } from 'node:zlib';
 
+/**
+ * Windows tar (bsdtar, System32). Git Bash puts GNU tar first on PATH, and GNU tar reads `-C C:\...` / `-f C:\...`
+ * as a remote host spec, so a bare 'tar.exe' fails when the tools run from Git Bash. Pin the system one.
+ */
+export function windowsTar(env = process.env, platform = process.platform) {
+  if (platform !== 'win32') return 'tar';
+  return join(env.SystemRoot || env.windir || 'C:\\Windows', 'System32', 'tar.exe');
+}
+
 export function extractionGroups(entries, workers = 4) {
   const weights = new Map();
   for (const entry of entries) {
@@ -37,13 +46,13 @@ export async function extractSidecarArchive(archive, destination) {
   const children = [];
   try {
     await pipeline(createReadStream(archive), createGunzip(), createWriteStream(temporaryTar, { flags: 'wx' }));
-    const listed = spawnSync('tar.exe', ['-tf', temporaryTar], { encoding: 'utf8', windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
+    const listed = spawnSync(windowsTar(), ['-tf', temporaryTar], { encoding: 'utf8', windowsHide: true, maxBuffer: 16 * 1024 * 1024 });
     if (listed.status !== 0) throw new Error('Packaged sidecar archive listing failed');
     const groups = extractionGroups(listed.stdout.split(/\r?\n/).filter(Boolean));
     if (!groups.length) throw new Error('Packaged sidecar archive is empty');
     mkdirSync(join(destination, 'server/node_modules'), { recursive: true });
     const results = await Promise.allSettled(groups.map((roots) => new Promise((accept, reject) => {
-      const child = spawn('tar.exe', ['-xf', temporaryTar, '-C', destination, ...roots], { windowsHide: true, stdio: 'ignore' });
+      const child = spawn(windowsTar(), ['-xf', temporaryTar, '-C', destination, ...roots], { windowsHide: true, stdio: 'ignore' });
       children.push(child);
       child.once('error', reject);
       child.once('exit', (code) => code === 0 ? accept() : reject(new Error('Packaged sidecar extraction failed')));

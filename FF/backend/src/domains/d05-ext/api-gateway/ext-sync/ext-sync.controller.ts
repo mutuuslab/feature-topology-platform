@@ -46,7 +46,7 @@ export class ExtSyncController {
 
   @Post('api/integrations/sync/conflicts/:id/resolve')
   @HttpCode(200)
-  @Roles('IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER')
+  @Roles('IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER')
   @AuditAction('EXT_SYNC_CONFLICT_RESOLVE')
   resolve(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(ResolveConflictBody)) body: ResolveConflictBody) {
     return this.s.resolve(actor, Number(id), body.choose, body.reason);

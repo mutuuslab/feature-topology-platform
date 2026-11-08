@@ -3,7 +3,7 @@ import type { ExtKind, ExtSystem, SyncState } from '@ff/contracts';
 
 export const extSync = {
   system: { CODEBEAMER: 'codeBeamer', JIRA: 'JIRA', GITLAB: 'GitLab' } satisfies Record<ExtSystem, string>,
-  kind: { REQUIREMENT: '요구사항', EPIC: 'Epic', CHANGE_REQUEST: '변경요청', DEFECT: '결함', MERGE_REQUEST: 'MR', PIPELINE: '파이프라인' } satisfies Record<ExtKind, string>,
+  kind: { REQUIREMENT: '요구사항', EPIC: 'Epic', CHANGE_REQUEST: '변경요청', DEFECT: '현장 문제', STORY: 'Story', TASK: 'Task', MERGE_REQUEST: 'MR', PIPELINE: '파이프라인' } satisfies Record<ExtKind, string>,
   state: { SYNCED: '맞음', PENDING: '보내는 중', CONFLICT: '충돌', FAILED: '보내기 실패', REJECTED: '외부 변경 거부됨' } satisfies Record<SyncState, string>,
   stale: 'G2 재검토',
   staleTitle: 'codeBeamer에서 요구가 개정되었습니다 — G2를 다시 판정하면 표시가 내려갑니다',

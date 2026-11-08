@@ -562,8 +562,15 @@ async function main() {
   await save('extInbox');
   await save('extOutbox', {}, { status: 'FAILED' });
   await save('extChangeRequests');
+  // 주기 대사 기록(80-50 §4.5) — 보조 백엔드에서 실제로 증분·전체 대사를 한 번씩 돌린 결과
+  for (const kind of ['FULL', 'INCREMENTAL']) await post('/api/integrations/sync/reconcile', { 'X-Actor-Id': 'usr-integrator', 'X-Actor-Role': 'IMPLEMENTER' }, { system: 'JIRA', kind });
+  await save('extReconcileRuns');
+  // 검토함 '산출물 변경 — 게이트 재판정'(80-50 §5.6)
+  await save('almRejudge', {}, { status: 'OPEN' });
   // Feature 상세 '양방향 연계' 탭 — 버전마다 추적을 읽는다(e2e:static이 모든 탭을 연다)
   for (const f of all.items as { featureId: string; version: string }[]) await save('extFeatureTrace', { id: f.featureId, ver: f.version });
+  // Feature 상세 '연계' 탭 — codeBeamer 산출물 8종(80-50 §5.4)
+  for (const f of all.items as { featureId: string; version: string }[]) await save('almWorkProducts', { id: f.featureId, ver: f.version });
   const targets = await get('/api/sync/targets');
   for (const t of (targets.items ?? targets) as { targetId: string }[]) await save('syncRuns', {}, { targetId: t.targetId });
   for (const featureId of featureIds) await save('virtualCombinations', {}, { featureId });

@@ -13,6 +13,7 @@ const ComplianceRegistryTab = lazy(() => import('./ComplianceRules').then((m) =>
 import { Link, useSearchParams } from 'react-router-dom';
 import { COMPLIANCE_PROFILES, KEY_PURPOSES, OPENFEATURE_PINS, profileFinding, reportRule, RULE_STATUS, STANDARDS_MAP, sumsRetention, VEX_STATES } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { shownMode, useSeamless } from '../../api/connections';
 import { ko } from '../../copy/ko';
 import { p10 } from '../../copy/p10';
 import { control as CT } from '../../copy/control';
@@ -446,6 +447,7 @@ function VexPanel() {
 export function SettingsScreen() {
   const health = useApi<{ status: string; seed: string | null; counts: Record<string, number> }>('health');
   const sys = useApi<{ items: { ifId: string; name: string; mode: string }[] }>('integrationSystems');
+  const seamless = useSeamless();
   const S = M.settings;
   const h = health.data;
   return (
@@ -491,7 +493,7 @@ export function SettingsScreen() {
                 ),
                 sort: (r) => r.ifId,
               },
-              { key: 'm', header: p10.integrations.col.mode, cell: (r) => p10.integrations.modes[r.mode] ?? r.mode },
+              { key: 'm', header: p10.integrations.col.mode, cell: (r) => p10.integrations.modes[shownMode(r.mode, seamless)] ?? r.mode },
             ]}
           />
         </AsyncView>

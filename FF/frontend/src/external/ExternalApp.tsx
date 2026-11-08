@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { EXT_KIND_LABEL, JIRA_CR_STATUS, JIRA_EPIC_STATUS, type FeatureFlagRow } from '@ff/contracts';
-import { call } from '../api/client';
+import { call, STATIC_MODE } from '../api/client';
+import { isSeamless } from '../api/connections';
+import type { ConnectionsResponse } from '@ff/contracts';
 import { usePlatformEvents } from '../api/stream';
 import { PLATFORM_ROLES } from '../api/actor';
 import { DEMO_ACCOUNTS } from '../data/demoAccounts';
@@ -115,6 +117,9 @@ export function ExternalWorkspace() {
   const requestedRole = query.get('role') ?? savedRole;
   const role = Object.prototype.hasOwnProperty.call(PLATFORM_ROLES, requestedRole) ? requestedRole : 'viewer';
   const readOnly = role === 'viewer';
+  // 데모 설치의 표시 방식(80-50 D-ALM-17) — seamless면 시연 배지·안내를 그리지 않는다(이 창은 앱 셸 밖이라 직접 읽는다)
+  const connections = useQuery<ConnectionsResponse, Error>({ queryKey: ['systemConnections'], queryFn: ({ signal }) => call<ConnectionsResponse>('systemConnections', { signal }), staleTime: 5 * 60_000, retry: false });
+  const seamless = isSeamless(connections.data);
   const identities = T.identities[system];
   const [externalUser, setExternalUser] = useState(() => (identities.find((i) => i.role === role) ?? identities[0]).id);
   const [selectedKey, setSelectedKey] = useState(query.get('key') ?? '');
@@ -192,7 +197,7 @@ export function ExternalWorkspace() {
   const identity = identities.find((entry) => entry.id === externalUser);
   return <div className="external-app" data-tool={system} data-view={view} data-external-demo="ff-external-demo-v1">
     <header className="external-header">
-      <div className="external-product"><a className="external-wordmark" href="/" aria-label={name + ' · ' + T.home}><ExtBrandLogo system={system} height={system === 'jira' ? 32 : 27} /></a><span className="external-demo-badge">{T.badge}</span></div>
+      <div className="external-product"><a className="external-wordmark" href="/" aria-label={name + ' · ' + T.home}><ExtBrandLogo system={system} height={system === 'jira' ? 32 : 27} /></a>{!seamless && <span className="external-demo-badge">{T.badge}</span>}</div>
       {system === 'codebeamer' && <p className="external-title">{T.cbTitle}</p>}
       <label className="external-search"><Icon name="search" size={16} /><input className="ds-input" aria-label={T.search} placeholder={T.search} value={search} onChange={(event) => setSearch(event.target.value)} /></label>
       <a href="/integration/connectors?tab=sync">{T.back}<Icon name="link" size={16} /></a>
@@ -207,9 +212,9 @@ export function ExternalWorkspace() {
     <div className="external-context" role="region" aria-label={T.currentItem}>
       {system === 'codebeamer' && <span className="external-context__mark" aria-hidden="true"><Icon name="layers" size={16} /></span>}
       <div>{system === 'codebeamer' && <small className="external-context__path">{T.projectHeader} · {fieldText(selected?.fields.tracker) ?? T.confirm} › {T.tracker}</small>}<span>{system === 'jira' ? T.project : T.tracker}</span><strong>{selected ? (system === 'jira' ? itemContext(selected).project : itemContext(selected).requirementGroup) ?? T.confirm : T.allItems}</strong><span> / </span><strong>{selected?.key ?? T.allItems}</strong></div>
-      <span>{system === 'codebeamer' && <span className="external-context__icons" aria-hidden="true"><Icon name="filter" size={16} /><Icon name="grid" size={16} /><Icon name="link" size={16} /></span>}{system === 'codebeamer' && <>{T.workingSet} · {personText(selected?.fields.workingSet) ?? T.confirm} / </>}{T.platformActor} · {DEMO_ACCOUNTS.find((account) => account.key === role)?.label ?? T.viewer}</span>
+      <span>{system === 'codebeamer' && <span className="external-context__icons" aria-hidden="true"><Icon name="filter" size={16} /><Icon name="grid" size={16} /><Icon name="link" size={16} /></span>}{system === 'codebeamer' && <>{T.workingSet} · {personText(selected?.fields.workingSet) ?? T.confirm} / </>}{seamless ? T.signedIn : T.platformActor} · {DEMO_ACCOUNTS.find((account) => account.key === role)?.label ?? T.viewer}</span>
     </div>
-    <div role="region" aria-label={T.badge}><div className="external-notice"><Icon name="link" size={16} /><p>{T.notice}</p></div></div>
+    {!seamless && <div role="region" aria-label={T.badge}><div className="external-notice"><Icon name="link" size={16} /><p>{T.notice}</p></div></div>}
     <main className="external-main">
       <div className="external-heading"><h1>{system === 'jira' ? T.issues : T.requirements}</h1><span>{T.refreshHint}</span></div>
       <div className="external-toolbar">

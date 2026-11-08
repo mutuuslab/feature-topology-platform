@@ -35,6 +35,12 @@ describe('외부 연결 상태 — 설정 규칙 (RD-UX-04)', () => {
     expect(byKey({ FF_ENV: 'production', FF_CONN_DATALAKE: 'mock' }).datalake).toBe('mock');
   });
 
+  it('표시 방식(80-50 D-ALM-17) — 데모는 기본 seamless, FF_DEMO_LABELS=on이면 labeled, 운영은 항상 labeled', () => {
+    expect(connectionPresentation(false, {})).toBe('seamless');
+    expect(connectionPresentation(false, { FF_DEMO_LABELS: 'on' })).toBe('labeled');
+    expect(connectionPresentation(true, {})).toBe('labeled');
+  });
+
   it('끄기 — FF_CONN_*=off, OTA는 IF_MODE_05=off도 따른다', () => {
     expect(byKey({ FF_CONN_BILLING: 'off', IF_MODE_05: 'off' })).toMatchObject({ billing: 'off', ota: 'off' });
   });

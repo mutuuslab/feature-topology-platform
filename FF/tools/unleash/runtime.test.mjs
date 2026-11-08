@@ -8,7 +8,7 @@ import { portsOf, assertFree, redactor, runRuntime, writeSupervisorLock, ensureS
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
-import { extractionGroups, extractSidecarArchive } from './archive.mjs';
+import { extractionGroups, extractSidecarArchive, windowsTar } from './archive.mjs';
 
 test('runtime rejects collisions and invalid configuration without stopping the existing listener', async () => {
   assert.throws(() => portsOf({ FF_PG_PORT: '4242' }), /distinct/);
@@ -64,7 +64,7 @@ test('parallel extraction preserves every original byte and removes its temporar
   ]);
   try {
     for (const [name, bytes] of files) { const file = join(source, name); mkdirSync(join(file, '..'), { recursive: true }); writeFileSync(file, bytes); }
-    assert.equal(spawnSync('tar.exe', ['-czf', archive, '-C', source, '.'], { windowsHide: true }).status, 0);
+    assert.equal(spawnSync(windowsTar(), ['-czf', archive, '-C', source, '.'], { windowsHide: true }).status, 0);
     const archiveBytes = readFileSync(archive);
     await extractSidecarArchive(archive, destination);
     for (const [name, bytes] of files) assert.deepEqual(readFileSync(join(destination, name)), bytes, name);
@@ -151,4 +151,9 @@ test('windows data directory is restricted before the secret file exists', () =>
     assert.throws(() => prepareSecrets(dir, { platform: 'win32', run: (cmd) => (cmd === 'whoami.exe' ? { status: 0, stdout: '' } : { status: 0 }) }), /restrict/);
     assert.equal(existsSync(path), false, '권한 제한에 실패하면 비밀을 만들지 않는다');
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('Windows tar is the System32 bsdtar, not whatever tar.exe comes first on PATH (Git Bash GNU tar breaks drive-letter paths)', { skip: process.platform !== 'win32' }, () => {
+  assert.equal(windowsTar({ SystemRoot: 'C:\\Windows' }, 'win32'), 'C:\\Windows\\System32\\tar.exe');
+  assert.equal(windowsTar({}, 'linux'), 'tar');
 });

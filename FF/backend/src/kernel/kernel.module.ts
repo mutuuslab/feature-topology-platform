@@ -10,6 +10,7 @@ import { ComponentRegistry } from './components';
 import { DB, migrate, type Db } from './db';
 import { applySeed, openDb } from './db-open';
 import { DomainErrorFilter } from './errors';
+import { GateHooks } from './gate-hooks';
 import { EventService } from './event.service';
 import { HousekeepingService } from './housekeeping.service';
 import { IdempotencyInterceptor } from './idempotency.interceptor';
@@ -36,6 +37,7 @@ import { DraftDeletionService } from './draft-deletion';
   imports: [DiscoveryModule],
   controllers: [KernelController, AuthController, PrivacyController],
   providers: [
+    GateHooks,
     {
       provide: DB,
       // FF_DB 기본 = 메모리 DB(데모·테스트). 파일 경로를 주면 재시작 후에도 유지된다. 운영 모드는 파일 필수·시드 기본 none(runtime-config).
@@ -91,7 +93,7 @@ import { DraftDeletionService } from './draft-deletion';
     AccountDirectory, // 계정 상태(F0, D-GAP-1) — 소유자 이관·소유자 인가
     DraftDeletionService, // 초안 삭제 공용(F0, B2) — 묘비·감사·이벤트
   ],
-  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink, ApiKeyAuth, AccountDirectory, DraftDeletionService],
+  exports: [DB, SHARED_STATE, SecretVault, Clock, Metrics, OtlpExporter, TelemetryMetrics, Scheduler, AuditService, AuthService, EventService, ComponentRegistry, VehicleAuthService, PrivacyService, LakeLink, ApiKeyAuth, AccountDirectory, DraftDeletionService, GateHooks],
 })
 export class KernelModule implements OnApplicationShutdown {
   constructor(@Inject(DB) private readonly db: Db) {}

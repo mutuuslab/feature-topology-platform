@@ -54,6 +54,7 @@ export const QUEUE_DEPTS: Record<QueueKey, string[]> = {
   modelUse: ['DEP-FS', 'DEP-OPS'],
   finding: ['DEP-OPS', 'DEP-FS', 'DEP-PDP'],
   canaryHold: ['DEP-INT', 'DEP-OPS'],
+  rejudge: ['DEP-SE', 'DEP-QA', 'DEP-FS'],
 };
 
 export const inDept = (i: Pick<QueueItem, 'queue' | 'gate'>, dept: string | null | undefined) =>
@@ -79,6 +80,7 @@ export const QUEUE_RANK: Record<QueueKey, number> = {
   finding: 3,
   canaryHold: 3,
   modelUse: 6,
+  rejudge: 3,
 };
 
 const t = (iso: string | null) => (iso ? Date.parse(iso) : Number.POSITIVE_INFINITY);

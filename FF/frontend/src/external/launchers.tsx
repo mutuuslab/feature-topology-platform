@@ -1,3 +1,4 @@
+import { useSeamless } from '../api/connections';
 import { useApi } from '../api/hooks';
 import { DEMO_EXTRAS } from '../auth-mode';
 import { externalLaunch as T } from '../copy/external';
@@ -15,6 +16,7 @@ type Source = { url: string; repository: string; commit: string };
 // 보이는 글자가 이름에 없어 음성 입력으로 누를 수 없다(axe label-content-name-mismatch, 통합 3차)
 export function ExternalToolLaunchers({ requirement, jira, featureId, version, compact = false }: { requirement?: Ref; jira?: Ref; featureId?: string; version?: string; compact?: boolean }) {
   const { role } = useAppShell();
+  const seamless = useSeamless();
   const flags = useApi<{ sources: Source[] }[]>('featureFlags', { query: { featureId, version } });
   const source = Array.isArray(flags.data) ? flags.data.flatMap((r) => r.sources ?? []).find((r) => r.repository === 'https://github.com/mutuuslab/feature-topology-platform') : undefined;
   const tools: { system: ExternalSystem; ref?: Ref }[] = [{ system: 'codebeamer', ref: requirement }, { system: 'jira', ref: jira }];
@@ -24,8 +26,8 @@ export function ExternalToolLaunchers({ requirement, jira, featureId, version, c
     <section className="external-launchers" data-compact={compact || undefined} aria-label={T.title}>
       {tools.filter(({ ref }) => DEMO_EXTRAS || (ref && !isDemoReference(ref.system, ref.url))).map(({ system, ref }) => {
         const virtual = DEMO_EXTRAS && (!ref || isDemoReference(ref.system, ref.url));
-        return <a key={system} className="external-launcher" data-tool={system} href={ref ? externalReferenceUrl(ref, DEMO_EXTRAS, role) : externalUrl(system, undefined, role)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>
-          <span className="external-launcher__top"><ExtBrandLogo system={system} height={system === 'jira' ? 28 : 27} className="external-launcher__logo" /><span className="external-launcher__badge">{virtual ? T.demo : T.connected}</span></span>
+        return <a key={system} className="external-launcher" data-tool={system} href={ref ? externalReferenceUrl(ref, DEMO_EXTRAS, role) : externalUrl(system, undefined, role)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow} aria-label={`${T[system].name} ${T.newWindow}`}>
+          <span className="external-launcher__top"><ExtBrandLogo system={system} height={system === 'jira' ? 28 : 27} className="external-launcher__logo" /><span className="external-launcher__badge">{virtual && !seamless ? T.demo : T.connected}</span></span>
           <span className="external-launcher__task">{T[system].task}</span>
           {!compact && <span className="external-launcher__detail">{T[system].detail}</span>}
           <span className="external-launcher__action">{ref?.key ?? T.newWindow}<Icon name="link" size={16} /></span>

@@ -221,7 +221,7 @@ export default function FeatureDetail() {
                     <OpsMetricsTab id={id} />
                   </Suspense>
                 ) : tab === 'ext' ? (
-                  <ExtLinksTab id={id} ver={ver} />
+                  <ExtLinksTab id={id} ver={ver} functions={d.feature.functions} />
                 ) : tab === 'baseline' ? (
                   <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
                     <BaselineTab d={d} />

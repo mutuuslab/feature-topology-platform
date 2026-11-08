@@ -9,6 +9,7 @@ import { approvalCheck, approvalPlan, BaselineRequestStatus, GATE_META, postRevi
 import { adsChange } from '../../copy/ads-change';
 import { actorFor, rolesFor } from '../../api/actor';
 import { asyncState, useApi } from '../../api/hooks';
+import { almInbox } from '../../copy/alm-inbox';
 import { ko } from '../../copy/ko';
 import { inbox as IX, QUEUE_LABEL, QUEUE_ROLE, SLOT_LABEL } from '../../copy/inbox';
 import { inboxLake as IL } from '../../copy/inbox-lake';
@@ -96,7 +97,9 @@ export function useInbox() {
   const changes = useApi<{ items: RefChangeRow[] }>('listRefChanges', { query: { status: 'REVIEW' } });
   // GitLab·JIRA·codeBeamer 동기화 충돌 — 사람이 플랫폼 값·외부 값 중 골라야 한다
   const sync = useApi<{ items: { conflictId: number; system: string; key: string; field: string; platformValue: string; externalValue: string; createdAt: string }[] }>('extConflicts', { query: { status: 'OPEN' } });
-  const queries = [bl, pol, approved, prod, wq, kills, reviews, changes, sync];
+  // 80-50 A5 — 승인 뒤 바뀐 codeBeamer 산출물을 근거로 쓴 게이트의 재판정 요청
+  const rejudge = useApi<{ items: { rejudgeId: number; featureId: string; version: string; gate: string; itemKey: string; itemTitle: string; fromVersion: number; toVersion: number; createdAt: string; released: boolean }[] }>('almRejudge', { query: { status: 'OPEN' } });
+  const queries = [bl, pol, approved, prod, wq, kills, reviews, changes, sync, rejudge];
   // Data Lake·Closed loop 대기열(TL-UI13) — 보조 대기열이라 실패해도 검토함 전체를 오류로 만들지 않는다(queries에 넣지 않음)
   const models = useApi<{ connected: boolean; items: LakeModelRow[] }>('lakeModels', {}, { retry: false });
   const health = useApi<FeatureHealthResponse>('featureHealth', {}, { retry: false });
@@ -154,7 +157,7 @@ export function useInbox() {
           const block = postReviewBlocker(r, me.id);
           return base({ key: `post:${r.killId}`, queue: 'postReview', item: r.killId, detail: `${r.featureId} · ${IX.postReview(personName(r.requestedBy))}`, who: r.requestedBy, due: r.due, mine: POST_REVIEW_ROLES.some(has) && !block, why: block, to: '/audit/oversight#post-reviews-h', featureId: r.featureId });
         }),
-      ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${c.field}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER'), to: '/integration/connectors?tab=sync' })),
+      ...(sync.data?.items ?? []).map((c) => base({ key: `sync:${c.conflictId}`, queue: 'sync', item: `${c.system} ${c.key}`, detail: `${almInbox.conflictField(c.field)}: ${c.platformValue} ↔ ${c.externalValue}`, since: c.createdAt, mine: has('IMPLEMENTER') || has('RELEASE_MANAGER') || has('FEATURE_APPROVER') || (c.field === 'asil' && has('SAFETY_OFFICER')), to: '/integration/connectors?tab=sync' })),
       ...(models.data?.items ?? [])
         .filter((m) => m.use === 'PENDING' && !m.drift)
         .map((m) => {
@@ -167,9 +170,10 @@ export function useInbox() {
       ...(canary.data?.items ?? [])
         .filter((c) => c.verdict === 'HOLD_STALE' || (c.verdict === 'ABORT' && c.criteria.registered))
         .map((c) => base({ key: `canary:${c.policyId}`, queue: 'canaryHold', item: `${c.policyId} · ${c.flagKey}`, detail: IL.canary[c.verdict], mine: has('RELEASE_MANAGER') || has('OPERATOR'), to: `/policies/${c.policyId}#canary-h`, featureId: c.featureId })),
+    ...(rejudge.data?.items ?? []).map((r) => base({ key: `rejudge:${r.rejudgeId}`, queue: 'rejudge', item: `${r.featureId} ${r.version} · ${r.gate}`, detail: almInbox.rejudgeDetail(r.itemTitle, r.fromVersion, r.toVersion, r.released), since: r.createdAt, mine: has('GATE_JUDGE') || has('RELEASE_MANAGER') || has('SAFETY_OFFICER'), to: `/features/${r.featureId}/${r.version}?tab=gates`, featureId: r.featureId })),
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 역할·조회 응답이 같으면 결과도 같다
-  }, [role, rolesKey, me.id, bl.data, pol.data, approved.data, prod.data, wq.data, kills.data, reviews.data, changes.data, sync.data, models.data, health.data, canary.data]);
+  }, [role, rolesKey, me.id, bl.data, pol.data, approved.data, prod.data, wq.data, kills.data, reviews.data, changes.data, sync.data, models.data, health.data, canary.data, rejudge.data]);
   const failed = queries.find((q) => q.isError && !optional(q));
   // 여러 큐를 합친다 — 하나라도 실패하면 그 상태(권한 거부면 forbidden)를 그대로 보인다
   const state: AsyncState = failed ? asyncState(failed) : queries.some((q) => q.isPending) ? 'loading' : items.length ? 'ready' : 'empty';

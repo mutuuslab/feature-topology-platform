@@ -35,6 +35,7 @@ import { FeatureRetireRepo, FeatureReviewRepo } from './feature-p10.repo';
 import { ReleaseCandidateService } from './release-candidate.service';
 import { Clock } from '../../../kernel/clock';
 import type { IssueItem } from '@ff/contracts';
+import { GateHooks } from '../../../kernel/gate-hooks';
 
 export const SYSTEM_ACTOR = (correlationId: string): Actor => ({ id: 'system:registry', role: 'SYSTEM', correlationId });
 
@@ -70,6 +71,7 @@ export class LifecycleService {
     private readonly reviews: FeatureReviewRepo,
     private readonly releaseCandidates: ReleaseCandidateService,
     private readonly clock: Clock,
+    private readonly hooks: GateHooks,
   ) {}
 
   require(featureId: string, version: string): FeatureVersionRow {
@@ -119,7 +121,7 @@ export class LifecycleService {
       roles: r.roles.map((x) => ROLE_LABEL[x]),
       // ADS-BE16 — 분류 대상 Version은 미분류·상태 책임자 미지정이면 전이를 막는다
       // 미리보기는 사유·이슈 항목이 채워진 것으로 본다(입력은 전이 때 받는다)
-      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview', issues: [{ item: 'preview', detail: '' }] } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to)],
+      blockers: [...evaluateTransition(f, r.to, this.context(f, actor && !r.auto ? { actor, reason: 'preview', issues: [{ item: 'preview', detail: '' }] } : {})).blockers, ...adsTransitionBlockers(this.db, f, r.to), ...this.hooks.transitionBlockers(f, r.to)],
     }));
   }
 
@@ -138,7 +140,7 @@ export class LifecycleService {
     const f = this.require(featureId, version);
     const evaluated = evaluateTransition(f, to, this.context(f, { actor, reason, issues }));
     const rule = evaluated.rule;
-    const blockers = evaluated.rule ? [...evaluated.blockers, ...adsTransitionBlockers(this.db, f, to)] : evaluated.blockers;
+    const blockers = evaluated.rule ? [...evaluated.blockers, ...adsTransitionBlockers(this.db, f, to), ...this.hooks.transitionBlockers(f, to)] : evaluated.blockers;
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
     const target = `${featureId}@${version}`;
     if (rule?.auto && actor.role !== 'SYSTEM') {
@@ -195,7 +197,7 @@ export class LifecycleService {
     let cur = f;
     for (let i = 0; i < 4; i++) {
       const rule = autoTransition(cur, this.context(cur));
-      if (!rule) break;
+      if (!rule || this.hooks.transitionBlockers(cur, rule.to).length) break;
       cur = this.apply(SYSTEM_ACTOR(correlationId), cur, rule.to, `자동 전이: ${rule.ko}`);
     }
     return cur;

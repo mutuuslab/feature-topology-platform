@@ -111,6 +111,67 @@ describe('Feature 연계 탭', () => {
     expect(within(chain).getByText(/연결된 요구·변경요청·코드가 없습니다/)).toBeTruthy();
     expect(within(chain).queryByText(/모두 연결되어/)).toBeNull();
   });
+
+  // 80-50 A3 — Epic 아래 이슈: 기능 분해 Story(기능 ID·FF 기능 이름), 현장 문제(운영 연결: 인시던트·긴급 차단·후보)
+  it('기능 분해 Story와 현장 문제 — 운영 연결은 인시던트·긴급 차단 링크, JIRA에서 만든 것은 인시던트 후보', async () => {
+    const STORY = (key: string, fn: string, title: string, status: string) => REF({ kind: 'STORY', key, url: `https://jira.ff.example/browse/${key}`, title, status, extra: { functionId: fn } });
+    const BUG = (key: string, title: string, extra: Record<string, unknown>) => REF({ kind: 'DEFECT', key, url: `https://jira.ff.example/browse/${key}`, title, status: 'Open', extra });
+    handler = (url) =>
+      url.startsWith('/api/integrations/sync/features/')
+        ? {
+            body: {
+              featureId: 'FEAT-00022', version: '1.0.0', lifecycle: 'RELEASED', epicStatusExpected: 'Released', requirements: [], missingRequirements: [], epic: null, changeRequests: [], mergeRequests: [], pipelines: [], policies: [], conflicts: [], stale: [],
+              stories: [STORY('FFE-31', 'FUNC-000031', '정차 판정', 'Done'), STORY('FFE-30', 'FUNC-000030', '옛 이름', 'In Progress')],
+              defects: [BUG('FFD-3', '[현장] 감지 거리 짧음', { incidentId: 'INC-00007' }), BUG('FFD-4', '대리점 — 해제 지연', {}), BUG('FFD-1', '긴급 차단 KILL-00002', { killId: 'KILL-00002' })],
+            },
+          }
+        : undefined;
+    mount('viewer', <ExtLinksTab id="FEAT-00022" ver="1.0.0" functions={[{ functionId: 'FUNC-000030', label: '홀드 유지·해제' }, { functionId: 'FUNC-000031', label: '정차 판정' }]} />);
+    const stories = await screen.findByRole('table', { name: '기능 분해 (JIRA Story)' });
+    const rows = within(stories).getAllByRole('row').slice(1);
+    expect(rows.map((r) => within(r).getAllByRole('cell')[1].textContent)).toEqual(['FUNC-000030', 'FUNC-000031']);
+    // 제목 칸은 FF 기능 이름(주인 = FF)
+    expect(within(rows[0]).getByText('홀드 유지·해제')).toBeTruthy();
+    const bugs = screen.getByRole('table', { name: '현장 문제 (JIRA)' });
+    expect(within(bugs).getByRole('link', { name: '인시던트 INC-00007' }).getAttribute('href')).toBe('/ops/incidents');
+    expect(within(bugs).getByRole('link', { name: '긴급 차단 KILL-00002' }).getAttribute('href')).toBe('/ops/kill');
+    expect(within(bugs).getByRole('link', { name: '인시던트 후보 — 운영 판단' })).toBeTruthy();
+  });
+});
+
+describe('Feature 연계 탭 — codeBeamer 산출물 (80-50 A4)', () => {
+  const K = (kind: string, o: Record<string, unknown> = {}) => ({ kind, required: true, items: 1, approved: 1, passed: true, problems: 0, ...o });
+  it('작성률·필요한 종류·누락 문장, 해당 없는 종류는 해당 없음 — 다시 읽기는 작성·판정 담당', async () => {
+    handler = (url, init) => {
+      if (url.startsWith('/api/integrations/sync/features/')) return { body: { featureId: 'FEAT-00013', version: '0.3.0', lifecycle: 'PROPOSED', epicStatusExpected: 'Proposed', requirements: [], missingRequirements: [], epic: null, changeRequests: [], defects: [], mergeRequests: [], pipelines: [], policies: [], conflicts: [], stale: [] } };
+      if (url.startsWith('/api/alm/features/FEAT-00013/0.3.0/work-products/refresh') && init?.method === 'POST') return { body: {} };
+      if (url.startsWith('/api/alm/features/FEAT-00013/0.3.0/work-products'))
+        return {
+          body: {
+            featureId: 'FEAT-00013', version: '0.3.0', hash: 'a'.repeat(64), computedAt: '2026-11-07T01:00:00.000Z', cyberWhy: '외부 통신·원격 제어·OTA 관련이 아님', items: [],
+            result: {
+              featureId: 'FEAT-00013', version: '0.3.0', passedKinds: 2, requiredKinds: 7, rate: 29, suspects: 1, basis: '',
+              kinds: [K('SYS_REQ'), K('SYS_ARCH', { items: 0, approved: 0, passed: false, problems: 1 }), K('SW_REQ', { passed: false, problems: 2 }), K('SW_ARCH'), K('SW_DD'), K('SAFETY_REQ'), K('CS_REQ', { required: false, items: 0, approved: 0 }), K('TEST_SPEC')],
+              problems: [{ rule: 'WP-1', kind: 'SYS_ARCH', item: null, why: '시스템 아키텍처 승인 항목 0건' }, { rule: 'WP-3', kind: 'SW_REQ', item: 'CB-1', why: 'CB-1 — SW 아키텍처 할당 없음' }, { rule: 'WP-7', kind: 'SW_REQ', item: 'CB-1', why: 'CB-1 → CB-2 의심' }],
+            },
+          },
+        };
+      return undefined;
+    };
+    mount('author', <ExtLinksTab id="FEAT-00013" ver="0.3.0" />);
+    const table = await screen.findByRole('table', { name: '산출물 (codeBeamer)' });
+    expect(screen.getByText('필요한 산출물 7종 중 2종 완결 · 작성률 29%')).toBeTruthy();
+    expect(screen.getByText(/의심 관계 1건/)).toBeTruthy();
+    const row = (name: string) => within(table).getByText(name).closest('tr')!;
+    expect(within(row('시스템 아키텍처')).getByText('1건 누락')).toBeTruthy();
+    expect(within(row('시스템 아키텍처')).getByText('시스템 아키텍처 승인 항목 0건')).toBeTruthy();
+    expect(within(row('SW 요구')).getByText(/CB-1 — SW 아키텍처 할당 없음 · 외 1건/)).toBeTruthy();
+    expect(within(row('사이버보안 요구')).getByText('해당 없음')).toBeTruthy();
+    // 내부 규칙 번호(WP-1 등)는 화면에 없다
+    expect(table.textContent).not.toMatch(/WP-\d/);
+    fireEvent.click(screen.getByRole('button', { name: 'codeBeamer 다시 읽기' }));
+    await waitFor(() => expect(calls.some((c) => c.url === '/api/alm/features/FEAT-00013/0.3.0/work-products/refresh' && c.method === 'POST')).toBe(true));
+  });
 });
 
 describe('변경요청 목록 (JIRA)', () => {
@@ -167,6 +228,36 @@ describe('정책 근거 CR', () => {
   });
 });
 
+describe('외부 연계 — 주기 대사·Epic 필드 충돌 (80-50 A2)', () => {
+  const RUN = { runId: 2, system: 'JIRA', kind: 'INCREMENTAL', startedAt: '2026-11-07T01:00:00.000Z', finishedAt: '2026-11-07T01:00:02.000Z', scanned: 14, applied: 1, conflicts: 0, errors: 0, notes: ['FFE-12 FEAT-00002@1.6.0 DEPRECATED → RETIRED (JIRA FFE-12)', 'FFE-3 상태 같음'] };
+  it('대사 실행 기록 — 종류·훑은 수·반영과 처리 내용, 지금 실행은 시스템 연계 담당만', async () => {
+    handler = (url, init) => {
+      if (url === '/api/integrations/sync/reconcile-runs') return { body: { items: [RUN, { ...RUN, runId: 1, kind: 'FULL', scanned: 61, applied: 0, notes: [] }] } };
+      if (url === '/api/integrations/sync/reconcile' && init?.method === 'POST') return { body: { ...RUN, runId: 3 } };
+      return undefined;
+    };
+    mount('integrator', <ExtSyncTab />);
+    const table = await screen.findByRole('table', { name: '주기 대사' });
+    const rows = within(table).getAllByRole('row');
+    expect(within(rows[1]).getByText('증분 대사')).toBeTruthy();
+    expect(within(rows[1]).getByText(/DEPRECATED → RETIRED \(JIRA FFE-12\) · 외 1건/)).toBeTruthy();
+    expect(within(rows[2]).getByText('전체 대사')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '전체 대사 지금 실행' }));
+    await waitFor(() => expect(calls.find((c) => c.url === '/api/integrations/sync/reconcile')?.body).toEqual({ system: 'JIRA', kind: 'FULL' }));
+    cleanup();
+    mount('viewer', <ExtSyncTab />);
+    expect(((await screen.findByRole('button', { name: '증분 대사 지금 실행' })) as HTMLButtonElement).disabled).toBe(true);
+  });
+  it('Epic ASIL 충돌 — 칸 이름은 ASIL, 기능안전 담당도 처리할 수 있다', async () => {
+    handler = (url) => (url.startsWith('/api/integrations/sync/conflicts') ? { body: { items: [{ conflictId: 7, system: 'JIRA', key: 'FFE-4', field: 'asil', platformValue: 'B', externalValue: 'D', createdAt: '2026-11-07T01:00:00.000Z' }] } } : undefined);
+    mount('safety2', <ExtSyncTab />);
+    const table = await screen.findByRole('table', { name: /충돌/ });
+    expect(within(table).getByText('ASIL')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('처리 사유'), { target: { value: 'HARA 결과 유지' } });
+    expect((within(table).getByRole('button', { name: '플랫폼 값 다시 보내기' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
 describe('외부 연계 — 양방향 탭', () => {
   it('충돌은 사유를 적어야 고를 수 있고, 플랫폼 값 다시 보내기를 누르면 처리 요청', async () => {
     handler = (url) => {
@@ -186,13 +277,25 @@ describe('외부 연계 — 양방향 탭', () => {
   });
 });
 
+describe('검토함 — 산출물 변경 재판정 (80-50 A5)', () => {
+  it('승인 뒤 바뀐 산출물의 게이트 재판정 요청은 Gate 판정자의 내 차례, Gate 탭으로 간다 — 출시 버전 표시', async () => {
+    handler = (url) => (url.startsWith('/api/alm/rejudge') ? { body: { items: [{ rejudgeId: 3, featureId: 'FEAT-00022', version: '1.0.0', gate: 'G8', itemKey: 'CB-10017', itemTitle: '감지 거리 요구', fromVersion: 1, toVersion: 2, status: 'OPEN', createdAt: '2026-11-07T01:00:00.000Z', released: true, resolvedBy: null }] } } : undefined);
+    mount('quality', <ApprovalInboxScreen />, '/admin/approval');
+    const table = await screen.findByRole('table', { name: '산출물 변경 — 게이트 재판정' });
+    const row = within(table).getByText('FEAT-00022 1.0.0 · G8').closest('tr')!;
+    expect(within(row).getByText('감지 거리 요구 v1 → v2 · 출시 버전')).toBeTruthy();
+    expect(within(row).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/features/FEAT-00022/1.0.0?tab=gates');
+  });
+});
+
 describe('검토함 — 외부 연계 충돌', () => {
   it('열린 동기화 충돌은 시스템 연계 담당의 내 차례, 외부 연계 화면으로 간다', async () => {
     handler = (url) => (url.startsWith('/api/integrations/sync/conflicts') ? { body: { items: [{ conflictId: 4, system: 'JIRA', key: 'FFE-9', field: 'status', platformValue: 'Deprecated', externalValue: 'Closed', createdAt: '2026-10-18T01:00:00.000Z' }] } } : undefined);
     mount('integrator', <ApprovalInboxScreen />, '/admin/approval');
     const table = await screen.findByRole('table', { name: '외부 연계 충돌' });
     const row = within(table).getByText('JIRA FFE-9').closest('tr')!;
-    expect(within(row).getByText('status: Deprecated ↔ Closed')).toBeTruthy();
+    // 칸 이름은 내부 코드(status)가 아니라 업무 이름
+    expect(within(row).getByText('상태: Deprecated ↔ Closed')).toBeTruthy();
     expect(within(row).getByRole('link', { name: '열기' }).getAttribute('href')).toBe('/integration/connectors?tab=sync');
     expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1');
   });

@@ -4,18 +4,18 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 297,
+      "구현": 299,
       "부분": 205,
-      "미구현": 85,
+      "미구현": 83,
       "범위 밖": 41
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 135,
+        "구현": 137,
         "부분": 59,
-        "미구현": 34,
+        "미구현": 32,
         "범위 밖": 11
       },
       {
@@ -59,7 +59,7 @@
         "범위 밖": 1
       }
     ],
-    "traced": 169,
+    "traced": 171,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 0,
@@ -282,6 +282,14 @@
       ],
       "tested": []
     },
+    "FR-REG-005-019": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/ext-sync/alm-gate.service.ts"
+      ],
+      "tested": [
+        "backend/test/d05/alm-gate.spec.ts"
+      ]
+    },
     "FR-REG-005-020": {
       "implemented": [
         "contracts/src/rules/lifecycle.ts"
@@ -331,6 +339,14 @@
         "backend/src/domains/d01-policy/registry/trace-link.service.ts"
       ],
       "tested": []
+    },
+    "FR-DEP-005-002": {
+      "implemented": [
+        "backend/src/domains/d05-ext/api-gateway/ext-sync/alm-gate.service.ts"
+      ],
+      "tested": [
+        "backend/test/d05/alm-gate.spec.ts"
+      ]
     },
     "FR-DEP-005-003": {
       "implemented": [

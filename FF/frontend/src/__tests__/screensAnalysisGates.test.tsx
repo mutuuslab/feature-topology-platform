@@ -17,6 +17,8 @@ let analysisStatus: number;
 let analysisPending: Promise<Response> | null;
 let gateHistory: Record<string, any[]>;
 let judgeReply: () => Promise<Response>;
+/** 80-50 A5 — codeBeamer 산출물 응답(없으면 빈 객체 — 산출물 확인을 그리지 않는다) */
+let wpView: Record<string, unknown> | null;
 const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { 'Content-Type': 'application/json' } });
 
 const HARA = { recordId: 'ANL-00001', kind: 'HARA', featureId: 'FEAT-00099', version: '0.1.0', docId: 'HARA-1', content: { asil: 'C', safetyGoals: [{ id: 'SG-01', text: '감속 누락 방지', asil: 'C' }] }, reason: 'HARA', signedBy: 'usr-safety2', signedRole: 'SAFETY_OFFICER', signedAt: '2026-11-05T01:00:00Z', provenance: 'PERSONAL', supersedes: null, kid: 'APR-usr-safety2', sig: 'x', valid: true } as const;
@@ -37,12 +39,15 @@ beforeEach(() => {
   gateHistory = {};
   analysisView = { featureId: 'FEAT-00099', version: '0.1.0', lifecycle: 'PROPOSED', asil: 'C', security: { relevant: false, why: '형식승인 무관(R0)·ADS 아님' }, asilDeviation: null, current: {}, history: [], g7: [] };
   judgeReply = async () => json({ record: {}, feature: {} }, 201);
+  wpView = null;
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET';
       const headers = (init?.headers ?? {}) as Record<string, string>;
       calls.push({ url, method, body: init?.body ? JSON.parse(String(init.body)) : undefined, role: headers['X-Actor-Role'] ?? null });
+      if (url.startsWith('/api/alm/rejudge/') && method === 'POST') return json({});
+      if (url.startsWith('/api/alm/features/') && method === 'GET') return json(wpView ?? {});
       if (url.includes('/analysis') && method === 'GET') return analysisPending ?? (analysisStatus === 200 ? json(analysisView) : json({ error: { code: 'INTERNAL', message: '분석 조회 실패' } }, analysisStatus));
       if (url.includes('/analysis/')) return json({ recordId: 'ANL-00009' }, 201);
       if (url.endsWith('/gates') && method === 'GET') return json(gatesView());
@@ -266,5 +271,44 @@ describe('분석 근거 패널(P3-3)', () => {
     expect((within(g7).getByRole('button', { name: 'G7 기능안전 서명' }) as HTMLButtonElement).disabled).toBe(true); // 이미 유효한 SM 서명
     fireEvent.click(within(g7).getByRole('button', { name: 'G7 사이버보안 서명' }));
     await waitFor(() => expect(calls.find((c) => c.method === 'POST')).toMatchObject({ url: '/api/features/FEAT-00099/versions/0.1.0/analysis/g7-security', role: 'SECURITY_OFFICER', body: { reason: 'TARA 대응 확인' } }));
+  });
+});
+
+describe('Gate 판정 폼 — codeBeamer 필수 산출물 (80-50 A5)', () => {
+  const view = (gateMode: string, rejudge: unknown[] = []) => ({
+    gateMode,
+    result: { featureId: 'FEAT-00099', version: '0.1.0', kinds: [], passedKinds: 4, requiredKinds: 7, rate: 57, problems: [], suspects: 0, basis: '' },
+    items: [],
+    stages: [{ judgeGate: 'G2', to: 'APPROVED', blockers: [{ rule: 'WP-1', kind: 'CS_REQ', item: null, why: '사이버보안 요구 승인 항목 0건' }] }, { judgeGate: 'G5', to: 'VERIFIED', blockers: [] }, { judgeGate: 'G8', to: 'RELEASED', blockers: [] }],
+    rejudge,
+  });
+  it('enforce면 G2 PASS를 막고 빠진 산출물을 문장으로 — FAIL 판정은 막지 않는다', async () => {
+    analysisView = { ...analysisView, current: { HARA } };
+    wpView = view('enforce');
+    mount('quality', <GatesTab id="FEAT-00099" ver="0.1.0" />);
+    await pick('G2');
+    fill('요구 확인');
+    const wp = await screen.findByTestId('gate-wp');
+    expect(wp.textContent).toContain('사이버보안 요구: 사이버보안 요구 승인 항목 0건');
+    expect(wp.textContent).not.toMatch(/WP-\d|CS_REQ/);
+    expect(submitBtn('G2').disabled).toBe(true);
+    fireEvent.change(within(judgeForm()).getByLabelText(/^입력 검사 결과/), { target: { value: 'FAIL' } });
+    expect(submitBtn('G2').disabled).toBe(false);
+  });
+  it('warn이면 알리기만 하고 판정할 수 있다 · 열린 재판정 요청은 사유를 적어 닫는다', async () => {
+    analysisView = { ...analysisView, current: { HARA } };
+    wpView = view('warn', [{ rejudgeId: 7, featureId: 'FEAT-00099', version: '0.1.0', gate: 'G2', itemKey: 'CB-10001', itemTitle: '감지 요구', fromVersion: 1, toVersion: 2, status: 'OPEN', createdAt: '2026-11-07T01:00:00Z', released: false, resolvedBy: null }]);
+    mount('quality', <GatesTab id="FEAT-00099" ver="0.1.0" />);
+    await pick('G2');
+    fill('요구 확인');
+    const wp = await screen.findByTestId('gate-wp');
+    expect(wp.textContent).toContain('판정은 막지 않지만');
+    expect(submitBtn('G2').disabled).toBe(false);
+    expect(wp.textContent).toContain('CB-10001 감지 요구 v1 → v2');
+    const close = within(wp).getByRole('button', { name: '영향 없음으로 닫기' }) as HTMLButtonElement;
+    expect(close.disabled).toBe(true);
+    fireEvent.change(within(wp).getByLabelText('닫는 사유'), { target: { value: '표현 수정 — 영향 없음' } });
+    fireEvent.click(close);
+    await waitFor(() => expect(calls.find((c) => c.url === '/api/alm/rejudge/7/close')).toMatchObject({ method: 'POST', body: { reason: '표현 수정 — 영향 없음' } }));
   });
 });

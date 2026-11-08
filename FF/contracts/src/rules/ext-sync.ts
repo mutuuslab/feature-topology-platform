@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { Asil, LIFECYCLE, type Lifecycle } from '../enums';
 import { RefId } from '../schemas/refdb';
+import { EPIC_FIELDS, parseJiraFields } from './alm/epic';
 
 export const EXT_SYSTEMS = ['CODEBEAMER', 'JIRA', 'GITLAB'] as const;
 export type ExtSystem = (typeof EXT_SYSTEMS)[number];
@@ -17,7 +18,8 @@ export const EXT_SYSTEM_IF: Record<ExtSystem, 'IF-01' | 'IF-13' | 'IF-14'> = { C
 /** 외부 항목 종류 */
 export const EXT_KINDS = {
   CODEBEAMER: ['REQUIREMENT'],
-  JIRA: ['EPIC', 'CHANGE_REQUEST', 'DEFECT'],
+  // STORY = 기능 분해(FUNC), TASK = 산출물 작성 일(80-50 §4.1, D-ALM-6)
+  JIRA: ['EPIC', 'CHANGE_REQUEST', 'DEFECT', 'STORY', 'TASK'],
   GITLAB: ['MERGE_REQUEST', 'PIPELINE'],
 } as const satisfies Record<ExtSystem, readonly string[]>;
 export type ExtKind = (typeof EXT_KINDS)[ExtSystem][number];
@@ -25,13 +27,15 @@ export const EXT_KIND_LABEL: Record<ExtKind, string> = {
   REQUIREMENT: '요구사항',
   EPIC: 'Epic',
   CHANGE_REQUEST: '변경요청(CR)',
-  DEFECT: '결함',
+  DEFECT: '현장 문제',
+  STORY: 'Story(기능)',
+  TASK: 'Task(산출물)',
   MERGE_REQUEST: 'MR',
   PIPELINE: '파이프라인',
 };
 
 /** 플랫폼 쪽 연결 대상 */
-export const LINK_ENTITIES = ['FEATURE', 'POLICY', 'KILL', 'CHANGE_RECORD'] as const;
+export const LINK_ENTITIES = ['FEATURE', 'POLICY', 'KILL', 'CHANGE_RECORD', 'INCIDENT'] as const;
 export type LinkEntity = (typeof LINK_ENTITIES)[number];
 
 /** 동기 상태 — 맞음·보낼 것 있음·충돌(사람이 고름)·실패(재시도 소진)·거부(외부 요청이 가드에 막혀 되돌림) */
@@ -143,7 +147,7 @@ export const JIRA_CR_STATUS = {
 export type JiraCrState = keyof typeof JIRA_CR_STATUS;
 export const JIRA_CR_STATES = Object.keys(JIRA_CR_STATUS) as JiraCrState[];
 /** JIRA 이슈 유형 이름 — 실제 연결 어댑터·webhook 정규화가 이 이름으로 가른다(프로젝트에 같은 이름의 유형이 있어야 한다) */
-export const JIRA_ISSUE_TYPE = { EPIC: 'Epic', CHANGE_REQUEST: 'Change Request', DEFECT: 'Bug' } as const;
+export const JIRA_ISSUE_TYPE = { EPIC: 'Epic', CHANGE_REQUEST: 'Change Request', DEFECT: 'Bug', STORY: 'Story', TASK: 'Task' } as const;
 
 /**
  * 회사 워크플로 상태 이름 덮어쓰기 — 환경 변수 JIRA_EPIC_STATUS·JIRA_CR_STATUS(JSON, 바꿀 상태만).
@@ -206,6 +210,11 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'JIRA_FIELD_ASIL', what: 'Epic 사용자 정의 필드 ID — ASIL', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_OWNER', what: 'Epic 사용자 정의 필드 ID — 담당 조직', required: 'epic-autocreate' },
     { key: 'JIRA_FIELD_FEATURE_DB', what: 'Epic 사용자 정의 필드 ID — Feature DB 기준 ID(대표 먼저, JIRA 안의 FF 앱이 기록)', required: 'epic-autocreate' },
+    { key: 'JIRA_FIELDS', what: 'Epic 사용자 필드 ID 표(JSON, 키 → customfield_xxxxx — 80-50 §4.2). 있는 키는 위 JIRA_FIELD_* 대신 쓴다', required: false },
+    { key: 'JIRA_API', what: "REST 판 — 비우면 3(Cloud), Data Center는 '2'", required: false },
+    { key: 'FF_PUBLIC_URL', what: 'Epic의 FF 링크 칸에 쓸 플랫폼 주소(https://…, 비우면 링크 칸을 쓰지 않음)', required: false },
+    { key: 'FF_ALM_APP_CLIENT_ID', what: "JIRA 안의 FF 앱 client ID(기본 'ff-jira-app')", required: false },
+    { key: 'FF_ALM_APP_CLIENT_SECRET', what: 'JIRA 안의 FF 앱 client 비밀값(운영 모드는 꼭 — 없으면 앱 토큰을 내주지 않음)', secret: true, required: false },
     { key: 'JIRA_EPIC_STATUS', what: 'Epic 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
     { key: 'JIRA_CR_STATUS', what: 'CR 워크플로 상태 이름(JSON, 기본과 다른 것만)', required: false },
   ],
@@ -222,12 +231,18 @@ export const EXT_LIVE_ENV: Record<ExtSystem, readonly ExtLiveEnv[]> = {
     { key: 'CODEBEAMER_WEBHOOK_SECRET', what: 'webhook HMAC 비밀값(codeBeamer webhook 설정과 같은 값)', secret: true, required: true },
     { key: 'CODEBEAMER_REQ_TRACKER', what: '요구사항 tracker ID(숫자, 비우면 전체에서 찾음)', required: false },
     { key: 'CODEBEAMER_REQ_ID_FIELD', what: "요구 ID 필드 이름(기본 'Requirement ID')", required: false },
+    { key: 'CODEBEAMER_PROJECT', what: '산출물 8종 트래커가 있는 프로젝트 ID(트래커 이름으로 찾음, 80-50 §5.1)', required: false },
+    { key: 'CODEBEAMER_TRACKERS', what: '산출물 트래커 ID 표(JSON, SYS_REQ·SW_DD 등 → 트래커 ID) — 있으면 이름으로 찾지 않는다', required: false },
+    { key: 'CODEBEAMER_APPROVED_STATUS', what: "'승인'으로 보는 상태 이름(기본 Approved)", required: false },
   ],
 };
 /** live에서 빠진 필수 환경 변수 */
 export function missingLiveEnv(system: ExtSystem, get: (key: string) => string | undefined): string[] {
   const autocreate = (get('FF_EPIC_AUTOCREATE') ?? '').trim() !== 'off';
-  return EXT_LIVE_ENV[system].filter((e) => (e.required === true || (e.required === 'epic-autocreate' && autocreate)) && !(get(e.key) ?? '').trim()).map((e) => e.key);
+  // Epic 필드 ID는 JIRA_FIELDS 표에 있으면 옛 변수(JIRA_FIELD_*)가 없어도 된다
+  const table = system === 'JIRA' ? parseJiraFields(get, true) : null;
+  const inTable = (key: string) => !!table && 'ids' in table && EPIC_FIELDS.some((f) => f.legacyEnv === key && table.ids[f.key]);
+  return EXT_LIVE_ENV[system].filter((e) => (e.required === true || (e.required === 'epic-autocreate' && autocreate)) && !(get(e.key) ?? '').trim() && !inTable(e.key)).map((e) => e.key);
 }
 
 /** 외부 계정 → 플랫폼 행위자 (매핑이 없으면 외부 요청을 거부한다 — 직무 분리를 외부로 우회하지 못하게) */
@@ -292,10 +307,12 @@ export type MockExtActionBody = z.infer<typeof MockExtActionBody>;
 /** 모의 외부 시스템에 새 항목 만들기(CR·MR·요구) */
 export const MockExtCreateBody = z
   .object({
-    kind: z.enum(['REQUIREMENT', 'EPIC', 'CHANGE_REQUEST', 'DEFECT', 'MERGE_REQUEST']),
+    kind: z.enum(['REQUIREMENT', 'EPIC', 'CHANGE_REQUEST', 'DEFECT', 'MERGE_REQUEST', 'STORY']),
     title: z.string().trim().min(2).max(200),
     body: z.string().trim().max(4000).default(''),
     externalUser: z.string().trim().min(1).max(120),
+    /** STORY·DEFECT: 상위 Epic 키 */
+    parentKey: z.string().regex(/^[A-Z][A-Z0-9]+-\d+$/).optional(),
     /** EPIC: 적용 범위(Feature 자동 등록에 필요) */
     scope: EpicScope.optional(),
   })

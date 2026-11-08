@@ -19479,12 +19479,12 @@
     },
     "/api/integrations/sync/conflicts/{id}/resolve": {
       "post": {
-        "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)",
+        "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용). Epic ASIL 충돌의 외부 값은 기능안전 담당만",
         "tags": [
           "D05-01"
         ],
         "operationId": "resolveExtConflict",
-        "description": "허용 역할: 구현 담당자, Feature 출시 담당자, Feature 승인자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "description": "허용 역할: 구현 담당자, Feature 출시 담당자, Feature 승인자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
             "name": "id",
@@ -19636,6 +19636,545 @@
               "schema": {
                 "type": "object",
                 "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/reconcile-runs": {
+      "get": {
+        "summary": "주기 대사 실행 기록 — 증분·전체, 훑은 수·반영·충돌·오류",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "extReconcileRuns",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/features/{id}/{ver}/work-products": {
+      "get": {
+        "summary": "codeBeamer 산출물 8종 — 종류별 필요·승인·추적 완결·누락·의심, 작성률",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almWorkProducts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/features/{id}/{ver}/work-products/refresh": {
+      "post": {
+        "summary": "codeBeamer 산출물 지금 다시 읽기",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "refreshAlmWorkProducts",
+        "description": "허용 역할: 시스템, 구현 담당자, Gate 판정자, Feature 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/rejudge": {
+      "get": {
+        "summary": "산출물 변경 — 게이트 재판정 요청(승인 뒤 바뀐 codeBeamer 항목을 근거로 쓴 게이트)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almRejudge",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/rejudge/{id}/close": {
+      "post": {
+        "summary": "재판정 요청 닫기 — 영향 없음(사유 필수, 출시 버전처럼 다시 판정할 수 없을 때)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "closeAlmRejudge",
+        "description": "허용 역할: Gate 판정자, Feature 출시 담당자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/features/{id}/{ver}/suspects/clear": {
+      "post": {
+        "summary": "의심 관계 풀기 — 아래 항목에 영향 없음(사유 필수)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "clearAlmSuspect",
+        "description": "허용 역할: 구현 담당자, Gate 판정자, 기능안전 담당자(FSM) (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "^CB-\\d+$"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "^CB-\\d+$"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "from",
+                  "to",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/token": {
+      "post": {
+        "summary": "JIRA 앱 자격 — client credentials로 Bearer 토큰(1시간)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppToken",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "client_credentials"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "grant_type",
+                  "client_id",
+                  "client_secret"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/refdb/refs": {
+      "get": {
+        "summary": "JIRA 앱 — Feature DB 검색(플랫폼 검색과 같은 질의, 매핑된 JIRA 사용자의 역할 범위)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppRefs",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/reference-values": {
+      "get": {
+        "summary": "JIRA 앱 — 판매국·차종·트림 선택지(사용 중)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppReferenceValues",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/alm/app/features/{id}/summary": {
+      "get": {
+        "summary": "JIRA 앱 — Epic 보기 패널 현황(작업 중·출시 버전·수명주기·게이트·산출물 작성률·링크)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "almAppFeatureSummary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/integrations/sync/reconcile": {
+      "post": {
+        "summary": "대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "runExtReconcile",
+        "description": "허용 역할: 시스템, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "system": {
+                    "type": "string",
+                    "enum": [
+                      "JIRA",
+                      "CODEBEAMER"
+                    ],
+                    "default": "JIRA"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "INCREMENTAL",
+                      "FULL"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
                 "additionalProperties": false
               }
             }
@@ -19875,7 +20414,8 @@
                       "EPIC",
                       "CHANGE_REQUEST",
                       "DEFECT",
-                      "MERGE_REQUEST"
+                      "MERGE_REQUEST",
+                      "STORY"
                     ]
                   },
                   "title": {
@@ -19892,6 +20432,10 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 120
+                  },
+                  "parentKey": {
+                    "type": "string",
+                    "pattern": "^[A-Z][A-Z0-9]+-\\d+$"
                   },
                   "scope": {
                     "type": "object",

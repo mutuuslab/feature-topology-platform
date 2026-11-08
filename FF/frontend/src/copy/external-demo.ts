@@ -110,6 +110,8 @@ export const externalDemo = {
   refreshHint: '공유 서버에서 3초마다 상태를 확인합니다.',
   emptyBody: '설명이 없습니다.',
   platformActor: '플랫폼 시연 계정',
+  signedIn: '로그인',
+  readOnlyPlain: '읽기 전용 보기입니다.',
   viewer: '열람',
   viewerHint: '열람 계정은 항목을 확인할 수 있습니다. 변경하려면 플랫폼에서 담당자 계정으로 연 뒤 다시 실행하세요.',
   boardLabel: '이슈 보기',

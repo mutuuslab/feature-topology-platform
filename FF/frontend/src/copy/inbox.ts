@@ -16,6 +16,7 @@ export const QUEUE_LABEL = {
   modelUse: '모델 사용 승인 대기',
   finding: '운영 점검 조치 필요',
   canaryHold: '확대 보류(Canary 관측)',
+  rejudge: '산출물 변경 — 게이트 재판정',
 } as const;
 export type QueueKey = keyof typeof QUEUE_LABEL;
 
@@ -34,6 +35,7 @@ export const QUEUE_ROLE: Record<QueueKey, string> = {
   modelUse: 'Safety Manager·운영 리더(서로 다른 2인)',
   finding: '점검 결과 담당 역할',
   canaryHold: '출시 담당·운영자',
+  rejudge: 'Gate 판정자·출시 담당·Safety Manager',
 };
 
 /** 보고서 승인 역할 → 화면 이름(차단·복원 '내 차례'가 어느 칸인지) */

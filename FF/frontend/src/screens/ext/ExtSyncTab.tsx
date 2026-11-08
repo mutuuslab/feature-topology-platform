@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Asil, EPIC_SCOPE_FIELDS, EPIC_SCOPE_LABEL, EXT_SYSTEMS, type EpicScopeField, type ExtSystem, type ExtSystemSummary, type OwnershipRule } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { shownMode, useSeamless } from '../../api/connections';
 import { extSync } from '../../copy/ext-sync';
 import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, ExplainCodes, Field, Panel, Select, whyDisabled } from '../../design';
@@ -10,6 +11,8 @@ import { usePermission, when } from '../shared';
 import { ExternalToolLaunchers } from '../../external/launchers';
 import { brandSystem, ExtBrandLogo } from '../../external/brand';
 import { useExternalChanges } from '../../external/useExternalChanges';
+import { alm } from '../../copy/alm';
+import { ReconcileRunsPanel } from './ReconcileRuns';
 
 const X = extSync.sync;
 const INVALIDATE = ['extSync', 'extConflicts', 'extInbox', 'extOutbox', 'extChangeRequests', 'extFeatureTrace', 'extFeatureEpics', 'featureDetail', 'policyDetail', 'mockExtItems', 'listFeatures'];
@@ -44,6 +47,7 @@ interface Job {
 /** quiet: 화면 핵심 메시지가 '아직 주고받은 변경이 없습니다'일 때 — 수신함 빈 상자로 되풀이하지 않는다(3초 ⑩) */
 export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
   useExternalChanges();
+  const seamless = useSeamless();
   const s = useApi<{ items: ExtSystemSummary[]; ownership: OwnershipRule[] }>('extSync', {}, { refetchInterval: 10_000 });
   const conflicts = useApi<{ items: Conflict[] }>('extConflicts', { query: { status: 'OPEN' } });
   const inbox = useApi<{ items: InboxRow[] }>('extInbox');
@@ -60,7 +64,7 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
             columns={[
               // IF 번호는 툴팁·설명 모드로(UX3-01). 로고가 이름을 보이고, 이름 글자는 화면 읽기용으로만 둔다.
               { key: 's', header: X.col.system, cell: (r) => { const brand = brandSystem(r.system); return <strong title={r.ifId}>{brand && <ExtBrandLogo system={brand} height={18} decorative className="ext-brand-logo--inline" />}<span className={brand ? 'ds-sr' : undefined}>{extSync.system[r.system]}</span><ExplainCodes codes={[r.ifId]} /></strong>; } },
-              { key: 'm', header: X.col.mode, cell: (r) => extSync.mode[r.mode] ?? r.mode },
+              { key: 'm', header: X.col.mode, cell: (r) => extSync.mode[shownMode(r.mode, seamless)] ?? r.mode },
               { key: 'l', header: X.col.links, cell: (r) => r.links.toLocaleString('ko-KR'), align: 'right' },
               { key: 'p', header: X.col.pending, cell: (r) => r.pending, align: 'right' },
               { key: 'f', header: X.col.failed, cell: (r) => <span style={r.failed ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{r.failed}</span>, align: 'right' },
@@ -78,6 +82,8 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
           {(conflicts.data?.items ?? []).length ? <ConflictTable rows={conflicts.data!.items} /> : <p className="ds-field__hint">{X.noConflicts}</p>}
         </AsyncView>
       </Panel>
+
+      <ReconcileRunsPanel />
 
       <Panel title={X.inbox} id="sync-inbox">
           <AsyncView
@@ -139,13 +145,14 @@ export function ExtSyncTab({ quiet = false }: { quiet?: boolean } = {}) {
         />
       </Panel>
 
-      {s.data?.items.some((x) => x.mode === 'mock') && <Simulate />}
+      {/* 모의 외부 시스템 직접 조작 — seamless 표시에서는 외부 도구 창으로만(80-50 D-ALM-17) */}
+      {!seamless && s.data?.items.some((x) => x.mode === 'mock') && <Simulate />}
     </div>
   );
 }
 
 function ConflictTable({ rows }: { rows: Conflict[] }) {
-  const perm = usePermission(['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER']);
+  const perm = usePermission(['IMPLEMENTER', 'RELEASE_MANAGER', 'FEATURE_APPROVER', 'SAFETY_OFFICER']);
   const resolve = useApiMutation('resolveExtConflict', INVALIDATE);
   const [reason, setReason] = useState('');
   return (
@@ -161,7 +168,7 @@ function ConflictTable({ rows }: { rows: Conflict[] }) {
           { key: 'at', header: X.conflictCol.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.createdAt)}</span> },
           { key: 's', header: X.conflictCol.system, cell: (r) => extSync.system[r.system] },
           { key: 'k', header: X.conflictCol.key, cell: (r) => <span className="ds-mono">{r.key}</span> },
-          { key: 'f', header: X.conflictCol.field, cell: (r) => r.field },
+          { key: 'f', header: X.conflictCol.field, cell: (r) => alm.conflictField(r.field) },
           { key: 'p', header: X.conflictCol.platform, cell: (r) => <strong>{r.platformValue}</strong> },
           { key: 'e', header: X.conflictCol.external, cell: (r) => <strong>{r.externalValue}</strong> },
           {

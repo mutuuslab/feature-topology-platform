@@ -1232,7 +1232,37 @@ CREATE TRIGGER feature_autofill_no_delete BEFORE DELETE ON feature_autofill BEGI
 `,
   },
   {
-    // 컴플라이언스 룰 레지스트리(D03-01, FR-CRC-001·002) — 현재 룰(룰 ID 유일), 버전별 내용 보존, 변경 이력·배포 시점 검증 기록은 추가만, 승인 요청
+    // 80-50 A2 JIRA·codeBeamer 주기 대사(§4.5) — 증분·전체 실행 기록. 번호 141~149는 ALM 묶음 예약
+    name: '141_alm_reconcile',
+    sql: `
+CREATE TABLE sync_reconcile_run (run_id INTEGER PRIMARY KEY AUTOINCREMENT, system TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('INCREMENTAL','FULL')), started_at TEXT NOT NULL, finished_at TEXT, doc TEXT NOT NULL);
+CREATE INDEX sync_reconcile_run_system ON sync_reconcile_run (system, started_at);
+`,
+  },
+  {
+    // 80-50 A4 codeBeamer 산출물 8종(§5) — Feature별 관측 항목·관계(아래 → 위, FF 계산 suspect)·버전별 완결성 결과(근거 해시)
+    name: '142_alm_workproducts',
+    sql: `
+CREATE TABLE alm_item (feature_id TEXT NOT NULL, item_key TEXT NOT NULL, kind TEXT NOT NULL, status TEXT NOT NULL, revision INTEGER NOT NULL, observed_at TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, item_key));
+CREATE TABLE alm_relation (feature_id TEXT NOT NULL, from_key TEXT NOT NULL, to_key TEXT NOT NULL, kind TEXT NOT NULL, suspect INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (feature_id, from_key, to_key, kind));
+CREATE TABLE alm_wp_result (feature_id TEXT NOT NULL, version TEXT NOT NULL, hash TEXT NOT NULL, computed_at TEXT NOT NULL, doc TEXT NOT NULL, PRIMARY KEY (feature_id, version));
+`,
+  },
+  {
+    // 80-50 A5 게이트·변경 영향(§5.5·§5.6) — 판정 증거(완결성 해시·항목 version), 승인 뒤 변경 기록, FF 계산 의심 관계, 게이트 재판정 요청
+    name: '143_alm_impact',
+    sql: `
+CREATE TABLE alm_gate_evidence (gate_record_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, version TEXT NOT NULL, gate TEXT NOT NULL, hash TEXT NOT NULL, created_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX alm_gate_evidence_fv ON alm_gate_evidence (feature_id, version, gate);
+CREATE TABLE alm_change (change_id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, item_key TEXT NOT NULL, from_version INTEGER NOT NULL, to_version INTEGER NOT NULL, at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX alm_change_feature ON alm_change (feature_id);
+CREATE TABLE alm_suspect (feature_id TEXT NOT NULL, from_key TEXT NOT NULL, to_key TEXT NOT NULL, kind TEXT NOT NULL, from_version INTEGER NOT NULL, since TEXT NOT NULL, cleared_at TEXT, doc TEXT NOT NULL, PRIMARY KEY (feature_id, from_key, to_key, kind));
+CREATE TABLE alm_rejudge (rejudge_id INTEGER PRIMARY KEY AUTOINCREMENT, feature_id TEXT NOT NULL, version TEXT NOT NULL, gate TEXT NOT NULL, item_key TEXT NOT NULL, to_version INTEGER NOT NULL, status TEXT NOT NULL CHECK (status IN ('OPEN','RESOLVED')), created_at TEXT NOT NULL, doc TEXT NOT NULL, UNIQUE (feature_id, version, gate, item_key, to_version));
+CREATE INDEX alm_rejudge_status ON alm_rejudge (status, feature_id);
+`,
+  },
+  {
+  // 컴플라이언스 룰 레지스트리(D03-01, FR-CRC-001·002) — 현재 룰(룰 ID 유일), 버전별 내용 보존, 변경 이력·배포 시점 검증 기록은 추가만, 승인 요청
     name: '151_compliance_rule',
     sql: `
 CREATE TABLE compliance_rule (rule_id TEXT PRIMARY KEY, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('PROPOSED','APPROVED','REJECTED','RETIRED')), owner_id TEXT NOT NULL, doc TEXT NOT NULL);

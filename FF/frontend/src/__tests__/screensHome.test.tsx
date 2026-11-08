@@ -149,6 +149,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
           ? { body: { items: [REF], total: 1 } }
           : undefined;
     mount('author', '/feature/propose', <ProposeScreen />, <Route path="/features/:id/:ver" element={<div>detail-page</div>} />);
+    fireEvent.click(await screen.findByRole('button', { name: '기준 기능 선택', exact: true }));
     fireEvent.click(await screen.findByRole('button', { name: 'BC-SEAT-010 기본 정보 가져오기' }));
     fireEvent.click(screen.getByRole('button', { name: '다음: 등록 정보 확인' }));
     const submit = screen.getByRole('button', { name: '다음: 등록 전 확인' });
@@ -163,7 +164,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(post.body).toMatchObject({ name: '좌석 열선 원격', requirementIds: ['REQ-1', 'REQ-2'], controlPoints: ['Flag'], asil: 'QM', featureRefs: [{ refId: 'BC-SEAT-010', role: 'PRIMARY' }] });
   });
 
-  it('메인 화면 업무 절차 지도 — 14개 절차 중 완료·내 차례·Gate를 한눈에', async () => {
+  it('메인 화면 업무 절차 지도 — 18개 절차 중 완료·내 차례·Gate를 한눈에', async () => {
     handler = (url) => {
       if (url === '/api/procedures/summary')
         return { body: { todo: 1, review: 1, overdue: 0, done: 1, total: 10, processes: [{ id: 'FPW.1', total: 5, done: 1, todo: 1, review: 1, overdue: 0 }] } };
@@ -175,8 +176,9 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(node.textContent).toContain('1/6');
     expect(node.textContent).toContain('내 차례 2');
     expect(within(node).getByText('G1')).toBeTruthy();
-    // 메인 지도는 HARA(FPW.2) 제외 — 13개(생애주기 8 + 지원 5, FPW.14 Feature DB 운영 포함)
-    expect(document.querySelectorAll('.pm-node').length).toBe(13);
+    // 메인 지도는 HARA(FPW.2) 제외 — 생애주기 8 + 지원 9.
+    expect(document.querySelectorAll('.pm-node').length).toBe(17);
+    for (const id of ['FPW.15', 'FPW.16', 'FPW.17', 'FPW.18']) expect(document.querySelector(`.pm-node[href="/procedures/${id}"]`)).not.toBeNull();
     expect(screen.queryByText(/HARA/)).toBeNull();
   });
 

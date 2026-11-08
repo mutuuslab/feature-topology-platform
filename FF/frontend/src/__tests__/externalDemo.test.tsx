@@ -20,13 +20,14 @@ let failFlagRead: boolean;
 let failedFeature: string;
 let detailReads: string[];
 let publicationBody: unknown;
+let connectionsBody: unknown;
 const source = { repository: 'https://github.com/mutuuslab/feature-topology-platform', provider: 'GITHUB' as const, commit: 'a'.repeat(40), url: `https://github.com/mutuuslab/feature-topology-platform/blob/${'a'.repeat(40)}/FF/example.ts#L8`, path: 'FF/example.ts', line: 8, symbol: 'client.getBooleanValue', method: 'getBooleanValue' as const, safeDefault: 'EXPLICIT_FALSE' as const, contentHash: 'sha256:' + 'b'.repeat(64), importedAt: '2026-11-05T00:00:00.000Z', importedBy: 'usr-integrator', provenance: 'CI_IMPORT' as const };
 const feature: ExternalFeature = { featureId: 'FEAT-00001', version: '2.1.0', name: '실제 원격 주차', ownerId: '주차개발팀', lifecycle: 'VERIFIED', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', requirementIds: ['REQ-PARK-0101'] };
 const flag: FeatureFlagRow = { flagKey: 'parking_remote_enable', featureId: feature.featureId, version: feature.version, featureName: feature.name!, policy: { policyId: 'POL-00001', status: 'DEPLOYED', revision: 3, controlPoint: 'Flag' }, sources: [source], publication: { publicationId: 'PUB-00001', status: 'PARTIAL', confirmed: 2, denominator: 5 } };
 const makeItem = (system = 'CODEBEAMER'): MockExternalItem => ({ system, key: system === 'JIRA' ? 'FFE-13' : 'CB-10001', kind: system === 'JIRA' ? 'EPIC' : 'REQUIREMENT', title: '차간 거리 요구 검토', body: '제동 거리와 안전 기본값을 확인한다.', status: system === 'JIRA' ? 'Proposed' : 'Approved', revision: 1, updatedAt: '2026-11-05T00:00:00.000Z', updatedBy: 'feature-platform', comments: [], fields: {} });
 
 beforeEach(() => {
-  localStorage.clear(); item = makeItem(); posts = []; rejectTransition = false; failWrite = false; traceReads = 0; featureRows = []; flagRows = [flag]; failFlagRead = false; failedFeature = ''; detailReads = [];
+  localStorage.clear(); item = makeItem(); posts = []; rejectTransition = false; failWrite = false; traceReads = 0; featureRows = []; flagRows = [flag]; failFlagRead = false; failedFeature = ''; detailReads = []; connectionsBody = null;
   publicationBody = { publication: { publicationId: 'PUB-00001', kind: 'POLICY', createdAt: '2026-11-05T00:00:00.000Z', status: 'PARTIAL', confirmed: 2, denominator: 5, payload: { publicationId: 'PUB-00001', featureId: flag.featureId, featureVersion: flag.version, flagKey: flag.flagKey, policy: { policyId: flag.policy!.policyId, revision: flag.policy!.revision }, targets: ['VIN-DEMO-1'] } }, verification: { valid: true }, readbacks: [{ publicationId: 'PUB-00001', vin: 'VIN-DEMO-1', at: '2026-11-05T00:02:00.000Z', observed: 'ON' }] };
   window.history.replaceState(null, '', '/external.html?system=codebeamer&key=CB-10001&role=quality');
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
@@ -42,6 +43,7 @@ beforeEach(() => {
       if (failFlagRead) return new Response(JSON.stringify({ error: { code: 'INTERNAL', message: 'Flag 원장 조회 실패' } }), { status: 503 });
       body = flagRows;
     } else if (url.startsWith('/api/publications/')) body = publicationBody;
+    else if (url.startsWith('/api/system/connections') && connectionsBody) body = connectionsBody;
     else if (url === '/api/features') body = { items: featureRows.map(({ requirementIds: _requirements, ...summary }) => summary) };
     else if (url.startsWith('/api/features/')) {
       const [, id, version] = /\/api\/features\/([^/]+)\/versions\/([^/?]+)/.exec(url)!;
@@ -107,7 +109,7 @@ describe('외부 도구 창 연결', () => {
     localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'approver' }));
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     mount(<ExternalToolLaunchers />, true);
-    const cb = screen.getByRole('link', { name: /^codeBeamer .*새 창 열기$/ });
+    const cb = await screen.findByRole('link', { name: 'CodeBeamer 새 창 열기', exact: true });
     expect(cb.getAttribute('href')).toBe('/external.html?system=codebeamer&role=approver');
     fireEvent.click(cb);
     expect(open).toHaveBeenCalledTimes(1);
@@ -157,6 +159,20 @@ describe('공유 모의 원장을 사용하는 독립 앱', () => {
     const logo = screen.getByRole('link', { name: 'CodeBeamer · 플랫폼 첫 화면' });
     expect(logo.getAttribute('href')).toBe('/'); expect(logo.getAttribute('target')).toBeNull();
     expect(screen.getByRole('link', { name: '플랫폼 연계로 돌아가기' }).getAttribute('target')).toBeNull();
+  });
+
+  it('데모 seamless(80-50 D-ALM-17) — 시연 배지·안내 줄·시연 계정 문구 없이 연다, labeled면 그대로 보인다', async () => {
+    connectionsBody = { mode: 'demo', presentation: 'seamless', items: [] };
+    const { unmount } = mount(<ExternalWorkspace />);
+    await screen.findByRole('heading', { name: item.title });
+    await waitFor(() => expect(document.querySelector('.external-demo-badge')).toBeNull());
+    expect(document.querySelector('.external-notice')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/가상 연계 시연|시연용 외부 도구|플랫폼 시연 계정/);
+    unmount();
+    connectionsBody = { mode: 'demo', presentation: 'labeled', items: [] };
+    mount(<ExternalWorkspace />);
+    await screen.findByRole('heading', { name: item.title });
+    expect(screen.getByText('가상 연계 시연', { exact: true })).toBeTruthy();
   });
 
   it('부분 상세 조회 실패는 연결 없음으로 단정하지 않고 다시 확인할 대상을 알린다', async () => {

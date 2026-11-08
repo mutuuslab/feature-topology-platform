@@ -378,9 +378,9 @@
       "gap": "위와 같음"
     },
     "FR-REG-005-019": {
-      "verdict": "미구현",
-      "evidence": "G2 수동 판정, ALM 모의는 요구 ID 나열뿐 (`B/../adapters/if-mocks/external-systems.ts:65-73`)",
-      "gap": "시스템·SW 요구사항 추적 연결 검사"
+      "verdict": "구현",
+      "evidence": "80-50 A5 — 정의 승인(G2·APPROVED 전이)은 codeBeamer 시스템 요구가 SW 요구 도출·시스템 아키텍처 할당으로 추적돼야 한다(WP-2, `contracts/src/rules/alm/work-products.ts` WP_GATE_STAGES, `backend/…/ext-sync/alm-gate.service.ts`, 시험 `backend/test/d05/alm-gate.spec.ts`·`ext-contract.spec.ts`)",
+      "gap": "막는 방식은 FF_ALM_WP_GATE — codeBeamer 실제 연결이면 enforce, 모의(데모)는 warn(알리기만)"
     },
     "FR-REG-005-020": {
       "verdict": "부분",
@@ -598,9 +598,9 @@
       "gap": "—"
     },
     "FR-DEP-005-002": {
-      "verdict": "미구현",
-      "evidence": "ALM(IF-01) 실재 확인 없음",
-      "gap": "등록 시 ALM 조회 검증"
+      "verdict": "구현",
+      "evidence": "80-50 A1·A5 — 등록 때 codeBeamer에서 요구 ID를 찾아 연결하고 없으면 실패로 남김(REQ_LINK), 정의 승인 전이는 요구 ID가 codeBeamer 시스템 요구(Requirement ID)에 있어야(`alm-gate.service.ts` transitionBlockers, 화면 산출물 표 requirementCheck, 시험 `alm-gate.spec.ts`)",
+      "gap": "등록 요청 자체는 막지 않는다(비동기 조회) — 승인 전이에서 막음"
     },
     "FR-DEP-005-003": {
       "verdict": "구현",

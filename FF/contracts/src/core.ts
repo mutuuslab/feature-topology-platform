@@ -127,4 +127,5 @@ export * from './rules/owner-authz';
 export * from './rules/draft-deletion';
 export * from './schemas/workflow-execution';
 export * from './rules/workflow-execution';
+export * from './rules/workflow-transfer';
 export * from './schemas/workflow-source';

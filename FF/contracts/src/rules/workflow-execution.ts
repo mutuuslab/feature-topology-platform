@@ -11,7 +11,7 @@ export const handlesActivity = (actor: Pick<WorkflowCommandActor,'roleIds'>, a: 
 function writable(item: WorkflowCase, version: number, actor: WorkflowCommandActor, a: WorkflowExecutionActivity, review = false, incoming = false): WorkflowCase {
   if (item.version !== version) fail('PRECONDITION_FAILED','다른 담당자가 업무 건을 변경했습니다. 최신 기록을 불러온 뒤 다시 확인하세요.',{version:item.version});
   if (!handlesActivity(actor,a,review)) fail('FORBIDDEN','이 활동을 처리하도록 배정된 역할이 아닙니다.');
-  if (a.processId !== item.processId && !item.handoffs.some((h) => h.toActivityId === a.id && (h.status === 'ACCEPTED' || incoming && h.status === 'OFFERED'))) fail('GUARD_FAILED','다른 절차의 활동은 해당 인계를 수락한 뒤 시작하세요.');
+  if (a.processId !== item.processId && !item.handoffs.some((h) => !h.toCaseId && h.toActivityId === a.id && (h.status === 'ACCEPTED' || incoming && h.status === 'OFFERED'))) fail('GUARD_FAILED','다른 절차의 활동은 해당 인계를 수락한 뒤 시작하세요.');
   return { ...structuredClone(item),version:item.version+1,updatedAt:actor.at };
 }
 export function latestWorkflowArtifacts(item: WorkflowCase, activityId: string): WorkflowArtifact[] {
@@ -44,11 +44,11 @@ export function submitWorkflowActivity(model: WorkflowExecutionModel,item: Workf
   const unfinished = predecessors.filter((p) => item.activities[p.id]?.status !== 'ACCEPTED');
   if (unfinished.length) fail('GUARD_FAILED','앞 활동의 검토가 끝나지 않았습니다.',{activities:unfinished.map((p) => p.id)});
   const lastHandoffs = new Map<string,WorkflowHandoff>();
-  for (const h of item.handoffs) if (h.toActivityId === a.id) lastHandoffs.set(h.fromActivityId,h);
+  for (const h of item.handoffs) if ((!h.toCaseId || h.toCaseId === item.caseId) && h.toActivityId === a.id) lastHandoffs.set(`${h.fromCaseId ?? item.caseId}|${h.fromActivityId}`,h);
   const unreceived = [...lastHandoffs.values()].filter((h) => h.status !== 'ACCEPTED');
   if (unreceived.length) fail('GUARD_FAILED','받은 인계를 수락한 뒤 검토를 요청하세요.');
   const crossRole=predecessors.filter(p=>!p.raci.R.some(r=>a.raci.R.includes(r)));
-  const missingReceipts=crossRole.filter(p=>lastHandoffs.get(p.id)?.status!=='ACCEPTED');
+  const missingReceipts=crossRole.filter(p=>lastHandoffs.get(`${item.caseId}|${p.id}`)?.status!=='ACCEPTED');
   if(missingReceipts.length)fail('GUARD_FAILED','다른 수행 역할에서 넘어오는 업무는 실제 인수 확인을 마친 뒤 검토를 요청하세요.',{activities:missingReceipts.map(p=>p.id)});
   const versions = latestWorkflowArtifacts(item,a.id);
   const missing: string[] = [];
@@ -67,7 +67,7 @@ export function reviewWorkflowActivity(model: WorkflowExecutionModel,item: Workf
   const a = executionActivity(model,activityId), next = writable(item,body.version,actor,a,true);
   const record = next.activities[a.id];
   if (!record || record.status !== 'SUBMITTED') fail('CONFLICT','검토 요청된 활동만 판정할 수 있습니다.');
-  if (record.submittedBy === actor.id || item.artifacts.some((v) => record.artifactIds.includes(v.artifactId) && v.by === actor.id)) fail('FORBIDDEN','제출자와 산출물 작성자는 자기 결과를 독립 검토할 수 없습니다.');
+  if (record.submittedBy === actor.id || item.artifacts.some((v) => record.artifactIds.includes(v.artifactId) && (v.by === actor.id || v.files.some(f=>f.uploadedBy===actor.id)))) fail('FORBIDDEN','제출자와 산출물·첨부 작성자는 자기 결과를 독립 검토할 수 없습니다.');
   next.activities[a.id] = {...record,status:body.decision === 'ACCEPT' ? 'ACCEPTED':'RETURNED',reviewedBy:actor.id,reviewedAt:actor.at,reason:body.reason};
   return next;
 }
@@ -89,6 +89,7 @@ export function offerWorkflowHandoff(model: WorkflowExecutionModel,item: Workflo
 }
 export function receiveWorkflowHandoff(model: WorkflowExecutionModel,item: WorkflowCase,handoffId: string,body: WorkflowHandoffReceiveBody,actor: WorkflowCommandActor): WorkflowCase {
   const h = item.handoffs.find((x) => x.handoffId === handoffId) ?? fail('NOT_FOUND','인계 요청이 없습니다.');
+  if (h.toCaseId) fail('GUARD_FAILED','업무 건 사이 인계는 발신·수신 버전을 함께 확인하세요.');
   const a = executionActivity(model,h.toActivityId), next = writable(item,body.version,actor,a,false,true);
   if (h.status !== 'OFFERED') fail('CONFLICT','처리된 인계 요청입니다.');
   if (h.fromAccount === actor.id) fail('FORBIDDEN','보낸 사람은 자기 인계를 수락할 수 없습니다.');

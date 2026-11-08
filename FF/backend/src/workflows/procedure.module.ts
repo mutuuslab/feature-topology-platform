@@ -4,10 +4,12 @@ import { TrustModule } from '../domains/d06-qsec/pki-kms/trust.module';
 import { ProcedureController, ProcedureService } from './procedure.service';
 import { WorkflowExecutionController } from './workflow-execution.controller';
 import { WorkflowExecutionService } from './workflow-execution.service';
+import { BinaryStorageModule } from '../kernel/binary-storage.module';
+import { WorkflowFilesController } from './workflow-files.controller';
 
 @Module({
-  imports: [TrustModule],
-  controllers: [ProcedureController, WorkflowExecutionController],
+  imports: [TrustModule, BinaryStorageModule],
+  controllers: [ProcedureController, WorkflowExecutionController, WorkflowFilesController],
   providers: [ProcedureService, WorkflowExecutionService],
   exports: [ProcedureService],
 })

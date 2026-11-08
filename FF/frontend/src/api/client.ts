@@ -116,7 +116,7 @@ const simActive = () => {
 let sim: Promise<typeof import('./sim')> | null = null;
 /** 시연 엔진 — 정적 모드의 첫 쓰기(또는 스냅샷에 없는 읽기) 때 불러온다 */
 export const loadSim = () => (sim ??= import('./sim'));
-const WORKFLOW_CASE_READS = new Set(['workflowIdentity', 'workflowAssignableAccounts', 'workflowRoleGrants', 'workflowCases', 'workflowCase', 'workflowCaseSources']);
+const WORKFLOW_CASE_READS = new Set(['workflowIdentity', 'workflowAssignableAccounts', 'workflowRoleGrants', 'workflowCases', 'workflowCase', 'workflowCaseSources', 'workflowTransferTargets']);
 
 /** 공개 사이트 접속 게이트 응답 표식 — functions/_middleware.ts GATE_MARK와 같다(시험 staticGate가 맞춰 본다) */
 export const GATE_MARK = 'ff-gate-v1';

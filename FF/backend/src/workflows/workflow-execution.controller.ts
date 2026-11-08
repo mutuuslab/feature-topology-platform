@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { WorkflowCrossCaseOfferBody, WorkflowCrossCaseReceiveBody } from '@ff/contracts';
 import { CreateWorkflowCaseBody, HUMAN_ROLES, WorkflowActivityReviewBody, WorkflowActivitySubmitBody, WorkflowArtifactBody, WorkflowHandoffBody, WorkflowHandoffReceiveBody, WorkflowRoleGrantBody } from '@ff/contracts';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../kernel/actor';
 import { ZodPipe } from '../kernel/zod.pipe';
@@ -14,6 +15,9 @@ export class WorkflowExecutionController {
   @Get('cases') list(@CurrentActor() actor:Actor) { return this.service.list(actor); }
   @Get('cases/:id') detail(@CurrentActor() actor:Actor,@Param('id') id:string) { return this.service.detail(actor,id); }
   @Get('cases/:id/sources') sources(@CurrentActor() actor:Actor,@Param('id') id:string) { return this.service.sources(actor,id); }
+  @Get('cases/:id/transfer-targets') targets(@CurrentActor() actor:Actor,@Param('id') id:string,@Query('fromActivityId') from:string) { return this.service.transferTargets(actor,id,from); }
+  @Post('cases/:id/transfers') @Roles(...HUMAN_ROLES) @AuditAction('WORKFLOW_CROSS_CASE_OFFER') transfer(@CurrentActor() actor:Actor,@Param('id') id:string,@Body(new ZodPipe(WorkflowCrossCaseOfferBody)) body:WorkflowCrossCaseOfferBody) { return this.service.offerCrossCase(actor,id,body); }
+  @Post('cases/:id/transfers/:handoffId/receive') @Roles(...HUMAN_ROLES) @AuditAction('WORKFLOW_CROSS_CASE_RECEIVE') receiveTransfer(@CurrentActor() actor:Actor,@Param('id') id:string,@Param('handoffId') handoffId:string,@Body(new ZodPipe(WorkflowCrossCaseReceiveBody)) body:WorkflowCrossCaseReceiveBody) { return this.service.receiveCrossCase(actor,id,handoffId,body); }
   @Post('cases') @Roles(...HUMAN_ROLES) @AuditAction('WORKFLOW_CASE_CREATE') create(@CurrentActor() actor:Actor,@Body(new ZodPipe(CreateWorkflowCaseBody)) body:CreateWorkflowCaseBody) { return this.service.create(actor,body); }
   @Post('cases/:id/artifacts') @Roles(...HUMAN_ROLES) @AuditAction('WORKFLOW_ARTIFACT_CREATE') artifact(@CurrentActor() actor:Actor,@Param('id') id:string,@Body(new ZodPipe(WorkflowArtifactBody)) body:WorkflowArtifactBody) { return this.service.artifact(actor,id,body); }
   @Post('cases/:id/activities/:activityId/submit') @Roles(...HUMAN_ROLES) @AuditAction('WORKFLOW_ACTIVITY_SUBMIT') submit(@CurrentActor() actor:Actor,@Param('id') id:string,@Param('activityId') activityId:string,@Body(new ZodPipe(WorkflowActivitySubmitBody)) body:WorkflowActivitySubmitBody) { return this.service.submit(actor,id,activityId,body); }

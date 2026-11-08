@@ -50,6 +50,8 @@ export interface SimTask {
 export interface SimOverlay {
   /** 스냅샷 판(감사 체인 끝 해시) — 배포가 바뀌면 다르다 → 자동 초기화 */
   version: string;
+  /** IndexedDB CAS prevents another tab's accepted write from being overwritten. */
+  storageRevision?: number;
   /** 컬렉션 → ID → 엔터티(바뀐 것·새로 만든 것 전체 값) */
   entities: Record<string, Record<string, any>>;
   /** 컬렉션 → 새로 만든 ID(최신이 앞) — 목록 앞쪽에 붙인다 */
@@ -128,6 +130,8 @@ export interface SimReadContext {
 
 /** 쓰기 문맥 — 바꾼 것은 핸들러가 끝나야 한 번에 반영된다(서버 트랜잭션처럼). 실패하면 감사 실패 기록만 남는다 */
 export interface SimWriteContext extends SimReadContext {
+  /** Persist the overlay and these actual IndexedDB blobs in the same transaction. */
+  attachBinary(fileIds: readonly string[]): void;
   iso(): string;
   /** 엔터티 넣기·바꾸기 — created면 목록 앞에 붙는 새 항목 */
   put(collection: string, id: string, entity: any, opts?: { created?: boolean }): void;

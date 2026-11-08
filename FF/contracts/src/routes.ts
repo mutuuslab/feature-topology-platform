@@ -43,7 +43,7 @@ import type { DataCategory } from './rules/retention';
 import { SafetyConfirmBody, SafetyProfilePatch } from './schemas/safety-profile';
 import { ReleaseSignoffBody } from './schemas/release-signoff';
 import { ProcedureCompleteBody } from './schemas/procedure';
-import { CreateWorkflowCaseBody, WorkflowActivityReviewBody, WorkflowActivitySubmitBody, WorkflowArtifactBody, WorkflowHandoffBody, WorkflowHandoffReceiveBody, WorkflowRoleGrantBody } from './schemas/workflow-execution';
+import { CreateWorkflowCaseBody, WorkflowActivityReviewBody, WorkflowActivitySubmitBody, WorkflowArtifactBody, WorkflowHandoffBody, WorkflowHandoffReceiveBody, WorkflowRoleGrantBody, WorkflowCrossCaseOfferBody, WorkflowCrossCaseReceiveBody } from './schemas/workflow-execution';
 import { AddCostFeatureBody, COST_MONEY_ROLES, COST_READ_ROLES, CostBasisDraftBody, CostTransitionBody, CreateCostProjectBody, PutCostActualBody, PutCostCheckBody, PutCostMbdBody, UpdateCostLineBody, UpdateCostProjectBody } from './schemas/cost';
 
 import { AnomalyActionBody, FeedbackAcceptBody } from './rules/anomaly';
@@ -172,6 +172,11 @@ export const ROUTES: RouteDef[] = [
   { name: 'workflowCases', method: 'GET', path: '/api/workflow/cases', summary: '담당·검토·협의 역할의 업무 건 목록', component: 'D04-04', personal: true },
   { name: 'workflowCase', method: 'GET', path: '/api/workflow/cases/:id', summary: '업무 건 활동·산출물 버전·인계·변경 이력', component: 'D04-04', personal: true },
   { name: 'workflowCaseSources', method: 'GET', path: '/api/workflow/cases/:id/sources', summary: '업무 대상의 실제 정본 기록·버전·현재 내용 해시 조회 — 외부 파일·승인 검증 아님', component: 'D04-04', personal: true },
+  { name: 'workflowTransferTargets', method: 'GET', path: '/api/workflow/cases/:id/transfer-targets', summary: '동일 대상·산출물 관계의 수신 업무 건', component: 'D04-04', personal: true },
+  { name: 'uploadWorkflowFile', method: 'POST', path: '/api/workflow/cases/:id/activities/:activityId/uploads', summary: '실제 바이너리 바이트 업로드 — JSON 본문 아님', component: 'D04-04', roles: HUMAN_ROLES },
+  { name: 'workflowFile', method: 'GET', path: '/api/workflow/cases/:id/files/:fileId', summary: '활동·수신 인계 권한 확인 후 실제 첨부 다운로드', component: 'D04-04', personal: true },
+  { name: 'offerCrossCaseWorkflow', method: 'POST', path: '/api/workflow/cases/:id/transfers', summary: '검토된 산출물을 다른 업무 건으로 인계', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowCrossCaseOfferBody },
+  { name: 'receiveCrossCaseWorkflow', method: 'POST', path: '/api/workflow/cases/:id/transfers/:handoffId/receive', summary: '수신 담당자의 양쪽 버전 인수·반송', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowCrossCaseReceiveBody },
   { name: 'createWorkflowCase', method: 'POST', path: '/api/workflow/cases', summary: '대상별 업무 건 작성 — 실제 업무 모델의 수행·책임 역할', component: 'D04-04', roles: HUMAN_ROLES, body: CreateWorkflowCaseBody },
   { name: 'createWorkflowArtifact', method: 'POST', path: '/api/workflow/cases/:id/artifacts', summary: '업무 산출물 내용·근거·첨부의 새 버전 작성', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowArtifactBody },
   { name: 'submitWorkflowActivity', method: 'POST', path: '/api/workflow/cases/:id/activities/:activityId/submit', summary: '필수 산출물과 근거를 확인해 독립 검토 요청', component: 'D04-04', roles: HUMAN_ROLES, body: WorkflowActivitySubmitBody },

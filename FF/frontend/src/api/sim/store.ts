@@ -24,17 +24,18 @@ export const emptyOverlay = (version: string): SimOverlay => ({
 
 const hasIdb = () => typeof indexedDB !== 'undefined' && indexedDB !== null;
 
-function open(): Promise<IDBDatabase> {
+export function openSimDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+    if(!hasIdb()){reject(new Error('첨부 보존에는 IndexedDB가 필요합니다.'));return;}
+    const req = indexedDB.open(DB, 2);
+    req.onupgradeneeded = () => {if(!req.result.objectStoreNames.contains(STORE))req.result.createObjectStore(STORE);if(!req.result.objectStoreNames.contains('binary'))req.result.createObjectStore('binary');};
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
 }
 
 async function idb<T>(mode: IDBTransactionMode, fn: (s: IDBObjectStore) => IDBRequest<T> | void): Promise<T | undefined> {
-  const db = await open();
+  const db = await openSimDatabase();
   try {
     return await new Promise<T | undefined>((resolve, reject) => {
       const tx = db.transaction(STORE, mode);
@@ -66,21 +67,29 @@ export async function loadOverlay(version: string): Promise<SimOverlay> {
   return emptyOverlay(version);
 }
 
-export async function saveOverlay(o: SimOverlay): Promise<void> {
+export async function saveOverlay(o: SimOverlay, requiredBinaryIds:readonly string[]=[]): Promise<void> {
+  if(hasIdb()||requiredBinaryIds.length){
+    const db=await openSimDatabase();
+    try{await new Promise<void>((resolve,reject)=>{
+      const tx=db.transaction([STORE,'binary'],'readwrite');let problem:Error|undefined;
+      for(const id of requiredBinaryIds){const r=tx.objectStore('binary').get(id);r.onsuccess=()=>{if(!r.result){problem=new Error('첨부 바이트가 없어 산출물을 저장하지 않았습니다.');tx.abort();}};}
+      const prior=tx.objectStore(STORE).get(KEY),revision=(o.storageRevision??0)+1;
+      prior.onsuccess=()=>{
+        const saved=prior.result as SimOverlay|undefined;
+        if(saved&&saved.version!==o.version||(saved?.storageRevision??0)!==(o.storageRevision??0)) {problem=new Error('다른 탭에서 시연 데이터를 변경했습니다. 페이지를 새로고침하고 다시 확인하세요.');tx.abort();return;}
+        tx.objectStore(STORE).put({...o,storageRevision:revision},KEY);
+      };
+      tx.oncomplete=()=>{o.storageRevision=revision;resolve();};tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(problem??tx.error);
+    });}finally{db.close();}
+    try{localStorage.setItem(SIM_FLAG,o.version);}catch{/* marker only */}
+    return;
+  }
   try {
     localStorage.setItem(SIM_FLAG, o.version);
   } catch {
     /* 저장소 막힘 — 이 탭에서만 유지 */
   }
-  if (!hasIdb()) {
-    memory = o;
-    return;
-  }
-  try {
-    await idb('readwrite', (s) => s.put(o, KEY));
-  } catch {
-    memory = o;
-  }
+  memory = structuredClone(o);
 }
 
 export async function clearOverlay(): Promise<void> {
@@ -92,7 +101,7 @@ export async function clearOverlay(): Promise<void> {
   }
   if (hasIdb()) {
     try {
-      await idb('readwrite', (s) => s.delete(KEY));
+      const db=await openSimDatabase();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction([STORE,'binary'],'readwrite');tx.objectStore(STORE).delete(KEY);tx.objectStore('binary').clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}finally{db.close();}
     } catch {
       /* 무시 */
     }

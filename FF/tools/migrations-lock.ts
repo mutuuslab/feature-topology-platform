@@ -1,13 +1,21 @@
 // node tools/migrations-lock.ts --update — 낸 마이그레이션 잠금(harness/migrations.lock.json)에 새 항목을 더한다.
 // 이미 잠근 항목의 SQL 해시가 바뀌었으면 갱신하지 않고 실패한다 — 고치지 말고 새 마이그레이션을 추가(backend/test/kernel/migration-upgrade.spec).
-// 출시 준비 RD-OPS-10. migrations.ts는 다른 모듈을 가져오지 않는 SQL 배열이라 타입 스트리핑으로 바로 읽는다.
+// 출시 준비 RD-OPS-10. Read source migrations, including independent migration modules, without relying on a stale build.
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { registerHooks } from 'node:module';
 import { FF, readJson } from './lib.ts';
 
 const PATH = join(FF, 'harness', 'migrations.lock.json');
+const migrationUrl = new URL('../backend/src/kernel/migrations.ts', import.meta.url).href;
+const sourceHook = registerHooks({ resolve(specifier,context,next) {
+  // Backend emits extensionless CommonJS imports. Only this source entry's local migration modules need a TS suffix here.
+  if(context.parentURL===migrationUrl&&/^\.\/migrations-[a-z-]+$/.test(specifier))return next(`${specifier}.ts`,context);
+  return next(specifier,context);
+} });
 const { MIGRATIONS } = (await import(new URL('../backend/src/kernel/migrations.ts', import.meta.url).href)) as { MIGRATIONS: { name: string; sql: string }[] };
+sourceHook.deregister();
 type Lock = { note: string; migrations: Record<string, string> };
 /** 잠금 파일 — 없으면 빈 잠금. 있는지 먼저 묻지 않고 바로 읽는다(검사·사용 사이 경쟁 없음) */
 function readLock(): Lock {

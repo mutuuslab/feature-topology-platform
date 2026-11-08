@@ -18,9 +18,9 @@ describe('업무 건·산출물·독립 검토·인계',()=>{
   const grant=(active:boolean,accountId='usr-integrator')=>http().post('/api/workflow/roles').set(SYS).send({accountId,roleId:'R-DPO',active,reason:'업무 분리 검토 담당 배정'});
   const fields=()=>Object.fromEntries(M.processes.find(p=>p.id==='FPW.18')!.products.find(w=>w.key===WP)!.content.map((_,i)=>[String(i),`검토 내용 ${i}`]));
   const artifact=(id:string,version:number,references:string[]=[])=>http().post(`/api/workflow/cases/${id}/artifacts`).set(AUTHOR).send({version,activityId:A,productKey:WP,fields:fields(),references,files:[],reason:'분석 범위 작성'});
-  it('124활동·122산출물의 실제 필수 내용과 RACI를 실행 모델에 보존한다',()=>{
+  it('124활동·123산출물의 실제 필수 내용과 RACI를 실행 모델에 보존한다',()=>{
     expect(M.processes.flatMap(p=>p.activities)).toHaveLength(124);
-    expect(new Set(M.processes.flatMap(p=>p.products.map(w=>w.key))).size).toBe(122);
+    expect(new Set(M.processes.flatMap(p=>p.products.map(w=>w.key))).size).toBe(123);
     expect(M.processes.every(p=>p.activities.every(a=>a.outputs.every(key=>M.processes.some(v=>v.products.some(w=>w.key===key)))))).toBe(true);
   });
   it('원천은 실제 DB 레코드와 해시만 조회하고 주소·알 수 없는 대상은 미확보로 남긴다',async()=>{
@@ -128,7 +128,8 @@ describe('업무 건·산출물·독립 검토·인계',()=>{
     await http().post(`/api/workflow/cases/${id}/activities/${A}/submit`).set(AUTHOR).send({version:2,note:'검토 요청'}).expect(201);await grant(true).expect(201);
     await http().post(`/api/workflow/cases/${id}/activities/${A}/review`).set(REVIEWER).send({version:3,decision:'ACCEPT',reason:'독립 검토 확인'}).expect(201);
     const body={version:4,requestKey:'handoff-outbox-failure',fromActivityId:A,toActivityId:NEXT,note:'다음 담당자에게 전달'};
-    const spy=vi.spyOn(app.get(EventService),'publish').mockImplementationOnce(()=>{throw new Error('test outbox persistence failure');});
+    const events=app.get(EventService),publish=events.publish.bind(events);
+    const spy=vi.spyOn(events,'publish').mockImplementation((...args)=>{if(args[0]==='workflow.case.changed'&&args[1]===id)throw new Error('test outbox persistence failure');return publish(...args);});
     try{await http().post(`/api/workflow/cases/${id}/handoffs`).set(AUTHOR).send(body).expect(500);}finally{spy.mockRestore();}
     const after=(await http().get(`/api/workflow/cases/${id}`).set(AUTHOR).expect(200)).body;
     expect(after.item).toMatchObject({version:4,handoffs:[]});

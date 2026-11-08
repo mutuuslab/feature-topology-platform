@@ -385,6 +385,7 @@ function mergeNotifications(o: SimOverlay, q: Record<string, string>, actor: Sim
 
 // ─── 쓰기 ─────────────────────────────────────────────────
 interface Staged {
+  binaryIds?: string[];
   entities: { c: string; id: string; e: any; created: boolean }[];
   audit: SimAudit[];
   failAudit: SimAudit[];
@@ -430,6 +431,7 @@ function writeContext(o: SimOverlay, req: SimRequest, actor: SimActor, st: Stage
       for (const s of st.entities) if (s.c === c) m.set(s.id, s.e);
       return [...m.values()];
     },
+    attachBinary: (ids) => {st.binaryIds=[...new Set([...(st.binaryIds??[]),...ids])];},
     put: (c, id, e, opts) => void st.entities.push({ c, id, e: structuredClone(e), created: !!opts?.created }),
     state: (key, init) => (st.data[key] ??= structuredClone(o.data[key] ?? init())),
     nextId: (prefix, existing, width = 5) => {
@@ -474,7 +476,8 @@ const staged = new WeakMap<SimWriteContext, { o: SimOverlay; st: Staged }>();
 const sha256 = async (s: string) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
 /** 반영 — 감사 해시 체인(시연용으로 이어서), 저장, 그 뒤 이벤트를 버스로 */
-async function commit(o: SimOverlay, st: Staged, audits: SimAudit[]) {
+async function commit(original: SimOverlay, st: Staged, audits: SimAudit[]) {
+  const o=structuredClone(original);
   for (const s of st.entities) {
     (o.entities[s.c] ??= {})[s.id] = s.e;
     if (s.created) o.created[s.c] = [s.id, ...(o.created[s.c] ?? []).filter((x) => x !== s.id)];
@@ -491,7 +494,8 @@ async function commit(o: SimOverlay, st: Staged, audits: SimAudit[]) {
   o.notifications = [...[...st.notifications].reverse(), ...o.notifications];
   o.tasks = [...o.tasks, ...st.tasks];
   for (const r of st.reads) o.reads[r.account] = [...new Set([...(o.reads[r.account] ?? []), r.id])];
-  await saveOverlay(o);
+  await saveOverlay(o,st.binaryIds);
+  Object.assign(original,o);
   for (const t of st.tasks) schedule(t);
   if (st.events.length) publishLocalEvents(st.events);
   localDataChanged();
@@ -627,7 +631,7 @@ export async function simInvoke<T = unknown>(ctx: SimWriteContext, name: string,
     req = { ...req, body: r.data };
   }
   const { o, st } = s;
-  const mark = { entities: st.entities.length, audit: st.audit.length, events: st.events.length, notifications: st.notifications.length, tasks: st.tasks.length, reads: st.reads.length, hooks: st.hooks?.length ?? 0, data: structuredClone(st.data) };
+  const mark = { entities: st.entities.length, audit: st.audit.length, events: st.events.length, notifications: st.notifications.length, tasks: st.tasks.length, reads: st.reads.length, hooks: st.hooks?.length ?? 0, binaryIds:[...(st.binaryIds??[])], data: structuredClone(st.data) };
   try {
     const out = await h(writeContext(o, req, opts.actor, st));
     return (out === undefined ? null : out) as T;
@@ -639,6 +643,7 @@ export async function simInvoke<T = unknown>(ctx: SimWriteContext, name: string,
     st.tasks.length = mark.tasks;
     st.reads.length = mark.reads;
     if (st.hooks) st.hooks.length = mark.hooks;
+    st.binaryIds=mark.binaryIds;
     for (const k of Object.keys(st.data)) delete st.data[k];
     Object.assign(st.data, mark.data);
     throw e;

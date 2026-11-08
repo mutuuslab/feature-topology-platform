@@ -132,3 +132,5 @@ export * from './schemas/workflow-source';
 export * from './schemas/software-delivery';
 
 export * from './rules/exception-policy';
+
+export * from './rules/status-v2_1';

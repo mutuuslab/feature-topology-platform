@@ -11528,7 +11528,7 @@
     },
     "/vehicle/v1/{vin}/status": {
       "post": {
-        "summary": "IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로",
+        "summary": "IF-06 차량 상태 보고 v2(2.0·2.1) — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 2.1은 판정·전달 단계·제어 책임·MRC를 ADS 상태에 투영, 위반은 이상 징후로",
         "tags": [
           "D04-03"
         ],
@@ -11548,250 +11548,839 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "status_report"
-                    ]
-                  },
-                  "schema_version": {
-                    "type": "string",
-                    "enum": [
-                      "2.0"
-                    ]
-                  },
-                  "vehicle_pseudonym": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{16,64}$"
-                  },
-                  "feature": {
+                "anyOf": [
+                  {
                     "type": "object",
                     "properties": {
-                      "id": {
+                      "type": {
                         "type": "string",
-                        "pattern": "^FEAT-[0-9]{5}$"
+                        "enum": [
+                          "status_report"
+                        ]
                       },
-                      "version": {
-                        "type": "string"
+                      "schema_version": {
+                        "type": "string",
+                        "enum": [
+                          "2.0"
+                        ]
+                      },
+                      "vehicle_pseudonym": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{16,64}$"
+                      },
+                      "feature": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^FEAT-[0-9]{5}$"
+                          },
+                          "version": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "version"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "INACTIVE",
+                          "ACT_PENDING",
+                          "ACTIVE",
+                          "DEACT_PENDING_IDLE",
+                          "DEACT_PENDING_CYCLE",
+                          "DEACT_WARNING",
+                          "DEACT_RAMP",
+                          "DISABLED",
+                          "RESTORE_PENDING",
+                          "FAULT",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "reason": {
+                        "type": "object",
+                        "properties": {
+                          "category": {
+                            "type": "string",
+                            "enum": [
+                              "SAFETY",
+                              "SECURITY",
+                              "REGULATORY",
+                              "COMMERCIAL",
+                              "OPERATIONAL"
+                            ]
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "REMOTE",
+                              "ONBOARD",
+                              "STARTUP"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "category",
+                          "source"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "request_result": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "ACCEPTED",
+                          "ACCEPTED_NOT_DURABLE",
+                          "REJECTED"
+                        ]
+                      },
+                      "reject_code": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "E2E_LENGTH",
+                          "E2E_DATA_ID",
+                          "E2E_CRC",
+                          "E2E_SEQUENCE",
+                          "AUTH_FAILED",
+                          "KEY_EPOCH_OLD",
+                          "REPLAY",
+                          "SEQ_JUMP",
+                          "TIME_INVALID",
+                          "NOT_YET_VALID",
+                          "EXPIRED",
+                          "TARGET_MISMATCH",
+                          "UNKNOWN_FEATURE",
+                          "VERSION_MISMATCH",
+                          "CODING_INVALID",
+                          "CLASS_MISMATCH",
+                          "DC4_REMOTE_FORBIDDEN",
+                          "APPROVALS_INVALID",
+                          "SAME_APPROVER",
+                          "STATE_NOT_ALLOWED",
+                          "NV_WRITE_FAILED",
+                          "SEQ_UNTRUSTED",
+                          "SCHEMA_VERSION",
+                          "SIGNATURE_INVALID",
+                          "AUTH_MISSING",
+                          "USER_CONFIRMATION_MISSING",
+                          "SEQUENCE_NOT_INCREASING",
+                          "RESPONSE_INVALID"
+                        ]
+                      },
+                      "vehicle_seq": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "durable": {
+                        "type": "boolean"
+                      },
+                      "hmi": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "INFO_PENDING",
+                          "WARN_TAKEOVER",
+                          "INFO_DISABLED"
+                        ]
+                      },
+                      "feature_weight_permille": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000
+                      },
+                      "policy_hash": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      },
+                      "dtc": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[0-9A-F]{6}$"
+                        }
+                      },
+                      "edr_aligned_state": {
+                        "type": "string",
+                        "enum": [
+                          "ENGAGED_OR_ARMED",
+                          "AVAILABLE",
+                          "OFF_BY_COMMAND",
+                          "OFF_BY_FAULT",
+                          "OFF"
+                        ]
+                      },
+                      "received_at": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "applied_at": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "observed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "time_sync": {
+                        "type": "string",
+                        "enum": [
+                          "SYNCED",
+                          "DEGRADED",
+                          "UNSYNCED"
+                        ]
+                      },
+                      "offline_since": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "data_category": {
+                        "type": "string",
+                        "enum": [
+                          "SAFETY_OPERATION",
+                          "SECURITY_MONITORING",
+                          "COMMERCIAL_USAGE"
+                        ]
+                      },
+                      "key_epoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      },
+                      "report_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4294967295
+                      },
+                      "state_auth": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{22}$"
+                      },
+                      "persistence": {
+                        "type": "string",
+                        "enum": [
+                          "DURABLE",
+                          "PENDING",
+                          "FAILED"
+                        ]
                       }
                     },
                     "required": [
-                      "id",
-                      "version"
+                      "type",
+                      "schema_version",
+                      "vehicle_pseudonym",
+                      "feature",
+                      "state",
+                      "reason",
+                      "request_result",
+                      "vehicle_seq",
+                      "durable",
+                      "hmi",
+                      "feature_weight_permille",
+                      "edr_aligned_state",
+                      "observed_at",
+                      "time_sync",
+                      "data_category",
+                      "key_epoch",
+                      "report_seq",
+                      "state_auth",
+                      "persistence"
                     ],
                     "additionalProperties": false
                   },
-                  "state": {
-                    "type": "string",
-                    "enum": [
-                      "INACTIVE",
-                      "ACT_PENDING",
-                      "ACTIVE",
-                      "DEACT_PENDING_IDLE",
-                      "DEACT_PENDING_CYCLE",
-                      "DEACT_WARNING",
-                      "DEACT_RAMP",
-                      "DISABLED",
-                      "RESTORE_PENDING",
-                      "FAULT",
-                      "UNKNOWN"
-                    ]
-                  },
-                  "reason": {
+                  {
                     "type": "object",
                     "properties": {
-                      "category": {
+                      "type": {
                         "type": "string",
                         "enum": [
-                          "SAFETY",
-                          "SECURITY",
-                          "REGULATORY",
-                          "COMMERCIAL",
-                          "OPERATIONAL"
+                          "status_report"
                         ]
                       },
-                      "source": {
+                      "schema_version": {
                         "type": "string",
                         "enum": [
-                          "REMOTE",
-                          "ONBOARD",
-                          "STARTUP"
+                          "2.1"
                         ]
+                      },
+                      "vehicle_pseudonym": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{16,64}$"
+                      },
+                      "feature": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "pattern": "^FEAT-[0-9]{5}$"
+                          },
+                          "version": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "version"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "INACTIVE",
+                          "ACT_PENDING",
+                          "ACTIVE",
+                          "DEACT_PENDING_IDLE",
+                          "DEACT_PENDING_CYCLE",
+                          "DEACT_WARNING",
+                          "DEACT_RAMP",
+                          "DISABLED",
+                          "RESTORE_PENDING",
+                          "FAULT",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "reason": {
+                        "type": "object",
+                        "properties": {
+                          "category": {
+                            "type": "string",
+                            "enum": [
+                              "SAFETY",
+                              "SECURITY",
+                              "REGULATORY",
+                              "COMMERCIAL",
+                              "OPERATIONAL"
+                            ]
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": [
+                              "REMOTE",
+                              "ONBOARD",
+                              "STARTUP"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "category",
+                          "source"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "request_result": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "ACCEPTED",
+                          "ACCEPTED_NOT_DURABLE",
+                          "REJECTED"
+                        ]
+                      },
+                      "reject_code": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "E2E_LENGTH",
+                          "E2E_DATA_ID",
+                          "E2E_CRC",
+                          "E2E_SEQUENCE",
+                          "AUTH_FAILED",
+                          "KEY_EPOCH_OLD",
+                          "REPLAY",
+                          "SEQ_JUMP",
+                          "TIME_INVALID",
+                          "NOT_YET_VALID",
+                          "EXPIRED",
+                          "TARGET_MISMATCH",
+                          "UNKNOWN_FEATURE",
+                          "VERSION_MISMATCH",
+                          "CODING_INVALID",
+                          "CLASS_MISMATCH",
+                          "DC4_REMOTE_FORBIDDEN",
+                          "APPROVALS_INVALID",
+                          "SAME_APPROVER",
+                          "STATE_NOT_ALLOWED",
+                          "NV_WRITE_FAILED",
+                          "SEQ_UNTRUSTED",
+                          "SCHEMA_VERSION",
+                          "SIGNATURE_INVALID",
+                          "AUTH_MISSING",
+                          "USER_CONFIRMATION_MISSING",
+                          "SEQUENCE_NOT_INCREASING",
+                          "RESPONSE_INVALID",
+                          "STALE_EPOCH"
+                        ]
+                      },
+                      "vehicle_seq": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "durable": {
+                        "type": "boolean"
+                      },
+                      "hmi": {
+                        "type": "string",
+                        "enum": [
+                          "NONE",
+                          "INFO_PENDING",
+                          "WARN_TAKEOVER",
+                          "INFO_DISABLED"
+                        ]
+                      },
+                      "feature_weight_permille": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000
+                      },
+                      "policy_hash": {
+                        "type": "string",
+                        "pattern": "^sha256:[a-f0-9]{64}$"
+                      },
+                      "dtc": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[0-9A-F]{6}$"
+                        }
+                      },
+                      "edr_aligned_state": {
+                        "type": "string",
+                        "enum": [
+                          "ENGAGED_OR_ARMED",
+                          "AVAILABLE",
+                          "OFF_BY_COMMAND",
+                          "OFF_BY_FAULT",
+                          "OFF"
+                        ]
+                      },
+                      "received_at": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "applied_at": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "observed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "time_sync": {
+                        "type": "string",
+                        "enum": [
+                          "SYNCED",
+                          "DEGRADED",
+                          "UNSYNCED"
+                        ]
+                      },
+                      "offline_since": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "date-time"
+                      },
+                      "data_category": {
+                        "type": "string",
+                        "enum": [
+                          "SAFETY_OPERATION",
+                          "SECURITY_MONITORING",
+                          "COMMERCIAL_USAGE"
+                        ]
+                      },
+                      "key_epoch": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      },
+                      "report_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 4294967295
+                      },
+                      "state_auth": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{22}$"
+                      },
+                      "persistence": {
+                        "type": "string",
+                        "enum": [
+                          "DURABLE",
+                          "PENDING",
+                          "FAILED"
+                        ]
+                      },
+                      "reported_at": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "runtime_state": {
+                        "type": "string",
+                        "enum": [
+                          "INACTIVE",
+                          "AVAILABLE",
+                          "ACTIVE",
+                          "IN_TRANSITION",
+                          "MRC",
+                          "TERMINATED",
+                          "RECOVERY_PENDING"
+                        ]
+                      },
+                      "ddt_owner": {
+                        "type": "string",
+                        "enum": [
+                          "ADS",
+                          "USER",
+                          "FALLBACK",
+                          "NONE",
+                          "UNKNOWN"
+                        ]
+                      },
+                      "feature_epoch": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "inhibits": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9_.:-]{3,64}$"
+                        },
+                        "maxItems": 64
+                      },
+                      "decision": {
+                        "type": "object",
+                        "properties": {
+                          "decision_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "action": {
+                            "type": "string",
+                            "enum": [
+                              "ACTIVATE",
+                              "HANDOVER",
+                              "INSTALL",
+                              "MRC",
+                              "TERMINATE_CONFIRM",
+                              "REACTIVATE"
+                            ]
+                          },
+                          "verdict": {
+                            "type": "string",
+                            "enum": [
+                              "ALLOW",
+                              "DENY",
+                              "UNKNOWN"
+                            ]
+                          },
+                          "reason_codes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[A-Z0-9_]{3,40}$"
+                            },
+                            "maxItems": 16
+                          },
+                          "session_id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+                          },
+                          "sample_ref": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+                          },
+                          "config_ref": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+                          },
+                          "odd_ref": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+                          },
+                          "input_quality": {
+                            "type": "string",
+                            "enum": [
+                              "OK",
+                              "DEGRADED",
+                              "INVALID"
+                            ]
+                          },
+                          "odd_state": {
+                            "type": "string",
+                            "enum": [
+                              "IN",
+                              "OUT",
+                              "UNKNOWN"
+                            ]
+                          },
+                          "odd_input_valid_until": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "odd_exit_forecast": {
+                            "type": "object",
+                            "properties": {
+                              "expected_exit_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "required_transition_ms": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "plan_started_at": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              }
+                            },
+                            "required": [
+                              "expected_exit_at",
+                              "required_transition_ms",
+                              "plan_started_at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "inputs": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "signal": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_.]{1,63}$"
+                                },
+                                "source": {
+                                  "type": "string",
+                                  "enum": [
+                                    "SENSOR",
+                                    "VEHICLE_BUS",
+                                    "LOCALIZATION",
+                                    "MAP",
+                                    "HMI",
+                                    "DIAGNOSTIC"
+                                  ]
+                                },
+                                "valid": {
+                                  "type": "boolean"
+                                },
+                                "trust": {
+                                  "type": "string",
+                                  "enum": [
+                                    "TRUSTED",
+                                    "DEGRADED",
+                                    "UNTRUSTED"
+                                  ]
+                                },
+                                "local_ts": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                },
+                                "max_age_ms": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                }
+                              },
+                              "required": [
+                                "signal",
+                                "source",
+                                "valid",
+                                "trust",
+                                "local_ts",
+                                "max_age_ms"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "minItems": 1,
+                            "maxItems": 64
+                          },
+                          "valid_until": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "evaluated_state_digest": {
+                            "type": "string",
+                            "pattern": "^sha256:[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "decision_id",
+                          "action",
+                          "verdict",
+                          "reason_codes",
+                          "input_quality",
+                          "odd_state",
+                          "inputs",
+                          "valid_until",
+                          "evaluated_state_digest"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "delivery": {
+                        "type": "object",
+                        "properties": {
+                          "subject_kind": {
+                            "type": "string",
+                            "enum": [
+                              "POLICY",
+                              "KILL",
+                              "RESTORE",
+                              "RESCIND"
+                            ]
+                          },
+                          "subject_id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+                          },
+                          "stage": {
+                            "type": "string",
+                            "enum": [
+                              "RECEIVED",
+                              "ACCEPTED",
+                              "DEFERRED",
+                              "APPLIED",
+                              "REJECTED"
+                            ]
+                          },
+                          "reason_code": {
+                            "type": "string",
+                            "pattern": "^[A-Z0-9_]{3,40}$"
+                          },
+                          "decision_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "subject_kind",
+                          "subject_id",
+                          "stage"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "mrc": {
+                        "type": "object",
+                        "properties": {
+                          "reached_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "hold_means": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              "EPB",
+                              "P_LOCK",
+                              "SERVICE_BRAKE_HOLD",
+                              "OTHER",
+                              null
+                            ]
+                          },
+                          "risk_mitigation_ref": {
+                            "type": "string",
+                            "nullable": true,
+                            "pattern": "^[A-Za-z0-9_.:-]{1,128}$"
+                          }
+                        },
+                        "required": [
+                          "reached_at",
+                          "hold_means",
+                          "risk_mitigation_ref"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "restore": {
+                        "type": "object",
+                        "properties": {
+                          "booted_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "integrity": {
+                            "type": "string",
+                            "enum": [
+                              "OK",
+                              "FAILED"
+                            ]
+                          },
+                          "inhibits_restored": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_.:-]{3,64}$"
+                            },
+                            "maxItems": 64
+                          }
+                        },
+                        "required": [
+                          "booted_at",
+                          "integrity",
+                          "inhibits_restored"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "commercial": {
+                        "type": "object",
+                        "properties": {
+                          "entitlement_state": {
+                            "type": "string",
+                            "enum": [
+                              "NONE",
+                              "TRIAL",
+                              "ACTIVE",
+                              "EXPIRED",
+                              "REVOKED"
+                            ]
+                          },
+                          "effective_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "entitlement_state",
+                          "effective_at"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "category",
-                      "source"
+                      "type",
+                      "schema_version",
+                      "vehicle_pseudonym",
+                      "feature",
+                      "state",
+                      "reason",
+                      "request_result",
+                      "vehicle_seq",
+                      "durable",
+                      "hmi",
+                      "feature_weight_permille",
+                      "edr_aligned_state",
+                      "observed_at",
+                      "time_sync",
+                      "data_category",
+                      "key_epoch",
+                      "report_seq",
+                      "state_auth",
+                      "persistence",
+                      "reported_at",
+                      "runtime_state",
+                      "feature_epoch",
+                      "inhibits"
                     ],
                     "additionalProperties": false
-                  },
-                  "request_result": {
-                    "type": "string",
-                    "enum": [
-                      "NONE",
-                      "ACCEPTED",
-                      "ACCEPTED_NOT_DURABLE",
-                      "REJECTED"
-                    ]
-                  },
-                  "reject_code": {
-                    "type": "string",
-                    "enum": [
-                      "NONE",
-                      "E2E_LENGTH",
-                      "E2E_DATA_ID",
-                      "E2E_CRC",
-                      "E2E_SEQUENCE",
-                      "AUTH_FAILED",
-                      "KEY_EPOCH_OLD",
-                      "REPLAY",
-                      "SEQ_JUMP",
-                      "TIME_INVALID",
-                      "NOT_YET_VALID",
-                      "EXPIRED",
-                      "TARGET_MISMATCH",
-                      "UNKNOWN_FEATURE",
-                      "VERSION_MISMATCH",
-                      "CODING_INVALID",
-                      "CLASS_MISMATCH",
-                      "DC4_REMOTE_FORBIDDEN",
-                      "APPROVALS_INVALID",
-                      "SAME_APPROVER",
-                      "STATE_NOT_ALLOWED",
-                      "NV_WRITE_FAILED",
-                      "SEQ_UNTRUSTED",
-                      "SCHEMA_VERSION",
-                      "SIGNATURE_INVALID",
-                      "AUTH_MISSING",
-                      "USER_CONFIRMATION_MISSING",
-                      "SEQUENCE_NOT_INCREASING",
-                      "RESPONSE_INVALID"
-                    ]
-                  },
-                  "vehicle_seq": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "durable": {
-                    "type": "boolean"
-                  },
-                  "hmi": {
-                    "type": "string",
-                    "enum": [
-                      "NONE",
-                      "INFO_PENDING",
-                      "WARN_TAKEOVER",
-                      "INFO_DISABLED"
-                    ]
-                  },
-                  "feature_weight_permille": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 1000
-                  },
-                  "policy_hash": {
-                    "type": "string",
-                    "pattern": "^sha256:[a-f0-9]{64}$"
-                  },
-                  "dtc": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^[0-9A-F]{6}$"
-                    }
-                  },
-                  "edr_aligned_state": {
-                    "type": "string",
-                    "enum": [
-                      "ENGAGED_OR_ARMED",
-                      "AVAILABLE",
-                      "OFF_BY_COMMAND",
-                      "OFF_BY_FAULT",
-                      "OFF"
-                    ]
-                  },
-                  "received_at": {
-                    "type": "string",
-                    "nullable": true,
-                    "format": "date-time"
-                  },
-                  "applied_at": {
-                    "type": "string",
-                    "nullable": true,
-                    "format": "date-time"
-                  },
-                  "observed_at": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "time_sync": {
-                    "type": "string",
-                    "enum": [
-                      "SYNCED",
-                      "DEGRADED",
-                      "UNSYNCED"
-                    ]
-                  },
-                  "offline_since": {
-                    "type": "string",
-                    "nullable": true,
-                    "format": "date-time"
-                  },
-                  "data_category": {
-                    "type": "string",
-                    "enum": [
-                      "SAFETY_OPERATION",
-                      "SECURITY_MONITORING",
-                      "COMMERCIAL_USAGE"
-                    ]
-                  },
-                  "key_epoch": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 255
-                  },
-                  "report_seq": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4294967295
-                  },
-                  "state_auth": {
-                    "type": "string",
-                    "pattern": "^[A-Za-z0-9_-]{22}$"
-                  },
-                  "persistence": {
-                    "type": "string",
-                    "enum": [
-                      "DURABLE",
-                      "PENDING",
-                      "FAILED"
-                    ]
                   }
-                },
-                "required": [
-                  "type",
-                  "schema_version",
-                  "vehicle_pseudonym",
-                  "feature",
-                  "state",
-                  "reason",
-                  "request_result",
-                  "vehicle_seq",
-                  "durable",
-                  "hmi",
-                  "feature_weight_permille",
-                  "edr_aligned_state",
-                  "observed_at",
-                  "time_sync",
-                  "data_category",
-                  "key_epoch",
-                  "report_seq",
-                  "state_auth",
-                  "persistence"
-                ],
-                "additionalProperties": false
+                ]
               }
             }
           }
@@ -33514,6 +34103,37 @@
           },
           "422": {
             "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/vehicles/{vin}/reconcile": {
+      "get": {
+        "summary": "재연결 대조 — 서버 의도(Feature epoch·종료 차단) vs 차량 보고 2.1 불일치·미확인 기간, 차량 ADS 사건",
+        "tags": [
+          "D04-03"
+        ],
+        "operationId": "vehicleReconcile",
+        "description": "허용 역할: 기능안전 담당자(FSM), 운영자, 운영 리더, Gate 판정자, Feature 출시 담당자, 구현 담당자, Feature 작성자, Feature 승인자, 법규 담당, 사이버보안 담당자(CSM), 운영·감사 조회자, 시스템 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "vin",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
           }
         }
       }

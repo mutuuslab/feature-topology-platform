@@ -42,6 +42,8 @@ export const PublicationPayload = z.object({
   issuedAt: z.string(),
   /** 정책 캐시 유효 기간(P9, FR-LPC-001-003) — POLICY 게시본만. 차량은 이 시각이 지나면 캐시 대신 Safe Default로 위임한다 */
   validUntil: z.string().optional(),
+  /** Feature epoch(ADS-BE07) — Feature마다 긴급 차단 때 하나씩 오른다. 차량은 본 epoch보다 낮은 게시본을 STALE_EPOCH로 거부한다. 0이면 싣지 않는다 */
+  featureEpochs: z.record(z.string(), z.number().int().min(1)).optional(),
 });
 export type PublicationPayload = z.infer<typeof PublicationPayload>;
 

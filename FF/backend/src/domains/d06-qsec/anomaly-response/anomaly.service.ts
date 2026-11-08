@@ -63,7 +63,7 @@ export class AnomalyService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'vehicle.status.rejected', 'kill.overdue', 'incident.sotif.triggered', 'vehicle.config.mismatch', 'ops.observation.recorded']).subscribe((e) => {
+    this.events.stream(['vehicle.fault.reported', 'vehicle.readback', 'publication.closed', 'kill.issued', 'vehicle.status.rejected', 'kill.overdue', 'incident.sotif.triggered', 'vehicle.config.mismatch', 'ops.observation.recorded', 'vehicle.ads.case']).subscribe((e) => {
       try {
         this.on(e);
       } catch (err) {
@@ -98,11 +98,16 @@ export class AnomalyService implements OnModuleInit {
       if (p.anomalyKind && p.featureId && p.status === 'firing') this.signal({ kind: p.anomalyKind, featureId: p.featureId, vin: null, code: `GRAFANA:${p.rule}`.slice(0, 120), severity: p.severity, at: e.at, ref: p.observationId });
       return;
     }
+    // 차량 ADS 사건(상태 보고 2.1, ADS-BE01) — 종료 중 제어 책임 공백·재시동 뒤 복구 미검증은 위급, MRC 미달성은 경고
+    if (e.type === 'vehicle.ads.case')
+      return this.signal({ kind: p.kind === 'RESTORE_UNVERIFIED' ? 'SECURITY' : 'FEATURE_FAULT', featureId: p.featureId, vin: p.vin, code: p.kind, severity: p.kind === 'MRC_NOT_ACHIEVED' ? 'WARNING' : 'CRITICAL', at: e.at, ref: p.caseId });
     if (e.type === 'vehicle.fault.reported') return this.signal({ kind: 'FEATURE_FAULT', featureId: p.featureId, vin: e.aggregate, code: p.code, severity: p.severity, at: e.at, ref: e.id });
     // 현장 장애·VOC의 SOTIF 트리거(D04-05, FFG-SOT-003) — 신호의 ref는 장애 ID(장애 이력이 이상 건을 거꾸로 찾는다)
     if (e.type === 'incident.sotif.triggered') return this.signal({ kind: 'FIELD_SOTIF', featureId: p.featureId, vin: p.vin ?? null, code: p.category, severity: p.severity, at: e.at, ref: p.incidentId });
     const pub = p.publicationId ? this.publications.get(p.publicationId) : undefined;
     if (!pub) return;
+    // STALE_EPOCH — 긴급 차단 뒤 늦게 도착한 과거 정책 게시본을 차량이 거부한 것(ADS-BE07). 보호 동작이라 보안 신호가 아니다(게시본 회신 사유로만 남는다)
+    if (e.type === 'vehicle.readback' && p.rejectReason === 'STALE_EPOCH') return;
     if (e.type === 'vehicle.readback' && p.rejectReason)
       return this.signal({ kind: 'SECURITY', featureId: pub.payload.featureId, vin: e.aggregate, code: p.rejectReason, severity: SECURITY_REJECT[p.rejectReason] ?? 'WARNING', at: e.at, ref: pub.publicationId });
     if (e.type === 'publication.closed' && DELIVERY_STATUS[p.status])

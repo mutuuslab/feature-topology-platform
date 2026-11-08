@@ -6,7 +6,7 @@ import { Body, Controller, Get, HttpCode, Inject, Injectable, OnModuleInit, Para
 import { AuditAction, CurrentActor, Roles, VehicleEndpoint, type Actor } from '../../../kernel/actor';
 import { AuditService } from '../../../kernel/audit.service';
 import { DomainError } from '../../../kernel/errors';
-import { applyWindowMs, checkStatusReport, DATA_CATEGORY_ACCESS, endState, statusAuthCanonical, type KillRequest, type StatusCheckResult, type StatusReportV2 } from '@ff/contracts';
+import { applyWindowMs, checkStatusReport, DATA_CATEGORY_ACCESS, endState, statusAuthCanonical, type KillRequest, type StatusCheckResult, type StatusReport, type StatusReportV2, type StatusReportV2_1 } from '@ff/contracts';
 import { Clock } from '../../../kernel/clock';
 import { PlatformComponent } from '../../../kernel/components';
 import { vehiclePseudonym } from '../../../kernel/crypto';
@@ -18,6 +18,7 @@ import { SafetyProfileService } from '../../d01-policy/registry/safety-profile.s
 import { EnvelopeRepo } from '../../d03-safety/kill-switch/envelope.repo';
 import { HsmService } from '../../d06-qsec/pki-kms/hsm.service';
 import { PublicationRepo, RuntimeRepo } from '../../d06-qsec/secure-deploy/publication.repo';
+import { StatusV21Service } from './status-v2_1.service';
 import { TelemetryService } from './telemetry.service';
 
 /** 기한 감시 여유 — 등급별 예상 시간에 더한다(전달 지연·회신 지연) */
@@ -44,6 +45,7 @@ export class StatusIngestService implements OnModuleInit {
     private readonly telemetry: TelemetryService,
     private readonly events: EventService,
     private readonly scheduler: Scheduler,
+    private readonly v21: StatusV21Service,
   ) {}
 
   onModuleInit() {
@@ -98,11 +100,11 @@ export class StatusIngestService implements OnModuleInit {
   }
 
   /**
-   * 수신 — 검사·기록·후속(회신 연결·이상 징후 이벤트).
+   * 수신 — 검사·기록·후속(회신 연결·이상 징후 이벤트). 상태 보고 2.0과 2.1을 함께 받는다(D-ADS-1) — 2.1은 기능 프로필 검사와 ADS 상태 투영(StatusV21Service)을 더한다.
    * @rule FFG-TEL-003 — 증명·순번·이력 검사를 통과한 보고만 확인 집계에 넣는다
    */
   ingest(vin: string, report: unknown, via: 'IF-06' | 'SIM' | 'GLEO' = 'IF-06'): StatusIngestResult {
-    const r = report as Partial<StatusReportV2>;
+    const r = report as Partial<StatusReport>;
     const featureId = typeof r?.feature?.id === 'string' ? r.feature.id : null;
     let authOk = false;
     try {
@@ -127,6 +129,7 @@ export class StatusIngestService implements OnModuleInit {
       acceptedAuthAtSeq,
       expectedVersion: featureId ? this.expectedVersion(vin, featureId) : null,
       lastCommand: last ? { request: last.request, vehicleSeq: last.vehicleSeq, acknowledged: this.acknowledged(vin, featureId!, last.vehicleSeq) } : null,
+      ...(featureId && (r as { schema_version?: string })?.schema_version === '2.1' ? { profile: this.v21.profile(featureId) } : {}),
     });
     // 가명은 이 차량의 것이어야 한다(채널 인증 VIN과 보고 본문의 결합)
     if (result.accepted && r.vehicle_pseudonym !== vehiclePseudonym(vin))
@@ -139,6 +142,7 @@ export class StatusIngestService implements OnModuleInit {
       result = { ...result, duplicate: true };
     // 중복은 이미 기록·처리한 보고 — 다시 기록하거나 상태·회신·이상 징후·보안 이벤트를 만들지 않고 앞 결과로 답한다
     if (result.duplicate) return { ...result, vin, featureId, reportSeq };
+    const v21 = result.accepted && r.schema_version === '2.1' ? (report as StatusReportV2_1) : null;
     this.db.tx(() => {
       this.db.run(
         'INSERT INTO status_report (vin, feature_id, report_seq, state, accepted, violation, via, doc, received_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -154,18 +158,22 @@ export class StatusIngestService implements OnModuleInit {
       );
       if (result.accepted && featureId) {
         this.db.run(
-          'INSERT INTO vehicle_feature_status (vin, feature_id, state, report_seq, doc, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(vin, feature_id) DO UPDATE SET state = excluded.state, report_seq = excluded.report_seq, doc = excluded.doc, updated_at = excluded.updated_at',
+          'INSERT INTO vehicle_feature_status (vin, feature_id, state, report_seq, doc, updated_at, schema_version, feature_epoch) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(vin, feature_id) DO UPDATE SET state = excluded.state, report_seq = excluded.report_seq, doc = excluded.doc, updated_at = excluded.updated_at, schema_version = excluded.schema_version, feature_epoch = excluded.feature_epoch',
           vin,
           featureId,
           r.state,
           reportSeq,
           JSON.stringify(report),
           now,
+          v21 ? '2.1' : '2.0',
+          v21 ? v21.feature_epoch : null,
         );
+        // 2.1 — 실제 실행·제어 책임·판정·전달 단계를 ADS 상태 읽기 모델에, 공백·복구 미검증·MRC 미달성은 사건으로
+        if (v21) this.v21.project(vin, v21, via);
         this.events.publish(
           'vehicle.status.accepted',
           vin,
-          { vin, featureId, state: r.state, requestResult: r.request_result, rejectCode: r.reject_code ?? null, action: result.action.kind, timeSync: r.time_sync ?? null, keyEpoch: r.key_epoch ?? null, dtc: r.dtc ?? [], via },
+          { vin, featureId, schemaVersion: r.schema_version, state: r.state, requestResult: r.request_result, rejectCode: r.reject_code ?? null, action: result.action.kind, timeSync: r.time_sync ?? null, keyEpoch: r.key_epoch ?? null, dtc: r.dtc ?? [], via },
           { componentId: 'D04-03' },
         );
         if (result.action.kind === 'REISSUE_SAME') this.events.publish('vehicle.status.reissue', vin, { vin, featureId, commandId: last?.commandId ?? null }, { componentId: 'D04-03' });

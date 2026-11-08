@@ -95,6 +95,7 @@
     "441_software_delivery": "ec6cc13e5a86f4c6826c336a1df8e1bdedb82347c146b177b682e6a5f7228221",
     "311_vehicle_message_nonce": "fd730c4517585ca91b24f480400953989ab5b308905145ca695b54c2046636f5",
     "321_exception_policy": "d0b396e2f8c0a87c0cab9d8140cf14a860625851df996ca0ddc55f3fa80caecd",
-    "341_ads_config_approval_scope": "aadf1330244e2943acce1e0e2ee7cf8343878f4ad7df1a4f2666617215f21ba4"
+    "341_ads_config_approval_scope": "aadf1330244e2943acce1e0e2ee7cf8343878f4ad7df1a4f2666617215f21ba4",
+    "201_wire_v2_1": "00715ce063f151a275ad5182332f72c7d20fa72a25420790240264ea37499b3a"
   }
 }

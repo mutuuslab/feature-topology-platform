@@ -62,7 +62,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
   }
 
   status() {
-    return { mode: this.mode, wire: 'v2', url: this.mode === 'ws' ? this.url : null, connected: this.connected, lastError: this.lastError, messages: this.messages.slice(-30) };
+    return { mode: this.mode, wire: 'v2', statusVersions: ['2.0', '2.1'], url: this.mode === 'ws' ? this.url : null, connected: this.connected, lastError: this.lastError, messages: this.messages.slice(-30) };
   }
 
   /** 게시본 → GLEO 메시지. 회신 의무가 없는(ack만) 차량 목록을 돌려준다. */
@@ -71,7 +71,9 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
     if ((p.kind === 'KILL' || p.kind === 'RESTORE') && p.kill) return this.sendV2(pub, vins);
     // 정책 배포는 policy_push — 차량은 캐시만 하고 회신하지 않는다, 회신 집계 분모에서 뺀다(ackOnly)
     const action = p.kind === 'RESTORE' ? 'enable' : p.policy?.enabled ? 'enable' : 'disable';
-    const msg = { type: 'policy_push', feature_id: p.featureId, action, scope: { vehicle_ids: vins }, issued_at: p.issuedAt, reason: `${pub.publicationId} ${p.flagKey ?? p.kind}` };
+    // ADS-BE07 — 차단이 있던 Feature면 게시본의 Feature epoch를 싣는다(FF_IMP 차량은 ADS-SIM04 동기 전까지 무시)
+    const epoch = p.featureEpochs?.[p.featureId];
+    const msg = { type: 'policy_push', feature_id: p.featureId, action, scope: { vehicle_ids: vins }, issued_at: p.issuedAt, reason: `${pub.publicationId} ${p.flagKey ?? p.kind}`, ...(epoch ? { feature_epoch: epoch } : {}) };
     const errors = gleoMessageErrors(msg);
     if (errors.length) throw new Error(`GLEO 메시지 계약 위반: ${errors.join('; ')}`);
     this.push('out', msg);
@@ -109,7 +111,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
     return vin && this.fleet.vehicle(vin)?.gleo ? vin : null;
   }
 
-  /** 브로커가 중계한 메시지 — 차량 status_report v2만 받는다 (자기가 보낸 명령은 브로커가 되돌려 주지 않는다, v1 보고는 버린다) */
+  /** 브로커가 중계한 메시지 — 차량 status_report v2(2.0·2.1)만 받는다 (자기가 보낸 명령은 브로커가 되돌려 주지 않는다, v1 보고는 버린다) */
   onRaw(raw: string) {
     let data: unknown;
     try {
@@ -118,7 +120,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
       return;
     }
     const v2 = data as { type?: string; schema_version?: string; vehicle_pseudonym?: string; feature?: { id?: string } };
-    if (v2?.type === 'status_report' && v2.schema_version === '2.0') {
+    if (v2?.type === 'status_report' && (v2.schema_version === '2.0' || v2.schema_version === '2.1')) {
       this.push('in', data);
       const vin = typeof v2.vehicle_pseudonym === 'string' ? this.vinOf(v2.vehicle_pseudonym) : null;
       if (!vin) return void (this.lastError = '알 수 없는 차량 가명의 status_report v2 — 버림');
@@ -126,7 +128,7 @@ export class GleoAdapter implements OnModuleInit, OnApplicationShutdown {
       if (r.accepted && !r.duplicate && r.featureId) {
         const s = this.runtime.get(vin);
         s.featureState[r.featureId] = (data as { state: string }).state;
-        s.log.push({ at: this.clock.iso(), publicationId: '-', kind: 'GLEO', result: 'APPLIED', detail: `status_report v2 ${(data as { state: string }).state}` });
+        s.log.push({ at: this.clock.iso(), publicationId: '-', kind: 'GLEO', result: 'APPLIED', detail: `status_report v${v2.schema_version} ${(data as { state: string }).state}` });
         this.runtime.save(s);
       }
     }

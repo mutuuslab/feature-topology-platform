@@ -22,6 +22,7 @@ import { PublicationRepo } from './publication.repo';
 import { SbomService } from '../vuln-monitor/sbom.service';
 import { OtaJobRepo } from '../../../adapters/ota/ota-job.repo';
 import { AdsPublishGate, type CandidateView } from '../../d02-runtime/variant-conditions/ads-publish-gate';
+import { FeatureEpochRepo } from '../../d03-safety/kill-switch/feature-epoch.repo';
 
 const OTA_TIMEOUT_MS = Number(process.env.PUBLICATION_TIMEOUT_MS ?? 8000);
 const EMERGENCY_TIMEOUT_MS = Number(process.env.KILL_TIMEOUT_MS ?? 5000);
@@ -61,6 +62,7 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     private readonly sbom: SbomService,
     private readonly otaJobs: OtaJobRepo,
     private readonly adsGate: AdsPublishGate,
+    private readonly epochs: FeatureEpochRepo,
   ) {}
 
   onModuleInit() {
@@ -124,8 +126,9 @@ export class SecureDeployService implements OnModuleInit, OnApplicationBootstrap
     const publicationId = this.repo.nextId();
     const { candidates, ...draft } = d;
     const issuedAt = this.clock.iso();
-    // P9 — 정책 게시본에는 캐시 유효 기간(서명 payload 안). 차단·복원은 차량 Guard가 따로 유효 시각(봉투 validity)을 본다
-    const payload = { publicationId, kind, sequence: 0, issuedAt, ...draft, ...(kind === 'POLICY' ? { validUntil: policyValidUntil(issuedAt, POLICY_CACHE_TTL_MS) } : {}) };
+    // Preserve the signed cache deadline AND the current Feature epochs in the same immutable payload.
+    const featureEpochs = this.epochs.of(draft.kill?.featureIds ?? [draft.featureId]);
+    const payload = { publicationId, kind, sequence: 0, issuedAt, ...draft, ...(kind === 'POLICY' ? { validUntil: policyValidUntil(issuedAt, POLICY_CACHE_TTL_MS) } : {}), ...(featureEpochs ? { featureEpochs } : {}) };
     const scopeKey = scopeKeyOf(payload);
     payload.sequence = this.repo.nextSequence(scopeKey);
     const emergency = kind !== 'POLICY';

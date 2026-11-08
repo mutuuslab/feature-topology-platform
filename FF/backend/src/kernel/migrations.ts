@@ -1507,6 +1507,25 @@ CREATE TRIGGER role_scope_no_update BEFORE UPDATE ON role_scope BEGIN SELECT RAI
 CREATE TRIGGER role_scope_no_delete BEFORE DELETE ON role_scope BEGIN SELECT RAISE(ABORT, 'role_scope는 추가만 가능'); END;
 `,
   },
+  {
+    // 차량 상태 보고 2.1(W — ADS-BE01·BE07·FFP-F031) — Feature epoch(명령 원장), 판정 decision_id·유효 기한·ODD 상태, 전달 단계의 판정 참조,
+    // 상태 보고 판(2.0·2.1)·차량 epoch, 기능별 상태 프로필(허용 실제 실행 상태·보고 간격 예산 ASSUMED|APPROVED), 차량 ADS 사건(제어 책임 공백·복구 미검증·MRC 미달성, 추가만)
+    name: '201_wire_v2_1',
+    sql: `
+ALTER TABLE command_ledger ADD COLUMN feature_epoch INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE safety_verdict ADD COLUMN decision_id TEXT;
+ALTER TABLE safety_verdict ADD COLUMN valid_until TEXT;
+ALTER TABLE safety_verdict ADD COLUMN odd_state TEXT;
+ALTER TABLE delivery_ack ADD COLUMN decision_id TEXT;
+ALTER TABLE vehicle_feature_status ADD COLUMN schema_version TEXT NOT NULL DEFAULT '2.0';
+ALTER TABLE vehicle_feature_status ADD COLUMN feature_epoch INTEGER;
+CREATE TABLE feature_state_profile (feature_id TEXT PRIMARY KEY, allowed_states TEXT NOT NULL, report_budget_ms INTEGER NOT NULL, budget_status TEXT NOT NULL CHECK (budget_status IN ('ASSUMED','APPROVED')), updated_at TEXT NOT NULL);
+CREATE TABLE ads_vehicle_case (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK (kind IN ('RESPONSIBILITY_GAP','RESTORE_UNVERIFIED','MRC_NOT_ACHIEVED')), vin TEXT NOT NULL, feature_id TEXT NOT NULL, report_seq INTEGER NOT NULL, opened_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX ads_vehicle_case_vin ON ads_vehicle_case (vin, feature_id, id);
+CREATE TRIGGER ads_vehicle_case_no_update BEFORE UPDATE ON ads_vehicle_case BEGIN SELECT RAISE(ABORT, 'ads_vehicle_case는 추가만 가능'); END;
+CREATE TRIGGER ads_vehicle_case_no_delete BEFORE DELETE ON ads_vehicle_case BEGIN SELECT RAISE(ABORT, 'ads_vehicle_case는 추가만 가능'); END;
+`,
+  },
   BINARY_MIGRATION,
   SOFTWARE_MIGRATION,
 ];

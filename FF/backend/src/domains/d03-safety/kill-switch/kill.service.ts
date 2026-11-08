@@ -53,6 +53,7 @@ import { PublicationRepo } from '../../d06-qsec/secure-deploy/publication.repo';
 import { SecureDeployService } from '../../d06-qsec/secure-deploy/secure-deploy.service';
 import { SbomService } from '../../d06-qsec/vuln-monitor/sbom.service';
 import { GateRejected, PolicyGateService } from '../deploy-safety/policy-gate.service';
+import { FeatureEpochRepo } from './feature-epoch.repo';
 import { KillRepo } from './kill.repo';
 
 export const KILL_ROLES = ['OPERATOR', 'SAFETY_OFFICER'] as const;
@@ -90,6 +91,7 @@ export class KillService {
     private readonly hsm: HsmService,
     private readonly profiles: SafetyProfileService,
     private readonly sbom: SbomService,
+    private readonly epochs: FeatureEpochRepo,
   ) {}
 
   /** 대상 차량의 시장(국가) — 차량마다 전체 차량 목록을 읽어 찾던 것(차량 10만 대에서 요청 하나 0.4 s, 출시 준비 RD-P2-01)을 한 번의 VIN 조회로 */
@@ -330,6 +332,8 @@ export class KillService {
     try {
       return this.db.tx(() => {
         const issued = this.issueCommand(actor, next, cmd);
+        // ADS-BE07 — Feature epoch를 올린 뒤 차단 게시본을 만든다(게시본이 새 epoch를 싣는다). 차단 전 게시본은 차량이 STALE_EPOCH로 거부
+        this.epochs.bump(next.featureIds);
         const pub = this.deploy.publishKill(next, actor, this.applyWithin(next, 'deactivate'));
         const done: KillRequest = { ...next, status: 'ACTIVE', publicationId: pub.publicationId, gate: { result: 'PASS', failed: [], at: this.clock.iso() }, command: this.commandRef(issued) };
         this.kills.update(done);

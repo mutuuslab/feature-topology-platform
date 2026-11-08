@@ -17,6 +17,8 @@ import { snapshotP5 } from './snapshot-p5.ts';
 import { snapshotP10 } from './snapshot-p10.ts';
 import { snapshotTx } from './snapshot-tx.ts';
 import { snapshotWorkflow } from './snapshot-workflow.ts';
+import { snapshotAc } from './snapshot-ac.ts';
+import { snapshotW } from './snapshot-w.ts';
 import { captureSoftwareDemos } from './software-demo-capture.ts';
 
 const require = createRequire(import.meta.url);
@@ -395,6 +397,7 @@ async function main() {
   await save('procedureSummary', {}, {}, PROC);
   await save('procedureInbox', {}, {}, PROC);
   await snapshotWorkflow(save);
+  await snapshotAc(save);
 
   // Feature Registry 목록 — FeatureList의 질의 모양: { q, lifecycle, country, latestOnly }
   const all = await save('listFeatures', {}, { latestOnly: false });
@@ -474,6 +477,7 @@ async function main() {
     }
   }
   const vehicles = await save('vehicles');
+  await snapshotW(save, { vehicles: vehicles.items });
   // 대시보드 차량 가젯 — 수만 읽는다(limit=1 + total·sample)
   await save('vehicles', {}, { limit: 1 });
   const flagKeys = [...new Set((policies.items as { flagKey: string; status: string }[]).filter((p) => p.status === 'DEPLOYED').map((p) => p.flagKey))];

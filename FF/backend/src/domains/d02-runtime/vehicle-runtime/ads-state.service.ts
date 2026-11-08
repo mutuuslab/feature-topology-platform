@@ -103,6 +103,8 @@ interface ReportDoc {
   reconnect: { at: string; gapMs: number } | null;
   restore: { integrity: 'OK' | 'FAILED'; inhibitReleased: boolean } | null;
   changes: { axis: CustomerAxis; before: string; after: string; reason: string }[];
+  /** 상태 보고 2.1(W) — 재시동 뒤 복구가 검증되지 않은 보고. 실제 실행·활성 적격을 현재 값으로 세지 않는다 */
+  restoreUnverified?: boolean;
 }
 interface VerdictDbRow {
   feature_id: string;
@@ -113,6 +115,8 @@ interface VerdictDbRow {
   observed_at: string;
   received_at: string;
   source: 'VEHICLE' | 'SIMULATED';
+  /** 상태 보고 2.1 판정 유효 기한(W) — 지나면 그 판정을 현재 값으로 다시 쓰지 않는다 */
+  valid_until?: string | null;
 }
 export interface OrderDoc {
   orderId: string;
@@ -369,7 +373,8 @@ export class AdsStateService implements OnModuleInit {
     const vs = this.latestVerdicts(vin, featureId);
     const v = vs.find((x) => x.action === 'ACTIVATE') ?? vs.at(-1) ?? null;
     if (!v) return null;
-    const stale = this.now() - Date.parse(v.observed_at) > this.basisOf(featureId).staleAfterMs;
+    // 2.1 판정은 유효 기한(valid_until)이 지나도 오래된 판정 — 과거 허용을 다시 쓰지 않는다(TC06)
+    const stale = this.now() - Date.parse(v.observed_at) > this.basisOf(featureId).staleAfterMs || (!!v.valid_until && Date.parse(v.valid_until) < this.now());
     return { verdict: v.verdict, reasonCodes: JSON.parse(v.reason_codes) as string[], at: v.observed_at, stale };
   }
 
@@ -385,8 +390,10 @@ export class AdsStateService implements OnModuleInit {
     const dc = pub ? classifyDelivery(this.deliveryEvents(pub, vin), b.staleAfterMs, this.now()) : null;
     const act = this.activation(vin, featureId);
     const elig = act ? eligibilityOf(act.verdict, act.reasonCodes) : null;
-    const eligNow = act && !act.stale ? reportedValue(elig, fresh.state) : { current: null, past: elig };
-    const run = reportedValue(rep?.runtime_state ?? null, fresh.state);
+    // 재시동 뒤 복구 미검증(RESTORE_UNVERIFIED) — 그 차량을 활성 집계에 넣지 않는다(값은 과거 값으로만)
+    const unverified = rep?.parsed.restoreUnverified === true;
+    const eligNow = act && !act.stale && !unverified ? reportedValue(elig, fresh.state) : { current: null, past: elig };
+    const run = unverified ? { current: null, past: rep?.runtime_state ?? null } : reportedValue(rep?.runtime_state ?? null, fresh.state);
     return {
       featureId,
       version: f?.version ?? version ?? '',

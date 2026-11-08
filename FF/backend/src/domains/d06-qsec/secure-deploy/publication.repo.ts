@@ -78,6 +78,12 @@ export interface VehicleRuntimeState {
   guard?: Record<string, { lastSeq: number; epoch: number; /** 마지막으로 받아들인 명령(멱등 재시도 판별 — FFP-F019) */ commandId?: string; digest?: string }>;
   /** 시동 안 상태 보고 순번(report_seq 하위 16비트) */
   reportCounter?: number;
+  /** Feature별 본 가장 높은 Feature epoch(ADS-BE07) — 이보다 낮은 정책 게시본은 STALE_EPOCH */
+  epochs?: Record<string, number>;
+  /** Feature별 건 종료 차단(사건 ID 또는 명령 ID) — 상태 보고 2.1 inhibits */
+  inhibits?: Record<string, string[]>;
+  /** Feature별 명령을 처음 받은 시각(received_at ≠ applied_at) */
+  receivedAt?: Record<string, string>;
 }
 
 @Injectable()

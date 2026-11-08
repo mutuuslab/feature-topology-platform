@@ -1,0 +1,1063 @@
+{
+  "_note": "GLEO 상태 보고 2.1 교차 언어 시험 벡터(ADS-SIM04) — backend/test/d03/gleo-v2_1-vectors.spec.ts가 만든다(손으로 고치지 않는다). 키는 gleo-v2.vectors.json과 같은 시험 전용 고정값. 스키마 초안은 FF/harness/wire/status_report.v2_1.schema.json.",
+  "keys": {
+    "same_as": "gleo-v2.vectors.json keys",
+    "epoch": 1,
+    "pseudonym": {
+      "ego-01": "1836e4185d6884d8"
+    }
+  },
+  "profiles": {
+    "ADS": {
+      "featureClass": "ADS",
+      "allowedStates": [
+        "INACTIVE",
+        "AVAILABLE",
+        "ACTIVE",
+        "IN_TRANSITION",
+        "MRC",
+        "TERMINATED",
+        "RECOVERY_PENDING"
+      ],
+      "reportBudgetMs": 2000,
+      "budgetStatus": "ASSUMED",
+      "source": "DEFAULT"
+    },
+    "ADAS": {
+      "featureClass": "ADAS",
+      "allowedStates": [
+        "INACTIVE",
+        "AVAILABLE",
+        "ACTIVE",
+        "IN_TRANSITION",
+        "TERMINATED",
+        "RECOVERY_PENDING"
+      ],
+      "reportBudgetMs": 5000,
+      "budgetStatus": "ASSUMED",
+      "source": "DEFAULT"
+    }
+  },
+  "status_cases": [
+    {
+      "name": "2.1 정상(허용 판정)",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "ACTIVE",
+        "ddt_owner": "ADS",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "decision": {
+          "decision_id": "0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e",
+          "action": "ACTIVATE",
+          "verdict": "ALLOW",
+          "reason_codes": [],
+          "input_quality": "OK",
+          "odd_state": "IN",
+          "inputs": [
+            {
+              "signal": "lane.confidence",
+              "source": "SENSOR",
+              "valid": true,
+              "trust": "TRUSTED",
+              "local_ts": "2026-10-13T00:00:07.500Z",
+              "max_age_ms": 1000
+            }
+          ],
+          "valid_until": "2026-10-13T00:01:00.000Z",
+          "evaluated_state_digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+        },
+        "state_auth": "B9S0dMDxhEVcInnaaP0Bqw"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"ADS\",\"decision\":{\"action\":\"ACTIVATE\",\"decision_id\":\"0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e\",\"evaluated_state_digest\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"input_quality\":\"OK\",\"inputs\":[{\"local_ts\":\"2026-10-13T00:00:07.500Z\",\"max_age_ms\":1000,\"signal\":\"lane.confidence\",\"source\":\"SENSOR\",\"trust\":\"TRUSTED\",\"valid\":true}],\"odd_state\":\"IN\",\"reason_codes\":[],\"valid_until\":\"2026-10-13T00:01:00.000Z\",\"verdict\":\"ALLOW\"},\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"ACTIVE\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "violation": null,
+        "action": {
+          "kind": "APPLIED",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "ACTIVE"
+      }
+    },
+    {
+      "name": "노후 입력으로 허용 → 위반",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "ACTIVE",
+        "ddt_owner": "ADS",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "decision": {
+          "decision_id": "0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e",
+          "action": "ACTIVATE",
+          "verdict": "ALLOW",
+          "reason_codes": [],
+          "input_quality": "OK",
+          "odd_state": "IN",
+          "inputs": [
+            {
+              "signal": "lane.confidence",
+              "source": "SENSOR",
+              "valid": true,
+              "trust": "TRUSTED",
+              "local_ts": "2026-10-13T00:00:05.000Z",
+              "max_age_ms": 1000
+            }
+          ],
+          "valid_until": "2026-10-13T00:01:00.000Z",
+          "evaluated_state_digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+        },
+        "state_auth": "BCh9yvbU8Cd-ZiBTt4FHtw"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"ADS\",\"decision\":{\"action\":\"ACTIVATE\",\"decision_id\":\"0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e\",\"evaluated_state_digest\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"input_quality\":\"OK\",\"inputs\":[{\"local_ts\":\"2026-10-13T00:00:05.000Z\",\"max_age_ms\":1000,\"signal\":\"lane.confidence\",\"source\":\"SENSOR\",\"trust\":\"TRUSTED\",\"valid\":true}],\"odd_state\":\"IN\",\"reason_codes\":[],\"valid_until\":\"2026-10-13T00:01:00.000Z\",\"verdict\":\"ALLOW\"},\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"ACTIVE\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "SCHEMA",
+          "code": "ALLOW_WITH_INVALID_INPUT",
+          "message": "노후·무효 입력(lane.confidence)이 있는데 허용으로 판정했습니다"
+        },
+        "action": {
+          "kind": "DISCARD_UNKNOWN",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "ACTIVE"
+      }
+    },
+    {
+      "name": "ODD 밖 거부(ODD_OUT)",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "ACTIVE",
+        "ddt_owner": "ADS",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "decision": {
+          "decision_id": "0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e",
+          "action": "ACTIVATE",
+          "verdict": "DENY",
+          "reason_codes": [
+            "ODD_OUT"
+          ],
+          "input_quality": "OK",
+          "odd_state": "OUT",
+          "inputs": [
+            {
+              "signal": "lane.confidence",
+              "source": "SENSOR",
+              "valid": true,
+              "trust": "TRUSTED",
+              "local_ts": "2026-10-13T00:00:07.500Z",
+              "max_age_ms": 1000
+            }
+          ],
+          "valid_until": "2026-10-13T00:01:00.000Z",
+          "evaluated_state_digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+        },
+        "state_auth": "0eIoJbQfOCjLyRBuDT-c8A"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"ADS\",\"decision\":{\"action\":\"ACTIVATE\",\"decision_id\":\"0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e\",\"evaluated_state_digest\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"input_quality\":\"OK\",\"inputs\":[{\"local_ts\":\"2026-10-13T00:00:07.500Z\",\"max_age_ms\":1000,\"signal\":\"lane.confidence\",\"source\":\"SENSOR\",\"trust\":\"TRUSTED\",\"valid\":true}],\"odd_state\":\"OUT\",\"reason_codes\":[\"ODD_OUT\"],\"valid_until\":\"2026-10-13T00:01:00.000Z\",\"verdict\":\"DENY\"},\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"ACTIVE\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "violation": null,
+        "action": {
+          "kind": "APPLIED",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "ACTIVE"
+      }
+    },
+    {
+      "name": "ODD 밖인데 사유가 입력 이상 → 위반",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "ACTIVE",
+        "ddt_owner": "ADS",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "decision": {
+          "decision_id": "0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e",
+          "action": "ACTIVATE",
+          "verdict": "DENY",
+          "reason_codes": [
+            "INPUT_INVALID_OR_STALE"
+          ],
+          "input_quality": "OK",
+          "odd_state": "OUT",
+          "inputs": [
+            {
+              "signal": "lane.confidence",
+              "source": "SENSOR",
+              "valid": true,
+              "trust": "TRUSTED",
+              "local_ts": "2026-10-13T00:00:07.500Z",
+              "max_age_ms": 1000
+            }
+          ],
+          "valid_until": "2026-10-13T00:01:00.000Z",
+          "evaluated_state_digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+        },
+        "state_auth": "QRzaTLwXRiAnMrmB8HQ6Tw"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"ADS\",\"decision\":{\"action\":\"ACTIVATE\",\"decision_id\":\"0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e\",\"evaluated_state_digest\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"input_quality\":\"OK\",\"inputs\":[{\"local_ts\":\"2026-10-13T00:00:07.500Z\",\"max_age_ms\":1000,\"signal\":\"lane.confidence\",\"source\":\"SENSOR\",\"trust\":\"TRUSTED\",\"valid\":true}],\"odd_state\":\"OUT\",\"reason_codes\":[\"INPUT_INVALID_OR_STALE\"],\"valid_until\":\"2026-10-13T00:01:00.000Z\",\"verdict\":\"DENY\"},\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"ACTIVE\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "SCHEMA",
+          "code": "REASON_CODE_INCONSISTENT",
+          "message": "운행 조건 밖(odd_state OUT)인데 사유에 ODD_OUT이 없습니다"
+        },
+        "action": {
+          "kind": "DISCARD_UNKNOWN",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "ACTIVE"
+      }
+    },
+    {
+      "name": "상업 상태를 판정 입력에 → 위반",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "ACTIVE",
+        "ddt_owner": "ADS",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "decision": {
+          "decision_id": "0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e",
+          "action": "ACTIVATE",
+          "verdict": "ALLOW",
+          "reason_codes": [],
+          "input_quality": "OK",
+          "odd_state": "IN",
+          "inputs": [
+            {
+              "signal": "entitlement.state",
+              "source": "SENSOR",
+              "valid": true,
+              "trust": "TRUSTED",
+              "local_ts": "2026-10-13T00:00:07.500Z",
+              "max_age_ms": 1000
+            }
+          ],
+          "valid_until": "2026-10-13T00:01:00.000Z",
+          "evaluated_state_digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+        },
+        "state_auth": "zzSvDWdoA-Ki_og-mqLafA"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"ADS\",\"decision\":{\"action\":\"ACTIVATE\",\"decision_id\":\"0b8d6c1e-2f3a-4b5c-9d7e-8f6a5b4c3d2e\",\"evaluated_state_digest\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"input_quality\":\"OK\",\"inputs\":[{\"local_ts\":\"2026-10-13T00:00:07.500Z\",\"max_age_ms\":1000,\"signal\":\"entitlement.state\",\"source\":\"SENSOR\",\"trust\":\"TRUSTED\",\"valid\":true}],\"odd_state\":\"IN\",\"reason_codes\":[],\"valid_until\":\"2026-10-13T00:01:00.000Z\",\"verdict\":\"ALLOW\"},\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"ACTIVE\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "SCHEMA",
+          "code": "COMMERCIAL_INPUT",
+          "message": "상업 상태(entitlement.state)를 판정 입력에 넣었습니다 — commercial 블록으로만 보고합니다"
+        },
+        "action": {
+          "kind": "DISCARD_UNKNOWN",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "ACTIVE"
+      }
+    },
+    {
+      "name": "ADS MRC 달성",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "MRC",
+        "ddt_owner": "FALLBACK",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "mrc": {
+          "reached_at": "2026-10-13T00:00:08.000Z",
+          "hold_means": "EPB",
+          "risk_mitigation_ref": "RM-0001"
+        },
+        "state_auth": "rpGoqUjqMTSe1CFnSAlOrQ"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"FALLBACK\",\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"mrc\":{\"hold_means\":\"EPB\",\"reached_at\":\"2026-10-13T00:00:08.000Z\",\"risk_mitigation_ref\":\"RM-0001\"},\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"MRC\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "violation": null,
+        "action": {
+          "kind": "APPLIED",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "MRC"
+      }
+    },
+    {
+      "name": "ADS MRC 미달성(정지 유지 수단 없음) — 받되 실제 실행은 전환 중",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "MRC",
+        "ddt_owner": "FALLBACK",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "mrc": {
+          "reached_at": "2026-10-13T00:00:08.000Z",
+          "hold_means": null,
+          "risk_mitigation_ref": null
+        },
+        "state_auth": "o8KCbmsq4_AGlu1rK09MwQ"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"FALLBACK\",\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"mrc\":{\"hold_means\":null,\"reached_at\":\"2026-10-13T00:00:08.000Z\",\"risk_mitigation_ref\":null},\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"MRC\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "violation": null,
+        "action": {
+          "kind": "APPLIED",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "IN_TRANSITION"
+      }
+    },
+    {
+      "name": "비 ADS 기능 MRC → 거부",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00022",
+          "version": "1.0.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "NONE",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "MRC",
+        "ddt_owner": "FALLBACK",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "mrc": {
+          "reached_at": "2026-10-13T00:00:08.000Z",
+          "hold_means": "EPB",
+          "risk_mitigation_ref": "RM-0001"
+        },
+        "state_auth": "LrwFN6qxqjrQd6mcJz3DAA"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"FALLBACK\",\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00022\",\"version\":\"1.0.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"mrc\":{\"hold_means\":\"EPB\",\"reached_at\":\"2026-10-13T00:00:08.000Z\",\"risk_mitigation_ref\":\"RM-0001\"},\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"NONE\",\"runtime_state\":\"MRC\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "1.0.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADAS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 5000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "violation": {
+          "step": "TARGET",
+          "code": "MRC_NOT_ALLOWED",
+          "message": "ADAS 기능은 MRC를 보고하지 않습니다 — MRC는 ADS 기능만"
+        },
+        "action": {
+          "kind": "DISCARD_UNKNOWN",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "MRC"
+      }
+    },
+    {
+      "name": "과거 정책 게시본 거부(STALE_EPOCH) 보고 — 조치는 새 게시본",
+      "vin": "ego-01",
+      "report": {
+        "type": "status_report",
+        "schema_version": "2.1",
+        "vehicle_pseudonym": "1836e4185d6884d8",
+        "feature": {
+          "id": "FEAT-00004",
+          "version": "4.1.0"
+        },
+        "state": "ACTIVE",
+        "reason": {
+          "category": "OPERATIONAL",
+          "source": "ONBOARD"
+        },
+        "request_result": "REJECTED",
+        "vehicle_seq": 0,
+        "durable": true,
+        "hmi": "NONE",
+        "feature_weight_permille": 1000,
+        "edr_aligned_state": "ENGAGED_OR_ARMED",
+        "received_at": null,
+        "applied_at": null,
+        "observed_at": "2026-10-13T00:00:08.000Z",
+        "time_sync": "SYNCED",
+        "offline_since": null,
+        "data_category": "SAFETY_OPERATION",
+        "key_epoch": 1,
+        "report_seq": 65539,
+        "persistence": "DURABLE",
+        "reported_at": "2026-10-13T00:00:08.100Z",
+        "runtime_state": "ACTIVE",
+        "ddt_owner": "ADS",
+        "feature_epoch": 1,
+        "inhibits": [],
+        "reject_code": "STALE_EPOCH",
+        "delivery": {
+          "subject_kind": "POLICY",
+          "subject_id": "PUB-00001",
+          "stage": "REJECTED",
+          "reason_code": "STALE_EPOCH"
+        },
+        "state_auth": "gQABTNDivxrUxJKD6-WSTw"
+      },
+      "state_auth_canonical": "{\"applied_at\":null,\"data_category\":\"SAFETY_OPERATION\",\"ddt_owner\":\"ADS\",\"delivery\":{\"reason_code\":\"STALE_EPOCH\",\"stage\":\"REJECTED\",\"subject_id\":\"PUB-00001\",\"subject_kind\":\"POLICY\"},\"durable\":true,\"edr_aligned_state\":\"ENGAGED_OR_ARMED\",\"feature\":{\"id\":\"FEAT-00004\",\"version\":\"4.1.0\"},\"feature_epoch\":1,\"feature_weight_permille\":1000,\"hmi\":\"NONE\",\"inhibits\":[],\"key_epoch\":1,\"observed_at\":\"2026-10-13T00:00:08.000Z\",\"offline_since\":null,\"persistence\":\"DURABLE\",\"reason\":{\"category\":\"OPERATIONAL\",\"source\":\"ONBOARD\"},\"received_at\":null,\"reject_code\":\"STALE_EPOCH\",\"report_seq\":65539,\"reported_at\":\"2026-10-13T00:00:08.100Z\",\"request_result\":\"REJECTED\",\"runtime_state\":\"ACTIVE\",\"schema_version\":\"2.1\",\"state\":\"ACTIVE\",\"time_sync\":\"SYNCED\",\"type\":\"status_report\",\"vehicle_pseudonym\":\"1836e4185d6884d8\",\"vehicle_seq\":0}",
+      "context": {
+        "authOk": true,
+        "lastReportSeq": 65538,
+        "expectedVersion": "4.1.0",
+        "lastCommand": null,
+        "profile": {
+          "featureClass": "ADS",
+          "allowedStates": [
+            "INACTIVE",
+            "AVAILABLE",
+            "ACTIVE",
+            "IN_TRANSITION",
+            "MRC",
+            "TERMINATED",
+            "RECOVERY_PENDING"
+          ],
+          "reportBudgetMs": 2000,
+          "budgetStatus": "ASSUMED",
+          "source": "DEFAULT"
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "violation": null,
+        "action": {
+          "kind": "NEW_COMMAND",
+          "retry": false,
+          "security": false
+        },
+        "projected_runtime": "ACTIVE"
+      }
+    }
+  ],
+  "gap_cases": [
+    {
+      "name": "ADS → UNKNOWN → MRC = 1건",
+      "sequence": [
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "ddtOwner": "ADS",
+          "runtimeState": "ACTIVE"
+        },
+        {
+          "at": "2026-10-13T00:00:00.500Z",
+          "ddtOwner": "UNKNOWN",
+          "runtimeState": "IN_TRANSITION"
+        },
+        {
+          "at": "2026-10-13T00:00:01.000Z",
+          "ddtOwner": "NONE",
+          "runtimeState": "MRC"
+        }
+      ],
+      "budget_ms": 2000,
+      "expected": [
+        {
+          "index": 1,
+          "kind": "OWNER_GAP",
+          "at": "2026-10-13T00:00:00.500Z",
+          "episodeStart": "2026-10-13T00:00:00.500Z",
+          "intervalMs": null
+        }
+      ]
+    },
+    {
+      "name": "ADS → FALLBACK → MRC = 0건",
+      "sequence": [
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "ddtOwner": "ADS",
+          "runtimeState": "ACTIVE"
+        },
+        {
+          "at": "2026-10-13T00:00:00.500Z",
+          "ddtOwner": "FALLBACK",
+          "runtimeState": "IN_TRANSITION"
+        },
+        {
+          "at": "2026-10-13T00:00:01.000Z",
+          "ddtOwner": "FALLBACK",
+          "runtimeState": "MRC"
+        }
+      ],
+      "budget_ms": 2000,
+      "expected": []
+    },
+    {
+      "name": "종료 진행 중 간격 초과 = 1건",
+      "sequence": [
+        {
+          "at": "2026-10-13T00:00:00.000Z",
+          "ddtOwner": "ADS",
+          "runtimeState": "ACTIVE"
+        },
+        {
+          "at": "2026-10-13T00:00:00.500Z",
+          "ddtOwner": "FALLBACK",
+          "runtimeState": "IN_TRANSITION"
+        },
+        {
+          "at": "2026-10-13T00:00:03.500Z",
+          "ddtOwner": "FALLBACK",
+          "runtimeState": "IN_TRANSITION"
+        },
+        {
+          "at": "2026-10-13T00:00:04.000Z",
+          "ddtOwner": "FALLBACK",
+          "runtimeState": "MRC"
+        }
+      ],
+      "budget_ms": 2000,
+      "expected": [
+        {
+          "index": 2,
+          "kind": "REPORT_INTERVAL",
+          "at": "2026-10-13T00:00:03.500Z",
+          "episodeStart": "2026-10-13T00:00:00.500Z",
+          "intervalMs": 3000
+        }
+      ]
+    }
+  ],
+  "restore_cases": [
+    {
+      "name": "재시동 — 서버 차단 1건 빠뜨림",
+      "input": {
+        "newBoot": true,
+        "restore": {
+          "booted_at": "2026-10-13T00:01:40.000Z",
+          "integrity": "OK",
+          "inhibits_restored": []
+        },
+        "serverInhibits": [
+          "ANM-00001"
+        ]
+      },
+      "expected": {
+        "required": true,
+        "verified": false,
+        "code": "INHIBIT_NOT_RESTORED",
+        "missing": [
+          "ANM-00001"
+        ]
+      }
+    },
+    {
+      "name": "재시동 — 무결성 실패",
+      "input": {
+        "newBoot": true,
+        "restore": {
+          "booted_at": "2026-10-13T00:01:40.000Z",
+          "integrity": "FAILED",
+          "inhibits_restored": [
+            "ANM-00001"
+          ]
+        },
+        "serverInhibits": [
+          "ANM-00001"
+        ]
+      },
+      "expected": {
+        "required": true,
+        "verified": false,
+        "code": "INTEGRITY_FAILED",
+        "missing": []
+      }
+    },
+    {
+      "name": "재시동 — restore 없음",
+      "input": {
+        "newBoot": true,
+        "serverInhibits": []
+      },
+      "expected": {
+        "required": true,
+        "verified": false,
+        "code": "RESTORE_MISSING",
+        "missing": []
+      }
+    },
+    {
+      "name": "재시동 — 검증",
+      "input": {
+        "newBoot": true,
+        "restore": {
+          "booted_at": "2026-10-13T00:01:40.000Z",
+          "integrity": "OK",
+          "inhibits_restored": [
+            "ANM-00001"
+          ]
+        },
+        "serverInhibits": [
+          "ANM-00001"
+        ]
+      },
+      "expected": {
+        "required": true,
+        "verified": true,
+        "code": null,
+        "missing": []
+      }
+    }
+  ],
+  "epoch_cases": [
+    {
+      "name": "차단 전 게시본(epoch 없음)이 차단 뒤 도착",
+      "policy_push": {
+        "type": "policy_push",
+        "feature_id": "FEAT-00022",
+        "action": "enable",
+        "scope": {
+          "vehicle_ids": [
+            "ego-01"
+          ]
+        },
+        "issued_at": "2026-10-13T00:00:00.000Z",
+        "reason": "PUB-00001 care_00022_param"
+      },
+      "vehicle_seen_epoch": 1,
+      "expected_reject": "STALE_EPOCH",
+      "schema_errors": []
+    },
+    {
+      "name": "차단 뒤 게시본(epoch 1)",
+      "policy_push": {
+        "type": "policy_push",
+        "feature_id": "FEAT-00022",
+        "action": "enable",
+        "scope": {
+          "vehicle_ids": [
+            "ego-01"
+          ]
+        },
+        "issued_at": "2026-10-13T00:00:00.000Z",
+        "reason": "PUB-00001 care_00022_param",
+        "feature_epoch": 1
+      },
+      "vehicle_seen_epoch": 1,
+      "expected_reject": "NONE",
+      "schema_errors": []
+    }
+  ],
+  "reconcile_cases": [
+    {
+      "name": "오프라인 중 서버 차단 → 재연결 보고에 차단 없음",
+      "intent": {
+        "epoch": 1,
+        "inhibits": [
+          "ANM-00001"
+        ]
+      },
+      "reported": {
+        "featureEpoch": 1,
+        "inhibits": [],
+        "observedAt": "2026-10-13T02:00:00.000Z",
+        "offlineSince": "2026-10-13T01:00:00.000Z"
+      },
+      "expected": {
+        "mismatches": [
+          {
+            "kind": "INHIBIT_MISSING",
+            "ref": "ANM-00001",
+            "expected": "ANM-00001",
+            "reported": null
+          }
+        ],
+        "unconfirmed": {
+          "from": "2026-10-13T01:00:00.000Z",
+          "to": "2026-10-13T02:00:00.000Z"
+        }
+      }
+    }
+  ]
+}

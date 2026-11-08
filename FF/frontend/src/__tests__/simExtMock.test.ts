@@ -66,14 +66,16 @@ describe('모의 외부 시스템 — 바깥에서 바꾸면 플랫폼이 받아
   });
 
   it('Epic 상태 = Lifecycle 전이 요청 — Gate 미판정·없는 상태·매핑 없는 계정은 거부하고 Epic을 되돌린다', async () => {
+    const linked = (await run('extFeatureEpics')).items.find((e: any) => e.key === 'FFE-15').feature as string;
+    const [featureId, featureVersion] = linked.split('@');
     // Gate가 막으면 Feature 전이 핸들러의 문장 그대로, 전이 거부 감사도 남는다
     const g = await act('jira', { key: 'FFE-15', action: 'TRANSITION', status: 'Approved', externalUser: 'lee.approver' });
     expect(g.result.outcome).toBe('REJECTED');
     expect(g.result.summary).toMatch(/^FFE-15 'Approved' 거부 — .*G1/);
     expect(g.item).toMatchObject({ status: 'Proposed', updatedBy: 'feature-platform' });
     expect(g.item.comments.at(-1).text).toMatch(/^플랫폼이 이 상태 변경을 받지 않았습니다 — .*상태를 'Proposed'\(으\)로 되돌립니다\.$/);
-    expect((await audits()).find((a) => a.target === 'FEAT-00013@0.3.0')).toMatchObject({ action: 'FEATURE_TRANSITION PROPOSED→APPROVED', result: 'FAILED', actorId: 'usr-approver' });
-    expect((await run('featureDetail', { params: { id: 'FEAT-00013', ver: '0.3.0' } })).feature.lifecycle).toBe('PROPOSED');
+    expect((await audits()).find((a) => a.target === linked)).toMatchObject({ action: 'FEATURE_TRANSITION PROPOSED→APPROVED', result: 'FAILED', actorId: 'usr-approver' });
+    expect((await run('featureDetail', { params: { id: featureId, ver: featureVersion } })).feature.lifecycle).toBe('PROPOSED');
     const bad = await act('jira', { key: 'FFE-1', action: 'TRANSITION', status: 'Foo', externalUser: 'park.release' });
     expect(bad.result).toMatchObject({ outcome: 'REJECTED', summary: "FFE-1 'Foo' 거부 — 'Foo'은(는) 플랫폼 Lifecycle 상태가 아닙니다." });
     expect(bad.item.status).toBe('In Verification');

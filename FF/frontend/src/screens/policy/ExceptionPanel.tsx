@@ -26,9 +26,9 @@ export function ExceptionPanel({ policy }: { policy: { policyId: string; feature
   const open = policy.status === 'APPROVED' || policy.status === 'DEPLOYED';
   const g = useApi<ReleaseGateDecision>('policyReleaseGate', { params: { id: policy.policyId } }, { enabled: open, retry: false });
   const list = useApi<{ items: ExceptionRow[] }>('exceptionPolicies', { query: { featureId: policy.featureId, featureVersion: policy.featureVersion, active: 'true' } }, { enabled: open, retry: false });
-  if (!open || !g.data) return null;
+  if (!open || !g.data || typeof g.data.allowed !== 'boolean' || !Array.isArray(g.data.pendingGates)) return null;
   const d = g.data;
-  const active = list.data?.items ?? [];
+  const active = Array.isArray(list.data?.items) ? list.data.items : [];
   const scope = policy.exceptionScope;
   return (
     <Panel title={X.panel.title} id="release-exception">

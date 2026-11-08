@@ -199,7 +199,7 @@ describe('개인정보 요청·외부 연계 충돌·실험·사고', () => {
     expect(out.result.outcome).toBe('APPLIED');
     expect((await run('extConflicts', { query: { status: 'OPEN' } })).items).toHaveLength(open.items.length - 1);
     const sync = await run('extSync');
-    expect(sync.items.find((s: any) => s.system === c.system).conflicts).toBe(0);
+    expect(sync.items.find((s: any) => s.system === c.system).conflicts).toBe(open.items.filter((row: any) => row.system === c.system).length - 1);
     await expect(run('resolveExtConflict', { params: { id: String(c.conflictId) }, role: 'coordinator', body: { choose: 'EXTERNAL', reason: '다시' } })).rejects.toMatchObject({ status: 409 });
   });
 

@@ -3,7 +3,7 @@
 // 시연 미러(DEMO_MIRROR)는 FF_FLAG_DEMO_REPO 아래의 로컬 Git 저장소를 읽는다(쓰지 않는다).
 import { Injectable } from '@nestjs/common';
 import { execFileSync } from 'node:child_process';
-import { createHmac, createPublicKey, createSign, createVerify, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, createPublicKey, createSign, createVerify, timingSafeEqual } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import type { FlagRepository } from '@ff/contracts';
@@ -42,12 +42,18 @@ export interface PullRequestFile {
   content: string | null;
 }
 
+type PullRequestInput = { branch: string; base: string; title: string; body: string; message: string; files: PullRequestFile[] };
+const gitSha = (value: unknown): string => {
+  if (typeof value !== 'string' || !/^[a-f0-9]{40}$/.test(value)) throw new GithubError('GitHub 커밋·트리 식별자가 올바르지 않습니다.');
+  return value;
+};
+
 /** 저장소 읽기·쓰기 창구 — 모드별 구현 */
 export interface FlagGitPort {
   readonly canWrite: boolean;
   headOf(repo: FlagRepository, branch: string): Promise<string>;
   files(repo: FlagRepository, commit: string): Promise<FlagSourceFile[]>;
-  createPullRequest(repo: FlagRepository, pr: { branch: string; base: string; title: string; body: string; message: string; files: PullRequestFile[] }): Promise<{ number: number; url: string; headCommit: string }>;
+  createPullRequest(repo: FlagRepository, pr: PullRequestInput): Promise<{ number: number; url: string; headCommit: string }>;
   checkRun(repo: FlagRepository, run: { headSha: string; conclusion: 'success' | 'failure'; title: string; summary: string }): Promise<void>;
 }
 
@@ -120,19 +126,82 @@ class GithubAppPort implements FlagGitPort {
     return out;
   }
 
-  async createPullRequest(repo: FlagRepository, pr: { branch: string; base: string; title: string; body: string; message: string; files: PullRequestFile[] }) {
-    const baseSha = await this.headOf(repo, pr.base);
-    const baseCommit = await this.call(repo, 'GET', `/git/commits/${baseSha}`);
+  private async treeFor(repo: FlagRepository, parent: string, files: PullRequestFile[]) {
+    const baseCommit = await this.call(repo, 'GET', `/git/commits/${parent}`);
+    if (baseCommit.sha !== parent) throw new GithubError('GitHub 기준 커밋이 일치하지 않습니다.');
     const tree: { path: string; mode: string; type: string; sha: string | null }[] = [];
-    for (const f of pr.files) {
+    for (const f of files) {
       if (f.content === null) tree.push({ path: f.path, mode: '100644', type: 'blob', sha: null });
-      else tree.push({ path: f.path, mode: '100644', type: 'blob', sha: (await this.call(repo, 'POST', '/git/blobs', { content: f.content, encoding: 'utf-8' })).sha });
+      else tree.push({ path: f.path, mode: '100644', type: 'blob', sha: gitSha((await this.call(repo, 'POST', '/git/blobs', { content: f.content, encoding: 'utf-8' })).sha) });
     }
-    const newTree = await this.call(repo, 'POST', '/git/trees', { base_tree: baseCommit.tree.sha, tree });
-    const commit = await this.call(repo, 'POST', '/git/commits', { message: pr.message, tree: newTree.sha, parents: [baseSha] });
-    await this.call(repo, 'POST', '/git/refs', { ref: `refs/heads/${pr.branch}`, sha: commit.sha });
-    const opened = await this.call(repo, 'POST', '/pulls', { title: pr.title, head: pr.branch, base: pr.base, body: pr.body });
-    return { number: Number(opened.number), url: String(opened.html_url), headCommit: String(commit.sha) };
+    return gitSha((await this.call(repo, 'POST', '/git/trees', { base_tree: gitSha(baseCommit.tree?.sha), tree })).sha);
+  }
+
+  private async branchOrMissing(repo: FlagRepository, branch: string) {
+    try { return gitSha(await this.headOf(repo, branch)); }
+    catch (e) { if (e instanceof GithubError && e.status === 404) return null; throw e; }
+  }
+
+  /** A retry may reuse only our exact intent and expected tree. Never move/force an existing ref. */
+  private async verifiedBranch(repo: FlagRepository, pr: PullRequestInput, head: string, message: string, base: string) {
+    const c = await this.call(repo, 'GET', `/git/commits/${head}`);
+    if (c.sha !== head || c.message !== message || !Array.isArray(c.parents) || c.parents.length !== 1) throw new GithubError('기존 PR 브랜치의 생성 의도가 다릅니다 — 브랜치를 덮어쓰지 않습니다.', 409);
+    const parent = gitSha(c.parents[0]?.sha);
+    if (parent !== base) {
+      const comparison = await this.call(repo, 'GET', `/compare/${parent}...${base}`);
+      if (!['ahead', 'identical'].includes(comparison.status) || comparison.merge_base_commit?.sha !== parent) throw new GithubError('기존 PR의 기준 커밋이 대상 브랜치 이력과 다릅니다.', 409);
+    }
+    const expectedTree = await this.treeFor(repo, parent, pr.files);
+    if (c.tree?.sha !== expectedTree) throw new GithubError('기존 PR 브랜치의 파일 트리가 예상과 다릅니다 — 브랜치를 덮어쓰지 않습니다.', 409);
+    return head;
+  }
+
+  private pullResult(repo: FlagRepository, pr: PullRequestInput, head: string, opened: any) {
+    const fullName = repoPath(repo.repository);
+    if (!Number.isSafeInteger(opened?.number) || opened.number < 1 || opened.state !== 'open' || opened.head?.sha !== head || opened.head?.ref !== pr.branch || opened.base?.ref !== pr.base || opened.head?.repo?.full_name?.toLowerCase() !== fullName.toLowerCase() || opened.base?.repo?.full_name?.toLowerCase() !== fullName.toLowerCase() || opened.title !== pr.title || (opened.body ?? '') !== pr.body || opened.html_url !== `https://github.com/${fullName}/pull/${opened.number}`) throw new GithubError('기존/생성된 PR의 저장소·브랜치·커밋·의도가 예상과 다릅니다.', 409);
+    return { number: opened.number as number, url: opened.html_url as string, headCommit: head };
+  }
+
+  private async openPull(repo: FlagRepository, pr: PullRequestInput, head: string) {
+    const query = new URLSearchParams({ state: 'open', head: `${repoPath(repo.repository).split('/')[0]}:${pr.branch}`, base: pr.base, per_page: '100' });
+    const found = await this.call(repo, 'GET', `/pulls?${query}`);
+    // Exact head/base has at most one open PR. Ambiguous/invalid replies never trigger another POST.
+    if (!Array.isArray(found) || found.length > 1) throw new GithubError('기존 PR 조회가 모호합니다 — 중복 PR을 만들지 않습니다.', 409);
+    return found.length ? this.pullResult(repo, pr, head, found[0]) : null;
+  }
+
+  async createPullRequest(repo: FlagRepository, pr: PullRequestInput) {
+    const files = [...pr.files].sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
+    if (new Set(files.map((f) => f.path)).size !== files.length) throw new GithubError('PR에 중복 파일 경로가 있습니다.');
+    const intent = createHash('sha256').update(JSON.stringify({ version: 1, repository: repoPath(repo.repository).toLowerCase(), branch: pr.branch, base: pr.base, title: pr.title, body: pr.body, message: pr.message, files })).digest('hex');
+    const message = `${pr.message}\n\nFF-PR-Intent: ${intent}`;
+    const base = gitSha(await this.headOf(repo, pr.base));
+    let head = await this.branchOrMissing(repo, pr.branch);
+    if (head) head = await this.verifiedBranch(repo, pr, head, message, base);
+    else {
+      const tree = await this.treeFor(repo, base, files);
+      head = gitSha((await this.call(repo, 'POST', '/git/commits', { message, tree, parents: [base] })).sha);
+      try { await this.call(repo, 'POST', '/git/refs', { ref: `refs/heads/${pr.branch}`, sha: head }); }
+      catch (e) {
+        if (!(e instanceof GithubError) || ![409, 422].includes(e.status ?? 0)) throw e;
+        const raced = await this.branchOrMissing(repo, pr.branch);
+        if (!raced) throw e;
+        head = await this.verifiedBranch(repo, pr, raced, message, base);
+      }
+    }
+    const existing = await this.openPull(repo, pr, head);
+    if (await this.branchOrMissing(repo, pr.branch) !== head) throw new GithubError('PR 생성 중 브랜치가 변경됐습니다.', 409);
+    if (existing) return existing;
+    try {
+      const opened = await this.call(repo, 'POST', '/pulls', { title: pr.title, head: pr.branch, base: pr.base, body: pr.body });
+      return this.pullResult(repo, pr, head, opened);
+    } catch (e) {
+      // The server may have accepted a POST whose response was lost. Do not hide auth/permission errors.
+      if (!(e instanceof GithubError) || (e.status !== null && e.status < 500 && ![408, 409, 422].includes(e.status))) throw e;
+      const recovered = await this.openPull(repo, pr, head);
+      if (recovered && await this.branchOrMissing(repo, pr.branch) === head) return recovered;
+      throw e;
+    }
   }
 
   async checkRun(repo: FlagRepository, run: { headSha: string; conclusion: 'success' | 'failure'; title: string; summary: string }) {

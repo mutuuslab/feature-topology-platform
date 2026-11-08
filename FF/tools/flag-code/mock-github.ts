@@ -18,7 +18,7 @@ export interface MockGithub {
   issueOidc(claims: Record<string, unknown>): string;
   /** FF에 webhook을 보낸다(X-Hub-Signature-256) */
   webhook(target: string, event: string, payload: unknown, opts: { secret: string; deliveryId?: string; badSignature?: boolean }): Promise<{ status: number; body: any }>;
-  readonly pulls: { repo: string; number: number; title: string; head: string; base: string; body: string; html_url: string }[];
+  readonly pulls: { repo: string; number: number; title: string; head: string; base: string; body: string; html_url: string; state?: 'open' | 'closed' }[];
   readonly checkRuns: { repo: string; name: string; head_sha: string; conclusion: string; output: { title: string; summary: string } }[];
   readonly tokens: string[];
 }
@@ -106,6 +106,17 @@ export async function startMockGithub(opts: { port?: number; host?: string; appP
     const r = refs.get(repo);
     if (!r) return send(404, { message: 'Not Found' });
     let x: RegExpExecArray | null;
+    if (req.method === 'GET' && (x = /^\/compare\/([0-9a-f]{40})\.\.\.([0-9a-f]{40})$/.exec(rest))) {
+      const [, base, head] = x;
+      if (!commits.has(base) || !commits.has(head)) return send(404, { message: 'Not Found' });
+      const ancestor = (a: string, b: string): boolean => {
+        const seen = new Set<string>(), pending = [b];
+        while (pending.length) { const c = pending.pop()!; if (c === a) return true; if (!seen.has(c)) { seen.add(c); pending.push(...(commits.get(c)?.parents ?? [])); } }
+        return false;
+      };
+      const status = base === head ? 'identical' : ancestor(base, head) ? 'ahead' : ancestor(head, base) ? 'behind' : 'diverged';
+      return send(200, { status, merge_base_commit: { sha: ['identical', 'ahead'].includes(status) ? base : head } });
+    }
     if (req.method === 'GET' && (x = /^\/git\/ref\/heads\/(.+)$/.exec(rest))) {
       const s = r.get(decodeURIComponent(x[1]));
       return s ? send(200, { ref: `refs/heads/${x[1]}`, object: { sha: s, type: 'commit' } }) : send(404, { message: 'Not Found' });
@@ -135,11 +146,21 @@ export async function startMockGithub(opts: { port?: number; host?: string; appP
       r.set(branch, body.sha);
       return send(201, { ref: body.ref, object: { sha: body.sha } });
     }
+    const pullView = (p: MockGithub['pulls'][number]) => ({ ...p, state: p.state ?? 'open', head: { ref: p.head, sha: r.get(p.head), repo: { full_name: repo } }, base: { ref: p.base, sha: r.get(p.base), repo: { full_name: repo } } });
+    if (req.method === 'GET' && rest === '/pulls') {
+      const head = url.searchParams.get('head');
+      const base = url.searchParams.get('base');
+      const state = url.searchParams.get('state') ?? 'open';
+      const found = pulls.filter((p) => p.repo === repo && (!head || head === `${repo.split('/')[0]}:${p.head}`) && (!base || p.base === base) && (state === 'all' || (p.state ?? 'open') === state));
+      const page = Number(url.searchParams.get('page') ?? 1), size = Number(url.searchParams.get('per_page') ?? 30);
+      return send(200, found.slice((page - 1) * size, page * size).map(pullView));
+    }
     if (req.method === 'POST' && rest === '/pulls') {
+      if (pulls.some((p) => p.repo === repo && p.head === body.head && p.base === body.base && (p.state ?? 'open') === 'open')) return send(422, { message: 'A pull request already exists' });
       const number = pulls.filter((p) => p.repo === repo).length + 1;
       const pr = { repo, number, title: body.title, head: body.head, base: body.base, body: body.body ?? '', html_url: `https://github.com/${repo}/pull/${number}` };
       pulls.push(pr);
-      return send(201, { number, html_url: pr.html_url, head: { ref: body.head, sha: r.get(body.head) }, base: { ref: body.base, sha: r.get(body.base) } });
+      return send(201, pullView(pr));
     }
     if (req.method === 'POST' && rest === '/check-runs') {
       checkRuns.push({ repo, name: body.name, head_sha: body.head_sha, conclusion: body.conclusion, output: body.output });

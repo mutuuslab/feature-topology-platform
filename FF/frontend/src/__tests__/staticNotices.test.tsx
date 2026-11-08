@@ -134,12 +134,13 @@ describe('정적 공개본 — 정적 안내 대신 데이터', () => {
     const lc = document.querySelector('.feature-lifecycle-actions') as HTMLElement;
     // 작성자 — 정의 승인은 승인자 몫(역할 막힘 사유), 읽기 전용 안내는 없다
     expect(lc.textContent).not.toContain(ko.page.readOnly);
-    expect(within(lc).getByRole('button', { name: /정의 승인|APPROVED/ })).toHaveProperty('disabled', true);
+    // 전이와 P10의 '정의 승인 반려'는 별도 행동이다 — 정확한 전이 이름으로 역할 판정을 확인한다.
+    expect(within(lc).getByRole('button', { name: 'APPROVED로 전이', exact: true })).toHaveProperty('disabled', true);
     cleanup();
     // 승인자 — 받아 둔 상세에는 역할 막힘이 찍혀 있어도 지금 역할로 다시 판정해 누를 수 있다
     mount('/features/FEAT-00013/0.3.0', '/features/:id/:ver', <FeatureDetail />, 'approver');
     await screen.findByRole('heading', { level: 1 });
     const lc2 = document.querySelector('.feature-lifecycle-actions') as HTMLElement;
-    expect(within(lc2).getByRole('button', { name: /정의 승인|APPROVED/ })).toHaveProperty('disabled', false);
+    expect(within(lc2).getByRole('button', { name: 'APPROVED로 전이', exact: true })).toHaveProperty('disabled', false);
   });
 });

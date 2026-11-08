@@ -176,7 +176,7 @@ export interface RuleItem {
 const RULE_GLYPH = {
   pass: 'PASS',
   fail: 'FAIL',
-  pending: 'UNJUDGED',
+  pending: 'REVIEW',
   na: 'NA',
 } as const;
 

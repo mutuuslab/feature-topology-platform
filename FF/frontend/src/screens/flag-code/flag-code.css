@@ -9,12 +9,17 @@
 
 /* 상태 표식 — 앞 사각 표식만 색, 글자는 본문 색 */
 .fc-status { display: inline-flex; align-items: center; gap: var(--sp-1h); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap; padding: 1px var(--sp-1h); border-radius: var(--r-sm); background: var(--surface-3); color: var(--ink); }
-.fc-status::before { content: ''; width: var(--sp-2); height: var(--sp-2); border-radius: var(--r-sm); background: var(--c, var(--muted)); flex: none; }
+.fc-status::before { content: ''; width: var(--sp-2); height: var(--sp-2); border-radius: 50%; background: var(--c, var(--mark-neutral)); flex: none; }
 .fc-status[data-sev='BLOCKER'] { --c: var(--danger); background: var(--danger-soft); }
 .fc-status[data-sev='WARNING'] { --c: var(--warn); background: var(--warn-soft); }
 .fc-status[data-sev='INFO'] { --c: var(--info); background: var(--info-soft); }
 .fc-status[data-sev='OK'] { --c: var(--ok); background: var(--ok-soft); }
 .fc-status[data-sev='NONE'] { --c: var(--faint); }
+.fc-status[data-sev='BLOCKER']::before { border-radius: 0; }
+.fc-status[data-sev='WARNING']::before { background: transparent; box-shadow: inset 0 0 0 2px var(--mark-warn); }
+.fc-status[data-sev='INFO']::before { border-radius: 0; transform: rotate(45deg); background: var(--mark-info); }
+.fc-status[data-sev='OK']::before { background: var(--mark-ok); }
+.fc-status { height: 22px; border: 1px solid color-mix(in srgb, var(--c) 35%, transparent); background: color-mix(in srgb, var(--c) 10%, var(--surface)); color: color-mix(in srgb, var(--c) 72%, var(--ink)); }
 .fc-waiver { font-size: var(--fs-xs); color: var(--ink-2); white-space: nowrap; }
 
 /* 5원천 칸 */
@@ -60,8 +65,8 @@
 
 /* 대사판 — 상태별 열 */
 .fc-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr)); gap: var(--sp-4); align-items: start; }
-.fc-col { border: 1px solid var(--line-strong); background: var(--surface); min-width: 0; }
-.fc-col > header { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--line); border-top: 3px solid var(--c, var(--line)); }
+.fc-col { border-top: 1px solid var(--line-strong); background: var(--surface); min-width: 0; }
+.fc-col > header { display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--line); }
 .fc-col[data-sev='BLOCKER'] { --c: var(--danger); }
 .fc-col[data-sev='WARNING'] { --c: var(--warn); }
 .fc-col[data-sev='INFO'] { --c: var(--info); }
@@ -74,6 +79,12 @@
 .fc-card__top a { font-family: var(--font-mono); font-weight: 700; font-size: var(--fs-sm); }
 .fc-card p { margin: 0; font-size: var(--fs-xs); color: var(--ink-2); }
 .fc-card__meta { display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); color: var(--muted); }
+.fc-card > .fc-actions { border-top: 1px solid var(--line); padding-top: var(--sp-2); margin-top: var(--sp-1); }
+.fc-card > .fc-actions:empty { display: none; }
+.fc-card__top + p { font-size: var(--fs-sm); color: var(--ink); }
+.fc-card__action { border-top: 1px solid var(--line); padding-top: var(--sp-2); font-size: var(--fs-xs); }
+.fc-card__action summary { color: var(--accent); cursor: pointer; min-height: 24px; }
+.fc-card__action[open] .fc-actions { margin-top: var(--sp-2); }
 
 /* 어긋남 목록 */
 .fc-findings { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }

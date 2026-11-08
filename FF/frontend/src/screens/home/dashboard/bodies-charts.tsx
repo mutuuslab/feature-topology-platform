@@ -14,7 +14,7 @@ import './operation-overview.css';
 const B = dashboard.board;
 const Bd = B.body;
 const F = B.fields;
-const MAX_SLICES = 7;
+const MAX_SLICES = 4;
 
 /** 큰 것부터 MAX_SLICES개, 나머지는 '기타' */
 function slices(rows: Row[], field: FieldKey) {

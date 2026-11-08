@@ -34,6 +34,8 @@
 .operation-timeline__axis { stroke: var(--chart-grid); }
 .operation-timeline__point { fill: var(--mark-info); stroke: var(--surface); stroke-width: 1; }
 .operation-timeline__point[data-failed='true'] { fill: var(--mark-danger); }
+.operation-timeline__legend { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3); margin-block: var(--sp-2); }
+.operation-timeline__legend > span { display: inline-flex; align-items: center; gap: var(--sp-1); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--muted); }
 .operation-timeline a:focus-visible .operation-timeline__point { stroke: var(--focus); stroke-width: 3; }
 .operation-timeline__label { fill: var(--ink-2); font-size: 12px; }
 .operation-timeline__tick { fill: var(--muted); font-size: 11px; font-family: var(--font-mono); }
@@ -54,7 +56,7 @@
 .operation-table__policy a { display: block; font-size: var(--fs-xs); overflow-wrap: anywhere; }
 .operation-overview__footer { display: flex; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; align-items: center; font-size: var(--fs-xs); color: var(--muted); }
 .jd-pie__center { fill: var(--surface); }
-.jd-pie__total { fill: var(--ink); text-anchor: middle; font-size: 26px; font-weight: 650; font-family: var(--font-sans); }
+.jd-pie__total { fill: var(--ink); text-anchor: middle; font-size: 26px; font-weight: 650; font-family: var(--font-mono); }
 .jd-pie__total-label { fill: var(--muted); text-anchor: middle; font-size: 12px; font-family: var(--font-sans); }
 @media (max-width: 700px) { .operation-overview { padding: var(--sp-4); } .operation-filter label { flex: 1 1 140px; } }
 /* 최근 회신 시각 — 숫자 글꼴 */

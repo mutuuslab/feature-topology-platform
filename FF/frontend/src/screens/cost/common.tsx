@@ -114,7 +114,7 @@ export function CostChip({ id }: { id: string }) {
 }
 
 export function CostStatusBadge({ status }: { status: CostProjectStatus }) {
-  const v = { neutral: 'UNJUDGED', warn: 'PENDING', ok: 'PASS' } as const;
+  const v = { neutral: 'UNJUDGED', warn: 'CONDITIONAL', ok: 'PASS' } as const;
   return <VerdictBadge value={v[COST_STATUS_TONE[status]]} label={COST_STATUS_LABEL[status]} />;
 }
 

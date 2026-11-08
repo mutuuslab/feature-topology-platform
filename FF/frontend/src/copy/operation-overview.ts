@@ -27,7 +27,7 @@ export const operationOverview = {
   preparationReason: { SYNC_UNKNOWN: '같은 정책·개정의 동기화 성공 기록 미확인', SYNC_LATE: '게시본 생성이 동기화 성공 기록보다 앞섬 · 원천 기록 순서 확인 필요', TIME_UNKNOWN: '원천 시각 미확인 · 단계 순서 확인 필요' },
   noEvents: '조회된 시각 기록이 없습니다.', noPhase: '기록 없음', restricted: '조회 미확인',
   records: (n: number) => `${n}건`, invalidTimes: (n: number) => `시각 미확인 기록 ${n}건은 시간축에서 제외했습니다.`,
-  legend: '마지막 수신값 범례', timelineSize: '점 크기는 같은 분에 묶인 기록 수, 사각은 실패가 섞인 묶음입니다.',
+  legend: '마지막 수신값 범례', timelineSize: '점 크기는 같은 분에 묶인 기록 수, 사각은 실패가 섞인 묶음입니다.', timelineFailed: '실패 포함',
   recent: '최근 연결 기록', snapshot: '조회 시점', map: 'Flag 지도', deployments: '서명 배포·회신',
   syncRecent: '복제 기록은 조회된 최근 최대 200건 기준입니다.',
   event: (phase: string, at: string, count: number) => `${phase} ${at} ${count}건`,

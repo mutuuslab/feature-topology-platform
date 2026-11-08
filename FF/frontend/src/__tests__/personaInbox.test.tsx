@@ -248,16 +248,23 @@ describe('기획 스튜디오 — Sign-off 대기·내 Feature·열 수·인계 
     expect(document.querySelectorAll('.ws-work__doc').length).toBe(work.length);
   });
 
-  it('P2-5 역할별 — 같은 스튜디오에서 approver는 정의 승인 대기·Feature DB 검토 대기가 핵심 메시지와 내 차례 칸에', async () => {
+  it('기획팀 approver는 팀의 정의 승인만 집계하고 시스템엔지니어링팀의 기준 검토는 섞지 않는다', async () => {
     handler = studioApi;
     mount({ role: 'approver', department: 'DEP-PDP' }, '/', '/', <HomeScreen />);
     await waitFor(() => expect(document.querySelector('[data-key-message]')?.textContent).toContain('정의 승인 대기'));
-    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('2'); // 정의 승인 1 + Feature DB 검토 1
+    expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('1');
     const tiles = document.querySelector('[data-role-queues]') as HTMLElement;
     expect(tiles.querySelector('[data-queue="definition"] a')?.getAttribute('href')).toBe('/features/FEAT-00191/0.1.0');
-    expect(tiles.querySelector('[data-queue="refReview"] a')?.getAttribute('href')).toBe('/master/feature-db/changes/CR-2026-010');
+    expect(tiles.querySelector('[data-queue="refReview"] .ws-fdb__n')?.textContent).toBe('0');
+    expect(tiles.querySelector('a[href="/master/feature-db/changes/CR-2026-010"]')).toBeNull();
     // 작성자 전용 Sign-off 대기 목록은 approver 홈에도 보이지만 approver의 '내 Feature'는 없다
     expect(screen.queryByRole('region', { name: '내 Feature' })).toBeNull();
+  });
+
+  it('시스템엔지니어링팀 approver는 팀의 기준 검토 행을 실제 상세로 연결한다', async () => {
+    handler = studioApi;
+    mount({ role: 'approver', department: 'DEP-SE' }, '/', '/', <HomeScreen />);
+    await waitFor(() => expect(document.querySelector('[data-role-queues] [data-queue="refReview"] a[href="/master/feature-db/changes/CR-2026-010"]')).not.toBeNull());
   });
 
   it('P2-5 엔지니어링 콘솔 — 출시 담당(coordinator)은 출시 가능·배포 대기가 핵심 메시지', async () => {

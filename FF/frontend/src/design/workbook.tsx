@@ -67,7 +67,10 @@ function TreeItems({ items, depth }: { items: WorkbookTreeItem[]; depth: number 
 
 function FilterGroup({ f }: { f: WorkbookFilter }) {
   const id = useId();
+  const [expanded, setExpanded] = useState(false);
   const picked = new Set(f.selected);
+  const ordered = [...f.options].sort((a, b) => Number(picked.has(b.value)) - Number(picked.has(a.value)) || Number(a.count === 0) - Number(b.count === 0));
+  const visible = expanded ? ordered : ordered.slice(0, Math.max(6, picked.size));
   const toggle = (v: string) => f.onChange(picked.has(v) ? f.selected.filter((x) => x !== v) : [...f.selected, v]);
   return (
     <div className="wb-filter" role="group" aria-labelledby={id} data-active={picked.size ? '' : undefined}>
@@ -83,7 +86,7 @@ function FilterGroup({ f }: { f: WorkbookFilter }) {
         )}
       </div>
       <ul className="wb-filter__list">
-        {f.options.map((o) => {
+        {visible.map((o) => {
           const on = picked.has(o.value);
           const text = o.text ?? (typeof o.label === 'string' ? o.label : o.value);
           return (
@@ -97,6 +100,7 @@ function FilterGroup({ f }: { f: WorkbookFilter }) {
           );
         })}
       </ul>
+      {ordered.length > Math.max(6, picked.size) && <button className="wb-filter__clear" type="button" aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>{expanded ? W.less : W.more(ordered.length - visible.length)}</button>}
     </div>
   );
 }
@@ -157,6 +161,7 @@ export function Workbook({ label, treeLabel = W.tree, tree, metrics, filters, on
             </button>
           </div>
         )}
+        <p className="wb-scroll-hint">{W.tableHint}</p>
         <div className="wb-table">{children}</div>
       </div>
       <aside className="wb-filters" aria-label={W.filters} data-open={filtersOpen ? '' : undefined}>

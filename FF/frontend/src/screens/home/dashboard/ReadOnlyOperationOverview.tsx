@@ -54,7 +54,12 @@ function TimeDistribution({ points, recent, ready }: { points: OperationTimeline
       })}
       <text x="150" y="157" className="operation-timeline__tick">{stamp(new Date(min).toISOString())}</text>{max !== min && <text x="790" y="157" textAnchor="end" className="operation-timeline__tick">{stamp(new Date(max).toISOString())}</text>}
     </svg>}
-    <details className="ov-basis"><summary>{O.basis}</summary><p className="operation-note">{O.timelineBasis} {O.syncRecent} {O.timelineSize}</p></details>
+    {!!points.length && <div className="operation-timeline__legend" aria-label={O.timelineSize}>
+      {[1, 10, 50].map((n) => <span key={n}><svg width="26" height="26" aria-hidden="true"><circle cx="13" cy="13" r={Math.min(12, 4 + Math.sqrt(n))} className="operation-timeline__point" /></svg>{O.records(n)}</span>)}
+      <span><svg width="26" height="26" aria-hidden="true"><rect x="6" y="6" width="14" height="14" className="operation-timeline__point" data-failed="true" /></svg>{O.timelineFailed}</span>
+    </div>}
+    <p className="operation-note">{O.timelineSize}</p>
+    <details className="ov-basis"><summary>{O.basis}</summary><p className="operation-note">{O.timelineBasis} {O.syncRecent}</p></details>
     <div className="operation-recent" role="group" aria-label={O.recent}>{recent.map((event, i) => <Link key={i} to={event.to}>{`${O.phase[event.phase]} · ${stamp(event.at)} · ${event.label}`}</Link>)}</div>
   </section>;
 }

@@ -63,9 +63,9 @@ function FlagCard({ row, repos, prs }: { row: FlagCoverageRow; repos: FlagReposi
         {f?.dueAt && <span>{`${T.col.due} ${when(f.dueAt)}`}</span>}
         {row.waiver && <span>{row.waiver.state === 'APPROVED' ? T.common.waived : T.common.waiverPending}</span>}
       </div>
-      <span className="fc-actions">
+      <details className="fc-card__action"><summary>{T.col.action}</summary><span className="fc-actions">
         <NextAction row={row} repos={repos} prs={prs} />
-      </span>
+      </span></details>
     </li>
   );
 }

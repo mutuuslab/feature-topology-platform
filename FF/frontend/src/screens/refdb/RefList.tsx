@@ -158,7 +158,6 @@ export function FeatureDbScreen() {
 
   const n = summary?.rows ?? total;
   const metrics = [
-    { key: 'rows', label: E.m.rows, value: nf(n), hint: qd ? E.m.rowsHint(qd.total) : undefined, lead: true },
     { key: 'scope', label: E.m.scope, value: summary ? `${summary.domains} · ${summary.components}` : '—' },
     { key: 'sources', label: E.m.sources, value: summary ? nf(summary.sources) : '—', hint: E.m.sourcesHint },
     { key: 'asilCD', label: E.m.asilCD, value: summary ? nf(summary.asilCD) : '—', hint: summary ? E.m.share(summary.asilCD, n) : undefined },
@@ -174,16 +173,18 @@ export function FeatureDbScreen() {
         lead={T.lead}
         message={{
           tone: 'neutral',
-          // 발행본 행 수 — 요청 중 행은 따로(머리 숫자가 발행 해시·내보내기 범위와 같다, P5-7)
-          value: qd ? (qd.published ?? qd.total).toLocaleString('ko-KR') : '—',
-          text: qd?.pending ? QC.keyPending(qd.pending) : QC.key,
+          value: list.isPending ? '—' : nf(n),
+          text: E.m.rows,
           status: qd ? { label: awaiting ? T.awaiting : T.noneAwaiting, tone: awaiting ? 'warn' : 'neutral' } : undefined,
         }}
         actions={<TextLink to="/master/feature-db/changes">{T.toChanges}</TextLink>}
       />
       {qd && (
+        <>
+        <SummaryLine label={T.quality} items={[{ k: T.q.noSource, v: qd.noSource }, { k: QC.attrMissing, v: qd.attrMissing ?? 0 }, { k: T.q.awaiting, v: qd.awaitingPublish }, { k: T.q.release, v: qd.latestRelease ?? '—' }]} />
+        <details><summary>{QC.moreStats}</summary>
         <SummaryLine
-          label={T.quality}
+          label={QC.moreStats}
           items={[
             ...REF_STATUSES.map((s) => ({ k: REF_STATUS_POLICY[s].ko, v: qd.byStatus[s] ?? 0 })),
             ...(qd.statusMissing ? [{ k: T.q.statusMissing, v: qd.statusMissing }] : []),
@@ -195,6 +196,8 @@ export function FeatureDbScreen() {
             { k: T.q.release, v: qd.latestRelease ?? '—' },
           ]}
         />
+        </details>
+        </>
       )}
       <Panel>
         {/* 기준 행 | 출처(정기 점검) — 출처 점검 기한 알림이 ?tab=sources&source=S##로 연다 */}

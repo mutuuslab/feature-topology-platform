@@ -13,4 +13,6 @@ export const workbook = {
   chip: (axis: string, value: string, n: number | undefined) => `${axis} ${value}${n === undefined ? '' : ` ${n.toLocaleString('ko-KR')}건`}`,
   treeItem: (name: string, n: number | undefined) => `${name}${n === undefined ? '' : ` ${n.toLocaleString('ko-KR')}건`}`,
   metrics: '지금 조건의 요약',
+  tableHint: '좁은 화면에서는 표 안을 좌우로 이동해 모든 열을 확인하세요.',
+  more: (n: number) => `${n}개 더 보기`, less: '접기',
 };

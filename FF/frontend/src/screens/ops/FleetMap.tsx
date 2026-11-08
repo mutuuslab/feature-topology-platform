@@ -88,10 +88,10 @@ interface DetailResponse {
 
 export function StateChip({ cssVar, label }: { cssVar: string; label: string }) {
   // 지도의 속이 빈 자동차(권한 없음)와 같게 칩도 테두리만
-  const hollow = cssVar === HOLLOW_VAR;
+  const hollow = cssVar === HOLLOW_VAR || cssVar === ACTIVATION_VAR.UNKNOWN;
   return (
     <span className="fm-chip">
-      <span className="fm-chip__dot" data-hollow={hollow || undefined} style={hollow ? { border: `2px solid var(${cssVar})` } : { background: `var(${cssVar})` }} aria-hidden="true" />
+      <span className="fm-chip__dot" data-hollow={hollow || undefined} style={{ ...(hollow ? { border: `2px solid var(${cssVar})` } : { background: `var(${cssVar})` }), ...(cssVar === ACTIVATION_VAR.DISABLED ? { borderRadius: 0 } : {}) }} aria-hidden="true" />
       {label}
     </span>
   );

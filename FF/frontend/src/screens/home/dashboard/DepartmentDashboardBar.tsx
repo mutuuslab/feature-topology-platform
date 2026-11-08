@@ -27,7 +27,7 @@ export default function DepartmentDashboardBar({ api, role }: { api: DashboardsA
   useEffect(() => {
     const mode = search.get('dashboard');
     const key = `${location.key}:${api.departmentId}:${mode}`;
-    if (!api.departmentId || applied.current === key || !mode || mode === 'department' && !q.data || api.listPending) return;
+    if (!api.departmentId || applied.current === key || !['department', 'role'].includes(mode ?? '') || mode === 'department' && !q.data || api.listPending) return;
     applied.current = key;
     api.select(mode === 'department' && q.data?.mode === 'DEPARTMENT' && q.data.dashboardId && api.items.some((d) => d.id === q.data!.dashboardId) ? q.data.dashboardId : SYSTEM_ID);
   }, [location.key, api.departmentId, api.listPending, api.items, api.select, search, q.data]);

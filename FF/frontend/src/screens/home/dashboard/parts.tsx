@@ -109,4 +109,4 @@ export function TableFoot({ shown, total, to }: { shown: number; total: number; 
 }
 
 /** 차트 범주 색(8) — 판 토큰 */
-export const SERIES = ['var(--jd-c1)', 'var(--jd-c2)', 'var(--jd-c3)', 'var(--jd-c4)', 'var(--jd-c5)', 'var(--jd-c6)', 'var(--jd-c7)', 'var(--jd-c8)'];
+export const SERIES = ['var(--viz-1)', 'var(--viz-2)', 'var(--viz-3)', 'var(--viz-4)', 'var(--viz-5)', 'var(--viz-6)', 'var(--mark-neutral)'];

@@ -20,10 +20,10 @@ const WINDOWS: Win[] = ['1h', '24h', '7d'];
 const VARIANT_COLOR = ['var(--viz-1)', 'var(--viz-3)', 'var(--viz-2)', 'var(--info)', 'var(--warn)'];
 const FALLBACK_COLOR: Record<string, string> = {
   DEFAULT_NO_SNAPSHOT: 'var(--viz-1)',
-  TTL_EXPIRED: 'var(--warn)',
-  SIGNATURE_INVALID: 'var(--danger)',
+  TTL_EXPIRED: 'var(--viz-4)',
+  SIGNATURE_INVALID: 'var(--viz-5)',
   LOCAL_GUARD_BLOCK: 'var(--viz-3)',
-  OTHER_VIN: 'var(--info)',
+  OTHER_VIN: 'var(--viz-6)',
   PROVIDER_ERROR: 'var(--viz-2)',
   UNSPECIFIED: 'var(--muted)',
 };

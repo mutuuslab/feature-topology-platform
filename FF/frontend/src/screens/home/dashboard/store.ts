@@ -4,6 +4,7 @@
 // 겹친 저장(412)·실패면 서버 판을 다시 읽어 화면을 맞춘다. 옛 판(v1, 역할별 localStorage)은 처음 한 번 내 대시보드로 옮긴다.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { canViewDashboard, type DashboardView, type Role } from '@ff/contracts';
 import { actorFor, rolesFor } from '../../../api/actor';
 import { ApiError, call, STATIC_MODE } from '../../../api/client';
@@ -170,6 +171,7 @@ export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 /** 대시보드 목록·지금 대시보드·저장 동작 — Dashboard.tsx가 쓴다 */
 export function useDashboards(role: string) {
+  const [, setSearch] = useSearchParams();
   const shell = useAppShell();
   const departmentId = isDepartment(shell.department) ? shell.department : undefined;
   const me = actorFor(role);
@@ -206,8 +208,11 @@ export function useDashboards(role: string) {
     (id: string) => {
       setCurrentId(id);
       pref.set(CURRENT(contextId), id === SYSTEM_ID ? null : id);
+        // Consume an explicit role/common navigation when a saved board is selected.
+        // Keeping ?dashboard=role would replace the personal selection on reload.
+        if (departmentId && id !== SYSTEM_ID) setSearch((params) => { params.set('dashboard', 'personal'); return params; }, { replace: true });
     },
-    [contextId],
+    [contextId, departmentId, setSearch],
   );
 
   // 화면 캐시를 바꾸기 전에 받는 중인 목록 조회를 멈춘다 — 늦게 온 옛 목록이 방금 만든·바꾼 판을 덮지 않게

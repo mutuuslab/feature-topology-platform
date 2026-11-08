@@ -56,6 +56,11 @@ describe('부서 공통판·역할판·개인판 전환',()=>{
     await waitFor(()=>expect(rows.at(-1)).toMatchObject({ownerId:'usr-author',sharedRoles:[]}));
     expect(rows.at(-1).departmentId).toBeUndefined();
     expect(defaults.dashboardId).toBe('DSH-TEAM');
+    const name=rows.at(-1).name;
+    await waitFor(()=>expect(screen.getByRole('heading',{level:1})).toHaveTextContent(name));
+    cleanup();
+    mount('author','DEP-PDP','/?dashboard=personal');
+    await waitFor(()=>expect(screen.getByRole('heading',{level:1})).toHaveTextContent(name));
   });
   it('정적 저장도 부서 경계·관리자만 편집·기본판 삭제 제한을 유지한다',async()=>{
     const admin=localBackend({id:'usr-sysadmin',roles:['SYSTEM_ADMIN']});

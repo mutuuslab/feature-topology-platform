@@ -7,6 +7,8 @@ export const swCost = {
   keyFull: '백만원 · 승인된 과제의 총개발비 합계',
   keyMm: 'M/M · 승인된 과제의 총 공수 합계',
   keyNone: '승인된 과제가 없습니다',
+  filteredKeyFull: '백만원 · 현재 조건의 승인 과제 개발비 합계',
+  filteredKeyMm: 'M/M · 현재 조건의 승인 과제 공수 합계',
   summary: '과제 상태',
   newProject: '새 과제',
   basisLink: '계수·단가 표',

@@ -277,7 +277,7 @@ export function HomeScreen() {
   const { department } = useAppShell();
   const [query] = useSearchParams();
   const dept = departmentById(department);
-  if (dept && WorkspaceHome && !['department', 'role'].includes(query.get('dashboard') ?? ''))
+  if (dept && WorkspaceHome && !['department', 'role', 'personal'].includes(query.get('dashboard') ?? ''))
     return (
       <Suspense fallback={<div className="ds-skel" data-state="loading"><span /><span /><span /></div>}>
         <WorkspaceHome key={dept.id} dept={dept} />

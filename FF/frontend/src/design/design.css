@@ -394,7 +394,7 @@ button.ds-gate:hover {
   /* 칸 안의 화면 낭독용 글(ds-sr, position:absolute)이 이 스크롤 상자를 벗어나 본문을 넓히지 않게 — 390 폭(통합 12단계) */
   position: relative;
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border-radius: var(--r);
   background: var(--surface);
   overflow: auto;
   max-height: var(--table-max-h, none);

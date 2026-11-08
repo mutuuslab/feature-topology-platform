@@ -238,7 +238,7 @@ export function ReplyGapList({ gaps, ready }: { gaps: OperationReplyGap[]; ready
               <span className="ov-top__main">
                 <Link to={`/deployments/${encodeURIComponent(g.publicationId)}`}>{`${g.policyId} · r${g.revision}`}</Link>
                 <span className="ov-top__meta">
-                  {g.flagKey && <code>{g.flagKey}</code>} {O.top.pending(g.pending, g.targets)}
+                  {g.flagKey && <code>{g.flagKey}</code>} {O.top.replied(g.replied, g.targets)}
                 </span>
                 <span className="ov-top__gauge" role="img" aria-label={O.top.replied(g.replied, g.targets)}>
                   <span style={{ width: `${(g.replied / g.targets) * 100}%` }} />

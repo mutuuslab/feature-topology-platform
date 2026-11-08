@@ -6,13 +6,13 @@ import { type AdsTraceDoc, type AdsTraceRequirement, type AdsTraceTest, type Ads
 import { ADS_TRACE_VERDICTS, revisionImpact, traceSummary, traceTestStatus, traceVerdict } from '../../../../contracts/src/rules/ads-evidence';
 import { asyncState, useApi } from '../../api/hooks';
 import { traceAds as T } from '../../copy/ads-evidence';
-import { AsyncView, DataTable, Drawer, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, SummaryLine, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
-import { StageCounts, VerdictReason, type SegTone, type VerdictTone } from '../../design/ads';
+import { AsyncView, Button, DataTable, Drawer, Field, IdChip, KeyValue, PageHeader, Panel, Segmented, Select, SummaryLine, Tabs, Toolbar, type KeyMessageSpec } from '../../design';
+import { StageCounts, VerdictReason, type VerdictTone } from '../../design/ads';
+import { coverageGroup, TRACE_COVERAGE_GROUPS, traceCoverage, type TraceCoverageGroup } from './trace-coverage';
 
 type Resp = AdsTraceDoc & { summary: ReturnType<typeof traceSummary> };
 
 const TONE: Record<AdsTraceVerdict, VerdictTone> = { IMPLEMENTED: 'ok', PARTIAL: 'warn', NOT_IMPLEMENTED: 'danger', OUT_OF_SCOPE: 'neutral', NO_EVIDENCE: 'unknown', SOURCE_CHANGED: 'warn', UNJUDGED: 'unknown' };
-const SEG: Record<AdsTraceVerdict, SegTone> = { IMPLEMENTED: 'ok', PARTIAL: 'warn', NOT_IMPLEMENTED: 'danger', OUT_OF_SCOPE: 'neutral', NO_EVIDENCE: 'unknown', SOURCE_CHANGED: 'warn', UNJUDGED: 'unknown' };
 
 function VerdictCell({ v }: { v: AdsTraceVerdict }) {
   const reason = v === 'NO_EVIDENCE' || v === 'UNJUDGED' ? T.verdictReason[v] : undefined;
@@ -74,7 +74,8 @@ function ReqsTab({ d }: { d: Resp }) {
   const areas = useMemo(() => [...new Set(d.requirements.map((r) => r.category))], [d]);
   const opt = (k: (r: AdsTraceRequirement) => string) => ['ALL', ...new Set(d.requirements.map(k))].map((v) => ({ value: v, label: v === 'ALL' ? T.filter.all : v }));
   const filtered = d.requirements.filter((r) => (!area || r.category === area) && (priority === 'ALL' || r.priority === priority) && (owner === 'ALL' || r.owner === owner));
-  const rows = sel ? filtered.filter((r) => verdictOf(d, r) === sel) : filtered;
+  const rows = !sel ? filtered : filtered.filter((r) => sel.startsWith('group:') ? coverageGroup[verdictOf(d, r)] === sel.slice(6) : verdictOf(d, r) === sel.slice(8));
+  const coverage = traceCoverage(filtered.map((r) => verdictOf(d, r)));
   const s = d.summary;
   const C = T.col;
   return (
@@ -88,13 +89,17 @@ function ReqsTab({ d }: { d: Resp }) {
           { k: T.summary.changed, v: s.counts.SOURCE_CHANGED },
         ]}
       />
-      <StageCounts
-        caption={T.dist}
-        total={filtered.length}
-        selected={sel}
-        onSelect={setSel}
-        segments={ADS_TRACE_VERDICTS.map((v) => ({ key: v, label: T.verdict[v], count: filtered.filter((r) => verdictOf(d, r) === v).length, tone: SEG[v] }))}
-      />
+      {coverage.total > 0 ? <StageCounts caption={T.coverage.title} total={coverage.total}
+        selected={sel?.startsWith('group:') ? sel.slice(6) : undefined}
+        onSelect={(key) => setSel(key ? `group:${key}` : null)}
+        segments={TRACE_COVERAGE_GROUPS.map((g) => ({ key: g.key, label: T.coverage.group[g.key as TraceCoverageGroup], count: coverage.counts[g.key], tone: g.tone }))}
+      /> : <p className="ds-field__hint">{T.coverage.noScope}</p>}
+      {coverage.excluded > 0 && <p className="ds-field__hint"><Button variant="ghost" aria-pressed={sel === 'verdict:OUT_OF_SCOPE'} onClick={() => setSel(sel === 'verdict:OUT_OF_SCOPE' ? null : 'verdict:OUT_OF_SCOPE')}>{T.coverage.excluded(coverage.excluded)}</Button>{T.coverage.excludedHint}</p>}
+      <details><summary>{T.coverage.details}</summary><Segmented label={T.coverage.rawFilter}
+        value={sel?.startsWith('verdict:') ? sel.slice(8) : sel ? 'GROUP' : 'ALL'}
+        onChange={(v) => setSel(v === 'ALL' ? null : `verdict:${v}`)}
+        options={[{ value: 'ALL', label: T.filter.all }, ...ADS_TRACE_VERDICTS.map((v) => ({ value: v, label: T.coverage.option(T.verdict[v], filtered.filter((r) => verdictOf(d, r) === v).length) }))]}
+      /></details>
       <Toolbar label={T.filter.area}>
         <Select label={T.filter.area} value={area} onChange={(e) => setArea(e.target.value)}>
           <option value="">{T.filter.all}</option>

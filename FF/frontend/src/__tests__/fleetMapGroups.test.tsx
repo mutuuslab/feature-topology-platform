@@ -18,7 +18,7 @@ describe('지도 차량 배치(화면)', () => {
     const { data, groups } = toGeoJSON(el, [...seoul, syn], 'activation', 1.5);
     expect(groups).toHaveLength(1);
     expect(groups[0].count).toBe(3);
-    expect(groups[0].states).toEqual({ '--ok': 2, '--warn': 1 });
+    expect(groups[0].states).toEqual({ '--mark-ok': 2, '--mark-warn': 1 });
     expect(data.features.map((f) => f.properties.vin)).toEqual(['SYN-1']);
   });
 
@@ -37,11 +37,11 @@ describe('지도 차량 배치(화면)', () => {
 
   it('군집 단추 — 상태별 대수를 읽어 주고 누르면 확대한다', () => {
     const open = vi.fn();
-    const b = groupElement({ id: 'g', lat: 37.5, lng: 127, count: 3, states: { '--ok': 2, '--warn': 1 }, vins: ['A', 'B', 'C'] }, (name) => varLabel(name, 'activation'), open);
+    const b = groupElement({ id: 'g', lat: 37.5, lng: 127, count: 3, states: { '--mark-ok': 2, '--mark-warn': 1 }, vins: ['A', 'B', 'C'] }, (name) => varLabel(name, 'activation'), open);
     expect(b.tagName).toBe('BUTTON');
     expect(b.getAttribute('aria-label')).toMatch(/3대/);
-    expect(b.getAttribute('aria-label')).toContain(`${varLabel('--ok', 'activation')} 2`);
-    expect(b.style.getPropertyValue('--fm-group-ring')).toContain('var(--ok)');
+    expect(b.getAttribute('aria-label')).toContain(`${varLabel('--mark-ok', 'activation')} 2`);
+    expect(b.style.getPropertyValue('--fm-group-ring')).toContain('var(--mark-ok)');
     expect(b.textContent).toBe('3');
     b.click();
     expect(open).toHaveBeenCalledOnce();

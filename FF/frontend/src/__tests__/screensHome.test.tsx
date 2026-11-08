@@ -175,8 +175,8 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
     expect(node.textContent).toContain('1/6');
     expect(node.textContent).toContain('내 차례 2');
     expect(within(node).getByText('G1')).toBeTruthy();
-    // 메인 지도는 HARA(FPW.2) 제외 — 13개(생애주기 8 + 지원 5, FPW.14 Feature DB 운영 포함)
-    expect(document.querySelectorAll('.pm-node').length).toBe(13);
+      // 메인 지도는 18개 절차 중 별도 HARA 상세를 제외한 17개다.
+      expect(document.querySelectorAll('.pm-node').length).toBe(17);
     expect(screen.queryByText(/HARA/)).toBeNull();
   });
 

@@ -263,6 +263,7 @@ export const refChangeDetail = {
 
 /** 품질 지표 한 줄 — Feature DB 목록 머리·콘솔 홈·기준 행 상세(P5-7·P5-8) */
 export const refQualityCopy = {
+  moreStats: '품질·발행 통계 자세히',
   title: 'Feature DB 품질',
   open: 'Feature DB 열기',
   published: (n: number, pending: number) => (pending ? `발행본 ${n.toLocaleString('ko-KR')}행 (+요청 중 ${pending})` : `발행본 ${n.toLocaleString('ko-KR')}행`),

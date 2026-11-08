@@ -3,7 +3,7 @@
 .ad__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--sp-3) var(--sp-4); }
 .ad__head h3 { margin: 0; font-size: var(--fs-base); }
 .ad__key { margin: var(--sp-1) 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--sp-2); font-size: var(--fs-sm); color: var(--muted); }
-.ad__key-num { font-size: var(--fs-kpi); font-weight: 700; line-height: 1.1; color: var(--ink); letter-spacing: -0.02em; }
+.ad__key-num { font-family: var(--font-mono); font-size: var(--fs-kpi); font-weight: 700; line-height: 1.1; color: var(--ink); letter-spacing: -0.02em; }
 .ad__key-of { font-size: var(--fs-md); font-weight: 600; color: var(--muted); margin-left: calc(-1 * var(--sp-2)); }
 .ad__pick { display: grid; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--muted); min-width: 0; }
 .ad__pick select { max-width: 100%; min-width: 0; }

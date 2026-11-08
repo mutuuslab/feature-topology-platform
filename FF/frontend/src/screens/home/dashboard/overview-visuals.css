@@ -1,6 +1,7 @@
 /* 홈 수신 현황 그림 — 흐름 띠·내 차례·KPI 히어로·상태 막대·Top 목록. 대시보드 디자인 언어(docs/70-design-system/70-50) 기준.
    색·간격은 토큰만, 그림 표식은 --mark-*(모양 병기), 숫자는 Mono tabular. 폭은 현황 상자 기준(컨테이너 질의) */
 .operation-overview { container: ov / inline-size; }
+[data-theme='dark'] .operation-overview :is(.ov-flow, .ov-work, .ov-hero, .ov-kpis > div, .ov-top, .ad, .operation-timeline) { border-color: var(--line-strong); }
 .ov-eyebrow { margin: 0 0 var(--sp-3); font-size: var(--fs-xs); font-weight: 650; letter-spacing: .02em; color: var(--muted); }
 .ov-unit { font-size: .5em; font-weight: 600; margin-left: var(--sp-0h); color: var(--muted); letter-spacing: 0; }
 

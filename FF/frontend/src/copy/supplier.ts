@@ -26,4 +26,19 @@ export const supplier = /* @__PURE__ */ localizedCopy('supplier.supplier', {
   criteria: 'Feature 검수 기준', criterionReason: '기준 개정 사유', saveCriteria: '새 기준 등록', coverage: '최소 커버리지(%)', warnings: '빌드 경고 상한(건)',
   gate: '협력사 검수 현황', gateReady: '현재 대상의 협력사 검수가 유효합니다.', internal: '내부 개발 대상입니다. 개발 검증 절차에서 판정하세요.',
   saved: '저장했습니다.', refresh: '다시 읽기', close: '닫기', source: '출처',
+  invalidInput: '입력 내용을 확인하세요.', unlinked: '미연결', verifiedContent: '본문 검증 일치',
+  confirmedArtifact: (label: string) => `${label} 확인`,
+  reviewBasis: (revision: number | null) => `기준 ${revision ?? '미등록'}`,
+  checkResult: { PASS: '충족', FAIL: '미충족', NOT_EVALUABLE: '미확인' },
+  artifactLabels: {
+    API_CONTRACT: 'API 계약', HUMAN_DOC: '개발 문서', FEATURE_MAPPING: 'Feature 매핑', CAPABILITY_MANIFEST: 'Capability Manifest',
+    VARIANT_COMPAT: 'Variant Compatibility', DIAGNOSTICS: '진단·텔레메트리', SAFETY_SECURITY: '안전·보안', SDK_STUB_MOCK: 'SDK·Stub·Mock', TEST_EVIDENCE: 'Test Evidence', RELEASE_NOTE: 'Release Note',
+  },
+  criterionLabels: {
+    MIN_COVERAGE: '시험 커버리지 최소값(%)', ALL_TESTS_PASS: '단위·통합 시험 전부 통과', BUILD_CLEAN: '빌드 성공·경고 상한(건)',
+    ASIL_COVERS_FEATURE: '안전 등급이 Feature ASIL 이상', VARIANT_COVERS_FEATURE: '적용 차량 조건이 Feature 범위를 포함',
+    CAPABILITY_COVERS_SW: 'Capability가 Feature SW 버전을 포함', BREAKING_HAS_MIGRATION: '호환 깨짐 변경에 이전 방법 기재',
+  },
+  packagingLabels: { PKG_ALL_ITEMS: '10항목 모두 수집', PKG_CHECKSUM_FORMAT: '체크섬 형식(SHA-256)', PKG_INTEGRITY: '본문 체크섬 대조', PKG_METADATA: '배포 ID·버전 정보', PKG_MAPPING_ACTIVE: 'Feature 매핑 참조' },
 } as const);
+

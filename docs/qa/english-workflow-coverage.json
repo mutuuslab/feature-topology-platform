@@ -1,17 +1,17 @@
 {
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
-  "total": 1782,
-  "missing": 1142,
-  "translated": 278,
-  "sourceEnglish": 362,
+  "total": 1800,
+  "missing": 1156,
+  "translated": 279,
+  "sourceEnglish": 365,
   "duplicate": [],
   "unknown": [],
   "fingerprints": [
     {
       "file": "frontend/src/locale/en/workflow-metadata.ts",
-      "entries": 216,
-      "sourceFingerprint": "978e5c5fbc69369cf93ceeb20281eb66b804ad2f19188386fa47fe299dfe215d",
+      "entries": 217,
+      "sourceFingerprint": "faf54d01576333518e0dd4d4acc573f05bc94d227ce0a71b59ad3bfd2fb0a765",
       "status": "MATCH"
     },
     {
@@ -1004,8 +1004,8 @@
     },
     {
       "key": "FPW.1-A01.steps.3",
-      "source": "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다",
-      "sourceHash": "69c46bece9f899b782f02d5babc824383c05340f504fee372975303d6c1ab8b5",
+      "source": "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다. 등록 뒤 같은 분류 수준의 노드에 배치해 경로를 남기며 발행 원본 분류는 직접 수정하지 않는다",
+      "sourceHash": "621b93e0dd7bd10f9302d381403d859a0874110b24acd2cae9af3c5d087e0a59",
       "status": "MISSING",
       "english": null
     },
@@ -2901,13 +2901,20 @@
     },
     {
       "key": "FPW.4-A03.steps.1",
+      "source": "정책에 브랜드·적용 지역 코드·법규 룰의 조회 조건을 연결하고 Feature Owner가 변경 근거와 개정 이력을 확인한다. 이 메타데이터 연결 자체를 배포 승인이나 차량 적용으로 보지 않는다",
+      "sourceHash": "0b796ad2a0747c4cb02d9c0296ad50e0da209316030358e70e685265bdf8d58d",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.4-A03.steps.2",
       "source": "분야별 검증 8종을 실행해 배포 안전성 판정을 받는다",
       "sourceHash": "b49b4f45c77e0332b06050ad855ed0fdea1b796884bd81836a9f84bf6b23e130",
       "status": "MISSING",
       "english": null
     },
     {
-      "key": "FPW.4-A03.steps.2",
+      "key": "FPW.4-A03.steps.3",
       "source": "수정하면 새 개정본이 되므로 다시 검증한다",
       "sourceHash": "2000090302faf66c1a8ba403abb111d7e3d0f33f4ba3e4f3082a1c7ed3b32e27",
       "status": "MISSING",
@@ -10019,6 +10026,13 @@
       "english": null
     },
     {
+      "key": "FPW.14.O6.text",
+      "source": "플랫폼 분류 노드의 수준·상위·Feature 배치와 변경 이력이 발행 원본과 구분되어 보존된다.",
+      "sourceHash": "8ff0764a876a9c9da41ff084a3ffffd977ba69f556654e3b89b77f493a7d2443",
+      "status": "MISSING",
+      "english": null
+    },
+    {
       "key": "FPW.14.entry.0",
       "source": "Feature DB 첫 발행본(엑셀 1회 이전 v1.3)이 설치되어 있다",
       "sourceHash": "f922837f1c393847c00344fdb32db1bf2f026e77c2dedf27b926484c5f399fea",
@@ -10204,6 +10218,34 @@
       "key": "FPW.14.WP-REF-SOURCE-REVIEW.content.2",
       "source": "출처별 새 다음 점검일",
       "sourceHash": "4b3b6d602f54ae22ec42cc8303c633dc7c6b86bc1f1cf5715b0a70ab1d72862b",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14.WP-PLATFORM-TAXONOMY.name",
+      "source": "플랫폼 분류 계층 기록",
+      "sourceHash": "cc3bcd6f22edb85c6293adf702cf74dbda1690b4144b0cb04ab4ff9147656d31",
+      "status": "SOURCE_ENGLISH",
+      "english": "Platform Taxonomy Record"
+    },
+    {
+      "key": "FPW.14.WP-PLATFORM-TAXONOMY.content.0",
+      "source": "노드 ID·명칭·L0~L5 수준·한 단계 위 상위 노드와 참조한 Feature DB 발행판",
+      "sourceHash": "916f199d48b30fd7dde40512c6b8e907116dd7605bb75f0cc59b915e96e9990d",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14.WP-PLATFORM-TAXONOMY.content.1",
+      "source": "등록·명칭 수정·삭제 사유와 담당자·시각, 삭제 ID 묘비와 재사용 금지 결과",
+      "sourceHash": "042ddc4c09c4d1cbeda46a048a9f80d8a9e2e980a244fb41af3fb777b1bcac42",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14.WP-PLATFORM-TAXONOMY.content.2",
+      "source": "하위 노드·배치 Feature 점검 및 Feature별 분류 경로, 원본 발행 분류와의 경계",
+      "sourceHash": "7616e18e3acdfc1cd73ad7537c404a6da82ecf8238ab1be3830fbddd4aa6ba7a",
       "status": "MISSING",
       "english": null
     },
@@ -10474,6 +10516,62 @@
       "english": null
     },
     {
+      "key": "FPW.14-A06.name",
+      "source": "플랫폼 분류 계층 관리",
+      "sourceHash": "9113f05aa06bee15753e98b4885e3d5aa1f186e066b237e23f89ea31e7382ae6",
+      "status": "TRANSLATED",
+      "english": "Manage the classification hierarchy"
+    },
+    {
+      "key": "FPW.14-A06.trigger",
+      "source": "Feature DB 발행 또는 플랫폼 분류 확장·수정 요청",
+      "sourceHash": "e483442771afa035066c03e9f1dcb8d4f1fbbde666e8d8d4d62111e21f570fd7",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14-A06.steps.0",
+      "source": "발행 원본의 도메인·클러스터·컴포넌트를 조회하고 필요한 플랫폼 노드의 수준과 상위를 확인한다",
+      "sourceHash": "039214bb631712de44bcaa20ffe3c5aa9122621438352d1ab771b624152d968e",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14-A06.steps.1",
+      "source": "플랫폼 노드를 등록하거나 명칭·설명을 수정한다. 상위는 정확히 한 단계 위여야 한다",
+      "sourceHash": "b510332f0a4e650e14159b3b4694636aea9a99665ec6cbda96b728cfe62c2840",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14-A06.steps.2",
+      "source": "삭제 전 하위 노드와 배치 Feature가 없는지 확인하고 삭제 사유와 재사용 금지 묘비를 보존한다",
+      "sourceHash": "098216cd648a833660f5de56a98f841eebdd4b2ce23596da65ed92f27b5437af",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14-A06.steps.3",
+      "source": "Feature 등록 담당자에게 같은 수준의 배치 후보와 L0부터의 경로를 인계한다",
+      "sourceHash": "0f08a5c0757ffce05fff84863085ae2a99de5048064f0bf4bc7339226e0a1e1c",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14-A06.checks.0",
+      "source": "발행 원본 분류는 직접 수정하지 않았고 원본 변경은 Feature DB 변경 요청으로 처리했다",
+      "sourceHash": "a4f487af986bc0d825c42e0285dbe67c2c70a05c708e4c4ad465b39a7d8a55ed",
+      "status": "MISSING",
+      "english": null
+    },
+    {
+      "key": "FPW.14-A06.checks.1",
+      "source": "노드 ID 재사용·잘못된 상위·하위 또는 배치가 있는 노드 삭제가 거부된다",
+      "sourceHash": "2dba87004b001f58e8e0febb905e6537ab188ead40f7a27ceb1f5e0e0dc9118b",
+      "status": "MISSING",
+      "english": null
+    },
+    {
       "key": "FPW.14.BP1.name",
       "source": "변경 요청 작성",
       "sourceHash": "ffc966c673d4689e7a11b67b7ac473f2871e8d9f2369cfafa327cc0a47a36631",
@@ -10544,6 +10642,20 @@
       "english": null
     },
     {
+      "key": "FPW.14.BP6.name",
+      "source": "플랫폼 분류 계층 관리",
+      "sourceHash": "9113f05aa06bee15753e98b4885e3d5aa1f186e066b237e23f89ea31e7382ae6",
+      "status": "SOURCE_ENGLISH",
+      "english": "Manage the classification hierarchy"
+    },
+    {
+      "key": "FPW.14.BP6.definition",
+      "source": "발행 원본과 플랫폼 확장 분류를 구분하여 수준·상위·배치 정합성을 유지한다. 노드 변경 근거와 삭제 묘비를 보존하고 Feature 등록 담당자가 같은 경로를 참조하도록 인계한다.",
+      "sourceHash": "edb4f0b46c81e1894d24b5765845d243c2ac98286a6528fce457bc9ad28217eb",
+      "status": "MISSING",
+      "english": null
+    },
+    {
       "key": "FPW.14-S1.label",
       "source": "시작",
       "sourceHash": "b1f28cd21af730b22ed30302c4078cf8a25118d1172485004a8318cbba5c5e82",
@@ -10558,6 +10670,13 @@
       "english": null
     },
     {
+      "key": "FPW.14-S3.label",
+      "source": "Feature DB 발행 또는 플랫폼 분류 확장·수정 요청",
+      "sourceHash": "e483442771afa035066c03e9f1dcb8d4f1fbbde666e8d8d4d62111e21f570fd7",
+      "status": "MISSING",
+      "english": null
+    },
+    {
       "key": "FPW.14-E1.label",
       "source": "종료",
       "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
@@ -10566,6 +10685,13 @@
     },
     {
       "key": "FPW.14-E2.label",
+      "source": "종료",
+      "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
+      "status": "SOURCE_ENGLISH",
+      "english": "End"
+    },
+    {
+      "key": "FPW.14-E3.label",
       "source": "종료",
       "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
       "status": "SOURCE_ENGLISH",

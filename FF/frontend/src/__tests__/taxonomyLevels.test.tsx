@@ -1,6 +1,6 @@
 // 분류 계층 L0~L5·Feature 분류 경로·브랜드·권역별 정책·룰 지역 코드 후보(TX, B7 (b)) — 모의 API
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
@@ -8,6 +8,9 @@ import TaxonomyLevelsScreen from '../screens/master/TaxonomyLevels';
 import TaxonomyTab from '../screens/features/TaxonomyTab';
 import GlobalScopeScreen from '../screens/policy/GlobalScope';
 import { RegionCandidates } from '../screens/master/RegionCandidates';
+import { __resetLocaleForTest, changeUiLanguage } from '../locale/runtime';
+import { brandDisplayName, regionCodeDisplayLabel } from '../copy/taxonomy-level-names';
+import { REGION_CODE_TABLE } from '../../../contracts/src/rules/region-code';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -27,6 +30,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  __resetLocaleForTest();
   vi.unstubAllGlobals();
 });
 
@@ -65,6 +69,24 @@ describe('분류 계층 화면 @req FR-CAT-001-001 FR-CAT-004-005', () => {
       if (url.includes('/api/taxonomy/nodes')) return { body: { total: 4, items: [], tree: [{ ...BC, childCount: 1, featureCount: 0, children: [{ ...CL, childCount: 1, featureCount: 0, children: [{ ...L2, childCount: 0, featureCount: 2, children: [] }] }] }] } };
       return undefined;
     };
+  });
+
+  it('switches the mounted hierarchy live without changing source records or issuing writes', async () => {
+    const contract = JSON.stringify(REGION_CODE_TABLE);
+    mount('author', '/master/taxonomy/levels', '/master/taxonomy/levels', <TaxonomyLevelsScreen />);
+    expect(await screen.findByText('원격 도어 잠금')).toBeTruthy();
+    await act(async () => { await changeUiLanguage('en'); });
+    expect(screen.getByRole('heading', { name: 'Classification hierarchy' })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: /L3 Software function/ })).toBeTruthy();
+    expect(screen.getByText('원격 도어 잠금')).toBeTruthy();
+    expect(regionCodeDisplayLabel('1')).toBe('1 · Korea');
+    expect(regionCodeDisplayLabel('unknown')).toBe('unknown');
+    expect(brandDisplayName('HYUNDAI')).toBe('Hyundai');
+    expect(JSON.stringify(REGION_CODE_TABLE)).toBe(contract);
+    expect(calls.every(call => call.method === 'GET')).toBe(true);
+    await act(async () => { await changeUiLanguage('ko'); });
+    expect(screen.getByRole('heading', { name: '분류 계층' })).toBeTruthy();
+    expect(regionCodeDisplayLabel('1')).toBe('1 · 한국');
   });
 
   it('수준별 분류 — 기본 L2, 수준을 바꾸면 그 수준 노드의 경로와 Feature', async () => {

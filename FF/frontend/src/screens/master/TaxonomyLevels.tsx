@@ -2,6 +2,7 @@
 // 플랫폼 노드(L2 차량·시스템 기능 → L3 SW → L4 정책·Flag → L5 코드·신호)를 수준별로 보고, 계층 트리를 펼치고, 노드를 등록·수정·삭제한다.
 // 판정(상위 존재·한 단계 아래·하위/배치가 있으면 삭제 거부)은 서버(taxonomy.service)와 contracts rules/taxonomy-tree가 정한다.
 import { useMemo, useState } from 'react';
+import { useUiLocale } from '../../locale/react';
 import { Link } from 'react-router-dom';
 import { TAXONOMY_LEVELS, type TaxonomyLevelCode, type TaxonomyTreeNode, type TaxonomyTreeView } from '../../../../contracts/src/schemas/taxonomy-tree';
 import { TAXONOMY_EDITOR_ROLES } from '../../../../contracts/src/rules/taxonomy-tree';
@@ -27,6 +28,7 @@ const INVALIDATE = ['taxonomyLevels', 'taxonomyLevel', 'taxonomyNodes', 'feature
 const FEATURE_CHIPS = 6;
 
 export default function TaxonomyLevelsScreen() {
+  useUiLocale();
   const q = useApi<LevelsView>('taxonomyLevels');
   const d = q.data;
   const nodes = d?.items.reduce((n, x) => n + x.nodes, 0) ?? 0;

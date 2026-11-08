@@ -33,7 +33,8 @@ import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValu
 import { usePermission } from '../shared';
 import { personLabel } from '../ops/shared';
 import { OwnerTransferPanel } from './OwnerTransfer';
-import { REGION_CODES, regionCodeLabel } from '../../../../contracts/src/rules/region-code';
+import { regionCodeDisplayLabel as regionCodeLabel } from '../../copy/taxonomy-level-names';
+import { REGION_CODES } from '../../../../contracts/src/rules/region-code';
 import { regionCopy } from '../../copy/taxonomy-levels';
 import { RegionCandidates } from './RegionCandidates';
 

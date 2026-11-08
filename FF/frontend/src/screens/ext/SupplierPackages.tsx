@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { useUiLocale } from '../../locale/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { AcceptanceCheck, SupplierArtifactRow, SupplierCriteriaRow, SupplierMappingRow, SupplierPackageRow, SupplierReviewRow } from '../../../../contracts/src/rules/supplier';
-import { SUPPLIER_ARTIFACT_LABEL, SUPPLIER_CRITERION_LABEL } from '../../../../contracts/src/rules/supplier';
 import { SUPPLIER_ARTIFACT_TYPES, SUPPLIER_CRITERION_KINDS, type SupplierArtifactType } from '../../../../contracts/src/schemas/supplier';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { actorFor } from '../../api/actor';
@@ -15,10 +15,11 @@ type Feature = { featureId: string; version: string; name: string };
 type Artifact = SupplierArtifactRow & { contentUrl: string | null };
 type Detail = { package: SupplierPackageRow; artifacts: Artifact[]; check: AcceptanceCheck; criteria: SupplierCriteriaRow | null; reviews: SupplierReviewRow[] };
 const INVALIDATE = ['supplierPackages', 'supplierPackage', 'supplierMappings', 'supplierCriteria', 'supplierGate'];
-const errorText = (e: unknown) => e instanceof Error ? e.message : '입력 내용을 확인하세요.';
+const errorText = (e: unknown) => e instanceof Error ? e.message : S.invalidInput;
 const Result = ({ m }: { m: { error: Error | null; isSuccess: boolean } }) => m.error ? <p role="alert" className="ds-error">{m.error.message}</p> : m.isSuccess ? <p role="status" className="ds-ok">{S.saved}</p> : null;
 
 export default function SupplierPackages() {
+  useUiLocale();
   const [sp] = useSearchParams();
   const features = useApi<{ items: Feature[] }>('listFeatures', { query: { latestOnly: false } });
   const [pickedId, setId] = useState(sp.get('featureId') ?? '');
@@ -64,7 +65,7 @@ export default function SupplierPackages() {
       {packageId ? <AsyncView state={asyncState(detail)} error={detail.error} onRetry={() => detail.refetch()}>{detail.data && <PackageDetail key={packageId + ':' + detail.data.package.status + ':' + detail.data.check.criteriaRevision} d={detail.data} />}</AsyncView> : <Panel title={S.artifact}><p>{S.choosePackage}</p></Panel>}
     </div>
     <Panel title={S.mapping}>
-      <DataTable caption={S.mapping} rows={mappings.data?.items ?? []} rowKey={(m) => m.mapId} columns={[{ key: 'supplier', header: S.supplier, cell: (m) => m.supplier }, { key: 'function', header: S.functionId, cell: (m) => m.supplierFunctionId }, { key: 'name', header: S.functionName, cell: (m) => m.name }, { key: 'swc', header: 'SW Component / ECU', cell: (m) => m.swcs.map((s) => s.name + ' / ' + (s.ecuPno ?? '미연결')).join(', ') }]} />
+      <DataTable caption={S.mapping} rows={mappings.data?.items ?? []} rowKey={(m) => m.mapId} columns={[{ key: 'supplier', header: S.supplier, cell: (m) => m.supplier }, { key: 'function', header: S.functionId, cell: (m) => m.supplierFunctionId }, { key: 'name', header: S.functionName, cell: (m) => m.name }, { key: 'swc', header: 'SW Component / ECU', cell: (m) => m.swcs.map((s) => s.name + ' / ' + (s.ecuPno ?? S.unlinked)).join(', ') }]} />
       {mappings.error && <p role="alert">{mappings.error.message}</p>}
       {mapPerm.ok && <details><summary>{S.saveMapping}</summary><MappingForm featureId={featureId} mappings={mappings.data?.items ?? []} /></details>}
     </Panel>
@@ -95,28 +96,28 @@ function PackageDetail({ d }: { d: Detail }) {
       <IdChip id={p.featureId} version={p.featureVersion} to={'/features/' + p.featureId + '/' + p.featureVersion} />
       <p className="ds-field__hint">{S.verificationNote}</p>
       <DataTable caption={S.artifact} rows={SUPPLIER_ARTIFACT_TYPES.map((type) => ({ type, a: latest[type] as Artifact | undefined }))} rowKey={(r) => r.type} columns={[
-        { key: 'type', header: S.artifact, cell: (r) => SUPPLIER_ARTIFACT_LABEL[r.type] },
+        { key: 'type', header: S.artifact, cell: (r) => S.artifactLabels[r.type] },
         { key: 'version', header: S.artifactVersion, cell: (r) => r.a?.version ?? '—' },
         { key: 'integrity', header: S.integrityCol, cell: (r) => r.a ? S.integrity[r.a.integrity] ?? S.hold : S.noArtifact },
         { key: 'body', header: S.source, cell: (r) => r.a?.contentUrl ? <Button onClick={() => void read(r.a!.recordId)}>{S.content}</Button> : '—' },
       ]} />
       {readError && <p role="alert">{readError}</p>}
-      {content && <details open><summary>{S.content} ({content.verified ? '본문 검증 일치' : S.hold})</summary><pre className="supplier-content">{content.text}</pre><Button onClick={() => setContent(null)}>{S.close}</Button></details>}
+      {content && <details open><summary>{S.content} ({content.verified ? S.verifiedContent : S.hold})</summary><pre className="supplier-content">{content.text}</pre><Button onClick={() => setContent(null)}>{S.close}</Button></details>}
       <h3>{d.check.verdict === 'MET' ? S.eligible : d.check.verdict === 'NO_CRITERIA' ? S.noCriteria : S.hold}</h3>
-      <ul>{[...d.check.packaging, ...d.check.criteria].map((c) => <li key={'key' in c ? c.key : c.kind}><strong>{c.label}</strong>: {c.result === 'PASS' ? '충족' : c.result === 'FAIL' ? '미충족' : '미확인'} / <span>{c.detail}</span></li>)}</ul>
+      <ul>{[...d.check.packaging, ...d.check.criteria].map((c) => <li key={'key' in c ? c.key : c.kind}><strong>{'kind' in c ? S.criterionLabels[c.kind] : S.packagingLabels[c.key as keyof typeof S.packagingLabels] ?? c.label}</strong>: {S.checkResult[c.result]} / <span>{c.detail}</span></li>)}</ul>
       {impl.ok && (p.status === 'DRAFT' || p.status === 'REJECTED') && <details><summary>{S.addArtifact}</summary><ArtifactForm pkg={p} /></details>}
       {impl.ok && (p.status === 'DRAFT' || p.status === 'REJECTED') && <div className="ds-stack"><Field label={S.submitNote}><textarea className="ds-input" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} /></Field><Button disabled={request.isPending || d.check.missing.length > 0} onClick={() => request.mutate({ params: { id: p.packageId }, body: { note: note.trim() || null } })}>{S.submit}</Button><Result m={request} /></div>}
     </Panel>
     <Panel title={S.review}>
       <p>{S.reviewHelp}</p>
-      <div className="supplier-confirm">{SUPPLIER_ARTIFACT_TYPES.map((type) => <label key={type}><input type="checkbox" checked={confirmed.includes(type)} disabled={!canReview} onChange={(e) => setConfirmed((v) => e.target.checked ? [...v, type] : v.filter((t) => t !== type))} /> {SUPPLIER_ARTIFACT_LABEL[type]} 확인</label>)}</div>
+      <div className="supplier-confirm">{SUPPLIER_ARTIFACT_TYPES.map((type) => <label key={type}><input type="checkbox" checked={confirmed.includes(type)} disabled={!canReview} onChange={(e) => setConfirmed((v) => e.target.checked ? [...v, type] : v.filter((t) => t !== type))} /> {S.confirmedArtifact(S.artifactLabels[type])}</label>)}</div>
       <Field label={S.reviewNote}><textarea className="ds-input" value={comment} disabled={!canReview} maxLength={500} onChange={(e) => setComment(e.target.value)} /></Field>
       <div className="ds-toolbar"><Button variant="primary" disabled={acceptDisabled} onClick={() => decide('ACCEPT')}>{S.accept}</Button><Button disabled={!canReview || comment.trim().length < 2 || review.isPending} onClick={() => decide('REJECT')}>{S.reject}</Button></div>
       {!quality.ok && <p className="ds-field__hint">{quality.hint}</p>}
       {participant && <p className="ds-field__hint">{S.reviewHelp}</p>}
       <Result m={review} />
     </Panel>
-    <Panel title={S.history}>{d.reviews.length ? <ol>{d.reviews.map((r) => <li key={r.reviewId}><strong>{r.decision === 'ACCEPT' ? S.accept : S.reject}</strong> / {when(r.reviewedAt)} / 기준 {r.criteriaRevision ?? '미등록'}<p>{r.comment}</p></li>)}</ol> : <p>{S.noReview}</p>}</Panel>
+    <Panel title={S.history}>{d.reviews.length ? <ol>{d.reviews.map((r) => <li key={r.reviewId}><strong>{r.decision === 'ACCEPT' ? S.accept : S.reject}</strong> / {when(r.reviewedAt)} / {S.reviewBasis(r.criteriaRevision)}<p>{r.comment}</p></li>)}</ol> : <p>{S.noReview}</p>}</Panel>
   </div>;
 }
 
@@ -164,7 +165,7 @@ function CriteriaForm({ featureId }: { featureId: string }) {
   const [warnings, setWarnings] = useState(0);
   const [reason, setReason] = useState('');
   return <form className="ds-stack" onSubmit={(e) => { e.preventDefault(); m.mutate({ body: { featureId, reason, items: kinds.map((kind) => ({ kind, threshold: kind === 'MIN_COVERAGE' ? coverage : kind === 'BUILD_CLEAN' ? warnings : null, note: null })) } }); }}>
-    {SUPPLIER_CRITERION_KINDS.map((kind) => <label key={kind}><input type="checkbox" checked={kinds.includes(kind)} onChange={(e) => setKinds((a) => e.target.checked ? [...a, kind] : a.filter((k) => k !== kind))} /> {SUPPLIER_CRITERION_LABEL[kind]}</label>)}
+    {SUPPLIER_CRITERION_KINDS.map((kind) => <label key={kind}><input type="checkbox" checked={kinds.includes(kind)} onChange={(e) => setKinds((a) => e.target.checked ? [...a, kind] : a.filter((k) => k !== kind))} /> {S.criterionLabels[kind]}</label>)}
     <Field label={S.coverage}><input className="ds-input" type="number" min={0} max={100} required value={coverage} onChange={(e) => setCoverage(Number(e.target.value))} /></Field>
     <Field label={S.warnings}><input className="ds-input" type="number" min={0} max={100} required value={warnings} onChange={(e) => setWarnings(Number(e.target.value))} /></Field>
     <Field label={S.criterionReason}><textarea className="ds-input" required minLength={2} value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
@@ -187,7 +188,7 @@ function ArtifactForm({ pkg }: { pkg: SupplierPackageRow }) {
   const calculate = async () => { try { setError(''); const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)); setChecksum('sha256:' + [...new Uint8Array(hash)].map((n) => n.toString(16).padStart(2, '0')).join('')); } catch { setError('보안 연결에서 본문 체크섬을 계산하세요.'); } };
   return <form className="ds-stack" onSubmit={(e) => { e.preventDefault(); try { setError(''); m.mutate({ params: { id: pkg.packageId }, body: { ...parse(), type, title, version: pkg.version, uri, checksum, text: text || null } }); } catch (e) { setError(errorText(e)); } }}>
     <p>{S.bodyHelp}</p>
-    <Select label={S.artifactType} value={type} onChange={(e) => { setType(e.target.value as SupplierArtifactType); setText(''); setChecksum(''); setMetadata(e.target.value === 'API_CONTRACT' ? '{"apiFormat":"OPENAPI"}' : '{}'); }}>{SUPPLIER_ARTIFACT_TYPES.map((t) => <option key={t} value={t}>{SUPPLIER_ARTIFACT_LABEL[t]}</option>)}</Select>
+    <Select label={S.artifactType} value={type} onChange={(e) => { setType(e.target.value as SupplierArtifactType); setText(''); setChecksum(''); setMetadata(e.target.value === 'API_CONTRACT' ? '{"apiFormat":"OPENAPI"}' : '{}'); }}>{SUPPLIER_ARTIFACT_TYPES.map((t) => <option key={t} value={t}>{S.artifactLabels[t]}</option>)}</Select>
     <Field label={S.artifactTitle}><input className="ds-input" required value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
     <Field label={S.uri}><input className="ds-input" type="url" required value={uri} onChange={(e) => setUri(e.target.value)} /></Field>
     <Field label={S.metadata}><textarea className="ds-input" value={metadata} onChange={(e) => setMetadata(e.target.value)} maxLength={10000} /></Field>
@@ -199,3 +200,4 @@ function ArtifactForm({ pkg }: { pkg: SupplierPackageRow }) {
     <Button type="submit" disabled={m.isPending}>{S.addArtifact}</Button><Result m={m} />
   </form>;
 }
+

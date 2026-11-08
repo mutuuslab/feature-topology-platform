@@ -2,7 +2,7 @@
 // (정적 데모는 코드 하나씩 스냅샷) 기존 Variant 조건(국가·차종·트림·UPG-VC)과 상품 구성 규칙을 합쳐 보인다. 고르는 판단은 룰 작성자 몫이다.
 import { Link } from 'react-router-dom';
 import type { CompositionRuleCandidate, VariantConditionCandidate } from '../../../../contracts/src/rules/region-code';
-import { regionCodeLabel } from '../../../../contracts/src/rules/region-code';
+import { regionCodeDisplayLabel as regionCodeLabel } from '../../copy/taxonomy-level-names';
 import { useApi } from '../../api/hooks';
 import { regionCopy as R } from '../../copy/taxonomy-levels';
 import { DataTable, ErrorNote, Panel } from '../../design';

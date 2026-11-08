@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Suspense } from 'react';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { ROUTES } from '../routes';
+import { __resetLocaleForTest, changeUiLanguage } from '../locale/runtime';
 
 const pkg = { packageId: 'SPK-00001', featureId: 'FEAT-00010', featureVersion: '2.0.0', supplier: 'Tier1-B', version: '2.0.0', status: 'SUBMITTED', createdBy: 'usr-impl', submittedBy: 'usr-impl' };
 let verdict = 'NOT_MET';
@@ -26,9 +27,22 @@ beforeEach(() => {
     return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
   }));
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); __resetLocaleForTest(); vi.unstubAllGlobals(); });
 const Portal = ROUTES.find((r) => r.path === '/supplier/portal')!.element;
 const mount = () => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={['/supplier/portal?featureId=FEAT-00010&featureVersion=2.0.0']}><AppProvider><Suspense fallback={<p>불러오는 중</p>}><Portal /></Suspense></AppProvider></MemoryRouter></QueryClientProvider>);
+
+it('changes supplier UI captions live while preserving the review draft and acceptance guard', async () => {
+  mount();
+  await screen.findByRole('heading', { name: '협력사 이관', level: 1 });
+  fireEvent.change(await screen.findByLabelText('검수 의견'), { target: { value: '검수 중인 원문' } });
+  await act(async () => { await changeUiLanguage('en'); });
+  expect(screen.getByRole('heading', { name: 'Supplier handover', level: 1 })).toBeInTheDocument();
+  expect(screen.getByLabelText('Review comment')).toHaveValue('검수 중인 원문');
+  expect(screen.getByRole('checkbox', { name: 'Confirm Development documentation' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Accept review' })).toBeDisabled();
+  expect(screen.getByText('Content not retained')).toBeInTheDocument();
+  expect(writes).toEqual([]);
+});
 
 it('신고된 체크섬은 본문 검증과 구분하고 자동 기준 미충족이면 합격을 막는다', async () => {
   mount();

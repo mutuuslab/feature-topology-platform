@@ -42,7 +42,7 @@ export const taxonomyCopy = /* @__PURE__ */ localizedCopy('taxonomy-levels.taxon
     platformOnly: '플랫폼 노드만 고치고 지울 수 있습니다',
   },
   feature: {
-    tab: taxonomyLevelNames.tab,
+    get tab() { return taxonomyLevelNames.tab; },
     level: '분류 수준',
     placement: '배치 노드',
     unplaced: '배치 전 — 아래에서 같은 수준의 노드를 고르세요',

@@ -1,6 +1,7 @@
 // Feature 상세 — 분류 경로(FR-CAT-004-009·010, FR-REG-001-008). 분류 수준, 배치 노드와 L0부터의 경로, 배치 노드 아래 구성(SW·Flag·신호),
 // 같은 수준의 노드로 배치·옮기기. 값은 /api/features/:id/taxonomy 그대로, 배치 규칙(같은 수준만)은 서버가 정한다.
 import { useState } from 'react';
+import { useUiLocale } from '../../locale/react';
 import { Link } from 'react-router-dom';
 import type { FeaturePlacement, TaxonomyLevelCode, TaxonomyTreeNode } from '../../../../contracts/src/schemas/taxonomy-tree';
 import { TAXONOMY_PLACEMENT_ROLES } from '../../../../contracts/src/rules/taxonomy-tree';
@@ -25,6 +26,7 @@ const INVALIDATE = ['featureTaxonomy', 'taxonomyLevels', 'taxonomyLevel', 'taxon
 const F = T.feature;
 
 export default function TaxonomyTab({ id }: { id: string }) {
+  useUiLocale();
   const q = useApi<FeatureTaxonomyView>('featureTaxonomy', { params: { id } });
   const d = q.data;
   return (

@@ -1,10 +1,12 @@
 // /policies/global-scope — 브랜드·권역별 정책(B7 (b), FR-GLB-001-001~004)과 적용 지역 코드 대응 표(FR-CRC-001-002).
 // 브랜드(현대·기아·제네시스)로 정책을 보고, 지역 코드·법규 조건으로 좁히고, 정책 하나의 조건을 등록·수정한다(수정은 Feature Owner·시스템 관리자만 — 서버가 403).
 import { useState } from 'react';
+import { useUiLocale } from '../../locale/react';
 import { Link } from 'react-router-dom';
-import { BRAND_LABEL, BRANDS, type Brand, type PolicyGlobalScope } from '../../../../contracts/src/schemas/global-scope';
+import { BRANDS, type Brand, type PolicyGlobalScope } from '../../../../contracts/src/schemas/global-scope';
 import { canEditGlobalScope, GLOBAL_SCOPE_AUTHOR_ROLES } from '../../../../contracts/src/rules/global-scope';
-import { REGION_CODE_TABLE, regionCodeLabel, type RegionCodeRow } from '../../../../contracts/src/rules/region-code';
+import { REGION_CODE_TABLE, type RegionCodeRow } from '../../../../contracts/src/rules/region-code';
+import { brandDisplayName, regionCodeDisplayLabel as regionCodeLabel, regionDisplayName } from '../../copy/taxonomy-level-names';
 import { actorFor, rolesFor } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { brandCopy as B, regionCopy as R } from '../../copy/taxonomy-levels';
@@ -26,6 +28,7 @@ interface RegionView {
 const INVALIDATE = ['brands', 'brandPolicies', 'globalScopes', 'policyGlobalScope', 'regionCodes', 'audit', 'events'];
 
 export default function GlobalScopeScreen() {
+  useUiLocale();
   const brands = useApi<BrandsView>('brands');
   const total = useApi<SearchView>('globalScopes');
   return (
@@ -56,7 +59,7 @@ function BrandPanel({ brands }: { brands: BrandsView }) {
   const rows = (byBrand.data?.items ?? []).filter((s) => !code || s.regionCodes.includes(code));
   return (
     <Panel id="brand-policies">
-      <Segmented<Brand> label={B.brand} value={brand} onChange={setBrand} options={BRANDS.map((b) => ({ value: b, label: BRAND_LABEL[b], count: brands.items.find((x) => x.brand === b)?.policies }))} />
+      <Segmented<Brand> label={B.brand} value={brand} onChange={setBrand} options={BRANDS.map((b) => ({ value: b, label: brandDisplayName(b), count: brands.items.find((x) => x.brand === b)?.policies }))} />
       <div className="ds-toolbar">
         <Select label={B.regionCode} value={code} onChange={(e) => setCode(e.target.value)}>
           <option value="">{B.all}</option>
@@ -66,7 +69,7 @@ function BrandPanel({ brands }: { brands: BrandsView }) {
         </Select>
       </div>
       <AsyncView state={asyncState(byBrand)} error={byBrand.error} onRetry={() => byBrand.refetch()}>
-        {code && !rows.length ? <p className="ds-field__hint" role="status">{B.emptyFilter}</p> : <ScopeTable rows={rows} caption={`${B.brand} ${BRAND_LABEL[brand]}`} />}
+        {code && !rows.length ? <p className="ds-field__hint" role="status">{B.emptyFilter}</p> : <ScopeTable rows={rows} caption={`${B.brand} ${brandDisplayName(brand)}`} />}
       </AsyncView>
     </Panel>
   );
@@ -84,7 +87,7 @@ function ScopeTable({ rows, caption }: { rows: ScopeView[]; caption: string }) {
         { key: 'p', header: C.policy, cell: (r) => <span className="ds-mono">{r.policyId}</span>, sort: (r) => r.policyId },
         { key: 'k', header: C.flag, cell: (r) => <span className="ds-mono">{r.policy?.flagKey ?? '—'}</span> },
         { key: 'f', header: C.feature, cell: (r) => <IdChip id={r.featureId} version={r.policy?.featureVersion} to={r.policy ? `/features/${r.featureId}/${r.policy.featureVersion}?tab=taxonomy` : undefined} copy={false} /> },
-        { key: 'b', header: C.brands, cell: (r) => <span className="ds-chips">{r.brands.map((b) => <span key={b} className="ds-tag">{BRAND_LABEL[b]}</span>)}</span> },
+        { key: 'b', header: C.brands, cell: (r) => <span className="ds-chips">{r.brands.map((b) => <span key={b} className="ds-tag">{brandDisplayName(b)}</span>)}</span> },
         { key: 'c', header: C.codes, cell: (r) => (r.regionCodes.length ? r.regionCodes.map(regionCodeLabel).join(', ') : '—') },
         { key: 'r', header: C.rules, cell: (r) => (r.complianceRuleIds.length ? <span className="ds-mono">{r.complianceRuleIds.join(', ')}</span> : '—') },
         { key: 'v', header: C.rev, cell: (r) => <span className="ds-mono">{r.revision}</span>, align: 'right' },
@@ -107,7 +110,7 @@ function RegionCodesPanel() {
           rowKey={(r) => r.code}
           columns={[
             { key: 'c', header: C.code, cell: (r) => <b className="ds-mono">{r.code}</b> },
-            { key: 'n', header: C.name, cell: (r) => r.nameKo },
+            { key: 'n', header: C.name, cell: (r) => regionDisplayName(r.code) },
             { key: 'm', header: C.market, cell: (r) => <span className="ds-mono">{r.market}</span> },
             { key: 'k', header: C.countries, cell: (r) => (r.countries.length ? <span className="ds-mono">{r.countries.join(', ')}</span> : <span className="ds-field__hint">{R.general}</span>) },
             { key: 'f', header: C.features, cell: (r) => <span className="ds-mono">{r.features}</span>, align: 'right' },
@@ -165,7 +168,7 @@ function ScopeForm() {
             {BRANDS.map((b) => (
               <label key={b} className="ds-check">
                 <input type="checkbox" checked={brands.includes(b)} onChange={() => setBrands((x) => toggle(x, b))} />
-                {BRAND_LABEL[b]}
+                {brandDisplayName(b)}
               </label>
             ))}
           </fieldset>

@@ -173,9 +173,10 @@ export interface RuntimeFlagView {
  * 차단이 하나라도 걸려 있으면 DISABLED, 오프라인·판단 불일치는 UNKNOWN(차량 상태를 단정하지 않는다), 켜진 플래그가 있으면 ON.
  * 게시본이 없는 차량(배포 대상 밖)은 그 기능이 실리지 않았으므로 OFF다.
  */
-export function activationState(v: { link: 'ONLINE' | 'OFFLINE'; kills: string[]; flags: RuntimeFlagView[] }, flagKey?: string): ActivationState {
+export function activationState(v: { link: 'ONLINE' | 'OFFLINE'; kills: string[]; flags: RuntimeFlagView[]; pending?: string[] }, flagKey?: string): ActivationState {
   const flags = flagKey ? v.flags.filter((f) => f.flagKey === flagKey) : v.flags;
   if (flags.some((f) => f.local.reason === 'KILL_SWITCH') || (!flagKey && v.kills.length > 0)) return 'DISABLED';
+  if (flagKey && v.pending?.includes(flagKey)) return 'UNKNOWN';
   if (v.link === 'OFFLINE' || flags.some((f) => f.drift)) return 'UNKNOWN';
   return flags.some((f) => f.local.value) ? 'ON' : 'OFF';
 }

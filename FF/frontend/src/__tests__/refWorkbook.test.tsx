@@ -65,7 +65,7 @@ function mount(path = '/master/feature-db') {
   );
 }
 
-const metric = (key: string) => document.querySelector(`[data-metric="${key}"] dd`)?.firstChild?.textContent;
+const metric = (key: string) => document.querySelector(key === 'rows' ? '[data-key-message] .ds-key__value' : `[data-metric="${key}"] dd`)?.firstChild?.textContent;
 const tableIds = () => [...document.querySelectorAll('tbody tr')].map((tr) => tr.textContent ?? '').map((t) => t.match(/[A-Z]{2}-[A-Z]+-\d{3}/)?.[0]);
 const filters = () => screen.getByRole('complementary', { name: WB.filters });
 const chip = (axis: string, value: string) => within(filters()).getByRole('button', { name: new RegExp(`^${axis} ${value}( |$)`) });

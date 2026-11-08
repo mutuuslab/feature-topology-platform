@@ -17,16 +17,16 @@ const svgX = (e: { clientX: number; currentTarget: Element }) => {
   return svg ? e.clientX - svg.getBoundingClientRect().left : 0;
 };
 
-function useWidth<T extends HTMLElement>(fallback = 720) {
+function useWidth<T extends HTMLElement>(fallback = 720, minimum = 320) {
   const ref = useRef<T>(null);
   const [w, setW] = useState(fallback);
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const ro = new ResizeObserver(([e]) => setW(Math.max(320, Math.floor(e.contentRect.width))));
+    const ro = new ResizeObserver(([e]) => setW(Math.max(minimum, Math.floor(e.contentRect.width))));
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [minimum]);
   return [ref, w] as const;
 }
 
@@ -207,11 +207,11 @@ export function niceMax(v: number) {
 const seriesColor = (s: { key: string; color?: string }) => s.color ?? STAGE_COLOR[s.key as Stage];
 
 /** tick — x축 눈금 글자(기본: 주 'YYYY-MM-DD'의 월-일, 긴 기간은 월). 시간 구간 등 다른 축은 화면이 준다 */
-export function TrendChart({ weeks, series, label, weekLabel, tick }: { weeks: string[]; series: { key: string; label: string; values: number[]; color?: string }[]; label: string; weekLabel: string; tick?: (w: string) => string }) {
-  const [ref, width] = useWidth<HTMLDivElement>();
+export function TrendChart({ weeks, series, label, weekLabel, tick, maxTicks, showEndLabels = true }: { weeks: string[]; series: { key: string; label: string; values: number[]; color?: string }[]; label: string; weekLabel: string; tick?: (w: string) => string; maxTicks?: number; showEndLabels?: boolean }) {
+  const [ref, width] = useWidth<HTMLDivElement>(720, showEndLabels ? 320 : 180);
   const [idx, setIdx] = useState<number | null>(null);
   const left = 44;
-  const right = 72;
+  const right = showEndLabels ? 72 : 16;
   const top = 12;
   const h = 240;
   const bottom = 24;
@@ -224,7 +224,7 @@ export function TrendChart({ weeks, series, label, weekLabel, tick }: { weeks: s
   const fmt = formatCount;
   // 주 눈금 — 반년 넘게 보면 월(YYYY-MM)로, 5년이면 반년마다
   const long = weeks.length > 60;
-  const step = weeks.length <= 30 ? 4 : long ? 26 : 8;
+  const step = maxTicks ? Math.max(1, Math.ceil((weeks.length - 1) / Math.max(1, maxTicks - 1))) : weeks.length <= 30 ? 4 : long ? 26 : 8;
   // 끝 표기 — 서로 12px 넘게 떨어진 것만(겹치면 범례·툴팁이 맡는다)
   const ends = series.map((s) => ({ s, yy: y(s.values.at(-1) ?? 0) })).sort((a, b) => a.yy - b.yy);
   const labeled = new Set(ends.filter((e, i) => (i === 0 || e.yy - ends[i - 1].yy >= 12) && (i === ends.length - 1 || ends[i + 1].yy - e.yy >= 12)).map((e) => e.s.key));
@@ -259,7 +259,7 @@ export function TrendChart({ weeks, series, label, weekLabel, tick }: { weeks: s
         ))}
         {/* 첫·마지막 주 눈금은 축 안쪽으로 — 가운데 맞춤이면 첫 주가 왼쪽 아래 모서리의 세로축 '0'과 겹쳤다(시연 모드, 2026-11-05) */}
         {weeks.map((w, i) =>
-          i % step === 0 || (i === weeks.length - 1 && i % step >= step - 1) ? (
+          i % step === 0 || (i === weeks.length - 1 && (maxTicks || i % step >= step - 1)) ? (
             <text key={w} x={x(i)} y={h - 6} className="ds-viz__tick" textAnchor={i === 0 && weeks.length > 1 ? 'start' : i === weeks.length - 1 && weeks.length > 1 ? 'end' : 'middle'}>
               {tick ? tick(w) : long ? w.slice(0, 7) : w.slice(5)}
             </text>
@@ -273,7 +273,7 @@ export function TrendChart({ weeks, series, label, weekLabel, tick }: { weeks: s
           return (
             <g key={s.key}>
               <circle cx={x(weeks.length - 1)} cy={y(v)} r={4} fill={seriesColor(s)} className="ds-viz__dot" />
-              {labeled.has(s.key) && (
+              {showEndLabels && labeled.has(s.key) && (
                 <text x={x(weeks.length - 1) + 10} y={y(v)} className="ds-viz__value ds-viz__value--sm" dominantBaseline="central">
                   {s.label} {formatCount(v)}
                 </text>

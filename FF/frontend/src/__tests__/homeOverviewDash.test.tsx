@@ -124,7 +124,8 @@ describe('홈 수신 현황 대시보드', () => {
     expect(SUMMARY.attention!.vehicles[0].kind).toBe('REJECTED');
     const replies = screen.getByRole('region', { name: O.top.replies });
     expect(within(replies).getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual(SUMMARY.replyGaps!.map((g) => `/deployments/${g.publicationId}`));
-    expect(within(replies).getByText(O.top.pending(SUMMARY.replyGaps![0].pending, SUMMARY.replyGaps![0].targets))).toBeTruthy();
+    expect(within(replies).getByText(O.top.replied(SUMMARY.replyGaps![0].replied, SUMMARY.replyGaps![0].targets))).toBeTruthy();
+    expect(within(replies).queryByText(O.top.pending(SUMMARY.replyGaps![0].pending, SUMMARY.replyGaps![0].targets))).toBeNull();
     expect(screen.getByRole('region', { name: O.preparation })).toBeTruthy();
   });
 

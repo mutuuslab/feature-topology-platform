@@ -28,7 +28,7 @@ function Attestation({ s }: { s: FlagScanRun }) {
   const a = s.attestation;
   if (!a) return <span className="fc-num">—</span>;
   return (
-    <span className="fc-status" data-sev={a.kind === 'NONE' ? 'WARNING' : 'OK'}>
+    <span className="ds-tag">
       {T.attestation[a.kind] ?? a.kind}
     </span>
   );

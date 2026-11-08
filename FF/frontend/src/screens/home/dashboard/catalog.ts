@@ -32,7 +32,7 @@ export interface GadgetTypeDef {
 export const SOURCE_APIS: Record<string, string[]> = {
   features: ['listFeatures'],
   policies: ['listPolicies'],
-  myReviews: ['baselineRequests', 'listPolicies', 'listProducts', 'safetyProfiles', 'killRequests', 'extConflicts'],
+  myReviews: ['baselineRequests', 'listPolicies', 'listProducts', 'workQueues', 'killRequests', 'killPostReviews', 'listRefChanges', 'extConflicts', 'lakeModels', 'featureHealth', 'canaryOverview', 'almRejudge'],
   kills: ['killRequests'],
   anomalies: ['anomalies'],
   audit: ['audit'],
@@ -133,6 +133,22 @@ const ROLE_BOARDS: Record<string, () => Board> = {
     build('2L', [
       [['assigned'], ['filter', { source: 'features', status: 'VERIFIED', columns: ['key', 'summary', 'country', 'status'] }, 'filter-1'], ['procedures']],
       [['summary'], ['pie', { source: 'features', groupBy: 'lifecycle' }, 'pie-1'], ['createdResolved', { source: 'reviews', days: 30 }, 'createdResolved-1']],
+    ]),
+  opslead: () =>
+    build('2L', [
+      [['assigned'], ['kills'], ['procedures']],
+      [['summary'], ['filter', { source: 'anomalies', status: 'open', columns: ['key', 'kind', 'severity', 'status'] }, 'filter-1'], ['activity'], ['links']],
+    ]),
+  safety2: () => ROLE_BOARDS.quality(),
+  productowner: () =>
+    build('2L', [
+      [['assigned'], ['filter', { source: 'features', status: 'VERIFIED', columns: ['key', 'summary', 'country', 'status'] }, 'filter-1'], ['procedures']],
+      [['summary'], ['pie', { source: 'features', groupBy: 'country' }, 'pie-1'], ['links']],
+    ]),
+  sysadmin: () =>
+    build('2L', [
+      [['assigned'], ['activity'], ['procedures']],
+      [['summary'], ['links']],
     ]),
   // 조회 — 운영 요약·활동
   viewer: () =>

@@ -76,7 +76,7 @@ export function DataTable<T>({ rows, columns, rowKey, onOpen, caption, maxHeight
     // 처음 값도 관찰 알림(그리기 직전, 레이아웃이 끝난 뒤)으로 읽는다 — 붙자마자 읽으면 큰 화면(차량 수백 대 표)에서 표마다 레이아웃을 한 번 더 했다
     return () => ro.disconnect();
   }, []);
-  const keyScroll = scrolls && !onOpen;
+  const keyScroll = scrolls;
 
   const sorted = useMemo(() => {
     if (!sort) return rows;

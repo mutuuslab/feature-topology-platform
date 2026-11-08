@@ -20,11 +20,13 @@ function PackageBars({ rows }: { rows: FlagCoverageRow[] }) {
     const warn = mine.filter((r) => !r.releaseBlocking && r.severity !== 'BLOCKER' && r.status !== 'OK').length;
     return { p, total: mine.length, ok: mine.length - block - warn, warn, block };
   }).filter((x) => x.total > 0);
-  // 패키지마다 100% — 작은 패키지도 연결 비율이 같은 눈금으로 보인다(수는 오른쪽 분수)
-  const pct = (k: number, total: number) => `${(k / Math.max(1, total)) * 100}%`;
+    // 모든 패키지를 같은 건수 축에서 비교한다.
+    const max = Math.max(1, ...by.map((x) => x.total));
+    const pct = (k: number) => `${(k / max) * 100}%`;
   return (
     <>
-      <ul className="fc-legend" aria-hidden="true">
+        <p className="fc-note">{T.coverage.packageScale(max)}</p>
+        <ul className="fc-legend" aria-hidden="true">
         <li><i style={{ '--c': 'var(--ok)' } as React.CSSProperties} />{T.severity.OK}</li>
         <li><i style={{ '--c': 'var(--warn)' } as React.CSSProperties} />{T.severity.WARNING}</li>
         <li><i style={{ '--c': 'var(--danger)' } as React.CSSProperties} />{T.severity.BLOCKER}</li>
@@ -36,9 +38,9 @@ function PackageBars({ rows }: { rows: FlagCoverageRow[] }) {
             <li key={x.p} className="fc-pkg" aria-label={T.coverage.pkgBar(name, x.ok, x.warn, x.block)}>
               <span className="fc-pkg__name">{name}</span>
               <span className="fc-pkg__bar" aria-hidden="true">
-                <span data-k="ok" style={{ width: pct(x.ok, x.total) }} />
-                <span data-k="warn" style={{ width: pct(x.warn, x.total) }} />
-                <span data-k="block" style={{ width: pct(x.block, x.total) }} />
+                  <span data-k="ok" style={{ width: pct(x.ok) }} />
+                  <span data-k="warn" style={{ width: pct(x.warn) }} />
+                  <span data-k="block" style={{ width: pct(x.block) }} />
               </span>
               <span className="fc-pkg__num">{`${x.ok}/${x.total}`}</span>
             </li>

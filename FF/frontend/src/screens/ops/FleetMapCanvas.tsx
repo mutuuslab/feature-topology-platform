@@ -25,10 +25,10 @@ export const SUBSCRIPTION_VAR: Record<SubscriptionState, string> = {
   NONE: '--muted',
 };
 export const ACTIVATION_VAR: Record<ActivationState, string> = {
-  ON: '--ok',
-  OFF: '--faint',
-  DISABLED: '--danger',
-  UNKNOWN: '--warn',
+  ON: '--mark-ok',
+  OFF: '--mark-neutral',
+  DISABLED: '--mark-danger',
+  UNKNOWN: '--mark-warn',
 };
 export const NO_RUNTIME_VAR = '--line-strong';
 /** 자동차 아이콘을 만들 상태 색 토큰 전부 */
@@ -115,6 +115,7 @@ export function toGeoJSON(el: Element, items: FleetMapVehicle[], lens: MapLens, 
           region: v.position!.precision === 'REGION',
           stale: v.stale,
           color: color(stateVar(v, lens)),
+          hollow: stateVar(v, lens) === HOLLOW_VAR || stateVar(v, lens) === ACTIVATION_VAR.UNKNOWN,
           icon: carIconName(stateVar(v, lens)),
           // 정지 차량은 방향이 없다 — 북쪽으로 둔다
           heading: v.position!.heading ?? 0,
@@ -345,7 +346,7 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
         const surface = cssVar(el, '--surface');
         // 상태 색마다 자동차 아이콘 하나 — 유리·바퀴는 테마와 무관하게 어두운 색
         const carColors = { outline: surface, glass: isDark(el) ? cssVar(el, '--paper') : cssVar(el, '--ink-2') };
-        for (const v of CAR_STATE_VARS) m.addImage(carIconName(v), carImage({ ...carColors, body: cssVar(el, v), hollow: v === HOLLOW_VAR }), { pixelRatio: CAR_PIXEL_RATIO });
+        for (const v of CAR_STATE_VARS) m.addImage(carIconName(v), carImage({ ...carColors, body: cssVar(el, v), hollow: v === HOLLOW_VAR || v === ACTIVATION_VAR.UNKNOWN }), { pixelRatio: CAR_PIXEL_RATIO });
         const SYN = ['all', ['!', ['get', 'demo']], ['!', ['get', 'region']]];
         // 합성 모집단 — 넓게 볼 때는 점, 도시 단위로 확대하면 작은 자동차
         m.addLayer({
@@ -355,9 +356,11 @@ export function FleetMapCanvas({ items, lens, selected, focus = 0, onSelect, vie
           maxzoom: SYN_CAR_ZOOM,
           filter: SYN,
           paint: {
-            'circle-color': ['get', 'color'],
+            'circle-color': ['case', ['get', 'hollow'], surface, ['get', 'color']],
             'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.5, 4, 2.2, 6, 3, 9, 4],
             'circle-opacity': 0.85,
+            'circle-stroke-color': ['get', 'color'],
+            'circle-stroke-width': ['case', ['get', 'hollow'], 1.5, 0],
           },
         });
         m.addLayer({

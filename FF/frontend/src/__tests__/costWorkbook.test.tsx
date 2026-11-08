@@ -57,7 +57,7 @@ const mount = () => {
     </QueryClientProvider>,
   );
 };
-const metric = (key: string) => document.querySelector(`[data-metric="${key}"] dd`)?.firstChild?.textContent;
+const metric = (key: string) => document.querySelector(key === 'approvedCost' ? '[data-key-message] .ds-key__value' : `[data-metric="${key}"] dd`)?.firstChild?.textContent;
 const ids = () => [...document.querySelectorAll('tbody tr')].map((tr) => tr.textContent?.match(/EST-\d{4}/)?.[0]).sort();
 const chip = (axis: string, value: string) => within(screen.getByRole('complementary', { name: WB.filters })).getByRole('button', { name: new RegExp(`^${axis} ${value}( |$)`) });
 
@@ -67,6 +67,7 @@ describe('개발비 산정 목록 탐색판', () => {
     await waitFor(() => expect(ids()).toHaveLength(4));
     expect(metric('projects')).toBe('4');
     expect(metric('approvedCost')).toBe('400.0');
+    expect(document.querySelector('[data-metric="approvedCost"]')).toBeNull(); // 금액 히어로 중복 금지
     fireEvent.click(chip(E.axis.asils, 'D'));
     await waitFor(() => expect(ids()).toEqual(['EST-0002', 'EST-0003']));
     expect(metric('projects')).toBe('2');

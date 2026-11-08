@@ -202,7 +202,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 0,
         "y": 1
@@ -228,12 +228,13 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "#c9c6bd"
           }
         },
         "overrides": []
@@ -246,10 +247,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
-        "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -262,7 +263,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 6,
         "y": 1
@@ -289,15 +290,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1.5,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 2,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -315,10 +316,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -331,7 +332,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 12,
         "y": 1
@@ -358,15 +359,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1.5,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 2,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -384,10 +385,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -400,7 +401,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 18,
         "y": 1
@@ -427,15 +428,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1.5,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 2,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -453,10 +454,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -468,7 +469,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 5
       },
       "panels": []
     },
@@ -485,7 +486,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -517,7 +518,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -525,10 +526,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -542,11 +549,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -568,7 +574,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -600,7 +606,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -608,10 +614,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -625,11 +637,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -642,7 +653,7 @@
       "id": 9,
       "type": "timeseries",
       "title": "폴백(활성 1천 대·시간당)",
-      "description": "Safe Default로 떨어진 횟수. 사유는 Feature 운영 건강도에서.",
+      "description": "Safe Default로 떨어진 횟수.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -651,7 +662,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 14
       },
       "targets": [
         {
@@ -683,7 +694,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -691,10 +702,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -708,11 +725,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -734,7 +750,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 14
       },
       "targets": [
         {
@@ -766,7 +782,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -774,10 +790,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "links": [
             {
@@ -791,11 +813,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -817,7 +838,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 22
       },
       "targets": [
         {
@@ -839,7 +860,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -847,21 +868,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -883,7 +909,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 22
       },
       "targets": [
         {
@@ -915,7 +941,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -923,21 +949,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {

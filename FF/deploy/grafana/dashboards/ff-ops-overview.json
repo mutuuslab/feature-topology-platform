@@ -204,13 +204,13 @@
       "id": 2,
       "type": "stat",
       "title": "상태 보고 수락률 (목표 99.5%)",
-      "description": "차량 상태 보고 v2 가운데 6단계 수신 검사를 통과한 비율(7일). 떨어지면 위조·재전송·스키마 위반이 늘었거나 차량 SW가 규격과 어긋난 것이다. 조치: 차량 텔레메트리 수신 대시보드의 거부 코드 → FF 이상 징후(보안).",
+      "description": "차량 상태 보고 v2 가운데 6단계 수신 검사를 통과한 비율(7일). 조치: 차량 텔레메트리 수신 대시보드의 거부 코드 → FF 이상 징후(보안).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 0,
         "y": 1
@@ -236,15 +236,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.99,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.995,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -262,23 +262,23 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
       "id": 3,
       "type": "stat",
       "title": "서명 검증 성공률 (목표 99.9%)",
-      "description": "상태 보고 state_auth(CMAC)와 차량이 회신한 게시본 서명 검증이 맞은 비율(7일). 떨어지면 키 회전·Epoch 불일치 또는 위조 시도다. 조치: FF 보안·인증서(/admin/security) — 키 Epoch, 이상 징후(보안).",
+      "description": "상태 보고 state_auth(CMAC)와 차량이 회신한 게시본 서명 검증이 맞은 비율(7일). 조치: FF 보안·인증서(/admin/security) — 키 Epoch, 이상 징후(보안).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 6,
         "y": 1
@@ -304,15 +304,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.995,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.999,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -330,23 +330,23 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
       "id": 4,
       "type": "stat",
       "title": "정책 반영 120초 안 (목표 95%)",
-      "description": "정책 게시본 서명부터 차량 회신까지 120초 안에 끝난 비율(7일). 떨어지면 전달 채널(OTA 서버·GLEO) 지연이나 통신 장애다. 조치: 수신 상세의 통신 채널별 패널, FF 배포 화면(/deployments).",
+      "description": "정책 게시본 서명부터 차량 회신까지 120초 안에 끝난 비율(7일). 조치: 수신 상세의 통신 채널별 패널, FF 배포 화면(/deployments).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 12,
         "y": 1
@@ -372,15 +372,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.9,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.95,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -398,23 +398,23 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
       "id": 5,
       "type": "stat",
       "title": "긴급 차단 기한 내 반영 (목표 99%)",
-      "description": "긴급 차단 대상 차량 가운데 등급별 기한(예상 시간 + 여유) 안에 끝 상태를 보고한 비율(7일). 떨어지면 오프라인 차량·DC3(다음 시동) 대기가 많은 것이다. 조치: 긴급 차단 반영 대시보드, FF 긴급 차단·복구(/ops/kill).",
+      "description": "긴급 차단 대상 차량 가운데 등급별 기한(예상 시간 + 여유) 안에 끝 상태를 보고한 비율(7일). 조치: 긴급 차단 반영 대시보드, FF 긴급 차단·복구(/ops/kill).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 6,
         "x": 18,
         "y": 1
@@ -441,15 +441,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.97,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.99,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -467,10 +467,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -482,7 +482,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 5
       },
       "panels": []
     },
@@ -499,7 +499,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -523,15 +523,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.25,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.5,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -565,7 +565,7 @@
         "h": 6,
         "w": 18,
         "x": 6,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -597,15 +597,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 6,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 14.4,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -613,12 +613,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           }
         },
@@ -626,11 +629,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -648,7 +650,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 12
       },
       "panels": []
     },
@@ -656,16 +658,16 @@
       "id": 10,
       "type": "stat",
       "title": "수신율",
-      "description": "등록 차량 가운데 최근 1시간 안에 상태 보고·회신이 있었던 비율. 밤에는 주차 차량이 많아 낮아지는 것이 정상 — 같은 시간대의 지난주와 비교한다.",
+      "description": "등록 차량 가운데 최근 1시간 안에 상태 보고·회신이 있었던 비율.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 0,
-        "y": 14
+        "y": 13
       },
       "targets": [
         {
@@ -688,15 +690,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.5,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.7,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -714,10 +716,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -730,10 +732,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 4,
-        "y": 14
+        "y": 13
       },
       "targets": [
         {
@@ -757,15 +759,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 60,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 120,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -783,10 +785,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -799,10 +801,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 8,
-        "y": 14
+        "y": 13
       },
       "targets": [
         {
@@ -826,15 +828,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 120,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 600,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -852,10 +854,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -868,10 +870,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 12,
-        "y": 14
+        "y": 13
       },
       "targets": [
         {
@@ -895,15 +897,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 600,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 3600,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -921,10 +923,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -937,10 +939,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 16,
-        "y": 14
+        "y": 13
       },
       "targets": [
         {
@@ -964,15 +966,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "red"
+                "color": "#e0453a"
               },
               {
                 "value": 0.9,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.99,
-                "color": "green"
+                "color": "#2fa66c"
               }
             ]
           },
@@ -990,26 +992,26 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
       "id": 15,
       "type": "stat",
       "title": "Flag 평가 오류율",
-      "description": "OpenFeature 평가 가운데 ERROR 사유 비율(1시간). 오르면 Edge·평가기 장애 — Flag 평가 대시보드.",
+      "description": "OpenFeature 평가 가운데 ERROR 사유 비율(1시간).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 20,
-        "y": 14
+        "y": 13
       },
       "targets": [
         {
@@ -1032,15 +1034,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.01,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.05,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1058,10 +1060,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -1073,7 +1075,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 17
       },
       "panels": []
     },
@@ -1081,7 +1083,7 @@
       "id": 17,
       "type": "timeseries",
       "title": "상태 보고 수락·거부(분당)",
-      "description": "국가별 수락과 거부. 수락이 현지 출퇴근 시간에 오르는 모양이 정상. 거부가 함께 오르면 수신 상세에서 코드를 본다.",
+      "description": "국가별 수락과 거부. 수락이 현지 출퇴근 시간에 오르는 모양이 정상.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1090,7 +1092,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 18
       },
       "targets": [
         {
@@ -1122,7 +1124,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1130,21 +1132,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -1166,7 +1173,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 18
       },
       "targets": [
         {
@@ -1198,7 +1205,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1206,21 +1213,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {

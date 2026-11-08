@@ -2,6 +2,9 @@
 // 도메인 서비스는 고치지 않고 이벤트만 읽는다. 라벨은 국가·차종·SW·Feature·Flag·결과뿐 — VIN·가명은 라벨·로그에 싣지 않는다.
 // 같은 사건을 OTLP 로그(개인정보 없는 필드만)로도 낸다(OTEL_EXPORTER_OTLP_ENDPOINT가 있을 때, Grafana Loki).
 import { Inject, Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { flagAdoptionCounts } from '@ff/contracts';
+import { VehicleRuntimeService } from '../domains/d02-runtime/vehicle-runtime/vehicle-runtime.service';
 import { ANNOTATION_EVENTS, effectiveBasisPoints, endState, SIGNATURE_REJECT_REASONS, SILENT_WINDOWS, type KillRequest, type OtelSpan, type Policy } from '@ff/contracts';
 import { Clock } from './clock';
 import { DB, type Db } from './db';
@@ -31,16 +34,20 @@ export class TelemetryMetrics implements OnModuleInit {
   /** VIN → 마지막 수신 시각(ms) — 처음 긁을 때 DB에서 한 번 채우고 이후 이벤트로 갱신 */
   private lastSeen: Map<string, number> | null = null;
   private fleetCache: { at: number; rows: (VehicleLabels & { vin: string })[] } | null = null;
+  private adoptionAt = -Infinity;
+  private adoptionPending: Promise<void> | null = null;
 
   constructor(
     @Inject(DB) private readonly db: Db,
     private readonly events: EventService,
     private readonly clock: Clock,
     metrics: Metrics,
+    private readonly moduleRef: ModuleRef,
     @Optional() private readonly otlp?: OtlpExporter,
   ) {
     this.reg = metrics.registry;
     this.reg.onCollect(() => this.collect());
+    this.reg.onCollectAsync(() => this.collectAdoption());
   }
 
   onModuleInit() {
@@ -95,6 +102,7 @@ export class TelemetryMetrics implements OnModuleInit {
 
   // ── 이벤트 → 지표 ───────────────────────────────────────
   on(e: PlatformEvent) {
+    this.adoptionAt = -Infinity;
     const p = (e.payload ?? {}) as Record<string, any>;
     if (ANNOTATED.has(e.type)) this.reg.inc('ff_events_total', { type: e.type });
     switch (e.type) {
@@ -223,6 +231,22 @@ export class TelemetryMetrics implements OnModuleInit {
   }
 
   // ── 긁을 때 채우는 gauge ─────────────────────────────────
+  private async collectAdoption(): Promise<void> {
+    const now = this.clock.now().getTime();
+    if (now - this.adoptionAt < COLLECT_TTL_MS) return;
+    if (this.adoptionPending) return this.adoptionPending;
+    this.adoptionPending = (async () => {
+      const runtime = await this.moduleRef.get(VehicleRuntimeService, { strict: false }).fleetStatus();
+      const policies = this.db.all<{ doc: string }>("SELECT doc FROM policy WHERE status = 'DEPLOYED'").map((r) => JSON.parse(r.doc) as Policy);
+      const flags = [...new Map(policies.map((p) => [p.flagKey, { flagKey: p.flagKey, stageRatio: effectiveBasisPoints(p) / 10000 }])).values()];
+      const rows = flagAdoptionCounts(runtime.items, this.fleet(), flags);
+      this.reg.clear('ff_flag_adoption_vehicles');
+      for (const { vehicles, ...labels } of rows) this.reg.set('ff_flag_adoption_vehicles', labels, vehicles);
+      this.adoptionAt = now;
+    })();
+    try { await this.adoptionPending; } finally { this.adoptionPending = null; }
+  }
+
   private fleet() {
     const now = this.clock.now().getTime();
     if (this.fleetCache && now - this.fleetCache.at < COLLECT_TTL_MS) return this.fleetCache.rows;

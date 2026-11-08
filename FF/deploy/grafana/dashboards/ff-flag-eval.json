@@ -238,7 +238,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 0,
         "y": 1
@@ -264,12 +264,13 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "#c9c6bd"
           }
         },
         "overrides": []
@@ -282,23 +283,23 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
-        "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
       "id": 3,
       "type": "stat",
       "title": "폴백 비율",
-      "description": "기본값(DEFAULT)·오류(ERROR)로 떨어진 비율 — 대상 밖·권한 없음이 대부분. 갑자기 오르면 문맥(context) 누락·정책 오류.",
+      "description": "기본값(DEFAULT)·오류(ERROR)로 떨어진 비율 — 대상 밖·권한 없음이 대부분.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 4,
         "y": 1
@@ -324,15 +325,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.1,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.25,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -350,10 +351,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -366,7 +367,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 8,
         "y": 1
@@ -392,15 +393,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.01,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.05,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -418,10 +419,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -434,7 +435,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 12,
         "y": 1
@@ -460,12 +461,13 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "#c9c6bd"
           }
         },
         "overrides": []
@@ -478,10 +480,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
-        "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -494,7 +496,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 16,
         "y": 1
@@ -520,15 +522,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.05,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.2,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -546,10 +548,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -562,7 +564,7 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 5,
+        "h": 4,
         "w": 4,
         "x": 20,
         "y": 1
@@ -587,11 +589,11 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -609,10 +611,10 @@
           "fields": "",
           "values": false
         },
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "area",
-        "textMode": "value_and_name",
-        "justifyMode": "center"
+        "textMode": "value",
+        "justifyMode": "auto"
       }
     },
     {
@@ -624,7 +626,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 5
       },
       "panels": []
     },
@@ -632,7 +634,7 @@
       "id": 9,
       "type": "timeseries",
       "title": "사유별 평가",
-      "description": "TARGETING_MATCH(대상 일치)·DEFAULT·DISABLED(차단·안전 경계)·SPLIT(실험)·ERROR. 긴급 차단 중에는 해당 Feature의 DISABLED가 오른다(시간축 주석).",
+      "description": "TARGETING_MATCH(대상 일치)·DEFAULT·DISABLED(차단·안전 경계)·SPLIT(실험)·ERROR.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -641,7 +643,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -663,7 +665,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -671,10 +673,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "fillOpacity": 40,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
             "stacking": {
               "mode": "normal"
             }
@@ -684,11 +692,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -701,7 +708,7 @@
       "id": 10,
       "type": "timeseries",
       "title": "Flag·변형별 평가",
-      "description": "Flag마다 on·off·safe_default·treatment·control 분포. 한 변형이 갑자기 사라지면 정책 변경을 확인한다.",
+      "description": "Flag마다 on·off·safe_default·treatment·control 분포.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -710,7 +717,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 7
+        "y": 6
       },
       "targets": [
         {
@@ -732,7 +739,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -740,21 +747,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -776,7 +788,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 14
       },
       "targets": [
         {
@@ -798,7 +810,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -806,10 +818,16 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "fillOpacity": 70,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            },
             "drawStyle": "bars",
             "stacking": {
               "mode": "normal"
@@ -820,11 +838,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -846,7 +863,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 14
       },
       "targets": [
         {
@@ -878,7 +895,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -886,21 +903,26 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
-            "spanNulls": true
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -922,7 +944,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 22
       },
       "targets": [
         {
@@ -944,15 +966,15 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 0.01,
-                "color": "orange"
+                "color": "#c99a2b"
               },
               {
                 "value": 0.05,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -960,12 +982,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 10,
+            "lineWidth": 1.5,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "pointSize": 4,
+            "axisBorderShow": false,
             "showPoints": "never",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "line+area"
+              "mode": "dashed"
             }
           }
         },
@@ -973,11 +998,10 @@
       },
       "options": {
         "legend": {
-          "displayMode": "table",
+          "displayMode": "list",
           "placement": "bottom",
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ]
         },
         "tooltip": {
@@ -999,7 +1023,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 22
       },
       "targets": [
         {
@@ -1022,11 +1046,11 @@
               "options": {
                 "0": {
                   "text": "일치",
-                  "color": "green"
+                  "color": "#2fa66c"
                 },
                 "1": {
                   "text": "drift",
-                  "color": "red"
+                  "color": "#e0453a"
                 }
               }
             }
@@ -1036,11 +1060,11 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#2fa66c"
               },
               {
                 "value": 1,
-                "color": "red"
+                "color": "#e0453a"
               }
             ]
           },
@@ -1061,7 +1085,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 30
       },
       "panels": []
     },
@@ -1069,7 +1093,7 @@
       "id": 16,
       "type": "table",
       "title": "배포된 Flag",
-      "description": "Flag ↔ 정책·Feature·F 등급. 행을 누르면 FF 정책 상세로 간다.",
+      "description": "Flag ↔ 정책·Feature·F 등급.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1078,7 +1102,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 32
+        "y": 31
       },
       "targets": [
         {
@@ -1102,7 +1126,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },
@@ -1166,7 +1190,7 @@
       "id": 17,
       "type": "table",
       "title": "오류 평가 추적",
-      "description": "Tempo — 오류로 끝난 feature_flag.evaluation span(가명 속성 없음). 추적 ID를 누르면 span을 연다.",
+      "description": "Tempo — 오류로 끝난 feature_flag.evaluation span(가명 속성 없음).",
       "datasource": {
         "type": "tempo",
         "uid": "${DS_TEMPO}"
@@ -1175,7 +1199,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 32
+        "y": 31
       },
       "targets": [
         {
@@ -1197,7 +1221,7 @@
             "steps": [
               {
                 "value": null,
-                "color": "green"
+                "color": "#5b616c"
               }
             ]
           },

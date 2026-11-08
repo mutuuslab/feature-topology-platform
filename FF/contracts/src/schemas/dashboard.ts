@@ -61,8 +61,9 @@ export type DashboardBoard = z.infer<typeof DashboardBoard>;
 
 const Name = z.string().trim().min(1).max(80);
 const SharedRoles = z.array(Role).max(20);
+const DepartmentId = z.string().regex(/^DEP-[A-Z]+$/).max(24);
 
-export const DashboardCreateBody = z.object({ name: Name, board: DashboardBoard, sharedRoles: SharedRoles.default([]) }).strict();
+export const DashboardCreateBody = z.object({ name: Name, board: DashboardBoard, sharedRoles: SharedRoles.default([]), departmentId: DepartmentId.optional() }).strict();
 export type DashboardCreateBody = z.infer<typeof DashboardCreateBody>;
 
 /** 바꿀 것만 — 버전은 If-Match 머리글(권장) 또는 version */
@@ -74,12 +75,21 @@ export type DashboardUpdateBody = z.infer<typeof DashboardUpdateBody>;
 export const DashboardDeleteBody = z.object({ version: z.number().int().positive().optional() }).strict();
 export const DashboardFavouriteBody = z.object({ favourite: z.boolean() }).strict();
 
+export const DashboardDepartmentDefaultBody = z.object({
+  mode: z.enum(['ROLE', 'DEPARTMENT']),
+  dashboardId: Ident.nullable(),
+  version: z.number().int().nonnegative(),
+}).strict().refine((b) => b.mode === 'ROLE' ? b.dashboardId === null : b.dashboardId !== null, { message: '부서 공통판에는 대시보드를 선택하고 역할 기본판에는 선택을 비우세요' });
+export type DashboardDepartmentDefaultBody = z.infer<typeof DashboardDepartmentDefaultBody>;
+export interface DashboardDepartmentDefault { departmentId: string; mode: 'ROLE' | 'DEPARTMENT'; dashboardId: string | null; version: number }
+
 /** 조회 결과 — favourite·mine은 보는 사람 기준 */
 export interface DashboardView {
   id: string;
   name: string;
   ownerId: string;
   sharedRoles: Role[];
+  departmentId?: string | null;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -89,5 +99,5 @@ export interface DashboardView {
 }
 
 /** 볼 수 있는가 — 소유자이거나 내 역할 중 하나에 공유됐다(서버·정적 데모가 같은 규칙) */
-export const canViewDashboard = (d: { ownerId: string; sharedRoles: readonly string[] }, actor: { id: string; roles: readonly string[] }) =>
-  d.ownerId === actor.id || d.sharedRoles.some((r) => actor.roles.includes(r));
+export const canViewDashboard = (d: { ownerId: string; sharedRoles: readonly string[]; departmentId?: string | null }, actor: { id: string; roles: readonly string[]; departmentId?: string | null }) =>
+  d.ownerId === actor.id || (d.departmentId ? d.departmentId === actor.departmentId || actor.roles.includes('SYSTEM_ADMIN') : d.sharedRoles.some((r) => actor.roles.includes(r)));

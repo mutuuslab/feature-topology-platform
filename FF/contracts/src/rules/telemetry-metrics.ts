@@ -58,6 +58,7 @@ export const TELEMETRY_METRICS: readonly TelemetryMetricDef[] = [
   { name: 'ff_flag_evaluation_errors_total', type: 'counter', help: 'Flag 평가 오류 — 오류 종류', labels: ['flag', 'error'], source: 'platform' },
   { name: 'ff_flag_info', type: 'gauge', help: '배포된 Flag 정보(값 1) — Flag ↔ 정책·Feature 결합용', labels: ['flag', 'policy', 'feature', 'feature_version', 'f_class'], source: 'platform' },
   { name: 'ff_rollout_stage_ratio', type: 'gauge', help: '단계 배포 비율(0~1) — 배포된 정책', labels: ['flag', 'policy', 'feature'], source: 'platform' },
+  { name: 'ff_flag_adoption_vehicles', type: 'gauge', help: '등록 차량의 Flag 적용 상태별 수 — lat/lon은 국가 대표점이며 차량 위치가 아님', labels: ['flag', 'country', 'state', 'lat', 'lon'], source: 'platform' },
   // ── Unleash·이벤트 ──
   { name: 'ff_unleash_edge_request_duration_seconds', type: 'histogram', help: 'Unleash Edge 호출 시간 — 결과 ok·error', labels: ['op', 'result'], source: 'platform', buckets: HTTP_BUCKETS },
   { name: 'ff_unleash_drift', type: 'gauge', help: 'Unleash 서버 정의가 FF 원천과 다르면 1(마지막 대조)', labels: ['flag'], source: 'platform' },
@@ -137,3 +138,8 @@ export const SILENT_WINDOWS = { '1h': 3_600_000, '24h': 86_400_000 } as const;
 
 /** 대시보드 주석으로 쓰는 이벤트 — ff_events_total{type}가 이 종류만 센다(종류 수 제한) */
 export const ANNOTATION_EVENTS = ['policy.deployed', 'policy.restored', 'rollout.staged', 'kill.issued', 'kill.released', 'kill.overdue', 'rollback.started', 'publication.signed', 'publication.closed', 'release.signed', 'sync.completed', 'ops.observation.recorded'] as const;
+/** Country/market representative points, never vehicle coordinates. */
+export const ADOPTION_COUNTRY_POINTS: Readonly<Record<string, readonly [number, number]>> = {
+  KR: [36, 128], US: [39, -98], EU: [50, 10], AU: [-25, 134], JP: [36, 138],
+  DE: [51, 10], FR: [46, 2], GB: [54, -2], CN: [35, 105], IN: [22, 79], CA: [56, -106],
+};

@@ -1404,4 +1404,12 @@ CREATE TRIGGER release_candidate_baseline_no_delete BEFORE DELETE ON release_can
     name: '401_oidc_department_context',
     sql: `ALTER TABLE auth_session ADD COLUMN department_id TEXT;`,
   },
+  {
+    name: '402_department_dashboards',
+    sql: `
+ALTER TABLE dashboard ADD COLUMN department_id TEXT;
+CREATE INDEX dashboard_department ON dashboard (department_id);
+CREATE TABLE dashboard_department_default (department_id TEXT PRIMARY KEY, mode TEXT NOT NULL CHECK (mode IN ('ROLE','DEPARTMENT')), dashboard_id TEXT, version INTEGER NOT NULL, updated_at TEXT NOT NULL);
+`,
+  },
 ];

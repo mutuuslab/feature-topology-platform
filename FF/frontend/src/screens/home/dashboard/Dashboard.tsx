@@ -35,6 +35,7 @@ const Directory = lazy(() => import('./Directory'));
 const DashboardDialog = lazy(() => import('./DashboardDialogs'));
 const loadOverview = () => import('./ReadOnlyOperationOverview');
 const OperationOverview = lazy(loadOverview);
+const DepartmentDashboardBar = lazy(() => import('./DepartmentDashboardBar'));
 
 let homePreloaded = false;
 /**
@@ -357,6 +358,7 @@ export function DashboardPage({ role, message, lead }: { role: string; message: 
         meta={<DashboardMeta api={api} />}
         actions={!editing ? <HeaderActions api={api} minutes={minutes} onRefresh={refreshAll} onEdit={() => void startEdit()} onDialog={setDialog} editBtn={editBtn} /> : undefined}
       />
+      {(api.departmentId || api.roles.includes('SYSTEM_ADMIN')) && <Suspense fallback={null}><DepartmentDashboardBar api={api} role={role} /></Suspense>}
       {!editing && !maxedGadget && <Suspense fallback={<div className="ds-skel" data-state="loading" aria-busy="true"><span /></div>}><OperationOverview role={role} /></Suspense>}
       {editing && (
         <div className="jd-editbar" role="region" aria-labelledby="jd-editbar-h">
@@ -494,7 +496,7 @@ function HeaderActions({ api, minutes, onRefresh, onEdit, onDialog, editBtn }: {
         <MenuItem onSelect={() => onDialog('rename')} disabled={!mine}>
           {B.actions.rename}
         </MenuItem>
-        <MenuItem onSelect={() => onDialog('share')} disabled={!mine}>
+        <MenuItem onSelect={() => onDialog('share')} disabled={!mine || !!api.current.departmentId}>
           {B.actions.share}
         </MenuItem>
         <MenuItem onSelect={() => onDialog('reset')} disabled={!mine}>

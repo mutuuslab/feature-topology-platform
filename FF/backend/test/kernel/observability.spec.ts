@@ -29,18 +29,18 @@ describe('관측 — 단위', () => {
     expect(lines.every((l) => !l.includes('\n'))).toBe(true);
   });
 
-  it('지표 — 운영 모드는 토큰이 없으면 꺼짐(404), 틀리면 401, 맞으면 텍스트', () => {
+  it('지표 — 운영 모드는 토큰이 없으면 꺼짐(404), 틀리면 401, 맞으면 텍스트', async () => {
     const m = new Metrics();
     m.observe('GET', '/api/features', 200, 0.02);
-    const call = (env: Record<string, string>, auth?: string) => {
+    const call = async (env: Record<string, string>, auth?: string) => {
       const res: { code?: number; body?: unknown; headers: Record<string, string> } = { headers: {} };
       const r = { status: (c: number) => ((res.code = c), { json: (b: unknown) => (res.body = b) }), setHeader: (k: string, v: string) => (res.headers[k] = v), send: (b: unknown) => ((res.code ??= 200), (res.body = b)) };
-      metricsEndpoint(m, env)({ header: (k: string) => (k === 'authorization' ? auth : undefined) } as never, r as never);
+      await metricsEndpoint(m, env)({ header: (k: string) => (k === 'authorization' ? auth : undefined) } as never, r as never);
       return res;
     };
-    expect(call({ FF_ENV: 'production' }).code).toBe(404);
-    expect(call({ FF_ENV: 'production', FF_METRICS_TOKEN: 't'.repeat(24) }, 'Bearer nope').code).toBe(401);
-    const ok = call({ FF_ENV: 'production', FF_METRICS_TOKEN: 't'.repeat(24) }, `Bearer ${'t'.repeat(24)}`);
+    expect((await call({ FF_ENV: 'production' })).code).toBe(404);
+    expect((await call({ FF_ENV: 'production', FF_METRICS_TOKEN: 't'.repeat(24) }, 'Bearer nope')).code).toBe(401);
+    const ok = await call({ FF_ENV: 'production', FF_METRICS_TOKEN: 't'.repeat(24) }, `Bearer ${'t'.repeat(24)}`);
     expect(ok.code).toBe(200);
     expect(String(ok.body)).toContain('ff_http_requests_total{method="GET",route="/api/features",status="200"} 1');
     expect(String(ok.body)).toContain('ff_http_request_duration_seconds_bucket{method="GET",route="/api/features",le="0.025"} 1');

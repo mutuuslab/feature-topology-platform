@@ -24,19 +24,25 @@ export function seriesTable(s: FlagEvaluationSeries) {
 export function EvalTrend({ series, compact = false }: { series: FlagEvaluationSeries; compact?: boolean }) {
   const t = seriesTable(series);
   if (t.labels.length < 2) return null;
+  const base = t.bySource[0];
+  const original = t.bySource.map((b) => ({ key: b.src, label: `${E.seriesEval} · ${T.source[b.src] ?? b.src}`, values: b.values, color: SOURCE_COLOR[b.src] ?? 'var(--viz-2)' }));
+  const differences = t.bySource.slice(1).map((b) => ({ key: b.src, label: E.seriesDifference(T.source[b.src] ?? b.src, T.source[base.src] ?? base.src), values: b.values.map((v, i) => Math.abs(v - base.values[i])), color: SOURCE_COLOR[b.src] ?? 'var(--viz-2)' }));
   // 7일 창은 날짜(월-일), 24시간 창은 시각
   const tick = series.window === '7d' ? (w: string) => w.slice(5, 10) : (w: string) => w.slice(11, 16);
   return (
     <div className="ds-stack" data-testid="flag-eval-trend">
       <TrendChart
+        maxTicks={3} showEndLabels={false}
         weeks={t.labels}
         weekLabel="KST"
         tick={tick}
-        label={E.seriesLabel(series.flagKey, series.window)}
-        series={t.bySource.map((b) => ({ key: b.src, label: `${E.seriesEval} · ${T.source[b.src] ?? b.src}`, values: b.values, color: SOURCE_COLOR[b.src] ?? 'var(--viz-2)' }))}
+        label={differences.length ? E.seriesDifferenceLabel : E.seriesLabel(series.flagKey, series.window)}
+        series={differences.length ? differences : original}
       />
+      {!!differences.length && <details><summary>{E.seriesOriginal}</summary><TrendChart maxTicks={3} showEndLabels={false} weeks={t.labels} weekLabel="KST" tick={tick} label={E.seriesLabel(series.flagKey, series.window)} series={original} /></details>}
       {!compact && (
         <TrendChart
+          maxTicks={3} showEndLabels={false}
           weeks={t.labels}
           weekLabel="KST"
           tick={tick}

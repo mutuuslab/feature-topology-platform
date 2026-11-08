@@ -1,6 +1,7 @@
 // Lozenge — Atlassian식 상태 배지(작은 대문자). 상태 값을 그대로 적고 색 6종(기본·진행·완료·제거·이동·새것)으로 무리를 보인다.
 // 모양(lozenge.css)은 첫 화면 묶음 예산 때문에 쓰는 화면이 함께 읽는다 — 대시보드(Dashboard.tsx)·디자인 갤러리.
 import type { ReactNode } from 'react';
+import { statusLabels } from '../copy/status-labels';
 
 export type LozengeAppearance = 'default' | 'inprogress' | 'success' | 'removed' | 'moved' | 'new';
 
@@ -22,10 +23,11 @@ export function lozengeAppearance(status: string): LozengeAppearance {
 }
 
 export function Lozenge({ children, appearance, title }: { children: ReactNode; appearance?: LozengeAppearance; title?: string }) {
-  const a = appearance ?? (typeof children === 'string' ? lozengeAppearance(children) : 'default');
+  const a = appearance ?? (children === 'REVIEW' ? 'moved' : typeof children === 'string' ? lozengeAppearance(children) : 'default');
+  const label = typeof children === 'string' ? statusLabels[children] ?? children : children;
   return (
-    <span className="ds-lozenge" data-appearance={a} title={title}>
-      {children}
+    <span className="ds-lozenge ds-badge" data-appearance={a} title={title ?? (label !== children ? String(children) : undefined)}>
+      <i className="ds-lozenge__mark" aria-hidden="true" />{label}
     </span>
   );
 }

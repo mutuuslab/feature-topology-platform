@@ -4,10 +4,13 @@
 // 겹친 저장(412)·실패면 서버 판을 다시 읽어 화면을 맞춘다. 옛 판(v1, 역할별 localStorage)은 처음 한 번 내 대시보드로 옮긴다.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { canViewDashboard, type DashboardView, type Role } from '@ff/contracts';
 import { actorFor, rolesFor } from '../../../api/actor';
 import { ApiError, call, STATIC_MODE } from '../../../api/client';
 import { dashboard } from '../../../copy/dashboard';
+import { useAppShell } from '../../../store';
+import { isDepartment } from '../../../data/departments';
 import { systemBoard } from './catalog';
 import { clearV1, emptyBoard, readV1, type Board } from './layout';
 
@@ -23,20 +26,20 @@ type Patch = { name?: string; board?: Board; sharedRoles?: Role[] };
 
 export interface DashboardBackend {
   list(): Promise<DashboardView[]>;
-  create(input: { name: string; board: Board; sharedRoles: Role[] }): Promise<DashboardView>;
+  create(input: { name: string; board: Board; sharedRoles: Role[]; departmentId?: string }): Promise<DashboardView>;
   update(id: string, version: number, patch: Patch): Promise<DashboardView>;
   remove(id: string, version: number): Promise<void>;
   favourite(id: string, favourite: boolean): Promise<DashboardView>;
 }
 
 /** 서버 — 행위자 머리글·Idempotency-Key는 API 클라이언트가 붙인다 */
-export function serverBackend(role: string): DashboardBackend {
+export function serverBackend(role: string, departmentId?: string): DashboardBackend {
   return {
-    list: () => call<{ items: DashboardView[] }>('listDashboards', { role }).then((r) => (Array.isArray(r?.items) ? r.items : [])),
+    list: () => call<{ items: DashboardView[] }>('listDashboards', { role, ...(departmentId ? { query: { department: departmentId } } : {}) }).then((r) => (Array.isArray(r?.items) ? r.items : [])),
     create: (body) => call<DashboardView>('createDashboard', { role, body }),
     update: (id, version, patch) => call<DashboardView>('updateDashboard', { role, params: { id }, body: patch, ifMatch: version }),
     remove: (id, version) => call('deleteDashboard', { role, params: { id }, body: {}, ifMatch: version }).then(() => undefined),
-    favourite: (id, favourite) => call<DashboardView>('favouriteDashboard', { role, params: { id }, body: { favourite } }),
+    favourite: (id, favourite) => call<DashboardView>('favouriteDashboard', { role, params: { id }, body: { favourite }, ...(departmentId ? { query: { department: departmentId } } : {}) }),
   };
 }
 
@@ -49,6 +52,7 @@ interface Stored {
   name: string;
   board: Board;
   sharedRoles: Role[];
+  departmentId?: string;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -75,17 +79,18 @@ const conflict = (version: number) => new ApiError(412, 'PRECONDITION_FAILED', B
 const forbidden = () => new ApiError(403, 'FORBIDDEN', B.saveFailed);
 const notFound = () => new ApiError(404, 'NOT_FOUND', B.saveFailed);
 
-export function localBackend(me: { id: string; roles: string[] }): DashboardBackend {
+export function localBackend(me: { id: string; roles: string[]; departmentId?: string }): DashboardBackend {
   const view = (s: Stored): DashboardView => ({
     id: s.id,
     name: s.name,
     ownerId: s.ownerId,
     sharedRoles: s.sharedRoles,
+    ...(s.departmentId ? { departmentId: s.departmentId } : {}),
     version: s.version,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
     favourite: s.stars.includes(me.id),
-    mine: s.ownerId === me.id,
+    mine: s.ownerId === me.id || !!s.departmentId && me.roles.includes('SYSTEM_ADMIN'),
     board: s.board,
   });
   const find = (id: string) => {
@@ -96,7 +101,7 @@ export function localBackend(me: { id: string; roles: string[] }): DashboardBack
   };
   const owned = (id: string, version: number) => {
     const r = find(id);
-    if (r.items[r.i].ownerId !== me.id) throw forbidden();
+    if (r.items[r.i].ownerId !== me.id && !(r.items[r.i].departmentId && me.roles.includes('SYSTEM_ADMIN'))) throw forbidden();
     if (r.items[r.i].version !== version) throw conflict(r.items[r.i].version);
     return r;
   };
@@ -106,20 +111,25 @@ export function localBackend(me: { id: string; roles: string[] }): DashboardBack
         .filter((x) => canViewDashboard(x, me))
         .sort((a, b) => Number(b.ownerId === me.id) - Number(a.ownerId === me.id) || b.updatedAt.localeCompare(a.updatedAt))
         .map(view),
-    create: async ({ name, board, sharedRoles }) => {
+    create: async ({ name, board, sharedRoles, departmentId }) => {
+      if (departmentId && (!isDepartment(departmentId) || !me.roles.includes('SYSTEM_ADMIN') || sharedRoles.length)) throw forbidden();
       const at = new Date().toISOString();
-      const s: Stored = { id: `DSH-${crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase()}`, ownerId: me.id, name, board, sharedRoles, version: 1, createdAt: at, updatedAt: at, stars: [] };
+      const s: Stored = { id: `DSH-${crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase()}`, ownerId: me.id, name, board, sharedRoles, ...(departmentId ? { departmentId } : {}), version: 1, createdAt: at, updatedAt: at, stars: [] };
       writeLocal([...readLocal(), s]);
       return view(s);
     },
     update: async (id, version, patch) => {
       const { items, i } = owned(id, version);
+      if (items[i].departmentId && patch.sharedRoles?.length) throw forbidden();
       items[i] = { ...items[i], ...patch, version: items[i].version + 1, updatedAt: new Date().toISOString() };
       writeLocal(items);
       return view(items[i]);
     },
     remove: async (id, version) => {
       const { items, i } = owned(id, version);
+      let assigned = false;
+      try { assigned = Object.values(JSON.parse(localStorage.getItem('ff.dashboard.departmentDefaults.v1') ?? '{}') as Record<string, { dashboardId?: string }>).some((d) => d.dashboardId === id); } catch { /* Corrupt browser preferences are not a valid assignment. */ }
+      if (assigned) throw new ApiError(409, 'CONFLICT', B.assignedDelete);
       items.splice(i, 1);
       writeLocal(items);
     },
@@ -161,19 +171,23 @@ export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 /** 대시보드 목록·지금 대시보드·저장 동작 — Dashboard.tsx가 쓴다 */
 export function useDashboards(role: string) {
+  const [, setSearch] = useSearchParams();
+  const shell = useAppShell();
+  const departmentId = isDepartment(shell.department) ? shell.department : undefined;
   const me = actorFor(role);
   const myRoles = rolesFor(role);
-  const backend = useMemo(() => (STATIC_MODE ? localBackend({ id: me.id, roles: myRoles }) : serverBackend(role)), [role, me.id, myRoles.join()]);
+  const backend = useMemo(() => (STATIC_MODE ? localBackend({ id: me.id, roles: myRoles, departmentId }) : serverBackend(role, departmentId)), [role, me.id, myRoles.join(), departmentId]);
   const qc = useQueryClient();
-  const key = useMemo(() => ['listDashboards', {}, {}, role], [role]);
+  const key = useMemo(() => ['listDashboards', {}, departmentId ? { department: departmentId } : {}, role], [role, departmentId]);
+  const contextId = departmentId ? `${me.id}.${departmentId}` : me.id;
   const q = useQuery<DashboardView[], ApiError>({ queryKey: key, queryFn: () => backend.list(), staleTime: 30_000, retry: false });
   const [systemStar, setSystemStar] = useState(() => pref.get(SYSTEM_STAR(me.id)) === '1');
-  const [currentId, setCurrentId] = useState<string>(() => pref.get(CURRENT(me.id)) ?? SYSTEM_ID);
-  const [forActor, setForActor] = useState(me.id);
-  if (forActor !== me.id) {
+  const [currentId, setCurrentId] = useState<string>(() => pref.get(CURRENT(contextId)) ?? SYSTEM_ID);
+  const [forActor, setForActor] = useState(contextId);
+  if (forActor !== contextId) {
     // 역할(계정)을 바꾸면 그 계정이 마지막으로 연 대시보드
-    setForActor(me.id);
-    setCurrentId(pref.get(CURRENT(me.id)) ?? SYSTEM_ID);
+    setForActor(contextId);
+    setCurrentId(pref.get(CURRENT(contextId)) ?? SYSTEM_ID);
     setSystemStar(pref.get(SYSTEM_STAR(me.id)) === '1');
   }
   const [saveState, setSaveState] = useState<SaveState>('idle');
@@ -193,9 +207,12 @@ export function useDashboards(role: string) {
   const select = useCallback(
     (id: string) => {
       setCurrentId(id);
-      pref.set(CURRENT(me.id), id === SYSTEM_ID ? null : id);
+      pref.set(CURRENT(contextId), id === SYSTEM_ID ? null : id);
+        // Consume an explicit role/common navigation when a saved board is selected.
+        // Keeping ?dashboard=role would replace the personal selection on reload.
+        if (departmentId && id !== SYSTEM_ID) setSearch((params) => { params.set('dashboard', 'personal'); return params; }, { replace: true });
     },
-    [me.id],
+    [contextId, departmentId, setSearch],
   );
 
   // 화면 캐시를 바꾸기 전에 받는 중인 목록 조회를 멈춘다 — 늦게 온 옛 목록이 방금 만든·바꾼 판을 덮지 않게
@@ -259,6 +276,11 @@ export function useDashboards(role: string) {
     },
     [addCache, backend, select],
   );
+
+  const createDepartment = useCallback(async (name: string, id: string) => {
+    const doc = await backend.create({ name, board: current.board, sharedRoles: [], departmentId: id });
+    addCache(doc); select(doc.id); return doc;
+  }, [backend, current.board, addCache, select]);
 
   const rename = useCallback(
     (name: string) => {
@@ -328,14 +350,19 @@ export function useDashboards(role: string) {
 
   return {
     me,
+    departmentId,
+    roles: myRoles,
+    remembered: pref.get(CURRENT(contextId)),
     items,
     system,
     current,
     loading,
+    listPending: q.isPending,
     listError: q.error ?? null,
     select,
     updateBoard,
     create,
+    createDepartment,
     rename,
     share,
     remove,

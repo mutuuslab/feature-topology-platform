@@ -77,7 +77,7 @@ export interface RefPublishResponse {
 }
 
 /** 상태 → 배지 무리 — 활성 완료 · 검토 필요 진행 · 폐기 예정 이동 · 폐기 제거 · 요청 중 새것(색은 Lozenge 토큰만) */
-const LOOK: Record<RefStatus, LozengeAppearance> = { ACTIVE: 'success', REVIEW: 'inprogress', DEPRECATED: 'moved', RETIRED: 'removed', PENDING: 'new' };
+const LOOK: Record<RefStatus, LozengeAppearance> = { ACTIVE: 'success', REVIEW: 'moved', DEPRECATED: 'moved', RETIRED: 'removed', PENDING: 'new' };
 
 /**
  * 기준 행 상태 배지 — Feature DB 화면·등록 화면·Feature 상세 '기준 행' 탭이 함께 쓴다(예전에는 색이 다른 두 벌이었다).

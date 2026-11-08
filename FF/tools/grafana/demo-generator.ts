@@ -4,6 +4,7 @@
 // 하루 1~2회 긴급 차단 사건(등급별 반영 지연·기한 초과·재전송·4~10시간 뒤 복원), FF 시연에 걸린 차단(KILL-00001), Edge 장애·Unleash drift 창, Feature별 개선 신호.
 // 누적 지표는 UTC 자정에 0부터 다시 센다(OTLP start_time = 자정).
 import { APPLY_LATENCY_BUCKETS, HEALTH_INDICATORS, HTTP_BUCKETS, metricDef, SIGNATURE_REJECT_REASONS } from '../../contracts/src/rules/telemetry-metrics.ts';
+import { ADOPTION_COUNTRY_POINTS } from '../../contracts/src/rules/telemetry-metrics.ts';
 import type { OtlpAttrs, OtlpHistogramPoint, OtlpLogRecord, OtlpMetric, OtlpNumberPoint, OtlpSpan } from '../../backend/src/kernel/otlp/otlp-proto.ts';
 import type { DemoCatalog } from './demo-catalog.ts';
 
@@ -532,6 +533,17 @@ function gauges(model: DemoModel, t: number): { name: string; labels: Labels; va
   for (const p of model.catalog.policies.filter((x) => x.status === 'DEPLOYED')) {
     g('ff_flag_info', { flag: p.flagKey, policy: p.policyId, feature: p.featureId, feature_version: p.featureVersion, f_class: p.fClass }, 1);
     g('ff_rollout_stage_ratio', { flag: p.flagKey, policy: p.policyId, feature: p.featureId }, p.stageRatio);
+    const countries = new Map<string, number>();
+    for (const c of model.cells) countries.set(c.country, (countries.get(c.country) ?? 0) + c.vehicles);
+    const killed = [...model.incidents(day - 1), ...model.incidents(day)].some((i) => i.featureId === p.featureId && t >= i.issued && t < i.released);
+    for (const [country, total] of countries) {
+      const point = ADOPTION_COUNTRY_POINTS[country];
+      const unknown = Math.round(total * (0.02 + rand('adoption-offline', country, Math.floor(t / (10 * MIN))) * 0.04));
+      const disabled = killed ? Math.round((total - unknown) * 0.6) : 0;
+      const applied = Math.round((total - unknown - disabled) * p.stageRatio * 0.9);
+      const counts = { UNKNOWN: unknown, DISABLED: disabled, [p.stageRatio < 1 ? 'CANARY' : 'ON']: applied, OFF: total - unknown - disabled - applied };
+      for (const [state, value] of Object.entries(counts)) if (value > 0) g('ff_flag_adoption_vehicles', { flag: p.flagKey, country, state, lat: point?.[0] ?? '', lon: point?.[1] ?? '' }, value);
+    }
     g('ff_unleash_drift', { flag: p.flagKey }, driftWindow(t) && p.flagKey === model.catalog.policies.filter((x) => x.status === 'DEPLOYED').at(-1)?.flagKey ? 1 : 0);
   }
   for (const [i, sys] of ['GITLAB', 'JIRA', 'CODEBEAMER'].entries()) g('ff_ext_outbox_pending', { system: sys }, Math.floor(3 * rand('outbox', sys, Math.floor(t / (10 * MIN)))) + (((t / 3_600_000) % 24) - i === 6 ? 14 : 0));

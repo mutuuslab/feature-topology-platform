@@ -8,7 +8,7 @@ import { COST_PROJECT_STATUSES, facetFilter, facetList, REF_EXPLORE_ORDER } from
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { COST_STATUS_LABEL, swCost as T } from '../../copy/cost';
 import { costExplorer as E } from '../../copy/cost-explorer';
-import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, PageHeader, SummaryLine, whyDisabled } from '../../design';
+import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, PageHeader, whyDisabled } from '../../design';
 import { Workbook, type WorkbookFilter, type WorkbookTreeItem } from '../../design/workbook';
 import { usePermission, when } from '../shared';
 import { BackLink, COST_WRITERS, CostChip, CostStatusBadge, costPath, mm, money, moneyKey, type CostListItem, type CostListResponse } from './common';
@@ -47,21 +47,6 @@ export function SwCostScreen() {
   const [open, setOpen] = useState(false);
   const items = q.data?.items ?? [];
   const full = q.data?.view === 'FULL';
-  // 머리 메시지 — 전체 과제 기준(필터와 상관없이 같은 숫자)
-  const approved = items.filter((p) => p.status === 'APPROVED' && p.totals);
-  const sumCost = approved.reduce((s, p) => s + (p.totals?.totalCost ?? 0), 0);
-  const sumMm = approved.reduce((s, p) => s + (p.totals?.totalMm ?? 0), 0);
-  const key = moneyKey(sumCost);
-  const message = !q.data
-    ? { tone: 'neutral' as const, text: T.title }
-    : !items.length
-      ? { tone: 'neutral' as const, text: T.empty }
-      : !approved.length
-        ? { tone: 'neutral' as const, text: T.keyNone }
-        : full
-          ? { tone: 'neutral' as const, value: key.value, text: T.keyFull }
-          : { tone: 'neutral' as const, value: mm(sumMm), text: T.keyMm };
-
   const pick = (k: keyof typeof PARAM) => facetList(sp.get(PARAM[k]));
   const selected = { status: pick('status'), countries: pick('countries'), vehicleModels: pick('vehicleModels'), asils: pick('asils'), tshirts: pick('tshirts'), domain: pick('domain'), component: sp.get(PARAM.domain) && sp.get(PARAM.component) ? [`${sp.get(PARAM.domain)}${TAB}${sp.get(PARAM.component)}`] : [], basis: pick('basis') };
   const set = (patch: Partial<Record<keyof typeof PARAM, string>>) => {
@@ -72,6 +57,16 @@ export function SwCostScreen() {
   const spKey = sp.toString();
   const view = useMemo(() => exploreCostProjects(items, selected), [items, spKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const rows = view.rows;
+  // 한 화면 한 히어로: 현재 조건의 승인 금액·공수는 여기 한 번만 표시한다.
+  const approved = rows.filter((p) => p.status === 'APPROVED' && p.totals);
+  const sumCost = approved.reduce((s, p) => s + (p.totals?.totalCost ?? 0), 0);
+  const sumMm = approved.reduce((s, p) => s + (p.totals?.totalMm ?? 0), 0);
+  const key = moneyKey(sumCost);
+  const message = !q.data ? { tone: 'neutral' as const, text: T.title }
+    : !items.length ? { tone: 'neutral' as const, text: T.empty }
+    : !approved.length ? { tone: 'neutral' as const, text: T.keyNone }
+    : full ? { tone: 'neutral' as const, value: key.value, text: T.filteredKeyFull }
+    : { tone: 'neutral' as const, value: mm(sumMm), text: T.filteredKeyMm };
 
   // 왼쪽 트리 — 담은 기능 분류(과제 수) · 계수 표 버전
   const domain = selected.domain[0] ?? '';
@@ -122,13 +117,10 @@ export function SwCostScreen() {
 
   // 요약 — 지금 조건의 과제로 센다
   const okRows = rows.filter((p) => p.status === 'APPROVED' && p.totals);
-  const okCost = okRows.reduce((s, p) => s + (p.totals?.totalCost ?? 0), 0);
-  const okMm = okRows.reduce((s, p) => s + (p.totals?.totalMm ?? 0), 0);
   const allMm = rows.reduce((s, p) => s + (p.totals?.totalMm ?? 0), 0);
   const metrics = [
     { key: 'projects', label: E.m.projects, value: rows.length.toLocaleString('ko-KR'), hint: E.m.projectsHint(items.length), lead: true },
     { key: 'approved', label: E.m.approved, value: okRows.length.toLocaleString('ko-KR') },
-    full ? { key: 'approvedCost', label: E.m.approvedCost, value: moneyKey(okCost).value, hint: E.m.unitCost } : { key: 'approvedMm', label: E.m.approvedMm, value: mm(okMm), hint: E.m.unitMm },
     { key: 'allMm', label: E.m.allMm, value: mm(allMm), hint: E.m.unitMm },
     { key: 'features', label: E.m.features, value: rows.reduce((s, p) => s + p.featureCount, 0).toLocaleString('ko-KR'), hint: E.m.featuresHint },
     { key: 'stale', label: E.m.stale, value: rows.filter((p) => p.basisStale).length.toLocaleString('ko-KR') },
@@ -161,7 +153,6 @@ export function SwCostScreen() {
         }
       />
       <AsyncView state={asyncState(q, items.length === 0)} error={q.error} onRetry={() => q.refetch()} emptyHidden>
-        <SummaryLine label={T.summary} items={COST_PROJECT_STATUSES.map((s) => ({ k: COST_STATUS_LABEL[s], v: items.filter((p) => p.status === s).length }))} />
         <Workbook
           label={E.title}
           treeLabel={E.tree}
@@ -170,7 +161,9 @@ export function SwCostScreen() {
           filters={filters}
           onClearAll={() => set(Object.fromEntries(AXES.map((a) => [a, ''])))}
         >
-          <DataTable rows={rows} columns={columns} rowKey={(p) => p.estId} caption={T.tableCaption} initialSort={{ key: 'id', dir: 'desc' }} />
+          <AsyncView state={rows.length ? 'ready' : 'empty'} filtered={items.length > 0}>
+            <DataTable rows={rows} columns={columns} rowKey={(p) => p.estId} caption={T.tableCaption} initialSort={{ key: 'id', dir: 'desc' }} />
+          </AsyncView>
         </Workbook>
       </AsyncView>
       <CreateDrawer open={open} onClose={() => setOpen(false)} />

@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DB, type Db } from '../../src/kernel/db';
 import { PleRepo } from '../../src/domains/d01-policy/ple/ple.repo';
+import { Scheduler } from '../../src/kernel/scheduler';
 import { actor, bootApp } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
@@ -132,14 +133,28 @@ describe('26580 하네스 리뷰 — 저장 없는 조회·점검', () => {
   let app: INestApplication;
   let http: () => any;
   let db: Db;
+  let scheduler: Scheduler;
   beforeAll(async () => {
-    const b = await bootApp({ at: AT });
-    ({ app, http } = b);
-    db = b.get<Db>(DB);
+    // 부팅 회신 타이머가 조회 사이에 기록하면 조회의 쓰기로 오인한다.
+    // 실제 부팅 대상·회신 경로는 남겨두고 이 독립 앱의 시간 진행만 수동으로 고정한다.
+    const previousMode = process.env.FF_SCHEDULER;
+    process.env.FF_SCHEDULER = 'manual';
+    try {
+      const b = await bootApp({ at: AT });
+      ({ app, http } = b);
+      db = b.get<Db>(DB);
+      scheduler = b.get(Scheduler);
+    } finally {
+      if (previousMode === undefined) delete process.env.FF_SCHEDULER;
+      else process.env.FF_SCHEDULER = previousMode;
+    }
   });
   afterAll(() => app.close());
 
   it('구성 점검·구성기·자동 채움·추천은 저장하지 않는다(모든 표의 행 수 그대로)', async () => {
+    expect(scheduler.manual).toBe(true);
+    const pending = scheduler.pending;
+    expect(pending).toBeGreaterThan(0);
     const tables = db.all<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").map((t) => t.name);
     const counts = () => Object.fromEntries(tables.map((t) => [t, db.get<{ n: number }>(`SELECT COUNT(*) AS n FROM "${t}"`)!.n]));
     const p = (await http().get('/api/ple/bill-of-features').expect(200)).body.items[0];
@@ -152,6 +167,13 @@ describe('26580 하네스 리뷰 — 저장 없는 조회·점검', () => {
     await http().get('/api/ple/catalogue').expect(200);
     const after = counts();
     expect(Object.keys(before).filter((t) => before[t] !== after[t]).map((t) => `${t} ${before[t]}→${after[t]}`)).toEqual([]);
+    expect(scheduler.pending).toBe(pending);
+  });
+
+  it('격리한 부팅 회신은 스케줄러를 진행하면 실제로 기록된다', () => {
+    const before = db.get<{ n: number }>('SELECT COUNT(*) AS n FROM readback')!.n;
+    expect(scheduler.flush()).toBeGreaterThan(0);
+    expect(db.get<{ n: number }>('SELECT COUNT(*) AS n FROM readback')!.n).toBeGreaterThan(before);
   });
 
 });

@@ -74,6 +74,8 @@
 
 최종 산출물은 작업 트리 `FF/frontend/dist`에 한 벌만 보존한다. 재현 미리보기는 `node FF/tools/snapshot-pack.preview.ts FF/frontend/dist 9564`이며 종료했다. 같은 dist를 기본 frontend build로 덮어쓰면 보존한 스냅샷도 지워지므로 후속 빌드는 별도 출력 위치를 사용한다.
 
+추가 상태 정합 검사에서 `ORD-SHOWCASE-0010`이 상품만 같은 OFFERED 권리를 가리키며 발급 CONFIRMED를 복제한 조합을 발견했다. 후속 seed는 원래 주문의 실제 권리와 종류·상태·기간이 대응하는 발급 권리만 연결하고, 원천 권리가 없거나 제안/거절 상태이면 UNCONFIRMED로 남긴다. 기존 주문·권리는 변경하지 않는다. 보존한 한 벌의 산출물은 이 수선 전 데이터(`b6cb8565`)이므로 이를 새 최종 후보로 게시하지 않으며, 최신 통합의 새 메모리 API/최종 빌드에서 후속 seed를 적용한다. 전체 스냅샷 재생성은 하지 않았다.
+
 추가 Feature `FEAT-00289`~`FEAT-00473`, 상품 `CAT-00065`~`CAT-00087`, 정책 `POL-00048` 이후, 실험 `EXP-00003/00004`, 주문 `ORD-SHOWCASE-0001`~`0012`, 장애 `INC-00008`~`00014`를 E2E에 쓸 수 있다. 업무 UUID는 `browser-fixture.json` 또는 실제 `workflowCases` 응답에서 얻는다. `가상 시연 FPW.18 · 산출물 작성 cohort`는 상품 담당자의 초안 조회·개정·새로고침 표본이다.
 
 원격 Grafana 계정·실제 외부 Gate 승인·실차 근거의 추가 검증은 이번 작업에서 수행하지 않았다.

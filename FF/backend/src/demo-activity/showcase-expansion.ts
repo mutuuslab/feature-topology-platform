@@ -129,7 +129,13 @@ export class ShowcaseExpansion {
         pairs.set(old.vin, match.vin); used.add(match.vin);
       }
       const vin = pairs.get(old.vin)!;
-      const grant = fleet.grants(vin).find(g => g.catalogId === source.catalogId);
+      const originalGrant = source.entitlementId ? fleet.grant(source.entitlementId) : undefined;
+      // A catalog match alone can select an OFFERED trial instead of the original issued right.
+      // Only a corresponding kind/state/period is evidence for the simulated receipt; otherwise leave it unconfirmed.
+      const grant = originalGrant && fleet.grants(vin).find(g =>
+        !['OFFERED', 'DECLINED'].includes(g.status) && g.catalogId === source.catalogId &&
+        g.kind === originalGrant.kind && g.status === originalGrant.status &&
+        g.validFrom === originalGrant.validFrom && g.validTo === originalGrant.validTo);
       const doc: Record<string, any> = { ...source, orderId: `ORD-SHOWCASE-${String(i + 1).padStart(4, '0')}`, vin, entitlementId: grant?.grantId ?? null, source: 'SIMULATED' };
       if (!grant) { doc.entitlement = 'UNCONFIRMED'; doc.entitlementAt = null; }
       this.db.run('INSERT INTO order_link(order_id,idempotency_key,vin,catalog_id,entitlement_id,publication_id,activation_state,deadline_at,refund_state,doc) VALUES(?,?,?,?,?,?,?,?,?,?)', doc.orderId, doc.orderId, vin, doc.catalogId, doc.entitlementId, null, doc.readyReport?.ok ? 'READY_REPORTED' : 'UNCONFIRMED', new Date(Date.parse(doc.paidAt) + 24 * 3600_000).toISOString(), doc.refund ? doc.refund.completedAt ? 'COMPLETED' : 'REQUESTED' : null, JSON.stringify(doc));

@@ -49,6 +49,16 @@ describe('explicit second synthetic showcase cohort', () => {
         expect(db.get('SELECT 1 FROM product WHERE catalog_id=?', o.catalogId)).toBeDefined();
         if (o.entitlementId) expect(db.get('SELECT 1 FROM entitlement WHERE grant_id=? AND vin=? AND catalog_id=?', o.entitlementId, o.vin, o.catalogId)).toBeDefined();
       }
+      const originalOrders = db.all<{ doc: string }>("SELECT doc FROM order_link WHERE order_id NOT LIKE 'ORD-SHOWCASE-%' ORDER BY order_id").map(r => JSON.parse(r.doc));
+      for (const [index, original] of originalOrders.entries()) {
+        const copy = db.get<{ doc: string }>('SELECT doc FROM order_link WHERE order_id=?', `ORD-SHOWCASE-${String(index + 1).padStart(4, '0')}`)!;
+        const clone = JSON.parse(copy.doc);
+        if (!clone.entitlementId) { expect(clone.entitlement).toBe('UNCONFIRMED'); continue; }
+        const from = JSON.parse(db.get<{ doc: string }>('SELECT doc FROM entitlement WHERE grant_id=?', original.entitlementId)!.doc);
+        const to = JSON.parse(db.get<{ doc: string }>('SELECT doc FROM entitlement WHERE grant_id=?', clone.entitlementId)!.doc);
+        expect(['OFFERED','DECLINED']).not.toContain(to.status);
+        for (const key of ['catalogId','kind','status','validFrom','validTo']) expect(to[key]).toEqual(from[key]);
+      }
       expect(db.all('PRAGMA foreign_key_check')).toEqual([]);
       const marker = db.get<{ value: string }>('SELECT value FROM meta WHERE key=?', SHOWCASE_EXPANSION_META)!.value;
       const preservation = JSON.parse(marker).preservation;

@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { FleetLive } from '../screens/ops/FleetLive';
 import { ko } from '../copy/ko';
+import { fleetSearch as FS } from '../copy/fleet-search';
 
 const flag = (flagKey: string, drift = false) => ({ flagKey, publicationId: 'PUB-1', sequence: 1, local: { value: true, reason: 'MATCH' }, server: { value: !drift, reason: 'MATCH' }, drift });
 const row = (i: number) => ({ vin: `V${String(i).padStart(3, '0')}`, label: `차량 ${i}`, scope: 'KR/NX4/P', link: 'ONLINE', quality: 'TRUSTED', gleo: false, featureState: {}, kills: [], flags: [flag('a', i === 150), flag('b')], last: null });
@@ -36,4 +37,26 @@ describe('운영 — 차량 × flag 표', () => {
     fireEvent.click(screen.getByRole('button', { name: ko.fleet.more }));
     expect(body()).toHaveLength(120);
   });
+});
+
+
+it('finds a vehicle beyond the initial page without rendering the whole fleet or changing global counts',async()=>{
+  localStorage.setItem('fp.state.v2',JSON.stringify({role:'operator'}));
+  render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false}}})}><MemoryRouter initialEntries={['/fleet/live?tab=match']}><AppProvider><FleetLive /></AppProvider></MemoryRouter></QueryClientProvider>);
+  const table=await screen.findByRole('table',{name:ko.fleet.matrix});
+  const search=screen.getByRole('searchbox',{name:FS.label});
+  expect(within(table).queryByRole('link',{name:'V199'})).toBeNull();
+  fireEvent.change(search,{target:{value:'v199'}});
+  expect(within(table).getAllByRole('link')).toHaveLength(1);
+  expect(within(table).getByRole('link',{name:'V199'})).toBeTruthy();
+  expect(screen.getByText(FS.matches(1,200))).toBeTruthy();
+  expect(screen.getByText('200/200')).toBeTruthy();
+  fireEvent.change(search,{target:{value:'차량 199'}});
+  expect(within(table).getByRole('link',{name:'V199'})).toBeTruthy();
+  fireEvent.change(search,{target:{value:'unknown-vin'}});
+  expect(screen.getByText(FS.empty)).toBeTruthy();
+  expect(within(table).queryAllByRole('link')).toHaveLength(0);
+  fireEvent.change(search,{target:{value:''}});
+  expect(within(table).getAllByRole('link')).toHaveLength(60);
+  expect(within(table).getAllByRole('row')[1]).toHaveTextContent('V150');
 });

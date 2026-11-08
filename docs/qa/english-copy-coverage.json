@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 8894,
-  "translated": 2590,
+  "required": 8898,
+  "translated": 2594,
   "modules": [
     {
       "module": "ads-change",
@@ -2604,6 +2604,17 @@
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
       "sourceHash": "d9fedf927ed40da235ba348c460adf8c85876c9e9b25bf724da57541d3277374"
+    },
+    {
+      "module": "fleet-search",
+      "source": "FF/frontend/src/copy/fleet-search.ts",
+      "required": 4,
+      "translated": 4,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "695fc542a8fd2fa6d85b92bd6a412f32a93c6f57338a957f453c37a473a2c764"
     },
     {
       "module": "formatters",

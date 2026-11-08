@@ -71,9 +71,13 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
   expect(col).toBeGreaterThan(0);
   const cellOf = (vin: RegExp) => matrix.getByRole('row', { name: vin }).getByRole('cell').nth(col).locator('.ds-fcell');
   await expect(cellOf(/lead-01/)).toHaveAttribute('data-v', 'safe');
-  await expect(cellOf(/KMH-NX4-0001/)).not.toHaveAttribute('data-v', 'safe');
   // 다른 차종 전용 flag 칸은 미수신이 아니다(해당 없음)
   await expect(matrix.getByRole('row', { name: /lead-01/ })).not.toContainText('미수신');
+  // Expanded fleets are paged by safety priority; select the unaffected comparison vehicle explicitly.
+  const search = page.getByRole('searchbox', { name: '차량 검색', exact: true });
+  await search.fill('KMH-NX4-0001');
+  await expect(cellOf(/KMH-NX4-0001/)).not.toHaveAttribute('data-v', 'safe');
+  await search.clear();
 
   // 서명 배포 현황 — 차단 게시본은 차단 용도 키로 서명 검증 통과
   await page.goto('/deployments');

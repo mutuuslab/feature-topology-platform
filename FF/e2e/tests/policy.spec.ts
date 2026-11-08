@@ -4,6 +4,7 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { apiRefs, REF } from './refdb';
 import { recordAnalysisApi, signG7Api } from './analysis';
 import { waiveFlagCodeGate } from './flag-code-gate';
+import { acceptSupplierFixture } from './supplier';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -35,6 +36,7 @@ async function developingFeature(request: APIRequestContext) {
   for (const g of ['G1', 'G2', 'G3']) await post(`${base}/gates`, judge, { gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });
   await post(`${base}/transitions`, ['usr-approver', 'FEATURE_APPROVER'], { to: 'APPROVED', reason: '승인' }, 200);
   await signG7Api(request, f.featureId, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
+  await acceptSupplierFixture(request, f.featureId, '0.1.0');
   for (const g of ['G4', 'G5', 'G6', 'G7']) await post(`${base}/gates`, judge, { gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });
   return f.featureId as string;
 }

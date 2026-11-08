@@ -7,6 +7,7 @@ import type { CustomerStateView, FleetAxisView, VehicleFeatureStateView, Vehicle
 import { asyncState, useApi } from '../../api/hooks';
 import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
+import { fleetSearch as FS } from '../../copy/fleet-search';
 import { control as CT } from '../../copy/control';
 import { pickDefault } from '../../data/first-run';
 import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
@@ -81,6 +82,7 @@ export function FleetLive() {
   const gleo = useApi<{ mode: 'off' | 'internal' | 'ws'; connected: boolean; lastError: string | null; messages: { dir: string; at: string; msg: { type: string } }[] }>('gleoStatus');
   const live = usePlatformEvents(STREAM, ['fleetRuntime', 'publications', 'killRequests', 'gleoStatus']);
   const [shown, setShown] = useState(MATRIX_PAGE);
+  const [query, setQuery] = useState('');
   // 다른 조회(게시본·이벤트)가 올 때마다 수백 대를 다시 훑지 않게 차량 목록이 바뀔 때만 센다.
   // 한 쪽보다 많으면 앞쪽만 그리므로 차단 중 차량 → 서버 판단과 다른 차량 → 미확인 차량을 위에 둔다(같은 묶음 안은 받은 순서).
   // 차단 중 차량은 대수가 적어도 위로 — 긴급 차단 직후 이 화면을 열면 차단한 차량이 표 아래(스크롤 밖)에 있었다
@@ -93,6 +95,10 @@ export function FleetLive() {
     const ordered = rows.map((r, i) => ({ r, i, k: rank(r) })).sort((a, b) => a.k - b.k || a.i - b.i).map((x) => x.r);
     return { rows, flagKeys, ordered, drift: rows.reduce((n, r) => n + r.flags.filter((f) => f.drift).length, 0), unsure: rows.filter(isUnsure).length };
   }, [fleet.data]);
+  const matching = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return q ? ordered.filter(r => [r.vin, r.label, r.scope].some(v => v.toLowerCase().includes(q))) : ordered;
+  }, [ordered, query]);
   const pubRows = (pubs.data?.items ?? []).slice(0, 12);
   const inflight = pubRows.filter((p) => !p.closedAt).length;
   // 차량 측 값을 받지 못했거나(미수신) 신뢰할 수 없는 차량(unsure) — 이들이 있으면 "모두 같다"고 말할 수 없다
@@ -136,6 +142,8 @@ export function FleetLive() {
             <>
       <Panel title={F.matrix} id="matrix">
         <AsyncView state={asyncState(fleet, rows.length === 0)} error={fleet.error} onRetry={() => fleet.refetch()}>
+          <label className="ds-field"><span className="ds-field__label">{FS.label}</span><input className="ds-input" type="search" value={query} placeholder={FS.placeholder} onChange={e => { setQuery(e.target.value); setShown(MATRIX_PAGE); }} /></label>
+          {query.trim() && <p role="status">{FS.matches(matching.length, rows.length)}</p>}
           <div style={{ overflow: 'auto', maxHeight: 'calc(100vh - 420px)' }}>
             <table className="ds-fleet">
               <caption className="ds-sr">{F.matrix}</caption>
@@ -152,7 +160,7 @@ export function FleetLive() {
                 </tr>
               </thead>
               <tbody>
-                {ordered.slice(0, shown).map((r) => (
+                {matching.slice(0, shown).map((r) => (
                   <tr key={r.vin}>
                     <th scope="row">
                       <Link to={`/fleet/vehicles/${encodeURIComponent(r.vin)}`} className="ds-mono">
@@ -175,13 +183,14 @@ export function FleetLive() {
                     </td>
                   </tr>
                 ))}
+                {!matching.length && <tr><td colSpan={flagKeys.length + 3}>{FS.empty}</td></tr>}
               </tbody>
             </table>
           </div>
-          {rows.length > MATRIX_PAGE && (
+          {matching.length > MATRIX_PAGE && (
             <div className="ds-toolbar" style={{ marginTop: 'var(--sp-2)', fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
-              <span>{F.showing(Math.min(shown, rows.length), rows.length)}</span>
-              {shown < rows.length && (
+              <span>{F.showing(Math.min(shown, matching.length), matching.length)}</span>
+              {shown < matching.length && (
                 <button type="button" className="ds-btn" onClick={() => setShown((n) => n + MATRIX_PAGE)}>
                   {F.more}
                 </button>

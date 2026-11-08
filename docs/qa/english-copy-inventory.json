@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 80,
-  "requiredLeaves": 8894,
+  "moduleCount": 81,
+  "requiredLeaves": 8898,
   "modules": [
     {
       "module": "ads-change",
@@ -21922,6 +21922,39 @@
       ],
       "connectedExports": [
         "flags"
+      ]
+    },
+    {
+      "module": "fleet-search",
+      "file": "FF/frontend/src/copy/fleet-search.ts",
+      "leaves": [
+        {
+          "path": "fleet-search.fleetSearch.label",
+          "kind": "text",
+          "text": "차량 검색",
+          "sourceHash": "0ebfdc083211cba9cfe21f8d85494f2125c213965b86354bb91754606a6501d7"
+        },
+        {
+          "path": "fleet-search.fleetSearch.placeholder",
+          "kind": "text",
+          "text": "VIN·차량 이름·적용 범위",
+          "sourceHash": "88fe9c7c80af0ff49b49d8fa33ccec205bea8ce8dc1397bf03f7b6718a5b8c9f"
+        },
+        {
+          "path": "fleet-search.fleetSearch.empty",
+          "kind": "text",
+          "text": "검색 조건에 맞는 차량이 없습니다.",
+          "sourceHash": "08113969649679f5c78ec3c9fd7c471c11ed45ac7cd8408b2fa9a9a4f1bc4062"
+        },
+        {
+          "path": "fleet-search.fleetSearch.matches",
+          "kind": "function",
+          "text": "(n: number, total: number) => `전체 ${total.toLocaleString()}대 중 검색 결과 ${n.toLocaleString()}대`",
+          "sourceHash": "401e4ea4ccb53302ae568dc6524d09a3ef9948a14ba5ecf726fd8f4483ebda87"
+        }
+      ],
+      "connectedExports": [
+        "fleetSearch"
       ]
     },
     {

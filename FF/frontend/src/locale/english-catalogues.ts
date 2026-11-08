@@ -12,6 +12,7 @@ const loaders = {
   'error-actions': () => import('./en/error-actions'),
   'errors': () => import('./en/errors'),
   'experiment-analysis': () => import('./en/experiment-analysis'),
+  'fleet-search': () => import('./en/fleet-search'),
   'formatters': () => import('./en/formatters'),
   'freshness': () => import('./en/freshness'),
   'ko': () => import('./en/ko'),

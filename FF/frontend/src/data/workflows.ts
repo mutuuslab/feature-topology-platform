@@ -4,7 +4,7 @@ import type { WorkflowDoc } from '@ff/contracts';
 import { displayWorkflows } from './workflowLabels';
 
 let loading: Promise<WorkflowDoc> | undefined;
-export const loadWorkflows = (): Promise<WorkflowDoc> => (loading ??= import('../../../contracts/src/generated/workflows').then((m) => displayWorkflows(m.WORKFLOWS)));
+export const loadWorkflows = (): Promise<WorkflowDoc> => (loading ??= import('../../../contracts/src/generated/workflow-loader').then((m) => m.loadWorkflowDocument()).then(displayWorkflows));
 
 /** null = 불러오는 중, 'fail' = 실패 */
 export function useWorkflows(): WorkflowDoc | null | 'fail' {

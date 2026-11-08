@@ -63,6 +63,16 @@ process:
         - 서버 배포(평가 기준 전환) 시각과 게시본 ID
         - Unleash 동기화 결과(flag·전략·환경)
         - Release Manager 판정과 근거 Evidence ID
+    - key: WP-REPO-CONNECTION
+      name: 코드 저장소 연결·변경 기록
+      en: 코드 저장소 연결·변경 기록
+      kind: output
+      content:
+        - 저장소·패키지·기본 브랜치와 스캔 설정
+        - webhook·서명 검증의 상태와 실패 조치
+        - 변경 사유·권한 있는 수행자·시각
+      retained: true
+
   activities:
     - id: FPW.6-A01
       name: 출시 Baseline 확정 요청
@@ -159,7 +169,7 @@ process:
         - 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
       checks:
         - 게시본 ID와 Unleash 동기화 결과가 G6 배포 기록에 있다
-      platform: {actions: [deployPolicy, syncUnleash], screens: [/deployments, /integration/connectors]}
+      platform: {actions: [deployPolicy, syncUnleash], screens: [/deployments, /integration/connectors, /ops/ota-installs, '/deployments/campaigns/:id']}
       next: [FPW.6-A07]
     - id: FPW.6-A07
       name: 코드 저장소 연결 관리
@@ -167,11 +177,104 @@ process:
       rules: []
       raci: {R: [R-REL], A: R-REL, C: [R-INT], I: [R-ARC]}
       inputs: []
-      outputs: []
+      outputs: [WP-REPO-CONNECTION]
       steps:
         - 차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다
         - webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다
         - 설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다
       checks:
         - 연결 저장소의 webhook이 정상이고 최근 스캔이 서명 확인됐다
-      platform: {actions: [createFlagRepository, updateFlagRepository], screens: [/integration/code-repositories, /integration/code-scans]}
+      platform: {actions: [createFlagRepository, updateFlagRepository], screens: [/integration/code-repositories, '/integration/code-repositories/:repoId', /integration/code-scans]}
+
+  base_practices:
+    - id: FPW.6.BP1
+      name: 출시 Baseline 확정 요청
+      definition_ko: 검증된 Feature Version과 승인 정책으로 출시 구성을 식별하고 필요한 Artifact를 갖춘 Baseline 확정을 요청한다. 요청 범위를
+        고정하고 요청자와 승인자의 분리를 유지한다.
+      notes: []
+      activity_ids:
+        - FPW.6-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-BASELINE-REQ
+          outcomes:
+            - O1
+    - id: FPW.6.BP2
+      name: 출시 Baseline 확정 승인
+      definition_ko: 요청된 출시 구성이 차량 사양·SW·Variant 기준정보와 일치하는지 검토한다. 다른 승인자가 확정 또는 반려하고 확정된 해시와 구성을 출시 담당자에게
+        전달한다.
+      notes: []
+      activity_ids:
+        - FPW.6-A02
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-RELEASE-BASELINE
+          outcomes:
+            - O1
+    - id: FPW.6.BP3
+      name: SUMS 기록·형식승인 확인
+      definition_ko: 확정 구성과 형식승인 영향 판단을 SUMS 기록에 연결한다. 필요한 기관 결정·사용자 고지·보존 조건이 준비되었는지 확인하고 미해결 사항은 배포 준비
+        판단에 반영한다.
+      notes: []
+      activity_ids:
+        - FPW.6-A03
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-SUMS-RECORD
+          outcomes:
+            - O2
+    - id: FPW.6.BP4
+      name: 서명 패키지 작성·SBOM 결합
+      definition_ko: 확정된 정책·설정 Artifact와 SBOM을 하나의 배포 단위로 식별한다. 용도가 맞는 키의 서명과 해시를 확인하고 변경 기록을 통해 원본 구성과
+        게시 패키지를 추적한다.
+      notes: []
+      activity_ids:
+        - FPW.6-A04
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-SIGNED-PACKAGE
+          outcomes:
+            - O3
+    - id: FPW.6.BP5
+      name: OTA Gate 판정 등록
+      definition_ko: 대상 식별·호환성·고지·서명·SUMS의 사전조건을 평가한다. 근거에 연결된 OTA 판정을 남기고 부족한 조건과 보완 책임을 출시 담당자에게 전달한다.
+      notes: []
+      activity_ids:
+        - FPW.6-A05
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-OTA-GATE
+          outcomes:
+            - O3
+    - id: FPW.6.BP6
+      name: G6 서명 배포 실행
+      definition_ko: 승인된 정책과 OTA 사전조건을 확인하여 서버 평가 기준과 외부 정책 도구를 일치시킨다. 서명 게시본·배포 결과를 기록하고 정책 전달과 차량 내 활성화의
+        차이를 운영 조직에 알린다.
+      notes:
+        - 열린 재-HARA는 출시 전이·Release Sign-off를 막으며 승인된 완화 정책의 배포 자체를 막지 않는다는 D-RD-6 경계를 따른다.
+      activity_ids:
+        - FPW.6-A06
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-G6-DECISION
+          outcomes:
+            - O3
+    - id: FPW.6.BP7
+      name: 코드 저장소 연결 관리
+      definition_ko: 차량 SW 저장소의 패키지·기본 브랜치·스캔·webhook 연결을 통제한다. 설정 변경과 실패 원인을 기록하고 구현 담당자가 자기 검사를 약화시키지
+        못하도록 변경 책임을 분리한다.
+      notes: []
+      activity_ids:
+        - FPW.6-A07
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-REPO-CONNECTION
+          outcomes:
+            - O1

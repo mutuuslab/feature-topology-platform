@@ -3,7 +3,7 @@ id: WF-ROLE-CSM
 type: workflow
 title: "CSM 업무 절차서 / Cybersecurity Manager Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -14,8 +14,11 @@ traces:
     - WF-FPW-8
     - WF-FPW-10
     - WF-FPW-11
+    - WF-FPW-12
     - WF-FPW-13
-last_updated: 2026-11-05
+    - WF-FPW-16
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -100,6 +103,28 @@ last_updated: 2026-11-05
 3. 법규 담당과 승인 기관 보고 내용을 확정해 제출한다
 - [ ] 보고 내용의 각 항목이 Evidence ID로 연결되었다
 
+### FPW.12-A07 정보주체 요청 접수 — 수행·책임
+- 프로세스: FPW.12 운영 데이터·데이터 보호
+- 시작: 앞 활동 완료
+- 입력: WP-PRIVACY-REVIEW → 출력: WP-PRIVACY-REQ
+- 플랫폼: `createPrivacyRequest`, `/admin/data`
+1. 요청 주체와 대상 사용자·차량 및 처리 목적을 확인한다
+2. 개인정보 목록에서 대상 저장소와 예상 행 및 보존 예외를 확인한다
+3. 내보내기 또는 삭제·가명화 요청과 사유를 기록하고 독립 실행자에게 인계한다
+- [ ] 대상 식별자와 목적을 무단 확대하지 않는다
+- [ ] 요청 접수를 실제 삭제 완료로 표시하지 않는다
+
+### FPW.12-A08 정보주체 독립 처리 — 수행·책임
+- 프로세스: FPW.12 운영 데이터·데이터 보호
+- 시작: 앞 활동 완료
+- 입력: WP-PRIVACY-REQ → 출력: WP-PRIVACY-RESULT
+- 플랫폼: `privacyExport`, `executePrivacyRequest`, `rejectPrivacyRequest`, `/admin/data`
+1. 삭제·가명화 실행자는 요청자와 다른 사람인지 확인한다
+2. 보존 예외와 목적을 검토하여 허용된 내보내기·실행 또는 사유 있는 거절을 수행한다
+3. 처리 행·Lake 위임 상태와 감사 체인을 확인하고 미완료 항목을 인계한다
+- [ ] 삭제·가명화 요청자 자기 실행이 차단된다
+- [ ] Lake 요청 전송과 외부 삭제 완료를 구분한다
+
 ### FPW.13-A03 분기 법규 감시·Profile 갱신 — 수행
 - 프로세스: FPW.13 규정·Compliance Profile 관리
 - 시작: 분기 정기 점검
@@ -127,9 +152,14 @@ last_updated: 2026-11-05
 - FPW.10-A02 DIA·CIA 체결 (협의)
 - FPW.10-A04 공급망 원산지 속성 관리 (협의)
 - FPW.11-A06 OSS 라이선스·보안 프로그램 운영 (협의)
+- FPW.12-A06 처리 목적·근거 검토 (협의)
 - FPW.13-A01 표준 판 고정 (협의)
 - FPW.13-A02 Compliance Profile 정의 (협의)
 - FPW.13-A04 원격 종료 시스템 설명 작성 (협의)
+- FPW.16-A01 계정 상태 변경 (협의)
+- FPW.16-A03 운영 설정·상태 점검 (협의)
+- FPW.16-A04 백업·복구 점검 (협의)
+- FPW.18-A04 개선 과제 인계 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

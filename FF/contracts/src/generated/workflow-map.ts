@@ -73,7 +73,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "gates": [
     "G8"
    ],
-   "activities": 12
+   "activities": 16
   },
   {
    "id": "FPW.9",
@@ -101,7 +101,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "name": "운영 데이터·데이터 보호",
    "group": "지원",
    "gates": [],
-   "activities": 5
+   "activities": 8
   },
   {
    "id": "FPW.13",
@@ -116,6 +116,34 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "group": "지원",
    "gates": [],
    "activities": 5
+  },
+  {
+   "id": "FPW.15",
+   "name": "SW 개발비·원가 기준 관리",
+   "group": "지원",
+   "gates": [],
+   "activities": 7
+  },
+  {
+   "id": "FPW.16",
+   "name": "플랫폼 접근·운영·복구",
+   "group": "지원",
+   "gates": [],
+   "activities": 4
+  },
+  {
+   "id": "FPW.17",
+   "name": "기준정보·공유 자산·연계 품질",
+   "group": "지원",
+   "gates": [],
+   "activities": 5
+  },
+  {
+   "id": "FPW.18",
+   "name": "운영 분석·상품 개선",
+   "group": "지원",
+   "gates": [],
+   "activities": 4
   }
  ]
 };

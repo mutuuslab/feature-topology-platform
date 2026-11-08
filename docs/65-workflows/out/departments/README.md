@@ -3,7 +3,7 @@ id: WF-DEP-INDEX
 type: workflow
 title: "부서별 R&R — 부서×프로세스 RACI / Department RACI"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -22,13 +22,13 @@ traces:
     - WF-DEP-PUR
     - WF-DEP-LEG
     - WF-DEP-DPO
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
 # WF-DEP-INDEX · 부서별 R&R
 
-> 1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다.
+> 핵심 생애주기(FPW.1~9)의 기존 검토 범위를 보존한다. 지원 업무(FPW.10~18)를 포함한 레퍼런스 정의는 조직 검토 전 초안이며 실제 수행·승인은 별도 근거로 확인한다.
 
 - 참고: 긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(관제실)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05).
 - 참고: 복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 심사 결재함)+opslead 또는 다른 CSM이 맡는다(2026-11-05).
@@ -45,12 +45,12 @@ last_updated: 2026-11-05
 | [시스템엔지니어링팀](DEP-SE.md) | 요구 Owner, 아키텍트, 도메인 검토자 | 엔지니어링 콘솔 | approver, integrator | 12 |
 | [SW통합·릴리스팀](DEP-INT.md) | 통합 조직, Release Manager | 엔지니어링 콘솔 | coordinator, integrator | 12 |
 | [PLM·기준정보팀](DEP-PLM.md) | 기준정보 담당, Feature DB 관리자 | 엔지니어링 콘솔 | steward | 2 |
-| [기능안전팀](DEP-FS.md) | Safety Manager | 심사 결재함 | quality, safety2, integrator | 16 |
+| [기능안전팀](DEP-FS.md) | Safety Manager | 심사 결재함 | quality, safety2, integrator | 17 |
 | [차량사이버보안팀](DEP-CS.md) | CSM | 심사 결재함 | integrator | 2 |
 | [법규인증팀](DEP-HOM.md) | 법규 담당 | 심사 결재함 | steward | 5 |
 | [시험·검증팀](DEP-VAL.md) | 시험 조직 | 심사 결재함 | quality | 4 |
 | [품질팀](DEP-QA.md) | 품질 조직 | 심사 결재함 | quality, viewer | 8 |
-| [OTA·서비스운영팀](DEP-OPS.md) | 운영 조직 | 관제실 | operator, opslead | 9 |
+| [OTA·서비스운영팀](DEP-OPS.md) | 운영 조직 | 관제실 | operator, opslead | 12 |
 | [IT인프라·보안운영팀](DEP-ITSEC.md) | PKI 운영, 시스템 관리자 | 관제실 | sysadmin | 0 (2차 초안만) |
 | [구매팀](DEP-PUR.md) | 구매, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 | 검토 포털 | viewer, approver | 0 (2차 초안만) |
 | [법무팀](DEP-LEG.md) | 법무 | 검토 포털 | viewer | 0 (2차 초안만) |
@@ -61,22 +61,22 @@ last_updated: 2026-11-05
 칸 = 그 부서가 맡는 활동 수(R 수행·A 책임·C 협의·I 통보). * = 2차 초안.
 부서가 한 활동에서 몫을 여럿 맡으면(예: 수행과 책임) 그 활동은 몫마다 한 번씩 센다 — 칸의 합이 활동 수보다 클 수 있다.
 
-| 부서 | FPW.1 | FPW.2 | FPW.3 | FPW.4 | FPW.5 | FPW.6 | FPW.7 | FPW.8 | FPW.9 | FPW.10* | FPW.11* | FPW.12* | FPW.13* | FPW.14* |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C2 I1 | I4 | R1 A1 I3 | R5 A6 C7 I8 | C1 I7 | R2 A3 C2 I2 | – | – | – | I2 | R1 A1 I4 |
-| 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C4 I2 | R3 A5 C2 I4 | C2 I1 | C1 I1 | R1 A1 | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C3 I2 |
-| SW통합·릴리스팀 | – | I1 | R2 A2 | R1 C1 I3 | R2 A2 C2 I4 | R3 A4 C4 | R1 A1 C1 I5 | C2 | R2 A1 C3 I3 | R1 A1 C2 I3 | C1 I3 | I1 | – | – |
-| PLM·기준정보팀 | R1 I3 | – | C1 I1 | C1 | – | R1 A1 I1 | – | – | – | C1 | – | – | – | R3 A3 I3 |
-| 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I2 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R2 A2 C5 | R3 A4 C6 I1 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 |
-| 차량사이버보안팀 | – | R1 A1 C2 | – | C2 | – | C2 | – | R1 C4 I1 | – | C3 | R4 A5 C1 | – | R1 C3 | – |
-| 법규인증팀 | R1 A1 C1 | R1 A1 C1 I1 | – | – | – | R1 A1 C1 I1 | R1 A1 C1 I1 | R1 A1 C3 I3 | – | R1 C1 | C1 I1 | R2 A2 C1 | R3 A3 C1 | C1 |
-| 시험·검증팀 | – | C1 I1 | C1 I3 | I3 | R3 A4 C3 | – | C3 | C1 | C3 | R1 C1 | – | – | – | – |
-| 품질팀 | I1 | I1 | R1 | R1 I1 | R1 C1 I3 | R1 I2 | R1 I3 | R2 A1 C1 I4 | R1 A1 | R3 A2 C2 I1 | I1 | I2 | I3 | – |
-| OTA·서비스운영팀 | – | – | – | – | – | C1 I2 | R2 A2 C2 I3 | R7 A6 C1 I4 | I3 | – | C1 I3 | C2 I2 | R1 I2 | – |
-| IT인프라·보안운영팀 | – | – | – | – | – | C1 | – | – | – | – | R1 C2 | – | – | – |
-| 구매팀 | – | C1 | – | – | – | – | – | – | – | R2 A3 I2 | C1 | – | – | – |
-| 법무팀 | – | – | – | – | – | – | C1 | C1 | – | C1 | R1 A1 | R1 A1 C2 | C2 | – |
-| 개인정보보호팀 | – | – | – | – | – | – | – | – | – | – | – | R1 A1 C4 | – | – |
+| 부서 | FPW.1 | FPW.2 | FPW.3 | FPW.4 | FPW.5 | FPW.6 | FPW.7 | FPW.8 | FPW.9 | FPW.10* | FPW.11* | FPW.12* | FPW.13* | FPW.14* | FPW.15* | FPW.16* | FPW.17* | FPW.18* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C2 I1 | I4 | R1 A1 I3 | R5 A6 C7 I8 | C1 I7 | R2 A3 C2 I2 | – | – | – | I2 | R1 A1 I4 | C1 | – | C1 I1 | R3 A3 C2 I3 |
+| 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C4 I2 | R3 A5 C2 I4 | C2 I1 | C1 I1 | R1 A1 | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C3 I2 | C1 | – | R1 A1 C2 | – |
+| SW통합·릴리스팀 | – | I1 | R2 A2 | R1 C1 I3 | R2 A2 C2 I4 | R3 A4 C4 | R1 A1 C1 I5 | C6 | R2 A1 C3 I3 | R1 A1 C2 I3 | C1 I3 | I1 | – | – | C1 | – | R2 A2 C3 I1 | – |
+| PLM·기준정보팀 | R1 I3 | – | C1 I1 | C1 | – | R1 A1 I1 | – | – | – | C1 | – | – | – | R3 A3 I3 | – | – | R1 A1 C3 | – |
+| 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I2 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R2 A2 C5 | R4 A5 C8 I2 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 | – | – | – | C1 |
+| 차량사이버보안팀 | – | R1 A1 C2 | – | C2 | – | C2 | – | R1 C4 I1 | – | C3 | R4 A5 C1 | R2 A2 C1 | R1 C3 | – | – | C3 | – | C1 |
+| 법규인증팀 | R1 A1 C1 | R1 A1 C1 I1 | – | – | – | R1 A1 C1 I1 | R1 A1 C1 I1 | R1 A1 C3 I3 | – | R1 C1 | C1 I1 | R2 A2 C1 | R3 A3 C1 | C1 | – | C1 | C1 | – |
+| 시험·검증팀 | – | C1 I1 | C1 I3 | I3 | R3 A4 C3 | – | C3 | C1 | C3 | R1 C1 | – | – | – | – | – | – | – | C1 |
+| 품질팀 | I1 | I1 | R1 | R1 I1 | R1 C1 I3 | R1 I2 | R1 I3 | R2 A1 C1 I8 | R1 A1 | R3 A2 C2 I1 | I1 | I4 | I3 | – | – | I4 | I3 | C2 I1 |
+| OTA·서비스운영팀 | – | – | – | – | – | C1 I2 | R2 A2 C2 I3 | R10 A9 C1 I5 | I3 | – | C1 I3 | C2 I3 | R1 I2 | – | – | R2 A2 I1 | R1 A1 | R1 A1 C1 |
+| IT인프라·보안운영팀 | – | – | – | – | – | C1 | – | – | – | – | R1 C2 | – | – | – | – | R2 A2 C2 | – | – |
+| 구매팀 | – | C1 | – | – | – | – | – | – | – | R2 A3 I2 | C1 | – | – | – | R7 A7 C6 I7 | – | – | – |
+| 법무팀 | – | – | – | – | – | – | C1 | C1 | – | C1 | R1 A1 | R1 A1 C4 | C2 | – | – | – | – | C1 |
+| 개인정보보호팀 | – | – | – | – | – | – | – | – | – | – | – | R2 A2 C6 | – | – | – | C1 | – | C2 |
 
 ## 3. 부서 겸직 직무 분리
 

@@ -44,12 +44,12 @@ describe('업무 절차 허브', () => {
     expect(screen.getByRole('link', { name: 'Release Sign-off(출시 책임 확인)' })).toBeTruthy();
   });
 
-  it('14개 절차가 모두 카드로 보인다', async () => {
+  it('기존 생애주기와 지원 업무 18개가 모두 카드로 보인다', async () => {
     mount('/procedures?view=list', 'viewer');
     // 업무 절차 문서는 늦게 읽힌다 — 카드 링크가 나올 때까지(시간 초과는 실패)
     const links = await screen.findAllByRole('link', { name: /Flag Retirement|출시|등록/ }, { timeout: 5000 });
     expect(links.length).toBeGreaterThan(0);
-    expect(document.querySelectorAll('.ds-learn-card').length).toBe(14);
+    expect(document.querySelectorAll('.ds-learn-card').length).toBe(18);
   });
 
   it('내 업무에서 완료를 표시하면 진행률이 오르고 다음 할 일이 바뀐다', async () => {

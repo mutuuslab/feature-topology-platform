@@ -3,7 +3,7 @@ id: WF-ROLE-INT
 type: workflow
 title: "통합 조직 업무 절차서 / Integration Organization Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -18,7 +18,9 @@ traces:
     - WF-FPW-10
     - WF-FPW-11
     - WF-FPW-12
-last_updated: 2026-11-05
+    - WF-FPW-15
+    - WF-FPW-17
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -60,7 +62,7 @@ last_updated: 2026-11-05
 ### FPW.4-A07 Flag PR 검토·병합 — 수행
 - 프로세스: FPW.4 안전 설계·정책 설계
 - 시작: 앞 활동 완료
-- 입력: WP-G4-DECISION → 출력: –
+- 입력: WP-G4-DECISION → 출력: WP-FLAG-PR-RESULT
 - 플랫폼: `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey`
 1. Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
 2. 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
@@ -80,7 +82,7 @@ last_updated: 2026-11-05
 ### FPW.5-A07 Flag 코드 연결 확인 — 수행·책임
 - 프로세스: FPW.5 검증·V&V
 - 시작: 앞 활동 완료
-- 입력: WP-INTEGRATION-REC → 출력: –
+- 입력: WP-INTEGRATION-REC → 출력: WP-FLAG-RECON-RESULT
 - 플랫폼: `rescanFlagRepository`, `requestFlagGateWaiver`, `/flag-code/reconcile`, `/integration/code-scans`
 1. 어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다
 2. 미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다
@@ -100,7 +102,7 @@ last_updated: 2026-11-05
 ### FPW.9-A06 Flag 제거 PR 병합 — 수행
 - 프로세스: FPW.9 사후 검토·Flag Retirement
 - 시작: 앞 활동 완료
-- 입력: WP-RETIRE-LOG → 출력: –
+- 입력: WP-RETIRE-LOG → 출력: WP-FLAG-REMOVAL-SCAN
 - 플랫폼: `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements`
 1. Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
 2. 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
@@ -116,6 +118,28 @@ last_updated: 2026-11-05
 2. 표식이 있는 ECU에서 기록이 없을 때 첫 시동으로 보지 않는지 확인한다
 3. 결과를 생산 기준정보와 함께 기록한다
 - [ ] 대상 ECU 모두 표식과 초기 기록이 확인되었다
+
+### FPW.17-A03 사전 품질 점검 — 수행·책임
+- 프로세스: FPW.17 기준정보·공유 자산·연계 품질
+- 시작: 앞 활동 완료
+- 입력: WP-ASSET-TRACE → 출력: WP-DATA-QUALITY
+- 플랫폼: `/precheck`, `/trace/coverage`
+1. 등록·설계·출고에 사용할 데이터 범위를 식별한다
+2. 사전 점검과 추적 커버리지에서 오류·누락·경고를 확인한다
+3. 원천 담당자에게 수정을 요청하고 재점검 결과 또는 승인된 보류 근거를 남긴다
+- [ ] 점검 범위와 미해결 오류의 담당자가 있다
+- [ ] 커버리지 비율만으로 설계 일관성이나 안전 승인을 대신하지 않는다
+
+### FPW.17-A04 외부 연계 대사 — 수행·책임
+- 프로세스: FPW.17 기준정보·공유 자산·연계 품질
+- 시작: 연계 실패·충돌 또는 정기 대사
+- 입력: WP-DATA-QUALITY → 출력: WP-INTEGRATION-RECON
+- 플랫폼: `resolveExtConflict`, `drainExtSync`, `/integration/connectors`
+1. 원천 소유자 규칙과 외부 요구·변경·배포 식별자 연결을 확인한다
+2. 보낸 함·받은 함·충돌과 거부 원인을 대조한다
+3. 허용된 재전송 또는 충돌 처리를 실행하고 실제 반영 결과를 확인한다
+- [ ] 외부 상태를 플랫폼 Guard를 우회하여 덮어쓰지 않는다
+- [ ] 재전송 요청과 외부 반영 완료를 구분한다
 
 ## 2. 협의·통보 받는 활동
 
@@ -138,6 +162,10 @@ last_updated: 2026-11-05
 - FPW.11-A04 취약점 영향 특정·대응 결정 (협의)
 - FPW.11-A06 OSS 라이선스·보안 프로그램 운영 (통보)
 - FPW.12-A02 평가 컨텍스트 개인정보 검토 (통보)
+- FPW.15-A03 공수·규모 입력 (협의)
+- FPW.17-A01 차량·시장 기준 관리 (통보)
+- FPW.17-A02 구조·공유 자산 검토 (협의)
+- FPW.17-A05 생산·Legacy 대사 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

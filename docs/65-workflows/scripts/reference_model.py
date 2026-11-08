@@ -79,7 +79,22 @@ def reference_problems(model: dict) -> list[str]:
     """Legacy source remains readable; declaring the reference model enables full definition gates."""
     required = bool(model.get('common', {}).get('reference_model'))
     keys = {w['key'] for p in model['processes'] for w in p.get('work_products', [])}
-    return [e for p in model['processes'] if required or 'base_practices' in p for e in practice_problems(p, keys)]
+    errors = [e for p in model['processes'] if required or 'base_practices' in p for e in practice_problems(p, keys)]
+    contexts = model.get('common', {}).get('screen_context')
+    if contexts is not None:
+        screens = set(model.get('screen_by_path', {}))
+        linked = {s for p in model['processes'] for a in p['activities'] for s in a.get('platform', {}).get('screens', [])}
+        seen = set()
+        for item in contexts:
+            path = item.get('path')
+            if path not in screens or path in seen or path in linked:
+                errors.append(f'화면 범위: 없거나 중복·이미 활동에 연결된 공통 화면 {path}')
+            if item.get('kind') not in ('navigation', 'cross_cutting') or not item.get('reason', '').strip():
+                errors.append(f'화면 범위: {path}의 구분·근거가 없다')
+            seen.add(path)
+        for path in sorted(screens - linked - seen):
+            errors.append(f'화면 범위: 업무 연결 또는 공통 UI 근거가 없는 화면 {path}')
+    return errors
 
 
 def practices_json(process: dict) -> list[dict]:

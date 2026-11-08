@@ -3,7 +3,7 @@ id: WF-ROLE-OPS
 type: workflow
 title: "운영 조직 업무 절차서 / Operations Organization Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -15,7 +15,10 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
-last_updated: 2026-11-05
+    - WF-FPW-16
+    - WF-FPW-17
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -52,7 +55,7 @@ last_updated: 2026-11-05
 ### FPW.8-A12 Flag 평가 이상 확인 — 수행·책임
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 평가 모니터링에서 기본값 폴백·서명 오류가 늘어난다
-- 입력: – → 출력: –
+- 입력: – → 출력: WP-FLAG-EVAL-INVESTIGATION
 - 플랫폼: `/ops/flag-evaluations`
 1. 평가 모니터링에서 기본값 폴백·서명 오류·오류 수가 늘어난 Flag를 찾는다
 2. 차량 회신과 게시본을 대조해 원인이 배포·서명·차량 중 어디인지 가른다
@@ -63,7 +66,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.8 운영·긴급 차단·복원
 - 시작: 운행 감시 경보, 장애·VOC 접수, SOTIF 트리거 발견
 - 입력: WP-G7-DECISION, WP-ROLLOUT-RECORD, WP-KPI-PLAN, WP-G5-EVIDENCE → 출력: WP-ANOMALY-CASE
-- 플랫폼: `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`
+- 플랫폼: `acknowledgeAnomaly`, `dismissAnomaly`, `createIncident`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`
 1. 운행 중 감시 지표와 장애·VOC를 확인해 이상 징후 건을 연다
 2. 대상 Feature Version과 영향 차량 범위를 Fleet 적용 현황에서 확인한다
 3. 안전·보안 영향이 의심되면 즉시 Safety Manager(보안은 CSM)에게 넘긴다
@@ -108,7 +111,7 @@ last_updated: 2026-11-05
 - 시작: 앞 활동 완료
 - 입력: WP-RESTORE-DECISION → 출력: WP-RESTORE-ROLLOUT
 - 플랫폼: `stageRollout`, `/fleet/live`
-1. Canary Cohort부터 복원을 적용하고 차량이 다음 시동 자체 시험 뒤 활성으로 돌아왔는지 확인한다
+1. Canary Cohort부터 차단 해제를 적용하고 차량이 INACTIVE 상태로 복귀했는지 확인한다. 재활성화는 정상 활성화 Guard·ODD·자체 시험 조건을 별도로 확인한다
 2. 사전에 정한 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다
 3. 이상이 보이면 확대를 멈추고 다시 차단 판단(A02)으로 넘긴다
 - [ ] 단계마다 관측 결과와 확대·중단 결정이 기록되었다
@@ -123,6 +126,39 @@ last_updated: 2026-11-05
 3. Safety Manager·품질 조직의 의견을 받아 G8 운영 판정을 남긴다
 - [ ] 분기마다 드릴 결과와 G8 판정이 있다
 
+### FPW.8-A13 정책 롤백 요청·계획 — 수행·책임
+- 프로세스: FPW.8 운영·긴급 차단·복원
+- 시작: 정책 복구 필요 또는 자동 복구 계획 수립
+- 입력: – → 출력: WP-RBK-REQ
+- 플랫폼: `previewRollback`, `createRollbackRequest`, `createRollbackPlan`, `/ops/rollback`, `/policies/:id`
+1. 현재 배포 ID와 같은 flag의 이전 배포 정책 및 복구 가능 근거를 확인한다
+2. 전 대상 범위와 사유 또는 자동 조건을 정해 미리보기를 검증한다
+3. 지정 승인대상자를 넣어 요청 또는 계획을 만들고 기준 배포를 고정한다
+- [ ] 현재 배포가 바뀌면 낡은 요청으로 실행하지 않는다
+- [ ] 정책 전 범위를 덮지 못하거나 SW 버전 실행 위임이 미확정이면 보류한다
+
+### FPW.8-A15 롤백 재검증·실행 — 수행·책임
+- 프로세스: FPW.8 운영·긴급 차단·복원
+- 시작: 앞 활동 완료
+- 입력: WP-RBK-DEC → 출력: WP-RBK-EXEC
+- 플랫폼: `executeRollbackRequest`, `/ops/rollback`, `/deployments/:id`
+1. 승인된 요청 또는 계획과 현재 배포의 일치 여부를 확인한다
+2. 복구 기준의 검증·운영 승인·서명·현재 적용 가능성을 다시 확인한다
+3. 허용된 실행을 수행하고 새 게시본 및 실행 이력을 연결한다
+- [ ] 승인 후 상태·키·기준이 달라지면 재검증에서 차단된다
+- [ ] 실행 응답을 차량 적용 완료로 간주하지 않는다
+
+### FPW.8-A16 롤백 적용·미회신 확인 — 수행·책임
+- 프로세스: FPW.8 운영·긴급 차단·복원
+- 시작: 앞 활동 완료
+- 입력: WP-RBK-EXEC → 출력: WP-RBK-CLOSE
+- 플랫폼: `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`
+1. 현재 롤백 게시본과 대상 차량 분모를 고정한다
+2. 차량별 수신·적용·거부·기한초과를 확인하고 허용된 재시도를 수행한다
+3. 모든 적용 완료 또는 미해결 차량·위험·담당자를 기록해 인계한다
+- [ ] 수신 ACK와 적용 READBACK을 구분한다
+- [ ] 누락 데이터는 대상 0 또는 성공으로 표시하지 않는다
+
 ### FPW.13-A04 원격 종료 시스템 설명 작성 — 수행
 - 프로세스: FPW.13 규정·Compliance Profile 관리
 - 시작: 앞 활동 완료
@@ -132,6 +168,50 @@ last_updated: 2026-11-05
 2. 발동 사유·승인자·긴급 권한·해제 기준·시장별 차이를 운영 절차(FPW.8)와 같은 내용으로 맞춘다
 3. 운영 조직이 드릴 결과로 실제 운영과 문서가 같은지 확인한다
 - [ ] 시스템 설명과 FPW.8 운영 절차의 승인자·기준이 일치한다
+
+### FPW.16-A03 운영 설정·상태 점검 — 수행·책임
+- 프로세스: FPW.16 플랫폼 접근·운영·복구
+- 시작: 정기 점검 또는 장애
+- 입력: – → 출력: WP-PLATFORM-OPS
+- 플랫폼: `/admin/settings`, `/events`, `/notifications/rules`
+1. 현재 운영 모드와 연결 대상 및 설정 변경 근거를 확인한다
+2. 설정·상태 화면과 운영 환경의 관측 자료로 연결·오류·보존 상태를 점검한다
+3. 비밀 값을 본문에 옮기지 않고 장애와 담당자 및 후속 조치를 기록한다
+- [ ] 개발 PC 설정을 원격 운영 확인 근거로 쓰지 않는다
+- [ ] 관측 실패와 미확인 연결은 정상 완료와 구분한다
+
+### FPW.16-A04 백업·복구 점검 — 수행·책임
+- 프로세스: FPW.16 플랫폼 접근·운영·복구
+- 시작: 복구 훈련 또는 사고 복구
+- 입력: WP-PLATFORM-OPS → 출력: WP-RECOVERY-DRILL
+- 플랫폼: `/admin/settings`
+1. 운영 환경의 백업 범위·보관 정책과 복구 책임자를 확인한다
+2. 승인된 격리 환경에서 복구 절차를 실행하고 데이터 및 감사 연속성을 대조한다
+3. 실측 시간·검증 결과·미실행 항목을 구분해 기록하고 개선을 인계한다
+- [ ] 계획서 존재만으로 복구 성공을 판정하지 않는다
+- [ ] 실제 실행 환경과 증거 위치가 기록된다
+
+### FPW.17-A05 생산·Legacy 대사 — 수행·책임
+- 프로세스: FPW.17 기준정보·공유 자산·연계 품질
+- 시작: 공장 인수·Legacy 연계
+- 입력: WP-MASTER-VALUES, WP-DATA-QUALITY → 출력: WP-INTEGRATION-RECON
+- 플랫폼: `runSync`, `importPlantOrders`, `translateLegacy`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`
+1. 대상 공장·차량과 옵션 코드 및 변환 규칙을 확인한다
+2. 허용된 동기화·주문 가져오기 또는 코딩 변환을 수행한다
+3. 출고 구성·수신 상태와 실패 사유를 대조해 현장 담당자에게 인계한다
+- [ ] Legacy 경로가 F2 이상 제한을 우회하지 않는다
+- [ ] 변환 계획과 실차 적용 결과를 구분한다
+
+### FPW.18-A02 운영·품질 데이터 분석 — 수행·책임
+- 프로세스: FPW.18 운영 분석·상품 개선
+- 시작: 앞 활동 완료
+- 입력: WP-ANALYSIS-SCOPE → 출력: WP-OPS-ANALYSIS
+- 플랫폼: `/data/workbench`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`, `/fleet/vehicles/:vin`
+1. 허용된 데이터 범위와 수집 지연·결측을 확인한다
+2. 차량군·기간별 운영 지표와 품질 사건을 분석한다
+3. 분모·쿼리·출처 및 불확실성을 기록해 품질 담당자에게 인계한다
+- [ ] 수신 없음과 정상 0건을 구분한다
+- [ ] 차량 회신과 실제 적용 근거를 구분한다
 
 ## 2. 협의·통보 받는 활동
 
@@ -148,6 +228,7 @@ last_updated: 2026-11-05
 - FPW.8-A05 긴급 차단 2인 승인 (통보)
 - FPW.8-A07 긴급 권한 사후 검토 (통보)
 - FPW.8-A09 복원 2인 승인 (통보)
+- FPW.8-A14 정책 롤백 독립 승인 (통보)
 - FPW.9-A01 운영 결과 품질 피드백 수용 (통보)
 - FPW.9-A03 Flag Retirement 승인 (통보)
 - FPW.9-A05 Lifecycle 종료 전이 (통보)
@@ -159,8 +240,11 @@ last_updated: 2026-11-05
 - FPW.12-A03 중국 데이터 현지 처리·이전 심사 (통보)
 - FPW.12-A04 EU 데이터 접근 요청 처리 (통보)
 - FPW.12-A05 보존 기간 경과 데이터 삭제 (협의)
+- FPW.12-A06 처리 목적·근거 검토 (통보)
 - FPW.13-A02 Compliance Profile 정의 (통보)
 - FPW.13-A03 분기 법규 감시·Profile 갱신 (통보)
+- FPW.16-A01 계정 상태 변경 (통보)
+- FPW.18-A01 분석 목적·데이터 검토 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

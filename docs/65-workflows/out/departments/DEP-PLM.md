@@ -3,7 +3,7 @@ id: WF-DEP-PLM
 type: workflow
 title: "PLM·기준정보팀 R&R / PLM & Master Data Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -14,9 +14,10 @@ traces:
     - WF-FPW-6
     - WF-FPW-10
     - WF-FPW-14
+    - WF-FPW-17
     - WF-ROLE-PLM
     - WF-ROLE-RDA
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -31,7 +32,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 5 · 책임 4 · 협의 3 · 통보 8 (활동 15개)
+수행 6 · 책임 5 · 협의 6 · 통보 8 (활동 19개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -50,6 +51,10 @@ last_updated: 2026-11-05
 | FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) · I (기준정보 담당) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | R·A (Feature DB 관리자) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
+| FPW.17-A01 차량·시장 기준 관리 | FPW.17 기준정보·공유 자산·연계 품질 | R·A (기준정보 담당) | – → 기준 값 관리 기록 `WP-MASTER-VALUES` | `/master/reference-values` | 2차 초안 |
+| FPW.17-A02 구조·공유 자산 검토 | FPW.17 기준정보·공유 자산·연계 품질 | C (기준정보 담당) | 기준 값 관리 기록 `WP-MASTER-VALUES` → 구조·공유 자산 추적 `WP-ASSET-TRACE` | `/master/taxonomy`, `/master/upg`, `/master/structure` 외 2 | 2차 초안 |
+| FPW.17-A03 사전 품질 점검 | FPW.17 기준정보·공유 자산·연계 품질 | C (기준정보 담당) | 구조·공유 자산 추적 `WP-ASSET-TRACE` → 데이터 사전 점검 `WP-DATA-QUALITY` | `/precheck`, `/trace/coverage` | 2차 초안 |
+| FPW.17-A05 생산·Legacy 대사 | FPW.17 기준정보·공유 자산·연계 품질 | C (기준정보 담당) | 기준 값 관리 기록 `WP-MASTER-VALUES`, 데이터 사전 점검 `WP-DATA-QUALITY` → 연계·대사 처리 기록 `WP-INTEGRATION-RECON` | `/integration/sync`, `/integration/legacy`, `/field` 외 1 | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -61,8 +66,9 @@ last_updated: 2026-11-05
 | 보냄 | FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1-A05 G1 등록·분류 판정 | 기능안전팀 | 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | 1차 |
 | 보냄 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6-A03 SUMS 기록·형식승인 확인 | 법규인증팀 | 출시 Baseline `WP-RELEASE-BASELINE` | 1차 |
 | 보냄 | FPW.6-A02 출시 Baseline 확정 승인 | FPW.6-A04 서명 패키지 작성·SBOM 결합 | SW통합·릴리스팀 | 출시 Baseline `WP-RELEASE-BASELINE` | 1차 |
+| 보냄 | FPW.17-A01 차량·시장 기준 관리 | FPW.17-A02 구조·공유 자산 검토 | 시스템엔지니어링팀 | 기준 값 관리 기록 `WP-MASTER-VALUES` | 2차 초안 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/baselines`, `/config/compat`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/master/feature-db`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/features/:id/:ver`, `/admin/approval`, `/master/artifacts`, `/integration/connectors`, `/policies/new`, `/policies`, `/config/odd`, `/master/feature-db/:refId`
+- 주 업무 화면: `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/baselines`, `/config/compat`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/master/feature-db`, `/master/reference-values`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/features/:id/:ver`, `/admin/approval`, `/master/artifacts`, `/integration/connectors`, `/policies/new`, `/policies`, `/config/odd`, `/master/feature-db/:refId`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/precheck`, `/trace/coverage`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`

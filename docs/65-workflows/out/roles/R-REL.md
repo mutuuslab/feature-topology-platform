@@ -3,7 +3,7 @@ id: WF-ROLE-REL
 type: workflow
 title: "Release Manager 업무 절차서 / Release Manager Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -16,7 +16,8 @@ traces:
     - WF-FPW-8
     - WF-FPW-9
     - WF-FPW-11
-last_updated: 2026-11-05
+    - WF-FPW-17
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -54,7 +55,7 @@ last_updated: 2026-11-05
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
 - 입력: WP-OTA-GATE, WP-RELEASE-BASELINE → 출력: WP-G6-DECISION
-- 플랫폼: `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors`
+- 플랫폼: `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id`
 1. OTA Gate PASS를 확인하고 정책을 서버에 배포해 평가 기준을 전환한다
 2. Unleash와 flag·태그·의존·전략·환경을 동기화하고 결과를 확인한다
 3. 이 배포는 패키지 전달까지이며, 차량 내 효력은 G7 승인 뒤 Canary부터 낸다고 운영 조직에 알린다
@@ -63,8 +64,8 @@ last_updated: 2026-11-05
 ### FPW.6-A07 코드 저장소 연결 관리 — 수행·책임
 - 프로세스: FPW.6 서명 배포
 - 시작: 앞 활동 완료
-- 입력: – → 출력: –
-- 플랫폼: `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-scans`
+- 입력: – → 출력: WP-REPO-CONNECTION
+- 플랫폼: `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans`
 1. 차량 SW 저장소를 패키지·기본 브랜치·스캔 주기와 함께 연결한다
 2. webhook 실패와 스캔 거부를 확인하고 원인을 통합 조직과 해소한다
 3. 설정 변경은 사유를 남기고 구현 담당이 자기 검사를 약화하지 못하게 한다
@@ -108,12 +109,17 @@ last_updated: 2026-11-05
 - FPW.7-A12 Release Sign-off(출시 책임 확인) (통보)
 - FPW.7-A11 Canary 활성화·단계적 확대 (협의)
 - FPW.8-A10 단계적 복원·관측 (협의)
+- FPW.8-A13 정책 롤백 요청·계획 (협의)
+- FPW.8-A14 정책 롤백 독립 승인 (협의)
+- FPW.8-A15 롤백 재검증·실행 (협의)
+- FPW.8-A16 롤백 적용·미회신 확인 (협의)
 - FPW.9-A02 Flag Retirement 요청 (협의)
 - FPW.9-A03 Flag Retirement 승인 (협의)
 - FPW.9-A04 코드·설정·시험 삭제 기록 (통보)
 - FPW.9-A06 Flag 제거 PR 병합 (통보)
 - FPW.11-A01 서명 키 계층·HSM 운영 (통보)
 - FPW.11-A04 취약점 영향 특정·대응 결정 (통보)
+- FPW.17-A04 외부 연계 대사 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

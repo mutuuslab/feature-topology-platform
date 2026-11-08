@@ -3,12 +3,12 @@ id: WF-FPW-9
 type: workflow
 title: "사후 검토·Flag Retirement / Post-Operation Review & Flag Retirement"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
   depends_on: []
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -53,7 +53,7 @@ flowchart LR
 | FPW.9-A02 | Flag Retirement 요청 | R Feature Owner · A Feature Owner · C Release Manager, 통합 조직 · I Safety Manager, 요구 Owner | WP-FEAT-REG | WP-RETIRE-REQ | `requestFlagRetirement`, `/flag-retirements` | FFG-CLS-008 |
 | FPW.9-A03 | Flag Retirement 승인 | R 요구 Owner, Safety Manager · A 요구 Owner · C Feature Owner, Release Manager · I 통합 조직, 운영 조직 | WP-RETIRE-REQ | WP-RETIRE-APPROVAL | `approveFlagRetirement`, `/flag-retirements` | FFG-ADS-010 |
 | FPW.9-A04 | 코드·설정·시험 삭제 기록 | R Feature Owner · A Feature Owner · C 통합 조직, 시험 조직 · I Release Manager | WP-RETIRE-APPROVAL | WP-RETIRE-LOG | `recordFlagRetirementStep`, `/flag-retirements` | FFG-LCY-011 |
-| FPW.9-A06 | Flag 제거 PR 병합 | R 통합 조직 · A Feature Owner · C 시험 조직 · I Release Manager | WP-RETIRE-LOG |  | `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements` | FFG-LCY-011 |
+| FPW.9-A06 | Flag 제거 PR 병합 | R 통합 조직 · A Feature Owner · C 시험 조직 · I Release Manager | WP-RETIRE-LOG | WP-FLAG-REMOVAL-SCAN | `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements` | FFG-LCY-011 |
 | FPW.9-A05 | Lifecycle 종료 전이 | R Release Manager · A Release Manager · C Feature Owner · I 상품 Owner, 운영 조직 | WP-RETIRE-LOG | WP-RETIRE-CLOSE | `transition`, `/features/:id/:ver` | – |
 
 ### 수행 절차와 완료 기준
@@ -116,6 +116,7 @@ flowchart LR
 | WP-RETIRE-APPROVAL | Retirement 승인 기록 | 산출 | 승인자(F2 이상은 Safety Manager 포함)와 시각; 삭제 기한(승인 후 6개월 또는 다음 정기 릴리스 중 이른 시점) |
 | WP-RETIRE-LOG | Retirement 단계 기록 | 산출 | 코드·설정·시험 삭제 단계별 완료 시각; 상태 보고로 확인한 구 Version 잔존 차량 수 |
 | WP-RETIRE-CLOSE | Lifecycle 종료 기록 | 산출 | DEPRECATED·RETIRED 전이 시각; Flag ID 재사용 금지 표시와 Catalog 퇴역 결과 |
+| WP-FLAG-REMOVAL-SCAN | Flag 제거 검토·스캔 결과 | 산출 | Retirement 승인·제거 PR·병합 참조; 최종 값 분기 검토와 정적 분석 결과; 참조 잔존 수·마지막 스캔·수행자와 시각 |
 
 ## 4. 진입·완료 기준
 
@@ -131,3 +132,73 @@ flowchart LR
 - O1 운영 결과와 새 트리거 조건이 품질 피드백으로 수용되어 시나리오와 다음 Version에 반영된다.
 - O2 Flag Retirement가 요청자와 다른 승인자의 승인을 받는다.
 - O3 Retirement 대상 Flag의 코드·설정·시험이 기한 안에 삭제되고 Lifecycle이 종료된다.
+
+## 6. 업무 수행 정의(Base Practices)
+
+업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.
+
+### FPW.9.BP1 운영 결과 품질 피드백 수용
+
+드릴·복원 관측·이상 조사 결과에서 반복 문제와 개선 항목을 식별한다. 수용한 피드백을 담당자·후속 Version·시험 시나리오에 연결하여 반영과 효과를 추적한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.9-A01
+
+### FPW.9.BP2 Flag Retirement 요청
+
+만료가 다가오거나 종료할 Flag의 연장 또는 Retirement 필요성을 검토한다. 영향 차량·구 Version 잔존과 예정 릴리스를 확인하고 종료 사유와 범위를 명시한 요청을 제출한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.9-A02
+
+### FPW.9.BP3 Flag Retirement 승인
+
+요청자와 구분된 책임자가 영향·안전 조건과 종료 계획을 검토한다. 필요한 독립 승인을 확보하고 삭제 기한·조건과 후속 책임을 통합·기획에 인계한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.9-A03
+
+### FPW.9.BP4 코드·설정·시험 삭제 기록
+
+승인된 Retirement 범위의 코드·설정·시험 제거와 차량 잔존을 단계별로 확인한다. 각 단계의 근거를 기록하고 잔존 및 후속 조건이 해소되어야 종료 단계를 닫는다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.9-A04
+
+### FPW.9.BP5 Flag 제거 PR 병합
+
+승인된 Flag 제거 변경을 검토하고 최종 값 분기와 병합 결과를 확인한다. 정적 분석·대사 결과를 보존하여 코드 참조가 제거되었는지 판단한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.9-A06
+
+### FPW.9.BP6 Lifecycle 종료 전이
+
+신규 사용 중지와 최종 종료의 조건을 구분하여 Lifecycle을 전이한다. Retirement 근거·수행 기록·ID 재사용 금지를 보존하고 상품 구성에 종료 사실을 반영하도록 전달한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.9-A05
+
+### BP × 성과
+
+| BP | O1 | O2 | O3 |
+|---|---|---|---|
+| FPW.9.BP1 | ● | – | – |
+| FPW.9.BP2 | – | ● | – |
+| FPW.9.BP3 | – | ● | – |
+| FPW.9.BP4 | – | – | ● |
+| FPW.9.BP5 | – | – | ● |
+| FPW.9.BP6 | – | – | ● |
+
+### 출력 근거 × 성과
+
+모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
+
+| 산출물 | O1 | O2 | O3 | 근거 BP |
+|---|---|---|---|---|
+| WP-QUALITY-FEEDBACK | ● | – | – | FPW.9.BP1 |
+| WP-RETIRE-REQ | – | ● | – | FPW.9.BP2 |
+| WP-RETIRE-APPROVAL | – | ● | – | FPW.9.BP3 |
+| WP-RETIRE-LOG | – | – | ● | FPW.9.BP4 |
+| WP-FLAG-REMOVAL-SCAN | – | – | ● | FPW.9.BP5 |
+| WP-RETIRE-CLOSE | – | – | ● | FPW.9.BP6 |

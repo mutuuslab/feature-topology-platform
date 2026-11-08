@@ -44,7 +44,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/admin/approval",
      "/flag-retirements",
      "/flag-code/lifecycle",
-     "/master/feature-db/:refId"
+     "/master/feature-db/:refId",
+     "/data/workbench",
+     "/biz/trials",
+     "/products"
     ],
     "reference": [
      "/analysis/impact",
@@ -61,6 +64,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/evidence",
      "/config/compat",
      "/deployments",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/verify/compliance",
      "/verify/safety-case",
      "/fleet/live",
@@ -69,6 +74,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
@@ -78,14 +84,26 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/quality/feedback",
      "/trace/ads",
      "/master/feature-db/changes/:id",
-     "/master/feature-db/changes"
+     "/master/feature-db/changes",
+     "/procurement/sw-cost",
+     "/procurement/sw-cost/:estId",
+     "/master/reference-values",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/fleet/vehicles/:vin"
     ]
    },
    "counts": {
-    "R": 13,
-    "A": 15,
-    "C": 20,
-    "I": 35
+    "R": 16,
+    "A": 18,
+    "C": 24,
+    "I": 39
    }
   },
   {
@@ -119,7 +137,12 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/flag-code/reconcile",
      "/flag-retirements",
      "/master/feature-db/changes/:id",
-     "/master/feature-db/changes"
+     "/master/feature-db/changes",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo"
     ],
     "reference": [
      "/master/define",
@@ -137,15 +160,19 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/evidence",
      "/baselines",
      "/integration/code-repositories",
+     "/integration/code-repositories/:repoId",
      "/integration/code-scans",
      "/integration/openfeature",
-     "/master/feature-db/:refId"
+     "/master/feature-db/:refId",
+     "/procurement/sw-cost/:estId",
+     "/precheck",
+     "/trace/coverage"
     ]
    },
    "counts": {
-    "R": 10,
-    "A": 12,
-    "C": 21,
+    "R": 11,
+    "A": 13,
+    "C": 24,
     "I": 18
    }
   },
@@ -173,9 +200,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/flag-code/reconcile",
      "/integration/code-scans",
      "/deployments",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/integration/code-repositories",
+     "/integration/code-repositories/:repoId",
      "/flag-code/lifecycle",
-     "/flag-retirements"
+     "/flag-retirements",
+     "/precheck",
+     "/trace/coverage"
     ],
     "reference": [
      "/master/control-points",
@@ -194,16 +226,30 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/fleet/live",
      "/notifications",
      "/ops/flag-evaluations",
+     "/ops/rollback",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
      "/supplier/portal",
      "/admin/security",
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/procurement/sw-cost/:estId",
+     "/master/reference-values",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol"
     ]
    },
    "counts": {
-    "R": 12,
-    "A": 11,
-    "C": 16,
-    "I": 23
+    "R": 14,
+    "A": 13,
+    "C": 24,
+    "I": 24
    }
   },
   {
@@ -228,7 +274,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/config/compat",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
-     "/master/feature-db"
+     "/master/feature-db",
+     "/master/reference-values"
     ],
     "reference": [
      "/master/define",
@@ -241,13 +288,24 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
-     "/master/feature-db/:refId"
+     "/master/feature-db/:refId",
+     "/master/taxonomy",
+     "/master/upg",
+     "/master/structure",
+     "/features/shared-assets",
+     "/change/eo",
+     "/precheck",
+     "/trace/coverage",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol"
     ]
    },
    "counts": {
-    "R": 5,
-    "A": 4,
-    "C": 3,
+    "R": 6,
+    "A": 5,
+    "C": 6,
     "I": 8
    }
   },
@@ -279,6 +337,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/kill",
      "/fleet/live",
      "/deployments",
+     "/ops/rollback",
      "/flag-retirements",
      "/ops/safety-kpi",
      "/trace/ads"
@@ -298,11 +357,14 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/validations",
      "/master/artifacts",
      "/validations/virtual",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/flag-code/reconcile",
      "/experiments",
      "/notifications",
      "/ops/anomalies",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
@@ -310,18 +372,22 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/incident-reports",
      "/audit/oversight",
      "/audit",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
      "/quality/feedback",
      "/supplier/portal",
      "/admin/security",
      "/master/feature-db/changes/:id",
-     "/master/feature-db/changes"
+     "/master/feature-db/changes",
+     "/data/workbench",
+     "/products"
     ]
    },
    "counts": {
-    "R": 17,
-    "A": 17,
-    "C": 35,
-    "I": 9
+    "R": 18,
+    "A": 18,
+    "C": 38,
+    "I": 10
    }
   },
   {
@@ -340,6 +406,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "primary": [
      "/ops/kill",
      "/admin/security",
+     "/admin/data",
      "/verify/compliance",
      "/trace/ads"
     ],
@@ -350,13 +417,19 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/deployments",
      "/master/artifacts",
      "/audit/oversight",
-     "/fleet/live"
+     "/fleet/live",
+     "/admin/iam",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules",
+     "/data/workbench",
+     "/products"
     ]
    },
    "counts": {
-    "R": 7,
-    "A": 6,
-    "C": 17,
+    "R": 9,
+    "A": 8,
+    "C": 22,
     "I": 1
    }
   },
@@ -389,13 +462,15 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/audit/oversight",
      "/audit",
      "/admin/security",
-     "/master/feature-db"
+     "/master/feature-db",
+     "/admin/iam",
+     "/master/reference-values"
     ]
    },
    "counts": {
     "R": 11,
     "A": 10,
-    "C": 12,
+    "C": 14,
     "I": 7
    }
   },
@@ -439,13 +514,18 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/kill",
      "/quality/feedback",
      "/flag-retirements",
-     "/flag-code/lifecycle"
+     "/flag-code/lifecycle",
+     "/data/workbench",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/fleet/vehicles/:vin"
     ]
    },
    "counts": {
     "R": 4,
     "A": 4,
-    "C": 13,
+    "C": 14,
     "I": 7
    }
   },
@@ -479,6 +559,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/verify/safety-case",
      "/deployments",
      "/integration/connectors",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/verify/compliance",
      "/activation/decide",
      "/fleet/live",
@@ -486,20 +568,41 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
      "/integration/datalake",
      "/audit",
+     "/ops/rollback",
+     "/policies/:id",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
      "/admin/data",
-     "/trace/ads"
+     "/trace/ads",
+     "/admin/iam",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules",
+     "/precheck",
+     "/trace/coverage",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol",
+     "/data/workbench",
+     "/biz/trials",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/products"
     ]
    },
    "counts": {
     "R": 11,
     "A": 4,
-    "C": 4,
-    "I": 22
+    "C": 6,
+    "I": 36
    }
   },
   {
@@ -526,16 +629,33 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/ops/anomalies",
      "/ops/safety-kpi",
      "/ops/incidents",
+     "/ops/incident-reports/:id",
      "/ops/feature-health",
      "/ops/feature-health/:findingId",
      "/ops/collection",
      "/integration/datalake",
      "/ops/kill",
      "/deployments",
-     "/audit"
+     "/audit",
+     "/ops/rollback",
+     "/deployments/:id",
+     "/fleet/vehicles/:vin",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules",
+     "/integration/sync",
+     "/integration/legacy",
+     "/field",
+     "/baselines/eol",
+     "/data/workbench",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles"
     ],
     "reference": [
      "/integration/connectors",
+     "/ops/ota-installs",
+     "/deployments/campaigns/:id",
      "/experiments",
      "/admin/approval",
      "/products/:id/:ver",
@@ -546,14 +666,16 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/admin/security",
      "/admin/data",
      "/verify/compliance",
-     "/trace/ads"
+     "/trace/ads",
+     "/admin/iam",
+     "/biz/trials"
     ]
    },
    "counts": {
-    "R": 10,
-    "A": 8,
-    "C": 7,
-    "I": 19
+    "R": 17,
+    "A": 15,
+    "C": 8,
+    "I": 22
    }
   },
   {
@@ -571,17 +693,22 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "screens": {
     "primary": [
-     "/admin/security"
+     "/admin/security",
+     "/admin/iam",
+     "/verify/compliance"
     ],
     "reference": [
      "/deployments",
-     "/master/artifacts"
+     "/master/artifacts",
+     "/admin/settings",
+     "/events",
+     "/notifications/rules"
     ]
    },
    "counts": {
-    "R": 1,
-    "A": 0,
-    "C": 3,
+    "R": 3,
+    "A": 2,
+    "C": 5,
     "I": 0
    }
   },
@@ -603,7 +730,11 @@ export const DEPARTMENTS: DepartmentsDoc = {
     "approver"
    ],
    "screens": {
-    "primary": [],
+    "primary": [
+     "/procurement/sw-cost",
+     "/procurement/sw-cost/:estId",
+     "/procurement/sw-cost/basis"
+    ],
     "reference": [
      "/analysis/impact",
      "/arch/topology",
@@ -611,10 +742,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 2,
-    "A": 3,
-    "C": 2,
-    "I": 2
+    "R": 9,
+    "A": 10,
+    "C": 8,
+    "I": 9
    }
   },
   {
@@ -636,13 +767,15 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/admin/data",
      "/integration/openfeature",
      "/verify/compliance",
-     "/trace/ads"
+     "/trace/ads",
+     "/data/workbench",
+     "/biz/trials"
     ]
    },
    "counts": {
     "R": 2,
     "A": 2,
-    "C": 7,
+    "C": 10,
     "I": 0
    }
   },
@@ -660,17 +793,22 @@ export const DEPARTMENTS: DepartmentsDoc = {
    ],
    "screens": {
     "primary": [
-     "/integration/openfeature"
+     "/integration/openfeature",
+     "/admin/data"
     ],
     "reference": [
      "/ops/safety-kpi",
-     "/admin/data"
+     "/admin/settings",
+     "/data/workbench",
+     "/biz/trials",
+     "/products",
+     "/entitlements"
     ]
    },
    "counts": {
-    "R": 1,
-    "A": 1,
-    "C": 4,
+    "R": 2,
+    "A": 2,
+    "C": 9,
     "I": 0
    }
   }

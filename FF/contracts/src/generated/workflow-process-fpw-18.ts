@@ -1,0 +1,741 @@
+// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.
+import type { WorkflowProcess } from '../rules/workflows';
+export const PROCESS: WorkflowProcess = {
+ "id": "FPW.18",
+ "name": "운영 분석·상품 개선",
+ "en": "Operational Analytics and Product Improvement",
+ "group": "지원",
+ "gates": [],
+ "ref": "업무 레퍼런스 모델 요구(WF-REFERENCE-REQUIREMENTS)·현행 플랫폼 계약/화면; 조직 검토 전 초안",
+ "purpose": "허용된 목적·범주·보존 범위 안에서 운영 및 체험 데이터를 해석하여 상품·품질 개선 가설을 도출하고, 편향·불확실성과 책임자를 명시한 후속 변경으로 인계한다.",
+ "outcomes": [
+  {
+   "id": "O1",
+   "text": "분석 목적·모집단·기간·데이터 범주와 개인정보 처리 근거가 검토된다."
+  },
+  {
+   "id": "O2",
+   "text": "품질·사용·체험 전환 지표가 분모와 결측을 포함해 재현 가능한 근거로 분석된다."
+  },
+  {
+   "id": "O3",
+   "text": "개선 가설과 위험·검증 방법이 담당 부서에 인계되고 승인된 별도 변경 절차로 연결된다."
+  }
+ ],
+ "basePractices": [
+  {
+   "id": "FPW.18.BP1",
+   "name": "분석 목적·데이터 검토",
+   "definition": "분석 질문과 필요한 최소 데이터를 정하고 개인정보 처리 목적·보존·이전 제한을 관계 담당자와 검토한다. 이 업무 정의 자체를 개인정보 동의나 법무 승인으로 간주하지 않는다.",
+   "notes": [
+    "DPO·법무의 검토는 플랫폼 밖 증거를 참조한다. 데모 조회는 고객 동의 획득이나 실제 외부 데이터 수신의 증거가 아니다."
+   ],
+   "activityIds": [
+    "FPW.18-A01"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-ANALYSIS-SCOPE",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.18.BP2",
+   "name": "운영·품질 데이터 분석",
+   "definition": "운영 데이터와 차량군별 품질 신호를 분석하여 이상과 개선 기회를 도출한다. 미수신·지연·누락을 정상 0건과 구분하고 분석 조건 및 출처를 보존한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.18-A02"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-OPS-ANALYSIS",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.18.BP3",
+   "name": "체험·전환 분석",
+   "definition": "체험의 제안·수락·거절·만료·구매 전환을 구분하여 상품별·집단별 지표를 해석한다. 추천이나 전환율을 자동 출시 승인으로 사용하지 않고 편향과 불확실성을 기록한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.18-A03"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-OPS-ANALYSIS",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.18.BP4",
+   "name": "개선 과제 인계",
+   "definition": "분석 결과를 검증 가능한 개선 가설로 정리하고 기존 Feature·정책·상품 변경 절차에 인계한다. 안전·보안·규정 검토와 승인 범위를 그대로 유지한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.18-A04"
+   ],
+   "outcomes": [
+    "O3"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-IMPROVEMENT-HANDOFF",
+     "outcomes": [
+      "O3"
+     ]
+    }
+   ]
+  }
+ ],
+ "rules": [],
+ "entry": [
+  "운영·체험 데이터의 출처와 접근 권한이 식별되어 있다"
+ ],
+ "exit": [
+  "분석 결과·한계와 후속 책임자가 기록된다",
+  "가설이 곧바로 안전 분류·정책 또는 상품 승인으로 반영되지 않는다"
+ ],
+ "workProducts": [
+  {
+   "key": "WP-ANALYSIS-SCOPE",
+   "name": "분석 목적·데이터 검토",
+   "en": "Analysis Purpose and Data Review",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "목적·모집단·기간·데이터 범주와 처리 근거",
+    "가명화·접근·보존 및 국외 이전 검토와 미확정 사항"
+   ]
+  },
+  {
+   "key": "WP-OPS-ANALYSIS",
+   "name": "운영·전환 분석 결과",
+   "en": "Operations and Conversion Analysis",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "쿼리·기간·분모·누락·출처와 결과",
+    "품질·사용·체험 수락/전환 지표와 해석 한계"
+   ]
+  },
+  {
+   "key": "WP-IMPROVEMENT-HANDOFF",
+   "name": "상품·품질 개선 인계",
+   "en": "Improvement Handover",
+   "kind": "output",
+   "retained": true,
+   "content": [
+    "가설·우선순위·고객/안전/보안 영향",
+    "담당 부서·검증 방법·후속 Feature/정책/상품 요청 참조"
+   ]
+  }
+ ],
+ "activities": [
+  {
+   "id": "FPW.18-A01",
+   "name": "분석 목적·데이터 검토",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-PDA"
+    ],
+    "A": "R-PDA",
+    "C": [
+     "R-DPO",
+     "R-LEG",
+     "R-OPS"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "inputs": [],
+   "outputs": [
+    "WP-ANALYSIS-SCOPE"
+   ],
+   "steps": [
+    "분석하려는 질문·대상 집단·기간과 필요한 데이터 범주를 정한다",
+    "DPO·법무와 목적 적합성·가명화·보존 및 국외 이전 근거를 검토한다",
+    "확인되지 않은 이용 목적과 접근 제한을 기록하고 허용된 데이터만 요청한다"
+   ],
+   "checks": [
+    "접근 가능하다는 이유만으로 새로운 이용 목적을 허용하지 않는다",
+    "외부 검토의 담당자와 근거가 식별된다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/data/workbench",
+     "/biz/trials"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.18-A02"
+   ]
+  },
+  {
+   "id": "FPW.18-A02",
+   "name": "운영·품질 데이터 분석",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-QA",
+     "R-TST"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "inputs": [
+    "WP-ANALYSIS-SCOPE"
+   ],
+   "outputs": [
+    "WP-OPS-ANALYSIS"
+   ],
+   "steps": [
+    "허용된 데이터 범위와 수집 지연·결측을 확인한다",
+    "차량군·기간별 운영 지표와 품질 사건을 분석한다",
+    "분모·쿼리·출처 및 불확실성을 기록해 품질 담당자에게 인계한다"
+   ],
+   "checks": [
+    "수신 없음과 정상 0건을 구분한다",
+    "차량 회신과 실제 적용 근거를 구분한다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/data/workbench",
+     "/ops/telemetry",
+     "/fleet/map",
+     "/fleet/vehicles",
+     "/fleet/vehicles/:vin"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.18-A03"
+   ]
+  },
+  {
+   "id": "FPW.18-A03",
+   "name": "체험·전환 분석",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-PDA"
+    ],
+    "A": "R-PDA",
+    "C": [
+     "R-PO",
+     "R-DPO"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "inputs": [
+    "WP-ANALYSIS-SCOPE"
+   ],
+   "outputs": [
+    "WP-OPS-ANALYSIS"
+   ],
+   "steps": [
+    "상품·제안 출처·기간과 집단별 분모를 확인한다",
+    "수락·거절·만료·구매 전환 지표와 차이를 분석한다",
+    "선택 편향·결측과 재현 조건을 적어 개선 가설을 만든다"
+   ],
+   "checks": [
+    "제안 수와 수락 수 및 구매 수를 혼동하지 않는다",
+    "상관관계만으로 인과 효과를 확정하지 않는다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/biz/trials",
+     "/products",
+     "/entitlements"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.18-A04"
+   ]
+  },
+  {
+   "id": "FPW.18-A04",
+   "name": "개선 과제 인계",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O3"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-PDA",
+     "R-QA",
+     "R-SM",
+     "R-CSM"
+    ],
+    "I": [
+     "R-PO"
+    ]
+   },
+   "inputs": [
+    "WP-OPS-ANALYSIS"
+   ],
+   "outputs": [
+    "WP-IMPROVEMENT-HANDOFF"
+   ],
+   "steps": [
+    "분석 근거와 고객·안전·보안 영향 및 우선순위를 검토한다",
+    "검증 방법과 담당 부서를 정하고 Feature·정책·상품의 후속 변경 요청에 연결한다",
+    "기존 Gate와 독립 승인 경로가 유지되는지 확인하고 결과를 추적한다"
+   ],
+   "checks": [
+    "분석 결과만으로 승인·배포·활성화하지 않는다",
+    "개선 과제와 근거 및 책임자가 연결된다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [
+     "/data/workbench",
+     "/products"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  }
+ ],
+ "layout": {
+  "width": 1366,
+  "height": 294,
+  "lanes": [
+   {
+    "role": "R-PDA",
+    "label": "상품 기획",
+    "x": 0,
+    "y": 0,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "role": "R-OPS",
+    "label": "운영 조직",
+    "x": 0,
+    "y": 98,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "role": "R-FO",
+    "label": "Feature Owner",
+    "x": 0,
+    "y": 196,
+    "w": 1366,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.18-A01",
+    "kind": "action",
+    "label": "분석 목적·데이터 검토",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-A03",
+    "kind": "action",
+    "label": "체험·전환 분석",
+    "x": 758,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-A02",
+    "kind": "action",
+    "label": "운영·품질 데이터 분석",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-A04",
+    "kind": "action",
+    "label": "개선 과제 인계",
+    "x": 1038,
+    "y": 212,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.18-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 1240,
+    "y": 236,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.18-S1",
+    "to": "FPW.18-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A01",
+    "to": "FPW.18-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A02",
+    "to": "FPW.18-A03",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      746,
+      147
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A03",
+    "to": "FPW.18-A04",
+    "kind": "flow",
+    "points": [
+     [
+      946,
+      49
+     ],
+     [
+      1026,
+      49
+     ],
+     [
+      1026,
+      245
+     ],
+     [
+      1038,
+      245
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A04",
+    "to": "FPW.18-E1",
+    "kind": "end",
+    "points": [
+     [
+      1226,
+      245
+     ],
+     [
+      1240,
+      245
+     ]
+    ]
+   }
+  ],
+  "joins": []
+ },
+ "departmentLayout": {
+  "width": 1366,
+  "height": 196,
+  "lanes": [
+   {
+    "department": "DEP-PDP",
+    "label": "상품기획팀",
+    "x": 0,
+    "y": 0,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "department": "DEP-OPS",
+    "label": "OTA·서비스운영팀",
+    "x": 0,
+    "y": 98,
+    "w": 1366,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.18-A01",
+    "kind": "action",
+    "label": "분석 목적·데이터 검토",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-A03",
+    "kind": "action",
+    "label": "체험·전환 분석",
+    "x": 758,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-A04",
+    "kind": "action",
+    "label": "개선 과제 인계",
+    "x": 1038,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-A02",
+    "kind": "action",
+    "label": "운영·품질 데이터 분석",
+    "x": 478,
+    "y": 114,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.18-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.18-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 1240,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.18-S1",
+    "to": "FPW.18-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A01",
+    "to": "FPW.18-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      147
+     ],
+     [
+      478,
+      147
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A02",
+    "to": "FPW.18-A03",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      147
+     ],
+     [
+      746,
+      147
+     ],
+     [
+      746,
+      49
+     ],
+     [
+      758,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A03",
+    "to": "FPW.18-A04",
+    "kind": "flow",
+    "points": [
+     [
+      946,
+      49
+     ],
+     [
+      1038,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.18-A04",
+    "to": "FPW.18-E1",
+    "kind": "end",
+    "points": [
+     [
+      1226,
+      49
+     ],
+     [
+      1240,
+      49
+     ]
+    ]
+   }
+  ],
+  "joins": []
+ }
+};

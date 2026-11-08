@@ -3,7 +3,7 @@ id: WF-FPW-6
 type: workflow
 title: "서명 배포 / Signed Deployment"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G8
     - FLW-RELEASE-READINESS
     - INT-OTA
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -62,8 +62,8 @@ flowchart LR
 | FPW.6-A03 | SUMS 기록·형식승인 확인 | R 법규 담당 · A 법규 담당 · C Release Manager · I Feature Owner, 운영 조직 | WP-RELEASE-BASELINE, WP-HOMOLOGATION-IMPACT | WP-SUMS-RECORD | 플랫폼 밖 | FFG-LCY-008, FFG-GEN-006 |
 | FPW.6-A04 | 서명 패키지 작성·SBOM 결합 | R 통합 조직 · A Release Manager · C PKI 운영, CSM · I 품질 조직 | WP-RELEASE-BASELINE | WP-SIGNED-PACKAGE | `registerChangeRecord`, `/deployments`, `/master/artifacts` | – |
 | FPW.6-A05 | OTA Gate 판정 등록 | R 품질 조직 · A Release Manager · C 법규 담당, CSM · I 운영 조직 | WP-SIGNED-PACKAGE, WP-SUMS-RECORD | WP-OTA-GATE | `judgeGate`, `/features/:id/:ver` | FFG-LCY-001 |
-| FPW.6-A06 | G6 서명 배포 실행 | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors` | FFG-LCY-009 |
-| FPW.6-A07 | 코드 저장소 연결 관리 | R Release Manager · A Release Manager · C 통합 조직 · I 아키텍트 |  |  | `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-scans` | – |
+| FPW.6-A06 | G6 서명 배포 실행 | R Release Manager · A Release Manager · C 운영 조직 · I Feature Owner, Safety Manager, 품질 조직 | WP-OTA-GATE, WP-RELEASE-BASELINE | WP-G6-DECISION | `deployPolicy`, `syncUnleash`, `/deployments`, `/integration/connectors`, `/ops/ota-installs`, `/deployments/campaigns/:id` | FFG-LCY-009 |
+| FPW.6-A07 | 코드 저장소 연결 관리 | R Release Manager · A Release Manager · C 통합 조직 · I 아키텍트 |  | WP-REPO-CONNECTION | `createFlagRepository`, `updateFlagRepository`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans` | – |
 
 ### 수행 절차와 완료 기준
 
@@ -133,6 +133,7 @@ flowchart LR
 | WP-SIGNED-PACKAGE | 서명 배포 패키지 | 산출 | 정책·설정 Artifact와 서명, 대상 해시; 결합된 SBOM과 패키지 식별자 |
 | WP-OTA-GATE | OTA Gate 판정 기록 | 산출 | R156 사전조건·대상·호환성 확인 결과; 판정자 서명과 시각 |
 | WP-G6-DECISION | G6 배포 기록 | 산출 | 서버 배포(평가 기준 전환) 시각과 게시본 ID; Unleash 동기화 결과(flag·전략·환경); Release Manager 판정과 근거 Evidence ID |
+| WP-REPO-CONNECTION | 코드 저장소 연결·변경 기록 | 산출 | 저장소·패키지·기본 브랜치와 스캔 설정; webhook·서명 검증의 상태와 실패 조치; 변경 사유·권한 있는 수행자·시각 |
 
 ## 4. 진입·완료 기준
 
@@ -149,3 +150,83 @@ flowchart LR
 - O1 출시 Baseline이 요청자와 다른 승인자에 의해 확정된다.
 - O2 Flag·파라미터 변경 명령이 SW 업데이트로 SUMS에 기록된다.
 - O3 서명·SBOM이 결합된 패키지가 OTA Gate를 거쳐 서버에 배포된다.
+
+## 6. 업무 수행 정의(Base Practices)
+
+업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.
+
+### FPW.6.BP1 출시 Baseline 확정 요청
+
+검증된 Feature Version과 승인 정책으로 출시 구성을 식별하고 필요한 Artifact를 갖춘 Baseline 확정을 요청한다. 요청 범위를 고정하고 요청자와 승인자의 분리를 유지한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.6-A01
+
+### FPW.6.BP2 출시 Baseline 확정 승인
+
+요청된 출시 구성이 차량 사양·SW·Variant 기준정보와 일치하는지 검토한다. 다른 승인자가 확정 또는 반려하고 확정된 해시와 구성을 출시 담당자에게 전달한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.6-A02
+
+### FPW.6.BP3 SUMS 기록·형식승인 확인
+
+확정 구성과 형식승인 영향 판단을 SUMS 기록에 연결한다. 필요한 기관 결정·사용자 고지·보존 조건이 준비되었는지 확인하고 미해결 사항은 배포 준비 판단에 반영한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.6-A03
+
+### FPW.6.BP4 서명 패키지 작성·SBOM 결합
+
+확정된 정책·설정 Artifact와 SBOM을 하나의 배포 단위로 식별한다. 용도가 맞는 키의 서명과 해시를 확인하고 변경 기록을 통해 원본 구성과 게시 패키지를 추적한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.6-A04
+
+### FPW.6.BP5 OTA Gate 판정 등록
+
+대상 식별·호환성·고지·서명·SUMS의 사전조건을 평가한다. 근거에 연결된 OTA 판정을 남기고 부족한 조건과 보완 책임을 출시 담당자에게 전달한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.6-A05
+
+### FPW.6.BP6 G6 서명 배포 실행
+
+승인된 정책과 OTA 사전조건을 확인하여 서버 평가 기준과 외부 정책 도구를 일치시킨다. 서명 게시본·배포 결과를 기록하고 정책 전달과 차량 내 활성화의 차이를 운영 조직에 알린다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.6-A06
+- 참고 1: 열린 재-HARA는 출시 전이·Release Sign-off를 막으며 승인된 완화 정책의 배포 자체를 막지 않는다는 D-RD-6 경계를 따른다.
+
+### FPW.6.BP7 코드 저장소 연결 관리
+
+차량 SW 저장소의 패키지·기본 브랜치·스캔·webhook 연결을 통제한다. 설정 변경과 실패 원인을 기록하고 구현 담당자가 자기 검사를 약화시키지 못하도록 변경 책임을 분리한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.6-A07
+
+### BP × 성과
+
+| BP | O1 | O2 | O3 |
+|---|---|---|---|
+| FPW.6.BP1 | ● | – | – |
+| FPW.6.BP2 | ● | – | – |
+| FPW.6.BP3 | – | ● | – |
+| FPW.6.BP4 | – | – | ● |
+| FPW.6.BP5 | – | – | ● |
+| FPW.6.BP6 | – | – | ● |
+| FPW.6.BP7 | ● | – | – |
+
+### 출력 근거 × 성과
+
+모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
+
+| 산출물 | O1 | O2 | O3 | 근거 BP |
+|---|---|---|---|---|
+| WP-BASELINE-REQ | ● | – | – | FPW.6.BP1 |
+| WP-RELEASE-BASELINE | ● | – | – | FPW.6.BP2 |
+| WP-SUMS-RECORD | – | ● | – | FPW.6.BP3 |
+| WP-SIGNED-PACKAGE | – | – | ● | FPW.6.BP4 |
+| WP-OTA-GATE | – | – | ● | FPW.6.BP5 |
+| WP-G6-DECISION | – | – | ● | FPW.6.BP6 |
+| WP-REPO-CONNECTION | ● | – | – | FPW.6.BP7 |

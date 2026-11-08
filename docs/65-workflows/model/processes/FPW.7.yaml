@@ -320,3 +320,171 @@ process:
       checks:
         - 단계마다 관측 결과와 확대·중단 결정이 기록되었다
       platform: {actions: [stageRollout], screens: [/activation/decide, /fleet/live, /features/:id/:ver, /notifications]}
+
+  base_practices:
+    - id: FPW.7.BP1
+      name: Canary·Shadow 판정 기준 정의
+      definition_ko: 안전 분류와 배포 범위를 기준으로 Canary 단계·관측 기간·중단 기준을 사전에 정한다. 단계 간 확대 조건을 합의하고 Shadow의 비간섭 검증
+        범위를 명시한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-CANARY-PLAN
+          outcomes:
+            - O1
+    - id: FPW.7.BP2
+      name: 출시 차단 해제 결정
+      definition_ko: 출시 차단 해제 요청의 현재 불일치·범위·근거·만료를 검토한다. 요청자와 다른 결정자가 제한된 예외를 승인하거나 반려하고 만료 뒤 원래 차단이 다시
+        적용되는지 확인한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A13
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-FLAG-WAIVER
+          outcomes:
+            - O1
+    - id: FPW.7.BP3
+      name: 효과 실험 계획 등록
+      definition_ko: 확인할 효과와 지표·대상·기간을 정하여 실험을 계획한다. 안전 관련 기능에 허용되는 방식과 비간섭 근거를 확인하고 승인 범위 내 실행 시점을 관계자와
+        맞춘다.
+      notes: []
+      activity_ids:
+        - FPW.7-A02
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-EXPERIMENT-PLAN
+          outcomes:
+            - O1
+    - id: FPW.7.BP4
+      name: Safety Case·SOTIF 근거 정리
+      definition_ko: 안전 주장과 잔여 위험을 현재 Version의 분석·검증 근거에 연결한다. 주장·논거·증거의 공백을 확인할 수 있도록 Safety Case를 구성하고
+        독립 검토에 넘긴다.
+      notes: []
+      activity_ids:
+        - FPW.7-A03
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-SAFETY-CASE
+          outcomes:
+            - O2
+    - id: FPW.7.BP5
+      name: Safety Case 독립 검토
+      definition_ko: 적격한 독립 검토자가 Safety Case의 주장과 증거를 검토하고 일부 근거를 재현한다. 적용 범위·불확실성·발견 사항과 조치 책임을 기록하여 출시
+        판단에 제공한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A04
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-SC-REVIEW
+          outcomes:
+            - O2
+    - id: FPW.7.BP6
+      name: 상품 구성 작성
+      definition_ko: 판매할 기능·구성·조건을 상품으로 정의하고 의존·배타·카탈로그 제약을 검증한다. 적합한 차량의 체험 범위를 계획하고 검증되지 않은 구성은 초안으로 구분한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A05
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-PRODUCT
+          outcomes:
+            - O3
+    - id: FPW.7.BP7
+      name: 상품 구성 승인
+      definition_ko: 상품 작성과 분리된 책임자가 구성·판매 조건·카탈로그 제약을 검토한다. 구성 승인 또는 반려의 사유를 남기고 고객 출시 승인과의 사람 분리를 유지한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A06
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-PRODUCT-APPROVAL
+          outcomes:
+            - O3
+    - id: FPW.7.BP8
+      name: 형식승인·사용자 고지 확인
+      definition_ko: 기관 결정과 시장별 고지·효력 조건이 활성화 범위에 맞는지 확인한다. 기능 작동 중 변경이 허용되지 않는 조건을 명시하여 출시·활성화 판단에 제공한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A07
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-ACTIVATION-PRECHECK
+          outcomes:
+            - O4
+    - id: FPW.7.BP9
+      name: G7 출시·활성화 판정
+      definition_ko: Safety Case 검토·Canary 기준·고지·활성화 조건을 모아 출시 준비를 판단한다. AI·모델을 포함한 변경 관리 근거를 확인하고 필요한 Gate
+        판정과 출시 책임 확인을 인계한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A08
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-G7-DECISION
+          outcomes:
+            - O4
+    - id: FPW.7.BP10
+      name: Release Sign-off(출시 책임 확인)
+      definition_ko: 현재 Gate 판정과 안전 근거·Canary 계획을 확인한 Feature 책임자가 출시 책임을 명시적으로 확인한다. 서명을 당시 판정 기록에 묶고 근거
+        판정이 바뀌면 서명의 효력을 다시 확인한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A12
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-RELEASE-SIGNOFF
+          outcomes:
+            - O4
+    - id: FPW.7.BP11
+      name: 출시 전이
+      definition_ko: 현재 OTA·운영 판정과 유효한 출시 책임 서명을 확인하여 출시 전이를 수행한다. 수행자·시각·결과를 기록하고 실패 또는 보완이 필요한 경우 해당 개발·검토
+        단계로 인계한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A09
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-RELEASE-RECORD
+          outcomes:
+            - O4
+    - id: FPW.7.BP12
+      name: 상품 고객 출시 승인
+      definition_ko: 구성 승인과 구분된 책임자가 고객 제공 준비와 상품 출시 조건을 검토한다. 고객 출시 결정을 기록하고 상품기획·운영에 제공 범위와 후속 체험 절차를
+        전달한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A10
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-PRODUCT-RELEASE
+          outcomes:
+            - O3
+    - id: FPW.7.BP13
+      name: Canary 활성화·단계적 확대
+      definition_ko: 승인된 Canary 범위에서 활성화를 시작하고 단계별 관측 결과를 평가한다. 사전 조건을 만족할 때만 확대하며 중단 기준에 해당하면 확대를 멈추고 이상
+        대응으로 인계한다.
+      notes: []
+      activity_ids:
+        - FPW.7-A11
+      outcomes:
+        - O5
+      evidence:
+        - work_product: WP-ROLLOUT-RECORD
+          outcomes:
+            - O5

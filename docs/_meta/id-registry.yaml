@@ -210,6 +210,10 @@ workflows:
     WF-FPW-12: "FPW.12 운영 데이터·데이터 보호"
     WF-FPW-13: "FPW.13 규정·Compliance Profile 관리"
     WF-FPW-14: "FPW.14 Feature DB 운영"
+    WF-FPW-15: "FPW.15 SW 개발비·원가 기준 관리"
+    WF-FPW-16: "FPW.16 플랫폼 접근·운영·복구"
+    WF-FPW-17: "FPW.17 기준정보·공유 자산·연계 품질"
+    WF-FPW-18: "FPW.18 운영 분석·상품 개선"
   roles:
     WF-ROLE-FO: "Feature Owner 업무 절차서"
     WF-ROLE-REQ: "요구 Owner 업무 절차서"

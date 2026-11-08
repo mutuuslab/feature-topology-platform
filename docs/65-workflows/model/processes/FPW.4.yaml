@@ -60,6 +60,16 @@ process:
       content:
         - 정책 ID와 근거 JIRA 변경요청(CR) 키·상태
         - JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유
+    - key: WP-FLAG-PR-RESULT
+      name: Flag 코드 변경 검토·병합 기록
+      en: Flag 코드 변경 검토·병합 기록
+      kind: output
+      content:
+        - 대상 Feature Version·Flag와 저장소 PR
+        - 기본값·호출 구조 검토와 검사 결과
+        - 병합 상태·스캔 참조·담당과 시각
+      retained: true
+
   activities:
     - id: FPW.4-A01
       name: 차량 내 감시·안전기제 설계
@@ -164,7 +174,7 @@ process:
       rules: [FFG-LCY-011]
       raci: {R: [R-INT], A: R-ARC, C: [R-FO], I: [R-REL, R-TST]}
       inputs: [WP-G4-DECISION]
-      outputs: []
+      outputs: [WP-FLAG-PR-RESULT]
       steps:
         - Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
         - 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
@@ -172,3 +182,97 @@ process:
       checks:
         - 해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다
       platform: {actions: [createFlagPr, demoMergeFlagPr], screens: [/flag-code, /flag-code/flags/:flagKey]}
+
+  base_practices:
+    - id: FPW.4.BP1
+      name: 차량 내 감시·안전기제 설계
+      definition_ko: 안전요구를 차량 내부의 감시·Guard·안전 기제와 제어점 설계에 할당한다. 차량의 시간 예산 안에서 동작할 경로와 원격 요청·늦은 관측의 경계를 분리하여
+        요구와 설계의 대응을 보존한다.
+      notes:
+        - 원격 통신이나 플랫폼 화면을 차량의 FTTI 안 안전 기제의 대체로 정의하지 않는다.
+      activity_ids:
+        - FPW.4-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-SAFETY-DESIGN
+          outcomes:
+            - O1
+    - id: FPW.4.BP2
+      name: Flag 정책 작성·검증
+      definition_ko: 적용 대상·Variant·기본값을 명시한 정책을 작성하고 현재 개정본을 분야별 검증으로 평가한다. 수정으로 근거가 달라지면 재검증하여 승인 대상 내용과
+        결과를 일치시킨다.
+      notes: []
+      activity_ids:
+        - FPW.4-A03
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-POLICY
+          outcomes:
+            - O3
+    - id: FPW.4.BP3
+      name: 정책 근거 변경요청(CR) 연결
+      definition_ko: 정책 변경의 이유와 범위를 외부 변경요청에 연결하여 의사결정의 근거를 추적한다. 외부 결정의 반영 여부와 거부 사유를 확인하고 플랫폼 정책 상태와 불일치를
+        해소한다.
+      notes: []
+      activity_ids:
+        - FPW.4-A06
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-POLICY-CR
+          outcomes:
+            - O3
+    - id: FPW.4.BP4
+      name: 정책 승인
+      definition_ko: 최신 정책 내용의 해시와 검증 결과를 확인하여 승인 또는 반려를 결정한다. 작성자와 구분된 승인자가 결정 근거를 남기고 수정이 필요한 경우 작성자에게
+        인계한다.
+      notes: []
+      activity_ids:
+        - FPW.4-A04
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-POLICY
+          outcomes:
+            - O3
+    - id: FPW.4.BP5
+      name: 플랫폼 도구 신뢰도 분류
+      definition_ko: 플랫폼 도구의 오류 출력과 검출 수단을 분석하여 신뢰도 분류와 확보 방법을 결정한다. 사용 범위와 분류 근거를 기록하고 필요한 확인 활동을 Safety
+        Plan에 반영한다.
+      notes: []
+      activity_ids:
+        - FPW.4-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-TCL-RECORD
+          outcomes:
+            - O2
+    - id: FPW.4.BP6
+      name: G4 설계 독립 검토·판정
+      definition_ko: 설계·정책·인터페이스가 안전요구를 충족하는지 독립적으로 검토한다. 발견 사항과 근거를 기록하고 설계 책임자의 확인 및 판정 결과에 따라 수정·재검토를
+        관리한다.
+      notes: []
+      activity_ids:
+        - FPW.4-A05
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-G4-DECISION
+          outcomes:
+            - O4
+    - id: FPW.4.BP7
+      name: Flag PR 검토·병합
+      definition_ko: 승인된 Version의 Flag 코드 변경을 검토하고 기본값·호출 구조·검사 결과를 확인한다. 병합 결과와 코드 연결 상태를 추적하여 정의와 구현이
+        어긋난 채 후속 출시로 넘어가지 않게 한다.
+      notes: []
+      activity_ids:
+        - FPW.4-A07
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-FLAG-PR-RESULT
+          outcomes:
+            - O3

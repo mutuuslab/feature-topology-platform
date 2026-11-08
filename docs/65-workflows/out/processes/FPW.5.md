@@ -3,7 +3,7 @@ id: WF-FPW-5
 type: workflow
 title: "검증·V&V / Verification & Validation"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G5
     - GATE-G6
     - FLW-RELEASE-READINESS
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -57,7 +57,7 @@ flowchart LR
 | FPW.5-A02 | 시나리오·허용 조합 정의 | R 시험 조직 · A 시험 조직 · C 아키텍트, Safety Manager · I 통합 조직 | WP-VV-PLAN, WP-FEAT-SCOPE | WP-TEST-SPEC | `/arch/topology`, `/validations` | FFG-TST-003, FFG-TST-006, FFG-TST-007 |
 | FPW.5-A03 | 통합 시험·SEooC 가정 확인 | R 통합 조직 · A 통합 조직 · C 아키텍트, 시험 조직, Safety Manager · I 품질 조직 | WP-VV-PLAN, WP-INTAKE-RESULT | WP-INTEGRATION-REC | `registerChangeRecord`, `/master/artifacts` | FFG-VEH-012 |
 | FPW.5-A04 | 비활성화·결함 주입 시험 수행 | R 시험 조직 · A 시험 조직 · C 통합 조직, Safety Manager · I 품질 조직, Feature Owner | WP-TEST-SPEC, WP-INTEGRATION-REC, WP-POLICY | WP-TEST-RESULT | `runVirtual`, `/validations/virtual` | FFG-TST-001, FFG-TST-004, FFG-TST-005, FFG-TST-011 |
-| FPW.5-A07 | Flag 코드 연결 확인 | R 통합 조직 · A 통합 조직 · C 시험 조직 · I Feature Owner, Release Manager | WP-INTEGRATION-REC |  | `rescanFlagRepository`, `requestFlagGateWaiver`, `/flag-code/reconcile`, `/integration/code-scans` | – |
+| FPW.5-A07 | Flag 코드 연결 확인 | R 통합 조직 · A 통합 조직 · C 시험 조직 · I Feature Owner, Release Manager | WP-INTEGRATION-REC | WP-FLAG-RECON-RESULT | `rescanFlagRepository`, `requestFlagGateWaiver`, `/flag-code/reconcile`, `/integration/code-scans` | – |
 | FPW.5-A05 | 시험 Evidence 연결·TMS 제출 | R 시험 조직 · A 시험 조직 · C 통합 조직 · I 품질 조직, Safety Manager | WP-TEST-RESULT, WP-TEST-SPEC | WP-G5-EVIDENCE | `submitTms`, `/verify/evidence`, `/verify/safety-case` | FFG-TST-009, FFG-ADS-009 |
 | FPW.5-A06 | G5 V&V 판정 | R 품질 조직 · A 시험 조직 · C Safety Manager · I Feature Owner, Release Manager, 아키텍트 | WP-G5-EVIDENCE, WP-VV-PLAN | WP-G5-DECISION | `judgeGate`, `/verify/evidence`, `/admin/approval` | FFG-LCY-001, FFG-LCY-002 |
 
@@ -134,6 +134,7 @@ flowchart LR
 | WP-TEST-RESULT | 시험 결과 | 산출 | 등급별 시나리오(작동 중·비작동 중·운전자 개입·전원 주기) 결과; 결함 주입별 수렴 상태와 기대 결과 대조; 가상검증(CARLA) 실행 결과와 재현 정보 |
 | WP-G5-EVIDENCE | G5 시험 Evidence 묶음 | 산출 | TMS에 제출된 시험 명세·결과와 Feature ID·Version 연결; 시험 재현 정보(환경·도구·입력·Version) |
 | WP-G5-DECISION | G5 Decision Record | 산출 | 판정과 근거 Evidence ID, 독립 V&V 서명; 미해결 결함과 잔여 위험 수용 근거 |
+| WP-FLAG-RECON-RESULT | Flag 코드 대사·예외 확인 기록 | 산출 | 대상 Version·검사 판·스캔 해시; 불일치 항목과 조치 결과; 예외가 있으면 범위·결정·만료 참조 |
 
 ## 4. 진입·완료 기준
 
@@ -152,3 +153,83 @@ flowchart LR
 - O2 시나리오·허용 조합·통합 가정이 정의되고 Version으로 관리된다.
 - O3 비활성화 등급별 동작·결함 주입·장악 가정 시험이 수행된다.
 - O4 재현 정보를 갖춘 시험 Evidence가 Feature Version과 연결되어 G5 판정을 받는다.
+
+## 6. 업무 수행 정의(Base Practices)
+
+업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.
+
+### FPW.5.BP1 독립성 수준·검증 계획 확정
+
+안전 분류와 참조 ASIL에 맞추어 확인 조치의 독립성과 검증 범위를 계획한다. 수행 주체·시험 수준·판정 기준을 합의하여 결과를 평가할 일관된 기준을 마련한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.5-A01
+
+### FPW.5.BP2 시나리오·허용 조합 정의
+
+기능·ODD·의존 관계에서 정상 및 거부 시나리오와 허용 조합을 정의한다. 시나리오 판과 시험 범위를 관리하고 시뮬레이션으로 판단할 수 없는 항목의 대체 검증을 계획한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.5-A02
+
+### FPW.5.BP3 통합 시험·SEooC 가정 확인
+
+협력사 사용 가정과 실제 차량 SW 구성을 비교하여 통합 적합성을 확인한다. 불일치의 조치와 추가 시험을 정하고 통합 빌드·변경 기록을 결과에 연결한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.5-A03
+
+### FPW.5.BP4 비활성화·결함 주입 시험 수행
+
+명세된 상황과 결함을 단위·HIL·차량 시험에 적용하여 안전 종료와 거부 동작을 확인한다. 실행 환경·실패·재현 정보를 보존하고 시뮬레이션과 실차 근거의 범위를 구분한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.5-A04
+- 참고 1: 가상 실행 결과는 정의된 TMS 제출과 판정 절차를 거쳐야 하며 실차 승인을 대신하지 않는다.
+
+### FPW.5.BP5 Flag 코드 연결 확인
+
+정의된 Flag와 실제 코드·스캔·외부 정책 도구의 상태를 대조한다. 불일치의 조치 또는 기한 있는 예외를 추적하고 출시 관문이 사용하는 최신 결과를 확인한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.5-A07
+
+### FPW.5.BP6 시험 Evidence 연결·TMS 제출
+
+시험 명세·결과·재현 정보를 Feature Version과 양방향으로 연결한다. 시험관리 연계로 결과를 제출하고 빠진 시험이나 잘못 연결된 Version을 확인하여 판정 근거를 완성한다.
+
+- 기여 성과: O4
+- 연결 활동: FPW.5-A05
+
+### FPW.5.BP7 G5 V&V 판정
+
+검증 계획의 범위·독립성·판정 기준을 실제 제출 결과와 비교한다. 미해결 결함과 잔여 위험의 검토 근거를 포함하여 독립 판정하고 필요한 재시험을 인계한다.
+
+- 기여 성과: O4
+- 연결 활동: FPW.5-A06
+
+### BP × 성과
+
+| BP | O1 | O2 | O3 | O4 |
+|---|---|---|---|---|
+| FPW.5.BP1 | ● | – | – | – |
+| FPW.5.BP2 | – | ● | – | – |
+| FPW.5.BP3 | – | ● | – | – |
+| FPW.5.BP4 | – | – | ● | – |
+| FPW.5.BP5 | – | ● | – | – |
+| FPW.5.BP6 | – | – | – | ● |
+| FPW.5.BP7 | – | – | – | ● |
+
+### 출력 근거 × 성과
+
+모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
+
+| 산출물 | O1 | O2 | O3 | O4 | 근거 BP |
+|---|---|---|---|---|---|
+| WP-VV-PLAN | ● | – | – | – | FPW.5.BP1 |
+| WP-TEST-SPEC | – | ● | – | – | FPW.5.BP2 |
+| WP-INTEGRATION-REC | – | ● | – | – | FPW.5.BP3 |
+| WP-TEST-RESULT | – | – | ● | – | FPW.5.BP4 |
+| WP-FLAG-RECON-RESULT | – | ● | – | – | FPW.5.BP5 |
+| WP-G5-EVIDENCE | – | – | – | ● | FPW.5.BP6 |
+| WP-G5-DECISION | – | – | – | ● | FPW.5.BP7 |

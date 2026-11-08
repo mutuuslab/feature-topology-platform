@@ -68,6 +68,16 @@ process:
       content:
         - 판정과 근거 Evidence ID, 독립 V&V 서명
         - 미해결 결함과 잔여 위험 수용 근거
+    - key: WP-FLAG-RECON-RESULT
+      name: Flag 코드 대사·예외 확인 기록
+      en: Flag 코드 대사·예외 확인 기록
+      kind: output
+      content:
+        - 대상 Version·검사 판·스캔 해시
+        - 불일치 항목과 조치 결과
+        - 예외가 있으면 범위·결정·만료 참조
+      retained: true
+
   activities:
     - id: FPW.5-A01
       name: 독립성 수준·검증 계획 확정
@@ -142,7 +152,7 @@ process:
       rules: []
       raci: {R: [R-INT], A: R-INT, C: [R-TST], I: [R-FO, R-REL]}
       inputs: [WP-INTEGRATION-REC]
-      outputs: []
+      outputs: [WP-FLAG-RECON-RESULT]
       steps:
         - 어긋남 대사판에서 이 Version의 Flag가 코드 없음·삭제된 호출·Unleash 불일치가 아닌지 확인한다
         - 미등록 키·동적 키 파일을 담당 패키지에 돌려보내고 재스캔으로 해소를 확인한다
@@ -184,3 +194,95 @@ process:
         - 판정자가 시험 수행·통합 담당과 다른 조직이다
         - Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
       platform: {actions: [judgeGate], screens: [/verify/evidence, /admin/approval], gates: [G5, G6]}
+
+  base_practices:
+    - id: FPW.5.BP1
+      name: 독립성 수준·검증 계획 확정
+      definition_ko: 안전 분류와 참조 ASIL에 맞추어 확인 조치의 독립성과 검증 범위를 계획한다. 수행 주체·시험 수준·판정 기준을 합의하여 결과를 평가할 일관된 기준을
+        마련한다.
+      notes: []
+      activity_ids:
+        - FPW.5-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-VV-PLAN
+          outcomes:
+            - O1
+    - id: FPW.5.BP2
+      name: 시나리오·허용 조합 정의
+      definition_ko: 기능·ODD·의존 관계에서 정상 및 거부 시나리오와 허용 조합을 정의한다. 시나리오 판과 시험 범위를 관리하고 시뮬레이션으로 판단할 수 없는 항목의
+        대체 검증을 계획한다.
+      notes: []
+      activity_ids:
+        - FPW.5-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-TEST-SPEC
+          outcomes:
+            - O2
+    - id: FPW.5.BP3
+      name: 통합 시험·SEooC 가정 확인
+      definition_ko: 협력사 사용 가정과 실제 차량 SW 구성을 비교하여 통합 적합성을 확인한다. 불일치의 조치와 추가 시험을 정하고 통합 빌드·변경 기록을 결과에 연결한다.
+      notes: []
+      activity_ids:
+        - FPW.5-A03
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-INTEGRATION-REC
+          outcomes:
+            - O2
+    - id: FPW.5.BP4
+      name: 비활성화·결함 주입 시험 수행
+      definition_ko: 명세된 상황과 결함을 단위·HIL·차량 시험에 적용하여 안전 종료와 거부 동작을 확인한다. 실행 환경·실패·재현 정보를 보존하고 시뮬레이션과 실차 근거의
+        범위를 구분한다.
+      notes:
+        - 가상 실행 결과는 정의된 TMS 제출과 판정 절차를 거쳐야 하며 실차 승인을 대신하지 않는다.
+      activity_ids:
+        - FPW.5-A04
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-TEST-RESULT
+          outcomes:
+            - O3
+    - id: FPW.5.BP5
+      name: Flag 코드 연결 확인
+      definition_ko: 정의된 Flag와 실제 코드·스캔·외부 정책 도구의 상태를 대조한다. 불일치의 조치 또는 기한 있는 예외를 추적하고 출시 관문이 사용하는 최신 결과를
+        확인한다.
+      notes: []
+      activity_ids:
+        - FPW.5-A07
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-FLAG-RECON-RESULT
+          outcomes:
+            - O2
+    - id: FPW.5.BP6
+      name: 시험 Evidence 연결·TMS 제출
+      definition_ko: 시험 명세·결과·재현 정보를 Feature Version과 양방향으로 연결한다. 시험관리 연계로 결과를 제출하고 빠진 시험이나 잘못 연결된 Version을
+        확인하여 판정 근거를 완성한다.
+      notes: []
+      activity_ids:
+        - FPW.5-A05
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-G5-EVIDENCE
+          outcomes:
+            - O4
+    - id: FPW.5.BP7
+      name: G5 V&V 판정
+      definition_ko: 검증 계획의 범위·독립성·판정 기준을 실제 제출 결과와 비교한다. 미해결 결함과 잔여 위험의 검토 근거를 포함하여 독립 판정하고 필요한 재시험을 인계한다.
+      notes: []
+      activity_ids:
+        - FPW.5-A06
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-G5-DECISION
+          outcomes:
+            - O4

@@ -3,7 +3,7 @@ id: WF-ROLE-PLM
 type: workflow
 title: "기준정보 담당 업무 절차서 / PLM Master Data Steward Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -14,7 +14,8 @@ traces:
     - WF-FPW-6
     - WF-FPW-10
     - WF-FPW-14
-last_updated: 2026-11-05
+    - WF-FPW-17
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -50,6 +51,17 @@ last_updated: 2026-11-05
 3. 확정된 Baseline 해시를 Release Manager에게 알린다
 - [ ] 승인자가 요청자와 다르고 Baseline 해시가 고정되었다
 
+### FPW.17-A01 차량·시장 기준 관리 — 수행·책임
+- 프로세스: FPW.17 기준정보·공유 자산·연계 품질
+- 시작: 앞 활동 완료
+- 입력: – → 출력: WP-MASTER-VALUES
+- 플랫폼: `createReferenceValue`, `retireReferenceValue`, `/master/reference-values`
+1. 원천 코드와 상위 판매국·차종 및 중복 여부를 확인한다
+2. 근거에 따라 기준 값을 등록하거나 사용 중지한다
+3. 사용 중지의 기존 기록 보존과 신규 선택지 제외를 확인한다
+- [ ] 하위 기준 값이 올바른 상위 코드에 연결된다
+- [ ] 기존 차량·Feature 이력을 소급 삭제하지 않는다
+
 ## 2. 협의·통보 받는 활동
 
 - FPW.1-A05 G1 등록·분류 판정 (통보)
@@ -59,6 +71,9 @@ last_updated: 2026-11-05
 - FPW.6-A01 출시 Baseline 확정 요청 (통보)
 - FPW.10-A07 EOL 프로비저닝 검증 (협의)
 - FPW.14-A04 Feature DB 버전 발행 (통보)
+- FPW.17-A02 구조·공유 자산 검토 (협의)
+- FPW.17-A03 사전 품질 점검 (협의)
+- FPW.17-A05 생산·Legacy 대사 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

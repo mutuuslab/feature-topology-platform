@@ -183,3 +183,94 @@ process:
         - 결과를 생산 기준정보와 함께 기록한다
       checks:
         - 대상 ECU 모두 표식과 초기 기록이 확인되었다
+
+  base_practices:
+    - id: FPW.10.BP1
+      name: 계약 전 협력사 역량 확인
+      definition_ko: 후보 협력사의 공급 범위와 평가 근거를 계약 전에 검토한다. 안전·보안·개발 역량의 부족 사항을 식별하고 개선 책임과 기한을 합의하여 계약 판단에 제공한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-SUPPLIER-ASSESS
+          outcomes:
+            - O1
+    - id: FPW.10.BP2
+      name: DIA·CIA 체결
+      definition_ko: 역할 분담·납품물·시간 예산·통지·현장 지원과 안전 정보 제공 조건을 계약에 명시한다. 법무 검토를 거쳐 책임 있는 구매 조직이 체결하고 후속 이행의
+        기준을 공유한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-DIA
+          outcomes:
+            - O2
+    - id: FPW.10.BP3
+      name: 확인 조치 독립성 지정
+      definition_ko: 협력사 범위에서 필요한 확인 조치와 독립성 수준을 계획한다. 수행자를 지정하고 자체 선언과 OEM의 확인 결과를 구분하여 입고 판정의 조건을 마련한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A03
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-CONFIRMATION-PLAN
+          outcomes:
+            - O4
+    - id: FPW.10.BP4
+      name: 공급망 원산지 속성 관리
+      definition_ko: 공급 구성요소의 개발 주체·국가·소유·통제 속성을 SBOM과 연결하여 관리한다. 적용 시장의 판단 근거와 보존 책임을 식별해 추적 가능한 원산지 기록을
+        유지한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A04
+      outcomes:
+        - O5
+      evidence:
+        - work_product: WP-ORIGIN-RECORD
+          outcomes:
+            - O5
+    - id: FPW.10.BP5
+      name: 기존 구현 진단
+      definition_ko: 재사용 또는 인수할 구현을 적용 요구와 비교하여 차이·위험·보완 계획을 식별한다. 분석 결과를 안전 영향 판단의 입력으로 전달하고 재사용 범위의 가정을
+        보존한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A05
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-SUPPLIER-DIFF
+          outcomes:
+            - O3
+    - id: FPW.10.BP6
+      name: Gate별 납품물 입고 검사
+      definition_ko: 계약된 Gate 납품물과 사용 가정을 OEM 환경에서 확인한다. 수정 납품의 재검사와 합격 기준을 적용하여 결과를 기록하고 통합 담당자에게 사용 가정을
+        인계한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A06
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-INTAKE-RESULT
+          outcomes:
+            - O4
+    - id: FPW.10.BP7
+      name: EOL 프로비저닝 검증
+      definition_ko: 출고 구성의 초기 기록과 프로비저닝 표식이 의도한 장치에 남았는지 검증한다. 누락 기록을 정상 첫 시동으로 취급하지 않는지 확인하고 생산 기준정보와
+        결과를 연결한다.
+      notes: []
+      activity_ids:
+        - FPW.10-A07
+      outcomes:
+        - O5
+      evidence:
+        - work_product: WP-EOL-RECORD
+          outcomes:
+            - O5

@@ -13,6 +13,7 @@ from typing import List
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_model as wm  # noqa: E402
 from build_html import role_activities, rules_of_role  # noqa: E402
+from reference_model import evidence_rows  # noqa: E402
 
 OUT = wm.ROOT / "out"
 GEN = "<!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->"
@@ -127,7 +128,31 @@ def process_md(m, p) -> str:
     lines += ["", "## 4. 진입·완료 기준", "", "**진입**"] + [f"- {x}" for x in p["entry_criteria"]]
     lines += ["", "**완료**"] + [f"- {x}" for x in p["exit_criteria"]] + [""]
     lines += ["## 5. 결과(Outcome)", ""] + [f"- {o['id']} {o['text_ko']}" for o in p["outcomes"]] + [""]
+    lines += reference_md(p)
     return "\n".join(lines)
+
+
+def reference_md(p) -> list[str]:
+    practices = p.get('base_practices', [])
+    if not practices:
+        return []
+    lines = ['## 6. 업무 수행 정의(Base Practices)', '',
+             '업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.', '']
+    for bp in practices:
+        lines += [f"### {bp['id']} {bp['name']}", '', bp['definition_ko'], '',
+                  f"- 기여 성과: {', '.join(bp['outcomes'])}",
+                  f"- 연결 활동: {', '.join(bp['activity_ids'])}"]
+        lines += [f'- 참고 {n}: {note}' for n, note in enumerate(bp.get('notes', []), 1)]
+        lines += ['']
+    ids = [o['id'] for o in p['outcomes']]
+    lines += ['### BP × 성과', '', '| BP | ' + ' | '.join(ids) + ' |', '|---|' + '---|' * len(ids)]
+    for bp in practices:
+        lines.append('| ' + bp['id'] + ' | ' + ' | '.join('●' if oid in bp['outcomes'] else '–' for oid in ids) + ' |')
+    lines += ['', '### 출력 근거 × 성과', '', '모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.', '',
+              '| 산출물 | ' + ' | '.join(ids) + ' | 근거 BP |', '|---|' + '---|' * len(ids) + '---|']
+    for row in evidence_rows(p):
+        lines.append('| ' + row['key'] + ' | ' + ' | '.join('●' if oid in row['outcomes'] else '–' for oid in ids) + ' | ' + ', '.join(row['practices']) + ' |')
+    return lines + ['']
 
 
 def role_md(m, r) -> str:

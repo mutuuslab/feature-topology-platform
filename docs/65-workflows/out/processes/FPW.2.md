@@ -3,7 +3,7 @@ id: WF-FPW-2
 type: workflow
 title: "HARA·변경 영향 판단 / HARA & Change Impact"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G7
     - FLW-CHANGE-REQUEST
     - FLW-CHANGESET-IMPACT
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -143,3 +143,73 @@ flowchart LR
 - O2 같은 Item 정의 위에서 HARA와 TARA가 수행되고 서로 교차 검토된다.
 - O3 거동을 바꾸는 Version의 SOTIF 분석(성능 한계·트리거 조건)이 갱신된다.
 - O4 형식승인 영향 1차 판단과 G2 판정이 기록된다.
+
+## 6. 업무 수행 정의(Base Practices)
+
+업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.
+
+### FPW.2.BP1 재-HARA 조건 검출·영향 범위 산정
+
+이전 구성과 제안 변경을 비교하여 재-HARA 조건과 영향을 받는 기능·차량·시험 범위를 식별한다. 재사용 구현의 차이와 위험 전파를 분석하고 재수행할 안전 활동을 결정한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.2-A01
+
+### FPW.2.BP2 HARA 수행
+
+정의된 Item과 변경 범위의 위험 사건을 분석하여 안전 목표와 ASIL의 근거를 마련한다. 명령 경로와 종료 동작을 포함하고 보안 분석과의 교차 검토 결과를 보존한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.2-A02
+
+### FPW.2.BP3 TARA 수행
+
+같은 Item 범위에서 자산·위협 시나리오·공격 경로를 분석하여 보안 위험과 요구 후보를 도출한다. 안전 사건과 연결되는 결과를 안전 담당자에게 전달하고 상호 영향을 검토한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.2-A06
+
+### FPW.2.BP4 SOTIF 분석 갱신
+
+기능 사양과 성능 한계 및 알려진·새로운 트리거 조건을 현재 Version 기준으로 평가한다. 안전한 사용 범위와 필요한 시나리오의 변경을 기록하여 안전 판단과 검증 계획에 반영한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.2-A03
+
+### FPW.2.BP5 형식승인 영향 1차 판단
+
+변경 내용이 적용 시장의 형식승인 범위와 소프트웨어 식별에 미치는 영향을 판단한다. 필요한 기관 결정과 일정·활성화 조건을 정리하고 출시 책임자에게 전달한다.
+
+- 기여 성과: O4
+- 연결 활동: FPW.2-A04
+
+### FPW.2.BP6 G2 HARA 영향 판정
+
+현재 Version의 HARA·TARA·SOTIF·형식승인 판단을 함께 검토하여 변경 영향의 수용 가능성을 결정한다. 기준 ASIL과 다른 지정의 근거도 검토하고 판정 Evidence를 후속 요구 작성에 인계한다.
+
+- 기여 성과: O4
+- 연결 활동: FPW.2-A05
+
+### BP × 성과
+
+| BP | O1 | O2 | O3 | O4 |
+|---|---|---|---|---|
+| FPW.2.BP1 | ● | – | – | – |
+| FPW.2.BP2 | – | ● | – | – |
+| FPW.2.BP3 | – | ● | – | – |
+| FPW.2.BP4 | – | – | ● | – |
+| FPW.2.BP5 | – | – | – | ● |
+| FPW.2.BP6 | – | – | – | ● |
+
+### 출력 근거 × 성과
+
+모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
+
+| 산출물 | O1 | O2 | O3 | O4 | 근거 BP |
+|---|---|---|---|---|---|
+| WP-IMPACT-ANALYSIS | ● | – | – | – | FPW.2.BP1 |
+| WP-HARA-TARA | – | ● | – | – | FPW.2.BP2 |
+| WP-TARA | – | ● | – | – | FPW.2.BP3 |
+| WP-SOTIF-ANALYSIS | – | – | ● | – | FPW.2.BP4 |
+| WP-HOMOLOGATION-IMPACT | – | – | – | ● | FPW.2.BP5 |
+| WP-G2-DECISION | – | – | – | ● | FPW.2.BP6 |

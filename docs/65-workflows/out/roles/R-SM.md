@@ -3,7 +3,7 @@ id: WF-ROLE-SM
 type: workflow
 title: "Safety Manager 업무 절차서 / Safety Manager (FSM) Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -22,7 +22,8 @@ traces:
     - WF-FPW-12
     - WF-FPW-13
     - WF-FPW-14
-last_updated: 2026-11-05
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -196,6 +197,17 @@ last_updated: 2026-11-05
 3. 두 번째 승인 뒤 게이트 판정과 복원 게시 ID를 확인한다
 - [ ] 복원 승인자 중 직전 차단 승인자가 없다
 
+### FPW.8-A14 정책 롤백 독립 승인 — 수행·책임
+- 프로세스: FPW.8 운영·긴급 차단·복원
+- 시작: 앞 활동 완료
+- 입력: WP-RBK-REQ → 출력: WP-RBK-DEC
+- 플랫폼: `decideRollbackRequest`, `decideRollbackPlan`, `/ops/rollback`
+1. 자신이 지정 승인대상자이며 요청자와 다른 사람인지 확인한다
+2. 복구 기준·적용 범위·조건과 안전 영향을 검토한다
+3. 사유를 남겨 승인 또는 반려하고 후속 실행자에게 결과를 알린다
+- [ ] 요청자 자기 승인과 지정되지 않은 사람의 승인이 차단된다
+- [ ] 자동 계획 승인도 승인된 조건·범위를 넘지 않는다
+
 ### FPW.9-A03 Flag Retirement 승인 — 수행
 - 프로세스: FPW.9 사후 검토·Flag Retirement
 - 시작: 앞 활동 완료
@@ -279,6 +291,9 @@ last_updated: 2026-11-05
 - FPW.8-A08 원인 조치·복원 요청 (협의)
 - FPW.8-A10 단계적 복원·관측 (협의)
 - FPW.8-A11 분기 드릴·G8 운영 판정 (협의)
+- FPW.8-A13 정책 롤백 요청·계획 (협의)
+- FPW.8-A15 롤백 재검증·실행 (협의)
+- FPW.8-A16 롤백 적용·미회신 확인 (통보)
 - FPW.9-A01 운영 결과 품질 피드백 수용 (협의)
 - FPW.9-A02 Flag Retirement 요청 (통보)
 - FPW.10-A01 계약 전 협력사 역량 확인 (협의)
@@ -292,6 +307,7 @@ last_updated: 2026-11-05
 - FPW.13-A02 Compliance Profile 정의 (협의)
 - FPW.13-A04 원격 종료 시스템 설명 작성 (협의)
 - FPW.14-A02 자동 점검·도메인 검토 (협의)
+- FPW.18-A04 개선 과제 인계 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

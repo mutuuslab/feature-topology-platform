@@ -3,7 +3,7 @@ id: WF-DEP-LEG
 type: workflow
 title: "법무팀 R&R / Legal Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -14,8 +14,9 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
+    - WF-FPW-18
     - WF-ROLE-LEG
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -32,7 +33,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 2 · 책임 2 · 협의 7 · 통보 0 (활동 9개)
+수행 2 · 책임 2 · 협의 10 · 통보 0 (활동 12개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -43,8 +44,11 @@ last_updated: 2026-11-05
 | FPW.12-A03 중국 데이터 현지 처리·이전 심사 | FPW.12 운영 데이터·데이터 보호 | R·A (법무) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 데이터 국외 이전 심사 기록 `WP-DATA-TRANSFER` | 플랫폼 밖 | 2차 초안 |
 | FPW.12-A04 EU 데이터 접근 요청 처리 | FPW.12 운영 데이터·데이터 보호 | C (법무) | 운행 감시 지표·경보 기준 `WP-KPI-PLAN` → 데이터 접근 요청·계약 근거 기록 `WP-DATA-ACCESS` | `/admin/data` | 2차 초안 |
 | FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | C (법무) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
+| FPW.12-A06 처리 목적·근거 검토 | FPW.12 운영 데이터·데이터 보호 | C (법무) | – → 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` | `/admin/data` | 2차 초안 |
+| FPW.12-A07 정보주체 요청 접수 | FPW.12 운영 데이터·데이터 보호 | C (법무) | 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` → 정보주체 처리 요청 `WP-PRIVACY-REQ` | `/admin/data` | 2차 초안 |
 | FPW.13-A02 Compliance Profile 정의 | FPW.13 규정·Compliance Profile 관리 | C (법무) | 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS`, 법규·표준 원문 `WP-REG-SOURCES` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 | FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | C (법무) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance`, `/trace/ads` | 2차 초안 |
+| FPW.18-A01 분석 목적·데이터 검토 | FPW.18 운영 분석·상품 개선 | C (법무) | – → 분석 목적·데이터 검토 `WP-ANALYSIS-SCOPE` | `/data/workbench`, `/biz/trials` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -55,4 +59,4 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: 없음
-- 참조 화면(협의·통보): `/ops/incident-reports`, `/admin/data`, `/integration/openfeature`, `/verify/compliance`, `/trace/ads`
+- 참조 화면(협의·통보): `/ops/incident-reports`, `/admin/data`, `/integration/openfeature`, `/verify/compliance`, `/trace/ads`, `/data/workbench`, `/biz/trials`

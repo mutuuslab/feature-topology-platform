@@ -1,5 +1,9 @@
 // PoC ② 정책 준비·검증·승인 · ③ 사용 권한·서버 활성화 판단 · IF-10 OFREP — API로 끝까지 검증한다.
 import { INestApplication } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { ensureShowcaseSupplierEvidence } from '../../src/demo-activity/showcase-supplier';
+import { FeatureRepo } from '../../src/domains/d01-policy/repos';
+import { DB, type Db } from '../../src/kernel/db';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Clock } from '../../src/kernel/clock';
 import { actor, bootApp, confirmSafety, signG7, withRef, SDK_KEY } from '../helpers';
@@ -92,6 +96,8 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
       await signG7(http, fid, '0.1.0'); // G7 — SM·CSM 두 사람 서명(P3-3)
+      // The positive demo fixture now supplies actual ten-item bodies and a separate supplier reviewer before G6.
+      ensureShowcaseSupplierEvidence(app.get<Db>(DB), app.get(ModuleRef), app.get(FeatureRepo).get(fid, '0.1.0')!, {id:'usr-integrator',role:'IMPLEMENTER',correlationId:'test:policy-supplier'}, {id:'choi.judge',role:'GATE_JUDGE',correlationId:'test:policy-supplier'});
       for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       const d = await http().get(`/api/features/${fid}/versions/0.1.0`).expect(200);
       expect(d.body.feature.lifecycle).toBe('DEVELOPING');

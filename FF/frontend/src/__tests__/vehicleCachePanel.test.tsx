@@ -16,6 +16,21 @@ const mount = (cache: VehicleCacheRow[], killHistory = [] as { at: string; publi
   );
 
 describe('차량 정책 캐시 패널', () => {
+  it('미검증 구형 캐시는 재취득 필요로 표시하며 정상 또는 무결성 위반으로 단정하지 않는다', () => {
+    mount([row({ status: 'UNVERIFIED', use: 'SAFE_DEFAULT', delegation: 'CACHE_REACQUIRE_REQUIRED', excluded: 'CACHE_REACQUIRE_REQUIRED' })]);
+    expect(screen.getByText('서명·기한 확인 필요')).toBeTruthy();
+    expect(screen.getByText('서명된 정책과 유효 기간을 확인할 수 없습니다 — 정책을 다시 받으세요')).toBeTruthy();
+    expect(screen.queryByText(C.ok)).toBeNull();
+    expect(screen.getByRole('alert').textContent).not.toMatch(/무결성 위반/);
+    expect(document.body.textContent).not.toContain('CACHE_');
+  });
+
+  it('만료·미수신 위임을 모든 캐시 정상으로 표시하지 않는다', () => {
+    mount([row({ status: 'EXPIRED', use: 'SAFE_DEFAULT', delegation: 'CACHE_EXPIRED' }), row({ flagKey: 'missing_flag', status: null, use: 'SAFE_DEFAULT', delegation: 'CACHE_MISSING' })]);
+    expect(screen.queryByText(C.ok)).toBeNull();
+    expect(screen.getByRole('alert')).toBeTruthy();
+  });
+
   it('정상 캐시 — 상태·쓴 캐시를 보이고 무결성 위반 경고는 없다', () => {
     mount([row({})]);
     const panel = screen.getByText(C.title).closest('section') as HTMLElement;

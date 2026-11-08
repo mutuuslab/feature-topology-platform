@@ -7,12 +7,15 @@ import { Controller, Get, Inject, Injectable, Logger, Param } from '@nestjs/comm
 import {
   authBlock,
   COMMAND_KEY_PURPOSE,
+  chooseCache,
   effectiveClass,
   endState,
   evaluateFlag,
   guardCheck,
   jcs,
   PUBLICATION_KEY_PURPOSE,
+  PublicationPayload,
+  SignatureSchema,
   reportSeqOf,
   statusAuthCanonical,
   type EdrState,
@@ -441,26 +444,37 @@ export class VehicleRuntimeService {
     const cache: CacheView[] = [];
     let noted = false;
     for (const [flagKey, b] of Object.entries(s.bundles).sort(([a], [z]) => a.localeCompare(z))) {
-      const f = this.features.get(b.policy.featureId, b.policy.featureVersion);
-      if (!f) continue;
       const a = assessCache(flagKey, b, now, verify);
+      const f = this.features.get(a.policy.featureId, a.policy.featureVersion);
+      if (!f) continue;
       cache.push(a.view);
-      const chosen = a.chosen ? { use: a.view.use, publicationId: a.chosen.publicationId, sequence: a.chosen.sequence, validUntil: a.chosen.validUntil ?? null } : { use: a.view.use, publicationId: null, sequence: null, validUntil: null };
+      const chosen = a.chosen ? { use: a.view.use, publicationId: a.chosen.payload!.publicationId, sequence: a.chosen.payload!.sequence, validUntil: a.chosen.payload!.validUntil ?? null } : { use: a.view.use, publicationId: null, sequence: null, validUntil: null };
       const local = !a.chosen ? delegatedResult(b.policy, flagKey, a.view.delegation!) : await evaluateFlag({
         policy: a.policy,
         scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim },
-        killed: !!s.kills[b.policy.featureId],
+        killed: !!s.kills[a.policy.featureId],
         vehicle,
-        entitlementActive: b.policy.entitlementCatalogId ? this.entitlements.activeFor(vin, b.policy.featureId).active : null,
+        entitlementActive: a.policy.entitlementCatalogId ? this.entitlements.activeFor(vin, a.policy.featureId).active : null,
         // @req FR-RTE-005-001
         // 차량 측 평가도 자기 형상(SW·ECU)으로 지원 조건을 본다. 서버(ActivationService.decide)와 같은 판정이라
         // 지원 미달 차량에 구독이 생겨도 서버·차량 모두 NOT_SUPPORTED로 OFF(어긋남 없음)
-        support: (({ verdict, reason }) => ({ verdict, reason }))(variantRow({ ...f, featureId: b.policy.featureId, version: b.policy.featureVersion }, vehicle)),
+        support: (({ verdict, reason }) => ({ verdict, reason }))(variantRow({ ...f, featureId: a.policy.featureId, version: a.policy.featureVersion }, vehicle)),
       });
       noted = noteCache(s, a.view, this.clock.iso(), a.chosen && local.reason === 'ERROR_SAFE_DEFAULT' ? local.trace.at(-1)?.detail ?? 'error' : undefined) || noted;
       const server = await this.activation.decide(vin, flagKey).then((d) => d.result, () => null);
       evaluations.push({ flagKey, local, server, drift: !!server && server.value !== local.value, cache: chosen });
     }
+    // 전체 캐시 유실도 표시한다. 플랫폼의 최신 대상 게시본은 누락 진단에만 쓰며, 수신된 차량 정책으로 평가하거나 현재 작동 상태를 바꾸지 않는다.
+    const latest = new Map<string, Publication>();
+    for (const pub of this.publications.list({ kind: 'POLICY' })) if (pub.payload.flagKey && !latest.has(pub.payload.flagKey)) latest.set(pub.payload.flagKey, pub);
+    for (const [flagKey, pub] of latest) {
+      if (s.bundles[flagKey] || !PublicationPayload.safeParse(pub.payload).success || !SignatureSchema.safeParse(pub.signature).success || !pub.payload.policy || !pub.payload.targets.includes(vin)) continue;
+      // 게시 기록의 키가 만료돼도 지정된 대상의 미수신 사실은 남는다. 이 기록으로 정책을 평가하거나 활성화하지 않는다.
+      const missing: CacheView = { ...chooseCache(null, null), flagKey, featureId: pub.payload.featureId, publicationId: pub.publicationId, sequence: pub.payload.sequence, validUntil: pub.payload.validUntil ?? null, status: null, previous: null, previousCache: null };
+      cache.push(missing);
+      noted = noteCache(s, missing, this.clock.iso()) || noted;
+    }
+    cache.sort((a, b) => a.flagKey.localeCompare(b.flagKey));
     if (noted) this.runtime.save(s);
     // FR-RTE-004-003 — 차량 쪽 차단·복원 이력(런타임 기록 중)
     const killHistory = s.log.filter((l) => l.kind === 'KILL' || l.kind === 'RESTORE');

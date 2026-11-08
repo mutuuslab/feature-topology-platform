@@ -51,7 +51,7 @@ export class PublicationRepo {
 }
 
 /** 차량 런타임(D02-03)이 차량마다 들고 있는 상태 — 시뮬레이터가 갱신하고, 회신 집계는 bootId를 기준값으로 쓴다 */
-/** 차량 정책 캐시 한 건(P9) — 서명 게시본 payload·서명을 그대로 두어 쓰기 전에 다시 검증한다(payload·signature가 없는 옛 캐시는 확인 없이 쓴다) */
+/** 차량 정책 캐시 한 건(P9) — 서명 게시본 payload·서명을 쓰기 전에 재검증한다. 근거 없는 옛 캐시는 보존하되 재취득 전 평가에 쓰지 않는다. */
 export interface PolicyCacheEntry {
   publicationId: string;
   sequence: number;

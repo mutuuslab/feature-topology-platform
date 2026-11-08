@@ -1,7 +1,7 @@
 // 차량 정책 캐시(P9) — 차량 시뮬레이터(vehicle-runtime.service)가 받아 둔 서명 정책을 쓰기 전에 다시 확인한다. 판정 규칙은 contracts rules/policy-cache.ts.
 // FR-LPC-001-003 유효 기간 · 002-003 만료 → Safe Default · 002-004 위임 기록 · 003-001 사용 전 서명 재검증 · 003-002 해시 재계산 · 003-003 손상 제외·직전 캐시 대체
 // FR-RTE-001-003 수신 파싱 · FR-RTE-002-004/005 로컬 실행 결과·평가 실패 기록. 차량 쪽 기록은 상태가 바뀔 때만 남긴다(같은 사유 반복 없음).
-import { cacheStatus, chooseCache, PublicationPayload, validityProblem, type CacheChoice, type CacheStatus, type FlagResult, type Publication } from '@ff/contracts';
+import { cacheStatus, chooseCache, PublicationPayload, SignatureSchema, validityProblem, type CacheChoice, type CacheStatus, type FlagResult, type Publication } from '@ff/contracts';
 import type { PolicyCacheEntry, VehicleRuntimeState } from '../../d06-qsec/secure-deploy/publication.repo';
 
 // @req FR-RTE-001-002
@@ -21,11 +21,14 @@ export function cacheEntryOf(pub: Pick<Publication, 'payload' | 'signature' | 'p
 
 // @req FR-LPC-003-001
 // @req FR-LPC-003-002
-/** 캐시 한 건 상태 — verify는 신뢰 앵커로 payload·서명을 다시 확인한다(PKI verify reason). payload가 없는 옛 캐시는 확인 없이 VALID */
+/** 캐시 한 건 상태 — 신뢰 앵커 검증 뒤 서명 payload의 기한을 확인한다. 미검증 구형 캐시는 보존하되 재취득이 필요하다. */
 export function entryStatus(e: PolicyCacheEntry | null | undefined, now: number, verify: (payload: unknown, sig: NonNullable<PolicyCacheEntry['signature']>) => string): CacheStatus | null {
   if (!e) return null;
-  if (!e.payload || !e.signature) return cacheStatus(e, now, 'SIGNATURE_VALID');
-  return cacheStatus(e, now, verify(e.payload, e.signature));
+  if (!e.payload || !e.signature) return 'UNVERIFIED';
+  if (!SignatureSchema.safeParse(e.signature).success) return 'SIGNATURE_INVALID';
+  const reason = verify(e.payload, e.signature);
+  if (reason === 'SIGNATURE_VALID' && (!PublicationPayload.safeParse(e.payload).success || e.payload.kind !== 'POLICY' || !e.payload.policy)) return 'UNVERIFIED';
+  return cacheStatus(e.payload, now, reason);
 }
 
 export interface CacheView extends CacheChoice {
@@ -53,7 +56,7 @@ export function assessCache(flagKey: string, b: VehicleRuntimeState['bundles'][s
     featureId: b.policy.featureId,
     publicationId: b.publicationId,
     sequence: b.sequence,
-    validUntil: b.validUntil ?? null,
+    validUntil: b.payload?.validUntil ?? null,
     status,
     previous: prevStatus,
     previousCache: b.previous ? { publicationId: b.previous.publicationId, status: prevStatus } : null,

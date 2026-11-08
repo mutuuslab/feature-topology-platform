@@ -11,13 +11,14 @@ export const POLICY_CACHE_TTL_DAYS_DEFAULT = 90;
 export const policyValidUntil = (issuedAt: string, ttlMs: number) => new Date(Date.parse(issuedAt) + ttlMs).toISOString();
 
 /** 캐시 한 건의 상태 */
-export const CACHE_STATUSES = ['VALID', 'EXPIRED', 'SIGNATURE_INVALID', 'INTEGRITY_MISMATCH'] as const;
+export const CACHE_STATUSES = ['VALID', 'EXPIRED', 'UNVERIFIED', 'SIGNATURE_INVALID', 'INTEGRITY_MISMATCH'] as const;
 export type CacheStatus = (typeof CACHE_STATUSES)[number];
 
 /** Safe Default 위임 사유 — 차량 기록(detail)과 화면에 그대로 쓴다 */
 export const CACHE_DELEGATION = {
   CACHE_EXPIRED: '정책 캐시 유효 기간이 지났습니다',
   CACHE_MISSING: '받은 정책이 없습니다',
+  CACHE_REACQUIRE_REQUIRED: '서명된 정책과 유효 기간을 확인할 수 없습니다 — 정책을 다시 받으세요',
   CACHE_SIGNATURE_INVALID: '저장된 정책의 서명이 맞지 않습니다',
   CACHE_INTEGRITY_MISMATCH: '저장된 정책의 무결성 값이 다시 계산한 값과 다릅니다',
   EVALUATION_ERROR: '정책 평가 중 오류가 났습니다',
@@ -26,17 +27,21 @@ export type CacheDelegation = keyof typeof CACHE_DELEGATION;
 
 /**
  * 캐시 한 건 상태 — 서명 확인 결과(PKI verify reason)를 받아 무결성(해시 불일치)과 서명 실패를 나눈다. 손상이 먼저, 만료는 그다음.
- * validUntil이 없는 캐시(유효 기간 도입 전 게시본)는 만료되지 않는다.
+ * 호출자는 검증한 서명 payload를 넘긴다. 기한을 확인할 수 없는 구형 캐시는 재취득 전 사용할 수 없다.
  */
-export function cacheStatus(entry: { validUntil?: string | null }, now: number, verifyReason: string): CacheStatus {
+export function cacheStatus(entry: { issuedAt?: string; validUntil?: string | null }, now: number, verifyReason: string): CacheStatus {
   if (verifyReason === 'PAYLOAD_TAMPERED') return 'INTEGRITY_MISMATCH';
   if (verifyReason !== 'SIGNATURE_VALID') return 'SIGNATURE_INVALID';
-  if (entry.validUntil && Date.parse(entry.validUntil) <= now) return 'EXPIRED';
+  const until = entry.validUntil ? Date.parse(entry.validUntil) : NaN;
+  const issued = entry.issuedAt === undefined ? null : Date.parse(entry.issuedAt);
+  if (!Number.isFinite(now) || !Number.isFinite(until) || (issued !== null && (!Number.isFinite(issued) || until <= issued))) return 'UNVERIFIED';
+  if (until <= now) return 'EXPIRED';
   return 'VALID';
 }
 
 const DELEGATION_OF: Record<Exclude<CacheStatus, 'VALID'>, CacheDelegation> = {
   EXPIRED: 'CACHE_EXPIRED',
+  UNVERIFIED: 'CACHE_REACQUIRE_REQUIRED',
   SIGNATURE_INVALID: 'CACHE_SIGNATURE_INVALID',
   INTEGRITY_MISMATCH: 'CACHE_INTEGRITY_MISMATCH',
 };
@@ -67,10 +72,10 @@ export function chooseCache(current: CacheStatus | null, previous: CacheStatus |
 
 /**
  * 수신 때 게시본 유효 기간 파싱(FR-RTE-001-003) — 형식이 틀리거나 발행 시각보다 앞서면 MALFORMED, 이미 지났으면 EXPIRED, 맞으면 null.
- * validUntil이 없는 게시본은 그대로 받는다(유효 기간 도입 전 게시본·차단·복원 게시본).
+ * POLICY는 기한 필수다. 차단·복원은 별도 Guard validity 계약을 쓰므로 이 필드를 요구하지 않는다.
  */
-export function validityProblem(payload: { issuedAt: string; validUntil?: string | null }, now: number): 'MALFORMED' | 'EXPIRED' | null {
-  if (payload.validUntil === undefined || payload.validUntil === null) return null;
+export function validityProblem(payload: { kind?: string; issuedAt: string; validUntil?: string | null }, now: number): 'MALFORMED' | 'EXPIRED' | null {
+  if (payload.validUntil === undefined || payload.validUntil === null) return payload.kind === 'POLICY' ? 'MALFORMED' : null;
   const until = Date.parse(payload.validUntil);
   const issued = Date.parse(payload.issuedAt);
   if (!Number.isFinite(until) || !Number.isFinite(issued) || until <= issued) return 'MALFORMED';

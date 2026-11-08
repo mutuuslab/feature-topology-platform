@@ -24,17 +24,18 @@ export interface KillHistoryRow {
   detail: string;
 }
 
-const STATUS_LOZENGE: Record<string, LozengeAppearance> = { VALID: 'success', EXPIRED: 'moved', SIGNATURE_INVALID: 'removed', INTEGRITY_MISMATCH: 'removed' };
+const STATUS_LOZENGE: Record<string, LozengeAppearance> = { VALID: 'success', EXPIRED: 'moved', UNVERIFIED: 'moved', SIGNATURE_INVALID: 'removed', INTEGRITY_MISMATCH: 'removed' };
 const USE_LOZENGE: Record<string, LozengeAppearance> = { CURRENT: 'success', PREVIOUS: 'moved', SAFE_DEFAULT: 'removed' };
 
 export function VehicleCachePanel({ cache, killHistory }: { cache: VehicleCacheRow[]; killHistory: KillHistoryRow[] }) {
-  const broken = cache.filter((c) => c.excluded).length;
+  const broken = cache.filter((c) => c.excluded && (c.status === 'SIGNATURE_INVALID' || c.status === 'INTEGRITY_MISMATCH')).length;
+  const attention = cache.filter((c) => c.use === 'SAFE_DEFAULT' || c.excluded).length;
   return (
     <>
       <Panel title={C.title} id="policy-cache">
         <p className="ds-field__hint">{C.lead}</p>
-        <p className="ds-field__hint" role={broken ? 'alert' : undefined} data-integrity={broken ? 'violation' : 'ok'}>
-          {broken ? C.integrityAlert(broken) : C.ok}
+        <p className="ds-field__hint" role={attention ? 'alert' : undefined} data-integrity={broken ? 'violation' : 'ok'}>
+          {broken ? C.integrityAlert(broken) : attention ? C.attention(attention) : C.ok}
         </p>
         <DataTable
           caption={C.caption}

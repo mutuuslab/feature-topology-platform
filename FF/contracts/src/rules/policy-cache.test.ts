@@ -6,11 +6,13 @@ const NOW = Date.parse('2026-11-07T00:00:00.000Z');
 const DAY = 86_400_000;
 
 describe('정책 캐시 유효 기간(FR-LPC-001-003)', () => {
-  it('발행 시각 + 유효 기간, 지나면 EXPIRED, 유효 기간 없는 옛 캐시는 만료되지 않는다', () => {
+  it('발행 시각 + 유효 기간, 지나면 EXPIRED, 기한 없는 옛 캐시는 재취득이 필요하다', () => {
     expect(policyValidUntil('2026-11-01T00:00:00.000Z', 90 * DAY)).toBe('2027-01-30T00:00:00.000Z');
     expect(cacheStatus({ validUntil: '2026-11-08T00:00:00.000Z' }, NOW, 'SIGNATURE_VALID')).toBe('VALID');
     expect(cacheStatus({ validUntil: '2026-11-07T00:00:00.000Z' }, NOW, 'SIGNATURE_VALID')).toBe('EXPIRED');
-    expect(cacheStatus({}, NOW, 'SIGNATURE_VALID')).toBe('VALID');
+    expect(cacheStatus({}, NOW, 'SIGNATURE_VALID')).toBe('UNVERIFIED');
+    expect(cacheStatus({ validUntil: 'not-a-date' }, NOW, 'SIGNATURE_VALID')).toBe('UNVERIFIED');
+    expect(cacheStatus({ issuedAt: '2026-11-08T00:00:00.000Z', validUntil: '2026-11-07T00:00:00.000Z' }, NOW, 'SIGNATURE_VALID')).toBe('UNVERIFIED');
   });
 
   it('손상이 만료보다 먼저 — 해시 불일치는 INTEGRITY_MISMATCH, 그 밖의 서명 실패는 SIGNATURE_INVALID', () => {
@@ -30,12 +32,17 @@ describe('캐시 고르기(FR-LPC-003-003·002-003·002-004)', () => {
     expect(chooseCache('INTEGRITY_MISMATCH', 'VALID')).toMatchObject({ use: 'PREVIOUS', delegation: null, excluded: 'CACHE_INTEGRITY_MISMATCH' });
     expect(chooseCache('SIGNATURE_INVALID', null)).toMatchObject({ use: 'SAFE_DEFAULT', delegation: 'CACHE_SIGNATURE_INVALID', excluded: 'CACHE_SIGNATURE_INVALID' });
     expect(chooseCache('INTEGRITY_MISMATCH', 'EXPIRED')).toMatchObject({ use: 'SAFE_DEFAULT', delegation: 'CACHE_INTEGRITY_MISMATCH' });
+    expect(chooseCache('UNVERIFIED', 'VALID')).toMatchObject({ use: 'PREVIOUS', excluded: 'CACHE_REACQUIRE_REQUIRED' });
+    expect(chooseCache('UNVERIFIED', 'UNVERIFIED')).toMatchObject({ use: 'SAFE_DEFAULT', delegation: 'CACHE_REACQUIRE_REQUIRED' });
   });
 });
 
 describe('수신 때 유효 기간 파싱(FR-RTE-001-003)', () => {
   it('없으면 통과, 형식 틀림·발행 시각 이전은 MALFORMED, 이미 지났으면 EXPIRED', () => {
     expect(validityProblem({ issuedAt: '2026-11-01T00:00:00.000Z' }, NOW)).toBeNull();
+    expect(validityProblem({ kind: 'POLICY', issuedAt: '2026-11-01T00:00:00.000Z' }, NOW)).toBe('MALFORMED');
+    expect(validityProblem({ kind: 'KILL', issuedAt: '2026-11-01T00:00:00.000Z' }, NOW)).toBeNull();
+    expect(validityProblem({ kind: 'RESTORE', issuedAt: '2026-11-01T00:00:00.000Z' }, NOW)).toBeNull();
     expect(validityProblem({ issuedAt: '2026-11-01T00:00:00.000Z', validUntil: '2027-01-01T00:00:00.000Z' }, NOW)).toBeNull();
     expect(validityProblem({ issuedAt: '2026-11-01T00:00:00.000Z', validUntil: 'soon' }, NOW)).toBe('MALFORMED');
     expect(validityProblem({ issuedAt: '2026-11-01T00:00:00.000Z', validUntil: '2026-10-01T00:00:00.000Z' }, NOW)).toBe('MALFORMED');

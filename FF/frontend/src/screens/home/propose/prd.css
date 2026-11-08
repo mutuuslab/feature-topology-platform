@@ -1,0 +1,19 @@
+.propose-prd-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem); gap: var(--sp-6); align-items: start; }
+.propose-document { min-width: 0; display: grid; gap: var(--sp-4); }
+.propose-document__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3); }
+.propose-document__head h2 { margin: 0; }
+.propose-document__title { font-size: var(--fs-xl); font-weight: 650; }
+.propose-document__editor, .propose-document__body { font-family: var(--font-sans); font-size: var(--fs-md); line-height: 1.8; }
+.propose-document__editor { resize: vertical; }
+.propose-document__body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.propose-document__preview { min-height: 24rem; border-top: 1px solid var(--line); padding-top: var(--sp-4); }
+.propose-document__tools { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3); }
+.propose-prd-aside { min-width: 0; display: grid; gap: var(--sp-4); border-inline-start: 1px solid var(--line); padding-inline-start: var(--sp-4); }
+.propose-prd-aside h3 { margin: 0; }
+.propose-prd-aside .propose-selection-summary { margin: 0; }
+.propose-prd-lifecycle { color: var(--muted); font-size: var(--fs-sm); margin: 0; }
+.propose-review .propose-document__body { margin-top: var(--sp-2); }
+@media (max-width: 1000px) {
+  .propose-prd-layout { grid-template-columns: minmax(0, 1fr); }
+  .propose-prd-aside { border-inline-start: 0; padding-inline-start: 0; border-top: 1px solid var(--line); padding-top: var(--sp-4); }
+}

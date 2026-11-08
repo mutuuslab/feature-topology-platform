@@ -1407,3 +1407,57 @@ html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
     bottom: var(--guide-sheet-h);
   }
 }
+
+/* Department sidebars must not consume half of a phone's content width. */
+@media (max-width: 767px) {
+  .sh[data-workspace],
+  [data-present='on'] .sh[data-workspace],
+  html:not([data-present='on']) .sh[data-workspace][data-guide='open'] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--topbar-h) auto minmax(0, 1fr);
+    grid-template-areas: 'top' 'nav' 'main';
+  }
+  .sh[data-workspace] .sh-dnav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    box-shadow: none;
+  }
+  .sh[data-workspace] .sh-dnav__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-1) var(--sp-2);
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .sh[data-workspace] .sh-dnav > .sh-dnav__list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--sp-1);
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: var(--sp-1);
+  }
+  .sh[data-workspace] .sh-dnav > .sh-dnav__list > li { flex: none; }
+  .sh[data-workspace] .sh-dnav__list a { min-height: 32px; white-space: nowrap; }
+  .sh[data-workspace] .sh-dnav__section { margin: 0; padding: 0; }
+  .sh[data-workspace] .sh-dnav__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .sh[data-workspace] .sh-main { min-width: 0; padding-inline: var(--sp-3); }
+  .sh[data-workspace] .sh-dept .sh-user { min-width: 0; overflow: hidden; }
+  .sh[data-workspace] .sh-dept .sh-user__role { overflow: hidden; text-overflow: ellipsis; }
+}

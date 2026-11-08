@@ -1,25 +1,26 @@
-// /feature/propose — Feature 등록 마법사(30-95 §6.1, 20-60 §6): ① 기준 기능 고르기(이름·설명 추천 포함) → ② 자동 채움 확인 → 제출·검토·정의 승인.
+// /feature/propose — 문서형 Feature 초안(30-95 §6.1, 20-60 §6): 직접 작성 → 기준 연결·기본값 확인 → 제출·검토·정의 승인.
 // 대표 기준 행에서 이름·설명·대표 ASIL·분류 태그·규제를 미리 채우고(§6.3), 바뀐 칸은 '수정됨'으로 보인다.
 // ASIL을 대표 ASIL과 다르게 하면 사유(asilDeviation)가 필수 — 기능안전 담당자 G2 검토 대상. 같은 범위 같은 대표 행은 409 → 사유와 함께 확인(§6.2).
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { FeatureRefRole } from '@ff/contracts';
 import { canAct } from '../../../api/actor';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
+import { PRD_BODY_LIMIT, PRD_TEMPLATE, proposePrd as D } from '../../../copy/propose-prd';
 import { planning as W } from '../../../copy/planning';
-import { Button, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
+import { Button, Drawer, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefPicker, refWarning } from './RefPicker';
 import { RefRequestDrawer } from './RefRequestDrawer';
 import { RefStatusBadge, RefWarningItems, type RefWarning } from '../../refdb/common';
 import { ASIL_VALUES, type TaxonomyNodeLite } from './taxonomy';
-import { choosePicked, list, makePrimaryPicked, prefillOf, primaryOf, regulationsOf, removePicked, sameList, type PickedRef, type Prefill, type RefLite } from './prefill';
+import { choosePicked, list, makePrimaryPicked, prefillOf, preserveEditedPrefill, primaryOf, regulationsOf, removePicked, sameList, type PickedRef, type Prefill, type RefLite } from './prefill';
 import { autofill as AF, profile as PR } from '../../../copy/ple';
-import { RegistrationSteps } from '../../ple/RegistrationSteps';
 import { AutofillPanel, scopeKey, useAutofill, variationPointsFor, type ProfileDraft } from './AutofillPanel';
 import { RegistrationReview } from './RegistrationReview';
+import { PrdEditor } from './PrdEditor';
 
 const INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
 type Form = typeof INITIAL;
@@ -41,8 +42,9 @@ export default function ProposeScreen() {
   const create = useApiMutation<Created>('createFeature', ['listFeatures', 'events', 'audit']);
   const taxonomy = useApi<{ items: TaxonomyNodeLite[] }>('refTaxonomy');
   const nodes = taxonomy.data?.items ?? [];
-  const [step, setStep] = useState<1 | 2>(1);
+  const [selecting, setSelecting] = useState(false);
   const [picked, setPicked] = useState<PickedRef[]>([]);
+  const [pendingPicked, setPendingPicked] = useState<PickedRef[]>([]);
   const [domain, setDomain] = useState('');
   const [requesting, setRequesting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -52,14 +54,18 @@ export default function ProposeScreen() {
   const [dupReason, setDupReason] = useState('');
   const [done, setDone] = useState<Created | null>(null);
   const [reviewing, setReviewing] = useState(false);
+  // Stable callbacks keep Drawer's original focus target across pending selection and async form updates.
+  const closeRefs = useCallback(() => setSelecting(false), []);
+  const closeReview = useCallback(() => setReviewing(false), []);
+  const closeRequest = useCallback(() => { setRequesting(false); setSelecting(true); }, []);
   // 미리 채운 값과 그 값을 준 대표 행 — 대표를 바꾸면 사용자가 고치지 않은 칸만 새 기준값으로 바꾼다
   const [base, setBase] = useState<(Prefill & { refId: string }) | null>(null);
   // 자동 채움(20-60 §5.3) — 사람이 손대지 않은 제어점·범위·프로필만 대표 행이 바뀔 때 채운다
   const [cpsTouched, setCpsTouched] = useState(false);
   const [scopeTouched, setScopeTouched] = useState(false);
+  const [asilTouched, setAsilTouched] = useState(false);
   const [profile, setProfile] = useState<ProfileDraft | null>(null);
   const [appliedRef, setAppliedRef] = useState<string | null>(null);
-  const stepHead = useRef<HTMLHeadingElement>(null);
   const dupHead = useRef<HTMLHeadingElement>(null);
 
   const primary = primaryOf(picked);
@@ -85,34 +91,26 @@ export default function ProposeScreen() {
   // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
   useUnsavedGuard(dirty);
 
-  // 단계를 바꾸면 그 단계 제목으로 초점을 옮긴다 — 화면 읽기 사용자가 새 단계를 듣는다
-  const firstStep = useRef(true);
-  useEffect(() => {
-    if (firstStep.current) {
-      firstStep.current = false;
-      return;
-    }
-    stepHead.current?.focus();
-  }, [step]);
-
-  const choose = (ref: RefLite, role: FeatureRefRole) => setPicked((xs) => choosePicked(xs, ref, role));
-  const makePrimary = (refId: string) => setPicked((xs) => makePrimaryPicked(xs, refId));
-  const remove = (refId: string) => setPicked((xs) => removePicked(xs, refId));
+  const openRefs = () => { setPendingPicked(picked); setSelecting(true); };
+  const choose = (ref: RefLite, role: FeatureRefRole) => setPendingPicked((xs) => choosePicked(xs, ref, role));
+  const makePrimary = (refId: string) => setPendingPicked((xs) => makePrimaryPicked(xs, refId));
+  const remove = (refId: string) => setPendingPicked((xs) => removePicked(xs, refId));
 
   const toStep2 = () => {
-    if (!primary) return;
-    if (base?.refId !== primary.refId) {
-      const next = prefillOf(primary);
-      // 처음이거나 사용자가 고치지 않은 칸(이전 기준값 그대로·빈 칸)만 새 기준값으로
-      const keep = (k: keyof Prefill, cur: string) => (base && cur !== '' && cur !== base[k] ? cur : next[k]);
-      setF((x) => ({ ...x, name: keep('name', x.name), description: keep('description', x.description), asil: base && x.asil !== base.asil ? x.asil : next.asil, tags: keep('tags', x.tags) }));
-      setBase({ ...next, refId: primary.refId });
+    const candidate = primaryOf(pendingPicked);
+    if (!candidate) return;
+    if (base?.refId !== candidate.refId) {
+      const next = prefillOf(candidate);
+      setF((x) => ({ ...x, ...preserveEditedPrefill(x, base, next, asilTouched) }));
+      setBase({ ...next, refId: candidate.refId });
     }
-    setStep(2);
+    setPicked(pendingPicked);
+    setSelecting(false);
   };
 
   const set = (k: keyof Form) => (e: { target: { value: string } }) => {
     if (k === 'country' || k === 'vehicleModel' || k === 'trim') setScopeTouched(true);
+    if (k === 'asil') setAsilTouched(true);
     setF((x) => ({ ...x, [k]: e.target.value }));
   };
   const fe = fieldErrors(create.error);
@@ -162,7 +160,7 @@ export default function ProposeScreen() {
           // 대표 기준 행이 없다는 거절(400 REFDB_LINK_REQUIRED) — 1단계로 돌려보내 기준 행을 고르게 한다
           if (e.code === LINK_REQUIRED) {
             setNotice(P.linkRequired);
-            setStep(1);
+            openRefs();
           }
         },
         onSuccess: (r) => {
@@ -179,6 +177,8 @@ export default function ProposeScreen() {
     [!primary, P.nextWhy],
     [!f.country.trim() || !f.vehicleModel.trim() || !f.trim.trim(), P.scopeWhy],
     [!f.name.trim() || !f.description.trim() || !f.ownerId.trim(), P.requiredWhy],
+    [f.description.length > PRD_BODY_LIMIT, D.bodyTooLong],
+    [f.description.trim() === PRD_TEMPLATE.trim(), D.templateFill],
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
     [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
   );
@@ -188,9 +188,7 @@ export default function ProposeScreen() {
     ? { tone: 'neutral' as const, text: P.key.cannot }
     : done
       ? { tone: 'warn' as const, text: P.key.done }
-      : step === 1
-        ? { tone: 'neutral' as const, text: primary ? P.key.picked(primary.refId, picked.length - 1) : P.key.pick }
-        : { tone: 'neutral' as const, text: P.key.can };
+      : { tone: 'neutral' as const, text: primary ? P.key.picked(primary.refId, picked.length - 1) : D.key };
 
   const text = (k: keyof Form, label: string, hint?: ReactNode, mono = true) => (
     <Field label={label} error={fe[k]} hint={hint}>
@@ -200,13 +198,12 @@ export default function ProposeScreen() {
 
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-01 · PROPOSED 0.1.0 · 30-95 §6" title={P.title} lead={P.lead} message={message} />
-      {/* 등록 진행 단계 — 마법사 두 단계 뒤로 제출·검토·정의 승인이 이어진다(20-60 §6) */}
-      <RegistrationSteps current={done || create.isSuccess || reviewing ? 2 : step - 1} />
+      <PageHeader codes="D01-01 · PROPOSED 0.1.0 · 30-95 §6" title={P.title} lead={D.lead} message={message} actions={!done && <div className="propose-actions">
+        <Button onClick={openRefs}>{D.chooseRefs}</Button>
+        <Button variant="primary" disabled={!!why || create.isPending} reason={why} onClick={() => setReviewing(true)}>{D.reviewTop}</Button>
+      </div>} />
+      <p className="propose-prd-lifecycle">{D.lifecycle}</p>
       <Panel id="propose-form" tour="feature-form">
-        <h2 ref={stepHead} tabIndex={-1} style={{ marginTop: 0 }}>
-          {step === 1 ? P.steps.pick : P.steps.confirm}
-        </h2>
         {notice && (
           <p className="ds-field__hint" role="status" data-testid="ref-request-notice">
             {notice}
@@ -220,24 +217,18 @@ export default function ProposeScreen() {
               {P.openDetail}
             </Button>
           </section>
-        ) : step === 1 ? (
-          <>
-            <RefPicker suggestIntent picked={picked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => setRequesting(true)} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
-          </>
         ) : (
           <>
-            <p className="ds-field__hint">{P.form.lead}</p>
-            <p className="propose-selection-summary">{primary?.nameKo} <span className="ds-mono">{primary?.refId}</span> · {P.selection.included(picked.length - 1)}</p>
             {/* 필수 입력을 먼저 작성하고 출처·추가 구성은 뒤에서 확인한다. */}
-            <div className="ds-split ds-prefill" data-prefilled={base?.refId}>
-              <div className="ds-stack">
-                <h3 className="propose-section-heading">{P.form.identity} <span className="ds-tag">{P.form.required}</span></h3>
-                <Field label={P.name} error={fe.name} hint={<>{mark('name')} {P.form.nameHint}</>}>
-                  <input className="ds-input" name="name" required maxLength={200} value={f.name} onChange={set('name')} />
-                </Field>
-                <Field label={P.description} error={fe.description} hint={<>{mark('description')} {P.form.descriptionHint}</>}>
-                  <textarea className="ds-input" name="description" required maxLength={2000} value={f.description} onChange={set('description')} rows={4} />
-                </Field>
+            <div className="propose-prd-layout ds-prefill" data-prefilled={base?.refId}>
+              <PrdEditor name={f.name} description={f.description} onName={(name) => setF((x) => ({ ...x, name }))} onDescription={(description) => setF((x) => ({ ...x, description }))} nameError={fe.name} descriptionError={fe.description} nameMark={mark('name')} descriptionMark={mark('description')} />
+              <aside className="propose-prd-aside" aria-label={D.metadataLandmark}>
+                <h3>{D.metadata}</h3>
+                <section className="ds-stack" aria-label={D.referenceTitle}>
+                  <p className="propose-selection-summary">{primary ? <>{primary.nameKo} <span className="ds-mono">{primary.refId}</span> · {P.selection.included(picked.filter((p) => p.role === 'INCLUDED').length)}</> : D.referenceEmpty}</p>
+                  <p className="ds-field__hint">{D.referenceHint}</p>
+                  <Button onClick={openRefs}>{D.manageRefs}</Button>
+                </section>
                 <Field label={P.owner} error={fe.ownerId} hint={<span id="propose-owner-hint">{P.form.ownerHint}</span>}>
                   <input className="ds-input" name="ownerId" aria-label={P.owner} aria-describedby="propose-owner-hint" required maxLength={100} value={f.ownerId} onChange={set('ownerId')} />
                 </Field>
@@ -260,8 +251,6 @@ export default function ProposeScreen() {
                     <p className="ds-field__hint">{P.refRegulationsNone}</p>
                   )}
                 </section>
-              </div>
-              <div className="ds-stack">
                 <h3 className="propose-section-heading">{P.form.scope} <span className="ds-tag">{P.form.required}</span></h3>
                 <p className="ds-field__hint">{P.form.scopeHint}</p>
                 {text('country', P.country, P.form.countryHint)}
@@ -304,7 +293,7 @@ export default function ProposeScreen() {
                     </label>
                   ))}
                 </fieldset>
-              </div>
+              </aside>
             </div>
 
             {af.data && profile ? (
@@ -351,7 +340,7 @@ export default function ProposeScreen() {
             )}
 
             <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <Button onClick={() => setStep(1)}>{P.changeRefs}</Button>
+              <Button onClick={openRefs}>{P.changeRefs}</Button>
               <Button variant="primary" data-ui="reviewFeature" disabled={!!why || create.isPending} reason={why} title={perm.hint} onClick={() => setReviewing(true)}>
                 {P.review.open}
               </Button>
@@ -359,15 +348,19 @@ export default function ProposeScreen() {
           </>
         )}
       </Panel>
-      {reviewing && <RegistrationReview draft={f} picked={picked} cps={cps} onClose={() => setReviewing(false)} onRegister={() => { setReviewing(false); submit(false); }} />}
+      {selecting && <Drawer open title={P.steps.pick} onClose={closeRefs}>
+        <RefPicker suggestIntent picked={pendingPicked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => { setSelecting(false); setRequesting(true); }} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
+      </Drawer>}
+      {reviewing && <RegistrationReview draft={f} picked={picked} cps={cps} onClose={closeReview} onRegister={() => { setReviewing(false); submit(false); }} />}
       {requesting && (
         <RefRequestDrawer
           open={requesting}
           nodes={nodes}
           initialDomain={domain}
-          onClose={() => setRequesting(false)}
+          onClose={closeRequest}
           onCreated={(ref) => {
             setRequesting(false);
+            setSelecting(true);
             choose(ref, 'PRIMARY');
             setNotice(P.request.notice(ref.refId));
           }}

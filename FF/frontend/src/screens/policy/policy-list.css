@@ -1,0 +1,5 @@
+.policy-id-cell { display: inline-grid; gap: var(--sp-1); }
+.policy-id-cell__status { display: none; }
+@media (max-width: 900px) {
+  .policy-id-cell__status { display: block; padding-bottom: var(--sp-1); }
+}

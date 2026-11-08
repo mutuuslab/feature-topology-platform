@@ -37,10 +37,10 @@ export const propose = {
   selection: {
     title: '기본 정보를 가져올 기능과 참고할 기능을 구분하세요',
     primaryTitle: '기본 정보 가져오기 · 1개 필수',
-    primaryBody: '이름·설명·ASIL·태그를 다음 화면의 입력값으로 가져옵니다. 실제 등록할 기능에 맞게 수정할 수 있습니다.',
+    primaryBody: '이름·설명·ASIL·태그를 채웁니다. 직접 작성한 값은 유지하며 빈 칸과 이전 기준값만 바꿉니다.',
     includedTitle: '참고로 연결 · 선택',
     includedBody: '참고할 기능의 연결만 저장합니다. 이름·설명·ASIL·태그를 가져오거나 다른 Feature를 만들지 않습니다.',
-    primaryEffect: '이름·설명·ASIL·태그 미리 채움',
+    primaryEffect: '빈 칸과 이전 기준값에 기본 정보 채움',
     includedEffect: '참고 연결만 추가 · 입력값 유지',
     savedLater: '이 선택만으로 새 Feature가 저장되지는 않습니다. 다음 단계에서 작성 내용을 확인한 뒤 등록합니다.',
     base: (id: string) => `${id}에서 이름·설명·ASIL·태그를 가져옵니다`,

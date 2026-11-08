@@ -1,5 +1,5 @@
 // 디자인 키트 기본 부품 — 버튼·ID 칩·패널·지표·비동기 상태·탭·Diff·이벤트 스트림.
-import { createContext, useContext, useId, useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { createContext, lazy, Suspense, useContext, useId, useMemo, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ko } from '../copy/ko';
 import { asErrorLike, ErrorNextStep, errorTitle, type ErrorLike } from './errors';
@@ -8,6 +8,7 @@ import { plainText, usePageTitle, type PageTitle } from './page';
 
 /** 지금 열린 탭의 이름과 탭 요소 id — 탭 안 Panel이 같은 제목을 되풀이하지 않게(UX3-11) */
 const ActiveTabContext = createContext<PageTitle | null>(null);
+const TabsOverflow = lazy(() => import('./tabs-overflow'));
 
 /**
  * reason — 비활성일 때 버튼 아래에 보이는 이유("권한이 없습니다", "대상을 고르세요"). 회색 버튼만 두면
@@ -180,6 +181,8 @@ export function AsyncView({ state, stale, onRetry, empty, emptyHidden, error, ch
 /** URL(?tab=)과 동기화되는 탭 — 딥링크·새로고침에도 같은 탭 */
 export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; label: ReactNode; count?: number }[]; param?: string; children: (active: string) => ReactNode }) {
   const [sp, setSp] = useSearchParams();
+  const strip = useRef<HTMLDivElement>(null);
+  const stripId = useId();
   const idPrefix = param === 'tab' ? '' : `${param}-`;
   const active = tabs.some((t) => t.key === sp.get(param)) ? sp.get(param)! : tabs[0]?.key;
   const activeLabel = plainText(tabs.find((t) => t.key === active)?.label);
@@ -191,7 +194,8 @@ export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; l
   };
   return (
     <>
-      <div className="ds-tabs" role="tablist">
+      <div className="ds-tabs-wrap">
+      <div className="ds-tabs" role="tablist" ref={strip} id={stripId} aria-label={ko.design.tabNavigation}>
         {tabs.map((t, i) => (
           <button
             key={t.key}
@@ -214,6 +218,8 @@ export function Tabs({ tabs, param = 'tab', children }: { tabs: { key: string; l
             {t.count !== undefined && <span className="ds-tab__count">{t.count}</span>}
           </button>
         ))}
+      </div>
+      <Suspense fallback={null}><TabsOverflow strip={strip} stripId={stripId} count={tabs.length} /></Suspense>
       </div>
       <div role="tabpanel" id={`panel-${idPrefix}${active}`} aria-labelledby={`tab-${idPrefix}${active}`}>
         <ActiveTabContext.Provider value={activeTab}>{active && children(active)}</ActiveTabContext.Provider>

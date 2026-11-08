@@ -3,12 +3,13 @@
 //  · ConsultScreen(/consults/:id): 대상·살펴볼 것·기한 한 장 + 동의·보완·반대 의견과 메모(받은 부서만, 요청자 본인 불가).
 //  · SentConsults: 요청 부서 홈 — 보낸 협의와 받은 의견(의견을 남기면 여기에 바로 보인다).
 // 화면 글자에 절차 코드·Gate·SLA 같은 전문용어를 쓰지 않는다(근거 활동은 이름만).
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ROUTES as API_ROUTES, type ConsultOpinion, type Consultation } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { myActorId } from '../refdb/common';
 import { consult as C } from '../../copy/consult';
+import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, whyDisabled } from '../../design';
 import { useAppShell } from '../../store';
 import { personName, personOf } from '../../data/people';
@@ -51,7 +52,36 @@ export function ConsultState({ c }: { c: Pick<ConsultView, 'status' | 'opinions'
 /** 포털 요청함 — 의견 대기 먼저, 기한 이른 순(서버 순서) */
 export function ConsultInbox({ items, caption }: { items: ConsultView[]; caption: string }) {
   const nav = useNavigate();
+  const root = useRef<HTMLDivElement>(null);
+  const [compact, setCompact] = useState(false);
+  const [order, setOrder] = useState<'asc' | 'desc' | null>(null);
+  useEffect(() => {
+    if (!root.current || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => setCompact(entry.contentRect.width < 600));
+    observer.observe(root.current);
+    return () => observer.disconnect();
+  }, []);
+  const ordered = order ? [...items].sort((a, b) => a.dueAt.localeCompare(b.dueAt) * (order === 'asc' ? 1 : -1)) : items;
   return (
+    <div className="cs-inbox" ref={root}>
+    {compact ? <>
+      <div className="cs-inbox__tools">
+        <Button variant="ghost" aria-label={`${C.col.due} ${order === 'asc' ? ko.action.sortDesc : ko.action.sortAsc}`} onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}>
+          {C.col.due} <span aria-hidden>{order === 'asc' ? '▲' : order === 'desc' ? '▼' : '↕'}</span>
+        </Button>
+      </div>
+      <ul className="cs-cards" aria-label={caption}>
+        {ordered.map((c) => <li key={c.consultId} data-consult={c.consultId}>
+          <Link to={consultPath(c.consultId)} className="cs-summary">{c.summary}</Link>
+          <span className="ds-field__hint">{`${C.target[c.targetKind]} · ${c.targetName}`}</span>
+          <dl className="cs-cards__meta">
+            <div><dt>{C.col.from}</dt><dd>{c.fromName}</dd></div>
+            <div><dt>{C.col.due}</dt><dd><DueTag c={c} /></dd></div>
+            <div><dt>{C.col.status}</dt><dd><ConsultState c={c} /></dd></div>
+          </dl>
+        </li>)}
+      </ul>
+    </> : (
     <DataTable<ConsultView>
       caption={caption}
       rows={items}
@@ -76,6 +106,8 @@ export function ConsultInbox({ items, caption }: { items: ConsultView[]; caption
         { key: 'st', header: C.col.status, cell: (c) => <ConsultState c={c} /> },
       ]}
     />
+    )}
+    </div>
   );
 }
 

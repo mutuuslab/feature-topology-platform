@@ -20,7 +20,7 @@ export function RegistrationReview({ draft, picked, cps, onClose, onRegister }: 
         <p>{P.review.lead}</p>
         {STATIC_MODE && <p className="ds-callout" data-tone="neutral">{P.review.staticHint}</p>}
         <dl className="propose-review">
-          <div><dt>{P.review.name}</dt><dd><strong>{draft.name}</strong><p>{draft.description}</p></dd></div>
+          <div><dt>{P.review.name}</dt><dd><strong>{draft.name}</strong><p className="propose-document__body">{draft.description}</p></dd></div>
           <div><dt>{P.review.scope}</dt><dd data-review-scope>{draft.country} / {draft.vehicleModel} / {draft.trim}</dd></div>
           <div><dt>{P.review.owner}</dt><dd>{draft.ownerId}</dd></div>
           <div><dt>{P.review.asil}</dt><dd>ASIL {draft.asil}</dd></div>

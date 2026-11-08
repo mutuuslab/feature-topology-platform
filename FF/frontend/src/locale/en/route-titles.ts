@@ -1,5 +1,6 @@
 // Static route captions only; URI patterns and permission metadata are unchanged.
 export default {
+  '/supplier/deliveries': 'Supplier handoff',
   '/': 'My dashboard', '/procedures/work': 'Work cases and artifacts', '/admin/approval': 'Review inbox',
   '/learn': 'Standards walkthroughs', '/learn/:id': 'Walkthrough scenario', '/procedures': 'Full workflow',
   '/procedures/roles': 'Role workflows', '/procedures/:id': 'Workflow details', '/arch/components': '42-component architecture',

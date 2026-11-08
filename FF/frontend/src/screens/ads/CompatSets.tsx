@@ -1,9 +1,11 @@
 // 승인 구성 조합 /config/compat (ADS-UI05 · ADS-BE10) — 승인 조합 표(1행 = 한 조합) + 차량 대조 탭(부합·불일치·부분 복구·보안 최소 버전 미달·형상 미확인).
 // 이 화면이 승인 조합의 원장(P-14). 핵심 메시지 '승인 조합 밖 차량 N대 — 부분 복구 M대 포함', 형상 미확인은 따로(부합으로 세지 않음).
+// 조합 등록 = 제안, 다른 사람(기능안전 담당) 승인 뒤에만 대조·발행 근거. 보안 최소 버전 표(사이버보안 담당 승인)가 등록·승인 하한(AcPanels.tsx).
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { type CompatClass, type ConfigSet, type ConfigSetListItem, type ConfigVehicleRow } from '@ff/contracts';
-import { COMPAT_CLASSES, COMPAT_LABEL, configSetRegistrationBlocker } from '../../../../contracts/src/rules/ads-config';
+import { COMPAT_CLASSES, COMPAT_LABEL, configSetRegistrationBlocker, mergeSecurityMin } from '../../../../contracts/src/rules/ads-config';
+import { SECURITY_MIN_UNREGISTERED, unregisteredSecurityMin } from '../../../../contracts/src/rules/ads-config-approval';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { compat as T } from '../../copy/ads-config';
@@ -13,6 +15,8 @@ import { FreshnessChip } from '../../design/freshness';
 import { usePermission } from '../shared';
 import { PublishTab, RecoveryTab } from './P5Panels';
 import { publish as PB, recovery as RC } from '../../copy/ads-p5';
+import { securityMin as SM, setApproval as SA } from '../../copy/ads-ac';
+import { SecurityMinTab, SetApprove, SetStatus, type SecurityMinsResp } from './AcPanels';
 import './ads-config.css';
 
 interface Summary {
@@ -30,6 +34,8 @@ interface ListResp {
   /** 조합 미검증 — 배포 중 F0·F1 Feature Version 중 승인 조합 없음 */
   unverified?: { count: number; items: { featureId: string; version: string; name: string | null; fClass: string | null }[] };
   decisions?: number;
+  /** 승인 대기 조합 수 */
+  pending?: number;
 }
 interface VehResp {
   set: ConfigSet & { featureName: string | null };
@@ -70,6 +76,7 @@ export default function CompatSetsScreen() {
         meta={
           <span className="adsc-row">
             {s ? <UnknownMark kind="UNCONFIRMED" reason={`${T.unconfirmed(s.unconfirmed)} — ${T.unconfirmedNote}`} /> : null}
+            {q.data?.pending ? <span>{SA.pendingMeta(q.data.pending)}</span> : null}
             <Link to="/config/odd">{T.toOdd}</Link>
           </span>
         }
@@ -79,8 +86,8 @@ export default function CompatSetsScreen() {
         <RegisterForm sets={items} onDone={() => setRegistering(false)} />
       </Drawer>
       <AsyncView state={asyncState(q, items.length === 0)} error={q.error ? T.error : null} onRetry={() => q.refetch()} empty={T.empty}>
-        <Tabs tabs={[{ key: 'sets', label: T.tabs.sets, count: items.length }, { key: 'vehicles', label: T.tabs.vehicles, count: s?.total }, { key: 'publish', label: PB.tab }, { key: 'recovery', label: RC.tab, count: q.data?.decisions }]}>
-          {(active) => (active === 'vehicles' ? <VehiclesTab sets={items} /> : active === 'publish' ? <PublishTab policyIds={deployedPolicies} unverified={q.data?.unverified} /> : active === 'recovery' ? <RecoveryTab setIds={items.map((x) => x.setId)} /> : <SetsTab sets={items} />)}
+        <Tabs tabs={[{ key: 'sets', label: T.tabs.sets, count: items.length }, { key: 'vehicles', label: T.tabs.vehicles, count: s?.total }, { key: 'publish', label: PB.tab }, { key: 'recovery', label: RC.tab, count: q.data?.decisions }, { key: 'security', label: SM.tab }]}>
+          {(active) => (active === 'vehicles' ? <VehiclesTab sets={items} /> : active === 'publish' ? <PublishTab policyIds={deployedPolicies} unverified={q.data?.unverified} /> : active === 'recovery' ? <RecoveryTab setIds={items.filter((x) => x.status === 'APPROVED').map((x) => x.setId)} /> : active === 'security' ? <SecurityMinTab /> : <SetsTab sets={items} />)}
         </Tabs>
       </AsyncView>
     </div>
@@ -106,6 +113,7 @@ function SetsTab({ sets }: { sets: ConfigSetListItem[] }) {
         onOpen={(r) => open(r.setId)}
         columns={[
           { key: 'id', header: C.set, cell: (r) => <span className="ds-mono ds-nowrap">{r.setId}</span> },
+          { key: 'st', header: SA.status, cell: (r) => <SetStatus set={r} /> },
           { key: 'f', header: C.feature, cell: (r) => <span className="adsc-cell"><span className="ds-mono ds-nowrap">{`${r.featureId} ${r.featureVersion}`}</span>{r.featureName ? <span className="adsc-sub">{r.featureName}</span> : null}</span> },
           { key: 'hw', header: C.hw, cell: (r) => <span className="adsc-cell">{r.hw.map((h) => <span key={h.ecuPno} className="ds-mono">{`${h.ecuPno} ${h.hwRevision}`}</span>)}</span> },
           { key: 'sw', header: C.sw, cell: (r) => <span className="adsc-cell">{r.ecuSw.map((x) => <span key={x.swId} className="ds-mono">{`${x.swId} ${x.version}`}</span>)}</span> },
@@ -115,6 +123,7 @@ function SetsTab({ sets }: { sets: ConfigSetListItem[] }) {
           { key: 'p', header: C.policy, cell: (r) => <span className="ds-mono">{r.flagKey ?? '—'}</span> },
           { key: 'sm', header: C.secMin, cell: (r) => <span className="adsc-cell">{r.securityMin.map((x) => <span key={x.swId} className="ds-mono">{`${x.swId} ${x.version}`}</span>)}</span> },
           { key: 'n', header: C.vehicles, cell: (r) => C.vehiclesCell(r.counts.MATCH, COMPAT_CLASSES.reduce((a, k) => a + r.counts[k], 0)) },
+          { key: 'ap', header: SA.approver, cell: (r) => <SetApprove set={r} /> },
         ]}
       />
     </Panel>
@@ -186,9 +195,12 @@ function RegisterForm({ sets, onDone }: { sets: ConfigSetListItem[]; onDone: () 
   const [cal, setCal] = useState('');
   const [reason, setReason] = useState('');
   const create = useApiMutation<ConfigSet>('createConfigSet', INVALIDATE);
+  // 보안 최소 버전 표(사이버보안 담당 승인)가 하한 — 서버와 같은 검사
+  const table = useApi<SecurityMinsResp>('securityMins').data?.current ?? [];
   if (!base) return null;
   const ecuSw = base.ecuSw.map((x) => ({ ...x, version: sw[x.swId] ?? x.version }));
-  const blocked = configSetRegistrationBlocker({ ecuSw, securityMin: base.securityMin });
+  const missing = table.length ? unregisteredSecurityMin(ecuSw, table) : [];
+  const blocked = missing.length ? SECURITY_MIN_UNREGISTERED(missing) : configSetRegistrationBlocker({ ecuSw, securityMin: mergeSecurityMin(table.filter((m) => ecuSw.some((x) => x.swId === m.swId)), base.securityMin) });
   const body = {
     featureId: base.featureId, featureVersion: base.featureVersion, hw: base.hw, ecuSw, model: base.model,
     calibration: base.calibration ? { ...base.calibration, version: cal || base.calibration.version } : null,
@@ -215,7 +227,7 @@ function RegisterForm({ sets, onDone }: { sets: ConfigSetListItem[]; onDone: () 
         <input className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} />
       </Field>
       <ErrorNote error={create.error} />
-      {create.data ? <p className="adsc-note">{R.done(create.data.setId)}</p> : null}
+      {create.data ? <p className="adsc-note">{SA.registered(create.data.setId)}</p> : null}
       {blocked ? (
         <BlockedAction label={R.submit} reason={blocked} />
       ) : (

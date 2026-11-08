@@ -33,6 +33,7 @@ import { isProduction, seedOf } from '../../kernel/runtime-config';
 import { ZodPipe } from '../../kernel/zod.pipe';
 import { FleetRepo } from '../../domains/d01-policy/policy-repos';
 import { FeatureRepo } from '../../domains/d01-policy/repos';
+import { approvedConfigSets } from '../../domains/d02-runtime/variant-conditions/config-set-store';
 import { P5_FIXTURE } from '../../domains/d05-ext/data-sync/eol.service';
 import { otaWebhookSignature } from './ota-server.adapter';
 
@@ -85,13 +86,10 @@ export class OtaInstallService implements OnModuleInit {
   private setsFor(vin: string): ConfigSet[] {
     const v = this.fleet.vehicle(vin);
     if (!v) return [];
-    return this.db
-      .all<{ doc: string }>('SELECT doc FROM ads_config_set ORDER BY set_id')
-      .map((r) => JSON.parse(r.doc) as ConfigSet)
-      .filter((s) => {
-        const f = this.features.get(s.featureId, s.featureVersion);
-        return !!f && f.country === v.country && f.vehicleModel === v.vehicleModel && f.trim === v.trim;
-      });
+    return approvedConfigSets(this.db).filter((s) => {
+      const f = this.features.get(s.featureId, s.featureVersion);
+      return !!f && f.country === v.country && f.vehicleModel === v.vehicleModel && f.trim === v.trim;
+    });
   }
 
   vehicle(vin: string) {

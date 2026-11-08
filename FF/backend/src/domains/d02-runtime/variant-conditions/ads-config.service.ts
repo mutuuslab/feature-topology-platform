@@ -1,10 +1,19 @@
 // ADS 구성 (D02-01) — ODD 프로파일(ADS-BE09)과 승인 조합(ADS-BE10). 규칙(의미 검증·상한 비교·형상 대조·보안 최소 버전)은 contracts rules/ads-config.ts.
 // 프로파일 흐름: 초안 → 의미 검증 → 기능안전 승인(SAFETY_OFFICER) → 정책 연결 → 배포. 승인된 프로파일은 불변(새 버전), 오류가 남은 초안은 막힘 사유와 함께 거부.
 // 승인 조합은 이 화면이 원장(P-14) — 지원 조건·복구 후보 화면은 이 판정을 읽는다. 조합은 추가만, 보안 최소 버전 아래 ECU SW가 있으면 등록 거부.
+// 조합 등록 = 제안 → 다른 사람(기능안전 담당) 승인 뒤에만 대조·발행 근거. 보안 최소 버전의 정본은 사이버보안 담당이 승인한 표(security-min-store.ts).
 import { Body, Controller, Get, Inject, Injectable, OnModuleInit, Param, Post, Query } from '@nestjs/common';
 import {
   AdsConfigFixture,
+  ApproveConfigSetBody,
   ApproveOddProfileBody,
+  ApproveSecurityMinBody,
+  configSetApprovalBlocker,
+  ProposeSecurityMinBody,
+  SECURITY_MIN_UNREGISTERED,
+  securityMinApprovalBlocker,
+  securityMinProposalBlocker,
+  unregisteredSecurityMin,
   classifyVehicleConfig,
   compareDeploySettings,
   configSetRegistrationBlocker,
@@ -49,6 +58,8 @@ import { ZodPipe } from '../../../kernel/zod.pipe';
 import { FleetRepo, PolicyRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo, ProductRepo } from '../../d01-policy/repos';
 import { isProduction, seedOf } from '../../../kernel/runtime-config';
+import { approvedConfigSets, readConfigSet, readConfigSets } from './config-set-store';
+import { readSecurityMins, securityMinTable } from './security-min-store';
 
 /** 커밋된 시드(data/fixtures/ads/config.json) — repo 루트 기준 */
 const FIXTURE = join(__dirname, '..', '..', '..', '..', '..', 'data', 'fixtures', 'ads', 'config.json');
@@ -86,9 +97,15 @@ export class AdsConfigService implements OnModuleInit {
       for (const s of fx.deploySettings) if (hasFeature(s.featureId, s.featureVersion)) this.db.run('INSERT INTO ads_deploy_setting (setting_id, feature_id, feature_version, doc) VALUES (?, ?, ?, ?)', s.settingId, s.featureId, s.featureVersion, JSON.stringify(s));
       for (const c of fx.configSets) {
         if (!hasFeature(c.featureId, c.featureVersion)) continue;
-        const { approvedAgo, ...rest } = c;
-        const doc = { ...rest, status: 'APPROVED', approvedAt: at(approvedAgo) } as ConfigSet;
+        // 제안 기록 + 다른 계정의 승인 기록(승인 대기 조합은 승인 기록 없음)
+        const { approvedAgo, proposedAgo, approvedBy, approvalReason, ...rest } = c;
+        const doc = { ...rest, status: 'PROPOSED', proposedAt: at(proposedAgo), approvedBy: null, approvedAt: null } as ConfigSet;
         this.db.run('INSERT INTO ads_config_set (set_id, feature_id, feature_version, doc) VALUES (?, ?, ?, ?)', doc.setId, doc.featureId, doc.featureVersion, JSON.stringify(doc));
+        if (approvedBy && approvedAgo) this.db.run('INSERT INTO ads_config_set_approval (set_id, approved_by, approved_role, approved_at, reason) VALUES (?, ?, ?, ?, ?)', doc.setId, approvedBy, 'SAFETY_OFFICER', at(approvedAgo), approvalReason ?? '승인');
+      }
+      for (const m of fx.securityMins) {
+        this.db.run('INSERT INTO ads_security_min (entry_id, sw_id, version, rationale, proposed_by, proposed_at) VALUES (?, ?, ?, ?, ?, ?)', m.entryId, m.swId, m.version, m.rationale, m.proposedBy, at(m.proposedAgo));
+        if (m.approvedBy && m.approvedAgo) this.db.run('INSERT INTO ads_security_min_approval (entry_id, approved_by, approved_at, reason) VALUES (?, ?, ?, ?)', m.entryId, m.approvedBy, at(m.approvedAgo), m.approvalReason ?? '승인');
       }
       for (const r of fx.vehicleConfigs) {
         if (!this.fleet.vehicle(r.vin)) continue;
@@ -161,7 +178,7 @@ export class AdsConfigService implements OnModuleInit {
     const approved = this.approvedProfile(p.featureId, p.featureVersion);
     const allSettings = this.settings(p.featureId, p.featureVersion);
     const compile = [...new Set(allSettings.map((s) => s.flagKey))].map((flagKey) => ({ flagKey, against: approved?.profileId ?? null, blockers: oddCompileBlockers({ flagKey, settings: allSettings, profile: approved }) }));
-    const configSets = this.sets().filter((s) => s.oddProfileId === p.profileId).map((s) => s.setId);
+    const configSets = this.allSets().filter((s) => s.oddProfileId === p.profileId).map((s) => s.setId);
     return {
       profile: p,
       feature: f ? { featureId: p.featureId, version: p.featureVersion, name: f.name, lifecycle: f.lifecycle } : null,
@@ -266,13 +283,18 @@ export class AdsConfigService implements OnModuleInit {
   }
 
   // ── 승인 조합 ──
+  /** 승인된 조합만 — 대조·발행·지원 판정의 근거 */
   sets(): ConfigSet[] {
-    return this.db.all<{ doc: string }>('SELECT doc FROM ads_config_set ORDER BY set_id').map((r) => JSON.parse(r.doc) as ConfigSet);
+    return approvedConfigSets(this.db);
+  }
+  /** 승인 대기 포함 — 목록 */
+  allSets(): ConfigSet[] {
+    return readConfigSets(this.db);
   }
   private set(id: string): ConfigSet {
-    const r = this.db.get<{ doc: string }>('SELECT doc FROM ads_config_set WHERE set_id = ?', id);
-    if (!r) throw new DomainError('NOT_FOUND', `승인 조합 ${id}을(를) 찾을 수 없습니다.`);
-    return JSON.parse(r.doc) as ConfigSet;
+    const s = readConfigSet(this.db, id);
+    if (!s) throw new DomainError('NOT_FOUND', `승인 조합 ${id}을(를) 찾을 수 없습니다.`);
+    return s;
   }
   report(vin: string): VehicleConfigReport | null {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM ads_vehicle_config WHERE vin = ?', vin);
@@ -304,7 +326,8 @@ export class AdsConfigService implements OnModuleInit {
 
   listSets() {
     const sets = this.sets();
-    const items: ConfigSetListItem[] = sets.map((s) => {
+    // 승인 대기 조합도 행으로 보인다(차량 수는 승인 뒤 대조할 차량 미리보기) — 요약·차량 한 번 세기는 승인된 조합만
+    const items: ConfigSetListItem[] = this.allSets().map((s) => {
       const counts = COMPAT_ZERO();
       for (const r of this.rows(s)) counts[r.cls]++;
       return { ...s, featureName: this.features.get(s.featureId, s.featureVersion)?.name ?? null, counts };
@@ -315,7 +338,7 @@ export class AdsConfigService implements OnModuleInit {
     const rows = [...byVin.values()].map((cls) => ({ cls }));
     const counts = COMPAT_ZERO();
     for (const r of rows) counts[r.cls]++;
-    return { items, summary: { ...compatSummary(rows), counts }, staleAfterMs: CONFIG_REPORT_STALE_MS, unverified: this.unverifiedCombos(sets), decisions: this.recoveryDecisions().length };
+    return { items, summary: { ...compatSummary(rows), counts }, staleAfterMs: CONFIG_REPORT_STALE_MS, unverified: this.unverifiedCombos(sets), decisions: this.recoveryDecisions().length, pending: items.filter((s) => s.status !== 'APPROVED').length };
   }
 
   setVehicles(id: string) {
@@ -324,18 +347,26 @@ export class AdsConfigService implements OnModuleInit {
     return { set: { ...set, featureName: this.features.get(set.featureId, set.featureVersion)?.name ?? null }, items: rows, summary: compatSummary(rows), staleAfterMs: CONFIG_REPORT_STALE_MS, now: this.clock.iso() };
   }
 
-  /** 승인 조합 등록 — 차량 사양·Variant 담당. 보안 최소 버전 아래 ECU SW가 있으면 거부 */
+  /** 보안 최소 버전 검사 — 표(승인 값)를 하한으로, 본문 값은 올리기만. 표에 없는 SW·하한 아래 SW가 있으면 막힘 사유 */
+  private securityCheck(ecuSw: ConfigSet['ecuSw'], extra: ConfigSet['securityMin']) {
+    const table = securityMinTable(this.db);
+    const swIds = new Set(ecuSw.map((s) => s.swId));
+    const securityMin = mergeSecurityMin(table.filter((m) => swIds.has(m.swId)), extra);
+    const missing = unregisteredSecurityMin(ecuSw, table);
+    if (missing.length) return { securityMin, blocker: { code: 'SECURITY_MIN_UNREGISTERED', message: SECURITY_MIN_UNREGISTERED(missing), ref: missing.join(',') } };
+    const blocked = configSetRegistrationBlocker({ ecuSw, securityMin });
+    return { securityMin, blocker: blocked ? { code: 'SECURITY_MIN_VIOLATION', message: blocked, ref: ecuSw.map((s) => s.swId).join(',') } : null };
+  }
+
+  /** 승인 조합 등록(제안) — 차량 사양·Variant 담당. 보안 최소 버전 표 아래·표에 없는 ECU SW가 있으면 거부. 승인은 다른 사람(approveSet) */
   createSet(actor: Actor, body: CreateConfigSetBody) {
     const target = `${body.featureId}@${body.featureVersion}#config-set`;
     if (!this.features.get(body.featureId, body.featureVersion)) throw new DomainError('NOT_FOUND', `${body.featureId} ${body.featureVersion}을(를) 찾을 수 없습니다.`);
-    // 보안 최소 버전 하한 — 기존 승인 조합(같은 SW)의 최소 버전 아래로는 요청 본문이 낮출 수 없다(빠뜨리거나 낮춘 값은 하한으로 올린다)
-    const swIds = new Set(body.ecuSw.map((s) => s.swId));
-    const floor = this.sets().reduce((acc, s) => mergeSecurityMin(acc, s.securityMin.filter((m) => swIds.has(m.swId))), [] as ConfigSet['securityMin']);
-    const securityMin = mergeSecurityMin(floor, body.securityMin);
-    const blocked = configSetRegistrationBlocker({ ecuSw: body.ecuSw, securityMin });
-    if (blocked) {
-      this.audit.failed(actor, 'CONFIG_SET_CREATE', target, blocked, 'D02-01');
-      throw new DomainError('GUARD_FAILED', blocked, { blockers: [{ code: 'SECURITY_MIN_VIOLATION', message: blocked, ref: body.ecuSw.map((s) => s.swId).join(',') }] });
+    // 보안 최소 버전 하한 — 사이버보안 담당이 승인한 표가 정본, 요청 본문은 낮출 수 없다(빠뜨리거나 낮춘 값은 표 값으로 올린다)
+    const { securityMin, blocker } = this.securityCheck(body.ecuSw, body.securityMin);
+    if (blocker) {
+      this.audit.failed(actor, 'CONFIG_SET_CREATE', target, blocker.message, 'D02-01');
+      throw new DomainError('GUARD_FAILED', blocker.message, { blockers: [blocker] });
     }
     if (body.oddProfileId) {
       const p = this.profile(body.oddProfileId);
@@ -343,11 +374,78 @@ export class AdsConfigService implements OnModuleInit {
     }
     const n = this.db.all<{ set_id: string }>('SELECT set_id FROM ads_config_set WHERE feature_id = ?', body.featureId).length;
     const { reason, ...rest } = body;
-    const doc: ConfigSet = { ...rest, securityMin, setId: `CFG-${body.featureId}-${String(n + 1).padStart(2, '0')}`, status: 'APPROVED', approvedBy: actor.id, approvedAt: this.clock.iso() };
+    const doc: ConfigSet = { ...rest, securityMin, setId: `CFG-${body.featureId}-${String(n + 1).padStart(2, '0')}`, status: 'PROPOSED', proposedBy: actor.id, proposedAt: this.clock.iso(), approvedBy: null, approvedAt: null };
     return this.db.tx(() => {
       this.db.run('INSERT INTO ads_config_set (set_id, feature_id, feature_version, doc) VALUES (?, ?, ?, ?)', doc.setId, doc.featureId, doc.featureVersion, JSON.stringify(doc));
       this.audit.record(actor, 'CONFIG_SET_CREATE', doc.setId, { after: doc, reason, componentId: 'D02-01' });
       return doc;
+    });
+  }
+
+  /** 조합 승인 — 기능안전 담당, 제안자 본인 거부(직무 분리), 승인 시점의 보안 최소 버전 표로 다시 검사 */
+  approveSet(actor: Actor, id: string, body: ApproveConfigSetBody) {
+    const set = this.set(id);
+    const blocked = configSetApprovalBlocker(set, actor.id);
+    if (blocked?.code === 'ALREADY_APPROVED') {
+      this.audit.failed(actor, 'CONFIG_SET_APPROVE', id, blocked.message, 'D02-01');
+      throw new DomainError('CONFLICT', blocked.message);
+    }
+    if (blocked) {
+      this.audit.denied(actor, 'CONFIG_SET_APPROVE', id, blocked.message, 'D02-01');
+      throw new DomainError('SEPARATION_OF_DUTY', blocked.message);
+    }
+    const sec = this.securityCheck(set.ecuSw, set.securityMin).blocker;
+    if (sec) {
+      this.audit.failed(actor, 'CONFIG_SET_APPROVE', id, sec.message, 'D02-01');
+      throw new DomainError('GUARD_FAILED', sec.message, { blockers: [sec] });
+    }
+    const at = this.clock.iso();
+    return this.db.tx(() => {
+      this.db.run('INSERT INTO ads_config_set_approval (set_id, approved_by, approved_role, approved_at, reason) VALUES (?, ?, ?, ?, ?)', id, actor.id, actor.role, at, body.reason);
+      this.audit.record(actor, 'CONFIG_SET_APPROVE', id, { before: { status: set.status, proposedBy: set.proposedBy }, after: { status: 'APPROVED' }, reason: body.reason, componentId: 'D02-01' });
+      return this.set(id);
+    });
+  }
+
+  // ── 보안 최소 버전 표(사이버보안 담당 승인) ──
+  securityMins() {
+    const entries = readSecurityMins(this.db);
+    const current = securityMinTable(this.db);
+    const used = new Set(this.allSets().flatMap((s) => s.ecuSw.map((x) => x.swId)));
+    return { items: entries, current, pending: entries.filter((x) => x.status === 'PROPOSED').length, unregistered: [...used].filter((sw) => !current.some((m) => m.swId === sw)).sort() };
+  }
+
+  /** 제안 — 지금 하한보다 높은 값만(올리기만) */
+  proposeSecurityMin(actor: Actor, body: ProposeSecurityMinBody) {
+    const entries = readSecurityMins(this.db);
+    const blocked = securityMinProposalBlocker(entries, body.swId, body.version);
+    if (blocked) {
+      this.audit.failed(actor, 'SECURITY_MIN_PROPOSE', body.swId, blocked.message, 'D02-01');
+      throw new DomainError('GUARD_FAILED', blocked.message, { blockers: [{ code: blocked.code, message: blocked.message, ref: body.swId }] });
+    }
+    const entryId = `SMV-${String(entries.length + 1).padStart(4, '0')}`;
+    return this.db.tx(() => {
+      this.db.run('INSERT INTO ads_security_min (entry_id, sw_id, version, rationale, proposed_by, proposed_at) VALUES (?, ?, ?, ?, ?, ?)', entryId, body.swId, body.version, body.rationale, actor.id, this.clock.iso());
+      this.audit.record(actor, 'SECURITY_MIN_PROPOSE', entryId, { after: { swId: body.swId, version: body.version }, reason: body.rationale, componentId: 'D02-01' });
+      return readSecurityMins(this.db).find((x) => x.entryId === entryId)!;
+    });
+  }
+
+  /** 승인 — 사이버보안 담당, 제안자 본인 거부, 그 사이 같거나 높은 값이 승인됐으면 거부 */
+  approveSecurityMin(actor: Actor, id: string, body: ApproveSecurityMinBody) {
+    const entries = readSecurityMins(this.db);
+    const entry = entries.find((x) => x.entryId === id);
+    if (!entry) throw new DomainError('NOT_FOUND', `보안 최소 버전 ${id}을(를) 찾을 수 없습니다.`);
+    const blocked = securityMinApprovalBlocker(entries, entry, actor.id);
+    if (blocked) {
+      if (blocked.code === 'SELF_APPROVAL') this.audit.denied(actor, 'SECURITY_MIN_APPROVE', id, blocked.message, 'D02-01');
+      else this.audit.failed(actor, 'SECURITY_MIN_APPROVE', id, blocked.message, 'D02-01');
+      throw new DomainError(blocked.code === 'SELF_APPROVAL' ? 'SEPARATION_OF_DUTY' : blocked.code === 'ALREADY_APPROVED' ? 'CONFLICT' : 'GUARD_FAILED', blocked.message, { blockers: [{ code: blocked.code, message: blocked.message, ref: id }] });
+    }
+    return this.db.tx(() => {
+      this.db.run('INSERT INTO ads_security_min_approval (entry_id, approved_by, approved_at, reason) VALUES (?, ?, ?, ?)', id, actor.id, this.clock.iso(), body.reason);
+      this.audit.record(actor, 'SECURITY_MIN_APPROVE', id, { before: { status: 'PROPOSED' }, after: { status: 'APPROVED', swId: entry.swId, version: entry.version }, reason: body.reason, componentId: 'D02-01' });
+      return readSecurityMins(this.db).find((x) => x.entryId === id)!;
     });
   }
 
@@ -382,6 +480,7 @@ export class AdsConfigService implements OnModuleInit {
   createRecoveryDecision(actor: Actor, body: RecoveryDecisionBody) {
     if (!this.fleet.vehicle(body.vin)) throw new DomainError('NOT_FOUND', `차량 ${body.vin}을(를) 찾을 수 없습니다.`);
     const set = this.set(body.configSetRef);
+    if (set.status !== 'APPROVED') throw new DomainError('GUARD_FAILED', `승인 조합 ${set.setId}이(가) 승인 전입니다 — 승인된 조합만 복구 기준으로 씁니다.`);
     if (body.path === 'RESTORE_PREVIOUS' && !body.candidatePublicationId) throw new DomainError('VALIDATION', '승인 조합으로 복구하려면 복구 후보 게시본(candidatePublicationId)을 고르세요.');
     const now = this.clock.now().getTime();
     const report = this.report(body.vin);
@@ -443,6 +542,32 @@ export class AdsConfigController {
   @AuditAction('CONFIG_SET_CREATE')
   create(@CurrentActor() actor: Actor, @Body(new ZodPipe(CreateConfigSetBody)) body: CreateConfigSetBody) {
     return this.ads.createSet(actor, body);
+  }
+
+  @Post('config-sets/:id/approve')
+  @Roles('SAFETY_OFFICER')
+  @AuditAction('CONFIG_SET_APPROVE')
+  approveSet(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(ApproveConfigSetBody)) body: ApproveConfigSetBody) {
+    return this.ads.approveSet(actor, id, body);
+  }
+
+  @Get('security-mins')
+  securityMins() {
+    return this.ads.securityMins();
+  }
+
+  @Post('security-mins')
+  @Roles('SECURITY_OFFICER', 'VARIANT_OWNER')
+  @AuditAction('SECURITY_MIN_PROPOSE')
+  proposeSecurityMin(@CurrentActor() actor: Actor, @Body(new ZodPipe(ProposeSecurityMinBody)) body: ProposeSecurityMinBody) {
+    return this.ads.proposeSecurityMin(actor, body);
+  }
+
+  @Post('security-mins/:id/approve')
+  @Roles('SECURITY_OFFICER')
+  @AuditAction('SECURITY_MIN_APPROVE')
+  approveSecurityMin(@CurrentActor() actor: Actor, @Param('id') id: string, @Body(new ZodPipe(ApproveSecurityMinBody)) body: ApproveSecurityMinBody) {
+    return this.ads.approveSecurityMin(actor, id, body);
   }
 
   @Get('config-sets/:id/vehicles')

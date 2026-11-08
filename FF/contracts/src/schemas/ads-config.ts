@@ -25,3 +25,15 @@ export const CreateConfigSetBody = z
   })
   .strict();
 export type CreateConfigSetBody = z.infer<typeof CreateConfigSetBody>;
+
+/** 승인 조합 승인(기능안전 담당, 제안자 본인 제외) — 사유 필수 */
+export const ApproveConfigSetBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
+export type ApproveConfigSetBody = z.infer<typeof ApproveConfigSetBody>;
+
+/** 보안 최소 버전 제안 — 앞자리 0 버전은 받지 않는다(비교할 수 없어 하한 검사를 지나가던 결함 회귀) */
+export const ProposeSecurityMinBody = z.object({ swId: z.string().min(3).max(60), version: Ver, rationale: z.string().trim().min(2).max(500) }).strict();
+export type ProposeSecurityMinBody = z.infer<typeof ProposeSecurityMinBody>;
+
+/** 보안 최소 버전 승인(사이버보안 담당, 제안자 본인 제외) — 사유 필수 */
+export const ApproveSecurityMinBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
+export type ApproveSecurityMinBody = z.infer<typeof ApproveSecurityMinBody>;

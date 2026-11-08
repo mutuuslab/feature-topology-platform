@@ -1,6 +1,6 @@
 // Feature 분류 보강·시장 기준선(ADS-BE16) — ADS 여부·DDT 영향·안전 관련성·담당·상태별 책임자와 시장별 승인 유형·규정 series·승인 ODD 프로파일.
 // 완결성은 확정(CONFIRMED) 여부만 본다 — 출처(INFERRED)는 판정에 쓰지 않는다(추정값은 미분류로 센다).
-// 출시 전이 거부 규칙(CLS_UNREGISTERED)은 분류 행이 있는 Version(분류 대상 등록)에 켠다 — 행이 없는 Version은 목록·사유만(전체 적용은 결정 대기, 설계 2단계 전환).
+// 출시 전이 거부 규칙(CLS_UNREGISTERED)은 모든 Version에 켠다(2026-11-07 결정 — 미분류를 채운 뒤 전체 적용, ads-release-guard.ts).
 // 입력(Feature 작성자)·확정(기능안전 담당, 확정 서명 = 축 값·담당·상태별 책임자)·시장 기준선 입력(법규 담당)·상태별 책임자 지정 이력(추가만).
 // 시드는 AdsChangeService(D06-05)가 data/fixtures/ads/change.json에서 싣는다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Param, Post, Put, Query } from '@nestjs/common';
@@ -46,7 +46,7 @@ export class AdsClassificationService {
     if (!f) throw new DomainError('NOT_FOUND', `${featureId} ${version}이(가) 없습니다.`);
     const c = this.get(featureId, version);
     const sp = this.db.get<{ status: string }>('SELECT status FROM safety_profile WHERE feature_id = ? AND version = ?', featureId, version);
-    return { featureId, version, lifecycle: f.lifecycle, classification: c, completeness: classificationCompleteness(c), baselines: this.baselines({ featureId, version }), safetyProfileStatus: sp?.status ?? null, ruleEnabled: !!c, ownerHistory: this.ownerHistory(featureId, version) };
+    return { featureId, version, lifecycle: f.lifecycle, classification: c, completeness: classificationCompleteness(c), baselines: this.baselines({ featureId, version }), safetyProfileStatus: sp?.status ?? null, ruleEnabled: true, ownerHistory: this.ownerHistory(featureId, version) };
   }
 
   /** 미분류 Feature — 출시 전 Feature(최신 Version)의 축별 빈칸. 행이 없으면 모든 축이 빈칸 */
@@ -63,7 +63,7 @@ export class AdsClassificationService {
       if (!c.classified) items.push({ featureId: f.featureId, version: f.version, name: f.name, lifecycle: f.lifecycle, ownerId: f.ownerId, gaps: c.gaps, inferred: c.inferred });
     }
     items.sort((a, b) => (a.featureId < b.featureId ? -1 : a.featureId > b.featureId ? 1 : 0));
-    return { items, scope: scope.length, ruleEnabled: false };
+    return { items, scope: scope.length, ruleEnabled: true };
   }
 
   /** 상태별 책임자 지정 이력(feature_lifecycle_owner) — 추가만 */

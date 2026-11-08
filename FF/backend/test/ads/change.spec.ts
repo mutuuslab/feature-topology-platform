@@ -85,25 +85,24 @@ describe('Feature 분류·시장 기준선 (ADS-BE16)', () => {
     expect(v.baselines.every((b) => b.oddProfileRef === 'ODD-FEAT-00004-v1')).toBe(true);
   });
 
-  it('미분류 목록 — 추정(INFERRED) 초안은 확정 전이라 미분류로 세고, 행이 없는 Feature는 모든 축이 빈칸', async () => {
+  it('미분류 목록 — 추정(INFERRED) 초안은 확정 전이라 미분류로 센다(빈칸은 분류 시드로 채웠고 규칙은 전체 적용)', async () => {
     const u = (await app.http().get('/api/classification/unclassified').expect(200)).body as UnclassifiedView;
     expect(u.items.length).toBeGreaterThan(0);
-    expect(u.ruleEnabled).toBe(false);
+    expect(u.ruleEnabled).toBe(true);
     const ids = u.items.map((x) => x.featureId);
     expect(ids).not.toContain('FEAT-00001'); // 확정
     const inferred = u.items.find((x) => x.featureId === 'FEAT-00010')!;
     expect(inferred).toMatchObject({ inferred: true, gaps: ['CONFIRM'] });
     expect(u.items.find((x) => x.featureId === 'FEAT-00019')!.gaps).toEqual(expect.arrayContaining(['DDT', 'LIFECYCLE_OWNER', 'CONFIRM']));
-    expect(u.items.find((x) => x.featureId === 'FEAT-00013')!.gaps).toHaveLength(6);
+    expect(ids).not.toContain('FEAT-00013'); // 분류 시드로 채움(2026-11-07 B10)
     // 출시한 Feature는 점검 범위 밖
     expect(ids).not.toContain('FEAT-00004');
   });
 
-  it('출시 전이 거부 규칙은 켜지 않았다 — 미분류 Feature도 서버가 전이를 지금 막지는 않는다(목록·사유만)', async () => {
+  it('출시 전이 거부 규칙은 모든 Version에 켜져 있다 — 분류 시드로 채운 Version은 분류됨(B10 전체 적용)', async () => {
     const v = (await app.http().get('/api/features/FEAT-00013/versions/0.3.0/classification').expect(200)).body as ClassificationView;
-    expect(v.completeness.classified).toBe(false);
-    expect(v.classification).toBeNull();
-    expect(v.ruleEnabled).toBe(false);
+    expect(v.completeness.classified).toBe(true);
+    expect(v.ruleEnabled).toBe(true);
   });
 });
 

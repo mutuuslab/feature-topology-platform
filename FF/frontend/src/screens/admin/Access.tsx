@@ -13,6 +13,7 @@ import { configLinks } from '../../copy/ads-config';
 import { AsyncView, DataTable, Field, KeyValue, PageHeader, Panel, RuleText, SummaryLine, VerdictBadge } from '../../design';
 import { CodeFreeText, ComponentName, when } from '../shared';
 import { AccountsPanel } from './AccountsPanel';
+import { RoleScopePanel } from './RoleScopes';
 
 const I = ko.iam;
 const VC = ko.variant;
@@ -130,6 +131,7 @@ export function IamScreen() {
         </Panel>
       </div>
       <AccountsPanel />
+      <RoleScopePanel />
     </div>
   );
 }

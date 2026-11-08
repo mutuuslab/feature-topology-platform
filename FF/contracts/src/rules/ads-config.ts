@@ -290,9 +290,13 @@ export interface ConfigSet {
   flagKey: string | null;
   /** 보안 최소 버전(anti-rollback 하한) — SW별 */
   securityMin: { swId: string; version: string }[];
-  status: 'APPROVED';
-  approvedBy: string;
-  approvedAt: string;
+  /** 등록 = 제안(PROPOSED), 다른 사람이 승인해야 대조·발행 근거(rules/ads-config-approval.ts) */
+  status: 'PROPOSED' | 'APPROVED';
+  proposedBy: string | null;
+  proposedAt: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  approvalReason?: string | null;
 }
 export interface VehicleConfigReport {
   vin: string;

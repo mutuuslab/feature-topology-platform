@@ -43,3 +43,9 @@ export * from './schemas/vehicle-message.vectors';
 export * from './rules/ota-reconcile';
 
 export * from './rules/policy-cache';
+
+export * from './rules/ads-config-approval';
+
+export * from './rules/role-scope';
+
+export * from './schemas/role-scope';

@@ -404,8 +404,8 @@ export interface UnclassifiedView {
   items: UnclassifiedRow[];
   /** 점검 범위 — 출시 전 Feature(최신 Version, RELEASED·DEPRECATED·RETIRED 제외) */
   scope: number;
-  /** 거부 규칙은 아직 켜지 않았다(목록·사유만) */
-  ruleEnabled: false;
+  /** 출시 전이 거부 규칙 — 모든 Version에 켜져 있다(미분류면 출시 거부, 2026-11-07 전체 적용) */
+  ruleEnabled: boolean;
 }
 
 /** 시장 기준선 — 시장별 승인 유형·규정 series·승인 ODD 프로파일 */
@@ -432,7 +432,7 @@ export interface ClassificationView {
   baselines: MarketBaseline[];
   /** 안전 분류(보고서 v1.1) 확정 상태 — 참고 */
   safetyProfileStatus: string | null;
-  /** 출시 전이 거부 규칙 — 분류 행이 있는 Version(분류 대상 등록)에서 켜진다(ADS-BE16) */
+  /** 출시 전이 거부 규칙 — 모든 Version에 켜져 있다(ADS-BE16, 2026-11-07 전체 적용) */
   ruleEnabled: boolean;
   /** 상태별 책임자 지정 이력(추가만) */
   ownerHistory?: { state: string; ownerId: string | null; assignedAt: string; assignedBy: string }[];

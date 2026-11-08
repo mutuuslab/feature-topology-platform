@@ -139,8 +139,11 @@
         { "swId": "SW-HDA2-APP", "version": "4.0.5" },
         { "swId": "SW-ADAS-FW", "version": "11.0.0" }
       ],
-      "approvedBy": "usr-variant",
-      "approvedAgo": { "days": 28 }
+      "approvedBy": "usr-quality",
+      "approvedAgo": { "days": 28 },
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 30 },
+      "approvalReason": "형상·보안 최소 버전 확인 — 독립 승인"
     },
     {
       "setId": "CFG-FEAT-00022-01",
@@ -164,8 +167,35 @@
         { "swId": "SW-CARE-SCC-ADP", "version": "2.3.0" },
         { "swId": "SW-CAMERA-FW", "version": "8.0.0" }
       ],
-      "approvedBy": "usr-variant",
-      "approvedAgo": { "days": 50 }
+      "approvedBy": "usr-quality",
+      "approvedAgo": { "days": 50 },
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 52 },
+      "approvalReason": "형상·보안 최소 버전 확인 — 독립 승인"
+    },
+    {
+      "setId": "CFG-FEAT-00004-02",
+      "featureId": "FEAT-00004",
+      "featureVersion": "4.1.0",
+      "hw": [{ "ecuPno": "99211-GN700", "hwRevision": "Rev.B" }],
+      "ecuSw": [
+        { "ecuPno": "99211-GN700", "swId": "SW-HDA2-APP", "version": "4.1.2" },
+        { "ecuPno": "99211-GN700", "swId": "SW-ADAS-FW", "version": "11.0.0" },
+        { "ecuPno": "99211-GN700", "swId": "SW-RADAR-SVC", "version": "4.2.0" }
+      ],
+      "model": { "id": "MDL-HDA2-PERCEPTION", "version": "3.2.0" },
+      "calibration": { "id": "CAL-GN7-HDA2", "version": "2026.09" },
+      "oddProfileId": "ODD-FEAT-00004-v1",
+      "flagKey": "hda2_00004_speed",
+      "securityMin": [
+        { "swId": "SW-HDA2-APP", "version": "4.0.5" },
+        { "swId": "SW-ADAS-FW", "version": "11.0.0" }
+      ],
+      "approvedBy": null,
+      "approvedAgo": null,
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "hours": 6 },
+      "approvalReason": null
     }
   ],
   "vehicleConfigs": [
@@ -262,6 +292,114 @@
       "calibration": { "id": "CAL-GN7-HDA2", "version": "2026.09" },
       "recovery": null,
       "recoveryCandidate": { "swId": "SW-HDA2-APP", "version": "4.0.5" }
+    }
+  ],
+  "securityMins": [
+    {
+      "entryId": "SMV-0001",
+      "swId": "SW-HDA2-APP",
+      "version": "4.0.5",
+      "rationale": "HDA2 앱 취약점 대응 반영 버전",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 41 },
+      "approvedBy": "usr-integrator",
+      "approvedAgo": { "days": 40 },
+      "approvalReason": "취약점 대응 기준 확인"
+    },
+    {
+      "entryId": "SMV-0002",
+      "swId": "SW-ADAS-FW",
+      "version": "11.0.0",
+      "rationale": "ADAS 펌웨어 보안 부팅 적용 버전",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 41 },
+      "approvedBy": "usr-integrator",
+      "approvedAgo": { "days": 40 },
+      "approvalReason": "취약점 대응 기준 확인"
+    },
+    {
+      "entryId": "SMV-0003",
+      "swId": "SW-RADAR-SVC",
+      "version": "4.0.0",
+      "rationale": "레이더 서비스 통신 인증 적용 버전",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 41 },
+      "approvedBy": "usr-integrator",
+      "approvedAgo": { "days": 40 },
+      "approvalReason": "취약점 대응 기준 확인"
+    },
+    {
+      "entryId": "SMV-0004",
+      "swId": "SW-CARE-SDIST-APP",
+      "version": "1.2.0",
+      "rationale": "차간 거리 앱 입력 검증 보강 버전",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 61 },
+      "approvedBy": "usr-integrator",
+      "approvedAgo": { "days": 60 },
+      "approvalReason": "취약점 대응 기준 확인"
+    },
+    {
+      "entryId": "SMV-0005",
+      "swId": "SW-CARE-SCC-ADP",
+      "version": "2.3.0",
+      "rationale": "SCC 어댑터 서명 검증 적용 버전",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 61 },
+      "approvedBy": "usr-integrator",
+      "approvedAgo": { "days": 60 },
+      "approvalReason": "취약점 대응 기준 확인"
+    },
+    {
+      "entryId": "SMV-0006",
+      "swId": "SW-CAMERA-FW",
+      "version": "8.0.0",
+      "rationale": "카메라 펌웨어 롤백 방지 적용 버전",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "days": 61 },
+      "approvedBy": "usr-integrator",
+      "approvedAgo": { "days": 60 },
+      "approvalReason": "취약점 대응 기준 확인"
+    },
+    {
+      "entryId": "SMV-0007",
+      "swId": "SW-CAMERA-FW",
+      "version": "8.1.0",
+      "rationale": "카메라 펌웨어 원격 진단 포트 취약점 대응",
+      "proposedBy": "usr-steward",
+      "proposedAgo": { "hours": 20 },
+      "approvedBy": null,
+      "approvedAgo": null,
+      "approvalReason": null
+    }
+  ],
+  "roleScopes": [
+    {
+      "accountId": "usr-operator",
+      "markets": ["KR", "EU", "US", "CA", "AU", "ME"],
+      "featureIds": null,
+      "environments": ["demo", "staging"],
+      "assignedBy": "usr-integrator",
+      "assignedAgo": { "days": 30 },
+      "reason": "일본 시장 운영은 현지 운영 조직 담당"
+    },
+    {
+      "accountId": "usr-coordinator",
+      "markets": null,
+      "featureIds": null,
+      "environments": ["demo", "staging"],
+      "assignedBy": "usr-integrator",
+      "assignedAgo": { "days": 30 },
+      "reason": "운영 환경 배포는 출시 승인 절차를 거친 계정만"
+    },
+    {
+      "accountId": "usr-viewer",
+      "markets": null,
+      "featureIds": null,
+      "environments": ["demo"],
+      "assignedBy": "usr-integrator",
+      "assignedAgo": { "days": 30 },
+      "reason": "분석 전용 — 명령 권한 없음, 조회 환경 한정"
     }
   ],
   "productMarketApprovals": [

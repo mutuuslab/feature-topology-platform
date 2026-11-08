@@ -28,6 +28,7 @@ import { Clock } from '../../../kernel/clock';
 import { DB, type Db } from '../../../kernel/db';
 import { FleetRepo } from '../../d01-policy/policy-repos';
 import { FeatureRepo } from '../../d01-policy/repos';
+import { approvedConfigSets } from './config-set-store';
 
 const parse = <T>(r: { doc: string } | undefined): T | null => (r ? (JSON.parse(r.doc) as T) : null);
 
@@ -47,8 +48,9 @@ export class AdsPublishGate {
     private readonly fleet: FleetRepo,
   ) {}
 
+  /** 승인된 조합만 — 승인 대기(제안) 조합은 발행 후보 계산에 쓰지 않는다 */
   sets(featureId: string, version: string): ConfigSet[] {
-    return this.db.all<{ doc: string }>('SELECT doc FROM ads_config_set WHERE feature_id = ? AND feature_version = ? ORDER BY set_id', featureId, version).map((r) => JSON.parse(r.doc) as ConfigSet);
+    return approvedConfigSets(this.db, featureId, version);
   }
   report(vin: string): VehicleConfigReport | null {
     return parse<VehicleConfigReport>(this.db.get<{ doc: string }>('SELECT doc FROM ads_vehicle_config WHERE vin = ?', vin));
@@ -126,7 +128,7 @@ export class AdsPublishGate {
     const v = this.fleet.vehicle(vin);
     const now = this.clock.now().getTime();
     const byFeature = new Map<string, ConfigSet[]>();
-    for (const s of this.db.all<{ doc: string }>('SELECT doc FROM ads_config_set ORDER BY set_id').map((r) => JSON.parse(r.doc) as ConfigSet)) {
+    for (const s of approvedConfigSets(this.db)) {
       const f = this.features.get(s.featureId, s.featureVersion);
       if (!v || !f || f.country !== v.country || f.vehicleModel !== v.vehicleModel || f.trim !== v.trim) continue;
       const k = `${s.featureId}@${s.featureVersion}`;

@@ -1,3 +1,5 @@
+import { PutRoleScopeBody } from './schemas/role-scope';
+import { ApproveConfigSetBody, ApproveSecurityMinBody, ProposeSecurityMinBody } from './schemas/ads-config';
 import { CreateExceptionBody, EXCEPTION_APPROVER_ROLES, EXCEPTION_REQUEST_ROLES, ExceptionDecisionBody, ExceptionRevokeBody } from './schemas/exception-policy';
 import { SoftwarePackageBody, SoftwarePackageDecisionBody, SoftwareDownloadCheckBody } from './schemas/software-delivery';
 // API 경로 목록 — 단일 기준. 백엔드 실제 라우트와 다르면 테스트가 실패하고(backend/test/routes.spec.ts),
@@ -762,6 +764,12 @@ export const ROUTES: RouteDef[] = [
   { name: 'decideExceptionPolicy', method: 'POST', path: '/api/exceptions/:id/decision', summary: '예외 승인·반려 — 요청자 제외 서로 다른 두 사람, 승인자 지정 만료 일시', component: 'D03-02', roles: [...EXCEPTION_APPROVER_ROLES], body: ExceptionDecisionBody },
   { name: 'revokeExceptionPolicy', method: 'POST', path: '/api/exceptions/:id/revoke', summary: '예외 회수 — 이전 정책 상태로 원복', component: 'D03-02', roles: [...EXCEPTION_REQUEST_ROLES, ...EXCEPTION_APPROVER_ROLES], body: ExceptionRevokeBody },
   { name: 'policyReleaseGate', method: 'GET', path: '/api/policies/:id/release-gate', summary: '출시 전 배포 판정 — 출시 전 Version은 Shadow만, Gate 예외 제한 범위', component: 'D03-02' },
+  { name: 'approveConfigSet', method: 'POST', path: '/api/config-sets/:id/approve', summary: '승인 조합 승인 — 제안자 본인 제외, 보안 최소 버전 표 재확인', component: 'D02-01', roles: ['SAFETY_OFFICER'], body: ApproveConfigSetBody },
+  { name: 'securityMins', method: 'GET', path: '/api/security-mins', summary: '보안 최소 버전 표 — SW별 지금 하한·제안·승인 이력', component: 'D02-01' },
+  { name: 'proposeSecurityMin', method: 'POST', path: '/api/security-mins', summary: '보안 최소 버전 제안(올리기만)', component: 'D02-01', roles: ['SECURITY_OFFICER', 'VARIANT_OWNER'], body: ProposeSecurityMinBody },
+  { name: 'approveSecurityMin', method: 'POST', path: '/api/security-mins/:id/approve', summary: '보안 최소 버전 승인 — 사이버보안 담당, 제안자 본인 제외', component: 'D02-01', roles: ['SECURITY_OFFICER'], body: ApproveSecurityMinBody },
+  { name: 'roleScopes', method: 'GET', path: '/api/iam/scopes', summary: '권한 범위 — 계정별 시장·Feature·환경(종료·해제·발행 명령에 적용)', component: 'D06-09' },
+  { name: 'putRoleScope', method: 'PUT', path: '/api/iam/scopes/:accountId', summary: '권한 범위 지정(추가만 이력)', component: 'D06-09', roles: ['SECURITY_OFFICER'], body: PutRoleScopeBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

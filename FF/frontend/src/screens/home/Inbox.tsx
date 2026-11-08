@@ -326,7 +326,7 @@ export function DefineScreen() {
   const D = masterCopy.define;
   const q = useApi<{ items: { featureId: string; version: string; name: string; lifecycle: string; ownerId: string; gates?: Record<string, string> }[] }>('listFeatures', { query: { latestOnly: true } });
   const rows = (q.data?.items ?? []).filter((f) => f.lifecycle !== 'RELEASED' && f.lifecycle !== 'RETIRED' && f.lifecycle !== 'DEPRECATED');
-  // 미분류 Feature — 출시 전이 거부 규칙을 켜기 전 점검(규칙은 켜지 않는다)
+  // 미분류 Feature — 출시 전이 거부 규칙(모든 Version 적용)에 걸릴 Version을 미리 보인다
   const u = useApi<UnclassifiedView>('adsUnclassified');
   const unclassified = Array.isArray(u.data?.items) ? u.data!.items : null;
   const byKey = new Map((unclassified ?? []).map((x) => [`${x.featureId}@${x.version}`, x]));

@@ -12,6 +12,7 @@ const migrationUrl = new URL('../backend/src/kernel/migrations.ts', import.meta.
 const sourceHook = registerHooks({ resolve(specifier,context,next) {
   // Backend emits extensionless CommonJS imports. Only this source entry's local migration modules need a TS suffix here.
   if(context.parentURL===migrationUrl&&/^\.\/migrations-[a-z-]+$/.test(specifier))return next(`${specifier}.ts`,context);
+  if(context.parentURL?.endsWith('/kernel/migrations-cost-reference.ts')&&specifier==='./pg-dialect')return next('./pg-dialect.ts',context);
   return next(specifier,context);
 } });
 const { MIGRATIONS } = (await import(new URL('../backend/src/kernel/migrations.ts', import.meta.url).href)) as { MIGRATIONS: { name: string; sql: string }[] };

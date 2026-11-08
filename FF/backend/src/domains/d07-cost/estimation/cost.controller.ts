@@ -1,8 +1,11 @@
 // SW 개발비 산정 API(D07-01) — 경로는 contracts ROUTES(cost*). 읽기는 모든 역할이지만 금액은 산정 역할만(서버 투영, 20-94 §4).
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Res, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
 import {
   AddCostFeatureBody,
+  AddCostReferenceBody,
+  UpdateCostReferenceBody,
+  COST_MONEY_ROLES,
   CostBasisDraftBody,
   CostTransitionBody,
   CreateCostProjectBody,
@@ -59,6 +62,28 @@ export class CostController {
   update(@CurrentActor() actor: Actor, @Param('estId') estId: string, @Body(new ZodPipe(UpdateCostProjectBody)) body: UpdateCostProjectBody) {
     return this.s.update(actor, estId, body);
   }
+
+  @Get('references/:refId')
+  @Roles(...COST_MONEY_ROLES)
+  reference(@CurrentActor() actor:Actor,@Param('refId') refId:string,@Query('basisVersion') basisVersion?:string) {return this.s.reference(actor,refId,basisVersion);}
+
+  @Get('projects/:estId/lines/:lineNo/sources/:revision')
+  referenceHistory(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Param('lineNo',ParseIntPipe) lineNo:number,@Param('revision',ParseIntPipe) revision:number) {return this.s.referenceHistory(actor,estId,lineNo,revision);}
+
+  @Post('projects/:estId/references')
+  @Roles('COST_ESTIMATOR')
+  @AuditAction('COST_REFERENCE_ADD')
+  addReference(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Body(new ZodPipe(AddCostReferenceBody)) body:AddCostReferenceBody) {return this.s.addReference(actor,estId,body);}
+
+  @Patch('projects/:estId/lines/:lineNo/source')
+  @Roles('COST_ESTIMATOR')
+  @AuditAction('COST_REFERENCE_UPDATE')
+  updateReference(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Param('lineNo',ParseIntPipe) lineNo:number,@Body(new ZodPipe(UpdateCostReferenceBody)) body:UpdateCostReferenceBody) {return this.s.updateReference(actor,estId,lineNo,body);}
+
+  @Delete('projects/:estId/lines/:lineNo')
+  @Roles('COST_ESTIMATOR')
+  @AuditAction('COST_LINE_REMOVE')
+  removeLine(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Param('lineNo',ParseIntPipe) lineNo:number) {return this.s.removeLine(actor,estId,lineNo);}
 
   @Post('projects/:estId/features')
   @Roles('COST_ESTIMATOR')

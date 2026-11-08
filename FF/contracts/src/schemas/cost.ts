@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { Asil, ROLES, type Role } from '../enums';
 import { patchOf } from './patch';
+import { RefId,RefReleaseId } from './refdb';
 import { DIRECT_PRESET, RATE_BASES, type CostEstimate, type CostSettings } from '../rules/cost/engine';
 
 /** 금액을 보는 역할 — 그 밖의 역할은 공수(M/M)만 본다(서버가 직렬화 전에 뺀다) */
@@ -57,6 +58,17 @@ export function costEngineSettings(s: CostSettingsInput): CostSettings {
   };
 }
 
+/** Source selection comes from GET costReference; optional Feature association is always a real matching record. */
+export const CostReferenceSelection = z.object({
+ refId:RefId,refRelease:RefReleaseId,referenceSha256:z.string().regex(/^[a-f0-9]{64}$/),
+ feature:z.object({featureId:z.string().regex(/^FEAT-\d{5}$/),version:z.string().regex(/^\d+\.\d+\.\d+$/),sha256:z.string().regex(/^[a-f0-9]{64}$/)}).strict().nullable().default(null),
+}).strict();
+export type CostReferenceSelection = z.infer<typeof CostReferenceSelection>;
+export const AddCostReferenceBody=CostReferenceSelection;
+export type AddCostReferenceBody=z.infer<typeof AddCostReferenceBody>;
+export const UpdateCostReferenceBody=z.object({selection:CostReferenceSelection,revision:z.number().int().nonnegative(),reason:z.string().trim().min(2).max(500)}).strict();
+export type UpdateCostReferenceBody=z.infer<typeof UpdateCostReferenceBody>;
+
 export const CreateCostProjectBody = z
   .object({
     name: z.string().trim().min(1).max(200),
@@ -65,12 +77,14 @@ export const CreateCostProjectBody = z
     /** 과제 통화(D-COST-10) — 계산은 원화, 표시만 환산. 계수 표의 환율 목록에 있어야 한다 */
     currency: z.string().length(3).default('KRW'),
     settings: CostSettingsInput.default(CostSettingsInput.parse({})),
+    /** New UI creates its initial reference lines atomically. Omission retains legacy API draft compatibility. */
+    references:z.array(CostReferenceSelection).min(1).max(50).optional(),
   })
   .strict();
 export type CreateCostProjectBody = z.infer<typeof CreateCostProjectBody>;
 
 /** DRAFT 과제 수정 — useLatestBasis면 최신 발행 계수 표·Feature DB 발행으로 다시 맞춘다(§6.4) */
-export const UpdateCostProjectBody = patchOf(CreateCostProjectBody.extend({ settings: CostSettingsInput }))
+export const UpdateCostProjectBody = patchOf(CreateCostProjectBody.omit({references:true}).extend({ settings: CostSettingsInput }))
   .extend({ useLatestBasis: z.literal(true).optional() })
   .strict();
 export type UpdateCostProjectBody = z.infer<typeof UpdateCostProjectBody>;

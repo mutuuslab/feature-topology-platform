@@ -100,6 +100,7 @@
     "231_kill_intake": "11950fe8da54c9b0cfb867cfec2d1aebebb4b24bfda588ad37d1b15cca41baeb",
     "232_deactivation_check": "1d58a86dca51d41c780b8b2a1f54f430cb4cd5250a18631c536e661aaa77a4ba",
     "233_termination_inhibit": "f12b79b9a8f3fba176f4d0361384fad2f57430564886f47f82ca890e95b6206a",
-    "234_impact_set": "1aa4e1ba2626998729c23b801df0d50229ac3cf08ed1d592a24423e2b3b26f86"
+    "234_impact_set": "1aa4e1ba2626998729c23b801df0d50229ac3cf08ed1d592a24423e2b3b26f86",
+    "451_cost_reference_source": "567d7f7be39261788a36bb57b61b2e8fd28b091878a3fa05fa26d4068f08f53b"
   }
 }

@@ -21,6 +21,8 @@ import {
   type CostActualRow,
   refStatusPolicy,
   type AddCostFeatureBody,
+  type AddCostReferenceBody,
+  type UpdateCostReferenceBody,
   type CostBasisDraftBody,
   type CostEstimate,
   type CostLineInputs,
@@ -48,6 +50,7 @@ import { openFor, sealFor } from '../../../kernel/kms/secret-columns';
 import { columnValues, entryData, patchWorkbook, readZip, sharedStrings, sheetPaths } from '../../../kernel/xlsx-patch';
 import { exportCells, SHEET } from './cost-export';
 import { FeatureRepo } from '../../d01-policy/repos';
+import { CostReferenceStore } from './cost-reference.store';
 import { RefdbRepository } from '../../d01-policy/refdb/refdb.repository';
 
 /** 계수 표 첫 판 — 엑셀 산정 도구 v1.3에서 옮긴 것(npm run cost:basis). 빈 DB에 한 번 넣는다(제품 기준 정보, 데모 시드와 무관) */
@@ -70,10 +73,11 @@ export interface CostProjectDoc {
 }
 
 interface LineDoc {
-  featureId: string;
-  version: string;
+  featureId: string|null;
+  version: string|null;
   refId: string;
-  role: 'PRIMARY' | 'INCLUDED';
+  role: 'PRIMARY' | 'INCLUDED' | 'REFERENCE';
+  sourceRevision?:number;
   /** 담을 때의 Feature ASIL — 적용 ASIL이 비면 이 값(20-94 §5) */
   featureAsil: string;
   inputs: CostLineInputs;
@@ -93,6 +97,7 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 @Injectable()
 @PlatformComponent('D07-01')
 export class CostService implements OnModuleInit {
+  private readonly referenceStore:CostReferenceStore;
   private refsCache: { key: string; map: Map<string, CostRefFacts> } | null = null;
   private template: { buf: Buffer; basis: CostBasis; fdbRows: Map<string, number>; driverRows: Map<string, number> } | null = null;
 
@@ -103,7 +108,7 @@ export class CostService implements OnModuleInit {
     private readonly vault: SecretVault,
     private readonly features: FeatureRepo,
     private readonly refs: RefdbRepository,
-  ) {}
+  ) {this.referenceStore=new CostReferenceStore(db,refs,features,vault,clock,version=>this.openBasis(version));}
 
   /** 데모 시드 중 — 줄마다 상세를 다시 계산·열람 감사하지 않는다 */
   private quiet = false;
@@ -254,9 +259,18 @@ export class CostService implements OnModuleInit {
 
   private compute(doc: CostProjectDoc, estId: string): CostEstimate {
     const basis = this.openBasis(doc.basisVersion);
-    const lines = this.lines(estId).map((l) => ({ refId: l.refId, ...l.inputs, asil: l.inputs.asil ?? l.featureAsil }));
+    const sourceLines=this.lines(estId);
+    const refs=new Map(this.refFacts());
+    const hashes=new Map<string,string>();
+    for(const line of sourceLines) if(line.sourceRevision) {
+      const captured=this.referenceStore.load(estId,line.lineNo,line.sourceRevision);
+      const prior=hashes.get(line.refId);
+      if(prior && prior!==captured.metadata.referenceSha256) throw new DomainError('CONFLICT','같은 기준 행의 서로 다른 원천 개정이 섞여 있습니다 — 최신 기준으로 맞추세요.');
+      hashes.set(line.refId,captured.metadata.referenceSha256);refs.set(line.refId,captured.snapshot.facts);
+    }
+    const lines = sourceLines.map((l) => ({ refId: l.refId, ...l.inputs, asil: l.inputs.asil ?? l.featureAsil }));
     const settings = costEngineSettings(doc.settings);
-    return estimate({ basis, settings, lines, mbd: this.mbd(estId), refs: this.refFacts() });
+    return estimate({ basis, settings, lines, mbd: this.mbd(estId), refs });
   }
 
   /** 승인 때 고정한 결과(최신 rev) */
@@ -293,6 +307,7 @@ export class CostService implements OnModuleInit {
         basisVersion: doc.basisVersion,
         basisStale: doc.basisVersion !== this.latestBasisVersion(),
         featureCount,
+        referenceCount:new Set(this.lines(row.est_id).map(line=>line.refId)).size,
         totals,
         scope: this.scopeOf(row.est_id, refs),
         createdBy: row.created_by,
@@ -310,8 +325,8 @@ export class CostService implements OnModuleInit {
   private scopeOf(estId: string, refs: ReadonlyMap<string, { domain: string; component: string; tshirt: string }>) {
     const sets = { countries: new Set<string>(), vehicleModels: new Set<string>(), asils: new Set<string>(), tshirts: new Set<string>(), domains: new Set<string>(), components: new Set<string>() };
     for (const l of this.lines(estId)) {
-      const f = this.features.get(l.featureId, l.version);
-      const r = refs.get(l.refId);
+      const f = l.featureId && l.version ? this.features.get(l.featureId,l.version) : undefined;
+      const r = l.sourceRevision ? this.referenceStore.load(estId,l.lineNo,l.sourceRevision).snapshot.reference : refs.get(l.refId);
       if (f?.country) sets.countries.add(f.country);
       if (f?.vehicleModel) sets.vehicleModels.add(f.vehicleModel);
       const asil = l.inputs.asil ?? l.featureAsil;
@@ -353,7 +368,7 @@ export class CostService implements OnModuleInit {
     const facts = this.refFacts();
     const info = new Map(this.refs.listRefs({}).map((r) => [r.refId, { nameKo: r.nameKo, component: r.component, tshirt: r.tshirt, asilRep: r.asilRep }]));
     const basis = this.openBasis(doc.basisVersion);
-    const featureKeys = [...new Map(lines.map((l) => [`${l.featureId}@${l.version}`, l])).values()];
+    const featureKeys = [...new Map(lines.filter(line=>line.featureId && line.version).map((l) => [`${l.featureId}@${l.version}`, l])).values()];
     const results = this.db.all<{ rev: number; approved_by: string; approved_at: string; reason: string; basis_version: string; result_sha256: string }>(
       'SELECT rev, approved_by, approved_at, reason, basis_version, result_sha256 FROM cost_result WHERE est_id = ? ORDER BY rev',
       estId,
@@ -361,10 +376,14 @@ export class CostService implements OnModuleInit {
     if (canSeeCost(actor.role)) this.db.tx(() => this.audit.record(actor, 'COST_VIEW', estId, { after: { status: row.status, rev: doc.rev }, componentId: 'D07-01' }));
     return {
       project: { ...doc, settings: costSettingsView(doc.settings, actor.role), status: row.status, createdBy: row.created_by, createdAt: row.created_at, updatedAt: row.updated_at, latestBasisVersion: this.latestBasisVersion(), latestRefRelease: this.refs.latestRelease()?.release ?? null },
-      lines: lines.map((l) => ({ ...l, refStatus: this.refs.statusOf(l.refId) ?? null, refKnown: facts.has(l.refId), ref: info.get(l.refId) ?? null })),
+      lines: lines.map((l) => {
+        const source=l.sourceRevision?this.referenceStore.view(estId,l.lineNo,l.sourceRevision):null;
+        const r=source?.reference;
+        return {...l,source,refStatus:this.refs.statusOf(l.refId) ?? null,refKnown:facts.has(l.refId),ref:r?{nameKo:r.nameKo,component:r.component,tshirt:r.tshirt,asilRep:r.asilRep}:info.get(l.refId) ?? null};
+      }),
       features: featureKeys.map((l) => {
         const f = this.features.get(l.featureId, l.version);
-        return { featureId: l.featureId, version: l.version, name: f?.name ?? null, asil: l.featureAsil, lifecycle: f?.lifecycle ?? null };
+        return { featureId: l.featureId!, version: l.version!, name: f?.name ?? null, asil: l.featureAsil, lifecycle: f?.lifecycle ?? null };
       }),
       /** 화면 입력 목록 — 계수 표의 이름들(금액 없음) */
       options: {
@@ -387,7 +406,7 @@ export class CostService implements OnModuleInit {
       mre: result ? costMre(result.lines, new Map(actuals.map((r) => [r.refId, r.actual]))) : null,
       result,
       error,
-      approvals: results.map((r) => ({ rev: r.rev, approvedBy: r.approved_by, approvedAt: r.approved_at, reason: r.reason, basisVersion: r.basis_version, resultSha256: r.result_sha256 })),
+      approvals: results.map((r) => ({ rev: r.rev, approvedBy: r.approved_by, approvedAt: r.approved_at, reason: r.reason, basisVersion: r.basis_version, resultSha256: r.result_sha256, sources:this.db.all<{line_no:number;source_revision:number}>('SELECT line_no,source_revision FROM cost_approval_source WHERE est_id=? AND approval_rev=? ORDER BY line_no',estId,r.rev).map(source=>({lineNo:source.line_no,revision:source.source_revision})) })),
       view: canSeeCost(actor.role) ? ('FULL' as const) : ('MM_ONLY' as const),
     };
   }
@@ -420,6 +439,7 @@ export class CostService implements OnModuleInit {
       const estId = this.nextEstId();
       const doc: CostProjectDoc = { estId, name: body.name, target: body.target, currency: body.currency, settings, basisVersion, refRelease: this.refs.latestRelease()?.release ?? null, rev: 0, lastReason: null };
       this.db.run("INSERT INTO cost_project (est_id, status, created_by, created_at, updated_at, doc) VALUES (?, 'DRAFT', ?, ?, ?, ?)", estId, actor.id, at, at, JSON.stringify(doc));
+      for(const selection of body.references ?? []) this.appendReference(actor,estId,doc,selection,'Feature DB 기준으로 산정 시작');
       this.audit.record(actor, 'COST_PROJECT_CREATE', estId, { after: { name: doc.name, basisVersion, refRelease: doc.refRelease }, componentId: 'D07-01' });
       return { ...doc, status: 'DRAFT' as const };
     });
@@ -438,13 +458,90 @@ export class CostService implements OnModuleInit {
     this.checkSettings(next.basisVersion, next.settings, next.currency);
     this.db.tx(() => {
       this.db.run('UPDATE cost_project SET doc = ?, updated_at = ? WHERE est_id = ?', JSON.stringify(next), this.clock.iso(), estId);
+      if(body.useLatestBasis) this.refreshReferenceSources(actor,estId,next);
       this.audit.record(actor, 'COST_PROJECT_UPDATE', estId, { before: { basisVersion: doc.basisVersion }, after: { basisVersion: next.basisVersion, changed: Object.keys(body) }, componentId: 'D07-01' });
     });
     return this.detail(actor, estId);
   }
 
+  reference(actor:Actor,refId:string,basisVersion=this.latestBasisVersion()) {
+    if(!canSeeCost(actor.role)) throw new DomainError('FORBIDDEN','산정 원천의 금액 정보는 산정 역할만 조회할 수 있습니다.');
+    const result=this.referenceStore.preview(refId,basisVersion);
+    this.db.tx(()=>this.audit.record(actor,'COST_VIEW',`reference:${refId}`,{after:{basisVersion,refRelease:result.refRelease},componentId:'D07-01'}));
+    return result;
+  }
+
+  referenceHistory(_actor:Actor,estId:string,lineNo:number,revision:number) {
+    this.row(estId);
+    return this.referenceStore.view(estId,lineNo,revision);
+  }
+
+  private referenceLine(value:ReturnType<CostReferenceStore['validate']>,revision:number,inputs:CostLineInputs={qty:1}):LineDoc {
+    const f=value.feature;
+    return {featureId:f?.featureId ?? null,version:f?.version ?? null,refId:value.reference.refId,role:f?(f.featureRefs ?? []).find(link=>link.refId===value.reference.refId)!.role:'REFERENCE',featureAsil:f?.asil ?? value.reference.asilRep,sourceRevision:revision,inputs};
+  }
+
+  private appendReference(actor:Actor,estId:string,project:CostProjectDoc,selection:AddCostReferenceBody,reason:string) {
+    if(this.db.get('SELECT 1 FROM cost_line WHERE est_id=? AND ref_id=?',estId,selection.refId)) throw new DomainError('CONFLICT','이 기준 행은 이미 과제에 있습니다 — 기존 줄의 Feature 연결·원천을 변경하세요.',{field:'refId'});
+    const value=this.referenceStore.validate(selection,project.basisVersion,project.refRelease);
+    const lineNo=this.referenceStore.nextLineNo(estId);
+    const captured=this.referenceStore.capture(actor,estId,lineNo,value,reason);
+    const line=this.referenceLine(value,captured.revision);
+    this.db.run('INSERT INTO cost_line(est_id,line_no,feature_id,version,ref_id,role,doc) VALUES(?,?,?,?,?,?,?)',estId,lineNo,line.featureId,line.version,line.refId,line.role,JSON.stringify(line));
+    this.audit.record(actor,'COST_REFERENCE_ADD',`${estId}#${lineNo}`,{after:{refId:line.refId,featureId:line.featureId,version:line.version,revision:captured.revision,release:captured.release,referenceSha256:captured.referenceSha256},reason,componentId:'D07-01'});
+    return lineNo;
+  }
+
+  addReference(actor:Actor,estId:string,selection:AddCostReferenceBody) {
+    const {doc}=this.draft(estId,actor,'COST_REFERENCE_ADD');
+    return this.db.tx(()=>{this.appendReference(actor,estId,doc,selection,'Feature DB 기준 행 추가');this.touch(estId);return this.detail(actor,estId);});
+  }
+
+  updateReference(actor:Actor,estId:string,lineNo:number,body:UpdateCostReferenceBody) {
+    const {doc}=this.draft(estId,actor,'COST_REFERENCE_UPDATE');
+    return this.db.tx(()=>{
+      const line=this.lines(estId).find(line=>line.lineNo===lineNo);
+      if(!line) throw new DomainError('NOT_FOUND','산정 기준 행이 없습니다.');
+      if((line.sourceRevision ?? 0)!==body.revision) throw new DomainError('CONFLICT','다른 담당자가 원천을 변경했습니다 — 과제를 다시 불러오세요.');
+      if(body.selection.refId!==line.refId) throw new DomainError('VALIDATION','원천 변경은 같은 기준 행에서만 가능합니다. 다른 기준 행은 별도로 추가하세요.',{field:'refId'});
+      const value=this.referenceStore.validate(body.selection,doc.basisVersion,doc.refRelease);
+      const captured=this.referenceStore.capture(actor,estId,lineNo,value,body.reason);
+      const next=this.referenceLine(value,captured.revision,line.inputs);
+      this.db.run('UPDATE cost_line SET feature_id=?,version=?,role=?,doc=? WHERE est_id=? AND line_no=?',next.featureId,next.version,next.role,JSON.stringify(next),estId,lineNo);
+      this.touch(estId);
+      this.audit.record(actor,'COST_REFERENCE_UPDATE',`${estId}#${lineNo}`,{before:{revision:line.sourceRevision ?? 0,featureId:line.featureId,version:line.version},after:{revision:captured.revision,release:captured.release,referenceSha256:captured.referenceSha256,featureId:next.featureId,version:next.version},reason:body.reason,componentId:'D07-01'});
+      return this.detail(actor,estId);
+    });
+  }
+
+  /** Explicit latest-basis action captures a new source revision; old source bodies and approved results remain intact. */
+  private refreshReferenceSources(actor:Actor,estId:string,project:CostProjectDoc) {
+    for(const line of this.lines(estId)) {
+      const preview=this.referenceStore.preview(line.refId,project.basisVersion);
+      const feature=line.featureId?preview.features.find(feature=>feature.featureId===line.featureId && feature.version===line.version):null;
+      if(line.featureId && !feature) throw new DomainError('CONFLICT','기존 Feature가 기준 행을 더 이상 참조하지 않습니다 — 연결을 먼저 확인하세요.',{refId:line.refId});
+      const selection:AddCostReferenceBody={refId:line.refId,refRelease:preview.refRelease ?? '',referenceSha256:preview.referenceSha256,feature:feature?{featureId:feature.featureId,version:feature.version,sha256:feature.sha256}:null};
+      const value=this.referenceStore.validate(selection,project.basisVersion,project.refRelease);
+      const captured=this.referenceStore.capture(actor,estId,line.lineNo,value,'최신 산정 기준 명시 적용');
+      const next=this.referenceLine(value,captured.revision,line.inputs);
+      this.db.run('UPDATE cost_line SET feature_id=?,version=?,role=?,doc=? WHERE est_id=? AND line_no=?',next.featureId,next.version,next.role,JSON.stringify(next),estId,line.lineNo);
+    }
+  }
+
+  removeLine(actor:Actor,estId:string,lineNo:number) {
+    this.draft(estId,actor,'COST_LINE_REMOVE');
+    const line=this.lines(estId).find(line=>line.lineNo===lineNo);
+    if(!line) throw new DomainError('NOT_FOUND','산정 기준 행이 없습니다.');
+    return this.db.tx(()=>{
+      this.db.run('DELETE FROM cost_line WHERE est_id=? AND line_no=?',estId,lineNo);
+      if(!this.db.get('SELECT 1 FROM cost_line WHERE est_id=? AND ref_id=?',estId,line.refId)) this.db.run('DELETE FROM cost_mbd_item WHERE est_id=? AND ref_id=?',estId,line.refId);
+      this.touch(estId);this.audit.record(actor,'COST_LINE_REMOVE',`${estId}#${lineNo}`,{before:{refId:line.refId,sourceRevision:line.sourceRevision ?? null},componentId:'D07-01'});
+      return this.detail(actor,estId);
+    });
+  }
+
   addFeature(actor: Actor, estId: string, body: AddCostFeatureBody) {
-    this.draft(estId, actor, 'COST_FEATURE_ADD');
+    const {doc:project}=this.draft(estId, actor, 'COST_FEATURE_ADD');
     const f = this.features.get(body.featureId, body.version);
     if (!f) throw new DomainError('NOT_FOUND', `${body.featureId} ${body.version}을(를) 찾을 수 없습니다.`);
     const links = f.featureRefs ?? [];
@@ -456,11 +553,12 @@ export class CostService implements OnModuleInit {
     });
     if (blocked.length) throw new DomainError('VALIDATION', `산정에 쓸 수 없는 기준 행이 있습니다(요청 중·폐기): ${blocked.map((l) => l.refId).join(', ')}`, { field: 'featureId', refs: blocked.map((l) => l.refId) });
     return this.db.tx(() => {
-      let no = this.db.get<{ m: number | null }>('SELECT max(line_no) AS m FROM cost_line WHERE est_id = ?', estId)?.m ?? 0;
+      let no=this.referenceStore.nextLineNo(estId)-1;
       // 대표 먼저, 그다음 포함 — 화면에서 Feature 아래 대표 줄이 위에 온다
       for (const l of [...links].sort((a, b) => (a.role === b.role ? 0 : a.role === 'PRIMARY' ? -1 : 1))) {
-        const doc: LineDoc = { featureId: f.featureId, version: f.version, refId: l.refId, role: l.role, featureAsil: f.asil, inputs: { qty: 1 } };
-        this.db.run('INSERT INTO cost_line (est_id, line_no, feature_id, version, ref_id, role, doc) VALUES (?, ?, ?, ?, ?, ?, ?)', estId, ++no, f.featureId, f.version, l.refId, l.role, JSON.stringify(doc));
+        const capture=this.referenceStore.capture(actor,estId,++no,this.referenceStore.fromFeature(this.refs.getRef(l.refId)!,f,project.basisVersion,project.refRelease),'등록 Feature의 기준 행 연결');
+        const doc: LineDoc = { featureId: f.featureId, version: f.version, refId: l.refId, role: l.role, featureAsil: f.asil, inputs: { qty: 1 },sourceRevision:capture.revision };
+        this.db.run('INSERT INTO cost_line (est_id, line_no, feature_id, version, ref_id, role, doc) VALUES (?, ?, ?, ?, ?, ?, ?)', estId, no, f.featureId, f.version, l.refId, l.role, JSON.stringify(doc));
       }
       this.touch(estId);
       this.audit.record(actor, 'COST_FEATURE_ADD', estId, { after: { featureId: f.featureId, version: f.version, refs: links.map((l) => l.refId) }, componentId: 'D07-01' });
@@ -532,11 +630,13 @@ export class CostService implements OnModuleInit {
     let result: CostEstimate | null = null;
     if (body.action === 'SUBMIT' || body.action === 'APPROVE') {
       const lines = this.lines(estId);
-      if (!lines.length) throw fail('GUARD_FAILED', '담긴 Feature가 없습니다 — Feature를 담은 뒤 제출합니다.');
+      if (!lines.length) throw fail('GUARD_FAILED', '산정 기준 행이 없습니다 — Feature DB에서 기준 행을 담은 뒤 제출합니다.');
+      if(lines.some(line=>!line.sourceRevision)) throw fail('GUARD_FAILED','원천 기록이 없는 이전 산정 줄이 있습니다 — 최신 기준을 명시 적용한 뒤 제출하세요.');
       const blocked = lines.filter((l) => {
         const s = this.refs.statusOf(l.refId);
         return !s || !refStatusPolicy(s).costUsable;
       });
+      if(lines.some(line=>line.sourceRevision && this.referenceStore.view(estId,line.lineNo,line.sourceRevision).stale)) throw fail('GUARD_FAILED','선택한 산정 원천이 변경됐습니다 — 최신 기준을 확인하고 재검토하세요.');
       if (blocked.length) throw fail('GUARD_FAILED', `산정에 쓸 수 없게 된 기준 행이 있습니다: ${[...new Set(blocked.map((l) => l.refId))].join(', ')}`);
       try {
         result = this.compute(doc, estId);
@@ -565,6 +665,7 @@ export class CostService implements OnModuleInit {
           sha(text),
         );
         this.db.run('INSERT INTO cost_result_doc (est_id, rev, doc_sealed) VALUES (?, ?, ?)', estId, rev, sealFor(this.vault, 'cost_result_doc', 'doc_sealed', `${estId}:${rev}`, text));
+        for(const line of this.lines(estId)) this.db.run('INSERT INTO cost_approval_source(est_id,approval_rev,line_no,source_revision) VALUES(?,?,?,?)',estId,rev,line.lineNo,line.sourceRevision!);
         next = { ...next, rev };
       }
       this.db.run('UPDATE cost_project SET status = ?, doc = ?, updated_at = ? WHERE est_id = ?', rule.to, JSON.stringify(next), at, estId);

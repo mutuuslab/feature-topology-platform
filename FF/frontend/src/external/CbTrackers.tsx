@@ -1,7 +1,9 @@
 // codeBeamer Trackers 화면 — 참고 화면의 3단 구성(Release 트리·그룹 표·상세 패널)을 공유 모의 원장에 적용한다.
 // 원장에 Epic·Story가 따로 없으므로 계층은 요구 ID 그룹 → 요구 항목 → 기존 추적으로 확인된 Feature Version으로 둔다.
 import { useMemo, useState, type ReactNode } from 'react';
-import { EXT_KIND_LABEL, type FeatureFlagRow } from '@ff/contracts';
+import type { FeatureFlagRow } from '@ff/contracts';
+import { extSync } from '../copy/ext-sync';
+import { uiLocaleTag } from '../locale/runtime';
 import { externalDemo as T } from '../copy/external-demo';
 import { Icon } from '../design/icons';
 import { openExternalWindow } from './links';
@@ -28,7 +30,7 @@ const matches = (item: MockExternalItem, filter: Filter) => filter.kind === 'all
   || (filter.kind === 'release' && releaseOf(item).release === filter.value)
   || (filter.kind === 'assignee' && assigneeOf(item) === filter.value);
 const sameFilter = (a: Filter, b: Filter) => a.kind === b.kind && (a.kind === 'all' || (b.kind !== 'all' && a.value === b.value));
-const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('ko-KR') : T.confirm;
+const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(uiLocaleTag()) : T.confirm;
 
 /** 'FEAT-00001@2.1.0 (시연)'의 버전 토큰은 줄을 바꾸지 않는다(하이픈에서 끊기지 않게). */
 function ReleaseText({ value }: { value: string }) {
@@ -177,7 +179,7 @@ export function CbTrackers({ items, visible, selected, selectedKey, role, onSele
           {([['cb-sec-details', P.details, 'book'], ['cb-sec-trace', P.trace, 'link'], ['cb-sec-comments', P.comments, 'pen']] as const).map(([id, label, icon]) => <button key={id} type="button" onClick={() => jump(id)}><Icon name={icon} size={16} /><span>{label}</span></button>)}
         </div>
         <section className="cb-detail__section" id="cb-sec-details" tabIndex={-1} aria-label={P.details}>
-          <p className="cb-detail__key"><Icon name="book" size={16} /><span>[{selected.key}]</span><span>{EXT_KIND_LABEL[selected.kind] ?? selected.kind}</span></p>
+          <p className="cb-detail__key"><Icon name="book" size={16} /><span>[{selected.key}]</span><span>{extSync.kind[selected.kind] ?? selected.kind}</span></p>
           <h2>{selected.title}</h2>
           <dl className="cb-props">
             <div><dt>{P.tracker}:</dt><dd>{value('tracker')}</dd></div>
@@ -207,3 +209,4 @@ export function CbTrackers({ items, visible, selected, selectedKey, role, onSele
     </article>
   </div>;
 }
+

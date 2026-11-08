@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EXT_KIND_LABEL, JIRA_CR_STATUS, JIRA_EPIC_STATUS, type FeatureFlagRow } from '@ff/contracts';
+import { JIRA_CR_STATUS, JIRA_EPIC_STATUS, type FeatureFlagRow } from '@ff/contracts';
+import { extSync } from '../copy/ext-sync';
+import { useUiLocale } from '../locale/react';
+import { uiLocaleTag } from '../locale/runtime';
+import { subscribeExternalLanguage } from './language';
 import { call, STATIC_MODE } from '../api/client';
 import { isSeamless } from '../api/connections';
 import type { ConnectionsResponse } from '@ff/contracts';
@@ -29,7 +33,7 @@ type Result = { outcome: string; summary: string };
 type ItemView = 'board' | 'list' | 'trackers' | 'document' | 'table' | 'item';
 const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 const columnOf = (status: string) => /^(approved|verified|released|closed|done|deployed|deprecated|retired|rejected|rolled back)$/i.test(status) ? 2 : /progress|review|verification|develop/i.test(status) ? 1 : 0;
-const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('ko-KR') : T.confirm;
+const date = (value: string) => Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(uiLocaleTag()) : T.confirm;
 
 function ExternalFlagProgress({ row }: { row: FeatureFlagRow }) {
   const query = useFlagPublication(row);
@@ -42,6 +46,9 @@ function ExternalFlagProgress({ row }: { row: FeatureFlagRow }) {
 }
 
 export function ExternalApp() {
+  const locale = useUiLocale();
+  useEffect(subscribeExternalLanguage, []);
+  useEffect(() => { document.documentElement.lang = locale.language; document.title = T.windowTitle; }, [locale.language]);
   // GitLab은 MR 열람 창(쓰기 없음) — JIRA·codeBeamer 작업 화면과 따로 그린다
   const gitlab = new URLSearchParams(window.location.search).get('system') === 'gitlab';
   return <QueryClientProvider client={cache}>{gitlab ? <GitLabWorkspace /> : <ExternalWorkspace />}</QueryClientProvider>;
@@ -55,14 +62,14 @@ function ItemProperties({ item, onParent, parentExists }: { item: MockExternalIt
     [T.jiraProperty.reporter, personText(fields.reporter) ?? personText(fields.submittedBy) ?? personText(fields.createdBy) ?? T.confirm],
     [T.jiraProperty.due, personText(fields.dueDate) ?? personText(fields.due) ?? T.confirm],
     [T.jiraProperty.priority, value('priority')], [T.jiraProperty.team, value('team')],
-    [T.jiraProperty.type, EXT_KIND_LABEL[item.kind] ?? item.kind], [T.jiraProperty.status, item.status],
+    [T.jiraProperty.type, extSync.kind[item.kind] ?? item.kind], [T.jiraProperty.status, item.status],
     [T.project, itemContext(item).project ?? T.confirm], [T.jiraProperty.revision, 'r' + item.revision],
     [T.jiraProperty.modifiedBy, item.updatedBy || T.confirm], [T.jiraProperty.updated, date(item.updatedAt)], [T.property.policy, value('policyId')],
   ] : [
     [T.property.tracker, value('tracker')], [T.property.release, value('release')], [T.property.status, item.status],
     [T.property.submittedBy, personText(fields.submittedBy) ?? personText(fields.createdBy) ?? T.confirm],
     [T.property.modifiedBy, item.updatedBy || T.confirm], [T.property.assignedTo, personText(fields.assignedTo) ?? personText(fields.assignee) ?? T.confirm],
-    [T.property.type, EXT_KIND_LABEL[item.kind] ?? item.kind], [T.property.risk, value('risk')], [T.property.verification, value('verificationMethod')],
+    [T.property.type, extSync.kind[item.kind] ?? item.kind], [T.property.risk, value('risk')], [T.property.verification, value('verificationMethod')],
     [T.property.requirementStatus, value('requirementStatus')], [T.property.requirementId, value('reqId')], [T.property.policy, value('policyId')],
   ];
   return <section className="external-properties" aria-label={T.properties}><h3>{T.properties}</h3><dl>{rows.map(([label, text]) => <div key={label}><dt>{label}</dt><dd data-unconfirmed={text === T.confirm || undefined}>{text}</dd></div>)}</dl>
@@ -170,7 +177,7 @@ export function ExternalWorkspace() {
     const url = new URL(window.location.href); url.searchParams.set('key', key); window.history.replaceState(null, '', url);
   }
   const itemButton = (item: MockExternalItem) => <button key={item.key} type="button" className="external-item" aria-pressed={selected?.key === item.key} onClick={() => select(item.key, system === 'jira')}>
-    <span className="external-item__key">{item.key}<span>{EXT_KIND_LABEL[item.kind] ?? item.kind}</span></span><strong>{item.title}</strong><span className="external-item__status">{item.status}<span>r{item.revision}</span></span>
+    <span className="external-item__key">{item.key}<span>{extSync.kind[item.kind] ?? item.kind}</span></span><strong>{item.title}</strong><span className="external-item__status">{item.status}<span>r{item.revision}</span></span>
   </button>;
   const workflow = selected && <div className="external-workflow">
     <label className="external-field">{T.identity}<select className="ds-input" aria-label={T.identity} value={externalUser} onChange={(event) => setExternalUser(event.target.value)} disabled={change.isPending}>{identities.map((identity) => <option key={identity.id} value={identity.id}>{identity.label} ({identity.id})</option>)}</select></label>
@@ -225,11 +232,11 @@ export function ExternalWorkspace() {
       </div>
       {itemsQuery.isPending ? <p role="status">{T.loading}</p> : itemsQuery.isError ? <p className="external-error" role="alert">{itemsQuery.error.message}</p> : view === 'trackers' ? <CbTrackers items={items} visible={visible} selected={selected} selectedKey={selectedKey} role={role} onSelect={(key) => select(key)} slots={{ share, workflow, trace, comments }} /> : <div className="external-workspace" data-view={view}>
         {view !== 'item' && <section className="external-collection" aria-label={system === 'jira' ? T.jiraItems : T.cbItems}>
-          {!visible.length ? <p className="external-empty">{T.noItems}</p> : view === 'board' ? <div className="external-board">{T.columns.map((label, index) => <section key={label} className="external-column"><h2>{label}<span>{visible.filter((item) => columnOf(item.status) === index).length}</span></h2>{visible.filter((item) => columnOf(item.status) === index).map(itemButton)}</section>)}</div> : view === 'table' ? <table className="external-item-table"><caption>{T.cbItems}</caption><thead><tr><th>{T.currentItem}</th><th>{T.property.type}</th><th>{T.status}</th><th>{T.revision}</th></tr></thead><tbody>{visible.map((item) => <tr key={item.key} data-selected={item.key === selected?.key || undefined}><td><button type="button" onClick={() => select(item.key, true)}>{item.key}<strong>{item.title}</strong></button></td><td>{EXT_KIND_LABEL[item.kind] ?? item.kind}</td><td>{item.status}</td><td>r{item.revision}</td></tr>)}</tbody></table> : <div className="external-list">{system === 'codebeamer' ? [...new Set(visible.map((item) => groupOf(item) ?? T.confirm))].map((namespace) => <details open key={namespace} className="external-tree-group"><summary>{namespace}</summary>{visible.filter((item) => (groupOf(item) ?? T.confirm) === namespace).map(itemButton)}</details>) : visible.map(itemButton)}</div>}
+          {!visible.length ? <p className="external-empty">{T.noItems}</p> : view === 'board' ? <div className="external-board">{T.columns.map((label, index) => <section key={label} className="external-column"><h2>{label}<span>{visible.filter((item) => columnOf(item.status) === index).length}</span></h2>{visible.filter((item) => columnOf(item.status) === index).map(itemButton)}</section>)}</div> : view === 'table' ? <table className="external-item-table"><caption>{T.cbItems}</caption><thead><tr><th>{T.currentItem}</th><th>{T.property.type}</th><th>{T.status}</th><th>{T.revision}</th></tr></thead><tbody>{visible.map((item) => <tr key={item.key} data-selected={item.key === selected?.key || undefined}><td><button type="button" onClick={() => select(item.key, true)}>{item.key}<strong>{item.title}</strong></button></td><td>{extSync.kind[item.kind] ?? item.kind}</td><td>{item.status}</td><td>r{item.revision}</td></tr>)}</tbody></table> : <div className="external-list">{system === 'codebeamer' ? [...new Set(visible.map((item) => groupOf(item) ?? T.confirm))].map((namespace) => <details open key={namespace} className="external-tree-group"><summary>{namespace}</summary>{visible.filter((item) => (groupOf(item) ?? T.confirm) === namespace).map(itemButton)}</details>) : visible.map(itemButton)}</div>}
         </section>}
         <article className="external-detail" aria-label={T.detail}>
           {!selected ? <p className="external-empty">{selectedKey ? T.notFound : T.select}</p> : <>
-            <div className="external-detail__meta"><span className="external-key">{selected.key}</span><span>{EXT_KIND_LABEL[selected.kind] ?? selected.kind}</span><span>{T.revision} r{selected.revision}</span></div><h2>{selected.title}</h2>
+            <div className="external-detail__meta"><span className="external-key">{selected.key}</span><span>{extSync.kind[selected.kind] ?? selected.kind}</span><span>{T.revision} r{selected.revision}</span></div><h2>{selected.title}</h2>
             <p className="external-current-status" data-testid="external-current-status">{selected.status}</p><p className="external-updated">{T.updated} · {date(selected.updatedAt)} · {selected.updatedBy}</p>
             {share}
             {system === 'codebeamer' && view === 'item' && properties}
@@ -245,3 +252,4 @@ export function ExternalWorkspace() {
     {system === 'codebeamer' && <footer className="external-footer"><span>{T.footer}</span><span>{T.refreshHint}</span><a href="/">{T.platform}</a></footer>}
   </div>;
 }
+

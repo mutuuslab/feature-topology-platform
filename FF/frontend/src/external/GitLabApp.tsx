@@ -1,6 +1,7 @@
 // GitLab MR 시연 창 — 공유 모의 원장(mockExtItems gitlab)의 MR·파이프라인을 GitLab MR 화면 구조로 보인다(읽기 전용).
 // Feature 연결은 제목으로 추측하지 않고 플랫폼 연계 원장(extFeatureTrace의 mergeRequests)에 이 MR이 실제로 있는지 확인한 뒤에만 잇는다.
 import { useEffect, useState } from 'react';
+import { uiLocaleTag } from '../locale/runtime';
 import { useQuery } from '@tanstack/react-query';
 import type { FeatureFlagRow } from '@ff/contracts';
 import { call, STATIC_MODE } from '../api/client';
@@ -23,7 +24,7 @@ interface FeatureDetail {
 type CommitStatus = { name: string; state: string; description?: string; sha?: string; at?: string };
 
 const FEATURE_REF = /FEAT-\d{5}@\d+\.\d+\.\d+/;
-const date = (value: string) => (Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString('ko-KR') : value);
+const date = (value: string) => (Number.isFinite(Date.parse(value)) ? new Date(value).toLocaleString(uiLocaleTag()) : value);
 /** MR 키 'vehicle/feature-sw!117' → '!117' */
 export const mrIid = (key: string) => '!' + (key.split('!').pop() ?? key);
 const pipelineId = (key: string) => '#' + (key.split('/').pop() ?? key);
@@ -185,3 +186,4 @@ function MrDetail({ item, pipelines, fromLink }: { item: MockExternalItem; pipel
     </article>
   );
 }
+

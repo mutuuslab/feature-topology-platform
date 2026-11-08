@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '../store';
-import { ExternalWorkspace, type MockExternalItem } from '../external/ExternalApp';
+import { ExternalApp, ExternalWorkspace, type MockExternalItem } from '../external/ExternalApp';
+import { initializeExternalLanguage, savedExternalLanguage } from '../external/language';
+import { __resetLocaleForTest } from '../locale/runtime';
 import { ExternalToolLaunchers } from '../external/launchers';
 import { externalReferenceUrl, EXTERNAL_CHANGE_KEY, GITHUB_PR_URL } from '../external/links';
 import { ExtLinksTab } from '../screens/features/ExtLinksTab';
@@ -86,7 +88,7 @@ describe('외부 항목의 정확한 원장 결합', () => {
     expect(externalTrace({ system: 'JIRA', key: 'FFE-1', fields: { featureId: '../admin', version: '2.1.0' } }, [feature], [flag]).features).toEqual([]);
   });
 });
-afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); __resetLocaleForTest(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 function mount(node: React.ReactNode, platform = false) {
   const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -130,6 +132,30 @@ describe('외부 도구 창 연결', () => {
 });
 
 describe('공유 모의 원장을 사용하는 독립 앱', () => {
+  it('starts in the saved platform language and changes UI language without changing external identity or draft content', async () => {
+    expect(savedExternalLanguage('{invalid')).toBe('ko');
+    expect(savedExternalLanguage('{"lang":"xx"}')).toBe('ko');
+    const saved = JSON.stringify({ role: 'author', lang: 'en', department: 'DEP-PDP' });
+    localStorage.setItem('fp.state.v2', saved);
+    await initializeExternalLanguage();
+    mount(<ExternalApp />);
+    const comment = await screen.findByLabelText('Review comment');
+    expect(screen.getByRole('heading', { name: item.title })).toBeTruthy();
+    fireEvent.change(comment, { target: { value: '검토 중인 원문' } });
+    expect(document.documentElement.lang).toBe('en');
+    expect(document.title).toBe('External tools · integration demo');
+    await act(async () => { window.dispatchEvent(new StorageEvent('storage', { key: 'fp.state.v2', newValue: JSON.stringify({ lang: 'ko', role: 'integrator' }) })); });
+    expect(screen.getByLabelText('검토 의견')).toHaveValue('검토 중인 원문');
+    expect(document.documentElement.lang).toBe('ko');
+    expect(localStorage.getItem('fp.state.v2')).toBe(saved);
+    expect(posts).toEqual([]);
+    fireEvent.click(screen.getByRole('button', { name: '의견 등록' }));
+    await waitFor(() => expect(posts).toHaveLength(1));
+    expect(posts[0].body.externalUser).toBe('seo.safety');
+    expect(posts[0].headers['X-Actor-Role']).toBe('SAFETY_OFFICER');
+    expect(posts[0].body.comment).toBe('검토 중인 원문');
+  });
+
   it('CB 요구 ID를 실제 Feature 상세와 결합해 Flag·정책·소스·커밋·회신·지도까지 이어 준다', async () => {
     item.fields = { reqId: 'REQ-PARK-0101', tracker: 'FF 시스템 요구사항', release: '시연 2026.11' };
     featureRows = [feature, { ...feature, version: '2.2.0' }];

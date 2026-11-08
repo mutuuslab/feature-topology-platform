@@ -31,3 +31,13 @@ root 2aa42b0b를 동기화하고 SW 전달 최초68개, 등록/제품라인204�
 현재 copy 9,145개 중 7,298개 번역/1,847개 미번역, 영어 entry 7,395개 타입 검사 불일치0·unknown/duplicate0. 현재 계약 dist 재빌드 후 FE 타입 PASS. 실제 관련 7파일49시험, 경로·제품라인 2파일16시험 PASS. 원본 로그는 `out/english-delivery-ple-related.log`와 `out/english-delivery-ple-flags-tests.log`다.
 
 업무 메타데이터 FPW.1(등록)87개와 FPW.14(Feature DB 운영)81개를 추가했다. 별도 메타데이터 전체1,800개 중 번역447/원천영어365/미번역988이며, 네 사전의 원천 fingerprint MATCH·unknown/duplicate0이다. 절차·활동·산출물 ID와 필드 인덱스, RACI, 원천 규칙과 승인 의미를 변경하지 않는다.
+
+## 선언 UI 문구 전체 채움 — source 2aa42b0b 이후 영어 후속
+
+남은 외부 시연·양방향 동기화·API/레거시·감사·규제·개인정보·차단·협의·상품·검토함·Lifecycle·알림·추적·분석실·가상검증·그래프 문구를 채웠다. 새 외부 창 제목1개를 포함해 현재 원천85모듈의 필수9,146/9,146개가 번역되었고, unknown/duplicate/함수 서명 불일치0이다. 값·함수 타입9,244entry 검사에서 불일치0. 이는 해당 source의 선언 copy 원장 수락이며 전체 화면 영어 완료를 뜻하지 않는다. 새 SW 상세 문구나 후속 통합에서 추가된 키는 다시 정합한다.
+
+외부 CB/JIRA/GitLab 독립 창에 저장된 플랫폼 언어 초기화와 언어 변경 구독을 연결했다. 초기화는 사전 로드 후 기존 앱을 마운트하고, 다른 창의 언어 변경은 문서 언어·제목·날짜 및 종류 라벨만 바꾼다. URL, 외부 담당자, role 헤더, 쓰기 계약과 상태 전이를 바꾸지 않는다. 저장 언어가 잘못되거나 저장소가 제한된 경우 한국어 fallback을 보존한다. 실제 마운트 회귀에서 작성 중인 의견 원문과 외부 identity가 유지되고, 이후 의견 요청의 canonical `SAFETY_OFFICER` 헤더도 유지됨을 확인했다.
+
+외부 회귀3파일32시험 PASS. 마지막 선언 문구 후속은 FE 타입과 관련17파일142시험 PASS(9파일76+8파일66)다. 키트 `out/english-final-copy-batch-tests.log`, `out/english-final-copy-work-tests.log`, `out/english-external-tests-r3.log` 참고. 숫자 모양의 문자열 코드 `01`/`00`에 대해 타입 도구가 `Record<string,T>`의 문자열 인덱스를 확인하도록 고쳤고, 실제 번역 키를 전체 타입 검사로 검증했다. 값·코드를 숫자로 바꾸거나 허용하지 않는 새 키를 예외로 추가하지 않았다.
+
+별도 업무 메타데이터988개, API가 생성하는 한국어 설명과 나머지 계약 라벨, 새 원천 정합 및 다음 운영 빌드/브라우저 수락은 계속 진행한다.

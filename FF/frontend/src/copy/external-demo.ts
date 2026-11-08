@@ -1,6 +1,7 @@
 import { localizedCopy } from '../locale/runtime';
 // 독립 가상 도구 앱에서만 지연 로드하는 문구와 모의 계정 목록.
 export const externalDemo = /* @__PURE__ */ localizedCopy('external-demo.externalDemo', {
+  windowTitle: '외부 도구 · 연계 시연',
   badge: '가상 연계 시연',
   notice: '이 창은 시연용 외부 도구입니다. 변경은 공유 모의 서버에 저장되고 Feature Platform의 연계 경로로 전달됩니다.',
   platform: 'Feature Platform 열기',

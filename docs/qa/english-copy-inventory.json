@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 85,
-  "requiredLeaves": 9145,
+  "requiredLeaves": 9146,
   "modules": [
     {
       "module": "ads-change",
@@ -17615,6 +17615,12 @@
       "module": "external-demo",
       "file": "FF/frontend/src/copy/external-demo.ts",
       "leaves": [
+        {
+          "path": "external-demo.externalDemo.windowTitle",
+          "kind": "text",
+          "text": "외부 도구 · 연계 시연",
+          "sourceHash": "95fb7459c3f3eebf94fca0acaf80169ac38eb2657afef92f9d527e7f67b848ff"
+        },
         {
           "path": "external-demo.externalDemo.badge",
           "kind": "text",

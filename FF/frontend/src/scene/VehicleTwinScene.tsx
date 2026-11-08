@@ -1,5 +1,5 @@
 /**
- * §17.3 — 차량 디지털 트윈 3D 뷰(2세대) — 관제실/엔지니어링 스타일 씬 + HUD.
+ * §17.3 — 차량 디지털 트윈 3D 뷰(2세대) — 배포 및 모니터링/엔지니어링 스타일 씬 + HUD.
  *
  * `pages/twinLive.tsx` 의 1세대 `VehicleModel`/`PartMesh`/`TwinScene`/`CameraRig`/
  * `Schematic2D`/`buildVehicleParts` 를 대체하기 위한 모듈. 이 파일은 오직

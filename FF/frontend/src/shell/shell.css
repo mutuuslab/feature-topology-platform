@@ -953,13 +953,12 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
 }
 
 /* ── 부서 작업공간(데모 부서 보기) — 8그룹 레일·패널 대신 부서 메뉴(DepartmentNav). 화면 유형마다 배치가 다르다.
-   기획 스튜디오·검토 포털: 상단 바 아래 가로 메뉴 / 심사 결재함·엔지니어링 콘솔·관제실: 왼쪽 세로 메뉴(폭·밀도가 다르다). ── */
+   SW개발비 및 정보보안: 상단 바 아래 가로 메뉴 / 상품기획·표준 검토함·엔지니어링 검토·배포 및 모니터링: 왼쪽 세로 메뉴(폭·밀도가 다르다). ── */
 .sh[data-workspace] {
   grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr);
   grid-template-rows: var(--topbar-h) minmax(0, 1fr);
   grid-template-areas: 'top top' 'nav main';
 }
-.sh[data-workspace='studio'],
 .sh[data-workspace='portal'] {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: var(--topbar-h) auto minmax(0, 1fr);
@@ -1113,8 +1112,7 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   border-color: var(--accent);
 }
 
-/* 가로 메뉴(기획 스튜디오·검토 포털) */
-.sh[data-workspace='studio'] .sh-dnav,
+/* SW개발비 및 정보보안의 가로 메뉴. 상품기획은 공통 좌측 메뉴를 사용한다. */
 .sh[data-workspace='portal'] .sh-dnav {
   flex-direction: row;
   flex-wrap: wrap;
@@ -1126,19 +1124,16 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   overflow: visible;
   background: var(--ws-band);
 }
-.sh[data-workspace='studio'] .sh-dnav__head,
 .sh[data-workspace='portal'] .sh-dnav__head {
   border: 0;
   margin: 0 var(--sp-3) 0 0;
   padding: 0;
 }
-.sh[data-workspace='studio'] .sh-dnav__list,
 .sh[data-workspace='portal'] .sh-dnav__list {
   display: flex;
   flex-wrap: wrap;
   gap: 2px;
 }
-.sh[data-workspace='studio'] .sh-dnav__list a,
 .sh[data-workspace='portal'] .sh-dnav__list a {
   border-radius: var(--r-pill);
   padding: 0 var(--sp-3);
@@ -1146,22 +1141,18 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   background: var(--surface);
 }
 /* 가로 메뉴의 배지 — 띠 색(accent-soft와 비슷)에 묻히지 않게 강조색 바탕 */
-.sh[data-workspace='studio'] .sh-dnav .sh-panel__count,
 .sh[data-workspace='portal'] .sh-dnav .sh-panel__count {
   background: var(--accent);
   color: var(--accent-ink);
 }
-.sh[data-workspace='studio'] .sh-dnav__list a.active,
 .sh[data-workspace='portal'] .sh-dnav__list a.active {
   box-shadow: none;
   background: var(--accent);
   color: var(--accent-ink);
 }
-.sh[data-workspace='studio'] .sh-dnav__more,
 .sh[data-workspace='portal'] .sh-dnav__more {
   position: relative;
 }
-.sh[data-workspace='studio'] .sh-dnav__more > summary,
 .sh[data-workspace='portal'] .sh-dnav__more > summary {
   margin: 0;
   min-height: var(--row-h);
@@ -1170,7 +1161,6 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   color: var(--ink-2);
   font-size: var(--fs-sm);
 }
-.sh[data-workspace='studio'] .sh-dnav__more > summary,
 .sh[data-workspace='portal'] .sh-dnav__more > summary {
   border: 1px solid var(--line);
   background: var(--surface);
@@ -1178,7 +1168,6 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
 .sh-dnav__drop {
   display: contents;
 }
-.sh[data-workspace='studio'] .sh-dnav__more[open] > .sh-dnav__drop,
 .sh[data-workspace='portal'] .sh-dnav__more[open] > .sh-dnav__drop {
   position: absolute;
   z-index: 20;
@@ -1198,7 +1187,6 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   border-radius: var(--r-lg);
   box-shadow: var(--e-2);
 }
-.sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list,
 .sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list {
   display: grid;
 }
@@ -1212,44 +1200,34 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   padding-top: 0;
   border-top: 0;
 }
-.sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list a,
 .sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list a {
   border: 0;
   border-radius: var(--r);
 }
-.sh[data-workspace='studio'] .sh-dnav__foot,
 .sh[data-workspace='portal'] .sh-dnav__foot {
   margin: 0 0 0 auto;
   border: 0;
   padding: 0;
   display: flex;
 }
-.sh[data-workspace='studio'] .sh-dnav a,
 .sh[data-workspace='portal'] .sh-dnav a,
-.sh[data-workspace='studio'] .sh-dnav__all,
 .sh[data-workspace='portal'] .sh-dnav__all,
-.sh[data-workspace='studio'] .sh-dnav__more > summary,
 .sh[data-workspace='portal'] .sh-dnav__more > summary {
   white-space: nowrap;
 }
 /* 1280~1439 — 가로 메뉴가 한 줄을 넘지 않게(1280에서 부서 R&R·전체 메뉴 보기가 둘째 줄로 내려갔다) 알약·여백을 줄인다 */
 @media (max-width: 1439px) {
-  .sh[data-workspace='studio'] .sh-dnav,
   .sh[data-workspace='portal'] .sh-dnav {
     column-gap: var(--sp-1h);
     padding-inline: var(--sp-4);
   }
-  .sh[data-workspace='studio'] .sh-dnav__head,
   .sh[data-workspace='portal'] .sh-dnav__head {
     margin-right: var(--sp-1);
   }
-  .sh[data-workspace='studio'] .sh-dnav__list a,
   .sh[data-workspace='portal'] .sh-dnav__list a,
-  .sh[data-workspace='studio'] .sh-dnav__more > summary,
   .sh[data-workspace='portal'] .sh-dnav__more > summary {
     padding-inline: var(--sp-2);
   }
-  .sh[data-workspace='studio'] .sh-dnav__drop .sh-dnav__list a,
   .sh[data-workspace='portal'] .sh-dnav__drop .sh-dnav__list a {
     padding-inline: var(--sp-2);
   }
@@ -1261,7 +1239,7 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
   padding-inline: max(var(--sp-6), calc((100% - 1120px) / 2));
 }
 
-/* 심사 결재함 — 중립 면, 판정색만 강조. 메뉴 항목은 결재 서류철처럼 칸으로 */
+/* 표준 검토함 — 중립 면, 판정색만 강조. 메뉴 항목은 결재 서류철처럼 칸으로 */
 .sh[data-workspace='review'] .sh-dnav {
   background: var(--surface-2);
   gap: var(--sp-2);
@@ -1269,7 +1247,7 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
 .sh[data-workspace='review'] .sh-dnav__list a.active {
   background: var(--surface);
 }
-/* 엔지니어링 콘솔 — 조밀한 사이드바(작은 글자·촘촘한 행) */
+/* 엔지니어링 검토 — 조밀한 사이드바(작은 글자·촘촘한 행) */
 .sh[data-workspace='console'] .sh-dnav {
   gap: 0;
   padding-inline: var(--sp-1);
@@ -1298,7 +1276,7 @@ body:has(.sh[data-guide='open']) .ds-drawer { right: var(--guide-w, 360px); }
 .sh[data-workspace='console'] .sh-main {
   padding: var(--sp-3) var(--sp-4) var(--sp-8);
 }
-/* 관제실 — 셸 전체가 어두운 관제 톤(html data-zone=ops), 메뉴는 청록 띠 */
+/* 배포 및 모니터링 — 셸 전체가 어두운 관제 톤(html data-zone=ops), 메뉴는 청록 띠 */
 .sh[data-workspace='control'] .sh-dnav {
   background: var(--surface-2);
   box-shadow: inset -3px 0 0 var(--accent);
@@ -1326,7 +1304,6 @@ html:not([data-present='on']) .sh[data-workspace][data-guide='open'] {
   grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr) var(--guide-w, 360px);
   grid-template-areas: 'top top top' 'nav main guide';
 }
-html:not([data-present='on']) .sh[data-workspace='studio'][data-guide='open'],
 html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
   grid-template-columns: minmax(0, 1fr) var(--guide-w, 360px);
   grid-template-areas: 'top top' 'nav nav' 'main guide';
@@ -1335,7 +1312,6 @@ html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
   html:not([data-present='on']) .sh[data-workspace][data-guide='open'] {
     grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr) min(330px, 28vw);
   }
-  html:not([data-present='on']) .sh[data-workspace='studio'][data-guide='open'],
   html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
     grid-template-columns: minmax(0, 1fr) min(330px, 28vw);
   }
@@ -1384,7 +1360,6 @@ html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
   html:not([data-present='on']) .sh[data-workspace][data-guide='open'] {
     grid-template-columns: var(--ws-nav-w, 248px) minmax(0, 1fr) 0;
   }
-  html:not([data-present='on']) .sh[data-workspace='studio'][data-guide='open'],
   html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
     grid-template-columns: minmax(0, 1fr) 0;
   }

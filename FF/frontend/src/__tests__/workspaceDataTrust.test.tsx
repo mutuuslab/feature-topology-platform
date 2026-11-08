@@ -44,7 +44,7 @@ describe('역할별 큐의 부서·조회 경계', () => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); localStorage.clear(); });
 
 describe('팀 홈에서 실패·빈 상태를 구분한다', () => {
-  it('관제실 안전 차단 조회 실패를 0건으로 표시하지 않고 재시도 후 정상 0건을 표시한다', async () => {
+  it('배포 및 모니터링 안전 차단 조회 실패를 0건으로 표시하지 않고 재시도 후 정상 0건을 표시한다', async () => {
     failed = '/api/kill-requests';
     mount(<ControlRoom dept={departmentById('DEP-OPS')!} />, 'operator', 'DEP-OPS');
     await waitFor(() => expect(screen.queryByRole('button', { name: /다시/ })).not.toBeNull());
@@ -52,7 +52,7 @@ describe('팀 홈에서 실패·빈 상태를 구분한다', () => {
     failed = ''; fireEvent.click(screen.getByRole('button', { name: /다시/ }));
     await waitFor(() => expect(document.querySelector('[data-key-message] .ds-key__value')?.textContent).toBe('0'));
   });
-  it('관제실 차량 조회 실패는 연결/끊김 0대가 아니라 알 수 없음으로 표시한다', async () => {
+  it('배포 및 모니터링 차량 조회 실패는 연결/끊김 0대가 아니라 알 수 없음으로 표시한다', async () => {
     failed = '/api/fleet/runtime';
     mount(<ControlRoom dept={departmentById('DEP-OPS')!} />, 'operator', 'DEP-OPS');
     const fleet = (await screen.findByRole('heading', { name: '차량 상태' })).closest('section')!;

@@ -9,7 +9,7 @@ import { procedureFlow as F } from '../copy/procedureFlow';
 describe('업무 절차 흐름도 문구 — 절차 수', () => {
   const n = WORKFLOWS.processes.length;
 
-  it('담당자·내 업무·전체 지도 안내는 모델의 절차 수를 말한다', () => {
+  it('담당자·내 업무·전체업무흐름 안내는 모델의 절차 수를 말한다', () => {
     expect(n).toBeGreaterThan(13);
     for (const text of [F.roles.hint('기능안전 담당', n), F.mine.hint('Feature 설계', n), F.chain.hint(n)]) expect(text).toContain(`${n}개 절차`);
   });

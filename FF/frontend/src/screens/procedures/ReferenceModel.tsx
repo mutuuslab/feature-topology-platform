@@ -9,7 +9,7 @@ import './reference-model.css';
 const PARTS: RaciKey[] = ['R', 'A', 'C', 'I'];
 const ids = (a: WorkflowActivity, k: RaciKey) => k === 'A' ? [a.raci.A] : a.raci[k];
 const participates = (a: WorkflowActivity, roles: Set<string>) => PARTS.some((k) => ids(a, k).some((id) => roles.has(id)));
-const definitionPath = (pid: string, dept?: string, bp?: string) => `/procedures/${pid}?docview=reference${dept ? `&dept=${encodeURIComponent(dept)}` : ''}${bp ? `#${encodeURIComponent(bp)}` : ''}`;
+const definitionPath = (pid: string, dept?: string, bp?: string) => `/procedures/${pid}${bp ? '?docview=reference' : ''}${dept ? `${bp ? '&' : '?'}dept=${encodeURIComponent(dept)}` : ''}${bp ? `#${encodeURIComponent(bp)}` : ''}`;
 
 /** Only source-declared evidence links count. An activity's other outcomes are never inferred. */
 export function referenceEvidence(p: WorkflowProcess) {

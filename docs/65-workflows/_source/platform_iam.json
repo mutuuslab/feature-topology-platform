@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9411/admin/iam",
+  "iam_url": "http://127.0.0.1:9532/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-08T07:24:05.134Z",
+  "fetched_at": "2026-11-08T16:02:24.608Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\harness-procedures-20261108\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-08T07:18:30.231Z",
+  "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\release-20261108-p10\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-08T15:58:45.396Z",
   "ff_git": {
-   "head": "ec2d31deb610b691b4ae2372d326d28253d42dd3",
-   "dirty_files": 1
+   "head": "634b2542ecdd493a7602ffffc326a9bbbbdc9619",
+   "dirty_files": 27
   },
-  "iam_sha256": "709b68bd3c008e3b9517ae91f9454e92be7a8cc754419cc2af9d34db95de406f"
+  "iam_sha256": "a3f3e2a23ffd102617ebfc6f996f42f44c046be510f61bf2c72621bf60ad063b"
  },
  "roles": [
   {
@@ -263,6 +263,202 @@
    "component": "D01-01",
    "roles": [
     "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "setWorkflowRoleGrant",
+   "method": "POST",
+   "path": "/api/workflow/roles",
+   "summary": "시스템 관리자의 업무 조직 역할 배정·철회 — IAM 권한 변경 아님",
+   "component": "D04-04",
+   "roles": [
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "createWorkflowCase",
+   "method": "POST",
+   "path": "/api/workflow/cases",
+   "summary": "대상별 업무 건 작성 — 실제 업무 모델의 수행·책임 역할",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "createWorkflowArtifact",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/artifacts",
+   "summary": "업무 산출물 내용·근거·첨부의 새 버전 작성",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "submitWorkflowActivity",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/activities/:activityId/submit",
+   "summary": "필수 산출물과 근거를 확인해 독립 검토 요청",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "reviewWorkflowActivity",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/activities/:activityId/review",
+   "summary": "산출물 독립 검토 수락·보완 — 원천 Gate·정책 승인과 별개",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "offerWorkflowHandoff",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/handoffs",
+   "summary": "수락된 산출물을 다음 활동 담당자에게 인계 요청 — 요청 번호 멱등",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "receiveWorkflowHandoff",
+   "method": "POST",
+   "path": "/api/workflow/cases/:id/handoffs/:handoffId/receive",
+   "summary": "다음 활동 담당자의 실제 인수·반송 기록",
+   "component": "D04-04",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
    ]
   },
   {
@@ -1567,12 +1763,13 @@
    "name": "resolveExtConflict",
    "method": "POST",
    "path": "/api/integrations/sync/conflicts/:id/resolve",
-   "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용)",
+   "summary": "충돌 처리 — 플랫폼 값 다시 보내기 / 외부 값을 요청으로 다시 시도(가드 적용). Epic ASIL 충돌의 외부 값은 기능안전 담당만",
    "component": "D05-01",
    "roles": [
     "IMPLEMENTER",
     "RELEASE_MANAGER",
-    "FEATURE_APPROVER"
+    "FEATURE_APPROVER",
+    "SAFETY_OFFICER"
    ]
   },
   {
@@ -1580,6 +1777,54 @@
    "method": "POST",
    "path": "/api/integrations/sync/drain",
    "summary": "보낼 함 지금 보내기",
+   "component": "D05-01",
+   "roles": [
+    "SYSTEM",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "refreshAlmWorkProducts",
+   "method": "POST",
+   "path": "/api/alm/features/:id/:ver/work-products/refresh",
+   "summary": "codeBeamer 산출물 지금 다시 읽기",
+   "component": "D05-01",
+   "roles": [
+    "SYSTEM",
+    "IMPLEMENTER",
+    "GATE_JUDGE",
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "closeAlmRejudge",
+   "method": "POST",
+   "path": "/api/alm/rejudge/:id/close",
+   "summary": "재판정 요청 닫기 — 영향 없음(사유 필수, 출시 버전처럼 다시 판정할 수 없을 때)",
+   "component": "D05-01",
+   "roles": [
+    "GATE_JUDGE",
+    "RELEASE_MANAGER",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "clearAlmSuspect",
+   "method": "POST",
+   "path": "/api/alm/features/:id/:ver/suspects/clear",
+   "summary": "의심 관계 풀기 — 아래 항목에 영향 없음(사유 필수)",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER",
+    "GATE_JUDGE",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "runExtReconcile",
+   "method": "POST",
+   "path": "/api/integrations/sync/reconcile",
+   "summary": "대사 지금 실행 — 증분(최근 변경)·전체(Epic 기대값 비교·없는 Epic 만들기·옛 버전별 Epic 합치기)",
    "component": "D05-01",
    "roles": [
     "SYSTEM",
@@ -1780,6 +2025,16 @@
     "COST_APPROVER",
     "COST_VIEWER",
     "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
+  },
+  {
+   "name": "setDepartmentDashboardDefault",
+   "method": "PUT",
+   "path": "/api/dashboard-departments/:departmentId",
+   "summary": "부서 기본 대시보드 배정 — 시스템 관리자, 버전 충돌 검사",
+   "component": "KERNEL",
+   "roles": [
     "SYSTEM_ADMIN"
    ]
   },
@@ -2777,6 +3032,11 @@
    "group": "home"
   },
   {
+   "path": "/procedures/work",
+   "title": "업무 건·산출물",
+   "group": "home"
+  },
+  {
    "path": "/admin/approval",
    "title": "검토함",
    "group": "home"
@@ -2978,7 +3238,7 @@
   },
   {
    "path": "/experiments",
-   "title": "실험·효과",
+   "title": "A/B 및 Shadow 테스트",
    "group": "verify"
   },
   {
@@ -2999,17 +3259,17 @@
   {
    "path": "/procurement/sw-cost",
    "title": "SW 개발비 산정",
-   "group": "release"
+   "group": "procurement"
   },
   {
    "path": "/procurement/sw-cost/basis",
    "title": "계수·단가 표",
-   "group": "release"
+   "group": "procurement"
   },
   {
    "path": "/procurement/sw-cost/:estId",
    "title": "SW 개발비 산정 과제",
-   "group": "release"
+   "group": "procurement"
   },
   {
    "path": "/products/bill-of-features",
@@ -3184,17 +3444,17 @@
   {
    "path": "/integration/code-repositories",
    "title": "코드 저장소 연결",
-   "group": "admin"
+   "group": "config"
   },
   {
    "path": "/integration/code-repositories/:repoId",
    "title": "저장소 상세",
-   "group": "admin"
+   "group": "config"
   },
   {
    "path": "/integration/code-scans",
    "title": "스캔 기록",
-   "group": "admin"
+   "group": "config"
   },
   {
    "path": "/integration/datalake",
@@ -3204,7 +3464,7 @@
   {
    "path": "/integration/openfeature",
    "title": "OpenFeature 범위",
-   "group": "admin"
+   "group": "config"
   },
   {
    "path": "/integration/sync",
@@ -3224,7 +3484,7 @@
   {
    "path": "/supplier/portal",
    "title": "협력사 이관",
-   "group": "admin"
+   "group": "procurement"
   },
   {
    "path": "/audit",
@@ -3237,14 +3497,19 @@
    "group": "admin"
   },
   {
+   "path": "/admin/settings",
+   "title": "설정",
+   "group": "settings"
+  },
+  {
    "path": "/admin/iam",
    "title": "플랫폼 인증·권한",
-   "group": "admin"
+   "group": "settings"
   },
   {
    "path": "/admin/security",
    "title": "보안·인증서",
-   "group": "admin"
+   "group": "settings"
   },
   {
    "path": "/admin/data",
@@ -3254,17 +3519,12 @@
   {
    "path": "/data/workbench",
    "title": "데이터 분석실",
-   "group": "admin"
+   "group": "ops"
   },
   {
    "path": "/biz/trials",
    "title": "체험 전환 분석",
-   "group": "admin"
-  },
-  {
-   "path": "/admin/settings",
-   "title": "설정",
-   "group": "admin"
+   "group": "ops"
   },
   {
    "path": "/consults/:id",

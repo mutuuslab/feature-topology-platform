@@ -144,7 +144,7 @@ describe('셸', () => {
     renderShell('/fleet');
     const main = document.getElementById('main')!;
     expect(main.getAttribute('data-area')).toBe('ops');
-    // 본문만 어둡게 바꾸던 data-zone(관제실 토큰)은 셸에 붙지 않는다 — 상단바·레일과 톤이 갈렸다(하네스 2판 결함 5)
+    // 본문만 어둡게 바꾸던 data-zone(배포 및 모니터링 토큰)은 셸에 붙지 않는다 — 상단바·레일과 톤이 갈렸다(하네스 2판 결함 5)
     expect(main.hasAttribute('data-zone')).toBe(false);
     expect(screen.getByText('운영 영역 — 실차·안전에 영향')).toBeTruthy();
   });

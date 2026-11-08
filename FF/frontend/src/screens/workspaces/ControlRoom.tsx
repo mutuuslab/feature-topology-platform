@@ -1,4 +1,4 @@
-// ④ 관제실(OTA·서비스운영·IT인프라·보안운영) — 셸 전체가 어두운 관제 톤. 핵심 메시지 = 진행 중인 안전 차단 수(0이면 회색),
+// ④ 배포 및 모니터링(OTA·서비스운영·IT인프라·보안운영) — 셸 전체가 어두운 관제 톤. 핵심 메시지 = 진행 중인 안전 차단 수(0이면 회색),
 // 그 옆에 크게 긴급 차단 요청. 숫자 띠(연결·끊김·이상 징후·차단) → 차량 상태 표 · 최근 이상 징후 · 내 업무.
 import { Link } from 'react-router-dom';
 import { workspaceMarker } from './workspaceMarker';
@@ -55,7 +55,7 @@ export default function ControlRoomHome({ dept }: { dept: DepartmentSummary }) {
         codes={C.eyebrow}
         title={C.title(dept.name)}
         lead={C.lead}
-        // 0건도 숫자로 — 관제실은 '지금 몇 건'이 첫 질문이다(0이면 회색)
+        // 0건도 숫자로 — 배포 및 모니터링은 '지금 몇 건'이 첫 질문이다(0이면 회색)
         message={!killsKnown ? { tone: kills.isError ? 'warn' : 'neutral', value: W.unknown, text: kills.isError ? W.unavailable : C.keyKill(0).text } : { tone: active ? 'danger' : 'neutral', ...C.keyKill(active) }}
         actions={
           <div className="ws-kill">

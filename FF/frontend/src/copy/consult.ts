@@ -1,11 +1,11 @@
-// 검토 포털·협의 요청 문구(W5, 담당자 개선 P5-1·P5-12) — 포털 부서(구매·법무·개인정보보호) 사람이 읽는다.
+// SW개발비 및 정보보안·협의 요청 문구(W5, 담당자 개선 P5-1·P5-12) — 포털 부서(구매·법무·개인정보보호) 사람이 읽는다.
 // 쓰지 않는 낱말(3초 규칙·P5-12): Gate·SLA·OTA·Inputs·Outputs·레인·R/A/C/I 글자·절차 활동 코드. 업무 이름과 한 줄 설명으로 말한다.
 import type { ConsultOpinion, ConsultTargetKind } from '@ff/contracts';
 
 export const consult = {
   portal: {
     eyebrow: '검토 의견',
-    title: (dept: string) => `${dept} 검토 포털`,
+    title: (dept: string) => `${dept} SW개발비 및 정보보안`,
     lead: '다른 부서가 의견을 구한 건입니다. 건을 열면 살펴볼 것이 한 장에 있고, 동의·보완·반대 중 하나와 메모를 남기면 됩니다.',
     key: (n: number) => ({ value: n, text: '의견을 기다리는 건' }),
     keyNone: '지금 의견을 기다리는 건이 없습니다 — 지난 건은 아래에 있습니다',

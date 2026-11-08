@@ -1,4 +1,4 @@
-// 전세계 차량 지도 그림 — MapLibre GL(BSD-3) + OpenFreeMap 벡터 타일(키·쿠키·요청 한도 없음). 밝은 면은 Positron, 어두운 관제실 영역은 Dark.
+// 전세계 차량 지도 그림 — MapLibre GL(BSD-3) + OpenFreeMap 벡터 타일(키·쿠키·요청 한도 없음). 밝은 면은 Positron, 어두운 배포 및 모니터링 영역은 Dark.
 // 타일 서버에 닿지 않으면(정적 데모·오프라인·e2e) 내장 Natural Earth 육지 윤곽으로 그린다. WebGL이 없으면 그리지 않는다(화면의 표가 같은 내용).
 // 차량 좌표는 GeoJSON으로 브라우저 안에서만 그린다 — 타일 요청에는 보고 있는 지도 범위만 담긴다.
 // 색은 CSS 토큰에서 읽는다(밝은/어두운 테마를 따라간다). 모든 값은 백엔드 /api/fleet/map 응답 그대로다.
@@ -74,7 +74,7 @@ export type MapView = keyof typeof VIEWS;
 
 export const hasWebGL = () => typeof window !== 'undefined' && typeof (window as unknown as { WebGLRenderingContext?: unknown }).WebGLRenderingContext !== 'undefined';
 
-// 토큰은 영역(관제실 [data-zone='ops'] 등) 범위로 선언되므로 지도 요소에서 읽는다
+// 토큰은 영역(배포 및 모니터링 [data-zone='ops'] 등) 범위로 선언되므로 지도 요소에서 읽는다
 const cssVar = (el: Element, name: string) => {
   const cs = getComputedStyle(el);
   return cs.getPropertyValue(name).trim() || cs.getPropertyValue('--muted').trim() || 'gray';

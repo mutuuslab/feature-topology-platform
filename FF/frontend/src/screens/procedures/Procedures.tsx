@@ -1,4 +1,4 @@
-// /procedures, /procedures/:id — 담당자 업무 절차(docs/65-workflows 모델). 허브는 탭 3개(내 업무 흐름·내 업무 목록·전체 지도),
+// /procedures, /procedures/:id — 담당자 업무 절차(docs/65-workflows 모델). 허브는 탭 3개(내 업무 흐름·내 업무 목록·전체업무흐름),
 // 상세는 스윔레인 흐름도(흐름도/텍스트 전환). 데이터는 지연 로딩(data/workflows.ts). 흐름도 배치는 flow/layout.ts가 계산한다.
 import { useEffect, useMemo, useRef } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -41,7 +41,7 @@ const firstStatic = (screens: string[]) => screens.find((s) => !s.includes(':') 
 
 function Hub({ doc }: { doc: WorkflowDoc }) {
   const [sp] = useSearchParams();
-  const reference = (sp.get('view') ?? 'reference') === 'reference';
+  const reference = sp.get('view') === 'reference';
   const { role, roleIds } = useMe(doc);
   const { isDone, toggle, doneCount, doneIds, status: progressStatus, error: progressError } = useProgress(role);
   const inbox = useProcedureInbox(role);
@@ -99,10 +99,10 @@ function Hub({ doc }: { doc: WorkflowDoc }) {
       <Tabs
         param="view"
         tabs={[
-          { key: 'reference', label: W.tab },
-          { key: 'flow', label: F.hub.flow },
-          { key: 'roles', label: F.hub.roles },
           { key: 'map', label: F.hub.map },
+          { key: 'flow', label: F.hub.flow },
+          { key: 'reference', label: W.tab },
+          { key: 'roles', label: F.hub.roles },
           { key: 'list', label: F.hub.list },
         ]}
       >

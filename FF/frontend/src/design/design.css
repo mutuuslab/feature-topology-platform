@@ -2664,7 +2664,7 @@ button.ds-clause:hover { border-color: var(--accent); color: var(--accent); }
   font-weight: 700;
 }
 
-/* ── 부서 작업공간 성격(D4) — 심사 결재함(review)은 강조색이 본문과 비슷한 슬레이트라 링크·머리가 묻혔다 ── */
+/* ── 부서 작업공간 성격(D4) — 표준 검토함(review)은 강조색이 본문과 비슷한 슬레이트라 링크·머리가 묻혔다 ── */
 /* 본문 링크는 밑줄로 구별한다(색만으로 구별하지 않는다, WCAG 1.4.1) — 버튼·탭·칩 링크는 제외 */
 :root[data-workspace='review'] #main a:not(.ds-btn):not([role='tab']):not(.ds-id a) {
   text-decoration: underline;

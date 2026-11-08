@@ -191,7 +191,7 @@
   font-size: var(--fs-xs);
 }
 
-/* ② 심사 결재함 — 3분할 */
+/* ② 표준 검토함 — 3분할 */
 .ws-3pane {
   display: grid;
   grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.5fr) minmax(240px, 0.9fr);
@@ -307,7 +307,7 @@
   font-size: var(--fs-sm);
 }
 
-/* ③ 엔지니어링 콘솔 — 조밀한 2열 표 */
+/* ③ 엔지니어링 검토 — 조밀한 2열 표 */
 .ws--console {
   gap: var(--sp-3);
 }
@@ -321,7 +321,7 @@
   font-size: var(--fs-sm);
 }
 
-/* ④ 관제실 — 큰 숫자 띠, 이상 징후 흐름 */
+/* ④ 배포 및 모니터링 — 큰 숫자 띠, 이상 징후 흐름 */
 .ws--control {
   gap: var(--sp-3);
 }
@@ -405,7 +405,7 @@
   color: var(--danger);
 }
 
-/* ⑤ 검토 포털 — 문서함 */
+/* ⑤ SW개발비 및 정보보안 — 문서함 */
 .ws--portal {
   gap: var(--sp-5);
 }
@@ -537,7 +537,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-/* 관제실 큰 숫자 3칸은 1280에서도 한 줄 — 셋째 칸만 다음 줄로 내려가지 않게(1280 미만에서만 2열) */
+/* 배포 및 모니터링 큰 숫자 3칸은 1280에서도 한 줄 — 셋째 칸만 다음 줄로 내려가지 않게(1280 미만에서만 2열) */
 @media (max-width: 1279px) {
   .ws-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -1,7 +1,7 @@
 ---
 id: WF-DEP-ITSEC
 type: workflow
-title: "IT인프라·보안운영팀 R&R / IT Infrastructure & SecOps Roles & Responsibilities"
+title: "Feature 관제실 R&R / IT Infrastructure & SecOps Roles & Responsibilities"
 status: draft
 version: 0.3.0
 owner: governance
@@ -17,7 +17,7 @@ last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
-# WF-DEP-ITSEC · IT인프라·보안운영팀 R&R
+# WF-DEP-ITSEC · Feature 관제실 R&R
 
 > 1차 범위(핵심 생애주기)에서 수행·책임 업무가 없다 — 2차 초안 업무만 있다.
 

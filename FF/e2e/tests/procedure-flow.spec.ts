@@ -122,15 +122,15 @@ test('내 업무 흐름 — 역할 전환기에서 역할을 바꾸면 흐름이
   await expect(page.getByRole('group', { name: /.+ 흐름도$/ })).toBeVisible();
 });
 
-test('내 업무 흐름 텍스트 보기 · 전체 지도에서 절차 흐름도로', async ({ page }) => {
+test('내 업무 흐름 텍스트 보기 · 전체업무흐름에서 절차 흐름도로', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'quality');
   await page.goto('/procedures?view=flow');
   await expect(page.getByRole('group', { name: '내 업무 흐름' })).toBeVisible();
   await page.getByRole('radio', { name: '텍스트' }).click();
   await expect(page.getByRole('table', { name: /내 업무 흐름/ })).toBeVisible();
-  await page.getByRole('tab', { name: '전체 지도' }).click();
-  const map = page.getByRole('group', { name: '전체 지도' });
+  await page.getByRole('tab', { name: '전체업무흐름' }).click();
+  const map = page.getByRole('group', { name: '전체업무흐름' });
   await expect(map).toBeVisible();
   await expect(map.locator('.pf-proc')).toHaveCount(14); // FPW.1~14(Feature DB 운영 FPW.14 포함)
   await expect(map.locator('.pf-proc[data-mine]').first()).toBeVisible();

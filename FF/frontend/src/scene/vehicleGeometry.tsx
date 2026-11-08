@@ -1,5 +1,5 @@
 /**
- * §17.3 — 차량 디지털 트윈 절차적 지오메트리(엔지니어링/관제실 스타일).
+ * §17.3 — 차량 디지털 트윈 절차적 지오메트리(엔지니어링/배포 및 모니터링 스타일).
  *
  * `scene/plantProps.tsx` 와 동일한 원칙을 따른다:
  *  - 장식용 메시를 두지 않는다 — 모든 형상은 서브시스템을 설명하거나 흐름/상태를 전달한다.
@@ -73,7 +73,7 @@ function usePulseMaterial(color: string, pulse: boolean, selected: boolean, opac
 }
 
 /* ------------------------------------------------------------------ */
-/* 공유 머티리얼 — 관제실 톤(다크 슬레이트)                                */
+/* 공유 머티리얼 — 배포 및 모니터링 톤(다크 슬레이트)                                */
 /* ------------------------------------------------------------------ */
 
 export const MAT = {
@@ -86,7 +86,7 @@ export const MAT = {
     color: LEGACY_PAL['lg-171c26'], metalness: 0.6, roughness: 0.34,
     clearcoat: 0.5, clearcoatRoughness: 0.2, envMapIntensity: 1,
   }),
-  // 유리 — 어두운 관제실에서 실제 유리처럼 읽히려면 투명도보다 "반사"가 지배적이어야 한다.
+  // 유리 — 어두운 배포 및 모니터링에서 실제 유리처럼 읽히려면 투명도보다 "반사"가 지배적이어야 한다.
   glass: new THREE.MeshPhysicalMaterial({
     color: LEGACY_PAL['lg-0e1622'], metalness: 0.16, roughness: 0.05,
     clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2.1,
@@ -113,7 +113,7 @@ export const MAT = {
 };
 
 /* ------------------------------------------------------------------ */
-/* 바닥 · 배경 — 다크 관제실 + 은은한 그리드                              */
+/* 바닥 · 배경 — 다크 배포 및 모니터링 + 은은한 그리드                              */
 /* ------------------------------------------------------------------ */
 
 export function SceneFloor() {

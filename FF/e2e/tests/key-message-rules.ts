@@ -5,8 +5,8 @@
 //      이름이 핵심 메시지 문장에 들어 있고, 값도 같거나(핵심 숫자 = 요약 숫자) 핵심 메시지에 숫자가 없으면 반복이다.
 //      핵심 합계를 나눈 내역(Topology '5 미판정·FAIL' 옆 FAIL 2·미판정 3)은 새 정보라 허용.
 //      상태 pill(.ds-key__status)도 본다 — Feature DB 'pill 발행 대기 2' 옆 요약 줄 '발행 대기 2'(F10). pill은 낱말 상태('발행 대기 있음')
-//   ⑫ 본문(#main)에 어두운 관제실 구역(data-zone="ops") 없음 — 대시보드 히어로가 화면에서 가장 진한 요소가 되어 핵심 메시지를 눌렀다.
-//      관제실 톤은 로그인 절차 모션에만 쓴다(design/tokens.css)
+//   ⑫ 본문(#main)에 어두운 배포 및 모니터링 구역(data-zone="ops") 없음 — 대시보드 히어로가 화면에서 가장 진한 요소가 되어 핵심 메시지를 눌렀다.
+//      배포 및 모니터링 톤은 로그인 절차 모션에만 쓴다(design/tokens.css)
 import { expect, type Page } from '@playwright/test';
 
 /** 머리 설명·본문에 쓰면 안 되는 코드 — 요구 ID(FFG-)·연계(IF-)·컴포넌트(D01-01)·보고서 절 번호 */
@@ -70,5 +70,5 @@ export async function summaryAndZone(page: Page) {
   const r = await summaryRepeats(page);
   expect(r.repeated, `⑪ 요약 줄 항목을 핵심 메시지 "${r.key}"(문장·상태 pill)에서 되풀이한다`).toEqual([]);
   const darkZones = await page.locator('#main [data-zone="ops"]').count();
-  expect(darkZones, '⑫ 본문에 어두운 관제실 구역(data-zone="ops")이 있다 — 핵심 메시지보다 진한 장식이 된다').toBe(0);
+  expect(darkZones, '⑫ 본문에 어두운 배포 및 모니터링 구역(data-zone="ops")이 있다 — 핵심 메시지보다 진한 장식이 된다').toBe(0);
 }

@@ -26,7 +26,7 @@ describe('데모 계정 12', () => {
     expect(actorFor('productowner', ['PRODUCT_APPROVER'])).toEqual({ id: 'usr-productowner', role: 'PRODUCT_APPROVER' });
   });
 
-  it('부서 계정은 모두 데모 계정이다 — 관제실 운영 리더, 심사 결재함 두 번째 FSM, 기획 스튜디오 상품 Owner', () => {
+  it('부서 계정은 모두 데모 계정이다 — 배포 및 모니터링 운영 리더, 표준 검토함 두 번째 FSM, 기획 스튜디오 상품 Owner', () => {
     for (const d of DEPARTMENTS.departments) for (const p of d.personas) expect(roles, `${d.id} ${p}`).toContain(p);
     const of = (id: string) => DEPARTMENTS.departments.find((d) => d.id === id)!.personas;
     expect(of('DEP-OPS')).toContain('opslead');

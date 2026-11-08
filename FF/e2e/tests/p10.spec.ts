@@ -55,7 +55,7 @@ test('데이터 동기화: CN 국외 이전은 보류, ECU 대사는 차이를 �
   await noSeriousAxe(page);
 });
 
-test('실험·효과: F2 이상 Feature의 A/B는 FFG-CLS-006으로 거부, Shadow는 등록된다 · 외부 연계 현황 13개', async ({ page }) => {
+test('A/B 및 Shadow 테스트: F2 이상 Feature의 A/B는 FFG-CLS-006으로 거부, Shadow는 등록된다 · 외부 연계 현황 13개', async ({ page }) => {
   await page.goto('/_design');
   await asRole(page, 'release');
   await page.goto('/experiments');
@@ -70,7 +70,7 @@ test('실험·효과: F2 이상 Feature의 A/B는 FFG-CLS-006으로 거부, Shad
   await create.getByLabel('유형').selectOption('SHADOW');
   await create.getByRole('button', { name: '등록', exact: true }).click();
   await expect(create).toHaveCount(0); // 등록되면 Drawer가 닫힌다
-  await expect(page.getByRole('table', { name: '실험·효과' })).toContainText('Shadow');
+  await expect(page.getByRole('table', { name: 'A/B 및 Shadow 테스트' })).toContainText('Shadow');
   await noSeriousAxe(page);
 
   // 첫 탭은 '양방향 연계'(GitLab·JIRA·codeBeamer) — 연결 현황 표는 '연결 현황' 탭

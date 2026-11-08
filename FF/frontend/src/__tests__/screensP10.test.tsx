@@ -1,4 +1,4 @@
-// P10 화면 — 실험·효과, 장애·VOC, 현장 지원 포털, 외부 연계 현황, 데이터 동기화, Legacy 연계. 모의 API.
+// P10 화면 — A/B 및 Shadow 테스트, 장애·VOC, 현장 지원 포털, 외부 연계 현황, 데이터 동기화, Legacy 연계. 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -46,7 +46,7 @@ function mount(path: string, routePath: string, el: JSX.Element, role = 'operato
 
 const EXP = { experimentId: 'EXP-00001', policyId: 'POL-00002', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', fClass: 'F2', type: 'SHADOW', metric: 'DECISION_AGREEMENT', hypothesis: '판단이 같다', treatmentBp: 5000, minSamples: 500, status: 'RUNNING', decision: null, reason: null };
 
-describe('실험·효과', () => {
+describe('A/B 및 Shadow 테스트', () => {
   it('Shadow 등록 본문, 행을 열면 효과·Fleet 대조, 출시 담당자는 결정 버튼', async () => {
     handler = (url, init) => {
       if (init?.method === 'POST') return { status: 201, body: EXP };

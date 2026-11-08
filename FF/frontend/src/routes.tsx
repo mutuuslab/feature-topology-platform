@@ -17,7 +17,7 @@ export interface MenuGroup {
   icon: IconName;
   /** 레일용 짧은 라벨 */
   short: string;
-  /** 어두운 관제실 톤 영역 */
+  /** 어두운 배포 및 모니터링 톤 영역 */
   zone?: 'ops';
 }
 
@@ -196,8 +196,8 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'CARLA 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
   { path: '/verify/scenario', element: legacyTo('/validations/virtual'), title: '차량 시나리오 (이전 주소)', group: 'verify', parent: '/validations/virtual' },
   { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
-  { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: '실험·효과', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },
-  { path: '/verify/experiment', element: legacyTo('/experiments'), title: '실험·효과 (이전 주소)', group: 'verify', parent: '/experiments' },
+  { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: 'A/B 및 Shadow 테스트', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },
+  { path: '/verify/experiment', element: legacyTo('/experiments'), title: 'A/B 및 Shadow 테스트 (이전 주소)', group: 'verify', parent: '/experiments' },
   { path: '/trace/design', element: named(traceScreens, 'DesignTraceScreen'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07', 'D01-02'], v2: true },
   { path: '/trace/ads', element: def(() => import('./screens/ads/TraceAds')), title: 'ADS·UNECE 요구 추적', group: 'verify', parent: '/trace/design', components: ['D06-07'], v2: true },
 
@@ -231,7 +231,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/ops/campaign/:id', element: legacyTo('/deployments'), title: '캠페인 상세 (이전 주소)', group: 'release', parent: '/deployments' },
   { path: '/release/cicd', element: legacyTo('/deployments'), title: 'CI/CD 연계 (이전 주소)', group: 'release', parent: '/deployments' },
 
-  // 7 차량 운영·안전 (관제실 톤)
+  // 7 차량 운영·안전 (배포 및 모니터링 톤)
   { path: '/fleet/live', element: named(fleetScreens, 'FleetLive'), title: 'Fleet 실시간 적용 현황', group: 'ops', menu: '/fleet/live', components: ['D02-03', 'D04-03', 'D06-08'], v2: true },
   { path: '/fleet/map', element: named(() => import('./screens/ops/FleetMap'), 'FleetMapScreen'), title: '전세계 차량 지도', group: 'ops', menu: '/fleet/map', components: ['D02-03'], v2: true },
   { path: '/twin/live', element: named(fleetScreens, 'LegacyLiveRedirect'), title: 'Fleet 실시간 적용 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
@@ -295,7 +295,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/cost', element: legacyTo('/biz/trials'), title: '비용 (이전 주소)', group: 'ops', parent: '/biz/trials' },
   // 디자인 시스템 갤러리 — 데모·개발 빌드만(결정 D-RD-8, 견본 ID를 보인다). 갤러리 자체는 그대로 둔다(시각 회귀·키트 규칙)
   ...(DEMO_EXTRAS ? [{ path: '/_design', element: def(() => import('./screens/design-gallery')), title: '디자인 시스템', group: 'settings', menu: '/_design', v2: true } as AppRoute] : []),
-  // 검토 포털 협의 요청 한 건 — '검토할 것 한 장'(W5 P5-1·P5-12), 포털 홈·요청 부서 홈에서 연다
+  // SW개발비 및 정보보안 협의 요청 한 건 — '검토할 것 한 장'(W5 P5-1·P5-12), 포털 홈·요청 부서 홈에서 연다
   { path: '/consults/:id', element: named(() => import('./screens/workspaces/Consults'), 'ConsultScreen'), title: '협의 요청', group: 'home', parent: '/', components: ['D04-04'], v2: true },
   // 추적 커버리지(P3) — Feature별 요구·필수 Test Evidence 비율, 요구 미연결·Evidence 미등록 Feature
   { path: '/trace/coverage', element: def(() => import('./screens/master/TraceCoverage')), title: '추적 커버리지', group: 'verify', parent: '/trace/design', components: ['D01-02'], v2: true },

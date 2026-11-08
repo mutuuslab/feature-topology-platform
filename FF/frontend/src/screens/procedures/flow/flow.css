@@ -111,7 +111,7 @@
 .pf-my__lane { fill: var(--pd-lane); stroke: var(--pd-lane-line); }
 .pf-my .pf-edge__label { fill: var(--pd-gold); font-weight: 600; }
 
-/* 전체 지도 — 절차서 '프로세스 고르기' 모양: 남색 테두리 상자, 지원 절차는 묶음 판 */
+/* 전체업무흐름 — 절차서 '프로세스 고르기' 모양: 남색 테두리 상자, 지원 절차는 묶음 판 */
 .pf-chainmap__title { fill: var(--pd-muted); font-size: 12px; font-weight: 700; }
 .pf-chainmap__band { fill: var(--pd-card-io); stroke: var(--pd-card-line); }
 .pf-proc { cursor: pointer; outline: none; }

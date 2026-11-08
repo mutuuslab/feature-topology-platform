@@ -1,4 +1,4 @@
-// 심사 결재함 링크 색 대비(담당자 웨이브 P3-11) — 링크 색(=강조색)이 본문 글자와 3:1 이상(WCAG 1.4.1 링크 구분), 바탕·머리 띠·옅은 강조 면과 4.5:1 이상.
+// 표준 검토함 링크 색 대비(담당자 웨이브 P3-11) — 링크 색(=강조색)이 본문 글자와 3:1 이상(WCAG 1.4.1 링크 구분), 바탕·머리 띠·옅은 강조 면과 4.5:1 이상.
 // 예전: 강조색 #334155가 본문 글자(#15171b)와 1.72:1 — 밑줄 말고는 링크를 구분할 수 없었다. 토큰(tokens.css)만 본다.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -26,7 +26,7 @@ const contrast = (a: string, b: string) => {
 const light = { ...block(':root {'), ...block(":root[data-workspace='review'] {") };
 const dark = { ...light, ...block("[data-theme='dark'],\n[data-zone='ops'] {"), ...block(":root[data-theme='dark'][data-workspace='review'] {") };
 
-describe('심사 결재함 링크 대비(P3-11)', () => {
+describe('표준 검토함 링크 대비(P3-11)', () => {
   for (const [name, t] of [
     ['밝은 테마', light],
     ['어두운 테마', dark],

@@ -894,7 +894,7 @@ export const PROCESS: WorkflowProcess = {
   "lanes": [
    {
     "department": "DEP-ITSEC",
-    "label": "IT인프라·보안운영팀",
+    "label": "Feature 관제실",
     "x": 0,
     "y": 0,
     "w": 806,

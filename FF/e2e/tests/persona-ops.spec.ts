@@ -44,7 +44,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/_design');
 });
 
-test('관제실 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → 단계적 복원(재검증 Evidence·Cohort, safety2·opslead) → 감사 사후 검토', async ({ page }) => {
+test('배포 및 모니터링 — 긴급 차단 FSM+CSM(역할 기록) → 차량 회신 → 단계적 복원(재검증 Evidence·Cohort, safety2·opslead) → 감사 사후 검토', async ({ page }) => {
   test.setTimeout(300_000); // 아래 기다림(다른 시험의 차단이 끝날 때까지)을 포함
   await lockKill(page.request, 'FEAT-00022'); // 같은 Feature를 차단하는 ops.spec·learn.spec과 차례를 둔다
   // ── 1. 운영자 요청(OTA·서비스운영) ──

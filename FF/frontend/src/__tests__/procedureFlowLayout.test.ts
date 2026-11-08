@@ -202,7 +202,7 @@ describe('내 업무 흐름 배치 — 데모 역할 9개 전부', () => {
   });
 });
 
-describe('전체 지도 배치', () => {
+describe('전체업무흐름 배치', () => {
   for (const w of [900, 1100, 1366, 1600]) {
     it(`폭 ${w}: 18칸 겹침 0, 폭 안에 들어가고, 생애주기 화살표가 차례로 잇는다`, () => {
       const l = layoutValueChain(WORKFLOWS.processes, w);

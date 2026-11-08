@@ -1,4 +1,4 @@
-// 업무 절차 흐름도 문구 — 절차 흐름도·내 업무 흐름·전체 지도. 흐름도 화면이 열릴 때만 불러온다(첫 화면 번들에 넣지 않는다).
+// 업무 절차 흐름도 문구 — 절차 흐름도·내 업무 흐름·전체업무흐름. 흐름도 화면이 열릴 때만 불러온다(첫 화면 번들에 넣지 않는다).
 export const procedureFlow = {
   views: {
     label: '보기 방식',
@@ -12,7 +12,7 @@ export const procedureFlow = {
     flow: '내 업무 흐름',
     roles: '담당자별 업무 흐름',
     list: '내 업무 목록',
-    map: '전체 지도',
+    map: '전체업무흐름',
   },
   roles: {
     title: '담당자별 업무 흐름',
@@ -175,7 +175,7 @@ export const procedureFlow = {
     loading: '내 업무 흐름을 불러오는 중입니다.',
   },
   chain: {
-    title: '전체 지도',
+    title: '전체업무흐름',
     hint: (procs: number) => `${procs}개 절차의 가치 사슬 — 생애주기 절차는 차례로 이어지고, 지원 절차가 아래에서 받칩니다. 칸을 누르면 그 절차의 흐름도가 열립니다.`,
     life: '생애주기',
     support: '지원 절차',
@@ -185,11 +185,11 @@ export const procedureFlow = {
     progress: (done: number, total: number) => `${done}/${total} 완료`,
     boxLabel: (name: string, mine: number, turn: number, done: number, total: number) =>
       `${name} — 내 활동 ${mine}건${turn ? `, 내 차례 ${turn}건` : ''}, ${total}개 중 ${done}개 완료`,
-    textCaption: '전체 지도 — 흐름도와 같은 내용',
+    textCaption: '전체업무흐름 — 흐름도와 같은 내용',
     col: { process: '절차', group: '단계', gates: 'Gate', mine: '내 활동', turn: '내 차례', progress: '완료' },
   },
   design: {
     title: '업무 절차 흐름도',
-    hint: '스윔레인 흐름도·내 업무 흐름·전체 지도 — 배치는 자체 알고리즘(열 = 위상 순위, 직교 경로)입니다.',
+    hint: '스윔레인 흐름도·내 업무 흐름·전체업무흐름 — 배치는 자체 알고리즘(열 = 위상 순위, 직교 경로)입니다.',
   },
 };

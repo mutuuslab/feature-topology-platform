@@ -6,7 +6,7 @@ import { DEPARTMENTS } from '../data/departments';
 describe('조사 으로/로', () => {
   it('받침이 있으면 으로, 없거나 ㄹ 받침·한글이 아니면 로', () => {
     expect(D.home.to('품질팀')).toBe('품질팀으로');
-    expect(D.home.to('관제실')).toBe('관제실로');
+    expect(D.home.to('배포 및 모니터링')).toBe('배포 및 모니터링으로');
     expect(D.home.to('법무')).toBe('법무로');
     expect(roParticle('QA')).toBe('로');
   });

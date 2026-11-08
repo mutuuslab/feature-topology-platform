@@ -2,7 +2,7 @@
 // 운영·안전 그룹 화면은 청록 표식(data-area="ops")으로 운영 모드임을 알린다. 본문만 어둡게 바꾸면 상단바·레일과
 // 톤이 반쯤 갈려 의도가 읽히지 않았다(하네스 2판 결함 5) — 테마는 사용자 설정(라이트·다크)을 그대로 따른다.
 // 부서 보기(데모, 2026-11-04): 부서를 고르면 레일·패널 대신 그 부서 메뉴(DepartmentNav)를 그리고, html[data-workspace]가
-// 화면 유형(기획 스튜디오·심사 결재함·엔지니어링 콘솔·관제실·검토 포털)별 배치·강조색·밀도를 바꾼다. 전체 보기는 지금 그대로다.
+// 화면 유형(기획 스튜디오·표준 검토함·엔지니어링 검토·배포 및 모니터링·SW개발비 및 정보보안)별 배치·강조색·밀도를 바꾼다. 전체 보기는 지금 그대로다.
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
@@ -129,7 +129,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [narrow, panelOpen, setPanelOpen]);
 
-  // 부서 작업공간 — 토큰(design/tokens.css [data-workspace])이 html에서 내려온다. 관제실은 셸 전체를 어두운 관제 톤으로
+  // 부서 작업공간 — 토큰(design/tokens.css [data-workspace])이 html에서 내려온다. 배포 및 모니터링은 셸 전체를 어두운 관제 톤으로
   useEffect(() => {
     const html = document.documentElement;
     if (tokenWorkspace) html.setAttribute('data-workspace', tokenWorkspace);

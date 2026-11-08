@@ -21,12 +21,12 @@ for (const c of CONDITIONS) {
 }
 
 // 갤러리 아래쪽 부품은 .sh-main 스크롤 밖이라 위 전체 샷에 잡히지 않는다 — 부품 패널마다 따로 찍는다.
-// 기능안전 부품(보고서 v1.1)과 관제실(다크) 영역: 가장 좁은 화면·가장 넓은 화면·시연 모드.
+// 기능안전 부품(보고서 v1.1)과 배포 및 모니터링(다크) 영역: 가장 좁은 화면·가장 넓은 화면·시연 모드.
 // 패널은 작아서 전역 허용치(0.2%)로는 글리프 모양 변화(●→–) 같은 접근성 신호가 빠져나간다 — 픽셀 수로 엄격하게 비교한다.
 const STRICT = { maxDiffPixels: 8, maxDiffPixelRatio: undefined } as const;
 const PANELS = ['safety-classes', 'safety-rules', 'safety-approvals', 'safety-stages', 'safety-replies'];
 for (const c of CONDITIONS.filter((x) => x.name !== '1536')) {
-  test(`@visual 기능안전 부품·관제실 영역 ${c.name}`, async ({ page }) => {
+  test(`@visual 기능안전 부품·배포 및 모니터링 영역 ${c.name}`, async ({ page }) => {
     await page.setViewportSize({ width: c.w, height: c.h });
     await page.addInitScript((present) => localStorage.setItem('ff.present', present ? '1' : '0'), c.present);
     await page.goto('/_design');

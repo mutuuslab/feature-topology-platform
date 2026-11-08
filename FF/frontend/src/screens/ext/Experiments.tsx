@@ -1,4 +1,4 @@
-// /experiments — 실험·효과 검증 관리 (D01-07). A/B·Shadow 실험 등록·시작·종료와 효과 추정. F2 이상은 Shadow만(FFG-CLS-006).
+// /experiments — A/B 및 Shadow 테스트 검증 관리 (D01-07). A/B·Shadow 실험 등록·시작·종료와 효과 추정. F2 이상은 Shadow만(FFG-CLS-006).
 import { FreshnessChip } from '../../design/freshness';
 import { useState } from 'react';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -7,10 +7,12 @@ import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValu
 import { usePermission } from '../shared';
 import type { LakeExperimentEffect } from '@ff/contracts';
 import { lake as LK } from '../../copy/lake';
+import { experimentAnalysis as A } from '../../copy/experiment-analysis';
+import { ExperimentMethods, ExperimentResultCharts, type ExperimentResults } from './ExperimentAnalysis';
 
 const X = p10.experiment;
 
-interface Results {
+interface Results extends ExperimentResults {
   days: number;
   control: number;
   treatment: number;
@@ -49,7 +51,9 @@ export function ExperimentsScreen() {
   const [open, setOpen] = useState<string | null>(null);
   // 등록은 머리의 행동으로 여는 Drawer — 결과(목록)가 위, 입력은 Drawer(3초 규칙 9, UX3-12)
   const [creating, setCreating] = useState(false);
+  const [mode, setMode] = useState('ALL');
   const rows = list.data?.items ?? [];
+  const visible = mode === 'ALL' ? rows : rows.filter(r => r.type === mode);
   const C = X.col;
   // Data Lake 실측 효과(TL-UI07) — 효과·신뢰구간·표본 수. 표본이 최소 표본에 못 미치거나 지표가 늦으면 '아직 판단 불가'
   const lake = useApi<{ connected: boolean; items: LakeExperimentEffect[] }>('lakeExperiments');
@@ -66,14 +70,19 @@ export function ExperimentsScreen() {
         })()}
         actions={<Button onClick={() => setCreating(true)}>{X.create}</Button>}
       />
+      <ExperimentMethods />
+      <Select label={A.mode} value={mode} onChange={e => setMode(e.target.value)}>
+        <option value="ALL">{A.all}</option><option value="AB">{A.ab}</option><option value="SHADOW">{A.shadow}</option>
+      </Select>
       <Drawer open={creating} title={X.create} onClose={() => setCreating(false)}>
         <CreateForm onDone={() => setCreating(false)} />
       </Drawer>
       {/* 실험이 하나도 없으면 핵심 메시지가 '진행 중인 실험이 없습니다'라고 말한다 — 빈 상자로 되풀이하지 않는다(3초 ⑩) */}
-      <AsyncView state={asyncState(list, rows.length === 0)} emptyHidden empty={{ title: X.empty }} error={list.error} onRetry={() => list.refetch()}>
+      <p className="ds-field__hint">{A.observedBody} {A.notCollected}</p>
+      <AsyncView state={asyncState(list, visible.length === 0)} empty={{ title: X.empty }} error={list.error} onRetry={() => list.refetch()}>
         <DataTable
           caption={X.title}
-          rows={rows}
+          rows={visible}
           rowKey={(r) => r.experimentId}
           onOpen={(r) => setOpen(r.experimentId)}
           columns={[
@@ -180,6 +189,7 @@ function ExperimentDrawer({ id, onClose }: { id: string | null; onClose: () => v
             </Button>
           )}
           <Panel title={X.results} actions={r ? <VerdictBadge value={VERDICT_BADGE[r.verdict] ?? 'UNJUDGED'} /> : undefined}>
+            {r && <ExperimentResultCharts result={r} type={e.type} minSamples={e.minSamples} />}
             {r ? (
               <KeyValue
                 rows={[

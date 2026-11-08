@@ -1,8 +1,8 @@
-// P10 화면 문구 — 실험·효과, 장애·VOC, 데이터 동기화, Legacy 연계·Legacy-SDV, 현장 지원 포털, 외부 연계 현황. 화면이 직접 가져와 해당 화면을 열 때 읽는다.
+// P10 화면 문구 — A/B 및 Shadow 테스트, 장애·VOC, 데이터 동기화, Legacy 연계·Legacy-SDV, 현장 지원 포털, 외부 연계 현황. 화면이 직접 가져와 해당 화면을 열 때 읽는다.
 export const p10 = {
   experiment: {
     key: { running: '진행 중인 실험', none: '진행 중인 실험이 없습니다' },
-    title: '실험·효과',
+    title: 'A/B 및 Shadow 테스트',
     lead: '정책 하나로 A/B·Shadow 실험을 하고 효과를 추정합니다.',
     create: '실험 등록',
     policy: '대상 정책',

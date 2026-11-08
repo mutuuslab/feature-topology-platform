@@ -78,7 +78,7 @@ last_updated: 2026-11-08
 |---|---|---|---|---|---|
 | 받음 | FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 | FPW.2-A06 TARA 수행 | 기능안전팀 | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` | 1차 |
 | 받음 | FPW.8-A04 긴급 차단 요청 | FPW.8-A05 긴급 차단 2인 승인 | OTA·서비스운영팀 | 긴급 차단 요청 `WP-KILL-REQ` | 1차 |
-| 받음 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11-A02 키 교체 플랫폼 기록 | IT인프라·보안운영팀 | 서명 키 대장 `WP-KEY-REGISTER` | 2차 초안 |
+| 받음 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11-A02 키 교체 플랫폼 기록 | Feature 관제실 | 서명 키 대장 `WP-KEY-REGISTER` | 2차 초안 |
 | 받음 | FPW.12-A06 처리 목적·근거 검토 | FPW.12-A07 정보주체 요청 접수 | 개인정보보호팀 | 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` | 2차 초안 |
 | 보냄 | FPW.2-A06 TARA 수행 | FPW.2-A05 G2 HARA 영향 판정 | 기능안전팀 | TARA 결과 `WP-TARA` | 1차 |
 | 보냄 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8-A06 차단 전달·적용 추적 | OTA·서비스운영팀 | 차단 승인 기록 `WP-KILL-DECISION` | 1차 |

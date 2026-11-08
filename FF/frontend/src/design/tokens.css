@@ -2,7 +2,7 @@
    디자인 토큰 — "Engineering Instrument"
    색·글꼴·간격·모션을 정의하는 유일한 파일(lint:tokens가 다른 파일의 원시 색을 막는다).
    · 밝은 종이 위 고밀도 거버넌스 화면 / 운영·안전 화면은 사용자 테마를 따르고 청록 표식(data-area="ops")만 붙인다.
-     어두운 관제실 톤(data-zone="ops")은 로그인 절차 모션에만 쓴다 — 본문(#main)에는 두지 않는다(대시보드 히어로도 본문 테마, UX3-15)
+     어두운 배포 및 모니터링 톤(data-zone="ops")은 로그인 절차 모션에만 쓴다 — 본문(#main)에는 두지 않는다(대시보드 히어로도 본문 테마, UX3-15)
    · 강조색은 코발트 하나, 빨강은 파괴적 액션(Kill)과 FAIL 전용
    · 밀도: 1920 comfortable · 1366~1599 compact · 시연 모드(data-present) 18px 고대비
    ───────────────────────────────────────────────────────────────────────────── */
@@ -216,7 +216,7 @@
 
 }
 
-/* 파생 토큰 — 다른 토큰을 참조하므로 각 테마 범위(관제실 영역·다크·시연)에서 다시 선언해야
+/* 파생 토큰 — 다른 토큰을 참조하므로 각 테마 범위(배포 및 모니터링 영역·다크·시연)에서 다시 선언해야
    그 범위의 값으로 계산된다(사용자 정의 속성은 선언된 요소에서 해석된다). */
 :root,
 [data-theme='dark'],
@@ -273,7 +273,7 @@
   }
 }
 
-/* 어두운 관제실 — 전역 다크 테마 또는 운영·안전 영역 */
+/* 어두운 배포 및 모니터링 — 전역 다크 테마 또는 운영·안전 영역 */
 [data-theme='dark'],
 [data-zone='ops'] {
   --paper: #0d0f12;
@@ -384,8 +384,8 @@
 
 /* 부서 작업공간(데모 부서 보기) — 화면 유형마다 강조색·정보 밀도·면을 다르게 한다(셸 html[data-workspace]).
    부품(버튼·표·폼)·글자 하한·판정색은 그대로다. html(:root)에만 건다 — 셸 div의 같은 속성(배치용)이 다크 토큰을 덮으면 안 된다. 강조색은 본문 글자와 흰 글자 모두 4.5:1 이상.
-   studio 기획 스튜디오(따뜻한 주황·넓은 여백) · review 심사 결재함(중립 슬레이트) · console 엔지니어링 콘솔(청색·조밀)
-   control 관제실(다크·청록, 셸 전체에 data-zone=ops 톤) · portal 검토 포털(보라·큰 글자) */
+   studio 기획 스튜디오(따뜻한 주황·넓은 여백) · review 표준 검토함(중립 슬레이트) · console 엔지니어링 검토(청색·조밀)
+   control 배포 및 모니터링(다크·청록, 셸 전체에 data-zone=ops 톤) · portal SW개발비 및 정보보안(보라·큰 글자) */
 :root[data-workspace='studio'] {
   --accent: #b4410b;
   --accent-hover: #8f3307;
@@ -427,14 +427,14 @@
   --ws-band: #f1ecfa;
   --row-h: 42px;
 }
-/* 엔지니어링 콘솔의 어두운 메뉴(DepartmentNav data-zone=ops) — 관제 토큰의 코발트 대신 콘솔 강조색 */
+/* 엔지니어링 검토의 어두운 메뉴(DepartmentNav data-zone=ops) — 관제 토큰의 코발트 대신 콘솔 강조색 */
 :root[data-workspace='console'] .sh-dnav[data-zone='ops'] {
   --accent: #5ec4e6;
   --accent-hover: #8ad6ee;
   --accent-soft: #11303b;
   --accent-ink: #061a21;
 }
-/* 검토 포털의 큰 글자는 본문에만 — 글자 크기 토큰은 --fs-base에서 계산되므로 본문에서 같은 식을 다시 선언한다 */
+/* SW개발비 및 정보보안의 큰 글자는 본문에만 — 글자 크기 토큰은 --fs-base에서 계산되므로 본문에서 같은 식을 다시 선언한다 */
 :root[data-workspace='portal'] #main {
   --fs-base: 15px;
   --fs-xs: max(11px, calc(var(--fs-base) * 0.786));

@@ -1,5 +1,5 @@
 export const procurementHome = {
-  title: (dept: string) => `${dept} 업무 현황`,
+  title: (dept: string) => `${dept} SW개발비 및 정보보안`,
   lead: '개발비 산정과 제출 건을 확인하고, 협력사 납품 내역과 다른 부서의 의견 요청으로 이어갑니다.',
   message: '산정·승인은 과제별 근거와 작성자·승인자 분리를 확인한 뒤 처리합니다.',
   cost: 'SW 개발비 산정·승인',

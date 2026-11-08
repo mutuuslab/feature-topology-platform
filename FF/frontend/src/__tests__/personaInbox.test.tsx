@@ -267,7 +267,7 @@ describe('기획 스튜디오 — Sign-off 대기·내 Feature·열 수·인계 
     await waitFor(() => expect(document.querySelector('[data-role-queues] [data-queue="refReview"] a[href="/master/feature-db/changes/CR-2026-010"]')).not.toBeNull());
   });
 
-  it('P2-5 엔지니어링 콘솔 — 출시 담당(coordinator)은 출시 가능·배포 대기가 핵심 메시지', async () => {
+  it('P2-5 엔지니어링 검토 — 출시 담당(coordinator)은 출시 가능·배포 대기가 핵심 메시지', async () => {
     handler = (url) => (url.startsWith('/api/policies?status=APPROVED') ? { body: { items: [{ policyId: 'POL-00006', flagKey: 'care_x', featureId: 'FEAT-00188', featureVersion: '1.0.0', status: 'APPROVED', createdBy: 'usr-commerce', createdAt: at(-10) }] } } : api(url));
     mount({ role: 'coordinator', department: 'DEP-INT' }, '/', '/', <HomeScreen />);
     await waitFor(() => expect(document.querySelector('[data-key-message]')?.textContent).toMatch(/출시 가능.*배포 대기|배포 대기.*출시 가능/));

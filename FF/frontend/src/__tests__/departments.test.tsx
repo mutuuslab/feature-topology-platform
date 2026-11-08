@@ -149,7 +149,7 @@ describe('셸 — 부서 보기와 전체 보기', () => {
     expect(document.querySelector('[data-dept-nav]')).toBeNull();
   });
 
-  it('부서를 고르면 레일 대신 부서 메뉴, html에 화면 유형 — 관제실은 어두운 관제 톤', async () => {
+  it('부서를 고르면 레일 대신 부서 메뉴, html에 화면 유형 — 배포 및 모니터링은 어두운 관제 톤', async () => {
     mount({ role: 'operator', department: 'DEP-OPS' });
     expect(document.querySelector('.sh-rail')).toBeNull();
     const nav = await screen.findByRole('navigation', { name: 'OTA·서비스운영팀 메뉴' });

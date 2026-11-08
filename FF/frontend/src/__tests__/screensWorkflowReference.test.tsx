@@ -85,6 +85,6 @@ describe('업무 레퍼런스 모델의 조회와 실제 처리 경계', () => {
     mount(<ProcessReference doc={WORKFLOWS} process={p} />, '/procedures/FPW.15?docview=reference');
     const ins = screen.getByRole('heading', { level: 3, name: '프로세스 입력' }).parentElement!;
     fireEvent.click(within(ins).getByRole('link', { name: /FPW\.1 · Feature 등록/ }));
-    expect(screen.getByLabelText('시험 경로').textContent).toBe('/procedures/FPW.1?docview=reference');
+    expect(screen.getByLabelText('시험 경로').textContent).toBe('/procedures/FPW.1');
   });
 });

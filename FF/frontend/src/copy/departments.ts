@@ -10,10 +10,10 @@ export const departments = {
   login: { label: '담당 부서', hint: '로그인 뒤 상단 바에서 언제든 바꿀 수 있습니다' },
   workspace: {
     studio: '기획팀',
-    review: '심사 결재함',
-    console: '엔지니어링 콘솔',
-    control: '관제실',
-    portal: '검토 포털',
+    review: '표준 검토함',
+    console: '엔지니어링 검토',
+    control: '배포 및 모니터링',
+    portal: 'SW개발비 및 정보보안',
   } satisfies Record<Workspace, string>,
   nav: {
     label: (dept: string) => `${dept} 메뉴`,
@@ -48,7 +48,7 @@ export const departments = {
   },
   review: {
     eyebrow: '독립 검토 · 판정',
-    title: (dept: string) => `${dept} 결재함`,
+    title: (dept: string) => `${dept} 표준 검토함`,
     lead: '왼쪽 대기열에서 고르고, 가운데에서 근거를 보고, 오른쪽에서 판정합니다.',
     key: (n: number) => ({ value: n, text: '내 차례인 판정·승인' }),
     clear: '내 차례인 판정·승인이 없습니다',
@@ -73,7 +73,7 @@ export const departments = {
   },
   console: {
     eyebrow: '엔지니어링 · 기준선',
-    title: (dept: string) => `${dept} 콘솔`,
+    title: (dept: string) => `${dept} 엔지니어링 검토`,
     lead: '기준선·Version·연계 상태를 한 표에서 보고 영향을 따라갑니다.',
     key: (n: number) => ({ value: n, text: '확정 대기 Baseline 요청' }),
     keyNone: (n: number) => ({ value: n, text: '확정된 Baseline — 확정 대기 요청 없음' }),
@@ -83,7 +83,7 @@ export const departments = {
     requests: 'Baseline 확정 요청',
     versions: 'Feature Version',
     impact: '변경 영향 분석',
-    // Feature DB 변경 요청 대기(검토·발행) — 기준정보·시스템엔지니어링 콘솔
+    // Feature DB 변경 요청 대기(검토·발행) — 기준정보·시스템엔지니어링 검토
     fdb: {
       title: 'Feature DB 변경 요청',
       review: '검토 대기',
@@ -96,7 +96,7 @@ export const departments = {
   },
   control: {
     eyebrow: '관제 · 실시간',
-    title: (dept: string) => `${dept} 관제실`,
+    title: (dept: string) => `${dept} 배포 및 모니터링`,
     lead: '차량 연결·이상 징후·진행 중인 차단을 실시간으로 보고, 필요하면 긴급 차단을 요청합니다.',
     keyKill: (n: number) => ({ value: n, text: '진행 중인 안전 차단' }),
     keyClear: '진행 중인 안전 차단',
@@ -131,7 +131,7 @@ export const departments = {
   },
   portal: {
     eyebrow: '검토 의견',
-    title: (dept: string) => `${dept} 검토 포털`,
+    title: (dept: string) => `${dept} SW개발비 및 정보보안`,
     lead: '다른 부서가 의견을 구하는 건을 모았습니다. 건마다 무엇을 보면 되는지 한 줄로 적었습니다.',
     key: (n: number) => ({ value: n, text: '의견을 구하는 업무' }),
     ask: '의견 요청함',
@@ -146,7 +146,7 @@ export const departments = {
   },
 };
 
-/** 조사 '으로/로' — 받침 있으면 '으로'(ㄹ 받침은 '로'), 없거나 한글이 아니면 '로'. 예: 품질팀으로 · 법무로 · 관제실로 */
+/** 조사 '으로/로' — 받침 있으면 '으로'(ㄹ 받침은 '로'), 없거나 한글이 아니면 '로'. 예: 품질팀으로 · 법무로 · 배포 및 모니터링로 */
 export function roParticle(word: string): '으로' | '로' {
   const c = word.trim().codePointAt(word.trim().length - 1) ?? 0;
   if (c < 0xac00 || c > 0xd7a3) return '로';

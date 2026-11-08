@@ -1,4 +1,4 @@
-// W5 담당자 개선(P1-8·P1-9·P5-1~P5-12) — 검토 포털 협의 요청·Feature DB 운영(발행 미리 보기·출처 점검·감사 이력)·감사 화면·변경 영향 협력사. 모의 API.
+// W5 담당자 개선(P1-8·P1-9·P5-1~P5-12) — SW개발비 및 정보보안 협의 요청·Feature DB 운영(발행 미리 보기·출처 점검·감사 이력)·감사 화면·변경 영향 협력사. 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -80,7 +80,7 @@ const consult = (o: Record<string, unknown> = {}) => ({
   ...o,
 });
 
-describe('검토 포털 — 실제 협의 요청(P5-1·P5-12)', () => {
+describe('SW개발비 및 정보보안 — 실제 협의 요청(P5-1·P5-12)', () => {
   it('요청함은 한 줄 요약·요청 부서·기한, 전문용어 없이 — 건은 흐름도가 아니라 "검토할 것 한 장"으로 연다', async () => {
     const items = [consult(), consult({ consultId: 'CON-2026-002', summary: '중국 데이터 현지 처리 의견', fromDept: 'DEP-LEG', fromName: '법무팀', daysLeft: -1, dueAt: '2026-11-04' }), consult({ consultId: 'CON-2026-001', status: 'ANSWERED', opinions: [{ opinion: 'AGREE', memo: '확인', by: 'usr-viewer', department: 'DEP-LEG', at: '2026-11-03T00:00:00Z' }] })];
     handler = (u) => (u.startsWith('/api/consultations?to=DEP-LEG') ? { body: { items, total: 3, open: 2, overdue: 1 } } : undefined);

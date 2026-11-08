@@ -1,5 +1,5 @@
 // 부서 메뉴(데모 부서 보기) — 8그룹 레일·패널 대신 그 부서의 업무 화면만. 구조는 하나이고 배치는 화면 유형이 정한다(shell.css
-// [data-workspace]): 기획 스튜디오·검토 포털은 위쪽 가로 메뉴, 심사 결재함·엔지니어링 콘솔·관제실은 왼쪽 세로 메뉴.
+// [data-workspace]): 기획 스튜디오·SW개발비 및 정보보안은 위쪽 가로 메뉴, 표준 검토함·엔지니어링 검토·배포 및 모니터링은 왼쪽 세로 메뉴.
 // 메뉴에 없는 화면도 주소로 열 수 있다(데모 — 화면 차단 없음). '전체 메뉴 보기'는 전체 보기(8그룹)로 돌아간다.
 import { useEffect, useMemo, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';

@@ -1,4 +1,4 @@
-// 업무 절차 흐름도 화면 — 절차 흐름도(상태 얹기·Gate 마름모·시작/종료·텍스트 보기), 내 업무 흐름(역할별), 전체 지도, 메인 가젯 작은 판.
+// 업무 절차 흐름도 화면 — 절차 흐름도(상태 얹기·Gate 마름모·시작/종료·텍스트 보기), 내 업무 흐름(역할별), 전체업무흐름, 메인 가젯 작은 판.
 // 데이터는 docs/65-workflows 모델에서 생성된 모듈 그대로(모의 없음), 서버 상태만 fetch를 바꿔 넣는다.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -180,10 +180,10 @@ describe('내 업무 흐름 (/procedures?view=flow)', () => {
   });
 });
 
-describe('전체 지도 (/procedures?view=map)', () => {
-  it('18개 절차를 그리고 내 역할 참여를 표시하며, 누르면 그 절차 흐름도로 간다', async () => {
-    mount('/procedures?view=map', 'author');
-    const svg = await screen.findByRole('group', { name: '전체 지도' });
+describe('전체업무흐름 (/procedures?view=map)', () => {
+  it('업무절차 기본 진입에서 전체업무흐름18개를 먼저 그리고, 누르면 그 절차 활동 흐름도로 간다', async () => {
+    mount('/procedures', 'author');
+    const svg = await screen.findByRole('group', { name: '전체업무흐름' });
     expect(svg.querySelectorAll('.pf-proc').length).toBe(18);
     const mine = svg.querySelectorAll('.pf-proc[data-mine]').length;
     expect(mine).toBe(WORKFLOWS.processes.filter((p) => myWorkSteps(WORKFLOWS, WORKFLOWS.personas.author).some((s) => s.process.id === p.id)).length);

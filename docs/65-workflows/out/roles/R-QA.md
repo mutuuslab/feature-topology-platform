@@ -3,7 +3,7 @@ id: WF-ROLE-QA
 type: workflow
 title: "품질 조직 업무 절차서 / Quality Organization Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -21,7 +21,10 @@ traces:
     - WF-FPW-11
     - WF-FPW-12
     - WF-FPW-13
-last_updated: 2026-11-05
+    - WF-FPW-16
+    - WF-FPW-17
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -169,15 +172,31 @@ last_updated: 2026-11-05
 - FPW.8-A06 차단 전달·적용 추적 (통보)
 - FPW.8-A10 단계적 복원·관측 (통보)
 - FPW.8-A11 분기 드릴·G8 운영 판정 (협의)
+- FPW.8-A13 정책 롤백 요청·계획 (통보)
+- FPW.8-A14 정책 롤백 독립 승인 (통보)
+- FPW.8-A15 롤백 재검증·실행 (통보)
+- FPW.8-A16 롤백 적용·미회신 확인 (통보)
 - FPW.10-A02 DIA·CIA 체결 (협의)
 - FPW.10-A03 확인 조치 독립성 지정 (협의)
 - FPW.10-A07 EOL 프로비저닝 검증 (통보)
 - FPW.11-A05 CSMS Evidence·R155 보고 (통보)
 - FPW.12-A01 운행 감시 지표·경보 기준 기록 (통보)
 - FPW.12-A05 보존 기간 경과 데이터 삭제 (통보)
+- FPW.12-A07 정보주체 요청 접수 (통보)
+- FPW.12-A08 정보주체 독립 처리 (통보)
 - FPW.13-A01 표준 판 고정 (통보)
 - FPW.13-A03 분기 법규 감시·Profile 갱신 (통보)
 - FPW.13-A04 원격 종료 시스템 설명 작성 (통보)
+- FPW.16-A01 계정 상태 변경 (통보)
+- FPW.16-A02 부재 소유자 이관 (통보)
+- FPW.16-A03 운영 설정·상태 점검 (통보)
+- FPW.16-A04 백업·복구 점검 (통보)
+- FPW.17-A03 사전 품질 점검 (통보)
+- FPW.17-A04 외부 연계 대사 (통보)
+- FPW.17-A05 생산·Legacy 대사 (통보)
+- FPW.18-A01 분석 목적·데이터 검토 (통보)
+- FPW.18-A02 운영·품질 데이터 분석 (협의)
+- FPW.18-A04 개선 과제 인계 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

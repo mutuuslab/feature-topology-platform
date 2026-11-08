@@ -7,7 +7,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState, type ReactNo
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { STATIC_MODE } from '../api/client';
 import { ko } from '../copy/ko';
-import { procedures } from '../copy/procedures';
+import { procedurePanel } from '../copy/procedure-panel';
+import { ScreenProcedureHost } from './ScreenProcedureHost';
 import { sim as SIM } from '../copy/sim';
 import { DEMO_EXTRAS, OIDC_AUTH } from '../auth-mode';
 import { Button, Icon, PageTitleProvider, usePageTitle } from '../design';
@@ -33,7 +34,6 @@ import { useProcedureSummary } from '../data/procedureProgress';
 import './shell.css';
 
 // 업무 절차 데이터는 패널을 열 때만 불러온다(첫 화면 번들 예산)
-const ScreenProcedure = lazy(() => import('./ScreenProcedure'));
 // 공개 시연 사이트 — 이 브라우저의 시연 데이터를 처음 상태로(누를 때만 불러온다, 20-60)
 const DemoReset = lazy(() => import('./DemoReset'));
 
@@ -214,7 +214,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
           ) : (
             <DepartmentSwitcher department={department} role={role} onDepartment={changeDepartment} onRole={(r) => (dept ? dispatch({ t: 'ROLE', role: r }) : changeRole(r))} />
           )}
-          <Button variant="ghost" icon="layers" aria-label={procedures.panel.button} title={procedures.panel.button} onClick={() => setProcOpen(true)} />
+          <Button variant="ghost" icon="layers" aria-label={procedurePanel.button} title={procedurePanel.button} onClick={() => setProcOpen(true)} />
           <Button variant="ghost" icon="book" aria-pressed={explain} aria-label={ko.learn.explain.label} title={ko.learn.explain.hint} onClick={() => learnStore.setExplain(!explain)} />
           <Button variant="ghost" icon="present" aria-pressed={present} aria-label={present ? ko.shell.presentOn : ko.shell.presentOff} title={present ? ko.shell.presentOn : ko.shell.presentOff} onClick={() => setPresent(!present)} />
           <Button variant="ghost" icon={motion.running ? 'pause' : 'play'} aria-pressed={motion.running} aria-label={ko.shell.motion} title={ko.shell.motion} onClick={() => motion.setLive(!motion.live)} />
@@ -250,9 +250,18 @@ function ShellFrame({ children }: { children: ReactNode }) {
             data-group-zone={g.zone}
             aria-current={g.key === current?.group ? 'true' : undefined}
             aria-pressed={g.key === group}
+            aria-expanded={narrow && !present ? g.key === group && panelOpen : undefined}
+            aria-controls={narrow && !present ? 'sh-group-panel' : undefined}
             title={g.ko}
             aria-label={g.ko}
             onClick={() => {
+              // 모바일은 그룹을 먼저 펼치고 사용자가 실제 하위 메뉴를 고른다.
+              // 바로 화면도 옮기면 route-change 효과가 새로 연 드로어를 즉시 닫는다.
+              if (narrow && !present) {
+                setGroup(g.key);
+                setPanelOpen(true);
+                return;
+              }
               // 시연 모드는 그룹 패널을 숨긴다. 아이콘 자체가 해당 그룹의 화면을 열어야 한다.
               const available = MENU.find((m) => m.key === g.key)?.items.filter((r) => !myRole || rolesOf(r) === 'all' || rolesOf(r).includes(role)) ?? [];
               const preferred = g.key === 'config' ? '/arch/topology' : g.key === 'admin' ? '/integration/connectors' : g.key === 'release' ? '/policies' : undefined;
@@ -271,7 +280,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
-      <aside className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
+      <aside id="sh-group-panel" className="sh-panel" aria-label={GROUPS.find((g) => g.key === group)!.ko} data-area={GROUPS.find((g) => g.key === group)?.zone}>
         {/* 좁은 화면 드로어에서만 보인다 — 레일 토글까지 내려가지 않아도 닫을 수 있게 */}
         <button type="button" className="sh-panel__close" aria-label={ko.action.close} title={ko.action.close} onClick={() => setPanelOpen(false)}>
           <Icon name="close" size={18} />
@@ -336,9 +345,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
       <RuleDrawerHost />
       <UnsavedPrompt />
       {procOpen && (
-        <Suspense fallback={null}>
-          <ScreenProcedure onClose={() => setProcOpen(false)} />
-        </Suspense>
+        <ScreenProcedureHost onClose={() => setProcOpen(false)} />
       )}
       {resetOpen && (
         <Suspense fallback={null}>

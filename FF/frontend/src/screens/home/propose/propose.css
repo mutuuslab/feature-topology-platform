@@ -5,6 +5,19 @@
 .propose-role-guide dd { color: var(--ink-2); margin: 0; max-width: 62ch; }
 .propose-selection-summary { padding: var(--sp-3); background: var(--accent-soft); color: var(--ink); overflow-wrap: anywhere; }
 .propose-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--sp-2); }
+.propose-result-actions { display: inline-flex; flex-wrap: wrap; gap: var(--sp-1); }
+.propose-result-actions > span { display: grid; gap: var(--sp-1); }
+.propose-result-list { list-style: none; margin: 0; padding: 0; max-height: 65vh; overflow: auto; }
+.propose-result { min-width: 0; padding: var(--sp-3) 0; border-bottom: 1px solid var(--line); }
+.propose-result:first-child { padding-top: 0; }
+.propose-result h4 { margin: var(--sp-1) 0; font-size: var(--fs-md); overflow-wrap: anywhere; }
+.propose-result-facts { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin: var(--sp-3) 0; }
+.propose-result-facts > div { display: grid; gap: var(--sp-1); }
+.propose-result-facts dt { font-size: var(--fs-xs); color: var(--muted); }
+.propose-result-facts dd { margin: 0; }
+.propose-result .propose-result-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); }
+.propose-result .propose-result-actions > span { justify-items: start; }
+.propose-result .ds-field__hint { white-space: normal; overflow-wrap: anywhere; }
 .propose-section-heading { margin: 0; padding-bottom: var(--sp-2); border-bottom: 1px solid var(--line); }
 .propose-autofill { border-block: 1px solid var(--line); padding-block: var(--sp-3); }
 .propose-autofill > summary { cursor: pointer; font-weight: 650; }

@@ -3,7 +3,7 @@ id: WF-DEP-SE
 type: workflow
 title: "시스템엔지니어링팀 R&R / Systems Engineering Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -19,10 +19,12 @@ traces:
     - WF-FPW-10
     - WF-FPW-12
     - WF-FPW-14
+    - WF-FPW-15
+    - WF-FPW-17
     - WF-ROLE-REQ
     - WF-ROLE-ARC
     - WF-ROLE-DRV
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -37,7 +39,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 10 · 책임 12 · 협의 21 · 통보 18 (활동 38개)
+수행 11 · 책임 13 · 협의 24 · 통보 18 (활동 42개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -63,12 +65,12 @@ last_updated: 2026-11-05
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | R·A (요구 Owner) · I (아키텍트) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
 | FPW.4-A02 플랫폼 도구 신뢰도 분류 | FPW.4 안전 설계·정책 설계 | C (아키텍트) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD` | `/arch/components` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.4-A07 Flag PR 검토·병합 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | G4 Decision Record `WP-G4-DECISION` → – | `/flag-code`, `/flag-code/flags/:flagKey` | 1차 |
+| FPW.4-A07 Flag PR 검토·병합 | FPW.4 안전 설계·정책 설계 | A (아키텍트) | G4 Decision Record `WP-G4-DECISION` → Flag 코드 변경 검토·병합 기록 `WP-FLAG-PR-RESULT` | `/flag-code`, `/flag-code/flags/:flagKey` | 1차 |
 | FPW.5-A02 시나리오·허용 조합 정의 | FPW.5 검증·V&V | C (아키텍트) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 시험 명세(시나리오·허용 조합) `WP-TEST-SPEC` | `/arch/topology`, `/validations` | 1차 |
 | FPW.5-A03 통합 시험·SEooC 가정 확인 | FPW.5 검증·V&V | C (아키텍트) | 검증 계획(독립성 수준) `WP-VV-PLAN`, 입고 검사 결과 `WP-INTAKE-RESULT` → 통합 검증 기록 `WP-INTEGRATION-REC` | `/master/artifacts` | 1차 |
 | FPW.5-A06 G5 V&V 판정 | FPW.5 검증·V&V | I (아키텍트) | G5 시험 Evidence 묶음 `WP-G5-EVIDENCE`, 검증 계획(독립성 수준) `WP-VV-PLAN` → G5 Decision Record `WP-G5-DECISION` | `/verify/evidence`, `/admin/approval` | 1차 |
 | FPW.6-A01 출시 Baseline 확정 요청 | FPW.6 서명 배포 | C (아키텍트) | G5 Decision Record `WP-G5-DECISION`, Flag 정책(검증·승인본) `WP-POLICY` → Baseline 확정 요청 `WP-BASELINE-REQ` | `/baselines` | 1차 |
-| FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | I (아키텍트) | – → – | `/integration/code-repositories`, `/integration/code-scans` | 1차 |
+| FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | I (아키텍트) | – → 코드 저장소 연결·변경 기록 `WP-REPO-CONNECTION` | `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans` | 1차 |
 | FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | R·A (요구 Owner) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
 | FPW.9-A02 Flag Retirement 요청 | FPW.9 사후 검토·Flag Retirement | I (요구 Owner) | Feature 등록 기록 `WP-FEAT-REG` → Flag Retirement 요청 `WP-RETIRE-REQ` | `/flag-retirements` | 1차 |
 | FPW.9-A03 Flag Retirement 승인 | FPW.9 사후 검토·Flag Retirement | R·A (요구 Owner) | Flag Retirement 요청 `WP-RETIRE-REQ` → Retirement 승인 기록 `WP-RETIRE-APPROVAL` | `/flag-retirements` | 1차 |
@@ -79,6 +81,10 @@ last_updated: 2026-11-05
 | FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | C (도메인 검토자) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | I (도메인 검토자) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | C (도메인 검토자) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
+| FPW.15-A03 공수·규모 입력 | FPW.15 SW 개발비·원가 기준 관리 | C (아키텍트) | 산정 범위·과제 `WP-COST-SCOPE`, 발행 원가 기준 `WP-COST-BASIS` → 산정 입력·계산 결과 `WP-COST-CALC` | `/procurement/sw-cost/:estId` | 2차 초안 |
+| FPW.17-A02 구조·공유 자산 검토 | FPW.17 기준정보·공유 자산·연계 품질 | R·A (아키텍트) | 기준 값 관리 기록 `WP-MASTER-VALUES` → 구조·공유 자산 추적 `WP-ASSET-TRACE` | `/master/taxonomy`, `/master/upg`, `/master/structure` 외 2 | 2차 초안 |
+| FPW.17-A03 사전 품질 점검 | FPW.17 기준정보·공유 자산·연계 품질 | C (아키텍트) | 구조·공유 자산 추적 `WP-ASSET-TRACE` → 데이터 사전 점검 `WP-DATA-QUALITY` | `/precheck`, `/trace/coverage` | 2차 초안 |
+| FPW.17-A04 외부 연계 대사 | FPW.17 기준정보·공유 자산·연계 품질 | C (아키텍트) | 데이터 사전 점검 `WP-DATA-QUALITY` → 연계·대사 처리 기록 `WP-INTEGRATION-RECON` | `/integration/connectors` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -91,6 +97,7 @@ last_updated: 2026-11-05
 | 받음 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7-A13 출시 차단 해제 결정 | 기능안전팀 | – | 1차 |
 | 받음 | FPW.9-A02 Flag Retirement 요청 | FPW.9-A03 Flag Retirement 승인 | 상품기획팀 | Flag Retirement 요청 `WP-RETIRE-REQ` | 1차 |
 | 받음 | FPW.14-A01 변경 요청 작성 | FPW.14-A02 자동 점검·도메인 검토 | 상품기획팀 | 기준 행 변경 요청 `WP-REF-CHANGE-REQ` | 2차 초안 |
+| 받음 | FPW.17-A01 차량·시장 기준 관리 | FPW.17-A02 구조·공유 자산 검토 | PLM·기준정보팀 | 기준 값 관리 기록 `WP-MASTER-VALUES` | 2차 초안 |
 | 보냄 | FPW.2-A03 SOTIF 분석 갱신 | FPW.2-A05 G2 HARA 영향 판정 | 기능안전팀 | SOTIF 분석 `WP-SOTIF-ANALYSIS` | 1차 |
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A03 요구 검토 판정 등록 | 품질팀 | 추적성 점검 결과 `WP-TRACE-REPORT` | 1차 |
 | 보냄 | FPW.3-A02 양방향 추적성 점검 | FPW.3-A05 구현 연결 입력 | SW통합·릴리스팀 | – | 1차 |
@@ -100,11 +107,12 @@ last_updated: 2026-11-05
 | 보냄 | FPW.7-A13 출시 차단 해제 결정 | FPW.7-A12 Release Sign-off(출시 책임 확인) | 상품기획팀 | – | 1차 |
 | 보냄 | FPW.9-A03 Flag Retirement 승인 | FPW.9-A04 코드·설정·시험 삭제 기록 | 상품기획팀 | Retirement 승인 기록 `WP-RETIRE-APPROVAL` | 1차 |
 | 보냄 | FPW.14-A02 자동 점검·도메인 검토 | FPW.14-A03 변경 승인·반려 | PLM·기준정보팀 | 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` | 2차 초안 |
+| 보냄 | FPW.17-A02 구조·공유 자산 검토 | FPW.17-A03 사전 품질 점검 | SW통합·릴리스팀 | 구조·공유 자산 추적 `WP-ASSET-TRACE` | 2차 초안 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/config/odd`, `/policies/:id`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/code-repositories`, `/integration/code-scans`, `/integration/openfeature`, `/master/feature-db/:refId`
+- 주 업무 화면: `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/admin/approval`, `/master/control-points`, `/policies/new`, `/policies`, `/config/odd`, `/policies/:id`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/flag-retirements`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/analysis/impact`, `/master/artifacts`, `/integration/connectors`, `/arch/components`, `/validations`, `/verify/evidence`, `/baselines`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans`, `/integration/openfeature`, `/master/feature-db/:refId`, `/procurement/sw-cost/:estId`, `/precheck`, `/trace/coverage`
 
 ## 4. 부서 겸직 직무 분리
 

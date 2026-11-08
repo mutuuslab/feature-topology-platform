@@ -269,6 +269,7 @@ function Overview({ d }: { d: Detail }) {
   const missing = (d.feature._missing ?? {}) as Record<string, string>;
   const show = (k: string) => {
     const v = f[k];
+    if (k === 'description' && typeof v === 'string' && v !== '') return <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{v}</span>;
     if (k === 'requirementIds' && Array.isArray(v) && v.length) return <RequirementChips id={d.feature.featureId} ver={d.feature.version} ids={v} />;
     if (k === 'functions') return (v as { functionId: string; label: string }[]).map((x) => <span key={x.functionId} className="ds-tag"><span className="ds-mono">{x.functionId}</span> {x.label}</span>);
     if (Array.isArray(v)) return v.length ? v.map((x: string, i: number) => <span key={i} className={/^[A-Z0-9-.@]+$/.test(x) ? 'ds-mono' : undefined}>{x}{i < v.length - 1 ? ',' : ''}</span>) : null;

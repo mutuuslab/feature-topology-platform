@@ -160,3 +160,83 @@ process:
       checks:
         - Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다
       platform: {actions: [judgeGate], screens: [/features/:id/:ver, /admin/approval], gates: [G7]}
+
+  base_practices:
+    - id: FPW.2.BP1
+      name: 재-HARA 조건 검출·영향 범위 산정
+      definition_ko: 이전 구성과 제안 변경을 비교하여 재-HARA 조건과 영향을 받는 기능·차량·시험 범위를 식별한다. 재사용 구현의 차이와 위험 전파를 분석하고 재수행할
+        안전 활동을 결정한다.
+      notes: []
+      activity_ids:
+        - FPW.2-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-IMPACT-ANALYSIS
+          outcomes:
+            - O1
+    - id: FPW.2.BP2
+      name: HARA 수행
+      definition_ko: 정의된 Item과 변경 범위의 위험 사건을 분석하여 안전 목표와 ASIL의 근거를 마련한다. 명령 경로와 종료 동작을 포함하고 보안 분석과의 교차 검토
+        결과를 보존한다.
+      notes: []
+      activity_ids:
+        - FPW.2-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-HARA-TARA
+          outcomes:
+            - O2
+    - id: FPW.2.BP3
+      name: TARA 수행
+      definition_ko: 같은 Item 범위에서 자산·위협 시나리오·공격 경로를 분석하여 보안 위험과 요구 후보를 도출한다. 안전 사건과 연결되는 결과를 안전 담당자에게 전달하고
+        상호 영향을 검토한다.
+      notes: []
+      activity_ids:
+        - FPW.2-A06
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-TARA
+          outcomes:
+            - O2
+    - id: FPW.2.BP4
+      name: SOTIF 분석 갱신
+      definition_ko: 기능 사양과 성능 한계 및 알려진·새로운 트리거 조건을 현재 Version 기준으로 평가한다. 안전한 사용 범위와 필요한 시나리오의 변경을 기록하여
+        안전 판단과 검증 계획에 반영한다.
+      notes: []
+      activity_ids:
+        - FPW.2-A03
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-SOTIF-ANALYSIS
+          outcomes:
+            - O3
+    - id: FPW.2.BP5
+      name: 형식승인 영향 1차 판단
+      definition_ko: 변경 내용이 적용 시장의 형식승인 범위와 소프트웨어 식별에 미치는 영향을 판단한다. 필요한 기관 결정과 일정·활성화 조건을 정리하고 출시 책임자에게
+        전달한다.
+      notes: []
+      activity_ids:
+        - FPW.2-A04
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-HOMOLOGATION-IMPACT
+          outcomes:
+            - O4
+    - id: FPW.2.BP6
+      name: G2 HARA 영향 판정
+      definition_ko: 현재 Version의 HARA·TARA·SOTIF·형식승인 판단을 함께 검토하여 변경 영향의 수용 가능성을 결정한다. 기준 ASIL과 다른 지정의 근거도
+        검토하고 판정 Evidence를 후속 요구 작성에 인계한다.
+      notes: []
+      activity_ids:
+        - FPW.2-A05
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-G2-DECISION
+          outcomes:
+            - O4

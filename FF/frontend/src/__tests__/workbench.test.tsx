@@ -80,9 +80,9 @@ describe('데이터 분석실 화면', () => {
     expect(screen.queryByRole('table', { name: '분석 결과' })).toBeNull();
   });
 
-  it('연계·감사·관리 메뉴에서 실제 분석실 경로로 열린다', () => {
-    expect(MENU.find((group) => group.key === 'admin')?.items.some((route) => route.menu === '/data/workbench')).toBe(true);
-    expect(routeOf('/data/workbench')).toMatchObject({ title: '데이터 분석실', group: 'admin', v2: true });
+  it('운영 메뉴에서 실제 분석실 경로로 열린다', () => {
+    expect(MENU.find((group) => group.key === 'ops')?.items.some((route) => route.menu === '/data/workbench')).toBe(true);
+    expect(routeOf('/data/workbench')).toMatchObject({ title: '데이터 분석실', group: 'ops', v2: true });
   });
   it('복수 선택·다중 조건을 적용하고 실제 GET만 호출한다', async () => {
     mount(); await screen.findByRole('table', { name: '분석 결과' });

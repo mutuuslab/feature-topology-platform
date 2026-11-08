@@ -1,0 +1,1297 @@
+// 생성 파일 — tools/workflow-sync.ts. 원천은 docs/65-workflows/model/*.yaml; 손으로 고치지 않는다.
+import type { WorkflowProcess } from '../rules/workflows';
+export const PROCESS: WorkflowProcess = {
+ "id": "FPW.1",
+ "name": "Feature 등록·분류",
+ "en": "Feature Registration & Classification",
+ "group": "생애주기",
+ "gates": [
+  "G1"
+ ],
+ "ref": "표준 보고서 5장(분류), 6.1절 G1, 6.4절 시나리오, Feature DB 설계(30-95) 6장",
+ "purpose": "통제할 Feature Version을 Feature DB 기준 행에 연결해 대상·소유자·적용 차량과 함께 Registry에 등록하고, 네 축 안전 분류와 법규 등급을 확정해 이후 모든 Gate가 같은 분류를 기준으로 판단하게 한다.",
+ "outcomes": [
+  {
+   "id": "O1",
+   "text": "Feature Version이 Feature DB 기준 행·소유자·대상 차량 사양·의존 관계와 함께 Registry에 등록된다."
+  },
+  {
+   "id": "O2",
+   "text": "F 등급·비활성화 등급·법규 등급·Flag 유형이 근거와 함께 확정된다."
+  },
+  {
+   "id": "O3",
+   "text": "G1 판정이 서명된 Decision Record로 남고 다음 단계(G2)로 넘어간다."
+  }
+ ],
+ "basePractices": [
+  {
+   "id": "FPW.1.BP1",
+   "name": "Feature 등록·초안 작성",
+   "definition": "제안의 목적과 기존 기능과의 관계를 검토하여 새 Feature 또는 개정의 범위를 정한다. 작성 기준과 자동 채움의 출처, 적용 대상·담당·안전 수준을 확인하고 필요한 수정 근거를 보존하여 초안을 등록한다.",
+   "notes": [
+    "작성 기준(PRIMARY)은 하나이고 관련 연결(INCLUDED)은 기본값을 합치는 기능이 아니다. 초안 등록은 정의 승인이나 차량 배포가 아니다."
+   ],
+   "activityIds": [
+    "FPW.1-A01"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-FEAT-REG",
+     "outcomes": [
+      "O1"
+     ]
+    },
+    {
+     "workProduct": "WP-REF-LINK",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.1.BP2",
+   "name": "대상 차량 사양·의존 등록",
+   "definition": "차량·시장 기준정보와 기능 의존 관계를 확인하여 이 Feature가 적용될 범위를 정의한다. 변이와 공유 자산의 관계를 점검하고 안전 분류에 영향을 주는 관계를 분류 담당자에게 인계한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.1-A02"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-FEAT-SCOPE",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.1.BP3",
+   "name": "안전 분류(네 축) 확정",
+   "definition": "대상 기능의 위험과 종료 동작을 근거로 안전 분류 네 축을 결정한다. 허용 조합과 시간 예산을 검토하고 등급 변경의 영향 근거를 연결한 뒤 권한 있는 담당자가 분류를 확정한다.",
+   "notes": [
+    "분류 확정은 근거와 서명이 필요한 별도 판단이며 자동 채움 값의 수락만으로 이루어지지 않는다."
+   ],
+   "activityIds": [
+    "FPW.1-A03"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-SAFETY-PROFILE",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.1.BP4",
+   "name": "법규 의무 기능 판정",
+   "definition": "적용 시장의 고정된 Compliance Profile과 기능의 역할을 대조하여 의무 기능 해당 여부를 판단한다. 판단 근거와 시장별 제한을 기록하고 분류·원격 요청 제한에 반영하도록 인계한다.",
+   "notes": [],
+   "activityIds": [
+    "FPW.1-A04"
+   ],
+   "outcomes": [
+    "O2"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-REG-CLASS",
+     "outcomes": [
+      "O2"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.1.BP5",
+   "name": "G1 등록·분류 판정",
+   "definition": "등록·차량 범위·기준 연결·안전 분류·법규 판단의 완전성과 일관성을 확인한다. 누락과 조건을 식별하고 작성자와 구분된 판정자가 근거를 연결한 G1 판정을 기록한다.",
+   "notes": [
+    "요청 중 기준 기능의 후속 관리자 승인은 Feature 정의 승인과 구분한다."
+   ],
+   "activityIds": [
+    "FPW.1-A05"
+   ],
+   "outcomes": [
+    "O3"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-G1-DECISION",
+     "outcomes": [
+      "O3"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "FPW.1.BP6",
+   "name": "Feature DB 추가 요청",
+   "definition": "기존 기준 기능으로 제안을 표현할 수 없는지 확인한 뒤 필요한 기능의 식별·분류·출처를 갖춘 추가 요청을 제출한다. 요청 상태를 추적하고 발행 또는 반려 결과에 따라 Feature 연결을 정리한다.",
+   "notes": [
+    "추가 요청이 접수되어 정식 형식 ID를 받더라도 기준 기능이 승인·발행되었다는 뜻은 아니다."
+   ],
+   "activityIds": [
+    "FPW.1-A06"
+   ],
+   "outcomes": [
+    "O1"
+   ],
+   "evidence": [
+    {
+     "workProduct": "WP-REF-ADD-REQ",
+     "outcomes": [
+      "O1"
+     ]
+    }
+   ]
+  }
+ ],
+ "rules": [
+  "FFG-CLS-001",
+  "FFG-CLS-003",
+  "FFG-CLS-005",
+  "FFG-CLS-008",
+  "FFG-CLS-009",
+  "FFG-LCY-001",
+  "FFG-LCY-002"
+ ],
+ "entry": [
+  "Feature 제안 또는 변경요청이 접수되어 담당 Feature Owner가 지정되었다",
+  "대상 시장의 Compliance Profile 판이 고정되어 있다"
+ ],
+ "exit": [
+  "Feature Version이 PROPOSED 상태로 등록되고 네 축 분류가 Safety Manager 서명으로 확정되었다",
+  "Feature Version이 Feature DB 대표 기준 행 1개(와 필요한 포함 행)에 연결되었다",
+  "법규 의무 기능 여부가 판정되어 분류에 반영되었다",
+  "G1 Decision Record(판정·근거 Evidence·승인자 역할)가 남았다"
+ ],
+ "workProducts": [
+  {
+   "key": "WP-FEAT-PROPOSAL",
+   "name": "Feature 제안·변경요청",
+   "en": "Feature Proposal / Change Request",
+   "kind": "input",
+   "retained": false,
+   "content": [
+    "기능 목적과 사용자 가치, 대상 시장·차종",
+    "관련 요구 ID(ALM)와 기존 Feature와의 관계",
+    "희망 출시 시점과 판매 방식(구독·구매·체험)"
+   ]
+  },
+  {
+   "key": "WP-FEAT-REG",
+   "name": "Feature 등록 기록",
+   "en": "Feature Registry Entry",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "Feature ID·Version(PROPOSED 0.1.0)·소유자·설명",
+    "Flag 유형과 Release·Experiment Flag의 만료일·Retirement 계획",
+    "관련 요구 ID와 판매 방식"
+   ]
+  },
+  {
+   "key": "WP-REF-LINK",
+   "name": "Feature DB 기준 행 연결",
+   "en": "Feature DB Reference Link",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "대표(PRIMARY) 기준 행 1개와 포함(INCLUDED) 행 ID, 연결 당시 Feature DB 발행 버전",
+    "기준값으로 미리 채운 이름·설명·대표 ASIL·분류 태그·규제와 '수정됨' 표시",
+    "자동 채움 출처(기준 행 열·카탈로그·규칙)와 칸별 결정(그대로·고침·사람이 채움), 누가·언제",
+    "Feature 프로필(ISO/IEC 26580) — 카탈로그 위치·상위 feature, 선택 유형·변이성·결합 시점, 변이점",
+    "대표 ASIL과 다른 ASIL을 고른 경우 변경 전후 값과 사유",
+    "연결 행 상태 경고(검토 필요·폐기 예정·요청 중)와 대체 행 안내"
+   ]
+  },
+  {
+   "key": "WP-REF-ADD-REQ",
+   "name": "Feature DB 추가 요청",
+   "en": "Feature DB Addition Request",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL",
+    "출처 ID 또는 근거 메모, 새 컴포넌트가 필요하면 3글자 약어 제안",
+    "즉시 부여된 정식 형식 ID와 요청 중(PENDING) 상태, 추가 변경 요청 번호"
+   ]
+  },
+  {
+   "key": "WP-FEAT-SCOPE",
+   "name": "대상 차량 사양·의존 관계",
+   "en": "Variant Scope & Dependencies",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "적용 차종·Trim·시장과 지원 조건",
+    "필요(REQUIRES)·배타(EXCLUDES) 의존 관계와 판정",
+    "Topology에서 위험 전파 관계가 있는 Feature 목록"
+   ]
+  },
+  {
+   "key": "WP-SAFETY-PROFILE",
+   "name": "안전 분류(네 축)",
+   "en": "Safety Profile",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "F 등급과 판정 근거(위험 전파 관계 포함)",
+    "비활성화 등급·Safe State·인계·감소 시간 프로파일",
+    "Safety Manager 개인 서명과 확정 시각"
+   ]
+  },
+  {
+   "key": "WP-REG-CLASS",
+   "name": "법규 등급 판정 기록",
+   "en": "Regulatory Classification Record",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "시장별 의무 기능 해당 여부와 근거 조항",
+    "의무 기능일 때 DC4·R2 지정과 원격 요청 거부 대상 표시"
+   ]
+  },
+  {
+   "key": "WP-G1-DECISION",
+   "name": "G1 Decision Record",
+   "en": "G1 Decision Record",
+   "kind": "output",
+   "retained": false,
+   "content": [
+    "판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID",
+    "판정자 역할·서명·시각, 조건부 통과 시 기한과 책임자"
+   ]
+  }
+ ],
+ "activities": [
+  {
+   "id": "FPW.1-A01",
+   "name": "Feature 등록·초안 작성",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [
+    "FFG-CLS-008"
+   ],
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-ARC",
+     "R-REQ"
+    ],
+    "I": [
+     "R-SM",
+     "R-RDA"
+    ]
+   },
+   "inputs": [
+    "WP-REFDB-RELEASE",
+    "WP-FEAT-PROPOSAL"
+   ],
+   "outputs": [
+    "WP-FEAT-REG",
+    "WP-REF-LINK"
+   ],
+   "steps": [
+    "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
+    "등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
+    "2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다",
+    "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다",
+    "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
+    "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
+   ],
+   "checks": [
+    "Registry에 PROPOSED Version이 생기고 소유자가 지정되었다",
+    "대표 기준 행이 정확히 1개이고 폐기 행이 없으며, 대표 ASIL과 다르면 변경 사유가 있다. 자동 채움 칸마다 출처와 결정이 이력에 남았다",
+    "만료일이 필요한 Flag 유형에 만료일과 Retirement 계획이 비어 있지 않다"
+   ],
+   "platform": {
+    "actions": [
+     "createFeature",
+     "createVersion",
+     "updateDraft"
+    ],
+    "screens": [
+     "/master/define",
+     "/feature/propose",
+     "/features",
+     "/master/feature-db"
+    ],
+    "gates": [],
+    "anchor": "feature-form",
+    "ui": {
+     "fields": [
+      "name",
+      "description",
+      "ownerId"
+     ],
+     "buttons": [
+      "createFeature"
+     ]
+    }
+   },
+   "slaHours": 48,
+   "next": [
+    "FPW.1-A02",
+    "FPW.1-A03"
+   ]
+  },
+  {
+   "id": "FPW.1-A02",
+   "name": "대상 차량 사양·의존 등록",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-PLM"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-ARC"
+    ],
+    "I": [
+     "R-SM"
+    ]
+   },
+   "inputs": [
+    "WP-FEAT-REG"
+   ],
+   "outputs": [
+    "WP-FEAT-SCOPE"
+   ],
+   "steps": [
+    "적용 차종·Trim·시장을 PLM 기준정보와 대조해 지원 조건을 등록한다",
+    "다른 Feature와의 필요·배타 관계를 등록하고 의존 판정 결과를 확인한다",
+    "Topology에서 위험 전파 관계가 있는 Feature를 찾아 분류 담당에게 넘긴다",
+    "Feature 카탈로그에서 주요·하위 feature 자리와 기준 행 선행·배타 제약을 보고, 관련 Feature 후보를 필요·배타 관계로 확정한다"
+   ],
+   "checks": [
+    "모든 대상 Variant가 기준정보에 존재하고 의존 판정이 미판정으로 남지 않았다",
+    "하위 feature는 상위 feature 기준 행이 있고, 변이점이 공유 자산과 맞다"
+   ],
+   "platform": {
+    "actions": [
+     "createDependency"
+    ],
+    "screens": [
+     "/variant-conditions",
+     "/arch/topology",
+     "/features/catalogue"
+    ],
+    "gates": [],
+    "anchor": "variant-conditions",
+    "ui": {
+     "fields": [
+      "featureId",
+      "version"
+     ],
+     "buttons": []
+    }
+   },
+   "slaHours": 24,
+   "next": [
+    "FPW.1-A05"
+   ]
+  },
+  {
+   "id": "FPW.1-A03",
+   "name": "안전 분류(네 축) 확정",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-CLS-001",
+    "FFG-CLS-003",
+    "FFG-CLS-009"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-FO",
+     "R-ARC"
+    ],
+    "I": [
+     "R-REQ"
+    ]
+   },
+   "inputs": [
+    "WP-FEAT-REG",
+    "WP-FEAT-SCOPE"
+   ],
+   "outputs": [
+    "WP-SAFETY-PROFILE"
+   ],
+   "steps": [
+    "F 등급·비활성화 등급·법규 등급·Flag 유형 네 축을 모두 채운다",
+    "비활성화 등급과 F 등급이 서로 허용되는 조합인지, 시간 프로파일 값이 0보다 큰지 확인한다",
+    "위험 전파 관계가 있는 Feature의 F 등급을 낮추는 경우 영향 재분석 결과를 붙인다",
+    "확정 버튼으로 개인 서명해 분류를 고정한다. 확정 뒤에는 초안 수정이 막힌다"
+   ],
+   "checks": [
+    "네 축 중 빈 값이 없고 분류 확정 서명이 남았다",
+    "F 등급 하향이면 재분석 Evidence가 연결되었다"
+   ],
+   "platform": {
+    "actions": [
+     "updateSafetyProfile",
+     "confirmSafetyProfile"
+    ],
+    "screens": [
+     "/features/:id/:ver"
+    ],
+    "gates": [],
+    "anchor": "safety-tab",
+    "ui": {
+     "fields": [],
+     "buttons": [
+      "confirmSafetyProfile"
+     ]
+    }
+   },
+   "slaHours": 48,
+   "next": [
+    "FPW.1-A04"
+   ]
+  },
+  {
+   "id": "FPW.1-A04",
+   "name": "법규 의무 기능 판정",
+   "trigger": null,
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O2"
+   ],
+   "rules": [
+    "FFG-CLS-005"
+   ],
+   "raci": {
+    "R": [
+     "R-REG"
+    ],
+    "A": "R-REG",
+    "C": [
+     "R-SM"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "inputs": [
+    "WP-SAFETY-PROFILE",
+    "WP-COMPLIANCE-PROFILE"
+   ],
+   "outputs": [
+    "WP-REG-CLASS"
+   ],
+   "steps": [
+    "대상 시장 Compliance Profile의 의무 기능 목록과 Feature 기능을 대조한다",
+    "의무 기능이면 법규 등급과 비활성화 등급을 의무 기능 기준으로 지정하도록 Safety Manager에게 요청한다",
+    "판정 근거 조항과 시장을 기록하고 Feature Owner에게 원격 요청 제한을 알린다"
+   ],
+   "checks": [
+    "대상 시장마다 의무 기능 해당 여부가 기록되었다"
+   ],
+   "platform": {
+    "actions": [],
+    "screens": [],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": [
+    "FPW.1-A05"
+   ]
+  },
+  {
+   "id": "FPW.1-A05",
+   "name": "G1 등록·분류 판정",
+   "trigger": null,
+   "gateDecision": "G1",
+   "independentOf": [],
+   "outcomes": [
+    "O3"
+   ],
+   "rules": [
+    "FFG-LCY-001",
+    "FFG-LCY-002",
+    "FFG-CLS-001"
+   ],
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-FO",
+     "R-REG"
+    ],
+    "I": [
+     "R-REQ",
+     "R-PLM",
+     "R-QA"
+    ]
+   },
+   "inputs": [
+    "WP-FEAT-REG",
+    "WP-REF-LINK",
+    "WP-FEAT-SCOPE",
+    "WP-SAFETY-PROFILE",
+    "WP-REG-CLASS"
+   ],
+   "outputs": [
+    "WP-G1-DECISION"
+   ],
+   "steps": [
+    "등록 기록·기준 행 연결·대상 사양·분류·법규 판정이 모두 있는지 확인하고, 하나라도 없으면 FAIL로 판정한다",
+    "Feature Owner의 의견을 받아 판정(PASS·CONDITIONAL PASS·FAIL)과 근거 Evidence ID를 입력한다",
+    "Gate G1(Feature)·G3(Variant)을 개인 서명으로 판정 등록한다",
+    "조건부 통과면 기한과 책임자를 등록하고 요구 Owner에게 G2·G3 착수를 알린다"
+   ],
+   "checks": [
+    "Decision Record에 판정·근거 Evidence·판정자 역할·시각이 모두 있다",
+    "Feature 작성자와 판정자가 다른 사람이다",
+    "요청 중(PENDING) 기준 행이 연결되어 있으면 조건부 통과 조건에 관리자 승인이 적혀 있다"
+   ],
+   "platform": {
+    "actions": [
+     "judgeGate"
+    ],
+    "screens": [
+     "/features/:id/:ver",
+     "/admin/approval"
+    ],
+    "gates": [
+     "G1",
+     "G3"
+    ],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  },
+  {
+   "id": "FPW.1-A06",
+   "name": "Feature DB 추가 요청",
+   "trigger": "맞는 기준 행이 Feature DB에 없을 때",
+   "gateDecision": null,
+   "independentOf": [],
+   "outcomes": [
+    "O1"
+   ],
+   "rules": [],
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-DRV"
+    ],
+    "I": [
+     "R-RDA"
+    ]
+   },
+   "inputs": [
+    "WP-FEAT-PROPOSAL",
+    "WP-REFDB-RELEASE"
+   ],
+   "outputs": [
+    "WP-REF-ADD-REQ"
+   ],
+   "steps": [
+    "검색과 도메인·컴포넌트 단계 선택으로 맞는 기준 행이 없음을 확인하고, 비슷한 행을 포함 행으로 쓸 수 있는지 먼저 본다",
+    "등록 화면의 추가 요청에서 도메인·컴포넌트·영문/한글 기능명·T-shirt·대표 ASIL·출처 또는 근거 메모를 입력한다",
+    "새 컴포넌트가 필요하면 3글자 약어를 같은 요청에 제안한다",
+    "즉시 부여된 정식 ID의 요청 중 행을 대표로 연결해 Feature 등록을 이어 간다",
+    "관리자가 반려하면 알림을 받고 다른 기준 행으로 다시 연결한다"
+   ],
+   "checks": [
+    "요청 중 행에 정식 형식 ID와 필수 정보가 있고 추가 변경 요청이 접수되었다",
+    "관리자 승인 전에는 Feature 정의 승인(APPROVED) 전이가 막혀 있음을 Feature Owner가 안다"
+   ],
+   "platform": {
+    "actions": [
+     "requestRefAdd"
+    ],
+    "screens": [
+     "/feature/propose"
+    ],
+    "gates": [],
+    "anchor": null,
+    "ui": {
+     "fields": [],
+     "buttons": []
+    }
+   },
+   "slaHours": null,
+   "next": []
+  }
+ ],
+ "layout": {
+  "width": 1366,
+  "height": 482,
+  "lanes": [
+   {
+    "role": "R-FO",
+    "label": "Feature Owner",
+    "x": 0,
+    "y": 0,
+    "w": 1366,
+    "h": 188
+   },
+   {
+    "role": "R-PLM",
+    "label": "기준정보 담당",
+    "x": 0,
+    "y": 188,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "role": "R-SM",
+    "label": "Safety Manager",
+    "x": 0,
+    "y": 286,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "role": "R-REG",
+    "label": "법규 담당",
+    "x": 0,
+    "y": 384,
+    "w": 1366,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.1-A01",
+    "kind": "action",
+    "label": "Feature 등록·초안 작성",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A06",
+    "kind": "action",
+    "label": "Feature DB 추가 요청",
+    "x": 198,
+    "y": 106,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A02",
+    "kind": "action",
+    "label": "대상 차량 사양·의존 등록",
+    "x": 478,
+    "y": 204,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A03",
+    "kind": "action",
+    "label": "안전 분류(네 축) 확정",
+    "x": 478,
+    "y": 302,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A05",
+    "kind": "action",
+    "label": "G1 등록·분류 판정",
+    "x": 1038,
+    "y": 302,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A04",
+    "kind": "action",
+    "label": "법규 의무 기능 판정",
+    "x": 758,
+    "y": 400,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.1-S2",
+    "kind": "start",
+    "label": "맞는 기준 행이 Feature DB에 없을 때",
+    "x": 146,
+    "y": 130,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.1-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 1240,
+    "y": 326,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.1-E2",
+    "kind": "end",
+    "label": "종료",
+    "x": 400,
+    "y": 130,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.1-S1",
+    "to": "FPW.1-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-S2",
+    "to": "FPW.1-A06",
+    "kind": "trigger",
+    "points": [
+     [
+      164,
+      139
+     ],
+     [
+      198,
+      139
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A01",
+    "to": "FPW.1-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      237
+     ],
+     [
+      478,
+      237
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A01",
+    "to": "FPW.1-A03",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      335
+     ],
+     [
+      478,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A02",
+    "to": "FPW.1-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      237
+     ],
+     [
+      1026,
+      237
+     ],
+     [
+      1026,
+      335
+     ],
+     [
+      1038,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A03",
+    "to": "FPW.1-A04",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      335
+     ],
+     [
+      746,
+      335
+     ],
+     [
+      746,
+      433
+     ],
+     [
+      758,
+      433
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A04",
+    "to": "FPW.1-A05",
+    "kind": "flow",
+    "points": [
+     [
+      946,
+      433
+     ],
+     [
+      1026,
+      433
+     ],
+     [
+      1026,
+      335
+     ],
+     [
+      1038,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A05",
+    "to": "FPW.1-E1",
+    "kind": "end",
+    "points": [
+     [
+      1226,
+      335
+     ],
+     [
+      1240,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A06",
+    "to": "FPW.1-E2",
+    "kind": "end",
+    "points": [
+     [
+      386,
+      139
+     ],
+     [
+      400,
+      139
+     ]
+    ]
+   }
+  ],
+  "joins": [
+   [
+    1026,
+    335
+   ]
+  ]
+ },
+ "departmentLayout": {
+  "width": 1366,
+  "height": 482,
+  "lanes": [
+   {
+    "department": "DEP-PDP",
+    "label": "상품기획팀",
+    "x": 0,
+    "y": 0,
+    "w": 1366,
+    "h": 188
+   },
+   {
+    "department": "DEP-PLM",
+    "label": "PLM·기준정보팀",
+    "x": 0,
+    "y": 188,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "department": "DEP-FS",
+    "label": "기능안전팀",
+    "x": 0,
+    "y": 286,
+    "w": 1366,
+    "h": 98
+   },
+   {
+    "department": "DEP-HOM",
+    "label": "법규인증팀",
+    "x": 0,
+    "y": 384,
+    "w": 1366,
+    "h": 98
+   }
+  ],
+  "nodes": [
+   {
+    "id": "FPW.1-A01",
+    "kind": "action",
+    "label": "Feature 등록·초안 작성",
+    "x": 198,
+    "y": 16,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A06",
+    "kind": "action",
+    "label": "Feature DB 추가 요청",
+    "x": 198,
+    "y": 106,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A02",
+    "kind": "action",
+    "label": "대상 차량 사양·의존 등록",
+    "x": 478,
+    "y": 204,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A03",
+    "kind": "action",
+    "label": "안전 분류(네 축) 확정",
+    "x": 478,
+    "y": 302,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A05",
+    "kind": "action",
+    "label": "G1 등록·분류 판정",
+    "x": 1038,
+    "y": 302,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-A04",
+    "kind": "action",
+    "label": "법규 의무 기능 판정",
+    "x": 758,
+    "y": 400,
+    "w": 188,
+    "h": 66
+   },
+   {
+    "id": "FPW.1-S1",
+    "kind": "start",
+    "label": "시작",
+    "x": 146,
+    "y": 40,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.1-S2",
+    "kind": "start",
+    "label": "맞는 기준 행이 Feature DB에 없을 때",
+    "x": 146,
+    "y": 130,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.1-E1",
+    "kind": "end",
+    "label": "종료",
+    "x": 1240,
+    "y": 326,
+    "w": 18,
+    "h": 18
+   },
+   {
+    "id": "FPW.1-E2",
+    "kind": "end",
+    "label": "종료",
+    "x": 400,
+    "y": 130,
+    "w": 18,
+    "h": 18
+   }
+  ],
+  "edges": [
+   {
+    "from": "FPW.1-S1",
+    "to": "FPW.1-A01",
+    "kind": "start",
+    "points": [
+     [
+      164,
+      49
+     ],
+     [
+      198,
+      49
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-S2",
+    "to": "FPW.1-A06",
+    "kind": "trigger",
+    "points": [
+     [
+      164,
+      139
+     ],
+     [
+      198,
+      139
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A01",
+    "to": "FPW.1-A02",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      237
+     ],
+     [
+      478,
+      237
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A01",
+    "to": "FPW.1-A03",
+    "kind": "flow",
+    "points": [
+     [
+      386,
+      49
+     ],
+     [
+      466,
+      49
+     ],
+     [
+      466,
+      335
+     ],
+     [
+      478,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A02",
+    "to": "FPW.1-A05",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      237
+     ],
+     [
+      1026,
+      237
+     ],
+     [
+      1026,
+      335
+     ],
+     [
+      1038,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A03",
+    "to": "FPW.1-A04",
+    "kind": "flow",
+    "points": [
+     [
+      666,
+      335
+     ],
+     [
+      746,
+      335
+     ],
+     [
+      746,
+      433
+     ],
+     [
+      758,
+      433
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A04",
+    "to": "FPW.1-A05",
+    "kind": "flow",
+    "points": [
+     [
+      946,
+      433
+     ],
+     [
+      1026,
+      433
+     ],
+     [
+      1026,
+      335
+     ],
+     [
+      1038,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A05",
+    "to": "FPW.1-E1",
+    "kind": "end",
+    "points": [
+     [
+      1226,
+      335
+     ],
+     [
+      1240,
+      335
+     ]
+    ]
+   },
+   {
+    "from": "FPW.1-A06",
+    "to": "FPW.1-E2",
+    "kind": "end",
+    "points": [
+     [
+      386,
+      139
+     ],
+     [
+      400,
+      139
+     ]
+    ]
+   }
+  ],
+  "joins": [
+   [
+    1026,
+    335
+   ]
+  ]
+ }
+};

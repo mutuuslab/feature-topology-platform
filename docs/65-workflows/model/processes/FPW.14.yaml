@@ -163,3 +163,69 @@ process:
       platform:
         actions: [recordSourceReview]
         screens: [/master/feature-db]
+
+  base_practices:
+    - id: FPW.14.BP1
+      name: 변경 요청 작성
+      definition_ko: 기준 기능의 변경 종류·필드·근거 출처와 대체 방안을 명시한 요청을 작성한다. 영향을 받는 Feature와 산정 과제를 확인하고 변경 판단에 필요한
+        정보를 제공한다.
+      notes: []
+      activity_ids:
+        - FPW.14-A01
+      outcomes:
+        - O1
+      evidence:
+        - work_product: WP-REF-CHANGE-REQ
+          outcomes:
+            - O1
+    - id: FPW.14.BP2
+      name: 자동 점검·도메인 검토
+      definition_ko: 자동 점검과 담당 도메인의 검토로 식별·출처·규모·관계의 타당성을 확인한다. 누락·반대·보완 사항과 안전 등급 변경 의견을 기록하고 요청자와 검토자의
+        분리를 유지한다.
+      notes: []
+      activity_ids:
+        - FPW.14-A02
+      outcomes:
+        - O2
+      evidence:
+        - work_product: WP-REF-REVIEW
+          outcomes:
+            - O2
+    - id: FPW.14.BP3
+      name: 변경 승인·반려
+      definition_ko: 요청과 점검·도메인 의견을 함께 검토하여 변경 승인 또는 반려를 결정한다. 작성·검토와 분리된 관리자가 사유를 남기고 발행 전 대기 상태를 명확히 한다.
+      notes: []
+      activity_ids:
+        - FPW.14-A03
+      outcomes:
+        - O3
+      evidence:
+        - work_product: WP-REF-DECISION
+          outcomes:
+            - O3
+    - id: FPW.14.BP4
+      name: Feature DB 버전 발행
+      definition_ko: 승인된 변경을 발행 단위로 묶어 품질 상태·발행 노트·정규화 해시를 기록한다. 상태 확정과 영향 사용자 통지를 확인하여 등록·산정이 같은 발행판을 참조하도록
+        한다.
+      notes: []
+      activity_ids:
+        - FPW.14-A04
+      outcomes:
+        - O4
+      evidence:
+        - work_product: WP-REFDB-RELEASE
+          outcomes:
+            - O4
+    - id: FPW.14.BP5
+      name: 출처 정기 점검
+      definition_ko: 점검 기한과 출처의 개정 여부를 확인하여 기준 기능에 미치는 영향을 평가한다. 필요한 도메인·법규 검토를 요청하고 점검 결과·후속 변경·다음 기한을
+        보존한다.
+      notes: []
+      activity_ids:
+        - FPW.14-A05
+      outcomes:
+        - O5
+      evidence:
+        - work_product: WP-REF-SOURCE-REVIEW
+          outcomes:
+            - O5

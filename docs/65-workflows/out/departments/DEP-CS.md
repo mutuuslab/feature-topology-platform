@@ -3,7 +3,7 @@ id: WF-DEP-CS
 type: workflow
 title: "차량사이버보안팀 R&R / Vehicle Cybersecurity Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -14,9 +14,12 @@ traces:
     - WF-FPW-8
     - WF-FPW-10
     - WF-FPW-11
+    - WF-FPW-12
     - WF-FPW-13
+    - WF-FPW-16
+    - WF-FPW-18
     - WF-ROLE-CSM
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -31,7 +34,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 7 · 책임 6 · 협의 17 · 통보 1 (활동 26개)
+수행 9 · 책임 8 · 협의 22 · 통보 1 (활동 33개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -57,10 +60,17 @@ last_updated: 2026-11-05
 | FPW.11-A04 취약점 영향 특정·대응 결정 | FPW.11 보안·키·취약점 관리 | R·A (CSM) | 공급망 원산지 기록 `WP-ORIGIN-RECORD`, 출시 Baseline `WP-RELEASE-BASELINE` → VEX 판정·대응 결정 `WP-VEX-DECISION` | `/admin/security` | 2차 초안 |
 | FPW.11-A06 OSS 라이선스·보안 프로그램 운영 | FPW.11 보안·키·취약점 관리 | C (CSM) | 공급망 원산지 기록 `WP-ORIGIN-RECORD` → OSS 관리 프로그램 기록 `WP-OSS-PROGRAM` | 플랫폼 밖 | 2차 초안 |
 | FPW.11-A05 CSMS Evidence·R155 보고 | FPW.11 보안·키·취약점 관리 | R·A (CSM) | HARA·TARA 결과 `WP-HARA-TARA`, VEX 판정·대응 결정 `WP-VEX-DECISION`, 키 사고 대응 기록 `WP-KEY-INCIDENT` → CSMS Evidence·R155 보고 `WP-CSMS-EVIDENCE` | 플랫폼 밖 | 2차 초안 |
+| FPW.12-A06 처리 목적·근거 검토 | FPW.12 운영 데이터·데이터 보호 | C (CSM) | – → 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` | `/admin/data` | 2차 초안 |
+| FPW.12-A07 정보주체 요청 접수 | FPW.12 운영 데이터·데이터 보호 | R·A (CSM) | 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` → 정보주체 처리 요청 `WP-PRIVACY-REQ` | `/admin/data` | 2차 초안 |
+| FPW.12-A08 정보주체 독립 처리 | FPW.12 운영 데이터·데이터 보호 | R·A (CSM) | 정보주체 처리 요청 `WP-PRIVACY-REQ` → 정보주체 처리 결과 `WP-PRIVACY-RESULT` | `/admin/data` | 2차 초안 |
 | FPW.13-A01 표준 판 고정 | FPW.13 규정·Compliance Profile 관리 | C (CSM) | 법규·표준 원문 `WP-REG-SOURCES` → 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS` | 플랫폼 밖 | 2차 초안 |
 | FPW.13-A02 Compliance Profile 정의 | FPW.13 규정·Compliance Profile 관리 | C (CSM) | 표준 판 고정 기록(Safety Plan) `WP-STANDARD-EDITIONS`, 법규·표준 원문 `WP-REG-SOURCES` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance` | 2차 초안 |
 | FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | R (CSM) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance`, `/trace/ads` | 2차 초안 |
 | FPW.13-A04 원격 종료 시스템 설명 작성 | FPW.13 규정·Compliance Profile 관리 | C (CSM) | 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE`, 드릴 결과·G8 판정 `WP-DRILL-REPORT` → 원격 종료 시스템 설명 `WP-SYSTEM-DESCRIPTION` | 플랫폼 밖 | 2차 초안 |
+| FPW.16-A01 계정 상태 변경 | FPW.16 플랫폼 접근·운영·복구 | C (CSM) | – → 계정 상태 변경 기록 `WP-ACCESS-CHANGE` | `/admin/iam` | 2차 초안 |
+| FPW.16-A03 운영 설정·상태 점검 | FPW.16 플랫폼 접근·운영·복구 | C (CSM) | – → 플랫폼 운영 점검 `WP-PLATFORM-OPS` | `/admin/settings`, `/events`, `/notifications/rules` | 2차 초안 |
+| FPW.16-A04 백업·복구 점검 | FPW.16 플랫폼 접근·운영·복구 | C (CSM) | 플랫폼 운영 점검 `WP-PLATFORM-OPS` → 백업·복구 점검 기록 `WP-RECOVERY-DRILL` | `/admin/settings` | 2차 초안 |
+| FPW.18-A04 개선 과제 인계 | FPW.18 운영 분석·상품 개선 | C (CSM) | 운영·전환 분석 결과 `WP-OPS-ANALYSIS` → 상품·품질 개선 인계 `WP-IMPROVEMENT-HANDOFF` | `/data/workbench`, `/products` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -69,11 +79,12 @@ last_updated: 2026-11-05
 | 받음 | FPW.2-A01 재-HARA 조건 검출·영향 범위 산정 | FPW.2-A06 TARA 수행 | 기능안전팀 | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` | 1차 |
 | 받음 | FPW.8-A04 긴급 차단 요청 | FPW.8-A05 긴급 차단 2인 승인 | OTA·서비스운영팀 | 긴급 차단 요청 `WP-KILL-REQ` | 1차 |
 | 받음 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11-A02 키 교체 플랫폼 기록 | IT인프라·보안운영팀 | 서명 키 대장 `WP-KEY-REGISTER` | 2차 초안 |
+| 받음 | FPW.12-A06 처리 목적·근거 검토 | FPW.12-A07 정보주체 요청 접수 | 개인정보보호팀 | 개인정보 목적·근거 검토 `WP-PRIVACY-REVIEW` | 2차 초안 |
 | 보냄 | FPW.2-A06 TARA 수행 | FPW.2-A05 G2 HARA 영향 판정 | 기능안전팀 | TARA 결과 `WP-TARA` | 1차 |
 | 보냄 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8-A06 차단 전달·적용 추적 | OTA·서비스운영팀 | 차단 승인 기록 `WP-KILL-DECISION` | 1차 |
 | 보냄 | FPW.8-A05 긴급 차단 2인 승인 | FPW.8-A07 긴급 권한 사후 검토 | 품질팀 | 차단 승인 기록 `WP-KILL-DECISION` | 1차 |
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/ops/kill`, `/admin/security`, `/verify/compliance`, `/trace/ads`
-- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/arch/components`, `/deployments`, `/master/artifacts`, `/audit/oversight`, `/fleet/live`
+- 주 업무 화면: `/ops/kill`, `/admin/security`, `/admin/data`, `/verify/compliance`, `/trace/ads`
+- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/arch/components`, `/deployments`, `/master/artifacts`, `/audit/oversight`, `/fleet/live`, `/admin/iam`, `/admin/settings`, `/events`, `/notifications/rules`, `/data/workbench`, `/products`

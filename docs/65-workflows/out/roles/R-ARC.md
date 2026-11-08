@@ -3,7 +3,7 @@ id: WF-ROLE-ARC
 type: workflow
 title: "아키텍트 업무 절차서 / Architect Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -17,7 +17,9 @@ traces:
     - WF-FPW-10
     - WF-FPW-12
     - WF-FPW-14
-last_updated: 2026-11-05
+    - WF-FPW-15
+    - WF-FPW-17
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -77,12 +79,23 @@ last_updated: 2026-11-05
 ### FPW.4-A07 Flag PR 검토·병합 — 책임(승인)
 - 프로세스: FPW.4 안전 설계·정책 설계
 - 시작: 앞 활동 완료
-- 입력: WP-G4-DECISION → 출력: –
+- 입력: WP-G4-DECISION → 출력: WP-FLAG-PR-RESULT
 - 플랫폼: `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey`
 1. Feature Version 승인 뒤 FF가 연 Flag PR에서 상수·호출 뼈대와 기본값 OFF를 확인한다
 2. 기능 분기를 구현하고 FF Flag 검사가 통과한 뒤 병합한다
 3. PR 생성이 실패했으면 Flag 코드 연결 화면에서 PR 다시 만들기를 요청한다
 - [ ] 해당 Version의 Flag가 모두 코드 연결 정상 또는 검토 중이다
+
+### FPW.17-A02 구조·공유 자산 검토 — 수행·책임
+- 프로세스: FPW.17 기준정보·공유 자산·연계 품질
+- 시작: 앞 활동 완료
+- 입력: WP-MASTER-VALUES → 출력: WP-ASSET-TRACE
+- 플랫폼: `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`
+1. ECU·SW·Function·Feature와 UPG 및 제어점 연결을 조회한다
+2. 공유 자산을 사용하는 Feature와 EO 변경의 영향 범위를 대조한다
+3. 누락·불일치와 설계 또는 원천 시스템의 변경 요청을 기록한다
+- [ ] 공유 자산 한 곳의 변경이 영향을 주는 Feature를 식별한다
+- [ ] 조회 결과를 원천 구조의 변경 완료로 간주하지 않는다
 
 ## 2. 협의·통보 받는 활동
 
@@ -107,6 +120,9 @@ last_updated: 2026-11-05
 - FPW.10-A05 기존 구현 진단 (협의)
 - FPW.12-A02 평가 컨텍스트 개인정보 검토 (협의)
 - FPW.14-A01 변경 요청 작성 (협의)
+- FPW.15-A03 공수·규모 입력 (협의)
+- FPW.17-A03 사전 품질 점검 (협의)
+- FPW.17-A04 외부 연계 대사 (협의)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

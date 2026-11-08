@@ -277,6 +277,9 @@ export const ko = {
   diff: { field: '항목', before: '이전', after: '이후', none: '변경 없음' },
   stream: { empty: '아직 이벤트가 없습니다' },
   design: {
+    tabNavigation: '화면 탭',
+    previousTabs: '이전 탭 보기',
+    nextTabs: '다음 탭 보기',
     errorsKit: '오류 다음 행동 · 모의 연결 · 쪽 넘김',
     lozenge: '상태 배지(Lozenge)',
     lozengeMine: '내 차례',

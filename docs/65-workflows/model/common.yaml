@@ -5,9 +5,31 @@
 meta:
   title: Feature Platform 담당자 업무 절차
   title_en: Feature Platform Role Workflows
-  version: 0.2.0
+  version: 0.3.0
   owner: governance
-  last_updated: 2026-11-05
+  last_updated: 2026-11-08
+
+# 조직 검토 전 업무 정의. 실행 기록·Gate 승인·ASPICE 적합성 평가와 별개다.
+reference_model:
+  id: FFP-BRM
+  title: Feature Platform 업무 레퍼런스 모델
+  version: 0.3.0
+  status: draft
+  scope: 기존 14개 부서의 Feature 생애주기와 플랫폼 지원 업무. 조직 가정안이며 실제 조직 승인과 외부 수행 증거는 별도다.
+  benchmark:
+    title: Automotive SPICE Process Assessment / Reference Model
+    version: '4.0'
+    url: https://vda-qmc.de/wp-content/uploads/2023/12/Automotive-SPICE-PAM-v40.pdf
+
+# 직접 활동에 연결하지 않는 공통 UI의 명시적 범위. 업무 누락과 구분한다.
+screen_context:
+  - {path: /, kind: navigation, reason: 담당자 대시보드에서 실제 업무 화면으로 진입한다.}
+  - {path: /learn, kind: navigation, reason: 학습 시나리오 목록이며 업무 수행·승인 기록을 대신하지 않는다.}
+  - {path: '/learn/:id', kind: navigation, reason: 기존 업무를 연습하는 안내이며 독립 업무 프로세스가 아니다.}
+  - {path: /procedures, kind: navigation, reason: 업무 정의와 담당 활동을 탐색하는 이 모델의 허브다.}
+  - {path: /procedures/roles, kind: navigation, reason: 같은 활동을 담당자·부서별로 조회한다.}
+  - {path: '/procedures/:id', kind: navigation, reason: 업무 정의·흐름과 실제 근거를 구분하여 조회한다.}
+  - {path: '/consults/:id', kind: cross_cutting, reason: 각 활동에서 발생한 부서 간 협의의 상세 기록이며 별도 승인이나 생애주기 전이를 만들지 않는다.}
 
 # ── 역할 카탈로그 ──────────────────────────────────────────────
 # source: report = 표준 보고서 1.5절 통제 어휘, report-gate = 6.1절 Gate 표 승인 칸, iam = /admin/iam 역할(보고서 어휘에 없음)
@@ -298,7 +320,7 @@ departments:
 # 부서 검토 범위 — 1차는 핵심 생애주기, 나머지는 기존 모델로 만든 2차 초안으로 표시한다.
 department_scope:
   first: [FPW.1, FPW.2, FPW.3, FPW.4, FPW.5, FPW.6, FPW.7, FPW.8, FPW.9]
-  note: "1차 검토 대상은 핵심 생애주기(FPW.1~9). 협력사·보안·데이터·규정·Feature DB 운영(FPW.10~14)은 2차 초안이다."
+  note: "핵심 생애주기(FPW.1~9)의 기존 검토 범위를 보존한다. 지원 업무(FPW.10~18)를 포함한 레퍼런스 정의는 조직 검토 전 초안이며 실제 수행·승인은 별도 근거로 확인한다."
   demo_notes:
     - "긴급 차단 2인 승인은 기능안전 + 차량사이버보안이다(2026-11-04 사용자 결정). 플랫폼 권한은 운영 리더(OPS_LEAD)의 승인도 허용한다 — 데모 계정 opslead(관제실)가 운영 리더 몫을 맡는다(12계정·겸직 0건, 2026-11-05)."
     - "복원 2인 승인은 직전 차단 승인자와 다른 사람이어야 한다(SOD-09). 데모에서 차단을 quality(FSM)+integrator(CSM)가 승인하면 복원은 safety2(두 번째 FSM, 심사 결재함)+opslead 또는 다른 CSM이 맡는다(2026-11-05)."
@@ -424,3 +446,7 @@ process_plan:
   - {id: FPW.12, name_ko: 운영 데이터·데이터 보호, group: 지원, gates: []}
   - {id: FPW.13, name_ko: 규정·Compliance Profile 관리, group: 지원, gates: []}
   - {id: FPW.14, name_ko: Feature DB 운영, group: 지원, gates: []}
+  - {id: FPW.15, name_ko: SW 개발비·원가 기준 관리, group: 지원, gates: []}
+  - {id: FPW.16, name_ko: 플랫폼 접근·운영·복구, group: 지원, gates: []}
+  - {id: FPW.17, name_ko: 기준정보·공유 자산·연계 품질, group: 지원, gates: []}
+  - {id: FPW.18, name_ko: 운영 분석·상품 개선, group: 지원, gates: []}

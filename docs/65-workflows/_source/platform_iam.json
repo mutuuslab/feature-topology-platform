@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://localhost:9402/admin/iam",
+  "iam_url": "http://127.0.0.1:9411/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-07T12:54:36.851Z",
+  "fetched_at": "2026-11-08T07:24:05.134Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-06-04_Feature_Platform-gf0\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-07T12:43:17.401Z",
+  "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\harness-procedures-20261108\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-08T07:18:30.231Z",
   "ff_git": {
-   "head": "d8f8bfc6cef36e9b93e6a34f3bba86135011fd59",
-   "dirty_files": 18
+   "head": "ec2d31deb610b691b4ae2372d326d28253d42dd3",
+   "dirty_files": 1
   },
-  "iam_sha256": "f3299f23654e8aec4d26c3e4db59f734da3a21865c06d828bb5c913b8d3bfed7"
+  "iam_sha256": "709b68bd3c008e3b9517ae91f9454e92be7a8cc754419cc2af9d34db95de406f"
  },
  "roles": [
   {
@@ -2335,6 +2335,81 @@
    "roles": [
     "RELEASE_MANAGER",
     "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "requestGateNa",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/gate-na-requests",
+   "summary": "Gate 해당 없음(N/A) 요청 — 사유 필수, G1·G4·G9와 QM 아닌 G2·G7은 불가",
+   "component": "D01-02",
+   "roles": [
+    "GATE_JUDGE",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "decideGateNa",
+   "method": "POST",
+   "path": "/api/gate-na-requests/:rid/decision",
+   "summary": "Gate 해당 없음 승인·반려 — 요청자 외 기능안전 담당자, 승인하면 N/A Gate 기록(승인자 서명)",
+   "component": "D01-02",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "rejectFeature",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/rejection",
+   "summary": "정의 승인 반려 — PROPOSED 유지, 반려 사유·이슈 항목·재작업 사유(작성자는 불가)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_APPROVER"
+   ]
+  },
+  {
+   "name": "requestFeatureRetire",
+   "method": "POST",
+   "path": "/api/features/:id/versions/:ver/retire-requests",
+   "summary": "Feature 즉시 폐기 요청 — 어느 단계든, 사유 필수",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "FEATURE_APPROVER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "decideFeatureRetire",
+   "method": "POST",
+   "path": "/api/feature-retire-requests/:rid/decision",
+   "summary": "Feature 즉시 폐기 승인·반려 — 요청자·작성자 제외, 출시된 Version은 Flag Retirement 완료 필요",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_APPROVER",
+    "RELEASE_MANAGER"
+   ]
+  },
+  {
+   "name": "deleteFeatureDraft",
+   "method": "DELETE",
+   "path": "/api/features/:id/versions/:ver",
+   "summary": "초안 Feature Version 삭제 — 작성자, 승인 이력·참조(정책·상품·관계·Gate 판정·분석 근거 등)가 있으면 409와 폐기 안내, 지운 ID는 다시 쓰지 않음",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "deleteRelationDraft",
+   "method": "DELETE",
+   "path": "/api/dependencies/:id",
+   "summary": "초안 관계 삭제 — 원천이 PROPOSED인 관계만, 원천 관계 목록에서도 뺀다",
+   "component": "D01-02",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "VARIANT_OWNER"
    ]
   },
   {

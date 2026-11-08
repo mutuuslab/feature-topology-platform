@@ -3,7 +3,7 @@ id: WF-ROLE-FO
 type: workflow
 title: "Feature Owner 업무 절차서 / Feature Owner Procedure"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -19,7 +19,10 @@ traces:
     - WF-FPW-9
     - WF-FPW-13
     - WF-FPW-14
-last_updated: 2026-11-05
+    - WF-FPW-15
+    - WF-FPW-17
+    - WF-FPW-18
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -41,7 +44,7 @@ last_updated: 2026-11-05
 1. 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
 2. 등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
 3. 2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다
-4. 관련 요구 ID·판매 방식을 입력해 PROPOSED 초안을 만든다
+4. 관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다
 5. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
 6. 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
 - [ ] Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
@@ -158,7 +161,7 @@ last_updated: 2026-11-05
 ### FPW.9-A06 Flag 제거 PR 병합 — 책임(승인)
 - 프로세스: FPW.9 사후 검토·Flag Retirement
 - 시작: 앞 활동 완료
-- 입력: WP-RETIRE-LOG → 출력: –
+- 입력: WP-RETIRE-LOG → 출력: WP-FLAG-REMOVAL-SCAN
 - 플랫폼: `createFlagRemovalPr`, `recordFlagRetirementStep`, `/flag-code/lifecycle`, `/flag-retirements`
 1. Retirement가 승인된 Flag의 제거 PR을 Flag 수명 관리에서 연다
 2. 최종 값 분기만 남기고 병합한 뒤 대사가 정상(코드 0)인지 확인한다
@@ -177,6 +180,17 @@ last_updated: 2026-11-05
 5. 폐기 예정·폐기 요청이면 대체 행을 함께 지정한다
 - [ ] 변경 요청에 필드별 변경 전후 값과 사유·출처가 있다
 - [ ] 폐기 예정·폐기 요청에 대체 행 또는 대체 없음 사유가 있다
+
+### FPW.18-A04 개선 과제 인계 — 수행·책임
+- 프로세스: FPW.18 운영 분석·상품 개선
+- 시작: 앞 활동 완료
+- 입력: WP-OPS-ANALYSIS → 출력: WP-IMPROVEMENT-HANDOFF
+- 플랫폼: `/data/workbench`, `/products`
+1. 분석 근거와 고객·안전·보안 영향 및 우선순위를 검토한다
+2. 검증 방법과 담당 부서를 정하고 Feature·정책·상품의 후속 변경 요청에 연결한다
+3. 기존 Gate와 독립 승인 경로가 유지되는지 확인하고 결과를 추적한다
+- [ ] 분석 결과만으로 승인·배포·활성화하지 않는다
+- [ ] 개선 과제와 근거 및 책임자가 연결된다
 
 ## 2. 협의·통보 받는 활동
 
@@ -229,6 +243,11 @@ last_updated: 2026-11-05
 - FPW.14-A03 변경 승인·반려 (통보)
 - FPW.14-A04 Feature DB 버전 발행 (통보)
 - FPW.14-A05 출처 정기 점검 (통보)
+- FPW.15-A01 산정 범위 설정 (협의)
+- FPW.17-A01 차량·시장 기준 관리 (협의)
+- FPW.17-A02 구조·공유 자산 검토 (통보)
+- FPW.18-A02 운영·품질 데이터 분석 (통보)
+- FPW.18-A03 체험·전환 분석 (통보)
 
 ## 3. 보고서가 이 역할에 지정한 규칙
 

@@ -285,6 +285,22 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
   {
    "id": "FPW.14",
    "name": "Feature DB 운영"
+  },
+  {
+   "id": "FPW.15",
+   "name": "SW 개발비·원가 기준 관리"
+  },
+  {
+   "id": "FPW.16",
+   "name": "플랫폼 접근·운영·복구"
+  },
+  {
+   "id": "FPW.17",
+   "name": "기준정보·공유 자산·연계 품질"
+  },
+  {
+   "id": "FPW.18",
+   "name": "운영 분석·상품 개선"
   }
  ],
  "activities": [
@@ -1501,7 +1517,9 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "screens": [
     "/deployments",
-    "/integration/connectors"
+    "/integration/connectors",
+    "/ops/ota-installs",
+    "/deployments/campaigns/:id"
    ],
    "actions": [
     "deployPolicy",
@@ -1532,6 +1550,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "next": [],
    "screens": [
     "/integration/code-repositories",
+    "/integration/code-repositories/:repoId",
     "/integration/code-scans"
    ],
    "actions": [
@@ -2013,6 +2032,7 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "/ops/anomalies",
     "/ops/safety-kpi",
     "/ops/incidents",
+    "/ops/incident-reports/:id",
     "/ops/feature-health",
     "/ops/feature-health/:findingId",
     "/ops/collection",
@@ -2343,6 +2363,137 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "screens": [
     "/ops/kill",
     "/audit"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.8-A13",
+   "processId": "FPW.8",
+   "processName": "운영·긴급 차단·복원",
+   "name": "정책 롤백 요청·계획",
+   "trigger": "정책 복구 필요 또는 자동 복구 계획 수립",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-REL",
+     "R-SM"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.8-A14"
+   ],
+   "screens": [
+    "/ops/rollback",
+    "/policies/:id"
+   ],
+   "actions": [
+    "previewRollback",
+    "createRollbackRequest",
+    "createRollbackPlan"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.8-A14",
+   "processId": "FPW.8",
+   "processName": "운영·긴급 차단·복원",
+   "name": "정책 롤백 독립 승인",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-REL"
+    ],
+    "I": [
+     "R-OPS",
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.8-A15"
+   ],
+   "screens": [
+    "/ops/rollback"
+   ],
+   "actions": [
+    "decideRollbackRequest",
+    "decideRollbackPlan"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.8-A15",
+   "processId": "FPW.8",
+   "processName": "운영·긴급 차단·복원",
+   "name": "롤백 재검증·실행",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-REL",
+     "R-SM"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.8-A16"
+   ],
+   "screens": [
+    "/ops/rollback",
+    "/deployments/:id"
+   ],
+   "actions": [
+    "executeRollbackRequest"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.8-A16",
+   "processId": "FPW.8",
+   "processName": "운영·긴급 차단·복원",
+   "name": "롤백 적용·미회신 확인",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-REL"
+    ],
+    "I": [
+     "R-SM",
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/ops/rollback",
+    "/deployments/:id",
+    "/fleet/vehicles/:vin"
    ],
    "actions": [],
    "anchor": null,
@@ -3064,6 +3215,99 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": null
   },
   {
+   "id": "FPW.12-A06",
+   "processId": "FPW.12",
+   "processName": "운영 데이터·데이터 보호",
+   "name": "처리 목적·근거 검토",
+   "trigger": "새 처리 목적 또는 처리 범위 변경",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-DPO"
+    ],
+    "A": "R-DPO",
+    "C": [
+     "R-LEG",
+     "R-CSM"
+    ],
+    "I": [
+     "R-OPS"
+    ]
+   },
+   "next": [
+    "FPW.12-A07"
+   ],
+   "screens": [
+    "/admin/data"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.12-A07",
+   "processId": "FPW.12",
+   "processName": "운영 데이터·데이터 보호",
+   "name": "정보주체 요청 접수",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CSM"
+    ],
+    "A": "R-CSM",
+    "C": [
+     "R-DPO",
+     "R-LEG"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.12-A08"
+   ],
+   "screens": [
+    "/admin/data"
+   ],
+   "actions": [
+    "createPrivacyRequest"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.12-A08",
+   "processId": "FPW.12",
+   "processName": "운영 데이터·데이터 보호",
+   "name": "정보주체 독립 처리",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CSM"
+    ],
+    "A": "R-CSM",
+    "C": [
+     "R-DPO"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/admin/data"
+   ],
+   "actions": [
+    "privacyExport",
+    "executePrivacyRequest",
+    "rejectPrivacyRequest"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
    "id": "FPW.13-A01",
    "processId": "FPW.13",
    "processName": "규정·Compliance Profile 관리",
@@ -3335,6 +3579,641 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "actions": [
     "recordSourceReview"
    ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A01",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "산정 범위 설정",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CE"
+    ],
+    "A": "R-CE",
+    "C": [
+     "R-FO",
+     "R-PUR"
+    ],
+    "I": [
+     "R-CA"
+    ]
+   },
+   "next": [
+    "FPW.15-A03"
+   ],
+   "screens": [
+    "/procurement/sw-cost",
+    "/procurement/sw-cost/:estId"
+   ],
+   "actions": [
+    "costProjectCreate",
+    "costFeatureAdd",
+    "costProjectUpdate"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A02",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "원가 기준 발행",
+   "trigger": "원가 기준 개정 필요",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CBA"
+    ],
+    "A": "R-CBA",
+    "C": [
+     "R-CE",
+     "R-PUR"
+    ],
+    "I": [
+     "R-CA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/procurement/sw-cost/basis"
+   ],
+   "actions": [
+    "costBasisDraft",
+    "costBasisPublish"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A03",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "공수·규모 입력",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CE"
+    ],
+    "A": "R-CE",
+    "C": [
+     "R-ARC",
+     "R-INT"
+    ],
+    "I": [
+     "R-CA"
+    ]
+   },
+   "next": [
+    "FPW.15-A04"
+   ],
+   "screens": [
+    "/procurement/sw-cost/:estId"
+   ],
+   "actions": [
+    "costLineUpdate",
+    "costMbdPut"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A04",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "산정 검토 요청",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CE"
+    ],
+    "A": "R-CE",
+    "C": [
+     "R-PUR"
+    ],
+    "I": [
+     "R-CA"
+    ]
+   },
+   "next": [
+    "FPW.15-A05"
+   ],
+   "screens": [
+    "/procurement/sw-cost/:estId"
+   ],
+   "actions": [
+    "costCheckPut",
+    "costTransition"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A05",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "산정 승인·반려",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CA"
+    ],
+    "A": "R-CA",
+    "C": [
+     "R-PUR"
+    ],
+    "I": [
+     "R-CE",
+     "R-CV"
+    ]
+   },
+   "next": [
+    "FPW.15-A06"
+   ],
+   "screens": [
+    "/procurement/sw-cost/:estId"
+   ],
+   "actions": [
+    "costCheckPut",
+    "costTransition"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A06",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "승인 결과 열람·공유",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CV"
+    ],
+    "A": "R-PUR",
+    "C": [
+     "R-CE"
+    ],
+    "I": [
+     "R-CA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/procurement/sw-cost",
+    "/procurement/sw-cost/:estId"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A07",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "실적·교정 검토",
+   "trigger": "승인 뒤 실적 확보",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CE"
+    ],
+    "A": "R-CBA",
+    "C": [
+     "R-PUR"
+    ],
+    "I": [
+     "R-CA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/procurement/sw-cost/:estId",
+    "/procurement/sw-cost/basis"
+   ],
+   "actions": [
+    "costActualPut"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.16-A01",
+   "processId": "FPW.16",
+   "processName": "플랫폼 접근·운영·복구",
+   "name": "계정 상태 변경",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-SYS"
+    ],
+    "A": "R-SYS",
+    "C": [
+     "R-CSM"
+    ],
+    "I": [
+     "R-QA",
+     "R-OPS"
+    ]
+   },
+   "next": [
+    "FPW.16-A02"
+   ],
+   "screens": [
+    "/admin/iam"
+   ],
+   "actions": [
+    "deactivateAccount",
+    "reactivateAccount"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.16-A02",
+   "processId": "FPW.16",
+   "processName": "플랫폼 접근·운영·복구",
+   "name": "부재 소유자 이관",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-SYS"
+    ],
+    "A": "R-SYS",
+    "C": [
+     "R-REG"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/admin/iam",
+    "/verify/compliance"
+   ],
+   "actions": [
+    "transferComplianceRuleOwner"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.16-A03",
+   "processId": "FPW.16",
+   "processName": "플랫폼 접근·운영·복구",
+   "name": "운영 설정·상태 점검",
+   "trigger": "정기 점검 또는 장애",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-SYS",
+     "R-CSM"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/admin/settings",
+    "/events",
+    "/notifications/rules"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.16-A04",
+   "processId": "FPW.16",
+   "processName": "플랫폼 접근·운영·복구",
+   "name": "백업·복구 점검",
+   "trigger": "복구 훈련 또는 사고 복구",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-SYS",
+     "R-CSM",
+     "R-DPO"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/admin/settings"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.17-A01",
+   "processId": "FPW.17",
+   "processName": "기준정보·공유 자산·연계 품질",
+   "name": "차량·시장 기준 관리",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-PLM"
+    ],
+    "A": "R-PLM",
+    "C": [
+     "R-FO",
+     "R-REG"
+    ],
+    "I": [
+     "R-INT"
+    ]
+   },
+   "next": [
+    "FPW.17-A02"
+   ],
+   "screens": [
+    "/master/reference-values"
+   ],
+   "actions": [
+    "createReferenceValue",
+    "retireReferenceValue"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.17-A02",
+   "processId": "FPW.17",
+   "processName": "기준정보·공유 자산·연계 품질",
+   "name": "구조·공유 자산 검토",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-ARC"
+    ],
+    "A": "R-ARC",
+    "C": [
+     "R-INT",
+     "R-PLM"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "next": [
+    "FPW.17-A03"
+   ],
+   "screens": [
+    "/master/taxonomy",
+    "/master/upg",
+    "/master/structure",
+    "/features/shared-assets",
+    "/change/eo"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.17-A03",
+   "processId": "FPW.17",
+   "processName": "기준정보·공유 자산·연계 품질",
+   "name": "사전 품질 점검",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-PLM",
+     "R-ARC"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/precheck",
+    "/trace/coverage"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.17-A04",
+   "processId": "FPW.17",
+   "processName": "기준정보·공유 자산·연계 품질",
+   "name": "외부 연계 대사",
+   "trigger": "연계 실패·충돌 또는 정기 대사",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-INT"
+    ],
+    "A": "R-INT",
+    "C": [
+     "R-ARC",
+     "R-REL"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/integration/connectors"
+   ],
+   "actions": [
+    "resolveExtConflict",
+    "drainExtSync"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.17-A05",
+   "processId": "FPW.17",
+   "processName": "기준정보·공유 자산·연계 품질",
+   "name": "생산·Legacy 대사",
+   "trigger": "공장 인수·Legacy 연계",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-PLM",
+     "R-INT"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/integration/sync",
+    "/integration/legacy",
+    "/field",
+    "/baselines/eol"
+   ],
+   "actions": [
+    "runSync",
+    "importPlantOrders",
+    "translateLegacy"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.18-A01",
+   "processId": "FPW.18",
+   "processName": "운영 분석·상품 개선",
+   "name": "분석 목적·데이터 검토",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-PDA"
+    ],
+    "A": "R-PDA",
+    "C": [
+     "R-DPO",
+     "R-LEG",
+     "R-OPS"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.18-A02"
+   ],
+   "screens": [
+    "/data/workbench",
+    "/biz/trials"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.18-A02",
+   "processId": "FPW.18",
+   "processName": "운영 분석·상품 개선",
+   "name": "운영·품질 데이터 분석",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-QA",
+     "R-TST"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "next": [
+    "FPW.18-A03"
+   ],
+   "screens": [
+    "/data/workbench",
+    "/ops/telemetry",
+    "/fleet/map",
+    "/fleet/vehicles",
+    "/fleet/vehicles/:vin"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.18-A03",
+   "processId": "FPW.18",
+   "processName": "운영 분석·상품 개선",
+   "name": "체험·전환 분석",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-PDA"
+    ],
+    "A": "R-PDA",
+    "C": [
+     "R-PO",
+     "R-DPO"
+    ],
+    "I": [
+     "R-FO"
+    ]
+   },
+   "next": [
+    "FPW.18-A04"
+   ],
+   "screens": [
+    "/biz/trials",
+    "/products",
+    "/entitlements"
+   ],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.18-A04",
+   "processId": "FPW.18",
+   "processName": "운영 분석·상품 개선",
+   "name": "개선 과제 인계",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-FO"
+    ],
+    "A": "R-FO",
+    "C": [
+     "R-PDA",
+     "R-QA",
+     "R-SM",
+     "R-CSM"
+    ],
+    "I": [
+     "R-PO"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/data/workbench",
+    "/products"
+   ],
+   "actions": [],
    "anchor": null,
    "slaHours": null
   }

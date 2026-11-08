@@ -3,7 +3,7 @@ id: WF-DEP-HOM
 type: workflow
 title: "법규인증팀 R&R / Homologation & Regulatory Roles & Responsibilities"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -18,8 +18,10 @@ traces:
     - WF-FPW-12
     - WF-FPW-13
     - WF-FPW-14
+    - WF-FPW-16
+    - WF-FPW-17
     - WF-ROLE-REG
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -34,7 +36,7 @@ last_updated: 2026-11-05
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 11 · 책임 10 · 협의 12 · 통보 7 (활동 30개)
+수행 11 · 책임 10 · 협의 14 · 통보 7 (활동 32개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -68,6 +70,8 @@ last_updated: 2026-11-05
 | FPW.13-A03 분기 법규 감시·Profile 갱신 | FPW.13 규정·Compliance Profile 관리 | R·A (법규 담당) | 법규·표준 원문 `WP-REG-SOURCES`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` | `/verify/compliance`, `/trace/ads` | 2차 초안 |
 | FPW.13-A04 원격 종료 시스템 설명 작성 | FPW.13 규정·Compliance Profile 관리 | R·A (법규 담당) | 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE`, 드릴 결과·G8 판정 `WP-DRILL-REPORT` → 원격 종료 시스템 설명 `WP-SYSTEM-DESCRIPTION` | 플랫폼 밖 | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | C (법규 담당) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
+| FPW.16-A02 부재 소유자 이관 | FPW.16 플랫폼 접근·운영·복구 | C (법규 담당) | 계정 상태 변경 기록 `WP-ACCESS-CHANGE` → 기록 소유자 이관 `WP-OWNER-HANDOVER` | `/admin/iam`, `/verify/compliance` | 2차 초안 |
+| FPW.17-A01 차량·시장 기준 관리 | FPW.17 기준정보·공유 자산·연계 품질 | C (법규 담당) | – → 기준 값 관리 기록 `WP-MASTER-VALUES` | `/master/reference-values` | 2차 초안 |
 
 ## 2. 부서 간 인계
 
@@ -91,4 +95,4 @@ last_updated: 2026-11-05
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/ops/incident-reports`, `/admin/data`, `/verify/compliance`, `/trace/ads`
-- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/ops/kill`, `/audit/oversight`, `/audit`, `/admin/security`, `/master/feature-db`
+- 참조 화면(협의·통보): `/features/:id/:ver`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/ops/kill`, `/audit/oversight`, `/audit`, `/admin/security`, `/master/feature-db`, `/admin/iam`, `/master/reference-values`

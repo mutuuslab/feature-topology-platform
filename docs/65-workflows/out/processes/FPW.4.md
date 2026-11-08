@@ -3,7 +3,7 @@ id: WF-FPW-4
 type: workflow
 title: "안전 설계·정책 설계 / Safety Design & Policy Design"
 status: draft
-version: 0.2.0
+version: 0.3.0
 owner: governance
 cycle: 0
 traces:
@@ -11,7 +11,7 @@ traces:
     - GATE-G4
     - GATE-G7
     - FLW-VARIANT-AUTHOR
-last_updated: 2026-11-05
+last_updated: 2026-11-08
 ---
 <!-- 생성물: docs/65-workflows/scripts/build_md.py — 손으로 고치지 않는다 -->
 
@@ -63,7 +63,7 @@ flowchart LR
 | FPW.4-A04 | 정책 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager · I 아키텍트, Release Manager | WP-POLICY | WP-POLICY | `decidePolicy`, `/policies/:id` | – |
 | FPW.4-A02 | 플랫폼 도구 신뢰도 분류 | R Safety Manager · A Safety Manager · C 아키텍트, CSM · I 품질 조직 | WP-SAFETY-REQ | WP-TCL-RECORD | `/arch/components` | FFG-PLT-013 |
 | FPW.4-A05 | G4 설계 독립 검토·판정 | R 품질 조직 · A 아키텍트 · C Safety Manager, CSM · I 시험 조직, Feature Owner | WP-SAFETY-DESIGN, WP-TCL-RECORD, WP-POLICY | WP-G4-DECISION | `judgeGate`, `/features/:id/:ver`, `/admin/approval` | FFG-LCY-001 |
-| FPW.4-A07 | Flag PR 검토·병합 | R 통합 조직 · A 아키텍트 · C Feature Owner · I Release Manager, 시험 조직 | WP-G4-DECISION |  | `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey` | FFG-LCY-011 |
+| FPW.4-A07 | Flag PR 검토·병합 | R 통합 조직 · A 아키텍트 · C Feature Owner · I Release Manager, 시험 조직 | WP-G4-DECISION | WP-FLAG-PR-RESULT | `createFlagPr`, `demoMergeFlagPr`, `/flag-code`, `/flag-code/flags/:flagKey` | FFG-LCY-011 |
 
 ### 수행 절차와 완료 기준
 
@@ -137,6 +137,7 @@ flowchart LR
 | WP-POLICY | Flag 정책(검증·승인본) | 산출 | 대상 규칙·Variant 조건·기본값과 개정 번호; 분야별 검증 8종 결과와 배포 안전성 판정; 승인자·정책 해시·승인 시각 |
 | WP-G4-DECISION | G4 Decision Record | 산출 | 설계 적합성 판정과 근거 Evidence ID; 독립 검토자 서명과 아키텍트 책임 확인 |
 | WP-POLICY-CR | 정책 근거 변경요청(CR) 연결 | 산출 | 정책 ID와 근거 JIRA 변경요청(CR) 키·상태; JIRA에서 CR 승인·반려가 정책 결정으로 반영되거나 거부된 기록과 사유 |
+| WP-FLAG-PR-RESULT | Flag 코드 변경 검토·병합 기록 | 산출 | 대상 Feature Version·Flag와 저장소 PR; 기본값·호출 구조 검토와 검사 결과; 병합 상태·스캔 참조·담당과 시각 |
 
 ## 4. 진입·완료 기준
 
@@ -153,3 +154,82 @@ flowchart LR
 - O2 플랫폼 컴포넌트의 도구 신뢰도(TCL)와 확보 방법이 정해진다.
 - O3 Flag 정책이 작성·검증되고 작성자가 아닌 승인자가 승인한다.
 - O4 독립 검토로 G4 설계 판정이 남는다.
+
+## 6. 업무 수행 정의(Base Practices)
+
+업무 정의 초안이다. 개인 활동 체크·서버 처리·Gate 승인 및 ASPICE 적합성 평가와 구분한다.
+
+### FPW.4.BP1 차량 내 감시·안전기제 설계
+
+안전요구를 차량 내부의 감시·Guard·안전 기제와 제어점 설계에 할당한다. 차량의 시간 예산 안에서 동작할 경로와 원격 요청·늦은 관측의 경계를 분리하여 요구와 설계의 대응을 보존한다.
+
+- 기여 성과: O1
+- 연결 활동: FPW.4-A01
+- 참고 1: 원격 통신이나 플랫폼 화면을 차량의 FTTI 안 안전 기제의 대체로 정의하지 않는다.
+
+### FPW.4.BP2 Flag 정책 작성·검증
+
+적용 대상·Variant·기본값을 명시한 정책을 작성하고 현재 개정본을 분야별 검증으로 평가한다. 수정으로 근거가 달라지면 재검증하여 승인 대상 내용과 결과를 일치시킨다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.4-A03
+
+### FPW.4.BP3 정책 근거 변경요청(CR) 연결
+
+정책 변경의 이유와 범위를 외부 변경요청에 연결하여 의사결정의 근거를 추적한다. 외부 결정의 반영 여부와 거부 사유를 확인하고 플랫폼 정책 상태와 불일치를 해소한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.4-A06
+
+### FPW.4.BP4 정책 승인
+
+최신 정책 내용의 해시와 검증 결과를 확인하여 승인 또는 반려를 결정한다. 작성자와 구분된 승인자가 결정 근거를 남기고 수정이 필요한 경우 작성자에게 인계한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.4-A04
+
+### FPW.4.BP5 플랫폼 도구 신뢰도 분류
+
+플랫폼 도구의 오류 출력과 검출 수단을 분석하여 신뢰도 분류와 확보 방법을 결정한다. 사용 범위와 분류 근거를 기록하고 필요한 확인 활동을 Safety Plan에 반영한다.
+
+- 기여 성과: O2
+- 연결 활동: FPW.4-A02
+
+### FPW.4.BP6 G4 설계 독립 검토·판정
+
+설계·정책·인터페이스가 안전요구를 충족하는지 독립적으로 검토한다. 발견 사항과 근거를 기록하고 설계 책임자의 확인 및 판정 결과에 따라 수정·재검토를 관리한다.
+
+- 기여 성과: O4
+- 연결 활동: FPW.4-A05
+
+### FPW.4.BP7 Flag PR 검토·병합
+
+승인된 Version의 Flag 코드 변경을 검토하고 기본값·호출 구조·검사 결과를 확인한다. 병합 결과와 코드 연결 상태를 추적하여 정의와 구현이 어긋난 채 후속 출시로 넘어가지 않게 한다.
+
+- 기여 성과: O3
+- 연결 활동: FPW.4-A07
+
+### BP × 성과
+
+| BP | O1 | O2 | O3 | O4 |
+|---|---|---|---|---|
+| FPW.4.BP1 | ● | – | – | – |
+| FPW.4.BP2 | – | – | ● | – |
+| FPW.4.BP3 | – | – | ● | – |
+| FPW.4.BP4 | – | – | ● | – |
+| FPW.4.BP5 | – | ● | – | – |
+| FPW.4.BP6 | – | – | – | ● |
+| FPW.4.BP7 | – | – | ● | – |
+
+### 출력 근거 × 성과
+
+모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
+
+| 산출물 | O1 | O2 | O3 | O4 | 근거 BP |
+|---|---|---|---|---|---|
+| WP-SAFETY-DESIGN | ● | – | – | – | FPW.4.BP1 |
+| WP-POLICY | – | – | ● | – | FPW.4.BP2, FPW.4.BP4 |
+| WP-POLICY-CR | – | – | ● | – | FPW.4.BP3 |
+| WP-TCL-RECORD | – | ● | – | – | FPW.4.BP5 |
+| WP-G4-DECISION | – | – | – | ● | FPW.4.BP6 |
+| WP-FLAG-PR-RESULT | – | – | ● | – | FPW.4.BP7 |

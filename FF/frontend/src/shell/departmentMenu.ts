@@ -6,12 +6,17 @@ import { DESKTOP_BUILD, routesFor, screenShipped, type AppRoute } from '../route
 export interface DeptMenuItem {
   to: string;
   title: string;
-  /** 이 항목으로 올라온 활동 화면 패턴 */
+  /** 이 항목으로 모은 활동 화면·지정 진입 화면 패턴 */
   screens: string[];
 }
 
 /** 작업공간 내비가 따로 그리는 항목 — 홈(작업공간)·업무 절차 */
 export const FIXED_ITEMS = ['/', '/procedures'];
+
+// 구매본부의 지정 진입점. 메뉴 탐색 우선순위이며 RACI·계정 권한을 부여하지 않는다.
+const PRIMARY_ENTRIES: Record<string, readonly string[]> = {
+  'DEP-PUR': ['/procurement/sw-cost', '/procurement/sw-cost/basis', '/supplier/portal'],
+};
 
 /** 경로 패턴 → 메뉴가 있는 가장 가까운 화면(자기 자신 또는 상위). 이 빌드에 싣지 않은 화면(데스크톱 배포본)은 메뉴로 올리지 않는다 */
 export function menuRouteOf(pattern: string, desktop = DESKTOP_BUILD): AppRoute | undefined {
@@ -40,7 +45,7 @@ function toItems(patterns: readonly string[], skip: ReadonlySet<string>, desktop
 
 export function departmentMenu(d: DepartmentSummary, desktop = DESKTOP_BUILD): { primary: DeptMenuItem[]; reference: DeptMenuItem[] } {
   const fixed = new Set(FIXED_ITEMS);
-  const primary = toItems(d.screens.primary, fixed, desktop);
+  const primary = toItems([...(PRIMARY_ENTRIES[d.id] ?? []), ...d.screens.primary], fixed, desktop);
   const reference = toItems(d.screens.reference, new Set([...fixed, ...primary.map((x) => x.to)]), desktop);
   return { primary, reference };
 }

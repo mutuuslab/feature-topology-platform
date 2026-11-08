@@ -68,6 +68,14 @@ export function RefPicker({
   // 추가 요청은 Feature 작성자·DB 관리자만(서버 requestRefAdd와 같은 역할), 공개 데모는 읽기 전용
   const requestPerm = usePermission(['FEATURE_AUTHOR', 'REFDB_ADMIN']);
   const root = useRef<HTMLDivElement>(null);
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const el = root.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(([entry]) => setCompact(entry.contentRect.width < 700));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const confirmHead = useRef<HTMLHeadingElement>(null);
   const [announce, setAnnounce] = useState('');
   // 다음에 그린 뒤 초점을 줄 요소(선택자) — 누른 버튼이 사라지는 동작 뒤에 쓴다
@@ -126,6 +134,24 @@ export function RefPicker({
     onMakePrimary(refId);
     setAnnounce(P.announce.madePrimary(refId));
     setFocusNext(`[data-ref-chosen="${refId}"] button`);
+  };
+
+  const renderChoice = (r: RefLite) => {
+    const role = chosen.get(r.refId);
+    if (role) return <span className="ds-tag" tabIndex={-1} data-picked-tag={r.refId}>{P.role[role]}</span>;
+    const retired = !REF_STATUS_POLICY[r.status]?.selectable;
+    return (
+      <span className="propose-result-actions">
+        <span>
+          <Button disabled={retired} reason={retired ? P.retiredWhy : undefined} aria-label={P.primaryLabel(r.refId)} onClick={() => choose(r, 'PRIMARY')}>{P.choosePrimary}</Button>
+          <span className="ds-field__hint">{P.selection.primaryEffect}</span>
+        </span>
+        {!retired && <span>
+          <Button variant="ghost" aria-label={P.includeLabel(r.refId)} onClick={() => choose(r, 'INCLUDED')}>{P.addIncluded}</Button>
+          <span className="ds-field__hint">{P.selection.includedEffect}</span>
+        </span>}
+      </span>
+    );
   };
 
   return (
@@ -226,7 +252,19 @@ export function RefPicker({
         </h3>
         {/* 빈 결과는 한 문장(제목 + 다음 행동) — 기본 제목과 겹쳐 두 번 말하던 것(P1-8) */}
         <AsyncView state={asyncState(search, rows.length === 0)} error={search.error} onRetry={() => search.refetch()} empty={{ title: PM.noResultTitle, body: PM.noResultBody }}>
-          <DataTable
+          {compact ? <ul className="propose-result-list" aria-label={P.results} tabIndex={0}>
+            {rows.map((r) => <li key={r.refId} className="propose-result" aria-labelledby={`ref-result-${r.refId}`}>
+              <span className="ds-mono">{r.refId}</span>
+              <h4 id={`ref-result-${r.refId}`}>{r.nameKo}</h4>
+              <span className="ds-field__hint">{r.nameEn}</span>
+              <dl className="propose-result-facts">
+                <div><dt>{P.col.asil}</dt><dd className="ds-mono">{r.asilRep}</dd></div>
+                <div><dt>{P.col.tshirt}</dt><dd className="ds-mono">{r.tshirt}</dd></div>
+                <div><dt>{P.col.status}</dt><dd><RefStatusBadge status={r.status} /></dd></div>
+              </dl>
+              {renderChoice(r)}
+            </li>)}
+          </ul> : <DataTable
             caption={P.results}
             rows={rows}
             rowKey={(r) => r.refId}
@@ -250,37 +288,10 @@ export function RefPicker({
               {
                 key: 'choose',
                 header: P.col.choose,
-                cell: (r) => {
-                  const role = chosen.get(r.refId);
-                  if (role)
-                    return (
-                      <span className="ds-tag" tabIndex={-1} data-picked-tag={r.refId}>
-                        {P.role[role]}
-                      </span>
-                    );
-                  const retired = !REF_STATUS_POLICY[r.status]?.selectable;
-                  return (
-                    <span style={{ display: 'inline-flex', gap: 'var(--sp-1)', flexWrap: 'wrap' }}>
-                      <span style={{ display: 'grid', gap: 'var(--sp-1)' }}>
-                        <Button disabled={retired} reason={retired ? P.retiredWhy : undefined} aria-label={P.primaryLabel(r.refId)} onClick={() => choose(r, 'PRIMARY')}>
-                          {P.choosePrimary}
-                        </Button>
-                        <span className="ds-field__hint">{P.selection.primaryEffect}</span>
-                      </span>
-                      {!retired && (
-                        <span style={{ display: 'grid', gap: 'var(--sp-1)' }}>
-                          <Button variant="ghost" aria-label={P.includeLabel(r.refId)} onClick={() => choose(r, 'INCLUDED')}>
-                            {P.addIncluded}
-                          </Button>
-                          <span className="ds-field__hint">{P.selection.includedEffect}</span>
-                        </span>
-                      )}
-                    </span>
-                  );
-                },
+                cell: renderChoice,
               },
             ]}
-          />
+          />}
         </AsyncView>
         {onRequest && (
           <div style={{ marginTop: 'var(--sp-2)' }}>

@@ -43,8 +43,8 @@ describe('업무 절차 ↔ 플랫폼 정합성', () => {
     expect(workflowProblems(WORKFLOWS, FACTS)).toEqual([]);
   });
 
-  it('14개 프로세스와 G7 Release Sign-off 활동이 있다', () => {
-    expect(WORKFLOWS.processes.map((p) => p.id)).toEqual(Array.from({ length: 14 }, (_, i) => `FPW.${i + 1}`));
+  it('18개 프로세스와 기존 G7 Release Sign-off 활동이 있다', () => {
+    expect(WORKFLOWS.processes.map((p) => p.id)).toEqual(Array.from({ length: 18 }, (_, i) => `FPW.${i + 1}`));
     const g7 = WORKFLOWS.gateCrosswalk.find((g) => g.report === 'G7');
     expect(g7?.approvalActions).toEqual(['signRelease']);
   });

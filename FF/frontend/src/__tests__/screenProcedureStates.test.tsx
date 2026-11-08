@@ -6,7 +6,7 @@ import { WORKFLOWS } from '../../../contracts/src/generated/workflows';
 import { AppProvider } from '../store';
 import { Shell } from '../shell/Shell';
 import ScreenProcedure from '../shell/ScreenProcedure';
-import { ScreenProcedureHost } from '../shell/ScreenProcedureHost';
+import { ScreenProcedureHost, procedurePanelRetryUrl } from '../shell/ScreenProcedureHost';
 
 const state = vi.hoisted(() => ({ doc: null as any, retry: vi.fn() }));
 vi.mock('../data/workflows', async () => ({ ...(await vi.importActual<any>('../data/workflows')), useWorkflowResource: () => state }));
@@ -17,6 +17,13 @@ function wrap(child: React.ReactNode, path = '/feature/propose') {
 }
 
 describe('현재 화면 업무절차 패널의 실제 연결과 비어 있지 않은 복구', () => {
+  it('캐시 우회는 같은 origin의 정확한 패널 JS에만 적용하고 경로·외부 URL·자격증명을 허용하지 않는다', () => {
+    const origin = 'https://preview.example';
+    expect(procedurePanelRetryUrl(new Error('Failed to fetch dynamically imported module: https://preview.example/assets/ScreenProcedure-abc12345.js'), origin, 2)).toBe('https://preview.example/assets/ScreenProcedure-abc12345.js?wfRetry=2');
+    for (const url of ['https://other.example/assets/ScreenProcedure-abc12345.js', 'https://preview.example/api/ScreenProcedure-abc12345.js', 'https://preview.example/assets/Other-abc12345.js', 'https://user:pass@preview.example/assets/ScreenProcedure-abc12345.js']) {
+      expect(procedurePanelRetryUrl(new Error(url), origin, 1)).toBeNull();
+    }
+  });
   it('실제 상단 아이콘을 누르면 현재 등록 화면의 목적·활동과 전체 절차 링크가 열린다', async () => {
     render(wrap(<Shell><h1>Feature 등록</h1></Shell>));
     fireEvent.click(screen.getByRole('button', { name: '이 화면의 업무 절차' }));

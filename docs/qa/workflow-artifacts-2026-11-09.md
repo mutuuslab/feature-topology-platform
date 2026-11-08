@@ -43,3 +43,5 @@
 - 정적 UI만 별도 빌드하고, 기존329,396,696byte/19,071파일 단일 snapshot artifact를 실제 게이트·리졸버로 읽기 연결했다. 원본 SHA tree `3a4665aa8dc73cad2124d8a24fa54e9c33c0eddeeabf2d907b41bf93d4753919` 유지. 전체 snapshot 복제·재생성·승인 주입 없음.
 
 PostgreSQL 실 DB는 이번 환경에서 실행하지 않았다. BYTEA/schema·adapter 전제·방언 회귀와 실제 SQLite/브라우저 실증을 구분한다. 배포 환경 PG smoke와 root 통합 뒤 팀별·전체 이해관계자 리뷰 및 최종 Publish는 별도 완료 조건이다.
+
+정적 신규 업로드는 IDB 실제 Blob으로 동작한다. 향후 native snapshot에 fileId 메타데이터만 캡처되고 해당 브라우저에 원문이 없는 파일은 바이트 없음으로 거부한다. Native 비공개 파일의 정적 공개용 자동 export/byte-pack은 이 작업에서 구현하지 않았다. 현재 frozen 2배 seed의 업무 초안은 별도 binary 첨부가 없으므로 이 경계와 분리해 검증했다. 공개용 native 첨부가 필요하면 공개가 허용된 실제 원문을 캡처·검증·패킹하는 별도 계약이 필요하며, 메타데이터만 있는 파일을 다운로드 검증 완료로 세지 않는다.

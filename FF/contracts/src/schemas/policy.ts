@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { patchOf } from './patch';
 import { ControlPointType } from '../enums';
-import { CONSTRAINT_OPERATORS } from '../flags/p0';
+import { CONSTRAINT_OPERATORS, decimalCompare } from '../flags/p0';
 import { OddRestriction } from '../rules/odd-restriction';
 import { FLEET_KINDS, GRANT_SOURCES } from '../rules/reference-data';
 
@@ -72,9 +72,18 @@ export const PolicySchema = PolicySpec.extend({
 });
 export type Policy = z.infer<typeof PolicySchema>;
 
-export const CreatePolicyBody = PolicySpec;
+/** 새 입력에만 숫자 문법을 적용한다. 구형 저장 정책은 파싱·조회할 수 있어야 검증기가 FAIL 근거를 남긴다. */
+function numericValues(body: Partial<PolicySpec>, ctx: z.RefinementCtx) {
+  body.strategies?.forEach((strategy, si) => strategy.constraints.forEach((c, ci) => {
+    if (c.operator.startsWith('NUM_')) c.values.forEach((value, vi) => {
+      if (decimalCompare(value, value) === null) ctx.addIssue({ code: 'custom', path: ['strategies', si, 'constraints', ci, 'values', vi], message: '수치 조건은 유효한 십진수로 입력하세요.' });
+    });
+  }));
+}
+
+export const CreatePolicyBody = PolicySpec.superRefine(numericValues);
 export type CreatePolicyBody = z.infer<typeof CreatePolicyBody>;
-export const UpdatePolicyBody = patchOf(PolicySpec).strict();
+export const UpdatePolicyBody = patchOf(PolicySpec).strict().superRefine(numericValues);
 export type UpdatePolicyBody = z.infer<typeof UpdatePolicyBody>;
 export const PolicyDecisionBody = z.object({ decision: z.enum(['APPROVE', 'REJECT']), reason: z.string().trim().min(2).max(500) }).strict();
 export type PolicyDecisionBody = z.infer<typeof PolicyDecisionBody>;

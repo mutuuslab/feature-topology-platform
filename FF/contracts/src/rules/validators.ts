@@ -66,6 +66,37 @@ function valueValid(c: Constraint, v: string) {
   return true;
 }
 
+/** 한 속성의 AND 수치 구간 — 평가기와 같은 정밀 십진수 비교. OR 전략·다른 속성은 호출자가 분리한다. */
+function numericRangeConflict(constraints: Constraint[]): boolean {
+  type Bound = { value: string; inclusive: boolean };
+  let lower: Bound | undefined;
+  let upper: Bound | undefined;
+  const excluded: string[] = [];
+  const tighten = (current: Bound | undefined, value: string, inclusive: boolean, low: boolean): Bound => {
+    if (!current) return { value, inclusive };
+    const cmp = decimalCompare(value, current.value)!;
+    if (cmp === 0) return { value, inclusive: current.inclusive && inclusive };
+    return (low ? cmp > 0 : cmp < 0) ? { value, inclusive } : current;
+  };
+  const inverse: Record<string, string> = { NUM_EQ: 'NUM_NE', NUM_GT: 'NUM_LTE', NUM_GTE: 'NUM_LT', NUM_LT: 'NUM_GTE', NUM_LTE: 'NUM_GT' };
+  for (const c of constraints) {
+    if (!c.operator.startsWith('NUM_') || c.values.length !== 1 || decimalCompare(c.values[0], c.values[0]) === null) continue;
+    const value = c.values[0];
+    switch (c.inverted ? inverse[c.operator] : c.operator) {
+      case 'NUM_EQ': lower = tighten(lower, value, true, true); upper = tighten(upper, value, true, false); break;
+      case 'NUM_NE': excluded.push(value); break;
+      case 'NUM_GT': lower = tighten(lower, value, false, true); break;
+      case 'NUM_GTE': lower = tighten(lower, value, true, true); break;
+      case 'NUM_LT': upper = tighten(upper, value, false, false); break;
+      case 'NUM_LTE': upper = tighten(upper, value, true, false); break;
+    }
+  }
+  if (!lower || !upper) return false;
+  const cmp = decimalCompare(lower.value, upper.value)!;
+  const point = lower.value;
+  return cmp > 0 || (cmp === 0 && (!lower.inclusive || !upper.inclusive || excluded.some((value) => decimalCompare(value, point) === 0)));
+}
+
 /** D06-01 정책 검증 — 형식·제어점·충돌 */
 export function validatePolicy(i: ValidationInput): ValidatorResult {
   const f: ValidatorResult['findings'] = [];
@@ -83,6 +114,10 @@ export function validatePolicy(i: ValidationInput): ValidatorResult {
       for (let b = a + 1; b < ins.length; b++)
         if (ins[a].contextName === ins[b].contextName && !ins[a].values.some((v) => ins[b].values.includes(v)))
           f.push({ result: 'FAIL', code: 'CONFLICT', message: `${s.name}: ${ins[a].contextName} 조건이 서로 모순 — 어떤 차량도 만족할 수 없습니다` });
+    const numericContexts = new Set(s.constraints.filter((c) => c.operator.startsWith('NUM_')).map((c) => c.contextName));
+    for (const contextName of numericContexts)
+      if (numericRangeConflict(s.constraints.filter((c) => c.contextName === contextName)))
+        f.push({ result: 'FAIL', code: 'CONFLICT', message: `${s.name}: ${contextName} 수치 조건의 AND 범위가 서로 모순 — 어떤 차량도 만족할 수 없습니다` });
   }
   for (const o of i.activePolicies.filter((x) => x.controlPoint === p.controlPoint && x.policyId !== p.policyId))
     f.push({ result: 'INFO', message: `같은 제어점의 ${o.status} 정책 ${o.policyId} r${o.revision}을(를) 대체합니다` });

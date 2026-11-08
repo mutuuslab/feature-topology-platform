@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { WORKSPACES } from '@ff/contracts';
 import { ALL_DEPARTMENTS, DEPARTMENTS, departmentById } from '../data/departments';
-import { departmentMenu, menuRouteOf } from '../shell/departmentMenu';
+import { departmentMenu, departmentMenuGroups, menuRouteOf } from '../shell/departmentMenu';
 import { GROUPS, ROUTES } from '../routes';
 import { Shell } from '../shell/Shell';
 import { HomeScreen } from '../screens/home/Inbox';
@@ -46,6 +46,31 @@ const mount = (state: object, path = '/', body: JSX.Element = <h1>본문</h1>) =
 };
 
 describe('부서 메뉴', () => {
+  it('업무 성격 분류는 14부서의 원래 항목과 주 업무·참조 경계를 빠짐없이 보존한다', () => {
+    for (const d of DEPARTMENTS.departments) {
+      const menu = departmentMenu(d);
+      for (const items of [menu.primary, menu.reference]) {
+        const groups = departmentMenuGroups(items);
+        expect(groups.every((g) => g.items.length > 0)).toBe(true);
+        expect(groups.flatMap((g) => g.items.map((i) => i.to)).sort()).toEqual(items.map((i) => i.to).sort());
+        expect(new Set(groups.map((g) => g.key)).size).toBe(groups.length);
+      }
+    }
+    const purchase = departmentMenuGroups(departmentMenu(departmentById('DEP-PUR')!).primary);
+    expect(purchase.find((g) => g.key === 'cost')?.items.map((i) => i.to)).toContain('/procurement/sw-cost');
+    expect(purchase.find((g) => g.key === 'supplier')?.items.map((i) => i.to)).toContain('/supplier/portal');
+  });
+
+  it('구매 업무 분류와 공통·역할 대시보드 링크가 보이고 현재 대시보드만 활성화된다', async () => {
+    mount({ role: 'viewer', department: 'DEP-PUR' }, '/?dashboard=department');
+    const nav = await screen.findByRole('navigation', { name: '구매팀 메뉴' });
+    expect(within(nav).getByRole('heading', { name: '개발비 산정' })).toBeTruthy();
+    expect(within(nav).getByRole('heading', { name: '협력사 납품·검수' })).toBeTruthy();
+    expect(within(nav).getByRole('link', { name: '부서 공통 대시보드' })).toHaveAttribute('href', '/?dashboard=department');
+    expect(within(nav).getByRole('link', { name: '부서 공통 대시보드' }).className).toBe('active');
+    expect(within(nav).getByRole('link', { name: '역할 기본 대시보드' }).className).not.toBe('active');
+    expect(within(nav).getByRole('link', { name: '내 작업공간' }).className).not.toBe('active');
+  });
   it('14개 부서 모두 메뉴가 있고, 모든 항목은 메뉴가 있는 실제 화면이다', () => {
     const menuPaths = new Set(ROUTES.filter((r) => r.menu).map((r) => r.menu));
     expect(DEPARTMENTS.departments).toHaveLength(14);
@@ -113,10 +138,10 @@ describe('셸 — 부서 보기와 전체 보기', () => {
     expect(document.querySelector('[data-dept-nav]')).toBeNull();
   });
 
-  it('부서를 고르면 레일 대신 부서 메뉴, html에 화면 유형 — 관제실은 어두운 관제 톤', () => {
+  it('부서를 고르면 레일 대신 부서 메뉴, html에 화면 유형 — 관제실은 어두운 관제 톤', async () => {
     mount({ role: 'operator', department: 'DEP-OPS' });
     expect(document.querySelector('.sh-rail')).toBeNull();
-    const nav = screen.getByRole('navigation', { name: 'OTA·서비스운영팀 메뉴' });
+    const nav = await screen.findByRole('navigation', { name: 'OTA·서비스운영팀 메뉴' });
     expect(within(nav).getByRole('link', { name: 'Fleet 실시간 적용 현황' })).toBeTruthy();
     expect(document.documentElement.getAttribute('data-workspace')).toBe('control');
     expect(document.documentElement.getAttribute('data-zone')).toBe('ops');
@@ -129,11 +154,11 @@ describe('셸 — 부서 보기와 전체 보기', () => {
     expect(document.querySelector('.sh')?.getAttribute('data-workspace')).toBe('studio');
   });
 
-  it('상단 바에서 부서를 바꾸고, 전체 메뉴 보기로 8그룹에 돌아온다', () => {
+  it('상단 바에서 부서를 바꾸고, 전체 메뉴 보기로 8그룹에 돌아온다', async () => {
     mount({ role: 'author' });
     fireEvent.change(screen.getByRole('combobox', { name: '담당 부서' }), { target: { value: 'DEP-FS' } });
     expect(document.documentElement.getAttribute('data-workspace')).toBe('review');
-    expect(screen.getByRole('navigation', { name: '기능안전팀 메뉴' })).toBeTruthy();
+    expect(await screen.findByRole('navigation', { name: '기능안전팀 메뉴' })).toBeTruthy();
     // 부서 안 역할 — 기능안전팀은 데모 계정이 둘(품질 검토 FSM, 부 FSM)
     expect(screen.getByRole('combobox', { name: '부서 안 역할' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '전체 메뉴 보기' }));

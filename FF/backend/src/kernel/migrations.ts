@@ -1374,4 +1374,18 @@ CREATE TRIGGER release_candidate_baseline_no_delete BEFORE DELETE ON release_can
     name: '401_oidc_department_context',
     sql: `ALTER TABLE auth_session ADD COLUMN department_id TEXT;`,
   },
+  {
+    name: '411_workflow_cases_artifacts',
+    sql: `
+CREATE TABLE workflow_case (case_id TEXT PRIMARY KEY, process_id TEXT NOT NULL, version INTEGER NOT NULL, created_by TEXT NOT NULL, updated_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX workflow_case_process ON workflow_case (process_id, updated_at);
+CREATE TABLE workflow_case_history (id INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT NOT NULL, version INTEGER NOT NULL, action TEXT NOT NULL, by_actor TEXT NOT NULL, at TEXT NOT NULL, detail TEXT NOT NULL);
+CREATE TRIGGER workflow_case_history_no_update BEFORE UPDATE ON workflow_case_history BEGIN SELECT RAISE(ABORT, 'workflow_case_history는 추가만 가능'); END;
+CREATE TRIGGER workflow_case_history_no_delete BEFORE DELETE ON workflow_case_history BEGIN SELECT RAISE(ABORT, 'workflow_case_history는 추가만 가능'); END;
+CREATE TABLE workflow_role_grant (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT NOT NULL, role_id TEXT NOT NULL, active INTEGER NOT NULL CHECK (active IN (0,1)), by_actor TEXT NOT NULL, at TEXT NOT NULL, reason TEXT NOT NULL);
+CREATE INDEX workflow_role_grant_account ON workflow_role_grant (account_id, role_id, id);
+CREATE TRIGGER workflow_role_grant_no_update BEFORE UPDATE ON workflow_role_grant BEGIN SELECT RAISE(ABORT, 'workflow_role_grant는 추가만 가능'); END;
+CREATE TRIGGER workflow_role_grant_no_delete BEFORE DELETE ON workflow_role_grant BEGIN SELECT RAISE(ABORT, 'workflow_role_grant는 추가만 가능'); END;
+`,
+  },
 ];

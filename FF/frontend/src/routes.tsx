@@ -57,6 +57,7 @@ const named = <T extends Record<string, unknown>>(load: () => Promise<T>, name: 
 
 // 페이지 모듈 — 모두 지연 로딩(초기 번들은 셸과 디자인 키트만)
 const homeScreens = () => import('./screens/home/Inbox');
+const workflowWorkScreens = () => import('./screens/procedures/WorkCases');
 const twin = () => import('./pages/twin');
 const twinOps = () => import('./pages/twinOps');
 
@@ -108,6 +109,7 @@ export const DESKTOP_EXCLUDED = new Set(['/arch/components']);
 const ALL_ROUTES: AppRoute[] = [
   // 1 홈
   { path: '/', element: named(homeScreens, 'HomeScreen'), title: '내 대시보드', group: 'home', menu: '/', v2: true },
+  { path: '/procedures/work', element: named(workflowWorkScreens, 'WorkflowWorkScreen'), title: '업무 건·산출물', group: 'home', menu: '/procedures/work', v2: true },
   { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
   // 표준 따라하기 — 데모·개발 빌드만(결정 D-RD-8). 운영 빌드는 라우트·묶음이 없어 직접 주소도 '찾는 항목이 없습니다'
   ...(DEMO_EXTRAS

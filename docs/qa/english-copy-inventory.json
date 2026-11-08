@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 78,
-  "requiredLeaves": 8801,
+  "moduleCount": 79,
+  "requiredLeaves": 8876,
   "modules": [
     {
       "module": "ads-change",
@@ -15442,8 +15442,8 @@
         {
           "path": "experiment-analysis.experimentAnalysis.simulationNote",
           "kind": "text",
-          "text": "아래 비율과 신뢰구간은 시연용 표본으로 계산했습니다. 실사용 결과는 목록의 Lake 조회·표본·최신성을 별도로 확인하세요.",
-          "sourceHash": "93f4bf8716116eeef4cb4af8ebb7ba733b989233849128b93c0fa47528dea443"
+          "text": "아래 비율과 신뢰구간은 시연용 표본으로 계산했습니다. 별도 관측 결과는 목록의 Lake 출처·표본·최신성을 확인하세요.",
+          "sourceHash": "40d5a086417020df173ec27d177d41b723f53b21e2ae7172dd1abcac02c51c0e"
         },
         {
           "path": "experiment-analysis.experimentAnalysis.comparison",
@@ -15492,6 +15492,18 @@
           "kind": "text",
           "text": "비교할 차량이 없습니다. 일치율을 표시하지 않습니다.",
           "sourceHash": "f04bd8b1ac5a210336686fe2dba1f7836f46d7faa903807b4e9534aa668fae0c"
+        },
+        {
+          "path": "experiment-analysis.experimentAnalysis.noBaseline",
+          "kind": "text",
+          "text": "비교할 배포 정책이 없습니다. 일치한 것으로 판정하지 않습니다.",
+          "sourceHash": "bf3239a10c1f45657c3332be13bbcbf4097d9c382c870335eeeabaec4851590a"
+        },
+        {
+          "path": "experiment-analysis.experimentAnalysis.incompleteComparison",
+          "kind": "text",
+          "text": "차량별 비교 근거가 완전하지 않습니다. 일치율과 채택 판단을 보류합니다.",
+          "sourceHash": "c13c30003de0ff676f49209cc1c1debccbc5d10fec19ef4900425b5724421a77"
         },
         {
           "path": "experiment-analysis.experimentAnalysis.agreement",
@@ -37967,8 +37979,8 @@
         {
           "path": "p10.p10.experiment.verdicts.INSUFFICIENT",
           "kind": "text",
-          "text": "표본 부족",
-          "sourceHash": "eca95921f48768673c4d417de827338ddafa2ebb0087ebc4d2c53eb7054c441c"
+          "text": "근거 부족",
+          "sourceHash": "ed4a81b806e8d7715301a2d61150ba879adc71ae72b18bee5cd3e88861033cab"
         },
         {
           "path": "p10.p10.experiment.verdicts.CONSISTENT",
@@ -49512,6 +49524,453 @@
       ],
       "connectedExports": [
         "statusLabels"
+      ]
+    },
+    {
+      "module": "supplier",
+      "file": "FF/frontend/src/copy/supplier.ts",
+      "leaves": [
+        {
+          "path": "supplier.supplier.title",
+          "kind": "text",
+          "text": "협력사 이관",
+          "sourceHash": "ed6da423fb5ad92ba2165f58f0a2b9a225a3efcdd5592f18645af783ac68da8c"
+        },
+        {
+          "path": "supplier.supplier.target",
+          "kind": "text",
+          "text": "협력사 패키지 대상",
+          "sourceHash": "0d8dd4783ccfa8aae639692e3a213d565e990ed54949ebe55fa68438c4ea47cf"
+        },
+        {
+          "path": "supplier.supplier.lead",
+          "kind": "text",
+          "text": "Feature에 연결된 협력사 기능과 산출물을 확인하고, 독립 검수 결과를 남깁니다.",
+          "sourceHash": "081858b16977cbc48fd068704d7b742701432751b3268ad64e50c180f65ceb7f"
+        },
+        {
+          "path": "supplier.supplier.packages",
+          "kind": "text",
+          "text": "패키지·검수",
+          "sourceHash": "25a6307a9910452b861d7337fd28eb28f09820110323c74dfb498ea476e98452"
+        },
+        {
+          "path": "supplier.supplier.deliveries",
+          "kind": "text",
+          "text": "SW 납품",
+          "sourceHash": "7546aad7968c10ebde8a139d887cbddd7c355f9164ed866fde821a4a8f03efa0"
+        },
+        {
+          "path": "supplier.supplier.feature",
+          "kind": "text",
+          "text": "대상 Feature",
+          "sourceHash": "8785980a34ccfecafafecf2643dae2b093b0c8f4ac5ecf1ea2578afb12399667"
+        },
+        {
+          "path": "supplier.supplier.version",
+          "kind": "text",
+          "text": "Feature 버전",
+          "sourceHash": "f755e6517ac36165ffa1e96354f4becc13ecbcadde9a97a9d0fa045c4f900eac"
+        },
+        {
+          "path": "supplier.supplier.supplier",
+          "kind": "text",
+          "text": "공급사",
+          "sourceHash": "fdc4a213e1e480669e37db4eb6420b61943d05a31ae001919f0d3b90d2bc798f"
+        },
+        {
+          "path": "supplier.supplier.allSuppliers",
+          "kind": "text",
+          "text": "전체 공급사",
+          "sourceHash": "7750a571c89d35636d762a4d254efdc4454e923d466f664a2a684dbd5978eff8"
+        },
+        {
+          "path": "supplier.supplier.packageList",
+          "kind": "text",
+          "text": "릴리스 패키지",
+          "sourceHash": "3aff679cc1a84b14066d022075849b89de9aed5c066ba4d3764920edf8600bab"
+        },
+        {
+          "path": "supplier.supplier.createPackage",
+          "kind": "text",
+          "text": "패키지 작성",
+          "sourceHash": "c5e337a7a82eb727752ea5b85831904ddac2e8c4f53c3f34048553b230bc6e46"
+        },
+        {
+          "path": "supplier.supplier.packageVersion",
+          "kind": "text",
+          "text": "패키지 버전",
+          "sourceHash": "3b0424db69e0673b3ad3d0a7f45c07a6afe9648310b6f42039ac838f820bb01f"
+        },
+        {
+          "path": "supplier.supplier.basedOn",
+          "kind": "text",
+          "text": "이어받을 패키지",
+          "sourceHash": "b0d2b9ceae75f4748df44f8d6c1465ba093d7702b8a8e7f212043e0cd44f126e"
+        },
+        {
+          "path": "supplier.supplier.noPackage",
+          "kind": "text",
+          "text": "대상 Feature와 공급사를 확인하고 첫 패키지를 작성하세요.",
+          "sourceHash": "9282488fd6757633fe157fb7305245fc4759e07098a3130ab2ea1c078e035285"
+        },
+        {
+          "path": "supplier.supplier.choosePackage",
+          "kind": "text",
+          "text": "왼쪽에서 패키지를 선택해 산출물과 검수 결과를 확인하세요.",
+          "sourceHash": "7b1660334df73c7c5bcd0c783db10693103e126988e14a055f7e43533fc3aa30"
+        },
+        {
+          "path": "supplier.supplier.status.DRAFT",
+          "kind": "text",
+          "text": "작성 중",
+          "sourceHash": "52296b752eb1223b91b5cbb1496f09cce37b7dc53e7ea08cf691d9c09ea950eb"
+        },
+        {
+          "path": "supplier.supplier.status.SUBMITTED",
+          "kind": "text",
+          "text": "검수 요청",
+          "sourceHash": "18b5c58e2e221b73bae7bcd1b89b5728578df5323f60826f11b8d57476cd97b9"
+        },
+        {
+          "path": "supplier.supplier.status.ACCEPTED",
+          "kind": "text",
+          "text": "합격",
+          "sourceHash": "6c1136cf74d35b667520ca75e1d05bb1e0705be0ecc12a4113d58f4470d2b486"
+        },
+        {
+          "path": "supplier.supplier.status.REJECTED",
+          "kind": "text",
+          "text": "보완 요청",
+          "sourceHash": "9037a2a179456e84f1bfbccb4b05afe8298641f9958a3de392235054ddd3569a"
+        },
+        {
+          "path": "supplier.supplier.integrity.VERIFIED",
+          "kind": "text",
+          "text": "본문 일치",
+          "sourceHash": "13d77daa8e120abd98b6adc497362a43b50eff17fcf5882727a0e4e17eaa188c"
+        },
+        {
+          "path": "supplier.supplier.integrity.DECLARED",
+          "kind": "text",
+          "text": "본문 미보관",
+          "sourceHash": "62285b0eeeb2db34deb834d509a3e101670d35ade87cf587459c7939bc238b44"
+        },
+        {
+          "path": "supplier.supplier.integrity.MISMATCH",
+          "kind": "text",
+          "text": "검증 불일치",
+          "sourceHash": "f1876f8113698f70755837b4f44a2cbacaead5259bf06319e1ef4b53c8f48aa9"
+        },
+        {
+          "path": "supplier.supplier.artifact",
+          "kind": "text",
+          "text": "필수 산출물",
+          "sourceHash": "e7deb549a018ae996de6030bace790568d42e043a197b7c434912e42972b497b"
+        },
+        {
+          "path": "supplier.supplier.artifactVersion",
+          "kind": "text",
+          "text": "산출물 버전",
+          "sourceHash": "d6623320cc4e540085376f1ba8485ee1d42c3bbc7d16db2e20bfc48aa565a178"
+        },
+        {
+          "path": "supplier.supplier.integrityCol",
+          "kind": "text",
+          "text": "본문 검증",
+          "sourceHash": "9bffff7f96bef02952d785b4b4dccf7fcb8676ae2caf1c7ae67443a55448ad62"
+        },
+        {
+          "path": "supplier.supplier.content",
+          "kind": "text",
+          "text": "본문 보기",
+          "sourceHash": "b13e6ba251f95f86b8ad8ef1a649cec04b0d8196b855df1ca01c3a25d442aa22"
+        },
+        {
+          "path": "supplier.supplier.noArtifact",
+          "kind": "text",
+          "text": "미등록",
+          "sourceHash": "1b33c0a98d477e70b0487fc18f44548740520a1a03411b33e0ffcdaf9f232cee"
+        },
+        {
+          "path": "supplier.supplier.verificationNote",
+          "kind": "text",
+          "text": "본문 일치는 보관 내용·대상·체크섬 확인 결과입니다. 시험·인증의 적합성은 항목별 검수에서 확인하세요.",
+          "sourceHash": "fc3fe6dfc53d5e5e266b42009d45b9730e6809b7690ee226dfc70cff051e08c9"
+        },
+        {
+          "path": "supplier.supplier.hold",
+          "kind": "text",
+          "text": "검수 보류",
+          "sourceHash": "a0c9b5897d621d423abc151d42fc1bfcb9ecddbe97721e70894f512a2d006477"
+        },
+        {
+          "path": "supplier.supplier.eligible",
+          "kind": "text",
+          "text": "자동 기준 충족",
+          "sourceHash": "9df4168d57d322de81b5592d83c365fbb098b88793b5ec0512cd85184aa257fb"
+        },
+        {
+          "path": "supplier.supplier.noCriteria",
+          "kind": "text",
+          "text": "검수 기준을 등록하세요.",
+          "sourceHash": "ee5e9c71f1a81072dbc09165a70e7c680d7441f7364a642bb91dfcf2c76ceec6"
+        },
+        {
+          "path": "supplier.supplier.addArtifact",
+          "kind": "text",
+          "text": "산출물 등록",
+          "sourceHash": "3f864d42704d4dd890117214abc96bff21417b45e8e173a0b8b6e24f5ab66de3"
+        },
+        {
+          "path": "supplier.supplier.artifactType",
+          "kind": "text",
+          "text": "산출물 유형",
+          "sourceHash": "082e1f48a53af68804900ad589e1166475ab40138219658d2ba3ef721ffc144e"
+        },
+        {
+          "path": "supplier.supplier.artifactTitle",
+          "kind": "text",
+          "text": "산출물 이름",
+          "sourceHash": "d68f2f100fc7738409b782c85279afbe068720ff5289d95ab476508b2d1c5097"
+        },
+        {
+          "path": "supplier.supplier.uri",
+          "kind": "text",
+          "text": "외부 HTTPS 출처",
+          "sourceHash": "3844065cdde7fb95f5cb29ac5e37a23e00429128b0d24f00bbdb476b6c18b0e5"
+        },
+        {
+          "path": "supplier.supplier.checksum",
+          "kind": "text",
+          "text": "SHA-256 체크섬",
+          "sourceHash": "80c0c9f5e65d267e9ec7a82024b53bbb328c1db857b5cec4836c5efacde046e0"
+        },
+        {
+          "path": "supplier.supplier.calculate",
+          "kind": "text",
+          "text": "본문 체크섬 계산",
+          "sourceHash": "5a16d5bdbf0c0136d1d74f3a31b644b3004929ad55bbeca541bec8133575373b"
+        },
+        {
+          "path": "supplier.supplier.body",
+          "kind": "text",
+          "text": "보관할 본문(JSON)",
+          "sourceHash": "2a9fdb31c0acea5a4284e236ef2cfe48c4645a175704b374b7e6d376967525d4"
+        },
+        {
+          "path": "supplier.supplier.metadata",
+          "kind": "text",
+          "text": "구조화된 산출물 값(JSON)",
+          "sourceHash": "d3003d5612f5ff849f3090f2ce050e27917e46f826766c15d6986d06fc67facb"
+        },
+        {
+          "path": "supplier.supplier.bodyHelp",
+          "kind": "text",
+          "text": "본문의 대상 Feature·버전·패키지 버전과 산출물 값을 함께 보관합니다. 본문 없이 출처만 등록하면 검수는 보류됩니다.",
+          "sourceHash": "144f7b6dcfb6b8a551796f257e726cb59a48e4b0eaf50114e7737325e0d06314"
+        },
+        {
+          "path": "supplier.supplier.template",
+          "kind": "text",
+          "text": "대상 양식 넣기",
+          "sourceHash": "6a888bbb833f7f66c2ce1a5712da63e3bbca22edbec07685fedb57ecfbb2810b"
+        },
+        {
+          "path": "supplier.supplier.submit",
+          "kind": "text",
+          "text": "검수 요청",
+          "sourceHash": "18b5c58e2e221b73bae7bcd1b89b5728578df5323f60826f11b8d57476cd97b9"
+        },
+        {
+          "path": "supplier.supplier.submitNote",
+          "kind": "text",
+          "text": "검수 요청 의견",
+          "sourceHash": "06068f89ddb22da670ddbea5b61c4cef64b63385f98a7a107f304fae403ed23e"
+        },
+        {
+          "path": "supplier.supplier.review",
+          "kind": "text",
+          "text": "항목별 검수",
+          "sourceHash": "0960412f7d71e8565aa817c7b9941b97c69b2d890357ba9996e3ed719118eb73"
+        },
+        {
+          "path": "supplier.supplier.reviewNote",
+          "kind": "text",
+          "text": "검수 의견",
+          "sourceHash": "de1e362de1720a2aa4fd5f7a4aac6fb215f1d7058a49ebddfa504357cbbdc3f0"
+        },
+        {
+          "path": "supplier.supplier.accept",
+          "kind": "text",
+          "text": "검수 합격",
+          "sourceHash": "8329cfa9ebd1a17e03e5bce5b34f20c99cc34f14e367b322df967d9534877ee8"
+        },
+        {
+          "path": "supplier.supplier.reject",
+          "kind": "text",
+          "text": "보완 요청",
+          "sourceHash": "9037a2a179456e84f1bfbccb4b05afe8298641f9958a3de392235054ddd3569a"
+        },
+        {
+          "path": "supplier.supplier.reviewHelp",
+          "kind": "text",
+          "text": "10항목을 확인하고 의견을 남겨 주세요. 작성·제출에 참여한 사람은 검수할 수 없습니다.",
+          "sourceHash": "4ae35e7a21c60926a49d5dd0527bfe7abc1a26aed5ba1ece3359567f0dc54d48"
+        },
+        {
+          "path": "supplier.supplier.reviewerOnly",
+          "kind": "text",
+          "text": "품질 검수 담당자가 판정합니다.",
+          "sourceHash": "0464110ed29d4fa3612f0a705b570a6cccea44b000f01f2d970f0d03a200bbc8"
+        },
+        {
+          "path": "supplier.supplier.allConfirmed",
+          "kind": "text",
+          "text": "10항목을 모두 확인해야 합격할 수 있습니다.",
+          "sourceHash": "bae0b611ac73c8ff77ea404ef6c0b8e00f3aab68e88559815cb0c3fdcdfd655b"
+        },
+        {
+          "path": "supplier.supplier.history",
+          "kind": "text",
+          "text": "검수 이력",
+          "sourceHash": "d260944cd39398fd65cf2a88a573cdb2b4cb95ec62e70aabc793f5337665cc69"
+        },
+        {
+          "path": "supplier.supplier.noReview",
+          "kind": "text",
+          "text": "산출물과 기준을 확인한 뒤 첫 검수 의견을 남겨 주세요.",
+          "sourceHash": "93a96dd626eb001c5335268ad7b64d26ad75a838f2eb39433a6d16b886b70836"
+        },
+        {
+          "path": "supplier.supplier.mapping",
+          "kind": "text",
+          "text": "협력사 기능 매핑",
+          "sourceHash": "19339e947b6bc742a36a1d2e75b667e1eae1e6b4d653ac4e7123faa43a8d88b0"
+        },
+        {
+          "path": "supplier.supplier.functionId",
+          "kind": "text",
+          "text": "협력사 Function ID",
+          "sourceHash": "9f644fda07da4437c0c0ee4a431bbb9c7910611b858d650ddbb8952fa90b027f"
+        },
+        {
+          "path": "supplier.supplier.functionName",
+          "kind": "text",
+          "text": "협력사 기능 이름",
+          "sourceHash": "727d11b681b9355edcfbd9b2ed4afb6056023b11f5552e6f13105b23a57a5e6c"
+        },
+        {
+          "path": "supplier.supplier.oemFunction",
+          "kind": "text",
+          "text": "OEM 기능 ID(선택)",
+          "sourceHash": "c275550f6cdfdcc883c0276ac77098b1b698ada9779664433edcbddd06d7d4c0"
+        },
+        {
+          "path": "supplier.supplier.saveMapping",
+          "kind": "text",
+          "text": "매핑 등록",
+          "sourceHash": "fd0dea57ca7ce0646182825bc2f67f4ba6f63b1105e79b84245258b2ef75d703"
+        },
+        {
+          "path": "supplier.supplier.addSwc",
+          "kind": "text",
+          "text": "SW Component 연결",
+          "sourceHash": "995f66219804acd409f28c7ba21e5c6c5db0f698a7940217b1aa5f676be2d932"
+        },
+        {
+          "path": "supplier.supplier.swcName",
+          "kind": "text",
+          "text": "구성요소 이름",
+          "sourceHash": "039c6de6ea65e4d4c0a97bab2c185aacc9fe0ed4fb5512362652e8b7b04cb60b"
+        },
+        {
+          "path": "supplier.supplier.swId",
+          "kind": "text",
+          "text": "OEM SW ID(선택)",
+          "sourceHash": "ba64579ce196444c3a86ff0ebee0892c5b261a47752aea96e92d8aff34b852fc"
+        },
+        {
+          "path": "supplier.supplier.ecu",
+          "kind": "text",
+          "text": "실행 ECU(선택)",
+          "sourceHash": "d4c3f127e4cf0f14b941c3236575d3cf204504eeb749ee87cb36057fc1bd7ac9"
+        },
+        {
+          "path": "supplier.supplier.criteria",
+          "kind": "text",
+          "text": "Feature 검수 기준",
+          "sourceHash": "6f7a6b3e97de360c91e9d61833f24a7288b1dc778986f02db638358a021bd9fc"
+        },
+        {
+          "path": "supplier.supplier.criterionReason",
+          "kind": "text",
+          "text": "기준 개정 사유",
+          "sourceHash": "d0851d4259546e97d58372e2d1eddff709c0e0a43b22bd74b39b343416162b90"
+        },
+        {
+          "path": "supplier.supplier.saveCriteria",
+          "kind": "text",
+          "text": "새 기준 등록",
+          "sourceHash": "3f8d1ff662d1990a3f865978f71c0c4789227934bfc8ecd9959ea5dbf6502178"
+        },
+        {
+          "path": "supplier.supplier.coverage",
+          "kind": "text",
+          "text": "최소 커버리지(%)",
+          "sourceHash": "767a52ca95994378692ba90d62304878c124abb05279b5713b6d78f40784a34e"
+        },
+        {
+          "path": "supplier.supplier.warnings",
+          "kind": "text",
+          "text": "빌드 경고 상한(건)",
+          "sourceHash": "f2d85e29751568ca7d36225bcbd5d73eaaba2ae8766a0e4f23700455aa44d746"
+        },
+        {
+          "path": "supplier.supplier.gate",
+          "kind": "text",
+          "text": "협력사 검수 현황",
+          "sourceHash": "8757ad24623f9c92ff8776b5c3fc449664870e99ffde8b4e1146290d7d003fe4"
+        },
+        {
+          "path": "supplier.supplier.gateReady",
+          "kind": "text",
+          "text": "현재 대상의 협력사 검수가 유효합니다.",
+          "sourceHash": "6f90d03d0169666156f2fb9ca4a46185c4a64110123541ab5e894e7f423688eb"
+        },
+        {
+          "path": "supplier.supplier.internal",
+          "kind": "text",
+          "text": "내부 개발 대상입니다. 개발 검증 절차에서 판정하세요.",
+          "sourceHash": "c142050df4307f4df0b01e84af67b5a62c3dc7407454970d4ef1dbc56e4d3d76"
+        },
+        {
+          "path": "supplier.supplier.saved",
+          "kind": "text",
+          "text": "저장했습니다.",
+          "sourceHash": "513ee667b349dacab2d0b2d9452e4a8b3c14301d495ca0fa06e671ac0528d90b"
+        },
+        {
+          "path": "supplier.supplier.refresh",
+          "kind": "text",
+          "text": "다시 읽기",
+          "sourceHash": "e887c4e73651a963ced6e05eced21b0bcb6cee4961c80fed8c63e8fc95dd2a19"
+        },
+        {
+          "path": "supplier.supplier.close",
+          "kind": "text",
+          "text": "닫기",
+          "sourceHash": "1e8c10206f5b35bd96122e14038b5afd38e326a758874332b3931d6db9b25259"
+        },
+        {
+          "path": "supplier.supplier.source",
+          "kind": "text",
+          "text": "출처",
+          "sourceHash": "fa543a9d6cf324986fbddb6c88daa7ef9429d0666ed9171203019529a656be77"
+        }
+      ],
+      "connectedExports": [
+        "supplier"
       ]
     },
     {

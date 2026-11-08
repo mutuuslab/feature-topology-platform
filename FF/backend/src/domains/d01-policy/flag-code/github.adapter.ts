@@ -77,25 +77,28 @@ class GithubAppPort implements FlagGitPort {
     const cached = this.tokens.get(repo.installationId);
     if (cached && cached.until > Date.now() + 60_000) return cached.token;
     const r = await this.raw('POST', `/app/installations/${repo.installationId}/access_tokens`, `Bearer ${this.appJwt()}`);
-    const token = String(r.token);
-    this.tokens.set(repo.installationId, { token, until: r.expires_at ? Date.parse(r.expires_at) : Date.now() + 3_000_000 });
+    if(typeof r.token!=='string'||!r.token.trim()||!Number.isFinite(Date.parse(r.expires_at))||Date.parse(r.expires_at)<=Date.now())throw new GithubError('GitHub 설치 토큰의 값·만료 시각이 올바르지 않습니다.');
+    const token = r.token;
+    this.tokens.set(repo.installationId, { token, until: Date.parse(r.expires_at) });
     return token;
   }
 
   private async raw(method: string, path: string, auth: string, body?: unknown): Promise<any> {
     let res: Response;
     try {
-      res = await fetch(this.api + path, { method, headers: { authorization: auth, accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28', 'user-agent': 'ff-flag-code', ...(body ? { 'content-type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(15_000) });
+      res = await fetch(this.api + path, { method, headers: { authorization: auth, accept: 'application/vnd.github+json', 'x-github-api-version': '2022-11-28', 'user-agent': 'ff-flag-code', ...(body ? { 'content-type': 'application/json' } : {}) }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(15_000),redirect:'error' });
     } catch (e) {
-      throw new GithubError(`GitHub에 연결하지 못했습니다: ${(e as Error).message}`);
+      throw new GithubError('GitHub에 연결하지 못했습니다. 연결 주소와 인증 설정을 확인하세요.');
     }
     const text = await res.text();
-    if (!res.ok) throw new GithubError(`GitHub ${method} ${path.split('?')[0]} → ${res.status}${text ? `: ${text.slice(0, 200)}` : ''}`, res.status);
+    if (!res.ok) throw new GithubError(`GitHub ${method} ${path.split('?')[0]} → ${res.status}`, res.status);
     return text ? JSON.parse(text) : {};
   }
 
   private async call(repo: FlagRepository, method: string, path: string, body?: unknown) {
-    return this.raw(method, `/repos/${repoPath(repo.repository)}${path}`, `token ${await this.token(repo)}`, body);
+    const route=`/repos/${repoPath(repo.repository)}${path}`;
+    try{return await this.raw(method,route,`token ${await this.token(repo)}`,body);}
+    catch(e){if(!(e instanceof GithubError)||e.status!==401)throw e;this.tokens.delete(repo.installationId!);return this.raw(method,route,`token ${await this.token(repo)}`,body);}
   }
 
   async headOf(repo: FlagRepository, branch: string) {

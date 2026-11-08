@@ -1,11 +1,15 @@
 import { INestApplication, Type } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
+import { ModuleRef } from '@nestjs/core';
 import request from 'supertest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AppModule } from '../src/app.module';
 import { DEMO_SDK_KEY } from '@ff/contracts';
+import { DB,type Db } from '../src/kernel/db';
+import { FeatureRepo } from '../src/domains/d01-policy/repos';
+import { ensureShowcaseSupplierEvidence } from '../src/demo-activity/showcase-supplier';
 
 /** 메모리 DB + v0.81 시드로 앱을 띄운다. 테스트마다 독립 DB. */
 export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?: Type<unknown>[]; at?: string; demoActivity?: boolean; costDemo?: boolean; flagCode?: boolean | string; showcaseFill?: boolean } = {}) {
@@ -37,6 +41,13 @@ export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?:
 }
 
 export const actor = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
+/** Positive fixture only: actual checksum-bound synthetic artifacts and a separate native reviewer. Never bypasses G6. */
+export function completeTestSupplierEvidence(app:INestApplication,id:string,version:string){
+  const feature=app.get(FeatureRepo).get(id,version);if(!feature)throw new Error(`Missing test Feature ${id}@${version}`);
+  return ensureShowcaseSupplierEvidence(app.get<Db>(DB),app.get(ModuleRef),feature,
+    {id:'usr-integrator',role:'IMPLEMENTER',correlationId:'test:synthetic-supplier'},
+    {id:'choi.judge',role:'GATE_JUDGE',correlationId:'test:synthetic-supplier'});
+}
 
 /** 안전 분류 확정(보고서 v1.1 G2 선행 — Safety Manager 개인 서명). G1 다음 Gate를 PASS로 판정하는 시험 흐름이 먼저 부른다.
  *  G2 PASS의 분석 근거(P3-3)도 함께 남긴다 — HARA(Safety Manager)·TARA(CSM, 보안 관련 Feature의 G2 근거) */

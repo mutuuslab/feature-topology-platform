@@ -129,10 +129,12 @@ export class ExtSyncRepo {
   finish(j: OutboxJob, status: OutboxJob['status'], error: string | null = null) {
     this.db.run('UPDATE sync_outbox SET status = ?, attempts = ?, done_at = ?, doc = ? WHERE job_id = ?', status, j.attempts + 1, this.clock.iso(), JSON.stringify({ job: j.job, error }), j.jobId);
   }
-  retry(j: OutboxJob, error: string) {
+  retry(j: OutboxJob, error: string, retryAfterMs?:number) {
     const wait = OUTBOX_BACKOFF_MS[j.attempts];
     if (wait === undefined) return this.finish(j, 'FAILED', error);
-    this.db.run('UPDATE sync_outbox SET attempts = ?, next_at = ?, doc = ? WHERE job_id = ?', j.attempts + 1, new Date(this.clock.now().getTime() + wait).toISOString(), JSON.stringify({ job: j.job, error }), j.jobId);
+      const remoteWait=typeof retryAfterMs==='number'&&Number.isFinite(retryAfterMs)?Math.max(0,retryAfterMs):0;
+      if(this.clock.now().getTime()+remoteWait>8.64e15)return this.finish(j,'FAILED','외부 서버의 재시도 시각이 유효한 날짜 범위를 벗어났습니다.');
+      this.db.run('UPDATE sync_outbox SET attempts = ?, next_at = ?, doc = ? WHERE job_id = ?', j.attempts + 1, new Date(this.clock.now().getTime() + Math.max(wait,remoteWait)).toISOString(), JSON.stringify({ job: j.job, error }), j.jobId);
   }
   requeue(jobId: number) {
     this.db.run("UPDATE sync_outbox SET status = 'PENDING', next_at = ? WHERE job_id = ?", this.clock.iso(), jobId);

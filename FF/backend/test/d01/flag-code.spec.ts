@@ -13,7 +13,7 @@ import { flagCodeDemoEnabled } from '../../src/domains/d01-policy/flag-code/flag
 import { DB, type Db } from '../../src/kernel/db';
 import { MIGRATIONS } from '../../src/kernel/migrations';
 import { dialectContextOf, translate, translateMigration } from '../../src/kernel/pg-dialect';
-import { actor, bootApp, confirmSafety, withRef } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety, withRef } from '../helpers';
 import { COMMITS, writeFlagCodeFixture } from './flag-code-fixture';
 
 const NOW = '2026-11-06T01:00:00.000Z';
@@ -115,12 +115,14 @@ describe('Flag 코드 연결 — 시연 픽스처(DEMO_MIRROR)', () => {
   it('출시 관문 — 코드 없는 Flag가 VERIFIED→RELEASED를 FLAG_CODE_MISSING으로 막고, 해제(직무 분리·F2 두 결정) 뒤 통과한다', async () => {
     const base = '/api/features/FEAT-00001/versions/2.1.0';
     await confirmSafety(http, 'FEAT-00001', '2.1.0');
+    completeTestSupplierEvidence(app,'FEAT-00001','2.1.0');
+    await http().post(`${base}/gates`).set(JUDGE).send({gate:'G6',inputResult:'PASS',rationale:'시험용 본문·해시와 별도 협력사 검수 선행조건 확인',evidenceRef:'DEMO-SUPPLIER-G6'}).expect(201);
     for (const g of ['G8', 'G9']) await http().post(`${base}/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${g}` }).expect(201);
     await http().post(`${base}/release-signoff`).set(AUTHOR).send({ reason: '출시 책임 확인 — Flag 코드 연결 시험' }).expect(201);
     const gate = FlagReleaseGate.parse((await http().get(`${base}/flag-code-gate`).expect(200)).body);
     expect(gate).toMatchObject({ pass: false, blockers: [{ flagKey: 'adas_00001_signal', status: 'NO_CODE' }], waived: [] });
     const blocked = await http().post(`${base}/transitions`).set(RM).send({ to: 'RELEASED', reason: '출시' }).expect(422);
-    expect(blocked.body.error.details.blockers.map((b: { code: string }) => b.code)).toEqual(['FLAG_CODE_MISSING']);
+    expect(blocked.body.error.details.blockers.map((b: { code: string }) => b.code),JSON.stringify(blocked.body.error)).toEqual(['FLAG_CODE_MISSING']);
     // 막히지 않은 Flag는 해제할 것이 없다, 30일 넘는 만료는 거부
     const body = { flagKey: 'adas_00001_signal', featureId: 'FEAT-00001', version: '2.1.0', reason: '스캐너가 C 코드 호출을 못 읽어 다음 스캔 전까지 해제', expiresAt: '2026-11-13T00:00:00.000Z' };
     await http().post('/api/flag-code/waivers').set(RM).send({ ...body, flagKey: 'adas_00001_enable' }).expect(422);

@@ -22,6 +22,11 @@ const jira = (path: string) => `/rest/api/${jiraApiVersion()}${path}`;
 /** 글자 → ADF(v3 본문·댓글). 빈 줄로 문단을 나눈다 */
 const adf = (text: string) => ({ type: 'doc', version: 1, content: text.split('\n\n').map((p) => ({ type: 'paragraph', content: p ? [{ type: 'text', text: p }] : [] })) });
 const jiraText = (text: string) => (jiraApiVersion() === 3 ? adf(text) : text);
+const remoteDelay=(raw:string|null)=>{
+  if(raw===null)return 1000;
+  const seconds=Number(raw);if(Number.isFinite(seconds)&&seconds>=0)return seconds*1000;
+  const date=Date.parse(raw);return Number.isFinite(date)?Math.max(0,date-Date.now()):1000;
+};
 /** 이슈 유형 이름 ↔ 연계 종류 */
 const JIRA_TYPE: Partial<Record<ExtKind, string>> = { EPIC: 'Epic', DEFECT: 'Bug', CHANGE_REQUEST: 'Change Request', STORY: 'Story', TASK: 'Task' };
 const kindOfType = (type: string | undefined): ExtKind => (Object.entries(JIRA_TYPE).find(([, t]) => t === type)?.[0] as ExtKind | undefined) ?? 'CHANGE_REQUEST';
@@ -120,16 +125,20 @@ export class LiveAdapter implements ExtAdapter {
     const headers: Record<string, string> = { accept: 'application/json', ...(body !== undefined && !form ? { 'content-type': 'application/json' } : {}) };
     if (this.system === 'GITLAB') headers['private-token'] = c.auth;
     else headers.authorization = c.auth;
-    let res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
+    const request=()=>this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000),redirect:'error' });
+    let res = await request();
     // 호출 제한(codeBeamer 초당 3·분당 120, JIRA도 429) — Retry-After(초)만큼 쉬고 세 번까지 다시(80-51 §2)
     for (let n = 0; res.status === 429 && n < 3; n++) {
-      const wait = Math.min(Number(res.headers.get('retry-after') ?? 1) || 1, 5) * 1000;
-      await new Promise((r) => setTimeout(r, wait));
-      res = await this.fetchFn(`${c.url}${path}`, { method, headers, body: body === undefined ? undefined : form ? (body as FormData) : JSON.stringify(body), signal: AbortSignal.timeout(10_000) });
+      const wait=remoteDelay(res.headers.get('retry-after'));
+      // Long waits belong to the durable outbox; never retry earlier than the remote server allows.
+      if(Number.isFinite(wait)&&wait>5000)throw Object.assign(new Error(`${this.system} 호출 제한 — 보낼 함에서 다시 시도합니다.`),{status:429,retryAfterMs:wait});
+      await new Promise((r) => setTimeout(r, Number.isFinite(wait)?wait:1000));
+      res = await request();
     }
     const text = await res.text();
-    const data = (text ? JSON.parse(text) : null) as T;
-    if (res.status >= 400 && res.status !== 404) throw Object.assign(new Error(`${this.system} ${method} ${path.split('?')[0]} → ${res.status}`), { status: res.status });
+    if (res.status >= 400 && res.status !== 404) throw Object.assign(new Error(`${this.system} ${method} ${path.split('?')[0]} → ${res.status}`), { status: res.status,retryAfterMs:[429,503].includes(res.status)?remoteDelay(res.headers.get('retry-after')):undefined });
+    let data:T;
+    try{data=(text?JSON.parse(text):null) as T;}catch{throw Object.assign(new Error(`${this.system} ${method} ${path.split('?')[0]} 응답 형식이 JSON이 아닙니다.`),{status:res.status});}
     return { status: res.status, data };
   }
   private gl(path: string) {
@@ -164,7 +173,8 @@ export class LiveAdapter implements ExtAdapter {
     const field = env('CODEBEAMER_REQ_ID_FIELD') || 'Requirement ID';
     const tracker = this.cfg().project;
     const q = `${tracker ? `tracker.id = ${Number(tracker)} AND ` : ''}'${field.replace(/'/g, '')}' = '${reqId.replace(/'/g, '')}'`;
-    const r = await this.req<{ items?: { id: number }[] }>('POST', '/api/v3/items/query', { queryString: q, page: 1, pageSize: 2 });
+    const r = await this.req<{ items?: { id: number }[];total?:number }>('POST', '/api/v3/items/query', { queryString: q, page: 1, pageSize: 2 });
+    if((r.data?.total??0)>1||(r.data?.items?.length??0)>1)throw new Error(`codeBeamer 요구 ID ${reqId}에 여러 항목이 대응합니다. 중복을 해소한 뒤 다시 연결하세요.`);
     const id = r.data?.items?.[0]?.id;
     return id ? this.read(`CB-${id}`) : null;
   }
@@ -382,16 +392,23 @@ export class LiveAdapter implements ExtAdapter {
     const issues: { key: string; fields: Record<string, any> }[] = [];
     if (jiraApiVersion() === 3) {
       let token: string | undefined;
+      const cursors=new Set<string>();
       do {
-        const r = await this.req<{ issues?: typeof issues; nextPageToken?: string }>('POST', jira('/search/jql'), { jql, maxResults: 100, fields, ...(token ? { nextPageToken: token } : {}) });
+        const r = await this.req<{ issues?: typeof issues; nextPageToken?: string;isLast?:boolean }>('POST', jira('/search/jql'), { jql, maxResults: 100, fields, ...(token ? { nextPageToken: token } : {}) });
         issues.push(...(r.data?.issues ?? []));
-        token = r.data?.nextPageToken;
-      } while (token && issues.length < 5000);
+        token = r.data?.isLast===true?undefined:r.data?.nextPageToken;
+        if(r.data?.isLast===false&&!token)throw new Error('JIRA 검색의 다음 페이지 정보가 없습니다. 대사를 완료하지 않았습니다.');
+        if(token){if(cursors.has(token))throw new Error('JIRA 검색 페이지 커서가 반복됩니다. 대사를 완료하지 않았습니다.');cursors.add(token);}
+        if(token&&issues.length>=5000||cursors.size>=100)throw new Error('JIRA 대사 조회 한도를 초과했습니다. 프로젝트·시간 범위를 좁혀 다시 실행하세요.');
+      } while (token);
     } else {
-      for (let startAt = 0; startAt < 5000; startAt += 100) {
-        const r = await this.req<{ issues?: typeof issues; total?: number }>('POST', jira('/search'), { jql, maxResults: 100, startAt, fields });
-        issues.push(...(r.data?.issues ?? []));
-        if ((r.data?.issues ?? []).length < 100) break;
+      for (let startAt=0; ; ) {
+        const r = await this.req<{ issues?: typeof issues; total?: number;maxResults?:number }>('POST', jira('/search'), { jql, maxResults: 100, startAt, fields });
+        const page=r.data?.issues??[];issues.push(...page);startAt+=page.length;
+        if(typeof r.data?.total==='number'&&startAt>=r.data.total)break;
+        if(!page.length){if(typeof r.data?.total==='number'&&startAt<r.data.total)throw new Error('JIRA 검색이 전체 항목을 반환하지 못했습니다.');break;}
+        if(r.data?.total===undefined&&page.length<(r.data?.maxResults??100))break;
+        if(startAt>=5000)throw new Error('JIRA 대사 조회 한도를 초과했습니다. 프로젝트·시간 범위를 좁혀 다시 실행하세요.');
       }
     }
     const out: RecentIssue[] = [];
@@ -405,15 +422,23 @@ export class LiveAdapter implements ExtAdapter {
     type H = { author?: { accountId?: string; name?: string }; created: string; items?: RecentIssue['histories'][number]['items'] };
     const map = (h: H) => ({ author: h.author?.accountId ?? h.author?.name ?? '', created: Date.parse(h.created), items: (h.items ?? []).map((x) => ({ field: x.field, fromString: x.fromString ?? null, toString: x.toString ?? null })) });
     if (jiraApiVersion() === 2) {
-      const r = await this.req<{ changelog?: { histories?: H[] } }>('GET', jira(`/issue/${encodeURIComponent(key)}?fields=updated&expand=changelog`));
+      const r = await this.req<{ changelog?: { histories?: H[];total?:number;startAt?:number } }>('GET', jira(`/issue/${encodeURIComponent(key)}?fields=updated&expand=changelog`));
+      if((r.data?.changelog?.startAt??0)>0||(r.data?.changelog?.total??0)>(r.data?.changelog?.histories?.length??0))throw new Error(`JIRA ${key}의 변경 이력이 일부만 반환되었습니다. 전체 이력을 확보한 뒤 대사하세요.`);
       return (r.data?.changelog?.histories ?? []).map(map);
     }
-    // 마지막 쪽(최근 100건)만 — 대사 창(20분) 안의 변경이면 충분하다
-    const first = await this.req<{ total?: number; values?: H[] }>('GET', jira(`/issue/${encodeURIComponent(key)}/changelog?startAt=0&maxResults=100`));
-    const total = first.data?.total ?? 0;
-    if (total <= 100) return (first.data?.values ?? []).map(map);
-    const last = await this.req<{ values?: H[] }>('GET', jira(`/issue/${encodeURIComponent(key)}/changelog?startAt=${total - 100}&maxResults=100`));
-    return (last.data?.values ?? []).map(map);
+    // A busy issue can have more than 100 recent changes. Do not erase the human transition between automated updates.
+    const all:H[]=[];let startAt=0;
+    for(;;){
+      const page=await this.req<{total?:number;values?:H[];startAt?:number;maxResults?:number;isLast?:boolean}>('GET',jira(`/issue/${encodeURIComponent(key)}/changelog?startAt=${startAt}&maxResults=100`));
+      if(page.status===404||page.data?.startAt!==undefined&&page.data.startAt!==startAt)throw new Error(`JIRA ${key}의 전체 변경 이력을 확인할 수 없습니다.`);
+      const values=page.data?.values??[];all.push(...values);startAt+=values.length;
+      if(typeof page.data?.total==='number'&&startAt>=page.data.total)break;
+      if(page.data?.isLast===true){if(typeof page.data.total==='number'&&startAt<page.data.total)throw new Error(`JIRA ${key}의 변경 이력이 일부만 반환되었습니다.`);break;}
+      if(!values.length){if((page.data?.total??0)>startAt)throw new Error(`JIRA ${key}의 변경 이력이 중간에서 비었습니다.`);break;}
+      if(page.data?.total===undefined&&values.length<(page.data?.maxResults??100))break;
+      if(startAt>=10000)throw new Error(`JIRA ${key}의 변경 이력 조회 한도를 초과했습니다.`);
+    }
+    return all.map(map);
   }
 }
 

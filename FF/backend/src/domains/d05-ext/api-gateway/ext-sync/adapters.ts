@@ -114,7 +114,9 @@ class MockAdapter implements ExtAdapter {
     return it ? view(it) : null;
   }
   async findRequirement(reqId: string) {
-    const it = this.store.all('CODEBEAMER', 'REQUIREMENT').find((x) => x.fields.reqId === reqId);
+    const matches=this.store.all('CODEBEAMER', 'REQUIREMENT').filter((x) => x.fields.reqId === reqId);
+    if(matches.length>1)throw new Error(`codeBeamer 요구 ID ${reqId}에 여러 항목이 대응합니다. 중복을 해소한 뒤 다시 연결하세요.`);
+    const it = matches[0];
     return it ? view(it) : null;
   }
   async create(kind: ExtKind, f: { title: string; body: string; status: string; fields?: Record<string, unknown> }) {

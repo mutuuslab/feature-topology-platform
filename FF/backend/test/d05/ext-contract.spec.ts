@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety, nextRefId, signG7, withRef } from '../helpers';
 
 // 모의 서버는 tools(Node 타입 스트리핑, .ts 경로 import) — 백엔드 타입 검사(commonjs)에 끌려 들어오지 않게 실행 때 읽고 쓰는 모양만 적는다
 interface MockServer {
@@ -139,7 +139,7 @@ describe('실제 연결 계약 — 플랫폼 live ↔ 독립 모의 JIRA·codeBe
     for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${featureId}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
     await http().post(`/api/features/${featureId}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);
     await signG7(http, featureId, '0.1.0');
-    for (const g of ['G4', 'G5', 'G6', 'G7']) await http().post(`/api/features/${featureId}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
+    for (const g of ['G4', 'G5', 'G6', 'G7']) { if(g==='G6')completeTestSupplierEvidence(app,featureId,'0.1.0');const response=await http().post(`/api/features/${featureId}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` });expect(response.status,JSON.stringify({gate:g,...response.body})).toBe(201); }
     await settle();
     expect((await issue(epicKey)).status).toBe('In Progress');
     expect((await trace('0.1.0')).epic).toMatchObject({ status: 'In Progress', syncState: 'SYNCED' });

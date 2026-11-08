@@ -355,7 +355,7 @@ export class ExtSyncService implements OnModuleInit, OnApplicationBootstrap {
     } catch (e) {
       // 일부만 반영된 쓰기 — 지금 외부 모습을 마지막 관측으로 둔다(재시도가 자기 쓰기를 외부 변경으로 보고 충돌을 열지 않게)
       if (e instanceof ExtPartialWriteError) this.observe(e.item, 'PENDING');
-      this.repo.retry(j, e instanceof Error ? e.message : String(e));
+      this.repo.retry(j, e instanceof Error ? e.message : String(e),(e as {retryAfterMs?:number})?.retryAfterMs);
       // Epic 거울 작업은 외부 키 대신 Feature를 갖는다 — 연결된 Epic의 상태를 실패로
       const k = 'key' in j.job ? j.job.key : j.job.op === 'EPIC_MIRROR' ? (this.linkedKeys('FEATURE', fid(j.job.featureId, j.job.version), 'JIRA', 'EPIC')[0] ?? null) : null;
       if (k && this.repo.job(j.jobId)?.status === 'FAILED') this.repo.setState(j.system, k, 'FAILED');

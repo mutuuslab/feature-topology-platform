@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 85,
-  "requiredLeaves": 9142,
+  "requiredLeaves": 9145,
   "modules": [
     {
       "module": "ads-change",
@@ -13950,14 +13950,14 @@
         {
           "path": "dashboard.dashboard.board.types.procedures.title",
           "kind": "text",
-          "text": "업무 절차 지도",
-          "sourceHash": "9b440ce1d9640dc8a5a681d5771006218c7faf9342c27e9cbbd9260170501843"
+          "text": "전체업무흐름",
+          "sourceHash": "85e9348f32cb96fddb2eb8e0650104e3d3494acb5515b3658d084ea3a128f631"
         },
         {
           "path": "dashboard.dashboard.board.types.procedures.description",
           "kind": "text",
-          "text": "13개 업무 절차의 진행과 내 차례",
-          "sourceHash": "2383fc7ac41cf1a822ea261bff5f5ddf2d93b970a66f1a77c1cc670e7b162e35"
+          "text": "전체 업무 절차의 진행과 내 차례",
+          "sourceHash": "d5e4ef8ebee1987b3fc427378852b22b1950988516d857133c168520be4099a9"
         },
         {
           "path": "dashboard.dashboard.board.types.intro.title",
@@ -50058,6 +50058,24 @@
           "kind": "text",
           "text": "차량은 사람 역할 헤더 대신 차량 키로 서명한 /vehicle/v1/:vin/software/:id/download 요청을 사용합니다.",
           "sourceHash": "c8fda9e1ddad208ad7db6a097a8c1b04b480facc19259ba737bed097ba8cca2e"
+        },
+        {
+          "path": "software-delivery.softwareDelivery.provenance.LOCAL_SIMULATION",
+          "kind": "text",
+          "text": "이 브라우저에서 생성한 시연 기록",
+          "sourceHash": "46d6dc7c266a4380a81fcda6906324281ccdf5c428d6f8e6f185546e737cee21"
+        },
+        {
+          "path": "software-delivery.softwareDelivery.provenance.CAPTURED_EXECUTABLE_DEMO",
+          "kind": "text",
+          "text": "공개가 허용된 시험용 SW 원문 사본",
+          "sourceHash": "f186fd2807bf4ed39b2b7a3dc91d0f90b3012f2c53b182216e1976c4a1fc841d"
+        },
+        {
+          "path": "software-delivery.softwareDelivery.staticBoundary",
+          "kind": "text",
+          "text": "정적 시연의 검토·다운로드는 실제 운영 시스템의 승인·설치 이력을 변경하지 않습니다.",
+          "sourceHash": "524f0694b4970575b99373e9ca5841ad35e99d2b20ac886bad9650c7369de424"
         },
         {
           "path": "software-delivery.softwareDelivery.states.DRAFT",

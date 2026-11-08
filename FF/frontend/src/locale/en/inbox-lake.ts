@@ -1,0 +1,15 @@
+export default {
+  "inboxLake.model": (title: string, ver: string, n: number) => `${title} ${ver} · ${n}/2 approvals`,
+  "inboxLake.modelTitle.ANOMALY": 'Anomaly detection ②',
+  "inboxLake.modelTitle.DEPLOY_RISK": 'Deployment risk ③',
+  "inboxLake.modelTitle.TRIAL_PROPENSITY": 'Trial conversion ④',
+  "inboxLake.modelTitle.CANARY_RULE": 'Deployment signal test ①',
+  "inboxLake.already": 'You have already recorded a decision on this Version (two-person approval)',
+  "inboxLake.finding": (name: string, ver: string, axis: string, overdue: boolean) => `${name} ${ver} · ${axis} axis${overdue ? ' · overdue' : ''}`,
+  "inboxLake.axis.OPERATION": 'Operation',
+  "inboxLake.axis.PROBLEM": 'Problem',
+  "inboxLake.axis.IMPROVEMENT": 'Improvement',
+  "inboxLake.axis.RISK": 'Risk',
+  "inboxLake.canary.HOLD_STALE": 'Metrics delayed — expansion on hold',
+  "inboxLake.canary.ABORT": 'Abort threshold exceeded — stop expansion',
+};

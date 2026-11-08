@@ -149,7 +149,7 @@ export const dashboard = /* @__PURE__ */ localizedCopy('dashboard.dashboard', {
       kills: { title: '걸린 긴급 차단', description: '지금 걸려 있는 긴급 차단(상업 비활성화 제외)' },
       lifecycle: { title: 'Lifecycle 분포', description: 'Feature별 최신 Version의 단계 분포' },
       links: { title: '바로 가기', description: '자주 여는 화면' },
-      procedures: { title: '업무 절차 지도', description: '13개 업무 절차의 진행과 내 차례' },
+      procedures: { title: '전체업무흐름', description: '전체 업무 절차의 진행과 내 차례' },
       intro: { title: '플랫폼 소개', description: '등록부터 운영까지 Feature 약속이 지켜지는 흐름(브랜드 소개)' },
     },
 

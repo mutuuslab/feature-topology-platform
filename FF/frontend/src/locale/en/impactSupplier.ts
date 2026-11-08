@@ -1,0 +1,18 @@
+export default {
+  "impactPlus.supplier": 'Supplier',
+  "impactPlus.supplierAny": 'Find by supplier (optional)',
+  "impactPlus.supplierLead": (n: number) => `${n} Features use this supplier’s SW — select one to assess its impact`,
+  "impactPlus.supplierNone": 'No Features use this supplier’s SW',
+  "impactPlus.pick": (id: string, ver: string) => `View impact for ${id} ${ver}`,
+  "impactPlus.field.name": 'Name',
+  "impactPlus.field.description": 'Description',
+  "impactPlus.field.ownerId": 'Owner',
+  "impactPlus.field.requirementIds": 'Requirements',
+  "impactPlus.field.upgVc": 'Vehicle specification codes',
+  "impactPlus.field.functions": 'Function decomposition',
+  "impactPlus.field.swVersions": 'SW Versions',
+  "impactPlus.field.ecuPnos": 'ECU part numbers',
+  "impactPlus.field.controlPoints": 'Control Points',
+  "impactPlus.field.dependencyIds": 'Dependency Features',
+  "impactPlus.field.tags": 'Tags',
+};

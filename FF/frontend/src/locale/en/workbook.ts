@@ -1,0 +1,18 @@
+export default {
+  "workbook.tree": 'Classifications and sources',
+  "workbook.treeToggle": (label: string, open: boolean) => `${open ? 'Close' : 'Open'} ${label}`,
+  "workbook.all": 'All',
+  "workbook.filters": 'Choose filters',
+  "workbook.filtersToggle": (open: boolean, n: number) => `${open ? 'Close filters' : 'Choose filters'}${n ? ` · ${n} applied` : ''}`,
+  "workbook.filtersHint": 'Rows match any selected value within a field and all selected fields.',
+  "workbook.clearAxis": 'Clear',
+  "workbook.clearAll": 'Clear all filters',
+  "workbook.applied": 'Applied filters',
+  "workbook.removeChip": (axis: string, value: string) => `Remove ${axis} ${value} filter`,
+  "workbook.chip": (axis: string, value: string, n: number | undefined) => `${axis} ${value}${n === undefined ? '' : ` ${n.toLocaleString('en-US')} records`}`,
+  "workbook.treeItem": (name: string, n: number | undefined) => `${name}${n === undefined ? '' : ` ${n.toLocaleString('en-US')} records`}`,
+  "workbook.metrics": 'Current filter summary',
+  "workbook.tableHint": 'On narrow screens, scroll within the table horizontally to view all columns.',
+  "workbook.more": (n: number) => `Show ${n} more`,
+  "workbook.less": 'Collapse',
+};

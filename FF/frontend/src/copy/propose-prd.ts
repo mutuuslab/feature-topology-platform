@@ -2,17 +2,17 @@ export const PRD_BODY_LIMIT = 2000;
 export const PRD_SECTIONS = ['[배경과 문제]', '[기대 동작]', '[완료 조건]', '[범위와 제약]'];
 export const PRD_TEMPLATE = `${PRD_SECTIONS.join('\n\n')}\n`;
 export const proposePrd = {
-  key: '먼저 Feature의 목적과 동작을 작성하세요',
-  lead: '기능 문서를 작성하고 기준 정보와 적용 대상을 연결한 뒤 초안으로 등록합니다.',
+  key: 'Feature DB의 기준을 선택하고 적용하면 작성을 시작합니다',
+  lead: 'Feature DB의 기준을 먼저 선택한 뒤, 가져온 정보와 적용 대상을 확인해 초안으로 등록합니다.',
   document: 'Feature 문서',
   draft: '미등록 초안',
   lifecycle: '초안 등록 후 내용 검토·정의 승인이 이어집니다. 차량 배포는 별도 절차입니다.',
   metadata: '담당·적용 대상·연결',
   metadataLandmark: 'Feature 문서 속성',
-  chooseRefs: '기준 기능 선택',
+  chooseRefs: '기준 Feature 선택',
   manageRefs: '연결 편집',
   referenceTitle: '기준 정보와 참고 연결',
-  referenceEmpty: '기본 정보를 가져올 기준 기능 1개가 필요합니다.',
+  referenceEmpty: '기본 정보를 가져올 기준 Feature 1개가 필요합니다.',
   referenceHint: '직접 작성한 내용은 유지합니다. 선택한 기준은 적용 전에 확인합니다.',
   reviewTop: '등록 전 확인',
   editorModes: '문서 보기 방식',

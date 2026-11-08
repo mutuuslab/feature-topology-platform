@@ -333,6 +333,21 @@ async function deliver(ctx: SimWriteContext, it: MockItem, prev: MockItem | null
 const resultOf = (row: InboxRow | null) => (row ? { system: row.system, deliveryId: row.deliveryId, receivedAt: row.receivedAt, key: row.key, outcome: row.outcome, summary: row.summary, externalUser: row.externalUser, duplicate: false } : null);
 
 // ─── 경로 ─────────────────────────────────────────────────
+/** New browser drafts have no build-time snapshot. Show only actually stored mock links, never synthesize an Epic or approval. */
+export async function registrationTrace(ctx: SimReadContext) {
+  const { id, ver } = ctx.req.params;
+  const row = ctx.get<{ row: { featureId: string; version: string; lifecycle: Lifecycle; requirementIds: string[] } }>('regFeature', fid(id, ver))?.row;
+  if (!row || await ctx.snapshot()) return undefined;
+  const target = fid(id, ver);
+  const L = (ctx.overlay.data[LINKS] ?? {}) as Links;
+  const observed = ctx.list<MockItem>(ITEM).filter((item) => L[idOf(item.system, item.key)]?.FEATURE === target);
+  const asLink = (item: MockItem) => ({ system: item.system, key: item.key, kind: item.kind, title: item.title, url: extUrl(item.system, item.kind, item.key), status: item.status, revision: item.revision, syncState: 'SYNCED', extra: item.fields });
+  const epic = observed.find((item) => item.system === 'JIRA' && item.kind === 'EPIC');
+  const requirements = (await itemsOf(ctx, 'CODEBEAMER')).filter((item) => item.kind === 'REQUIREMENT' && row.requirementIds.includes(String(item.fields.reqId))).map(asLink);
+  return { featureId: id, version: ver, lifecycle: row.lifecycle, epicStatusExpected: JIRA_EPIC_STATUS[row.lifecycle], requirements, missingRequirements: row.requirementIds.filter((reqId) => !requirements.some((item) => item.extra.reqId === reqId)), epic: epic ? asLink(epic) : null, changeRequests: observed.filter((item) => item.kind === 'CHANGE_REQUEST').map(asLink), defects: observed.filter((item) => item.kind === 'DEFECT').map(asLink), stories: [], mergeRequests: observed.filter((item) => item.kind === 'MERGE_REQUEST').map(asLink), pipelines: observed.filter((item) => item.kind === 'PIPELINE').map(asLink), policies: [], conflicts: [], stale: [] };
+}
+registerSimReader('extFeatureTrace', registrationTrace);
+
 registerSimReader('mockExtItems', async (ctx) => {
   if (!ctx.list(ITEM).length) return undefined;
   const system = systemOf(ctx, ctx.req.params.system);

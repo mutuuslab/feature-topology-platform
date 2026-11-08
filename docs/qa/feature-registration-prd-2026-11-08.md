@@ -3,13 +3,29 @@ id: TC-FEATURE-PRD-20261108
 type: reference
 title: Feature PRD 문서형 등록 요구·판단·검증
 status: in-review
-version: 0.1.0
+version: 0.2.0
 owner: feature-architect
 cycle: 1
-last_updated: 2026-11-08
+last_updated: 2026-11-09
 ---
 
 # Feature 문서형 초안
+
+## 2026-11-09 기준 Feature DB 선행 적용
+
+사용자 최신 요구에 따라 Feature DB 기준 행 1개를 선택하고 적용해야 이름·설명·담당·적용 대상 작성 및 등록 전 확인을 연다. 첫 화면에는 기준 선택 안내, 기준 행 추가 요청, Feature DB의 기존 기준·변경 요청 경로를 제공한다. 선택 Drawer를 적용하지 않고 닫으면 폼이 열리지 않는다. 기존 기준을 적용한 후에는 수동으로 고친 제목·본문·ASIL·담당·적용 범위를 기준 변경 취소나 적용으로 덮지 않는다. 작성 전 2000자를 입력하던 과거 시험은 기준 적용 후 작성→변경 취소·적용→동일 원문 저장 회귀로 바꿨다. 서버의 PRIMARY1개 필수 및 기존 승인·중복·폐기·범위·2000자 조건은 유지한다.
+
+자동 채움은 실제 기존 `autofillFromRef`의 출처와 적용 후보를 사용한다. 담당은 기존 기준 정보에 값이 있으면 추천하고, 없으면 현재 계정을 준비한다. 사용자가 고친 담당·적용 대상은 늦게 도착한 자동 채움이 덮지 않는다. 작성 가이드는 가져오는 정보와 사람이 근거를 확인할 항목을 구분한다.
+
+등록 성공 또는 서버 안내 확인 뒤에는 새 Feature ID와 Version의 `?tab=ext`로 이동해 기존 정본 JIRA·codeBeamer 연계 화면을 연다. Feature DB refId·Feature ID/Version·외부 항목 ID를 구분해 설명하고, 실패·충돌은 기존 `/integration/connectors?tab=sync`에서 권한을 가진 담당자가 재처리하도록 연결한다. 새 ALM 원장이나 등록 전 외부 항목 수동 생성은 추가하지 않는다. root 통합 ALM의 기존 Epic 자동 생성·역방향 JIRA Feature 생성·산출물 갱신·동기화 가드를 그대로 사용한다. 실제 회사 외부 계정이 제공되지 않아 소프트웨어 회귀·정적 시연과 실연동 완료를 구분한다.
+
+production 정적 시연에서 새 ID는 빌드 시점 스냅샷이 없어 연계 탭이 오류로 끝나는 것을 관측했다. 기존 ext-mock reader에 새 브라우저 초안 조회만 보강했다. 저장된 mock 연결과 실제 관측된 codeBeamer 요구만 표시하고, 없으면 Epic 없음·미확보 요구로 표시한다. Epic·외부 승인·실연동 성공을 합성하지 않으며, 기존 스냅샷과 알 수 없는 Feature의 조회는 기존 처리에 맡긴다. 별도 회귀3개가 이 경계와 정확한 Version 연결을 확인한다.
+
+이번 영향 실행은 frontend6파일70PASS, 새 정적trace+등록2파일35PASS(등록32개 중복), backend기준DB·PLE·정책60PASS와 실제HTTP/DB PRD2PASS다. 타입·copy·tokens·spacing·docs-meta·시험위생 정책을 통과했다. 최종3폭 production 재관측과 root 통합본 전체시험은 별도 증거로 확인한다.
+
+아래는 이전 문서형 초안의 이력이다. 첫 화면 직접 작성 및 최초 기준 선택 전 입력 허용은 최신 요구로 대체되었다. 최신 구현의 검사 결과와 고정 아티팩트는 통합 인계 기록에 별도로 연결한다.
+
+## 2026-11-08 문서형 초안 이력
 
 사용자 지시: Feature 등록 UI/UX에 Jira PRD 스타일을 적용한다. [Atlassian 공식 Product requirements 템플릿](https://www.atlassian.com/software/confluence/templates/product-requirements)의 목적·가정·사용자 동작·지원 자료·범위 분리를 참고했다. 저장 계약에 맞춰 문서 본문과 기존 속성을 구분했으며, 이름만 비슷한 외부 연동이나 저장되지 않는 속성을 만들지 않았다.
 

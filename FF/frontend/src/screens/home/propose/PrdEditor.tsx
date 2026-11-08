@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Button, Field } from '../../../design';
 import { propose as P } from '../../../copy/propose';
 import { PRD_BODY_LIMIT, PRD_SECTIONS, PRD_TEMPLATE, proposePrd as D } from '../../../copy/propose-prd';
+import { proposeGuide as G } from '../../../copy/propose-guide';
 import './prd.css';
 
 export function PrdEditor({ name, description, onName, onDescription, nameError, descriptionError, nameMark, descriptionMark }: {
@@ -32,6 +33,7 @@ export function PrdEditor({ name, description, onName, onDescription, nameError,
       <Field label={P.description} error={descriptionError} hint={<>{descriptionMark} {D.bodyHint}</>}>
         <textarea className="ds-input propose-document__editor" name="description" required maxLength={PRD_BODY_LIMIT} rows={8} placeholder={D.emptyBody} value={description} onChange={(e) => onDescription(e.target.value)} />
       </Field>
+      <details className="propose-writing-help"><summary>{G.editorHelp}</summary><dl>{G.examples.map((example) => <div key={example.title}><dt>{example.title}</dt><dd>{example.text}</dd></div>)}</dl></details>
     </div>}
   </article>;
 }

@@ -102,8 +102,8 @@ describe('등록 진행 단계', () => {
 describe('Feature 등록 마법사 — 자동 채움', () => {
   it('이름·설명으로 추천 → 대표로 고르기 → 자동 채움 표(출처)·제어점·범위·프로필이 채워지고 본문에 실린다', async () => {
     mount('/feature/propose', <ProposeScreen />);
-    // 단계 띠 — 1단계
-    expect(document.querySelector('[data-reg-step="0"]')).toBeTruthy();
+    expect(screen.queryByLabelText(/^이름/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: P.steps.pick, exact: true }));
     fireEvent.change(screen.getByLabelText(new RegExp(A.intentLabel)), { target: { value: '전동 시트 높이 조절' } });
     fireEvent.click(await screen.findByRole('button', { name: A.intentPick('BC-SEAT-001') }));
     expect(document.querySelector('[data-ref-chosen="BC-SEAT-001"]')?.getAttribute('data-role')).toBe('PRIMARY');
@@ -111,7 +111,7 @@ describe('Feature 등록 마법사 — 자동 채움', () => {
 
     const table = await screen.findByTestId('autofill');
     fireEvent.click(screen.getByText(P.form.autofill));
-    expect(document.querySelector('[data-reg-step="1"]')).toBeTruthy();
+    expect(screen.queryByTestId('propose-reference-gate')).toBeNull();
     const asilRow = table.querySelector('[data-af-field="asil"]') as HTMLElement;
     expect(asilRow.textContent).toContain('대표 ASIL(L)');
     expect(within(asilRow).getByText(A.state.base)).toBeTruthy();
@@ -144,6 +144,7 @@ describe('Feature 등록 마법사 — 자동 채움', () => {
 
   it('제어점을 빼면 그 변이점도 빠지고, 하위 feature인데 상위가 없으면 등록이 막힌다', async () => {
     mount('/feature/propose', <ProposeScreen />);
+    fireEvent.click(screen.getByRole('button', { name: P.steps.pick, exact: true }));
     fireEvent.change(screen.getByLabelText(new RegExp(A.intentLabel)), { target: { value: '전동 시트' } });
     fireEvent.click(await screen.findByRole('button', { name: A.intentPick('BC-SEAT-001') }));
     fireEvent.click(document.querySelector('[data-ui="refPickNext"]') as HTMLElement);

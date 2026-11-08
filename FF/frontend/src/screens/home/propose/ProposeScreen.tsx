@@ -1,14 +1,16 @@
-// /feature/propose — 문서형 Feature 초안(30-95 §6.1, 20-60 §6): 직접 작성 → 기준 연결·기본값 확인 → 제출·검토·정의 승인.
+// /feature/propose — 기준 Feature DB 선택 → 기본값 확인·문서 작성 → 제출·검토·정의 승인.
 // 대표 기준 행에서 이름·설명·대표 ASIL·분류 태그·규제를 미리 채우고(§6.3), 바뀐 칸은 '수정됨'으로 보인다.
 // ASIL을 대표 ASIL과 다르게 하면 사유(asilDeviation)가 필수 — 기능안전 담당자 G2 검토 대상. 같은 범위 같은 대표 행은 409 → 사유와 함께 확인(§6.2).
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { FeatureRefRole } from '@ff/contracts';
-import { canAct } from '../../../api/actor';
+import { actorFor, canAct } from '../../../api/actor';
 import { fieldErrors } from '../../../api/field-errors';
 import { useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
 import { PRD_BODY_LIMIT, PRD_TEMPLATE, proposePrd as D } from '../../../copy/propose-prd';
+import { proposeGuide as G } from '../../../copy/propose-guide';
+import { personLabel } from '../../../data/people';
 import { planning as W } from '../../../copy/planning';
 import { Button, Drawer, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
@@ -21,8 +23,9 @@ import { autofill as AF, profile as PR } from '../../../copy/ple';
 import { AutofillPanel, scopeKey, useAutofill, variationPointsFor, type ProfileDraft } from './AutofillPanel';
 import { RegistrationReview } from './RegistrationReview';
 import { PrdEditor } from './PrdEditor';
+import { RegistrationGuide } from './RegistrationGuide';
 
-const INITIAL = { name: '', description: '', requirementIds: '', country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
+const INITIAL = { name: '', description: '', requirementIds: '', country: '', vehicleModel: '', trim: '', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
 type Form = typeof INITIAL;
 const DUPLICATE = 'REFDB_DUPLICATE_IN_SCOPE';
 const LINK_REQUIRED = 'REFDB_LINK_REQUIRED';
@@ -39,6 +42,8 @@ interface Created {
 export default function ProposeScreen() {
   const nav = useNavigate();
   const perm = usePermission(['FEATURE_AUTHOR']);
+  const actorId = actorFor(perm.role).id;
+  const accountOwner = actorId === 'anonymous' ? '' : actorId;
   const create = useApiMutation<Created>('createFeature', ['listFeatures', 'events', 'audit']);
   const taxonomy = useApi<{ items: TaxonomyNodeLite[] }>('refTaxonomy');
   const nodes = taxonomy.data?.items ?? [];
@@ -48,7 +53,9 @@ export default function ProposeScreen() {
   const [domain, setDomain] = useState('');
   const [requesting, setRequesting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [f, setF] = useState<Form>(INITIAL);
+  const [f, setF] = useState<Form>(() => ({ ...INITIAL, ownerId: accountOwner }));
+  const [userEdited, setUserEdited] = useState(false);
+  const [ownerTouched, setOwnerTouched] = useState(false);
   const [cps, setCps] = useState<string[]>(['Flag']);
   const [asilReason, setAsilReason] = useState('');
   const [dupReason, setDupReason] = useState('');
@@ -71,23 +78,27 @@ export default function ProposeScreen() {
   const primary = primaryOf(picked);
   const scope = { country: f.country.trim(), vehicleModel: f.vehicleModel.trim(), trim: f.trim.trim() };
   const af = useAutofill(primary, picked.map((p) => p.ref), f.name, scope);
+  const ownerField = af.data?.fields.find((field) => field.key === 'owner');
+  const catalogueOwner = typeof ownerField?.value === 'string' ? ownerField.value.trim() : '';
+  const suggestedOwner = catalogueOwner || accountOwner;
+  useEffect(() => {
+    if (!ownerTouched) setF((current) => current.ownerId === suggestedOwner ? current : { ...current, ownerId: suggestedOwner });
+  }, [ownerTouched, suggestedOwner]);
   useEffect(() => {
     const r = af.data;
-    if (!r || r.refId === appliedRef) return;
+    if (!r || r.refId !== primary?.refId || r.refId === appliedRef) return;
     setAppliedRef(r.refId);
     const plan = r.fields.find((x) => x.key === 'controlPoints')?.value;
     if (!cpsTouched && Array.isArray(plan) && plan.length) setCps(plan);
     // 지금 범위가 후보 밖이고 사람이 고치지 않았으면 첫 후보로
     const first = r.scopeCandidates[0];
     if (!scopeTouched && first && !r.scopeCandidates.some((s) => scopeKey(s) === scopeKey(scope))) setF((x) => ({ ...x, country: first.country, vehicleModel: first.vehicleModel, trim: first.trim }));
-    // 담당 — 비어 있으면 같은 컴포넌트·도메인 Feature의 담당으로
-    const owner = r.fields.find((x) => x.key === 'owner')?.value;
-    if (typeof owner === 'string') setF((x) => (x.ownerId.trim() ? x : { ...x, ownerId: owner }));
     const { variationPoints: _vps, ...draft } = r.variability;
     setProfile(draft);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [af.data]);
-  const dirty = !done && !create.isSuccess && (picked.length > 0 || Object.entries(f).some(([k, v]) => v !== INITIAL[k as keyof Form]) || cps.join() !== 'Flag');
+  // Automatic account defaults do not turn an untouched document into an unsaved edit.
+  const dirty = !done && !create.isSuccess && (picked.length > 0 || userEdited);
   // 입력이 있으면 떠나기 전에 묻는다 — 등록이 끝나면(상세로 이동) 묻지 않는다(출시 준비 RD-UX-02)
   useUnsavedGuard(dirty);
 
@@ -109,6 +120,8 @@ export default function ProposeScreen() {
   };
 
   const set = (k: keyof Form) => (e: { target: { value: string } }) => {
+    setUserEdited(true);
+    if (k === 'ownerId') setOwnerTouched(true);
     if (k === 'country' || k === 'vehicleModel' || k === 'trim') setScopeTouched(true);
     if (k === 'asil') setAsilTouched(true);
     setF((x) => ({ ...x, [k]: e.target.value }));
@@ -132,7 +145,8 @@ export default function ProposeScreen() {
     );
   };
 
-  const submit = (confirmDuplicate = false) =>
+  const submit = (confirmDuplicate = false) => {
+    if (!primary) return;
     create.mutate(
       {
         body: {
@@ -167,10 +181,11 @@ export default function ProposeScreen() {
           // 서버 안내(요청 중·검토 필요·폐기 예정 행 연결 등)가 있으면 이 화면에서 먼저 보여 준다
           // 상세에서 '등록했습니다 — 다음 할 일'(정의 승인 필수 칸·구현 연결·G1~G3)을 보인다(P1-7)
           if (r.warnings?.length) setDone(r);
-          else nav(`/features/${r.featureId}/${r.version}`, { state: { registered: true } });
+          else nav(`/features/${r.featureId}/${r.version}?tab=ext`, { state: { registered: true } });
         },
       },
     );
+  };
 
   const why = whyDisabled(
     [!perm.ok, perm.hint],
@@ -200,9 +215,10 @@ export default function ProposeScreen() {
     <div className="ds-screen">
       <PageHeader codes="D01-01 · PROPOSED 0.1.0 · 30-95 §6" title={P.title} lead={D.lead} message={message} actions={!done && <div className="propose-actions">
         <Button onClick={openRefs}>{D.chooseRefs}</Button>
-        <Button variant="primary" disabled={!!why || create.isPending} reason={why} onClick={() => setReviewing(true)}>{D.reviewTop}</Button>
+        {primary && <Button variant="primary" disabled={!!why || create.isPending} reason={why} onClick={() => setReviewing(true)}>{D.reviewTop}</Button>}
       </div>} />
       <p className="propose-prd-lifecycle">{D.lifecycle}</p>
+      {!done && <RegistrationGuide />}
       <Panel id="propose-form" tour="feature-form">
         {notice && (
           <p className="ds-field__hint" role="status" data-testid="ref-request-notice">
@@ -213,15 +229,25 @@ export default function ProposeScreen() {
           <section aria-labelledby="propose-warnings-h" data-testid="propose-warnings">
             <h3 id="propose-warnings-h">{P.warningsTitle}</h3>
             <RefWarningItems warnings={done.warnings ?? []} />
-            <Button variant="primary" onClick={() => nav(`/features/${done.featureId}/${done.version}`, { state: { registered: true } })}>
+            <Button variant="primary" onClick={() => nav(`/features/${done.featureId}/${done.version}?tab=ext`, { state: { registered: true } })}>
               {P.openDetail}
             </Button>
           </section>
+        ) : !primary ? (
+          <section className="propose-reference-gate" aria-labelledby="propose-reference-gate-h" data-testid="propose-reference-gate">
+            <h2 id="propose-reference-gate-h">{G.startTitle}</h2>
+            <p>{G.startBody}</p>
+            <p className="ds-field__hint">{G.startMissing}</p>
+            <div className="propose-actions">
+              <Button onClick={() => { setPendingPicked(picked); setRequesting(true); }}>{G.requestMissing}</Button>
+              <Link to="/master/feature-db">{G.openFeatureDb}</Link>
+            </div>
+          </section>
         ) : (
           <>
-            {/* 필수 입력을 먼저 작성하고 출처·추가 구성은 뒤에서 확인한다. */}
+            {/* 적용한 기준이 있어야 문서 편집과 등록 전 확인을 연다. */}
             <div className="propose-prd-layout ds-prefill" data-prefilled={base?.refId}>
-              <PrdEditor name={f.name} description={f.description} onName={(name) => setF((x) => ({ ...x, name }))} onDescription={(description) => setF((x) => ({ ...x, description }))} nameError={fe.name} descriptionError={fe.description} nameMark={mark('name')} descriptionMark={mark('description')} />
+              <PrdEditor name={f.name} description={f.description} onName={(name) => { setUserEdited(true); setF((x) => ({ ...x, name })); }} onDescription={(description) => { setUserEdited(true); setF((x) => ({ ...x, description })); }} nameError={fe.name} descriptionError={fe.description} nameMark={mark('name')} descriptionMark={mark('description')} />
               <aside className="propose-prd-aside" aria-label={D.metadataLandmark}>
                 <h3>{D.metadata}</h3>
                 <section className="ds-stack" aria-label={D.referenceTitle}>
@@ -229,9 +255,11 @@ export default function ProposeScreen() {
                   <p className="ds-field__hint">{D.referenceHint}</p>
                   <Button onClick={openRefs}>{D.manageRefs}</Button>
                 </section>
-                <Field label={P.owner} error={fe.ownerId} hint={<span id="propose-owner-hint">{P.form.ownerHint}</span>}>
-                  <input className="ds-input" name="ownerId" aria-label={P.owner} aria-describedby="propose-owner-hint" required maxLength={100} value={f.ownerId} onChange={set('ownerId')} />
+                <Field label={P.owner} error={fe.ownerId} hint={<span id="propose-owner-hint">{ownerTouched ? G.ownerEdited : catalogueOwner && ownerField ? G.ownerCatalogue(ownerField.source.column) : G.ownerAccount(personLabel(accountOwner))} {P.form.ownerHint}</span>}>
+                  <input className="ds-input" name="ownerId" aria-label={P.owner} aria-describedby="propose-owner-hint" required maxLength={100} value={f.ownerId} onChange={set('ownerId')} list="propose-owner-candidates" />
+                  <datalist id="propose-owner-candidates">{[...new Set([accountOwner, catalogueOwner].filter(Boolean))].map((owner) => <option key={owner} value={owner}>{personLabel(owner)}</option>)}</datalist>
                 </Field>
+                {!!accountOwner && f.ownerId !== accountOwner && <Button variant="ghost" onClick={() => { setUserEdited(true); setOwnerTouched(true); setF((x) => ({ ...x, ownerId: accountOwner })); }}>{G.ownerSelf}</Button>}
                 <h3 className="propose-section-heading">{P.form.references}</h3>
                 {/* 정의 승인 필수(PROPOSED → APPROVED 필수 입력) — 등록은 되지만 비어 있으면 승인이 막힌다(P1-7) */}
                 <Field label={<>{P.requirements} <span className="ds-tag" data-required-for="approval">{W.required.tag}</span></>} error={fe.requirementIds} hint={P.form.requirementsHint}>
@@ -253,6 +281,15 @@ export default function ProposeScreen() {
                 </section>
                 <h3 className="propose-section-heading">{P.form.scope} <span className="ds-tag">{P.form.required}</span></h3>
                 <p className="ds-field__hint">{P.form.scopeHint}</p>
+                {af.data?.scopeCandidates.length ? <Field label={G.scope} hint={<span id="propose-scope-candidates-hint">{G.scopeHint}</span>}>
+                  <select className="ds-select" aria-label={G.scope} aria-describedby="propose-scope-candidates-hint" value={af.data.scopeCandidates.some((s) => scopeKey(s) === scopeKey(scope)) ? scopeKey(scope) : ''} onChange={(e) => {
+                    const selected = af.data?.scopeCandidates.find((s) => scopeKey(s) === e.target.value);
+                    if (selected) { setUserEdited(true); setScopeTouched(true); setF((x) => ({ ...x, country: selected.country, vehicleModel: selected.vehicleModel, trim: selected.trim })); }
+                  }}>
+                    <option value="">{G.customScope}</option>
+                    {af.data.scopeCandidates.map((candidate) => <option key={scopeKey(candidate)} value={scopeKey(candidate)}>{candidate.country} · {candidate.vehicleModel} · {candidate.trim}</option>)}
+                  </select>
+                </Field> : <p className="ds-field__hint" role="status">{!primary ? G.scopeBefore : af.pending ? G.scopeWaiting : G.scopeEmpty}</p>}
                 {text('country', P.country, P.form.countryHint)}
                 {text('vehicleModel', P.vehicleModel, P.form.modelHint)}
                 {text('trim', P.trim, P.form.trimHint)}
@@ -288,7 +325,7 @@ export default function ProposeScreen() {
                   <p className="ds-field__hint" id="propose-cps-hint">{P.form.cpHint}</p>
                   {['Flag', 'Parameter', 'Signal', 'DTC'].map((c) => (
                     <label key={c}>
-                      <input type="checkbox" aria-describedby="propose-cps-hint" checked={cps.includes(c)} onChange={() => { setCpsTouched(true); setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c])); }} />
+                      <input type="checkbox" aria-describedby="propose-cps-hint" checked={cps.includes(c)} onChange={() => { setUserEdited(true); setCpsTouched(true); setCps((xs) => (xs.includes(c) ? xs.filter((x) => x !== c) : [...xs, c])); }} />
                       {c}
                     </label>
                   ))}
@@ -351,7 +388,7 @@ export default function ProposeScreen() {
       {selecting && <Drawer open title={P.steps.pick} onClose={closeRefs}>
         <RefPicker suggestIntent picked={pendingPicked} onChoose={choose} onRemove={remove} onMakePrimary={makePrimary} onRequest={() => { setSelecting(false); setRequesting(true); }} onNext={toStep2} nodes={nodes} domain={domain} setDomain={setDomain} />
       </Drawer>}
-      {reviewing && <RegistrationReview draft={f} picked={picked} cps={cps} onClose={closeReview} onRegister={() => { setReviewing(false); submit(false); }} />}
+      {reviewing && primary && <RegistrationReview draft={f} picked={picked} cps={cps} onClose={closeReview} onRegister={() => { setReviewing(false); submit(false); }} />}
       {requesting && (
         <RefRequestDrawer
           open={requesting}

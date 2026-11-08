@@ -13,7 +13,19 @@
 .propose-prd-aside .propose-selection-summary { margin: 0; }
 .propose-prd-lifecycle { color: var(--muted); font-size: var(--fs-sm); margin: 0; }
 .propose-review .propose-document__body { margin-top: var(--sp-2); }
+.propose-guide { display: grid; gap: var(--sp-2); padding-block: var(--sp-3); border-block: 1px solid var(--line); }
+.propose-reference-gate { display: grid; gap: var(--sp-4); max-width: 78ch; }
+.propose-reference-gate h2, .propose-reference-gate p { margin: 0; }
+.propose-guide > p { margin: 0; max-width: 78ch; color: var(--ink-2); font-size: var(--fs-sm); }
+.propose-guide summary, .propose-writing-help summary { cursor: pointer; color: var(--accent); font-weight: 650; }
+.propose-guide__steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-5); padding-inline-start: var(--sp-5); }
+.propose-guide__steps p { margin-block: var(--sp-2) 0; color: var(--ink-2); font-size: var(--fs-sm); line-height: 1.7; }
+.propose-guide__notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); margin-block: var(--sp-4) 0; }
+.propose-guide__notes dt, .propose-writing-help dt { font-weight: 650; }
+.propose-guide__notes dd, .propose-writing-help dd { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); line-height: 1.7; color: var(--ink-2); }
+.propose-writing-help dl { display: grid; gap: var(--sp-3); }
 @media (max-width: 1000px) {
   .propose-prd-layout { grid-template-columns: minmax(0, 1fr); }
   .propose-prd-aside { border-inline-start: 0; padding-inline-start: 0; border-top: 1px solid var(--line); padding-top: var(--sp-4); }
+  .propose-guide__steps, .propose-guide__notes { grid-template-columns: minmax(0, 1fr); }
 }

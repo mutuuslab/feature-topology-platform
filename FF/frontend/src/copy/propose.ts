@@ -11,7 +11,7 @@ export const propose = {
     cannot: 'Feature 작성자만 제안할 수 있습니다',
     done: '등록했습니다 — 확인할 안내가 있습니다',
   },
-  steps: { label: '등록 단계', pick: '기준 기능 고르기', confirm: '등록 정보 확인', no: (n: number) => `${n}단계` },
+  steps: { label: '등록 단계', pick: '기준 Feature 선택', confirm: '등록 정보 확인', no: (n: number) => `${n}단계` },
 
   // ① 기준 기능 고르기
   search: '기능 검색',
@@ -23,7 +23,7 @@ export const propose = {
   results: '검색 결과',
   resultCount: (shown: number, total: number) => (total > shown ? `${total}개 중 ${shown}개` : `${total}개`),
   noResult: '맞는 기준 행이 없습니다 — 검색어를 바꾸거나 Feature DB에 추가를 요청하세요',
-  col: { refId: '기준 기능 ID', name: '기능명', asil: '기준 ASIL', tshirt: '규모', status: '상태', choose: '사용 방법' },
+  col: { refId: '기준 Feature ID', name: '기능명', asil: '기준 ASIL', tshirt: '규모', status: '상태', choose: '사용 방법' },
   choosePrimary: '기본 정보 가져오기',
   addIncluded: '참고로 연결',
   chosen: '이번 Feature에 연결할 기능',
@@ -151,7 +151,7 @@ export const propose = {
     staticHint: '공개 시연에서는 이 브라우저의 시연 데이터에만 저장됩니다.',
     open: '다음: 등록 전 확인',
     title: '새 Feature 초안 등록 전 확인',
-    lead: '아래 내용으로 PROPOSED 0.1.0 초안을 만듭니다. 이 동작은 정의 승인이나 차량 배포를 수행하지 않습니다.',
+    lead: 'PROPOSED 0.1.0 초안을 만듭니다. 등록 후 연계 탭에서 JIRA·codeBeamer 연결을 확인하세요.',
     name: '등록할 기능',
     scope: '적용 범위',
     owner: '담당',
@@ -169,7 +169,7 @@ export const propose = {
 
   // 등록 뒤
   warningsTitle: '등록했습니다 — 서버 안내',
-  openDetail: 'Feature 상세 열기',
+  openDetail: 'Feature 상세·연계 상태 확인',
   duplicate: {
     title: '같은 범위에 같은 대표 기준 행이 이미 있습니다',
     reason: '같은 기준 행으로 다시 등록하는 사유',

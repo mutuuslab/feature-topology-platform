@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9383,
-  "translated": 9383,
+  "required": 9392,
+  "translated": 9392,
   "modules": [
     {
       "module": "ads-change",
@@ -359,13 +359,13 @@
     {
       "module": "flag-code",
       "source": "FF/frontend/src/copy/flag-code.ts",
-      "required": 403,
-      "translated": 403,
+      "required": 412,
+      "translated": 412,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "1373d75b0c7b9ce0868c5c36d6843d0efaf548b09c2b891fab704201eb5b1ad6"
+      "sourceHash": "6fd9e257ea1c5ef590b06fb41db7c9eb7a99d3964dce179c930aaf46a844b49d"
     },
     {
       "module": "flags",

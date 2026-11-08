@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 88,
-  "requiredLeaves": 9383,
+  "requiredLeaves": 9392,
   "modules": [
     {
       "module": "ads-change",
@@ -22415,6 +22415,60 @@
           "kind": "function",
           "text": "(why: string) => `PR을 만들지 못했습니다 — ${why} 원인을 고친 뒤 다시 만드세요.`",
           "sourceHash": "0ec2438930abab9708b8370f8273a1d118a921e3c2f73ad51150d381e0a3840d"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumePr",
+          "kind": "text",
+          "text": "PR 생성 재개",
+          "sourceHash": "09554ebf91cff81abd5e0d9c87303050005252689efaaadea1c8fe7947f83c1f"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeNote",
+          "kind": "text",
+          "text": "기존 요청의 저장소·브랜치·전체 Flag를 그대로 재사용합니다. 이미 열린 PR은 중복 생성 없이 확인합니다.",
+          "sourceHash": "0295872c415f8445c5e835884d2791ebac8f9f723aca72008383469d59e48d30"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeWaiting",
+          "kind": "text",
+          "text": "생성 요청 후 10분 동안은 중복 요청을 막습니다. 시간이 지나면 재개할 수 있으며 서버가 다시 확인합니다.",
+          "sourceHash": "74b5bf0c6c6dd2f24e403afb486a2138af84077b5a56c216e54b1b5f1263a828"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeLoading",
+          "kind": "text",
+          "text": "기존 PR 요청을 확인 중입니다. 조회가 완료되어야 재개할 수 있습니다.",
+          "sourceHash": "541928dc7e50deba800438a7a4dfc84eacc2ef486196c26dff11e2eadad344e8"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeNoRepo",
+          "kind": "text",
+          "text": "기존 요청의 활성 저장소 연결과 원본 요청 정보가 필요합니다.",
+          "sourceHash": "a741b5d4166e05364d9e32ee40fb32504e98bd43182c2db431c1b5f1fa026a95"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeRecovered",
+          "kind": "text",
+          "text": "같은 요청의 열린 PR을 다시 조회해 확인했습니다.",
+          "sourceHash": "e4b36f8fa68f2e5b781650eb57be3df2ced03d4558e4270f70c7745fccd3e2dc"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeDone",
+          "kind": "text",
+          "text": "기존 요청의 PR을 확인했습니다.",
+          "sourceHash": "e6aa3507d8c1caadaf275aa26d18df54ab2090737608c394beaa3c445ad07a20"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeReload",
+          "kind": "text",
+          "text": "요청 상태 다시 조회",
+          "sourceHash": "4d5372e6a3d715df7eaeb5f4bea8a6615edcf66cfb9dd6b3200c71433c500f86"
+        },
+        {
+          "path": "flag-code.flagCode.actions.resumeUnconfirmed",
+          "kind": "text",
+          "text": "결과를 확인하지 못했습니다. PR 목록과 연결 상태를 확인한 뒤 같은 요청을 재개하세요.",
+          "sourceHash": "f2c539d51409651fc1c366067153143ed76d2db8e7e41e0d105b716c16d59358"
         },
         {
           "path": "flag-code.flagCode.actions.removalTitle",

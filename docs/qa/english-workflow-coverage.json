@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
-  "total": 1802,
+  "total": 1822,
   "missing": 0,
-  "translated": 1442,
-  "sourceEnglish": 360,
+  "translated": 1460,
+  "sourceEnglish": 362,
   "duplicate": [],
   "unknown": [],
   "fingerprints": [
@@ -106,8 +106,8 @@
     },
     {
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-7.ts",
-      "entries": 110,
-      "sourceFingerprint": "f87e6f8ea2819f73c499df9e585708fc766bed0b708bb8b99074d64f9f1d50c2",
+      "entries": 128,
+      "sourceFingerprint": "201f09bf3011f77b341df9ba38bb678305633d286556975838097eb778ea2840",
       "status": "MATCH"
     },
     {
@@ -4675,6 +4675,13 @@
       "english": "Effectiveness expands from the Canary Cohort only when observation criteria are met."
     },
     {
+      "key": "FPW.7.O6.text",
+      "source": "기한부 예외는 요청자와 다른 두 사람이 승인하고 기록된 제한 범위만 열며 만료되면 이전 정책 상태로 돌아간다.",
+      "sourceHash": "9a96a9dd0792d4d0e9eb957a6ebafe1fedb7e3323493f37c9ed6a19115797e81",
+      "status": "TRANSLATED",
+      "english": "Time-limited exceptions require two approvers distinct from the requester, permit only recorded restricted scope and restore the previous policy state on expiry."
+    },
+    {
       "key": "FPW.7.entry.0",
       "source": "G6 배포가 끝나 서버에 정책이 게시되었다(차량 내 효력 없음)",
       "sourceHash": "837de928a4b97380f8d677fd75c96c847f4338a8bbb5bacc182b574724ffdab8",
@@ -4948,6 +4955,27 @@
       "english": "Personal signature and time of a decision maker distinct from the requester (including Safety Manager for F2 or higher)"
     },
     {
+      "key": "FPW.7.WP-EXCEPTION-RECORD.name",
+      "source": "예외 승인 기록",
+      "sourceHash": "8d335c1deb205c40016ba312618176fb8d4f126809668cf92004307c0faa6b5f",
+      "status": "SOURCE_ENGLISH",
+      "english": "Exception Approval Record"
+    },
+    {
+      "key": "FPW.7.WP-EXCEPTION-RECORD.content.0",
+      "source": "요청자·긴급 사유·대상 Feature·적용 기간·우회할 검사 또는 PENDING Gate·제한 조건·완료 예정일·잔여 리스크",
+      "sourceHash": "26ade2ae87053b2de10839dbb53eb42c92c2ab5d2adb4a0f2b2c296213a25e8b",
+      "status": "TRANSLATED",
+      "english": "Requester, emergency reason, target Feature, duration, checks or PENDING Gates, restriction, due date and residual risk"
+    },
+    {
+      "key": "FPW.7.WP-EXCEPTION-RECORD.content.1",
+      "source": "두 승인자의 승인·지정 만료 일시(반려 사유), 적용한 배포와 이전 상태, 만료·회수 원복 메시지",
+      "sourceHash": "c4a59fa207b1ced0b3bb498ed8d16ce76e9d94a0961556a8ec9460455f337bc5",
+      "status": "TRANSLATED",
+      "english": "Two approvals and designated expiry (or rejection reason), applied deployments and prior state, expiry/revocation reversion messages"
+    },
+    {
       "key": "FPW.7-A01.name",
       "source": "Canary·Shadow 판정 기준 정의",
       "sourceHash": "45bf162ca5cc5317b3d2a46262a918421bce30f573615d7ca8d8042116c685a9",
@@ -5016,6 +5044,90 @@
       "sourceHash": "8bb18e233a794dc301ab7fbe71c69ce773a6ba46cfa103b277a2663c6791c467",
       "status": "TRANSLATED",
       "english": "Requester and decision maker are different people"
+    },
+    {
+      "key": "FPW.7-A14.name",
+      "source": "예외 요청(임시 우회·Gate 예외)",
+      "sourceHash": "02ac2de10647e0d73fb7f9b2c1a8713da744fcc3c01b3e0325b8683e24c13130",
+      "status": "TRANSLATED",
+      "english": "Request an exception (temporary bypass or Gate exception)"
+    },
+    {
+      "key": "FPW.7-A14.trigger",
+      "source": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+      "sourceHash": "cd852a558bd92db76393d0210fcc110b656fa484351bb783279c04fb1b396587",
+      "status": "TRANSLATED",
+      "english": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
+    },
+    {
+      "key": "FPW.7-A14.steps.0",
+      "source": "긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다",
+      "sourceHash": "4d56c0913b2e0a7b25ec017c54e51ab1d44d5dd3b1564d1c510b957d2ab8f215",
+      "status": "TRANSLATED",
+      "english": "Request with emergency reason, duration, checks (or PENDING Gates) and restrictions (limited rollout, Pilot or Shadow)"
+    },
+    {
+      "key": "FPW.7-A14.steps.1",
+      "source": "Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다",
+      "sourceHash": "a985e84830ba6eff5621d42cec8b77c89c2c6b15f407a59623b6c1aeaa9a401b",
+      "status": "TRANSLATED",
+      "english": "For Gate exceptions, include a completion due date and residual risk"
+    },
+    {
+      "key": "FPW.7-A14.steps.2",
+      "source": "서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다",
+      "sourceHash": "dbfe09a2493b739c18b5116e89c570760c74fdadc8962202c1f3cb2317a8fa6c",
+      "status": "TRANSLATED",
+      "english": "Exceptions cannot bypass signature/integrity, two-person emergency block approval, separation of duty or stopping"
+    },
+    {
+      "key": "FPW.7-A14.checks.0",
+      "source": "적용 기간이 있고 우회 불가 항목이 없다",
+      "sourceHash": "7c7a97ec523788c8ab18678e02b7f71ebf66508ffdbfa895ce517a6f5a2546cc",
+      "status": "TRANSLATED",
+      "english": "A duration is specified and no non-bypassable item is included"
+    },
+    {
+      "key": "FPW.7-A15.name",
+      "source": "예외 승인·만료 원복 확인",
+      "sourceHash": "031f26027bf61c7effa1228959d4e7722e68446ab5223129a3665b657ed665af",
+      "status": "TRANSLATED",
+      "english": "Approve exceptions and verify expiry reversion"
+    },
+    {
+      "key": "FPW.7-A15.steps.0",
+      "source": "요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다",
+      "sourceHash": "ccc5057621f173de361628e234e7096b16872109b1506b25bdd98271275d8535",
+      "status": "TRANSLATED",
+      "english": "Two distinct people other than the requester approve with expiry times, or reject with reasons"
+    },
+    {
+      "key": "FPW.7-A15.steps.1",
+      "source": "두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다",
+      "sourceHash": "cf9201ec462dbfb66376ccaae5900f0a785f32aac4137cf4e038add9db1b30bc",
+      "status": "TRANSLATED",
+      "english": "After the second approval, confirm deployment stays within the recorded restriction"
+    },
+    {
+      "key": "FPW.7-A15.steps.2",
+      "source": "만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다",
+      "sourceHash": "1aeefab34aa6c538e215de9edb6c71e86fe20630694bc3e5f71101d5205f2861",
+      "status": "TRANSLATED",
+      "english": "On expiry, the platform restores the previous policy state and reports reversion. Revoke to end earlier"
+    },
+    {
+      "key": "FPW.7-A15.checks.0",
+      "source": "요청자와 두 승인자가 모두 다른 사람이다",
+      "sourceHash": "bbd6f2fb19c6824c412612494b1d80f0efe02fc885f07a92d5e69f772cc3618e",
+      "status": "TRANSLATED",
+      "english": "The requester and both approvers are three different people"
+    },
+    {
+      "key": "FPW.7-A15.checks.1",
+      "source": "만료 일시가 있고 Gate 판정은 PENDING 그대로다",
+      "sourceHash": "2f9670b47af8e97197cdad7df591df1d62a1ac8141571bb96fdd56c8f70df7ad",
+      "status": "TRANSLATED",
+      "english": "An expiry exists and Gate decisions remain PENDING"
     },
     {
       "key": "FPW.7-A02.name",
@@ -5641,6 +5753,20 @@
       "english": "Start activation within the approved Canary scope and evaluate observations at each stage. Expand only when prerequisites are met; halt expansion and hand over to anomaly response on stop criteria."
     },
     {
+      "key": "FPW.7.BP14.name",
+      "source": "기한부 예외 승인·제한 적용·원복",
+      "sourceHash": "14c3e5b3007aa00e7bcceaa767d28eba0452205ae12f9df2c7034b3104af8510",
+      "status": "TRANSLATED",
+      "english": "Time-limited exception approval, restricted application and reversion"
+    },
+    {
+      "key": "FPW.7.BP14.definition",
+      "source": "예외 요청의 대상 검사와 잔여 리스크를 확인하고 요청자와 다른 두 사람이 기간과 제한 범위를 승인한다. 원래 Gate 판정을 보존하면서 승인 범위에만 적용하고 만료·회수 시 이전 정책 상태로 원복한 근거를 기록한다.",
+      "sourceHash": "d8339513605ce6dc33b8e2ed2ea7c60a2630e731bba6b5a5f7624ce78843182e",
+      "status": "TRANSLATED",
+      "english": "Review target checks and residual risks. Two people distinct from the requester approve duration and restricted scope. Preserve original Gate decisions, apply only within approved scope, and retain evidence of restoring the previous policy state after expiry or revocation."
+    },
+    {
       "key": "FPW.7-S1.label",
       "source": "시작",
       "sourceHash": "b1f28cd21af730b22ed30302c4078cf8a25118d1172485004a8318cbba5c5e82",
@@ -5649,17 +5775,17 @@
     },
     {
       "key": "FPW.7-S2.label",
+      "source": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+      "sourceHash": "cd852a558bd92db76393d0210fcc110b656fa484351bb783279c04fb1b396587",
+      "status": "TRANSLATED",
+      "english": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
+    },
+    {
+      "key": "FPW.7-S3.label",
       "source": "출시 효과를 실험으로 비교해야 할 때",
       "sourceHash": "45482566a9c7e1c7559ccef3ac1bb3442be00f8cf5d6d6df452f3c77689d6efd",
       "status": "TRANSLATED",
       "english": "When release effects need experimental comparison"
-    },
-    {
-      "key": "FPW.7-S3.label",
-      "source": "G6 배포 완료",
-      "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "TRANSLATED",
-      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-S4.label",
@@ -5676,6 +5802,13 @@
       "english": "G6 deployment complete"
     },
     {
+      "key": "FPW.7-S6.label",
+      "source": "G6 배포 완료",
+      "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
+    },
+    {
       "key": "FPW.7-E1.label",
       "source": "종료",
       "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
@@ -5684,6 +5817,13 @@
     },
     {
       "key": "FPW.7-E2.label",
+      "source": "종료",
+      "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
+      "status": "SOURCE_ENGLISH",
+      "english": "End"
+    },
+    {
+      "key": "FPW.7-E3.label",
       "source": "종료",
       "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
       "status": "SOURCE_ENGLISH",

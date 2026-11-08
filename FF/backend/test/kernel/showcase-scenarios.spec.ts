@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { join } from 'node:path';
 import { DB, type Db } from '../../src/kernel/db';
 import { FeatureRepo, GateRepo } from '../../src/domains/d01-policy/repos';
-import { PolicyRepo } from '../../src/domains/d01-policy/policy-repos';
+import { FleetRepo, PolicyRepo } from '../../src/domains/d01-policy/policy-repos';
 import { BaselineService } from '../../src/domains/d01-policy/registry/baseline.service';
 import { ConsultService } from '../../src/workflows/consult.service';
 import { RegistryService } from '../../src/domains/d01-policy/registry/registry.service';
@@ -10,6 +11,7 @@ import { ChangeRecordService } from '../../src/domains/d04-ops/pipeline-link/cha
 import { PrivacyService } from '../../src/kernel/privacy.service';
 import { SyncService } from '../../src/domains/d05-ext/data-sync/sync.service';
 import { RollbackService } from '../../src/domains/d03-safety/restore/rollback.service';
+import { PublicationRepo } from '../../src/domains/d06-qsec/secure-deploy/publication.repo';
 import { DemoActivitySeeder } from '../../src/demo-activity/demo-activity.seeder';
 import { Scheduler } from '../../src/kernel/scheduler';
 import { Clock } from '../../src/kernel/clock';
@@ -19,6 +21,14 @@ import { SHOWCASE_SCENARIOS_META, ShowcaseScenariosSeeder, showcaseScenariosEnab
 import { bootApp } from '../helpers';
 
 describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', () => {
+  beforeEach(() => {
+    // Version·복구 계획의 통합 시험은 원본 12대와 복제 12대로 실제 서명·차량 회신을 확인한다.
+    // 기본 480대 확대/원본 보존은 showcase.spec.ts가 별도로 검증한다.
+    vi.stubEnv('FF_SHOWCASE_VEHICLES', '24');
+    // 시드의 검증 경로는 유지하되 개발 PC의 Python·CARLA 서버에 의존하지 않는다.
+    vi.stubEnv('CARLA_RUNNER', join(process.cwd(), 'test', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'));
+    vi.stubEnv('FF_EVIDENCE_DIR', join(process.cwd(), '..', '.evidence', 'test-showcase-scenarios'));
+  });
   afterEach(() => vi.unstubAllEnvs());
 
   it('전시 명시 없이, 운영·빈 DB·5년 재생 데이터셋에는 실행하지 않는다', async () => {
@@ -98,6 +108,7 @@ describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', (
     try {
       const db = b.get<Db>(DB);
       const marker = JSON.parse(db.get<{ value: string }>('SELECT value FROM meta WHERE key = ?', SHOWCASE_SCENARIOS_META)!.value);
+      expect(b.get(FleetRepo).vehicles()).toHaveLength(24);
       expect(marker.before).toBe(92);
       expect(marker.created).toHaveLength(92);
       expect(marker.after).toBe(184);
@@ -122,6 +133,9 @@ describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', (
         clock.set(new Date(clock.now().getTime() + 12000));
       }
       expect(await demo.continuation).toContain('REQUESTED');
+      const publications = b.get(PublicationRepo).list({ kind: 'POLICY' }).filter((p) => p.payload.featureId === 'FEAT-00027');
+      // 빈 대상의 자동 완료가 아니라 차량 적용·서명 회신을 거쳐 복구 계획을 만든다.
+      expect(publications.some((p) => ['CONFIRMED', 'PARTIAL'].includes(p.status) && p.confirmed > 0 && b.get(PublicationRepo).readbacks({ publicationId: p.publicationId }).length > 0)).toBe(true);
       expect(await b.get(ShowcaseScenariosSeeder).continuation).toMatchObject({ plans: expect.any(Array) });
       const plans = b.get(RollbackService).plans({}).items;
       expect(plans).toHaveLength(2);
@@ -168,6 +182,9 @@ describe('선택 전시: 두 배 규모와 담당자별 실제 검토 상황', (
       }
       expect(await demo.continuation).toContain('REQUESTED');
       expect(await b.get(ShowcaseScenariosSeeder).continuation).toEqual({ error: 'simulated late-plan interruption' });
+      expect(b.get(FleetRepo).vehicles()).toHaveLength(24);
+      const publications = b.get(PublicationRepo).list({ kind: 'POLICY' }).filter((p) => p.payload.featureId === 'FEAT-00027');
+      expect(publications.some((p) => ['CONFIRMED', 'PARTIAL'].includes(p.status) && p.confirmed > 0 && b.get(PublicationRepo).readbacks({ publicationId: p.publicationId }).length > 0)).toBe(true);
       interrupted.mockRestore();
       demo.continuation = null; // 재기동한 프로세스에는 원래 Promise가 없다.
       const restarted = new ShowcaseScenariosSeeder(b.get<Db>(DB), b.app.get<ModuleRef>(ModuleRef), clock);

@@ -21,4 +21,6 @@
 .wf-history li { display: flex; flex-wrap: wrap; gap: var(--sp-2); border-bottom: 1px solid var(--line); padding-bottom: var(--sp-2); }
 .wf-history time { color: var(--muted); font-size: var(--fs-sm); }
 .wf-source-record { max-height: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--fs-sm); }
+.wf-source-browser > summary { cursor: pointer; padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r); }
+.wf-source-browser > summary small { display: block; margin-top: var(--sp-1); color: var(--muted); }
 @media (max-width: 1000px) { .wf-work { grid-template-columns: minmax(0, 1fr); } .wf-cases { grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr)); } }

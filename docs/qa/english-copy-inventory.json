@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 87,
-  "requiredLeaves": 9279,
+  "moduleCount": 88,
+  "requiredLeaves": 9357,
   "modules": [
     {
       "module": "ads-change",
@@ -15873,6 +15873,484 @@
       ],
       "connectedExports": [
         "errors"
+      ],
+      "unresolvedCopyReferences": []
+    },
+    {
+      "module": "exceptions",
+      "file": "FF/frontend/src/copy/exceptions.ts",
+      "leaves": [
+        {
+          "path": "exceptions.exceptions.title",
+          "kind": "text",
+          "text": "예외 승인",
+          "sourceHash": "3c3868c7178051659cd74eb70d3b2da20b225d21d7d1cb6086fba69958dd8d6f"
+        },
+        {
+          "path": "exceptions.exceptions.lead",
+          "kind": "text",
+          "text": "긴급할 때 정해진 기간·범위만 검사를 비켜 가는 예외 — 두 사람이 승인하고, 만료되면 이전 정책 상태로 되돌린다",
+          "sourceHash": "912aa10acd0515048a240bd7fa57794e610638b6ce5ba4f058b8260ddf3c14b6"
+        },
+        {
+          "path": "exceptions.exceptions.key.active",
+          "kind": "text",
+          "text": "건 적용 중",
+          "sourceHash": "e4d9b46d8519223e2a624d80a974fe58209afe9911534b6588781c8ce4c1b778"
+        },
+        {
+          "path": "exceptions.exceptions.key.waiting",
+          "kind": "text",
+          "text": "건 승인 대기",
+          "sourceHash": "0516b5bbfd9b7b07514009605801685ec6b56f273f29c1f3b02807a4313f62eb"
+        },
+        {
+          "path": "exceptions.exceptions.key.none",
+          "kind": "text",
+          "text": "적용 중인 예외 없음 — 모든 배포가 원래 검사를 거친다",
+          "sourceHash": "0170f7e18171c2aec1f233e1cbda30d0daf88aa0c02bb2b24a489efd9c91ce72"
+        },
+        {
+          "path": "exceptions.exceptions.kpi.active",
+          "kind": "text",
+          "text": "적용 중",
+          "sourceHash": "0619d3235c59fd2325da029938ae6cdaac1b63b50620529e73d052c3fd058f93"
+        },
+        {
+          "path": "exceptions.exceptions.kpi.waiting",
+          "kind": "text",
+          "text": "승인 대기",
+          "sourceHash": "b702670f35bdfcd04cfed986bb94cdef99d44228c4d2613b0382d36a3ca96084"
+        },
+        {
+          "path": "exceptions.exceptions.kpi.closed",
+          "kind": "text",
+          "text": "만료·회수·완료",
+          "sourceHash": "e59b9e1110559c0ac7685cb06950260b2fed2fdc34e4bcb6719e62ff5ab2366d"
+        },
+        {
+          "path": "exceptions.exceptions.kpi.rejected",
+          "kind": "text",
+          "text": "반려",
+          "sourceHash": "d283b7dbc864793f48ce9c18b99dedb5e9a78bcd48c98229ec009539d6413422"
+        },
+        {
+          "path": "exceptions.exceptions.filter",
+          "kind": "text",
+          "text": "상태",
+          "sourceHash": "e10195a1239fb321327bafbe0397ebfcf7f0985a6e3bc28661a65132025b6808"
+        },
+        {
+          "path": "exceptions.exceptions.all",
+          "kind": "text",
+          "text": "전체",
+          "sourceHash": "a4b69faf0c1113faf1f7cf9d9a6224cf3b62a16c6e841a22882adafcced64db9"
+        },
+        {
+          "path": "exceptions.exceptions.create",
+          "kind": "text",
+          "text": "예외 요청",
+          "sourceHash": "575b6f08dc9775c99c6796bc5121d9d9881a92a66a345c51c5d71ae55863e9be"
+        },
+        {
+          "path": "exceptions.exceptions.table",
+          "kind": "text",
+          "text": "예외 목록",
+          "sourceHash": "a51324c045cfc35e7de4726485a961e0391e7a6e1cf64756c71c3401f3cb8952"
+        },
+        {
+          "path": "exceptions.exceptions.col.id",
+          "kind": "text",
+          "text": "예외",
+          "sourceHash": "31f743d21461d92434db258ad922c7ca5b78acff3f40fe5a1bd89a65369a0851"
+        },
+        {
+          "path": "exceptions.exceptions.col.kind",
+          "kind": "text",
+          "text": "종류",
+          "sourceHash": "2e6adf4ec98d68239960607e3c29f6ee648e5c5b10665d1502e14c5a1d2d836d"
+        },
+        {
+          "path": "exceptions.exceptions.col.target",
+          "kind": "text",
+          "text": "대상",
+          "sourceHash": "8c609debc12c2cd08ebde99d0d4f80137bd62074c4821a4bcb3e3fdaec279f95"
+        },
+        {
+          "path": "exceptions.exceptions.col.scope",
+          "kind": "text",
+          "text": "우회·예외 대상",
+          "sourceHash": "00114ba28ec9eb55364c66b6b2862d79ef9373af5963b463a4190ec71f415d70"
+        },
+        {
+          "path": "exceptions.exceptions.col.restriction",
+          "kind": "text",
+          "text": "제한 조건",
+          "sourceHash": "c6699ec6cf7423760f1430ea930f1a6f5b99056381391348ce841fb69195d408"
+        },
+        {
+          "path": "exceptions.exceptions.col.status",
+          "kind": "text",
+          "text": "상태",
+          "sourceHash": "e10195a1239fb321327bafbe0397ebfcf7f0985a6e3bc28661a65132025b6808"
+        },
+        {
+          "path": "exceptions.exceptions.col.expires",
+          "kind": "text",
+          "text": "만료 일시",
+          "sourceHash": "4505fdd34c1c5bbae9b879bfb37c1b0b37afdc260690bcb3e83c07c32c188f2a"
+        },
+        {
+          "path": "exceptions.exceptions.col.approvals",
+          "kind": "text",
+          "text": "승인",
+          "sourceHash": "ae0b472e631ddef724071fd6dbc8c89351d9ed5e6536d7054e03a96a275b654c"
+        },
+        {
+          "path": "exceptions.exceptions.remaining",
+          "kind": "function",
+          "text": "(ms: number) => (ms >= 3_600_000 ? `${Math.floor(ms / 3_600_000)}시간 남음` : `${Math.max(1, Math.round(ms / 60_000))}분 남음`)",
+          "sourceHash": "3c014a49fa65b8946c4756d6221ebdcaf275296336b63a33c5107bf502a3b20b"
+        },
+        {
+          "path": "exceptions.exceptions.rules.title",
+          "kind": "text",
+          "text": "예외로 열 수 있는 검사",
+          "sourceHash": "17408e0e7771ffd335f93fcf96557abf8d8a9aae29ca08f7b5a28869e459a5db"
+        },
+        {
+          "path": "exceptions.exceptions.rules.open",
+          "kind": "text",
+          "text": "예외 가능",
+          "sourceHash": "3d21f136a9049519c45631b8b9c73c803f976d416b75c37ced5e8f9209633826"
+        },
+        {
+          "path": "exceptions.exceptions.rules.closed",
+          "kind": "text",
+          "text": "우회 불가",
+          "sourceHash": "1672685215e8a064eb04d7e9691cd200da08e7dda59968b69da153207da4e45d"
+        },
+        {
+          "path": "exceptions.exceptions.rules.note",
+          "kind": "text",
+          "text": "예외는 판정을 바꾸지 않는다 — 기록된 제한 범위(제한 배포·Pilot)까지만 배포를 열고, 만료·회수되면 적용 이전 상태로 되돌린다.",
+          "sourceHash": "0d2b09961352fdf3f910d7b4445f2d96a92756f9ff70c84bab4ba5d2066f91ce"
+        },
+        {
+          "path": "exceptions.exceptions.detail.title",
+          "kind": "function",
+          "text": "(id: string) => `예외 ${id}`",
+          "sourceHash": "5c673dee513d283467a6836ef6057deaa82e47c4fc160ad6b2459c3f2d3dca1e"
+        },
+        {
+          "path": "exceptions.exceptions.detail.requester",
+          "kind": "text",
+          "text": "요청자",
+          "sourceHash": "16bf0f071c4059f86b5227dfb95289cac8039f38fc57ae337de7087e36611177"
+        },
+        {
+          "path": "exceptions.exceptions.detail.reason",
+          "kind": "text",
+          "text": "긴급 사유",
+          "sourceHash": "e36271436d062760e96b369dc8fc53ec33d87f208926ebc7a840ec2cc47f6637"
+        },
+        {
+          "path": "exceptions.exceptions.detail.period",
+          "kind": "text",
+          "text": "적용 기간",
+          "sourceHash": "05056a183afdf4c687761c641ad4975e41eedaec02fb9f774eb6f95ab607fd9e"
+        },
+        {
+          "path": "exceptions.exceptions.detail.periodValue",
+          "kind": "function",
+          "text": "(h: number) => `${h}시간`",
+          "sourceHash": "7e88a8d335ad273c735ebf384543554e119b94d5c209ab4914bb2a6b290e869f"
+        },
+        {
+          "path": "exceptions.exceptions.detail.applied",
+          "kind": "text",
+          "text": "적용 시각",
+          "sourceHash": "aacb83929e9654222e31c552863bc3e00959ba61f579af44e29466bf906d7099"
+        },
+        {
+          "path": "exceptions.exceptions.detail.expires",
+          "kind": "text",
+          "text": "만료 일시",
+          "sourceHash": "4505fdd34c1c5bbae9b879bfb37c1b0b37afdc260690bcb3e83c07c32c188f2a"
+        },
+        {
+          "path": "exceptions.exceptions.detail.due",
+          "kind": "text",
+          "text": "완료 예정일",
+          "sourceHash": "c29e7a70fff7141d5fdc83d09ce89815f283287af834b81822de073b7ca8d877"
+        },
+        {
+          "path": "exceptions.exceptions.detail.risk",
+          "kind": "text",
+          "text": "잔여 리스크",
+          "sourceHash": "0356d8c5ab32dc0fbf41062b5ce6610d9ef555ae1ba594afea3fa4e7ba1986d9"
+        },
+        {
+          "path": "exceptions.exceptions.detail.policy",
+          "kind": "text",
+          "text": "대상 정책",
+          "sourceHash": "c43bb11e1d9c9ecfcea573baf8254eccb4fe7647b1a2b62d7ce38be9ccfee105"
+        },
+        {
+          "path": "exceptions.exceptions.detail.approvals",
+          "kind": "text",
+          "text": "승인",
+          "sourceHash": "ae0b472e631ddef724071fd6dbc8c89351d9ed5e6536d7054e03a96a275b654c"
+        },
+        {
+          "path": "exceptions.exceptions.detail.rejection",
+          "kind": "text",
+          "text": "반려 사유",
+          "sourceHash": "b21676ab64524d8bc6f9360f4c7f4bf487d016258769d2b8ba05cc29ad1032ab"
+        },
+        {
+          "path": "exceptions.exceptions.detail.revert",
+          "kind": "text",
+          "text": "원복 메시지",
+          "sourceHash": "4055829736f3eff09a45465b3737807c42ffdeba65e5b854731df0d9f0f9a793"
+        },
+        {
+          "path": "exceptions.exceptions.detail.applications",
+          "kind": "text",
+          "text": "이 예외로 연 배포",
+          "sourceHash": "cd9d4862d73db94a4752e111e40d67b855fc3594b42cca02fac5c06b45d60a5b"
+        },
+        {
+          "path": "exceptions.exceptions.detail.prior",
+          "kind": "function",
+          "text": "(id: string | null) => (id ? `이전 배포 ${id}` : '이전 배포 없음')",
+          "sourceHash": "048b7a95d20afa358a20a30b3be5d00963ee461766d3dbfb4dd677f49eaf31ba"
+        },
+        {
+          "path": "exceptions.exceptions.detail.cap",
+          "kind": "function",
+          "text": "(bp: number) => `상한 ${bp / 100}%`",
+          "sourceHash": "af06c606cf63f3f5db33c23f70ed8e96a7625dfeeda08178f7bc7f315f7fd43f"
+        },
+        {
+          "path": "exceptions.exceptions.detail.history",
+          "kind": "text",
+          "text": "상태 전이 기록",
+          "sourceHash": "bf567760cdbf9aed9a0a38e6f6b15ac78fd436d2df1acb5117b4a0d8af353dff"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.REQUESTED",
+          "kind": "text",
+          "text": "승인 요청",
+          "sourceHash": "c1f6e0c48552beb7e6b54cba08c717011a21f0caad9b6498154f11db8af96cd2"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.APPROVED_1",
+          "kind": "text",
+          "text": "1차 승인",
+          "sourceHash": "98e124e9cbfb4dd6a30dde800f458f36f9055844e31295c211962cccfee72f81"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.ACTIVE",
+          "kind": "text",
+          "text": "2차 승인·적용",
+          "sourceHash": "fd76d0f0904ed854632395e47bb006adb0ce932d009dadcfac8da967f8b2b3b3"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.APPLIED",
+          "kind": "text",
+          "text": "배포에 적용",
+          "sourceHash": "c0b02ebc566a9c0924278e149eb44141bfb4f80f13b4f5505c2fb5caa2fd6d20"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.EXPIRED",
+          "kind": "text",
+          "text": "만료·원복",
+          "sourceHash": "38b76cb042bbec8b2d0a8bf722ce5b04aec5461e5a075700f16c84c3e4c31c26"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.REVOKED",
+          "kind": "text",
+          "text": "회수·원복",
+          "sourceHash": "b6e1dc50bac8071d6dc44c2e09a11c9911c9b1057ec23f3bc01a92e82706a124"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.REJECTED",
+          "kind": "text",
+          "text": "반려",
+          "sourceHash": "d283b7dbc864793f48ce9c18b99dedb5e9a78bcd48c98229ec009539d6413422"
+        },
+        {
+          "path": "exceptions.exceptions.detail.historyKind.COMPLETED",
+          "kind": "text",
+          "text": "Gate 통과·완료",
+          "sourceHash": "63c1e643eeceefcacbb86e76796778e96585445e107b0547e9fcae9a12857272"
+        },
+        {
+          "path": "exceptions.exceptions.act.approve",
+          "kind": "text",
+          "text": "승인",
+          "sourceHash": "ae0b472e631ddef724071fd6dbc8c89351d9ed5e6536d7054e03a96a275b654c"
+        },
+        {
+          "path": "exceptions.exceptions.act.reject",
+          "kind": "text",
+          "text": "반려",
+          "sourceHash": "d283b7dbc864793f48ce9c18b99dedb5e9a78bcd48c98229ec009539d6413422"
+        },
+        {
+          "path": "exceptions.exceptions.act.revoke",
+          "kind": "text",
+          "text": "회수(원복)",
+          "sourceHash": "b81e892f3cecd53d6d4153d5665b17989c01a24a21391853c86f7a5d2d22e7ff"
+        },
+        {
+          "path": "exceptions.exceptions.act.reason",
+          "kind": "text",
+          "text": "의견·사유",
+          "sourceHash": "d05bccb5aa4a68c4700d326b405a100492b50523e0a44901b14601d3c0daeaae"
+        },
+        {
+          "path": "exceptions.exceptions.act.expiresAt",
+          "kind": "text",
+          "text": "만료 일시(승인자 지정)",
+          "sourceHash": "18a3bc049325515529733a40603582de593f3c5f10e978b8ce5c0204994aecb4"
+        },
+        {
+          "path": "exceptions.exceptions.act.selfApproval",
+          "kind": "text",
+          "text": "요청자는 자기 예외를 승인할 수 없습니다(직무 분리)",
+          "sourceHash": "8ce7ce2cc4acbc3db960823d9c12ec6064c87925f00b2164c72abf70d67e217a"
+        },
+        {
+          "path": "exceptions.exceptions.act.sameApprover",
+          "kind": "text",
+          "text": "이미 승인했습니다 — 두 번째 승인은 다른 사람이 합니다",
+          "sourceHash": "9eddd7cf349506c0654bdeb242edbcb62d7ddc89b30bec5b611633d972543ac8"
+        },
+        {
+          "path": "exceptions.exceptions.act.expiryRequired",
+          "kind": "text",
+          "text": "승인에는 만료 일시가 필요합니다",
+          "sourceHash": "44b98dcf59d2533a959caeaacae9c9031abccce216cbd0f446336021b2bcf0ca"
+        },
+        {
+          "path": "exceptions.exceptions.act.revokeHint",
+          "kind": "text",
+          "text": "회수하면 이 예외로 연 배포를 이전 정책 상태로 되돌립니다",
+          "sourceHash": "4ec617d95857945bb4c4c51f682e6057a3f12256d2f1db721da51bade28319b6"
+        },
+        {
+          "path": "exceptions.exceptions.form.kind",
+          "kind": "text",
+          "text": "종류",
+          "sourceHash": "2e6adf4ec98d68239960607e3c29f6ee648e5c5b10665d1502e14c5a1d2d836d"
+        },
+        {
+          "path": "exceptions.exceptions.form.policy",
+          "kind": "text",
+          "text": "임시 우회할 배포 정책",
+          "sourceHash": "4ffe04eed016a7b27316fa67604a448622aedbc5b7ba76b623c90db3213c99f3"
+        },
+        {
+          "path": "exceptions.exceptions.form.checks",
+          "kind": "text",
+          "text": "우회할 검사",
+          "sourceHash": "e159cc5ca130bac4b5278c5d5903803aaa4d21ba09c2e19b12df55c34a9dcc96"
+        },
+        {
+          "path": "exceptions.exceptions.form.ruleIds",
+          "kind": "text",
+          "text": "우회할 컴플라이언스 룰 ID(쉼표로 구분)",
+          "sourceHash": "60791ee3919d4af0a13bbe9ed8187a7752ed00325e73c45f532d5c236134d956"
+        },
+        {
+          "path": "exceptions.exceptions.form.restriction",
+          "kind": "text",
+          "text": "제한 조건",
+          "sourceHash": "c6699ec6cf7423760f1430ea930f1a6f5b99056381391348ce841fb69195d408"
+        },
+        {
+          "path": "exceptions.exceptions.form.reason",
+          "kind": "text",
+          "text": "긴급 사유",
+          "sourceHash": "e36271436d062760e96b369dc8fc53ec33d87f208926ebc7a840ec2cc47f6637"
+        },
+        {
+          "path": "exceptions.exceptions.form.periodHours",
+          "kind": "text",
+          "text": "적용 기간(시간, 최대 168)",
+          "sourceHash": "985dd10eac022249bd5a2141619aa19d5be5b14300fac1fd39eed519a63f62c9"
+        },
+        {
+          "path": "exceptions.exceptions.form.dueDate",
+          "kind": "text",
+          "text": "완료 예정일",
+          "sourceHash": "c29e7a70fff7141d5fdc83d09ce89815f283287af834b81822de073b7ca8d877"
+        },
+        {
+          "path": "exceptions.exceptions.form.residualRisk",
+          "kind": "text",
+          "text": "잔여 리스크",
+          "sourceHash": "0356d8c5ab32dc0fbf41062b5ce6610d9ef555ae1ba594afea3fa4e7ba1986d9"
+        },
+        {
+          "path": "exceptions.exceptions.form.submit",
+          "kind": "text",
+          "text": "승인 요청",
+          "sourceHash": "c1f6e0c48552beb7e6b54cba08c717011a21f0caad9b6498154f11db8af96cd2"
+        },
+        {
+          "path": "exceptions.exceptions.panel.title",
+          "kind": "text",
+          "text": "출시·예외",
+          "sourceHash": "99ceeb4b36bd689f08efc50a90a91fa4e22222a6db1e789af910572ce212a4b4"
+        },
+        {
+          "path": "exceptions.exceptions.panel.released",
+          "kind": "text",
+          "text": "출시된 Version — 실제 배포 가능",
+          "sourceHash": "c4f87bea942b8d96ba6d1d671b6b132ec38d5699334c602790653092942ad7af"
+        },
+        {
+          "path": "exceptions.exceptions.panel.shadowOnly",
+          "kind": "text",
+          "text": "출시 전 Version — Shadow(판단만 기록, 차량 동작 그대로)로만 차량에 보낼 수 있다",
+          "sourceHash": "5666dc34b7e140a595963b0902c3eae420c96d1ecbe0c512b2eb2a520a5a5090"
+        },
+        {
+          "path": "exceptions.exceptions.panel.gateException",
+          "kind": "function",
+          "text": "(pct: number) => `Gate 예외로 ${pct}%까지만 배포할 수 있다`",
+          "sourceHash": "af7e2f7f116389f414e88f1c70fe09b46864996821dc0d392e82965dd7e9e663"
+        },
+        {
+          "path": "exceptions.exceptions.panel.pending",
+          "kind": "function",
+          "text": "(gates: string) => `미통과 Gate ${gates}`",
+          "sourceHash": "96e91a654b007a96cb52f12ce6ca447f7a3342d7ba0d46af11857f1741be573e"
+        },
+        {
+          "path": "exceptions.exceptions.panel.scope",
+          "kind": "function",
+          "text": "(pct: number, ids: string) => `예외 제한 범위 ${pct}% — ${ids}`",
+          "sourceHash": "92c539eaae0624caec66965aaef321122571a5ddc88f824e38e606f01ae1e12e"
+        },
+        {
+          "path": "exceptions.exceptions.panel.active",
+          "kind": "text",
+          "text": "이 정책·Feature에 적용 중인 예외",
+          "sourceHash": "a4051af6b8fb4334f9d2618c4e28559a5946a36f411e067e17114ffabf9d4892"
+        },
+        {
+          "path": "exceptions.exceptions.panel.open",
+          "kind": "text",
+          "text": "예외 승인 화면에서 보기",
+          "sourceHash": "6c866a27c29cea502f2b35a1dcaf5fd7f1e20daeb1c1d57c728540aee894f276"
+        }
+      ],
+      "connectedExports": [
+        "exceptions"
       ],
       "unresolvedCopyReferences": []
     },

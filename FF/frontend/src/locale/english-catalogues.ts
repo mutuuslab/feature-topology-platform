@@ -24,6 +24,7 @@ const loaders = {
   'departments': () => import('./en/departments'),
   'error-actions': () => import('./en/error-actions'),
   'errors': () => import('./en/errors'),
+  'exceptions': () => import('./en/exceptions'),
   'experiment-analysis': () => import('./en/experiment-analysis'),
   'ext-gateway': () => import('./en/ext-gateway'),
   'ext-sync': () => import('./en/ext-sync'),

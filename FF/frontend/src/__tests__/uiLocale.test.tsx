@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { AppProvider, useAppApi, useAppShell } from '../store';
 import { proposeGuide } from '../copy/propose-guide';
 import { hasPrdOutline, isPrdTemplate, prdTemplate } from '../copy/propose-prd';
-import { changeUiLanguage, localeSnapshot, localizedCopy, __resetLocaleForTest, untranslatedCopyPaths } from '../locale/runtime';
+import { changeUiLanguage, localeSnapshot, localizedCopy, staticUiText, __resetLocaleForTest, untranslatedCopyPaths } from '../locale/runtime';
 import * as catalogues from '../locale/english-catalogues';
 import { useUiLocale } from '../locale/react';
 import { ROUTES, rolesOf, routeOf, trailOf } from '../routes';
@@ -17,10 +17,24 @@ import { QUEUE_LABEL, QUEUE_ROLE } from '../copy/inbox';
 import { StatusBadge } from '../screens/flag-code/badge';
 import { vehicleCache } from '../copy/vehicle-cache';
 import { ota } from '../copy/ota';
+import { exceptions } from '../copy/exceptions';
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); __resetLocaleForTest(); });
 
 describe('reactive UI language catalogues', () => {
+  it('translates exception scope and two-person guidance while retaining history codes and numeric limits', async()=>{
+    const keys=Object.keys(exceptions.detail.historyKind);
+    const ko=exceptions.act.selfApproval;
+    await changeUiLanguage('en');
+    expect(staticUiText('route-titles','/verify/exceptions','예외 승인')).toBe('Exception approvals');
+    expect(exceptions.act.selfApproval).toContain('cannot approve their own exceptions');
+    expect(exceptions.remaining(7200000)).toBe('2 hours remaining');
+    expect(exceptions.detail.cap(500)).toBe('Cap 5%');
+    expect(exceptions.rules.note).toContain('Exceptions do not change decisions');
+    expect(exceptions.panel.shadowOnly).toContain('vehicle behavior is unchanged');
+    expect(Object.keys(exceptions.detail.historyKind)).toEqual(keys);
+    await changeUiLanguage('ko');expect(exceptions.act.selfApproval).toBe(ko);
+  });
   it('translates cache trust and OTA reconciliation guidance without changing status keys', async () => {
     const before = { statuses:Object.keys(vehicleCache.status), uses:Object.keys(vehicleCache.use), reasons:Object.keys(vehicleCache.reason) };
     const korean = vehicleCache.status.UNVERIFIED;

@@ -1,7 +1,8 @@
+import { localizedCopy } from '../locale/runtime';
 // 예외 승인 화면 문구(/verify/exceptions) — 임시 우회·Gate 예외 요청, 2인 승인, 만료·원복, 출시 전 Shadow만.
 // 상태·종류·제한 조건·검사 이름은 계약(rules/exception-policy.ts) 표를 그대로 쓴다.
 
-export const exceptions = {
+export const exceptions = /* @__PURE__ */ localizedCopy('exceptions.exceptions', {
   title: '예외 승인',
   lead: '긴급할 때 정해진 기간·범위만 검사를 비켜 가는 예외 — 두 사람이 승인하고, 만료되면 이전 정책 상태로 되돌린다',
   key: { active: '건 적용 중', waiting: '건 승인 대기', none: '적용 중인 예외 없음 — 모든 배포가 원래 검사를 거친다' },
@@ -75,4 +76,4 @@ export const exceptions = {
     active: '이 정책·Feature에 적용 중인 예외',
     open: '예외 승인 화면에서 보기',
   },
-};
+});

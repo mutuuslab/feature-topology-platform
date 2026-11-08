@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9279,
-  "translated": 9279,
+  "required": 9357,
+  "translated": 9357,
   "modules": [
     {
       "module": "ads-change",
@@ -267,6 +267,17 @@
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
       "sourceHash": "73b8be0bdcc21cebcf8a45ca17892752cfd740989ec940f85d97c87f7ffc7852"
+    },
+    {
+      "module": "exceptions",
+      "source": "FF/frontend/src/copy/exceptions.ts",
+      "required": 78,
+      "translated": 78,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "db35ee8ba2a1157c67e6d63e34d6646d740e6d3ffc8e46a421c04e02b4ec0c4e"
     },
     {
       "module": "experiment-analysis",

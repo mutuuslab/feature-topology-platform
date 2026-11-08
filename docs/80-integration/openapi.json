@@ -2686,6 +2686,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "taxonomyLevel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2961,6 +2969,17 @@
                       "variability",
                       "bindingTime",
                       "variationPoints"
+                    ]
+                  },
+                  "taxonomyLevel": {
+                    "type": "string",
+                    "enum": [
+                      "L0",
+                      "L1",
+                      "L2",
+                      "L3",
+                      "L4",
+                      "L5"
                     ]
                   }
                 },
@@ -3295,6 +3314,17 @@
                           "variability",
                           "bindingTime",
                           "variationPoints"
+                        ]
+                      },
+                      "taxonomyLevel": {
+                        "type": "string",
+                        "enum": [
+                          "L0",
+                          "L1",
+                          "L2",
+                          "L3",
+                          "L4",
+                          "L5"
                         ]
                       },
                       "functions": {
@@ -3713,6 +3743,17 @@
                       "variability",
                       "bindingTime",
                       "variationPoints"
+                    ]
+                  },
+                  "taxonomyLevel": {
+                    "type": "string",
+                    "enum": [
+                      "L0",
+                      "L1",
+                      "L2",
+                      "L3",
+                      "L4",
+                      "L5"
                     ]
                   },
                   "functions": {
@@ -25548,6 +25589,15 @@
                         },
                         "maxItems": 4,
                         "default": []
+                      },
+                      "regionCodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 2
+                        },
+                        "maxItems": 14,
+                        "default": []
                       }
                     },
                     "required": [
@@ -25917,6 +25967,15 @@
                           ]
                         },
                         "maxItems": 4,
+                        "default": []
+                      },
+                      "regionCodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "maxLength": 2
+                        },
+                        "maxItems": 14,
                         "default": []
                       }
                     },
@@ -29937,6 +29996,1905 @@
                 },
                 "required": [
                   "toOwnerId",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-mappings": {
+      "get": {
+        "summary": "OEM Feature·협력사 Function·SW Component 매핑",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierMappings",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "협력사 기능 매핑 등록",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "createSupplierMapping",
+        "description": "허용 역할: 구현 담당자, Feature 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "supplier": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60
+                  },
+                  "supplierFunctionId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]*$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "oemFunctionId": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^FUNC-\\d{6}$",
+                    "default": null
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "supplier",
+                  "supplierFunctionId",
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-mappings/{id}/swcs": {
+      "post": {
+        "summary": "동일 공급사 SW·ECU 연결",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "addSupplierSwc",
+        "description": "허용 역할: 구현 담당자, Feature 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "swcId": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]*$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "swId": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 60,
+                    "default": null
+                  },
+                  "ecuPno": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 2,
+                    "maxLength": 40,
+                    "default": null
+                  }
+                },
+                "required": [
+                  "swcId",
+                  "name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-packages": {
+      "get": {
+        "summary": "Feature Version별 협력사 패키지 목록",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierPackages",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureVersion",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "supplier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "버전별 협력사 패키지 작성",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "createSupplierPackage",
+        "description": "허용 역할: 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "featureVersion": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "supplier": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 60
+                  },
+                  "version": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  },
+                  "basedOn": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^SPK-\\d{5}$",
+                    "default": null
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "featureVersion",
+                  "supplier",
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-packages/{id}": {
+      "get": {
+        "summary": "협력사 산출물·무결성·기준·검수 이력",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierPackage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-packages/{id}/artifacts": {
+      "post": {
+        "summary": "산출물 본문·manifest·체크섬 검증 및 추가 보관",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "submitSupplierArtifact",
+        "description": "허용 역할: 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "API_CONTRACT",
+                      "HUMAN_DOC",
+                      "FEATURE_MAPPING",
+                      "CAPABILITY_MANIFEST",
+                      "VARIANT_COMPAT",
+                      "DIAGNOSTICS",
+                      "SAFETY_SECURITY",
+                      "SDK_STUB_MOCK",
+                      "TEST_EVIDENCE",
+                      "RELEASE_NOTE"
+                    ]
+                  },
+                  "version": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "uri": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 300
+                  },
+                  "checksum": {
+                    "type": "string",
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 20000,
+                    "default": null
+                  },
+                  "apiFormat": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      "OPENAPI",
+                      "PROTOBUF",
+                      null
+                    ],
+                    "default": null
+                  },
+                  "mappingIds": {
+                    "type": "array",
+                    "nullable": true,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^SFM-\\d{5}$"
+                    },
+                    "maxItems": 40,
+                    "default": null
+                  },
+                  "capability": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "hwVersions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 20
+                        },
+                        "minItems": 1,
+                        "maxItems": 40
+                      },
+                      "swVersions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "swId": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 60
+                            },
+                            "version": {
+                              "type": "string",
+                              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                            }
+                          },
+                          "required": [
+                            "swId",
+                            "version"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 40
+                      },
+                      "ecuCapabilities": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "ecuPno": {
+                              "type": "string",
+                              "minLength": 2,
+                              "maxLength": 40
+                            },
+                            "capabilities": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 2,
+                                "maxLength": 60
+                              },
+                              "minItems": 1,
+                              "maxItems": 40
+                            }
+                          },
+                          "required": [
+                            "ecuPno",
+                            "capabilities"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 40
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "hwVersions",
+                      "swVersions",
+                      "ecuCapabilities"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "variants": {
+                    "type": "array",
+                    "nullable": true,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "vehicleModel": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        },
+                        "region": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 10
+                        },
+                        "trim": {
+                          "type": "string",
+                          "nullable": true,
+                          "minLength": 1,
+                          "maxLength": 40,
+                          "default": null
+                        },
+                        "modelYears": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 2015,
+                            "maximum": 2045
+                          },
+                          "minItems": 1,
+                          "maxItems": 12
+                        }
+                      },
+                      "required": [
+                        "vehicleModel",
+                        "region",
+                        "modelYears"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 40,
+                    "default": null
+                  },
+                  "diagnostics": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "dtcs": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 60,
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]*$"
+                        },
+                        "maxItems": 80
+                      },
+                      "events": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 60,
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]*$"
+                        },
+                        "maxItems": 80
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "dtcs",
+                      "events"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "safety": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "asil": {
+                        "type": "string",
+                        "enum": [
+                          "QM",
+                          "A",
+                          "B",
+                          "C",
+                          "D"
+                        ]
+                      },
+                      "cybersecurityClaim": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "certRef": {
+                        "type": "string",
+                        "nullable": true,
+                        "minLength": 2,
+                        "maxLength": 80,
+                        "default": null
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "asil",
+                      "cybersecurityClaim"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "testEvidence": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "unitPassed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "unitTotal": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "integrationPassed": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "integrationTotal": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "coveragePct": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      "buildStatus": {
+                        "type": "string",
+                        "enum": [
+                          "SUCCESS",
+                          "FAILED"
+                        ]
+                      },
+                      "buildWarnings": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "evidenceIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 60,
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/-]*$"
+                        },
+                        "minItems": 1,
+                        "maxItems": 50
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "unitPassed",
+                      "unitTotal",
+                      "integrationPassed",
+                      "integrationTotal",
+                      "coveragePct",
+                      "buildStatus",
+                      "buildWarnings",
+                      "evidenceIds"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "releaseNote": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "releaseId": {
+                        "type": "string",
+                        "maxLength": 60
+                      },
+                      "breakingChanges": {
+                        "type": "boolean"
+                      },
+                      "migration": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 1000,
+                        "default": null
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "releaseId",
+                      "breakingChanges"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "version",
+                  "title",
+                  "uri",
+                  "checksum"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-artifacts/{id}/content": {
+      "get": {
+        "summary": "서버 보관 산출물 본문 다시 취득",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierArtifactContent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-packages/{id}/submit": {
+      "post": {
+        "summary": "필수 10항목 검수 요청",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "submitSupplierPackage",
+        "description": "허용 역할: 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 500,
+                    "default": null
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-packages/{id}/reviews": {
+      "post": {
+        "summary": "독립 검수자의 항목별 합격·보완 결정",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "reviewSupplierPackage",
+        "description": "허용 역할: Gate 판정자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "decision": {
+                    "type": "string",
+                    "enum": [
+                      "ACCEPT",
+                      "REJECT"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "API_CONTRACT",
+                            "HUMAN_DOC",
+                            "FEATURE_MAPPING",
+                            "CAPABILITY_MANIFEST",
+                            "VARIANT_COMPAT",
+                            "DIAGNOSTICS",
+                            "SAFETY_SECURITY",
+                            "SDK_STUB_MOCK",
+                            "TEST_EVIDENCE",
+                            "RELEASE_NOTE"
+                          ]
+                        },
+                        "result": {
+                          "type": "string",
+                          "enum": [
+                            "PASS",
+                            "FAIL"
+                          ]
+                        },
+                        "comment": {
+                          "type": "string",
+                          "nullable": true,
+                          "maxLength": 500,
+                          "default": null
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "result"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  }
+                },
+                "required": [
+                  "decision",
+                  "comment",
+                  "items"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-criteria": {
+      "get": {
+        "summary": "Feature별 검수 기준 개정 이력",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierCriteria",
+        "parameters": [
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "검수 기준 새 개정 등록",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "createSupplierCriteria",
+        "description": "허용 역할: Gate 판정자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "pattern": "^FEAT-\\d{5}$"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "MIN_COVERAGE",
+                            "ALL_TESTS_PASS",
+                            "BUILD_CLEAN",
+                            "ASIL_COVERS_FEATURE",
+                            "VARIANT_COVERS_FEATURE",
+                            "CAPABILITY_COVERS_SW",
+                            "BREAKING_HAS_MIGRATION"
+                          ]
+                        },
+                        "threshold": {
+                          "type": "number",
+                          "nullable": true,
+                          "minimum": 0,
+                          "maximum": 100,
+                          "default": null
+                        },
+                        "note": {
+                          "type": "string",
+                          "nullable": true,
+                          "maxLength": 200,
+                          "default": null
+                        }
+                      },
+                      "required": [
+                        "kind"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 7
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "items",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/supplier-gate": {
+      "get": {
+        "summary": "G6 협력사 검수 대상·승인 패키지·막힘 사유",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierGate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/versions/{ver}/supplier-scope": {
+      "get": {
+        "summary": "협력사 책임 범위·검증된 시험 근거·계약 누락",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierScope",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ver",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/supplier-directory": {
+      "get": {
+        "summary": "협력사 연락처 원본 — 미설정·원격 조회 구분",
+        "tags": [
+          "D05-01"
+        ],
+        "operationId": "supplierDirectory",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/taxonomy/levels": {
+      "get": {
+        "summary": "분류 수준 L0~L5 개요 — 수준별 노드 수·분류된 Feature 수",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "taxonomyLevels",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/taxonomy/levels/{level}": {
+      "get": {
+        "summary": "수준 하나의 분류 — 노드마다 L0부터의 경로와 연결된 Feature",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "taxonomyLevel",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/taxonomy/nodes": {
+      "get": {
+        "summary": "분류 노드 — 기본은 계층 트리, 수준·상위로 거르면 평면 목록(하위 수·배치 수)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "taxonomyNodes",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "분류 노드 등록 — 상위 존재·정확히 한 단계 아래·지운 ID 재사용 금지",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "createTaxonomyNode",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nodeId": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9][A-Z0-9._-]{1,39}$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "L0",
+                      "L1",
+                      "L2",
+                      "L3",
+                      "L4",
+                      "L5"
+                    ]
+                  },
+                  "parentId": {
+                    "type": "string",
+                    "nullable": true,
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 500,
+                    "default": null
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "nodeId",
+                  "name",
+                  "level",
+                  "parentId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/taxonomy/nodes/{id}": {
+      "patch": {
+        "summary": "분류 노드 수정 — 명칭·설명(Feature DB 분류는 변경 요청으로)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "updateTaxonomyNode",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 120
+                  },
+                  "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 500
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/taxonomy/nodes/{id}/delete": {
+      "post": {
+        "summary": "분류 노드 삭제 — 하위 노드·배치된 Feature가 있으면 거부, ID는 묘비로 남김",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "deleteTaxonomyNode",
+        "description": "허용 역할: Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/features/{id}/taxonomy": {
+      "get": {
+        "summary": "Feature 분류 — 분류 수준·배치 노드·L0부터 경로·아래 구성(SW·Flag·신호)·배치 후보",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "featureTaxonomy",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "Feature 배치 — Feature 분류 수준의 노드 하나(다시 배치하면 바꿈)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "placeFeatureTaxonomy",
+        "description": "허용 역할: Feature 작성자, Feature DB 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nodeId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "nodeId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/region-codes": {
+      "get": {
+        "summary": "적용 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 코드별 Feature·룰·정책 수",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "regionCodes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/region-codes/variant-candidates": {
+      "get": {
+        "summary": "지역 코드 기준 Variant Rule 후보 — 기존 Variant 조건(국가·차종·트림·UPG-VC)과 26580 구성 규칙(상품)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "regionVariantCandidates",
+        "parameters": [
+          {
+            "name": "codes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/brands": {
+      "get": {
+        "summary": "브랜드 목록(현대·기아·제네시스)과 등록된 정책 수",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "brands",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/brands/{brand}/policies": {
+      "get": {
+        "summary": "브랜드별 Feature 정책 — 없으면 빈 목록, 목록 밖 브랜드는 400",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "brandPolicies",
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/global-scopes": {
+      "get": {
+        "summary": "조건(브랜드·적용 지역 코드·법규 룰·Feature)으로 연계 정책 찾기",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "globalScopes",
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "regionCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ruleId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/policies/{id}/global-scope": {
+      "get": {
+        "summary": "정책 하나의 브랜드·권역·법규 조건과 Feature Owner",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "policyGlobalScope",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "정책 브랜드·권역·법규 조건 등록 — 목록 밖 브랜드·지역 코드 400",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "createPolicyGlobalScope",
+        "description": "허용 역할: Feature 작성자, 구현 담당자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brands": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "maxItems": 3
+                  },
+                  "regionCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2
+                    },
+                    "maxItems": 14,
+                    "default": []
+                  },
+                  "complianceRuleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 32
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "brands",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "정책 브랜드·권역·법규 조건 수정 — Feature Owner·시스템 관리자만(그 밖 403)",
+        "tags": [
+          "D01-01"
+        ],
+        "operationId": "updatePolicyGlobalScope",
+        "description": "허용 역할: Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brands": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "maxItems": 3
+                  },
+                  "regionCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 2
+                    },
+                    "maxItems": 14,
+                    "default": []
+                  },
+                  "complianceRuleIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 2,
+                      "maxLength": 32
+                    },
+                    "maxItems": 20,
+                    "default": []
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "brands",
                   "reason"
                 ],
                 "additionalProperties": false

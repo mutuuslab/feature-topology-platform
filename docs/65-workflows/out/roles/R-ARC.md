@@ -59,10 +59,11 @@ last_updated: 2026-11-08
 - 프로세스: FPW.4 안전 설계·정책 설계
 - 시작: 앞 활동 완료
 - 입력: WP-SAFETY-DESIGN, WP-FEAT-SCOPE → 출력: WP-POLICY
-- 플랫폼: `createPolicy`, `updatePolicy`, `validatePolicy`, `/policies/new`, `/policies`, `/config/odd`
+- 플랫폼: `createPolicy`, `updatePolicy`, `validatePolicy`, `createPolicyGlobalScope`, `updatePolicyGlobalScope`, `/policies/new`, `/policies`, `/config/odd`, `/policies/global-scope`
 1. 대상 규칙·Variant 조건·기본값을 정책으로 작성한다
-2. 분야별 검증 8종을 실행해 배포 안전성 판정을 받는다
-3. 수정하면 새 개정본이 되므로 다시 검증한다
+2. 정책에 브랜드·적용 지역 코드·법규 룰의 조회 조건을 연결하고 Feature Owner가 변경 근거와 개정 이력을 확인한다. 이 메타데이터 연결 자체를 배포 승인이나 차량 적용으로 보지 않는다
+3. 분야별 검증 8종을 실행해 배포 안전성 판정을 받는다
+4. 수정하면 새 개정본이 되므로 다시 검증한다
 - [ ] 최신 개정본의 분야별 검증이 모두 통과했다
 
 ### FPW.4-A05 G4 설계 독립 검토·판정 — 책임(승인)
@@ -120,6 +121,7 @@ last_updated: 2026-11-08
 - FPW.10-A05 기존 구현 진단 (협의)
 - FPW.12-A02 평가 컨텍스트 개인정보 검토 (협의)
 - FPW.14-A01 변경 요청 작성 (협의)
+- FPW.14-A06 플랫폼 분류 계층 관리 (협의)
 - FPW.15-A03 공수·규모 입력 (협의)
 - FPW.17-A03 사전 품질 점검 (협의)
 - FPW.17-A04 외부 연계 대사 (협의)

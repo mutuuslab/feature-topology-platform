@@ -266,8 +266,13 @@ def test_feature_db_operation_process_exists(model):
     actions = {n: a["raci"]["R"][0] for a in p["activities"] for n in (a.get("platform") or {}).get("actions", [])}
     assert actions == {"createRefChange": "R-FO", "reviewRefChange": "R-DRV",
                        "decideRefChange": "R-RDA", "publishRefRelease": "R-RDA",
-                       "recordSourceReview": "R-RDA"}                   # 출처 정기 점검 기록(다음 점검일 갱신)
+                       "recordSourceReview": "R-RDA", "createTaxonomyNode": "R-RDA",
+                       "updateTaxonomyNode": "R-RDA", "deleteTaxonomyNode": "R-RDA"}                   # 출처 정기 점검 기록(다음 점검일 갱신)
     assert model["acts_by_id"]["FPW.14-A05"][1].get("trigger")          # 정기 출처 점검은 사건(점검일)으로 시작
+    taxonomy = model["acts_by_id"]["FPW.14-A06"][1]
+    assert taxonomy["outputs"] == ["WP-PLATFORM-TAXONOMY"]
+    assert taxonomy["platform"]["screens"] == ["/master/taxonomy/levels"]
+    assert all(f"FPW.14-A{i:02}" in model["acts_by_id"] for i in range(1, 7))
 
 
 def test_feature_registration_links_reference_and_blocks_pending(model):

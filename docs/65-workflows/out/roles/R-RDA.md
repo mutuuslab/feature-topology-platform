@@ -61,6 +61,18 @@ last_updated: 2026-11-08
 4. 점검 결과와 새 다음 점검일을 기록한다
 - [ ] 기한이 지난 출처마다 점검 결과와 새 다음 점검일이 있다
 
+### FPW.14-A06 플랫폼 분류 계층 관리 — 수행·책임
+- 프로세스: FPW.14 Feature DB 운영
+- 시작: Feature DB 발행 또는 플랫폼 분류 확장·수정 요청
+- 입력: WP-REFDB-RELEASE → 출력: WP-PLATFORM-TAXONOMY
+- 플랫폼: `createTaxonomyNode`, `updateTaxonomyNode`, `deleteTaxonomyNode`, `/master/taxonomy/levels`
+1. 발행 원본의 도메인·클러스터·컴포넌트를 조회하고 필요한 플랫폼 노드의 수준과 상위를 확인한다
+2. 플랫폼 노드를 등록하거나 명칭·설명을 수정한다. 상위는 정확히 한 단계 위여야 한다
+3. 삭제 전 하위 노드와 배치 Feature가 없는지 확인하고 삭제 사유와 재사용 금지 묘비를 보존한다
+4. Feature 등록 담당자에게 같은 수준의 배치 후보와 L0부터의 경로를 인계한다
+- [ ] 발행 원본 분류는 직접 수정하지 않았고 원본 변경은 Feature DB 변경 요청으로 처리했다
+- [ ] 노드 ID 재사용·잘못된 상위·하위 또는 배치가 있는 노드 삭제가 거부된다
+
 ## 2. 협의·통보 받는 활동
 
 - FPW.1-A01 Feature 등록·초안 작성 (통보)

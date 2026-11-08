@@ -76,6 +76,10 @@ import { DeleteDraftBody } from './rules/draft-deletion';
 import { RejectFeatureBody, RetireDecisionBody, RetireFeatureBody } from './rules/feature-retire';
 import { ApproveOddSiteBody, AsBuiltBody, ConfirmClassificationBody, CreateOddSiteBody, EolCheckBody, InstallReportEvent, PutMarketBaselineBody, RecoveryDecisionBody, SimulateInstallBody, SupportDrillBody, UpdateClassificationBody } from './schemas/ads-p5';
 import { AddSupplierSwcBody, CreateSupplierCriteriaBody, CreateSupplierMappingBody, CreateSupplierPackageBody, ReviewSupplierPackageBody, SubmitSupplierArtifactBody, SubmitSupplierPackageBody } from './schemas/supplier';
+import { CreateTaxonomyNodeBody, DeleteTaxonomyNodeBody, PlaceFeatureBody, UpdateTaxonomyNodeBody } from './schemas/taxonomy-tree';
+import { TAXONOMY_EDITOR_ROLES, TAXONOMY_PLACEMENT_ROLES } from './rules/taxonomy-roles';
+import { PolicyGlobalScopeBody } from './schemas/global-scope';
+import { GLOBAL_SCOPE_AUTHOR_ROLES } from './rules/global-scope';
 
 const EmptyBody = z.object({}).strict();
 /** 공개 데모 게이트 로그인(20-99) — 데모 ID·비밀번호. 길이만 막고 판정은 서버가 상수 시간으로 */
@@ -180,7 +184,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'undoProcedureActivity', method: 'DELETE', path: '/api/procedures/activities/:id/complete', summary: '활동 완료 취소 — 감사 기록, 다음 활동 인계를 되돌린다', component: 'D04-04', roles: HUMAN_ROLES, body: EmptyBody },
 
   // Feature Registry (D01-01)
-  { name: 'listFeatures', method: 'GET', path: '/api/features', summary: 'Feature 버전 목록 — limit·cursor를 주면 페이지 나눔(응답 nextCursor), 없으면 전체', component: 'D01-01', query: ['q', 'lifecycle', 'country', 'vehicleModel', 'latestOnly', 'limit', 'cursor'] },
+  { name: 'listFeatures', method: 'GET', path: '/api/features', summary: 'Feature 버전 목록 — limit·cursor를 주면 페이지 나눔(응답 nextCursor), 없으면 전체', component: 'D01-01', query: ['q', 'lifecycle', 'country', 'vehicleModel', 'latestOnly', 'limit', 'cursor', 'taxonomyLevel'] },
   { name: 'createFeature', method: 'POST', path: '/api/features', summary: 'Feature 등록 (PROPOSED 0.1.0)', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: CreateFeatureBody },
   { name: 'featureVersions', method: 'GET', path: '/api/features/:id', summary: 'Feature의 버전들', component: 'D01-01' },
   { name: 'createVersion', method: 'POST', path: '/api/features/:id/versions', summary: '새 Version 생성', component: 'D01-01', roles: ['FEATURE_AUTHOR'], body: CreateVersionBody },
@@ -715,6 +719,23 @@ export const ROUTES: RouteDef[] = [
   { name: 'supplierGate', method: 'GET', path: '/api/features/:id/versions/:ver/supplier-gate', summary: 'G6 협력사 검수 대상·승인 패키지·막힘 사유', component: 'D05-01' },
   { name: 'supplierScope', method: 'GET', path: '/api/features/:id/versions/:ver/supplier-scope', summary: '협력사 책임 범위·검증된 시험 근거·계약 누락', component: 'D05-01', roles: ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM') },
   { name: 'supplierDirectory', method: 'GET', path: '/api/supplier-directory', summary: '협력사 연락처 원본 — 미설정·원격 조회 구분', component: 'D05-01', roles: ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM') },
+  // 분류 계층 L0~L5·적용 지역 코드·브랜드별 정책(TX, B7 (b)) — Feature DB 분류(L0·L1) 아래 플랫폼 노드, Feature 배치, 지역 코드 ↔ 시장·국가, 정책의 브랜드·권역·법규 조건
+  { name: 'taxonomyLevels', method: 'GET', path: '/api/taxonomy/levels', summary: '분류 수준 L0~L5 개요 — 수준별 노드 수·분류된 Feature 수', component: 'D01-01' },
+  { name: 'taxonomyLevel', method: 'GET', path: '/api/taxonomy/levels/:level', summary: '수준 하나의 분류 — 노드마다 L0부터의 경로와 연결된 Feature', component: 'D01-01' },
+  { name: 'taxonomyNodes', method: 'GET', path: '/api/taxonomy/nodes', summary: '분류 노드 — 기본은 계층 트리, 수준·상위로 거르면 평면 목록(하위 수·배치 수)', component: 'D01-01', query: ['level', 'parentId'] },
+  { name: 'createTaxonomyNode', method: 'POST', path: '/api/taxonomy/nodes', summary: '분류 노드 등록 — 상위 존재·정확히 한 단계 아래·지운 ID 재사용 금지', component: 'D01-01', roles: TAXONOMY_EDITOR_ROLES, body: CreateTaxonomyNodeBody },
+  { name: 'updateTaxonomyNode', method: 'PATCH', path: '/api/taxonomy/nodes/:id', summary: '분류 노드 수정 — 명칭·설명(Feature DB 분류는 변경 요청으로)', component: 'D01-01', roles: TAXONOMY_EDITOR_ROLES, body: UpdateTaxonomyNodeBody },
+  { name: 'deleteTaxonomyNode', method: 'POST', path: '/api/taxonomy/nodes/:id/delete', summary: '분류 노드 삭제 — 하위 노드·배치된 Feature가 있으면 거부, ID는 묘비로 남김', component: 'D01-01', roles: TAXONOMY_EDITOR_ROLES, body: DeleteTaxonomyNodeBody },
+  { name: 'featureTaxonomy', method: 'GET', path: '/api/features/:id/taxonomy', summary: 'Feature 분류 — 분류 수준·배치 노드·L0부터 경로·아래 구성(SW·Flag·신호)·배치 후보', component: 'D01-01' },
+  { name: 'placeFeatureTaxonomy', method: 'PUT', path: '/api/features/:id/taxonomy', summary: 'Feature 배치 — Feature 분류 수준의 노드 하나(다시 배치하면 바꿈)', component: 'D01-01', roles: TAXONOMY_PLACEMENT_ROLES, body: PlaceFeatureBody },
+  { name: 'regionCodes', method: 'GET', path: '/api/region-codes', summary: '적용 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 코드별 Feature·룰·정책 수', component: 'D01-01' },
+  { name: 'regionVariantCandidates', method: 'GET', path: '/api/region-codes/variant-candidates', summary: '지역 코드 기준 Variant Rule 후보 — 기존 Variant 조건(국가·차종·트림·UPG-VC)과 26580 구성 규칙(상품)', component: 'D01-01', query: ['codes'], requiredQuery: ['codes'], sample: { codes: '1' } },
+  { name: 'brands', method: 'GET', path: '/api/brands', summary: '브랜드 목록(현대·기아·제네시스)과 등록된 정책 수', component: 'D01-01' },
+  { name: 'brandPolicies', method: 'GET', path: '/api/brands/:brand/policies', summary: '브랜드별 Feature 정책 — 없으면 빈 목록, 목록 밖 브랜드는 400', component: 'D01-01' },
+  { name: 'globalScopes', method: 'GET', path: '/api/global-scopes', summary: '조건(브랜드·적용 지역 코드·법규 룰·Feature)으로 연계 정책 찾기', component: 'D01-01', query: ['brand', 'regionCode', 'ruleId', 'featureId'] },
+  { name: 'policyGlobalScope', method: 'GET', path: '/api/policies/:id/global-scope', summary: '정책 하나의 브랜드·권역·법규 조건과 Feature Owner', component: 'D01-01' },
+  { name: 'createPolicyGlobalScope', method: 'POST', path: '/api/policies/:id/global-scope', summary: '정책 브랜드·권역·법규 조건 등록 — 목록 밖 브랜드·지역 코드 400', component: 'D01-01', roles: GLOBAL_SCOPE_AUTHOR_ROLES, body: PolicyGlobalScopeBody },
+  { name: 'updatePolicyGlobalScope', method: 'PUT', path: '/api/policies/:id/global-scope', summary: '정책 브랜드·권역·법규 조건 수정 — Feature Owner·시스템 관리자만(그 밖 403)', component: 'D01-01', roles: HUMAN_ROLES, body: PolicyGlobalScopeBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

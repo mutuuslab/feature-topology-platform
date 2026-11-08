@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 81,
-  "requiredLeaves": 8903,
+  "moduleCount": 83,
+  "requiredLeaves": 9021,
   "modules": [
     {
       "module": "ads-change",
@@ -50151,6 +50151,735 @@
       ],
       "connectedExports": [
         "supplier"
+      ]
+    },
+    {
+      "module": "taxonomy-level-names",
+      "file": "FF/frontend/src/copy/taxonomy-level-names.ts",
+      "leaves": [
+        {
+          "path": "taxonomy-level-names.LEVEL_KO.L0",
+          "kind": "text",
+          "text": "도메인·역량",
+          "sourceHash": "d2d005f649db7ca7cefa956c27af0067c14db03687660c4f70c8b5971604fe51"
+        },
+        {
+          "path": "taxonomy-level-names.LEVEL_KO.L1",
+          "kind": "text",
+          "text": "고객·사업 기능",
+          "sourceHash": "0533687898fc5a2745d40aad7fbdb996523996200e6c64cdd4b1a370fd42e9dd"
+        },
+        {
+          "path": "taxonomy-level-names.LEVEL_KO.L2",
+          "kind": "text",
+          "text": "차량·시스템 기능",
+          "sourceHash": "9bc2459fe01382ed54810adbe2487262989de5d4f14ded6c606ae1364d31b8f2"
+        },
+        {
+          "path": "taxonomy-level-names.LEVEL_KO.L3",
+          "kind": "text",
+          "text": "소프트웨어 기능",
+          "sourceHash": "d17746f8ece5f667d370ace657ba46df819b29ef026150791acc4e773865dac5"
+        },
+        {
+          "path": "taxonomy-level-names.LEVEL_KO.L4",
+          "kind": "text",
+          "text": "정책·Flag·파라미터",
+          "sourceHash": "bcc352bf31bc6af372cc618bac21f054f2d8f7cec347a3153e2f2fafc4733a7d"
+        },
+        {
+          "path": "taxonomy-level-names.LEVEL_KO.L5",
+          "kind": "text",
+          "text": "코드·신호·로직",
+          "sourceHash": "ca0539e42f1d600055a32e4d20ce9f44e98261f49ce8061ea535a0c5fb3eacb0"
+        },
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.tab",
+          "kind": "text",
+          "text": "분류 경로",
+          "sourceHash": "84467f3d5ba1f5a0e720673f16e2b1edbf8ce13d76fe65978864d5df90871172"
+        },
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.list.level",
+          "kind": "text",
+          "text": "분류 수준",
+          "sourceHash": "8072113c87c37546728f7c2b52097067505030188a647ac6deae28cb73c947e3"
+        },
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.propose.level",
+          "kind": "text",
+          "text": "분류 수준",
+          "sourceHash": "8072113c87c37546728f7c2b52097067505030188a647ac6deae28cb73c947e3"
+        },
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.propose.levelHint",
+          "kind": "text",
+          "text": "Feature Master는 보통 L2(차량·시스템 기능)입니다",
+          "sourceHash": "9e96ddaa456e92e2f227d5c316cdfb003745d2b45fdf69b83c8a974fcd8ca100"
+        },
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.propose.levelWhy",
+          "kind": "text",
+          "text": "분류 수준을 고르세요",
+          "sourceHash": "c34b48a78448701c06551df2fcf398394574679b41d440a5a1333861f5032afc"
+        },
+        {
+          "path": "taxonomy-level-names.taxonomyLevelNames.propose.choose",
+          "kind": "text",
+          "text": "고르세요",
+          "sourceHash": "49a7c1e6ecbe9f527d4be048f7bc791729797e5de52dc78ea4e78f70dba2494f"
+        }
+      ],
+      "connectedExports": [
+        "LEVEL_KO",
+        "taxonomyLevelNames"
+      ]
+    },
+    {
+      "module": "taxonomy-levels",
+      "file": "FF/frontend/src/copy/taxonomy-levels.ts",
+      "leaves": [
+        {
+          "path": "taxonomy-levels.taxonomyCopy.title",
+          "kind": "text",
+          "text": "분류 계층",
+          "sourceHash": "7b6a1869a5552755994c6c1929a52177b2033eac3c1ae21232b7bc4888f0e98d"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.lead",
+          "kind": "text",
+          "text": "Feature DB 분류 아래 차량·시스템 기능부터 코드·신호까지 L0~L5로 나눠 Feature를 배치합니다.",
+          "sourceHash": "2cd010dfc2243248c36fc0088bbdcc4f60689cb6f1369cbf2b000623b93ca4f2"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.key",
+          "kind": "function",
+          "text": "(features: number, nodes: number) => `Feature ${features}개를 노드 ${nodes}개에 배치했습니다`",
+          "sourceHash": "d1b0a8c032a8a19821dd261a9edbc8500c50aee2a9bd5653de36e56faa48135b"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.back",
+          "kind": "text",
+          "text": "태그·범위 분류로",
+          "sourceHash": "92110a6a6d82044d458b6baa3aeab589a04979e57330201d905a5b9bcff21a98"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.toLevels",
+          "kind": "text",
+          "text": "L0~L5 분류 계층",
+          "sourceHash": "f4fdda7939217b9fd036151ed5ac95c16f99a35ad190b934170f23cd213a0769"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.tabs.classify",
+          "kind": "text",
+          "text": "수준별 분류",
+          "sourceHash": "d4b46a97157bb1f9e351571f6a6d2760c5d0b3bb6ea7a55554511832ae43d377"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.tabs.tree",
+          "kind": "text",
+          "text": "계층 트리",
+          "sourceHash": "2efec71cb3cbeaffa0dc810fc59cd93e6df1afb834ab531e633079682159db86"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.tabs.manage",
+          "kind": "text",
+          "text": "노드 관리",
+          "sourceHash": "0869b6872c3b0c3af2ca1174505dbb6a54a443eb4c25162f384cadea63fe2b39"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.summary.nodes",
+          "kind": "text",
+          "text": "노드",
+          "sourceHash": "504cab32698fe070430b4fbebfee466553ce23d3cf83458024f650cdf216b83f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.summary.features",
+          "kind": "text",
+          "text": "분류된 Feature",
+          "sourceHash": "fe4298f22e4ffe3729a124970c7fb90e81a6238167bebe765cd0838b230dc986"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.summary.classified",
+          "kind": "text",
+          "text": "Feature가 있는 노드",
+          "sourceHash": "bd2f43da13fb9f55a6c95bcfaa83b4a9ebf75d3b693e00ff6a18206370da7f60"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.node",
+          "kind": "text",
+          "text": "노드",
+          "sourceHash": "504cab32698fe070430b4fbebfee466553ce23d3cf83458024f650cdf216b83f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.name",
+          "kind": "text",
+          "text": "명칭",
+          "sourceHash": "4cda38a249ab558190e607c4e4e9aca9c14c4591b75debb9989be5cba4ceab0f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.path",
+          "kind": "text",
+          "text": "L0부터 경로",
+          "sourceHash": "f6b373b8b4cd605d99984e84c3d302e6ab54509ddec31d4d0600cc2eba26b178"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.source",
+          "kind": "text",
+          "text": "출처",
+          "sourceHash": "fa543a9d6cf324986fbddb6c88daa7ef9429d0666ed9171203019529a656be77"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.children",
+          "kind": "text",
+          "text": "하위",
+          "sourceHash": "5b07accebe39643de9b41d60ce2fd08245ed65914013ff6eaf89cc48c2bbc842"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.placed",
+          "kind": "text",
+          "text": "배치",
+          "sourceHash": "ce12d7f14ebfba7b1bbe898e9a0c406f84e479fc4c54c8cba1247b3c77bcb18f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.by",
+          "kind": "text",
+          "text": "등록",
+          "sourceHash": "bb216f104fde8df481e96264cbba034455a9249a78e9ec91e27dfd701b579d44"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.col.level",
+          "kind": "text",
+          "text": "수준",
+          "sourceHash": "7a73f940083f5fda613253035fb7488f2a17fa4730932800d9ed408f2952900d"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.source.FEATURE_DB",
+          "kind": "text",
+          "text": "Feature DB 발행",
+          "sourceHash": "4f244925cdfe5bd922aead43873e8d4064ce60c4a610a96f0d351c2e3f2eaf40"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.source.PLATFORM",
+          "kind": "text",
+          "text": "플랫폼",
+          "sourceHash": "e56c7fcf61e194b640383bb573942a4e1988d7d93f7bf21865743a99d0559289"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.sourceHint",
+          "kind": "text",
+          "text": "Feature DB 발행 분류는 Feature DB 변경 요청으로 고칩니다",
+          "sourceHash": "5ef1bad898c8020af25748d6b3e2ab39e9500f04c4867339b3288da88cfe9011"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.more",
+          "kind": "function",
+          "text": "(n: number) => `외 ${n}개`",
+          "sourceHash": "61e0ddae90577ebced48ab4bc74273cfa9d38bcc9f3ef076ee96051c065fd570"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.tree.expand",
+          "kind": "text",
+          "text": "펼치기",
+          "sourceHash": "42dfbd146f39218cd2a8188382932605f91972b139a1e44c6bf9440d76e3d6a9"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.tree.collapse",
+          "kind": "text",
+          "text": "접기",
+          "sourceHash": "aba0885359f9179b5e6bcdc32f24d226cfdb3987fa93b634ff5eedf93ef667a9"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.tree.count",
+          "kind": "function",
+          "text": "(c: number, f: number) => `하위 ${c} · 배치 ${f}`",
+          "sourceHash": "7fe04c40c15d36ed4dd2833994ed500ee89e6f9dc9f8a2cabd8aeec86adb335a"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.create",
+          "kind": "text",
+          "text": "노드 등록",
+          "sourceHash": "c91cda5e387d96258fe0620d5f43902369cf0c83a139b44e697b48caa938f975"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.nodeIdHint",
+          "kind": "text",
+          "text": "영문 대문자·숫자로 시작, 점·밑줄·하이픈 사용(지운 ID는 다시 쓰지 않음)",
+          "sourceHash": "b6fb3b0b7260b21020954d13695a06ef3d36d3f1937461b4b5432e7fa8ba45da"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.name",
+          "kind": "text",
+          "text": "Node 명칭",
+          "sourceHash": "3503b90139db7db6c19c7d12d5ca3775011580d61f053274f92c443f20724518"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.level",
+          "kind": "text",
+          "text": "수준",
+          "sourceHash": "7a73f940083f5fda613253035fb7488f2a17fa4730932800d9ed408f2952900d"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.parent",
+          "kind": "text",
+          "text": "상위 Node ID",
+          "sourceHash": "edffc96f7db4e7447a6f52218f59f9aad0cf52cbcfddd34d7c65a2c685f0749d"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.parentHint",
+          "kind": "function",
+          "text": "(need: string) => `${need} 노드의 ID — 정확히 한 단계 위여야 합니다`",
+          "sourceHash": "e2bf99465992c935dc8b71fcfda9d4bdeb3c5b88eeb107c29b82ce216dfa179e"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.noParent",
+          "kind": "text",
+          "text": "L0은 상위가 없습니다",
+          "sourceHash": "4fa3ca6f53a37886a1394ecb450db406943429eb7894569281e4c9cfd1287387"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.description",
+          "kind": "text",
+          "text": "설명",
+          "sourceHash": "8c3f651d3083e63da64415c1d9ad8198bcaabfcdceeab546f4fa261e557b70d8"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.reason",
+          "kind": "text",
+          "text": "사유",
+          "sourceHash": "ab9442a23e772cce670320f5d60fb8e84f94b845c859d2f7691c7d052aeabb99"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.submit",
+          "kind": "text",
+          "text": "등록",
+          "sourceHash": "bb216f104fde8df481e96264cbba034455a9249a78e9ec91e27dfd701b579d44"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.done",
+          "kind": "function",
+          "text": "(id: string) => `${id}을(를) 등록했습니다`",
+          "sourceHash": "96555df941f980593ae9871bd9951c91060d62f9e72c8c606b26065da21b4f51"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.pick",
+          "kind": "text",
+          "text": "고칠 노드",
+          "sourceHash": "ea48be13ca543355de512c1122c4146aa8c4611f715e2c785a822a442a30bd94"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.edit",
+          "kind": "text",
+          "text": "명칭·설명 수정",
+          "sourceHash": "08425df03bc3f0de4752f0ec55b921044760ce7d4b26a7f6e2a4c947e4758ddb"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.save",
+          "kind": "text",
+          "text": "저장",
+          "sourceHash": "5fb926229090001c0a61d0ca8909524ecbe038017748f156cfb17d813cc20660"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.saved",
+          "kind": "function",
+          "text": "(id: string) => `${id}을(를) 고쳤습니다`",
+          "sourceHash": "0fb44e358e2ca89b98f0cfcf05110a5e2a927cbb1acbc0ed1e810f65612dca14"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.remove",
+          "kind": "text",
+          "text": "삭제",
+          "sourceHash": "6139b6c3ed73cd4aa3849fcf25698abce9b6d870ddb9fcb0565ad1372a97c06c"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.removed",
+          "kind": "function",
+          "text": "(id: string) => `${id}을(를) 삭제했습니다`",
+          "sourceHash": "ed8ebca90f6c7c99b6487923cb49436ce68aef95fda3f8fe9c48c32a7afba983"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.removeHint",
+          "kind": "text",
+          "text": "하위 노드나 배치된 Feature가 있으면 삭제할 수 없습니다",
+          "sourceHash": "04bf7c8151bfe0b4aa804dacdba1acd41c2968a15e0acae42eafbfca51a4fd0b"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.manage.platformOnly",
+          "kind": "text",
+          "text": "플랫폼 노드만 고치고 지울 수 있습니다",
+          "sourceHash": "e85985b5becb59daecb73fac36d18e3b044df01ed6bdd46ca32ecde4c68c7108"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.level",
+          "kind": "text",
+          "text": "분류 수준",
+          "sourceHash": "8072113c87c37546728f7c2b52097067505030188a647ac6deae28cb73c947e3"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.placement",
+          "kind": "text",
+          "text": "배치 노드",
+          "sourceHash": "e2442a42da348289d5f0f01df6d6e55e82ea5a4b0545692829338cab85194a5b"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.unplaced",
+          "kind": "text",
+          "text": "배치 전 — 아래에서 같은 수준의 노드를 고르세요",
+          "sourceHash": "07f8ced1a1a442c4672a3c21ff8f6cb112983d07e74b6dab421900e82643e131"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.path",
+          "kind": "text",
+          "text": "L0부터 배치 노드까지",
+          "sourceHash": "1fd56d80c611ea3515695294b113f44060e72dea8fb1da8458a848ec83a2a299"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.below",
+          "kind": "text",
+          "text": "배치 노드 아래 구성",
+          "sourceHash": "23f129fa5627fec697f13c7e1d05639f2620050ef38b8ce9bad910b3f50dccd6"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.belowNone",
+          "kind": "text",
+          "text": "배치 노드가 맨 아래 수준입니다",
+          "sourceHash": "731bf6c456041d616fbbe17155986d0818c73a1307c7ca1f4dd6bf4a87de5b77"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.place",
+          "kind": "text",
+          "text": "배치",
+          "sourceHash": "ce12d7f14ebfba7b1bbe898e9a0c406f84e479fc4c54c8cba1247b3c77bcb18f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.replace",
+          "kind": "text",
+          "text": "다른 노드로 옮기기",
+          "sourceHash": "fbcc5ccb5eddac1662744f05fdcbf0dc998b67f65fdc30dada6ae2da52ddb4f4"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.node",
+          "kind": "text",
+          "text": "노드",
+          "sourceHash": "504cab32698fe070430b4fbebfee466553ce23d3cf83458024f650cdf216b83f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.reason",
+          "kind": "text",
+          "text": "사유",
+          "sourceHash": "ab9442a23e772cce670320f5d60fb8e84f94b845c859d2f7691c7d052aeabb99"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.placed",
+          "kind": "function",
+          "text": "(id: string) => `${id}에 배치했습니다`",
+          "sourceHash": "973a23bd3febdff3c9a3b32f62f99157cc4bbb17fc54c1a026557de3d7ec8f7f"
+        },
+        {
+          "path": "taxonomy-levels.taxonomyCopy.feature.toTree",
+          "kind": "text",
+          "text": "분류 계층 전체 보기",
+          "sourceHash": "94b6d6d581cbb138b3e0c9ec487e69d4f634156db106b402cf8d340c3963f5a7"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.title",
+          "kind": "text",
+          "text": "적용 지역 코드",
+          "sourceHash": "5d30482d4226226b70508095a855c087f2fa6e4231c9373028f646a38c9fc425"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.lead",
+          "kind": "text",
+          "text": "컴플라이언스 룰과 브랜드별 정책에 쓰는 적용 지역 코드(1~9·A~D·G)와 시장·국가 대응입니다.",
+          "sourceHash": "28f186f2abd5d0ffc145999b23c531ddd90b53645a3327bdb22ac7cf0ddff539"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.col.code",
+          "kind": "text",
+          "text": "코드",
+          "sourceHash": "f3cd31eef45be9bc28cda4c4904680cb34aa2d3d67b22289719da28d1e260dd7"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.col.name",
+          "kind": "text",
+          "text": "지역",
+          "sourceHash": "770eb9e292c171999d24b8a26c73d63c7b1947558ff98c500a1f9069b83a5574"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.col.market",
+          "kind": "text",
+          "text": "시장",
+          "sourceHash": "b46fa208d9de21d2daf1d3d628ad78496cf201f655b89b8ab8612c28faf47c3b"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.col.countries",
+          "kind": "text",
+          "text": "국가",
+          "sourceHash": "10a6c77fd1f313a630c48e596795dc5f1a23fbcefdef7cfabfe701c1db536bf5"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.col.rules",
+          "kind": "text",
+          "text": "룰",
+          "sourceHash": "f98f2ca71cae323f7df59e32210280c0b40640eba2009057f33ea0e654a1d5ae"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.col.policies",
+          "kind": "text",
+          "text": "정책",
+          "sourceHash": "ff41d4a47c5fd63e9a962be1f79def83ac9d48eeae744cd43108b639f2e80f1a"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.general",
+          "kind": "text",
+          "text": "일반 사양(국가 미지정)",
+          "sourceHash": "042543d11ea2e0455a3b8809f9deca3d560a4a118ae667496a8a5e4dec3d152b"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.field",
+          "kind": "text",
+          "text": "적용 지역 코드",
+          "sourceHash": "5d30482d4226226b70508095a855c087f2fa6e4231c9373028f646a38c9fc425"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.fieldHint",
+          "kind": "text",
+          "text": "코드의 시장이 적용 지역(시장)에 들어 있어야 합니다",
+          "sourceHash": "56354a32ed8b1920a4ed7e0186880826f2d55e989629293a7149ca0b5852102b"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.candidates",
+          "kind": "text",
+          "text": "적용 대상 후보(Variant Rule)",
+          "sourceHash": "f6b5a3e4dc191258c4bd2ea33378497bd75c483f488abb7465ee857a5ab8f8af"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.candidatesLead",
+          "kind": "text",
+          "text": "고른 지역 코드의 국가를 조건으로 가진 Variant 조건과 상품 구성 규칙입니다.",
+          "sourceHash": "8d9822f622ba40ccdc267a486bb6c4988978b70737419609c2724e3789e3882b"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.variant",
+          "kind": "text",
+          "text": "Variant 조건",
+          "sourceHash": "874fe7b756a919616e2155c2484e2dde60195af348809b975ced34403530e2ca"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.composition",
+          "kind": "text",
+          "text": "상품 구성 규칙",
+          "sourceHash": "4195909e285738a8d0bd690bb71f0e478109e768126ccac1b49f18a2160b72e7"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.cCol.scope",
+          "kind": "text",
+          "text": "국가·차종·트림",
+          "sourceHash": "b62f0f670b8fb048e86202e73a1ba527f9ede466bb43027255d47db489783ce4"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.cCol.product",
+          "kind": "text",
+          "text": "상품",
+          "sourceHash": "cd75437c97e691144222c2271f5c7353a9bf641c62a61df9655f27bac3358fdc"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.cCol.type",
+          "kind": "text",
+          "text": "유형",
+          "sourceHash": "5cf2792b3fab357833fbe130aac4664a39e2eb340f49e0ec1d6938e6494f94dc"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.cCol.codes",
+          "kind": "text",
+          "text": "코드",
+          "sourceHash": "f3cd31eef45be9bc28cda4c4904680cb34aa2d3d67b22289719da28d1e260dd7"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.none",
+          "kind": "function",
+          "text": "(codes: string) => `지역 코드 ${codes}의 국가를 조건으로 쓰는 Feature·상품 0개 — 다른 코드를 골라 보세요`",
+          "sourceHash": "6299266b5da315a1e094cb3596b66f7406e00a1d280affb417b4c5a3b67d661a"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.general2",
+          "kind": "text",
+          "text": "일반(2)은 국가를 정하지 않아 후보를 고르지 않습니다",
+          "sourceHash": "bd49391840f33ec216a62f84fa32fffae8bc9ad2a10f5ec93f35c6b052367259"
+        },
+        {
+          "path": "taxonomy-levels.regionCopy.pickHint",
+          "kind": "text",
+          "text": "지역 코드를 고르면 후보를 보여 줍니다",
+          "sourceHash": "7d2d1ca297739fdd6e7daf4592ac871a940650e822cd35d84a8cc532a1fdf75a"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.title",
+          "kind": "text",
+          "text": "브랜드·권역별 정책",
+          "sourceHash": "e3cea7987577cf1368e754f997a0f55cb825a46b91374db064023397c2e48062"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.lead",
+          "kind": "text",
+          "text": "정책마다 브랜드(현대·기아·제네시스)·적용 지역 코드·법규 조건을 잇고, 조건으로 정책을 찾습니다.",
+          "sourceHash": "0064725ce03e45fbd1fbdb47dd07f0b2934fd1394b221e501fd48a69f607aa9a"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.key",
+          "kind": "function",
+          "text": "(n: number) => `브랜드 조건이 있는 정책 ${n}개`",
+          "sourceHash": "af0f43e7ddbc743e2d73366f37247079621990ae79c631f9629cab440427d8e4"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.back",
+          "kind": "text",
+          "text": "Feature Flag 정책으로",
+          "sourceHash": "8f3aa6a2c3a840a0037a34182a3dd65f2dfad4f9f3e182c9cd254ea0462eb8ab"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.brand",
+          "kind": "text",
+          "text": "브랜드",
+          "sourceHash": "559380a1cea8a17ccb0a314be278474f9a53b2218818407f6ef84391545e63ff"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.all",
+          "kind": "text",
+          "text": "전체",
+          "sourceHash": "a4b69faf0c1113faf1f7cf9d9a6224cf3b62a16c6e841a22882adafcced64db9"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.regionCode",
+          "kind": "text",
+          "text": "적용 지역 코드",
+          "sourceHash": "5d30482d4226226b70508095a855c087f2fa6e4231c9373028f646a38c9fc425"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.rule",
+          "kind": "text",
+          "text": "법규 조건(룰)",
+          "sourceHash": "ce76bb2dcd979baf3a0ac255d888bf41d6848bde6dcc126468d1927728fcff25"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.col.policy",
+          "kind": "text",
+          "text": "정책",
+          "sourceHash": "ff41d4a47c5fd63e9a962be1f79def83ac9d48eeae744cd43108b639f2e80f1a"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.col.brands",
+          "kind": "text",
+          "text": "브랜드",
+          "sourceHash": "559380a1cea8a17ccb0a314be278474f9a53b2218818407f6ef84391545e63ff"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.col.codes",
+          "kind": "text",
+          "text": "지역 코드",
+          "sourceHash": "a79d6ffe696182bf323b8d5aabad5cabed13f92dd07d58821eaf4cdcaadaf912"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.col.rules",
+          "kind": "text",
+          "text": "법규 조건",
+          "sourceHash": "0fd149264d1d0ae513f17438b0ed83b0df06959bf57583eb7a26a6743bcf078f"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.col.rev",
+          "kind": "text",
+          "text": "판",
+          "sourceHash": "65c6ecdc92b8ebd7754e9b21e1b4befe58597406cef9c43333227f449a72e339"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.col.by",
+          "kind": "text",
+          "text": "수정",
+          "sourceHash": "3537f0cc3ec9fa10bc0d21c80b1a61ea361e337f84f41cfac7749d691668441d"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.emptyFilter",
+          "kind": "text",
+          "text": "이 조건에 맞는 정책 0개 — 조건을 넓혀 보세요",
+          "sourceHash": "649329bbd3e207d2f954bf003e662a6edec86ce27e2b91c8db1cd6bd523e9585"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.title",
+          "kind": "text",
+          "text": "조건 등록·수정",
+          "sourceHash": "22db5d0e142ff375aaced4eb1a238645b62770159cd88946fb5fcdffa398df22"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.policy",
+          "kind": "text",
+          "text": "정책 ID",
+          "sourceHash": "8b863d61f9c8a0550334f66fcf6a7d96a032499918ca33c8da622540d76e40b0"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.load",
+          "kind": "text",
+          "text": "불러오기",
+          "sourceHash": "898b71a2e088148acc69951b61a067117bec89ef6ba4fa3bb4c081c6fdacd83d"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.brands",
+          "kind": "text",
+          "text": "브랜드",
+          "sourceHash": "559380a1cea8a17ccb0a314be278474f9a53b2218818407f6ef84391545e63ff"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.codes",
+          "kind": "text",
+          "text": "적용 지역 코드",
+          "sourceHash": "5d30482d4226226b70508095a855c087f2fa6e4231c9373028f646a38c9fc425"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.rules",
+          "kind": "text",
+          "text": "법규 조건(룰 ID, 쉼표로)",
+          "sourceHash": "34f884a40361c16446e537ab2a940b3069762f18e09041836ee4976714438727"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.reason",
+          "kind": "text",
+          "text": "사유",
+          "sourceHash": "ab9442a23e772cce670320f5d60fb8e84f94b845c859d2f7691c7d052aeabb99"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.create",
+          "kind": "text",
+          "text": "등록",
+          "sourceHash": "bb216f104fde8df481e96264cbba034455a9249a78e9ec91e27dfd701b579d44"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.update",
+          "kind": "text",
+          "text": "수정",
+          "sourceHash": "3537f0cc3ec9fa10bc0d21c80b1a61ea361e337f84f41cfac7749d691668441d"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.created",
+          "kind": "function",
+          "text": "(id: string) => `${id} 조건을 등록했습니다`",
+          "sourceHash": "748178219aae81f19570660479ff63d831def180f50188f8bb66f1a06b6eefd5"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.updated",
+          "kind": "function",
+          "text": "(id: string, rev: number) => `${id} 조건을 고쳤습니다(${rev}판)`",
+          "sourceHash": "dd9f39f9fd3b3adc6b5a8b539812c4cd04f345885b25b172d7ce8c45ca586c81"
+        },
+        {
+          "path": "taxonomy-levels.brandCopy.form.ownerOnly",
+          "kind": "function",
+          "text": "(owner: string) => `수정은 Feature Owner(${owner}) 또는 시스템 관리자만 할 수 있습니다`",
+          "sourceHash": "06603a8ee927c41f52dc59d987a4278fc47a9c07a2ab998859830d66b9e9fadf"
+        }
+      ],
+      "connectedExports": [
+        "taxonomyCopy",
+        "regionCopy",
+        "brandCopy"
       ]
     },
     {

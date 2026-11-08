@@ -3,6 +3,7 @@ import { D01PolicyModule } from './domains/d01-policy/d01-policy.module';
 import { FlagCodeModule } from './domains/d01-policy/flag-code/flag-code.module';
 import { PolicyModule } from './domains/d01-policy/policy-store/policy.module';
 import { RefdbModule } from './domains/d01-policy/refdb/refdb.module';
+import { TaxonomyModule } from './domains/d01-policy/taxonomy/taxonomy.module';
 import { CostModule } from './domains/d07-cost/estimation/cost.module';
 import { D04OpsModule } from './domains/d04-ops/d04-ops.module';
 import { D05ExtModule } from './domains/d05-ext/d05-ext.module';
@@ -29,7 +30,7 @@ import { ExtGatewayModule } from './domains/ext-gateway.module';
 
 // 도메인 모듈(d01-policy … d06-qsec)은 단계별로 추가한다 — PROGRESS.md 참고.
 @Module({
-  imports: [KernelModule, D01PolicyModule, FlagCodeModule, RefdbModule, CostModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, LakeLoopModule, D04OpsModule, D05ExtModule, ExtModule, ExtSyncModule, ProcedureModule, DashboardModule, ConsultModule, UnleashLiveModule, AdsConfigModule, AdsEvidenceModule, AdsStateModule, AdsChangeModule, ExtGatewayModule, AdsP5Module],
+  imports: [KernelModule, D01PolicyModule, FlagCodeModule, RefdbModule, CostModule, D06QsecModule, PolicyModule, DeliveryModule, OpsLoopModule, LakeLoopModule, D04OpsModule, D05ExtModule, ExtModule, ExtSyncModule, ProcedureModule, DashboardModule, ConsultModule, UnleashLiveModule, AdsConfigModule, AdsEvidenceModule, AdsStateModule, AdsChangeModule, ExtGatewayModule, AdsP5Module, TaxonomyModule],
   // 데모 활동 시드 — 루트 공급자라 도메인 모듈의 부팅 훅 뒤에 돈다(demo-activity.seeder.ts)
   providers: [DemoActivitySeeder, ShowcaseScenariosSeeder, ShowcaseFillSeeder],
 })

@@ -1,6 +1,10 @@
 // P10 Lifecycle·Gate·즉시 폐기·Baseline 보강 — Gate 4상태·Go/No-Go·자동 검사·N/A 승인, 정의 승인 반려·검증 재작업 기록,
 // 즉시 폐기(요청자 ≠ 승인자, Retired 관문), Feature 변경 이력·Baseline 조회·비교·ChangeSet, 출시 후보 통합 스냅샷.
 import { INestApplication } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { ensureShowcaseSupplierEvidence } from '../../src/demo-activity/showcase-supplier';
+import { FeatureRepo } from '../../src/domains/d01-policy/repos';
+import { DB, type Db } from '../../src/kernel/db';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { actor, bootApp, confirmSafety, withRef } from '../helpers';
 
@@ -191,9 +195,11 @@ describe('P10 Lifecycle·Gate 보강', () => {
       expect((await http().get(`${base}/release-candidate`).expect(200)).body.snapshot).toBeNull();
       await http().get('/api/features/FEAT-99999/versions/1.0.0/release-candidate').expect(404);
       await confirmSafety(http, 'FEAT-00001', '2.1.0');
+      ensureShowcaseSupplierEvidence(app.get<Db>(DB), app.get(ModuleRef), app.get(FeatureRepo).get('FEAT-00001', '2.1.0')!, {id:'usr-integrator',role:'IMPLEMENTER',correlationId:'test:release-candidate'}, {id:'choi.judge',role:'GATE_JUDGE',correlationId:'test:release-candidate'});
       for (const g of ['G8', 'G9']) await judge('FEAT-00001', '2.1.0', g).expect(201);
       await http().post(`${base}/release-signoff`).set(OWNER).send({ reason: '출시 책임 확인 — 통합 스냅샷 시험' }).expect(201);
-      await http().post(`${base}/transitions`).set(RELEASE).send({ to: 'RELEASED', reason: '출시' }).expect(200);
+      const released = await http().post(`${base}/transitions`).set(RELEASE).send({ to: 'RELEASED', reason: '출시' });
+      expect(released.status, released.text).toBe(200);
       const rc = (await http().get(`${base}/release-candidate`).expect(200)).body;
       expect(rc.verified).toBe(true);
       expect(rc.snapshot).toMatchObject({ rcbId: expect.stringMatching(/^RCB-\d{5}$/), featureId: 'FEAT-00001', version: '2.1.0', contentHash: expect.stringMatching(/^sha256:[0-9a-f]{64}$/), createdBy: 'usr-coordinator' });

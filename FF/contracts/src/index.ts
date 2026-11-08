@@ -29,3 +29,9 @@ export * from './schemas/supplier';
 // 기존 core.CheckResult와 이름을 구분한다. 협력사 전용 판정은 SupplierCheckResult로 공개한다.
 export { SUPPLIER_ARTIFACT_LABEL, SUPPLIER_CRITERION_LABEL, REQUIRED_SUPPLIER_ARTIFACTS, CHECKSUM_FORMAT, SCOPE_RELATION_LABEL, CONTRACT_GAP_LABEL, latestArtifacts, missingArtifacts, packagingQuality, evaluateCriterion, acceptanceCheck, semverGreater, supplierOfSw, supplierScope, evidenceStatus, contractGaps, supplierContactsFor } from './rules/supplier';
 export type { SupplierSwc, SupplierMappingRow, ArtifactIntegrity, SupplierArtifactRow, SupplierPackageRow, SupplierCriteriaRow, SupplierReviewRow, SupplierContact, SupplierDirectoryEntry, CheckResult as SupplierCheckResult, QualityCheck, FeatureScopeInput, CriterionResult, AcceptanceVerdict, AcceptanceCheck, ScopeRelation, EvidenceStatus, ContractGapKind, ScopeSw, SupplierScopeEntry, ContractGapRow } from './rules/supplier';
+// 분류 계층 L0~L5·적용 지역 코드·브랜드(TX, B7 (b)) — 화면은 파일에서 직접 읽는다
+export * from './schemas/taxonomy-tree';
+export * from './rules/taxonomy-tree';
+export * from './rules/region-code';
+export * from './schemas/global-scope';
+export * from './rules/global-scope';

@@ -5,6 +5,7 @@ import { Asil, CatalogType, ControlPointType, GateId, GateResult, Lifecycle, Rel
 import { AsilDeviation, FeatureRefLinkInputs } from './refdb';
 import { FeatureVariability } from './ple';
 import { IssueItem } from '../rules/feature-retire';
+import { TaxonomyLevelCode } from './taxonomy-level';
 
 const reason = z.string().trim().min(2, '사유를 2자 이상 입력하세요.').max(500);
 
@@ -32,6 +33,8 @@ export const CreateFeatureBody = z.object({
   duplicateReason: z.string().trim().min(2).max(500).optional(),
   /** 26580 변이 프로필(20-60 §5.2) — 없으면 서버가 대표 기준 행에서 제안한 값을 남긴다 */
   variability: FeatureVariability.optional(),
+  /** 분류 수준 L0~L5(FR-REG-001-001·008, 30-70 §1) — 등록 화면은 필수 선택(기본 L2), 빠지면 서버가 Feature Master 기준 수준 L2로 저장 */
+  taxonomyLevel: TaxonomyLevelCode.optional(),
 });
 export type CreateFeatureBody = z.infer<typeof CreateFeatureBody>;
 

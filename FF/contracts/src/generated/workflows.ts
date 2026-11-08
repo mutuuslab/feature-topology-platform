@@ -952,6 +952,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.14-A06",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.15-A01",
      "process": "FPW.15",
      "part": "C",
@@ -1028,6 +1037,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/arch/topology",
      "/features/catalogue",
@@ -1058,6 +1068,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/flag-code",
      "/flag-code/flags/:flagKey",
      "/validations/virtual",
@@ -1590,6 +1601,16 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.14-A06",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.15-A03",
      "process": "FPW.15",
      "part": "C",
@@ -1637,6 +1658,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/policies/:id",
      "/flag-code",
      "/flag-code/flags/:flagKey",
@@ -1655,6 +1677,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/arch/topology",
      "/features/catalogue",
@@ -2601,6 +2624,17 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.14-A06",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.17-A01",
      "process": "FPW.17",
      "part": "R",
@@ -2648,6 +2682,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/master/reference-values"
     ],
     "reference": [
@@ -2661,6 +2696,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/master/feature-db/:refId",
      "/master/taxonomy",
      "/master/upg",
@@ -3393,6 +3429,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/features/catalogue",
      "/trace/design",
@@ -6978,7 +7015,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
       "등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
       "2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다",
-      "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다",
+      "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다. 등록 뒤 같은 분류 수준의 노드에 배치해 경로를 남기며 발행 원본 분류는 직접 수정하지 않는다",
       "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
       "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
      ],
@@ -6991,13 +7028,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "actions": [
        "createFeature",
        "createVersion",
-       "updateDraft"
+       "updateDraft",
+       "placeFeatureTaxonomy"
       ],
       "screens": [
        "/master/define",
        "/feature/propose",
        "/features",
-       "/master/feature-db"
+       "/master/feature-db",
+       "/master/taxonomy/levels"
       ],
       "gates": [],
       "anchor": "feature-form",
@@ -10697,6 +10736,7 @@ export const WORKFLOWS: WorkflowDoc = {
      ],
      "steps": [
       "대상 규칙·Variant 조건·기본값을 정책으로 작성한다",
+      "정책에 브랜드·적용 지역 코드·법규 룰의 조회 조건을 연결하고 Feature Owner가 변경 근거와 개정 이력을 확인한다. 이 메타데이터 연결 자체를 배포 승인이나 차량 적용으로 보지 않는다",
       "분야별 검증 8종을 실행해 배포 안전성 판정을 받는다",
       "수정하면 새 개정본이 되므로 다시 검증한다"
      ],
@@ -10707,12 +10747,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "actions": [
        "createPolicy",
        "updatePolicy",
-       "validatePolicy"
+       "validatePolicy",
+       "createPolicyGlobalScope",
+       "updatePolicyGlobalScope"
       ],
       "screens": [
        "/policies/new",
        "/policies",
-       "/config/odd"
+       "/config/odd",
+       "/policies/global-scope"
       ],
       "gates": [],
       "anchor": null,
@@ -25897,6 +25940,10 @@ export const WORKFLOWS: WorkflowDoc = {
     {
      "id": "O5",
      "text": "출처마다 다음 점검일이 관리되고 기한이 지난 출처가 점검된다."
+    },
+    {
+     "id": "O6",
+     "text": "플랫폼 분류 노드의 수준·상위·Feature 배치와 변경 이력이 발행 원본과 구분되어 보존된다."
     }
    ],
    "basePractices": [
@@ -25999,6 +26046,26 @@ export const WORKFLOWS: WorkflowDoc = {
        ]
       }
      ]
+    },
+    {
+     "id": "FPW.14.BP6",
+     "name": "플랫폼 분류 계층 관리",
+     "definition": "발행 원본과 플랫폼 확장 분류를 구분하여 수준·상위·배치 정합성을 유지한다. 노드 변경 근거와 삭제 묘비를 보존하고 Feature 등록 담당자가 같은 경로를 참조하도록 인계한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.14-A06"
+     ],
+     "outcomes": [
+      "O6"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-PLATFORM-TAXONOMY",
+       "outcomes": [
+        "O6"
+       ]
+      }
+     ]
     }
    ],
    "rules": [],
@@ -26072,6 +26139,18 @@ export const WORKFLOWS: WorkflowDoc = {
       "다음 점검일이 지난 출처와 점검 결과(변경 없음·개정 있음)",
       "개정이 있는 출처에서 나온 후속 변경 요청 대상 행",
       "출처별 새 다음 점검일"
+     ]
+    },
+    {
+     "key": "WP-PLATFORM-TAXONOMY",
+     "name": "플랫폼 분류 계층 기록",
+     "en": "Platform Taxonomy Record",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "노드 ID·명칭·L0~L5 수준·한 단계 위 상위 노드와 참조한 Feature DB 발행판",
+      "등록·명칭 수정·삭제 사유와 담당자·시각, 삭제 ID 묘비와 재사용 금지 결과",
+      "하위 노드·배치 Feature 점검 및 Feature별 분류 경로, 원본 발행 분류와의 경계"
      ]
     }
    ],
@@ -26366,11 +26445,70 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": []
+    },
+    {
+     "id": "FPW.14-A06",
+     "name": "플랫폼 분류 계층 관리",
+     "trigger": "Feature DB 발행 또는 플랫폼 분류 확장·수정 요청",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O6"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-RDA"
+      ],
+      "A": "R-RDA",
+      "C": [
+       "R-FO",
+       "R-ARC",
+       "R-PLM"
+      ],
+      "I": [
+       "R-DRV"
+      ]
+     },
+     "inputs": [
+      "WP-REFDB-RELEASE"
+     ],
+     "outputs": [
+      "WP-PLATFORM-TAXONOMY"
+     ],
+     "steps": [
+      "발행 원본의 도메인·클러스터·컴포넌트를 조회하고 필요한 플랫폼 노드의 수준과 상위를 확인한다",
+      "플랫폼 노드를 등록하거나 명칭·설명을 수정한다. 상위는 정확히 한 단계 위여야 한다",
+      "삭제 전 하위 노드와 배치 Feature가 없는지 확인하고 삭제 사유와 재사용 금지 묘비를 보존한다",
+      "Feature 등록 담당자에게 같은 수준의 배치 후보와 L0부터의 경로를 인계한다"
+     ],
+     "checks": [
+      "발행 원본 분류는 직접 수정하지 않았고 원본 변경은 Feature DB 변경 요청으로 처리했다",
+      "노드 ID 재사용·잘못된 상위·하위 또는 배치가 있는 노드 삭제가 거부된다"
+     ],
+     "platform": {
+      "actions": [
+       "createTaxonomyNode",
+       "updateTaxonomyNode",
+       "deleteTaxonomyNode"
+      ],
+      "screens": [
+       "/master/taxonomy/levels"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
     }
    ],
    "layout": {
     "width": 1366,
-    "height": 294,
+    "height": 384,
     "lanes": [
      {
       "role": "R-FO",
@@ -26394,7 +26532,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 196,
       "w": 1366,
-      "h": 98
+      "h": 188
      }
     ],
     "nodes": [
@@ -26444,6 +26582,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.14-A06",
+      "kind": "action",
+      "label": "플랫폼 분류 계층 관리",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.14-S1",
       "kind": "start",
       "label": "시작",
@@ -26462,6 +26609,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.14-S3",
+      "kind": "start",
+      "label": "Feature DB 발행 또는 플랫폼 분류 확장·수정 요청",
+      "x": 146,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.14-E1",
       "kind": "end",
       "label": "종료",
@@ -26476,6 +26632,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 326,
       "w": 18,
       "h": 18
      }
@@ -26508,6 +26673,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         198,
         245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-S3",
+      "to": "FPW.14-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        335
+       ],
+       [
+        198,
+        335
        ]
       ]
      },
@@ -26601,13 +26781,28 @@ export const WORKFLOWS: WorkflowDoc = {
         245
        ]
       ]
+     },
+     {
+      "from": "FPW.14-A06",
+      "to": "FPW.14-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        335
+       ],
+       [
+        400,
+        335
+       ]
+      ]
      }
     ],
     "joins": []
    },
    "departmentLayout": {
     "width": 1366,
-    "height": 294,
+    "height": 384,
     "lanes": [
      {
       "department": "DEP-PDP",
@@ -26631,7 +26826,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 196,
       "w": 1366,
-      "h": 98
+      "h": 188
      }
     ],
     "nodes": [
@@ -26681,6 +26876,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.14-A06",
+      "kind": "action",
+      "label": "플랫폼 분류 계층 관리",
+      "x": 198,
+      "y": 302,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.14-S1",
       "kind": "start",
       "label": "시작",
@@ -26699,6 +26903,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.14-S3",
+      "kind": "start",
+      "label": "Feature DB 발행 또는 플랫폼 분류 확장·수정 요청",
+      "x": 146,
+      "y": 326,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.14-E1",
       "kind": "end",
       "label": "종료",
@@ -26713,6 +26926,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 236,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.14-E3",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 326,
       "w": 18,
       "h": 18
      }
@@ -26745,6 +26967,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         198,
         245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-S3",
+      "to": "FPW.14-A06",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        335
+       ],
+       [
+        198,
+        335
        ]
       ]
      },
@@ -26836,6 +27073,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         245
+       ]
+      ]
+     },
+     {
+      "from": "FPW.14-A06",
+      "to": "FPW.14-E3",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        335
+       ],
+       [
+        400,
+        335
        ]
       ]
      }

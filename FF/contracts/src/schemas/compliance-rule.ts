@@ -6,6 +6,7 @@ import { Asil, GATES } from '../enums';
 import { CALS } from '../rules/gate-evidence';
 import { MARKETS } from './wire';
 import type { AccountState, OwnerTransfer } from '../rules/owner-authz';
+import { regionCodeIssues } from '../rules/region-code';
 
 export const COMPLIANCE_RULE_TYPES = ['LEGAL', 'PRIVACY', 'SAFETY', 'SECURITY'] as const;
 export type ComplianceRuleType = (typeof COMPLIANCE_RULE_TYPES)[number];
@@ -75,6 +76,8 @@ export const ComplianceScope = z
     rolloutModes: z.array(z.enum(COMPLIANCE_ROLLOUT_MODES)).max(3).default([]),
     asil: z.array(Asil).max(5).default([]),
     cal: z.array(z.enum(CALS)).max(4).default([]),
+    /** 적용 지역 코드(1~9·A~D·G, rules/region-code.ts) — 선택. 코드의 시장은 markets에 있어야 한다(FR-CRC-001-002) */
+    regionCodes: z.array(z.string().trim().max(2)).max(14).default([]),
   })
   .strict();
 export type ComplianceScope = z.infer<typeof ComplianceScope>;
@@ -93,6 +96,10 @@ const fields = {
 const datesOk = (v: { validFrom?: string; validTo?: string | null }, ctx: z.RefinementCtx) => {
   if (v.validFrom && v.validTo && v.validTo < v.validFrom) ctx.addIssue({ code: 'custom', message: '유효 종료일은 유효 시작일보다 빠를 수 없습니다.', path: ['validTo'] });
 };
+/** 적용 지역 코드 — 체계 밖·중복·시장 불일치면 사유와 함께 거부 @req FR-CRC-001-002 */
+const regionOk = (v: { scope?: { markets: string[]; regionCodes?: string[] } }, ctx: z.RefinementCtx) => {
+  for (const message of v.scope ? regionCodeIssues(v.scope.regionCodes ?? [], v.scope.markets) : []) ctx.addIssue({ code: 'custom', message, path: ['scope', 'regionCodes'] });
+};
 
 /**
  * 등록 — 룰 ID는 등록한 뒤 바꾸지 않는다. 필수 정보·근거(URL·문서명·조항·메모)·유효 기간(종료일 없음 = 무기한, 종료일 ≥ 시작일)
@@ -101,7 +108,10 @@ const datesOk = (v: { validFrom?: string; validTo?: string | null }, ctx: z.Refi
 export const CreateComplianceRuleBody = z
   .object({ ruleId: ComplianceRuleId, ...fields, reason: z.string().trim().min(2).max(500).optional() })
   .strict()
-  .superRefine(datesOk);
+  .superRefine((v, ctx) => {
+    datesOk(v, ctx);
+    regionOk(v, ctx);
+  });
 export type CreateComplianceRuleBody = z.infer<typeof CreateComplianceRuleBody>;
 
 /** 수정 — 바꿀 항목만, 사유는 필수. 승인된 룰을 고치면 다시 제안 상태(FR-CRC-001-021) */
@@ -121,6 +131,7 @@ export const UpdateComplianceRuleBody = z
   .superRefine((v, ctx) => {
     if (!Object.keys(v).some((k) => k !== 'reason')) ctx.addIssue({ code: 'custom', message: '바꿀 항목을 하나 이상 넣으세요.', path: [] });
     datesOk(v, ctx);
+    regionOk(v, ctx);
   });
 export type UpdateComplianceRuleBody = z.infer<typeof UpdateComplianceRuleBody>;
 

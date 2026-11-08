@@ -40,11 +40,11 @@ last_updated: 2026-11-08
 - 프로세스: FPW.1 Feature 등록·분류
 - 시작: 앞 활동 완료
 - 입력: WP-REFDB-RELEASE, WP-FEAT-PROPOSAL → 출력: WP-FEAT-REG, WP-REF-LINK
-- 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`
+- 플랫폼: `createFeature`, `createVersion`, `updateDraft`, `placeFeatureTaxonomy`, `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/master/taxonomy/levels`
 1. 제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다
 2. 등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다
 3. 2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다
-4. 관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다
+4. 관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다. 등록 뒤 같은 분류 수준의 노드에 배치해 경로를 남기며 발행 원본 분류는 직접 수정하지 않는다
 5. Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다
 6. 아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다
 - [ ] Registry에 PROPOSED Version이 생기고 소유자가 지정되었다
@@ -243,6 +243,7 @@ last_updated: 2026-11-08
 - FPW.14-A03 변경 승인·반려 (통보)
 - FPW.14-A04 Feature DB 버전 발행 (통보)
 - FPW.14-A05 출처 정기 점검 (통보)
+- FPW.14-A06 플랫폼 분류 계층 관리 (협의)
 - FPW.15-A01 산정 범위 설정 (협의)
 - FPW.17-A01 차량·시장 기준 관리 (협의)
 - FPW.17-A02 구조·공유 자산 검토 (통보)

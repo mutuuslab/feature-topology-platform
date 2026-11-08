@@ -32,11 +32,13 @@ flowchart LR
     FPW_14_A03["A03 변경 승인·반려"]
     FPW_14_A04["A04 Feature DB 버전 발행"]
     FPW_14_A05["A05 출처 정기 점검"]
+    FPW_14_A06["A06 플랫폼 분류 계층 관리"]
   end
   FPW_14_A01 --> FPW_14_A02
   FPW_14_A02 --> FPW_14_A03
   FPW_14_A03 --> FPW_14_A04
   T_FPW_14_A05(("출처의 다음 점검일 도래(Feature DB 화면 알림)")) -.-> FPW_14_A05
+  T_FPW_14_A06(("Feature DB 발행 또는 플랫폼 분류 확장·수정 요청")) -.-> FPW_14_A06
 ```
 
 ## 2. 활동
@@ -48,6 +50,7 @@ flowchart LR
 | FPW.14-A03 | 변경 승인·반려 | R Feature DB 관리자 · A Feature DB 관리자 · C 도메인 검토자 · I Feature Owner | WP-REF-CHANGE-REQ, WP-REF-ADD-REQ, WP-REF-REVIEW | WP-REF-DECISION | `decideRefChange`, `/master/feature-db/changes/:id`, `/master/feature-db/changes` | – |
 | FPW.14-A04 | Feature DB 버전 발행 | R Feature DB 관리자 · A Feature DB 관리자 · I Feature Owner, 도메인 검토자, 기준정보 담당 | WP-REF-DECISION | WP-REFDB-RELEASE | `publishRefRelease`, `/master/feature-db/changes` | – |
 | FPW.14-A05 | 출처 정기 점검 | R Feature DB 관리자 · A Feature DB 관리자 · C 법규 담당, 도메인 검토자 · I Feature Owner | WP-REFDB-RELEASE | WP-REF-SOURCE-REVIEW | `recordSourceReview`, `/master/feature-db` | – |
+| FPW.14-A06 | 플랫폼 분류 계층 관리 | R Feature DB 관리자 · A Feature DB 관리자 · C Feature Owner, 아키텍트, 기준정보 담당 · I 도메인 검토자 | WP-REFDB-RELEASE | WP-PLATFORM-TAXONOMY | `createTaxonomyNode`, `updateTaxonomyNode`, `deleteTaxonomyNode`, `/master/taxonomy/levels` | – |
 
 ### 수행 절차와 완료 기준
 
@@ -104,6 +107,17 @@ flowchart LR
 완료 기준:
 - [ ] 기한이 지난 출처마다 점검 결과와 새 다음 점검일이 있다
 
+#### FPW.14-A06 플랫폼 분류 계층 관리
+- 트리거: Feature DB 발행 또는 플랫폼 분류 확장·수정 요청
+1. 발행 원본의 도메인·클러스터·컴포넌트를 조회하고 필요한 플랫폼 노드의 수준과 상위를 확인한다
+2. 플랫폼 노드를 등록하거나 명칭·설명을 수정한다. 상위는 정확히 한 단계 위여야 한다
+3. 삭제 전 하위 노드와 배치 Feature가 없는지 확인하고 삭제 사유와 재사용 금지 묘비를 보존한다
+4. Feature 등록 담당자에게 같은 수준의 배치 후보와 L0부터의 경로를 인계한다
+
+완료 기준:
+- [ ] 발행 원본 분류는 직접 수정하지 않았고 원본 변경은 Feature DB 변경 요청으로 처리했다
+- [ ] 노드 ID 재사용·잘못된 상위·하위 또는 배치가 있는 노드 삭제가 거부된다
+
 ## 3. 산출물
 
 | 키 | 이름 | 종류 | 주요 내용 |
@@ -113,6 +127,7 @@ flowchart LR
 | WP-REF-DECISION | 변경 승인·반려 기록 | 산출 | 승인·반려 판정과 사유, 판정자와 시각; 승인된 필드 차이의 적용 결과(발행 대기 표시); 반려된 추가 요청의 요청 중 행(발행 때 폐기·알림 대상) |
 | WP-REFDB-RELEASE | Feature DB 발행본 | 산출 | 발행 번호(v1.4 등)와 묶인 승인 요청 목록; 요청 중 행의 확정 상태(활성·검토 필요, 반려된 추가 요청은 폐기와 사유)와 알림 받은 Feature Owner; 전체 기준 행 정규화 해시와 상태별 행 수; 품질 지표(출처 없는 행·근거 확인 12개월 경과 행·규모 근거 D 비중·발행 대기 요청 수); 분류 체계(도메인·클러스터·컴포넌트)와 출처 목록 |
 | WP-REF-SOURCE-REVIEW | 출처 정기 점검 기록 | 산출 | 다음 점검일이 지난 출처와 점검 결과(변경 없음·개정 있음); 개정이 있는 출처에서 나온 후속 변경 요청 대상 행; 출처별 새 다음 점검일 |
+| WP-PLATFORM-TAXONOMY | 플랫폼 분류 계층 기록 | 산출 | 노드 ID·명칭·L0~L5 수준·한 단계 위 상위 노드와 참조한 Feature DB 발행판; 등록·명칭 수정·삭제 사유와 담당자·시각, 삭제 ID 묘비와 재사용 금지 결과; 하위 노드·배치 Feature 점검 및 Feature별 분류 경로, 원본 발행 분류와의 경계 |
 
 ## 4. 진입·완료 기준
 
@@ -132,6 +147,7 @@ flowchart LR
 - O3 요청자·검토자와 다른 사람이 근거를 남기고 변경을 승인·반려한다.
 - O4 승인된 변경이 정규화 해시가 기록된 발행 버전으로 묶여 등록 화면에 반영되고
 - O5 출처마다 다음 점검일이 관리되고 기한이 지난 출처가 점검된다.
+- O6 플랫폼 분류 노드의 수준·상위·Feature 배치와 변경 이력이 발행 원본과 구분되어 보존된다.
 
 ## 6. 업무 수행 정의(Base Practices)
 
@@ -172,24 +188,33 @@ flowchart LR
 - 기여 성과: O5
 - 연결 활동: FPW.14-A05
 
+### FPW.14.BP6 플랫폼 분류 계층 관리
+
+발행 원본과 플랫폼 확장 분류를 구분하여 수준·상위·배치 정합성을 유지한다. 노드 변경 근거와 삭제 묘비를 보존하고 Feature 등록 담당자가 같은 경로를 참조하도록 인계한다.
+
+- 기여 성과: O6
+- 연결 활동: FPW.14-A06
+
 ### BP × 성과
 
-| BP | O1 | O2 | O3 | O4 | O5 |
-|---|---|---|---|---|---|
-| FPW.14.BP1 | ● | – | – | – | – |
-| FPW.14.BP2 | – | ● | – | – | – |
-| FPW.14.BP3 | – | – | ● | – | – |
-| FPW.14.BP4 | – | – | – | ● | – |
-| FPW.14.BP5 | – | – | – | – | ● |
+| BP | O1 | O2 | O3 | O4 | O5 | O6 |
+|---|---|---|---|---|---|---|
+| FPW.14.BP1 | ● | – | – | – | – | – |
+| FPW.14.BP2 | – | ● | – | – | – | – |
+| FPW.14.BP3 | – | – | ● | – | – | – |
+| FPW.14.BP4 | – | – | – | ● | – | – |
+| FPW.14.BP5 | – | – | – | – | ● | – |
+| FPW.14.BP6 | – | – | – | – | – | ● |
 
 ### 출력 근거 × 성과
 
 모델에 명시한 연결만 표시한다. 연결 존재는 실제 산출물 확보나 승인 완료의 증거가 아니다.
 
-| 산출물 | O1 | O2 | O3 | O4 | O5 | 근거 BP |
-|---|---|---|---|---|---|---|
-| WP-REF-CHANGE-REQ | ● | – | – | – | – | FPW.14.BP1 |
-| WP-REF-REVIEW | – | ● | – | – | – | FPW.14.BP2 |
-| WP-REF-DECISION | – | – | ● | – | – | FPW.14.BP3 |
-| WP-REFDB-RELEASE | – | – | – | ● | – | FPW.14.BP4 |
-| WP-REF-SOURCE-REVIEW | – | – | – | – | ● | FPW.14.BP5 |
+| 산출물 | O1 | O2 | O3 | O4 | O5 | O6 | 근거 BP |
+|---|---|---|---|---|---|---|---|
+| WP-REF-CHANGE-REQ | ● | – | – | – | – | – | FPW.14.BP1 |
+| WP-REF-REVIEW | – | ● | – | – | – | – | FPW.14.BP2 |
+| WP-REF-DECISION | – | – | ● | – | – | – | FPW.14.BP3 |
+| WP-REFDB-RELEASE | – | – | – | ● | – | – | FPW.14.BP4 |
+| WP-REF-SOURCE-REVIEW | – | – | – | – | ● | – | FPW.14.BP5 |
+| WP-PLATFORM-TAXONOMY | – | – | – | – | – | ● | FPW.14.BP6 |

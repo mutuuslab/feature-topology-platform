@@ -63,10 +63,10 @@ last_updated: 2026-11-08
 
 | 부서 | FPW.1 | FPW.2 | FPW.3 | FPW.4 | FPW.5 | FPW.6 | FPW.7 | FPW.8 | FPW.9 | FPW.10* | FPW.11* | FPW.12* | FPW.13* | FPW.14* | FPW.15* | FPW.16* | FPW.17* | FPW.18* |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C2 I1 | I4 | R1 A1 I3 | R5 A6 C7 I8 | C1 I7 | R2 A3 C2 I2 | – | – | – | I2 | R1 A1 I4 | C1 | – | C1 I1 | R3 A3 C2 I3 |
-| 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C4 I2 | R3 A5 C2 I4 | C2 I1 | C1 I1 | R1 A1 | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C3 I2 | C1 | – | R1 A1 C2 | – |
+| 상품기획팀 | R2 A3 C2 I1 | C4 I1 | R1 C2 I2 | R1 A1 C2 I1 | I4 | R1 A1 I3 | R5 A6 C7 I8 | C1 I7 | R2 A3 C2 I2 | – | – | – | I2 | R1 A1 C1 I4 | C1 | – | C1 I1 | R3 A3 C2 I3 |
+| 시스템엔지니어링팀 | C4 I2 | R1 C3 I5 | R3 A4 C4 I2 | R3 A5 C2 I4 | C2 I1 | C1 I1 | R1 A1 | – | R1 A1 I1 | C1 | – | C1 | – | R1 A1 C4 I3 | C1 | – | R1 A1 C2 | – |
 | SW통합·릴리스팀 | – | I1 | R2 A2 | R1 C1 I3 | R2 A2 C2 I4 | R3 A4 C4 | R1 A1 C1 I5 | C6 | R2 A1 C3 I3 | R1 A1 C2 I3 | C1 I3 | I1 | – | – | C1 | – | R2 A2 C3 I1 | – |
-| PLM·기준정보팀 | R1 I3 | – | C1 I1 | C1 | – | R1 A1 I1 | – | – | – | C1 | – | – | – | R3 A3 I3 | – | – | R1 A1 C3 | – |
+| PLM·기준정보팀 | R1 I3 | – | C1 I1 | C1 | – | R1 A1 I1 | – | – | – | C1 | – | – | – | R4 A4 C1 I3 | – | – | R1 A1 C3 | – |
 | 기능안전팀 | R2 A2 C1 I2 | R3 A4 C2 | C3 I2 | R1 A1 C3 | R1 A1 C4 I1 | I1 | R2 A2 C5 | R4 A5 C8 I2 | R1 C1 I1 | R1 A1 C3 I1 | C4 | R1 A1 | R2 A1 C2 | C1 | – | – | – | C1 |
 | 차량사이버보안팀 | – | R1 A1 C2 | – | C2 | – | C2 | – | R1 C4 I1 | – | C3 | R4 A5 C1 | R2 A2 C1 | R1 C3 | – | – | C3 | – | C1 |
 | 법규인증팀 | R1 A1 C1 | R1 A1 C1 I1 | – | – | – | R1 A1 C1 I1 | R1 A1 C1 I1 | R1 A1 C3 I3 | – | R1 C1 | C1 I1 | R2 A2 C1 | R3 A3 C1 | C1 | – | C1 | C1 | – |

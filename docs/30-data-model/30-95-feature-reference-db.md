@@ -10,7 +10,7 @@ standards: [ISO-26262, COCOMO-II, COVESA-VSS, AUTOSAR]
 traces:
   satisfies: [FR-1, FR-2]
   related: [ARC-TAXONOMY, ARC-COST-ESTIMATION]
-last_updated: 2026-11-07
+last_updated: 2026-11-09
 ---
 
 # 30-95 Feature DB — Feature 등록 정보 원천
@@ -80,11 +80,21 @@ Feature ID는 바꾸지 않는다(**D-REF-15 확정 2026-11-07**, 사용자 D9 (
 - **ECU.domain 정리**: `contracts/src/rules/refdb/domain-alias.ts`에 자유 문자열 → 공식 도메인 대응표(예: `Body` → `Body & Comfort`, `ADAS` → `ADAS & AD`). `data:check`가 대응 안 되는 ECU.domain을 경고한다. ECU 표 자체는 1단계에서 바꾸지 않고, 화면·필터가 대응표로 공식 도메인을 보여 준다.
 - SW 계층(Application 702 · Platform 278 · Back-end 72), 수명주기(Commodity 818 · Differentiating 178 · Innovation 56), 차량 유형, 적용 권역은 기준 행의 열거형 속성으로 둔다(태그로 미리 채움).
 
-### 4.1 분류 확장과 명세의 Variant Rule 대응 (기능명세서 결정 D8, 2026-11-07)
+### 4.1 L0~L5 확장·적용 지역 코드·브랜드 (B7 (b), 2026-11-07 확정)
 
-- **분류 확장**: 위 분류 표(L0~L2)를 30-70 Taxonomy의 L5까지 넓히고(노드 배치·Level 정합성·L0~L5 경로 조회), 브랜드 3종(현대·기아·제네시스)과 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표를 둔다 — 구현 묶음 TX. 노드 삭제는 초안 삭제 규칙(결정 D2 — 하위 노드가 있으면 거부)을 따른다.
-- **Variant Rule 대응(가정)**: 기능명세서의 'Variant Rule'은 독립 엔티티로 만들지 않는다. 명세의 Variant Rule = 기존 Variant 조건(`FF/backend/src/domains/d02-runtime/variant-conditions`, 차종·트림·SW 버전·시장 조건) + ISO 26580 구성 규칙(20-60 bill-of-features 제약)으로 읽는다.
-- 영향 요구와 조회를 맡는 묶음: FR-CST-001-002(R04, RP) · FR-DSV-001-002 · FR-PDA-001-004(P11b) · FR-KSW-001-002 · FR-KSW-002-003 · FR-KSW-003-001(P11a) · FR-REG-005-002(P10) · FR-CRC-001-003(TX). 판정·사유는 `FF/harness/requirements/review.json`(specNotes·verdicts)에 있다.
+- **분류 표를 L5까지**: Feature DB 발행 분류는 그대로 둔다(도메인 = L0, 클러스터·컴포넌트 = L1, 읽기 전용 — 고치려면 Feature DB 변경 요청). 그 아래 플랫폼 노드 L2(차량·시스템 기능) → L3(SW 기능) → L4(정책·Flag·파라미터) → L5(코드·신호·로직)를 `taxonomy_level_node`(마이그레이션 261)에 둔다. 상위는 Feature DB 노드든 플랫폼 노드든 정확히 한 단계 위여야 하고, 하위 노드·배치된 Feature가 있으면 지우지 않으며, 지운 ID는 `taxonomy_node_tombstone`(추가만)에 남겨 다시 쓰지 않는다(초안 삭제 규칙 B2와 같은 뜻). 규칙 `contracts/src/rules/taxonomy-tree.ts`.
+- **Feature 분류 수준·배치**: Feature에 `taxonomyLevel`(L0~L5, 등록 화면 필수·기본 L2, API에서 빠지면 L2)을 두고, Feature 하나를 같은 수준의 노드 하나에 배치한다(`feature_taxonomy_placement`). 경로 조회는 L0부터 배치 노드까지 + 배치 노드 아래(SW·Flag·신호). 데모 시드는 시드 Feature의 대표 기준 행으로 L2 노드(상위 = 그 행의 클러스터)를 만들고, 정책이 있는 Feature에 L3~L5를 붙인다.
+- **적용 지역 코드**: 1~9·A~D·G 14개(코드·지역 이름은 HMG 제공 자료 — 생산 지역 K · 적용 지역 1 표기). 시장·국가 대응은 플랫폼 표 `contracts/src/rules/region-code.ts`: 1 한국 KR · 2 일반(국가 미지정) OTHER · 3 중동 ME/OTHER · 4 유럽 EU · 5 호주 AU · 6 캐나다 CA · 7 미국 US · 8 중국 CN · 9 러시아 RU/OTHER · A 인도 IN · B 브라질 BR · C 멕시코 MX · D 터키 TR/OTHER · G 인니 ID/OTHER. 컴플라이언스 룰 `scope.regionCodes`(선택) — 체계 밖·중복·코드의 시장이 `markets`에 없으면 등록 거부. **시장 대응(특히 OTHER로 묶은 5개)은 확인 필요.**
+- **브랜드**: 상수 3종(HYUNDAI 현대·KIA 기아·GENESIS 제네시스). 정책 하나에 브랜드·적용 지역 코드(권역)·컴플라이언스 룰(법규 조건)을 잇는 `policy_global_scope`·`policy_global_link`(정책 본문은 그대로). 목록 밖 브랜드는 400, 수정은 해당 Feature Owner 또는 시스템 관리자(`SYSTEM_ADMIN`, F0 묶음)만 — 그 밖 403. 화면 `/policies/global-scope`.
+
+### 4.2 Variant Rule 대응 정의 (가정 — 확인 필요)
+
+명세의 Variant Rule을 독립 엔티티로 만들지 않는다(B7 (b)). 다음 둘을 합쳐 Variant Rule로 본다:
+
+1. **기존 Variant 조건** — Feature Version의 적용 범위 국가·차종·트림 + UPG-VC 목록(`contracts/src/rules/variant.ts`, D02-01). 같은 묶음을 쓰는 Feature를 한 Variant Rule로 묶는다(키 `국가/차종/트림/UPG-VC`).
+2. **26580 구성 규칙** — 상품(PLE 카탈로그·bill-of-features)의 국가·차종·트림 범위와 구성 Feature(`contracts/src/rules/ple/bill-of-features.ts`).
+
+지역 코드 기준 후보 조회(FR-CRC-001-003)는 코드의 국가를 조건으로 가진 위 두 종류를 돌려준다(`GET /api/region-codes/variant-candidates`, 폐기 Feature·상품 제외, 일반(2)은 국가가 없어 후보 없음). 같은 정의를 쓰는 다른 요구: FR-CST-001-002(RP)·FR-DSV-001-002·FR-PDA-001-004(P11b)·FR-KSW-001-002·002-003·003-001(P11a)·FR-REG-005-002(P10).
 
 ## 5. 데이터 모델
 

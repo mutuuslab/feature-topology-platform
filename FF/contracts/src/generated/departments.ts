@@ -26,6 +26,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/arch/topology",
      "/features/catalogue",
@@ -56,6 +57,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/flag-code",
      "/flag-code/flags/:flagKey",
      "/validations/virtual",
@@ -102,7 +104,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 16,
     "A": 18,
-    "C": 24,
+    "C": 25,
     "I": 39
    }
   },
@@ -131,6 +133,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/policies/:id",
      "/flag-code",
      "/flag-code/flags/:flagKey",
@@ -149,6 +152,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/arch/topology",
      "/features/catalogue",
@@ -172,8 +176,8 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 11,
     "A": 13,
-    "C": 24,
-    "I": 18
+    "C": 25,
+    "I": 19
    }
   },
   {
@@ -276,6 +280,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/master/reference-values"
     ],
     "reference": [
@@ -289,6 +294,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/master/feature-db/:refId",
      "/master/taxonomy",
      "/master/upg",
@@ -304,9 +310,9 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 6,
-    "A": 5,
-    "C": 6,
+    "R": 7,
+    "A": 6,
+    "C": 7,
     "I": 8
    }
   },
@@ -348,6 +354,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/features/catalogue",
      "/trace/design",

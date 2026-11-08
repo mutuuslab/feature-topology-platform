@@ -33,6 +33,9 @@ import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValu
 import { usePermission } from '../shared';
 import { personLabel } from '../ops/shared';
 import { OwnerTransferPanel } from './OwnerTransfer';
+import { REGION_CODES, regionCodeLabel } from '../../../../contracts/src/rules/region-code';
+import { regionCopy } from '../../copy/taxonomy-levels';
+import { RegionCandidates } from './RegionCandidates';
 
 const ROLES = COMPLIANCE_RULE_ROLES as readonly Role[];
 const INVALIDATE = ['complianceRules', 'complianceRule', 'complianceValidations', 'complianceRulesApplicable'];
@@ -182,6 +185,7 @@ function RuleDrawer({ ruleId, onClose, onEdit }: { ruleId: string; onClose: () =
                 { k: C.col.status, v: <StatusBadge s={r.status} /> },
                 { k: C.col.version, v: <span className="ds-mono">{r.version}</span> },
                 { k: C.col.markets, v: <span className="ds-mono">{s.markets.join(', ')}</span> },
+                ...(s.regionCodes?.length ? [{ k: regionCopy.field, v: s.regionCodes.map(regionCodeLabel).join(', ') }] : []),
                 {
                   k: D.scope,
                   v: [
@@ -308,6 +312,7 @@ type Draft = {
   name: string;
   type: string;
   markets: string[];
+  regionCodes: string[];
   featureIds: string;
   rolloutModes: string[];
   asil: string[];
@@ -328,6 +333,7 @@ const draftOf = (r: ComplianceRule | null): Draft => ({
   name: r?.name ?? '',
   type: r?.type ?? 'LEGAL',
   markets: [...(r?.scope.markets ?? [])],
+  regionCodes: [...(r?.scope.regionCodes ?? [])],
   featureIds: (r?.scope.featureIds ?? []).join(', '),
   rolloutModes: [...(r?.scope.rolloutModes ?? [])],
   asil: [...(r?.scope.asil ?? [])],
@@ -350,6 +356,7 @@ const bodyOf = (d: Draft) => {
     type: d.type,
     scope: {
       markets: d.markets,
+      regionCodes: d.regionCodes,
       featureIds: d.featureIds
         .split(',')
         .map((x) => x.trim())
@@ -367,7 +374,7 @@ const bodyOf = (d: Draft) => {
 };
 
 /** 칸 오류 위치 — 계약 스키마 오류 경로 → 화면 칸 */
-const FIELD_OF: Record<string, keyof Draft> = { ruleId: 'ruleId', name: 'name', type: 'type', 'scope.markets': 'markets', 'scope.featureIds': 'featureIds', criteria: 'criteria', approverIds: 'approverIds', 'evidence.url': 'url', 'evidence.docName': 'docName', validFrom: 'validFrom', validTo: 'validTo', reason: 'reason' };
+const FIELD_OF: Record<string, keyof Draft> = { ruleId: 'ruleId', name: 'name', type: 'type', 'scope.markets': 'markets', 'scope.regionCodes': 'regionCodes', 'scope.featureIds': 'featureIds', criteria: 'criteria', approverIds: 'approverIds', 'evidence.url': 'url', 'evidence.docName': 'docName', validFrom: 'validFrom', validTo: 'validTo', reason: 'reason' };
 
 function Checks<T extends string>({ legend, options, value, onChange, label = (x) => x, error }: { legend: string; options: readonly T[]; value: string[]; onChange: (v: T[]) => void; label?: (x: T) => string; error?: string }) {
   return (
@@ -440,6 +447,9 @@ function RuleForm({ rule, onClose, onSaved }: { rule: ComplianceRule | null; onC
           </Select>
         </div>
         <Checks legend={F.markets} options={MARKETS} value={d.markets} onChange={(v) => set('markets', v)} error={errors.markets} />
+        {/* 적용 지역 코드(FR-CRC-001-002·003) — 코드 체계 1~9·A~D·G, 고르면 Variant 조건·상품 구성 후보 */}
+        <Checks legend={regionCopy.field} options={REGION_CODES} value={d.regionCodes} label={regionCodeLabel} onChange={(v) => set('regionCodes', v)} error={errors.regionCodes} />
+        {d.regionCodes.length > 0 && <RegionCandidates codes={d.regionCodes} />}
         <Field label={F.featureIds} error={errors.featureIds}>
           <input className="ds-input ds-input--mono" value={d.featureIds} onChange={(e) => set('featureIds', e.target.value)} />
         </Field>

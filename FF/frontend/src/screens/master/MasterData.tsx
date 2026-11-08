@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { asyncState, useApi } from '../../api/hooks';
 import { ko } from '../../copy/ko';
 import { planning as W } from '../../copy/planning';
+import { taxonomyCopy } from '../../copy/taxonomy-levels';
 import { AsyncView, DataTable, IdChip, LifecycleBadge, PageHeader, Panel, Tabs, Toolbar, VerdictBadge } from '../../design';
 import { Segments } from '../shared';
 
@@ -244,7 +245,7 @@ export function TaxonomyScreen() {
   const T = M.taxonomy;
   return (
     <div className="ds-screen">
-      <PageHeader codes="D01-01 · Taxonomy" title={T.title} lead={T.lead} message={{ tone: 'neutral', text: d ? T.key(d.tags.length, d.scopes.length) : '—' }} />
+      <PageHeader codes="D01-01 · Taxonomy" title={T.title} lead={T.lead} message={{ tone: 'neutral', text: d ? T.key(d.tags.length, d.scopes.length) : '—' }} meta={<Link to="/master/taxonomy/levels">{taxonomyCopy.toLevels}</Link>} />
       <AsyncView state={asyncState(q)} error={q.error} onRetry={() => q.refetch()}>
         {d && (
           <div className="ds-split">

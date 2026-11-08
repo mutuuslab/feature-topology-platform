@@ -317,7 +317,7 @@ export const PROCESS: WorkflowProcess = {
     "제안·변경요청을 검토해 기존 Feature의 새 Version인지 새 Feature인지 정한다",
     "등록 1단계에서 만들 기능을 한 줄로 적어 추천 기준 행을 보거나, 기능명·별칭·ID와 도메인·컴포넌트로 Feature DB를 찾아 대표 기준 행 1개와 포함 행을 고른다",
     "2단계에서 대표 행으로 자동 채운 칸(이름·설명·대표 ASIL·도메인·컴포넌트·SW 계층·T-shirt·규제·제어점·적용 범위·담당·Feature 프로필)을 출처와 함께 확인하고 필요한 칸만 고친다. ASIL을 바꾸면 사유를 적고, 중복·유사 경고와 관련 Feature 후보를 확인한다",
-    "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다",
+    "관련 요구 ID와 등록 필수 항목을 입력해 PROPOSED 초안을 만든다. 판매 방식은 기획 입력으로 보존하고 상품 구성 절차에서 정한다. 등록 뒤 같은 분류 수준의 노드에 배치해 경로를 남기며 발행 원본 분류는 직접 수정하지 않는다",
     "Flag 유형을 고르고, Release·Experiment Flag면 만료일과 Retirement 계획을 함께 적는다",
     "아키텍트·요구 Owner와 Control Point 후보와 요구 범위를 맞춘다"
    ],
@@ -330,13 +330,15 @@ export const PROCESS: WorkflowProcess = {
     "actions": [
      "createFeature",
      "createVersion",
-     "updateDraft"
+     "updateDraft",
+     "placeFeatureTaxonomy"
     ],
     "screens": [
      "/master/define",
      "/feature/propose",
      "/features",
-     "/master/feature-db"
+     "/master/feature-db",
+     "/master/taxonomy/levels"
     ],
     "gates": [],
     "anchor": "feature-form",

@@ -97,11 +97,12 @@ process:
       outputs: [WP-POLICY]
       steps:
         - 대상 규칙·Variant 조건·기본값을 정책으로 작성한다
+        - 정책에 브랜드·적용 지역 코드·법규 룰의 조회 조건을 연결하고 Feature Owner가 변경 근거와 개정 이력을 확인한다. 이 메타데이터 연결 자체를 배포 승인이나 차량 적용으로 보지 않는다
         - 분야별 검증 8종을 실행해 배포 안전성 판정을 받는다
         - 수정하면 새 개정본이 되므로 다시 검증한다
       checks:
         - 최신 개정본의 분야별 검증이 모두 통과했다
-      platform: {actions: [createPolicy, updatePolicy, validatePolicy], screens: [/policies/new, /policies, /config/odd]}
+      platform: {actions: [createPolicy, updatePolicy, validatePolicy, createPolicyGlobalScope, updatePolicyGlobalScope], screens: [/policies/new, /policies, /config/odd, /policies/global-scope]}
       next: [FPW.4-A06]
     - id: FPW.4-A06
       name: 정책 근거 변경요청(CR) 연결

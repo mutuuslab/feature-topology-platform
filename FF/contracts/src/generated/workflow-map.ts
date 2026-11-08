@@ -115,7 +115,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "name": "Feature DB 운영",
    "group": "지원",
    "gates": [],
-   "activities": 5
+   "activities": 6
   },
   {
    "id": "FPW.15",

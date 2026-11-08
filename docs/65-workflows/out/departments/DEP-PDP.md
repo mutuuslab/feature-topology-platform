@@ -40,11 +40,11 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 16 · 책임 18 · 협의 24 · 통보 39 (활동 69개)
+수행 16 · 책임 18 · 협의 25 · 통보 39 (활동 70개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
-| FPW.1-A01 Feature 등록·초안 작성 | FPW.1 Feature 등록·분류 | R·A (Feature Owner) | Feature DB 발행본 `WP-REFDB-RELEASE`, Feature 제안·변경요청 `WP-FEAT-PROPOSAL` → Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK` | `/master/define`, `/feature/propose`, `/features` 외 1 | 1차 |
+| FPW.1-A01 Feature 등록·초안 작성 | FPW.1 Feature 등록·분류 | R·A (Feature Owner) | Feature DB 발행본 `WP-REFDB-RELEASE`, Feature 제안·변경요청 `WP-FEAT-PROPOSAL` → Feature 등록 기록 `WP-FEAT-REG`, Feature DB 기준 행 연결 `WP-REF-LINK` | `/master/define`, `/feature/propose`, `/features` 외 2 | 1차 |
 | FPW.1-A02 대상 차량 사양·의존 등록 | FPW.1 Feature 등록·분류 | A (Feature Owner) | Feature 등록 기록 `WP-FEAT-REG` → 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` | `/variant-conditions`, `/arch/topology`, `/features/catalogue` | 1차 |
 | FPW.1-A03 안전 분류(네 축) 확정 | FPW.1 Feature 등록·분류 | C (Feature Owner) | Feature 등록 기록 `WP-FEAT-REG`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → 안전 분류(네 축) `WP-SAFETY-PROFILE` | `/features/:id/:ver` | 1차 |
 | FPW.1-A04 법규 의무 기능 판정 | FPW.1 Feature 등록·분류 | I (Feature Owner) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, 시장별 Compliance Profile `WP-COMPLIANCE-PROFILE` → 법규 등급 판정 기록 `WP-REG-CLASS` | 플랫폼 밖 | 1차 |
@@ -60,7 +60,7 @@ last_updated: 2026-11-08
 | FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | R (Feature Owner) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
 | FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3 안전요구 확정 | C (Feature Owner) | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → 외부 연계 동기화·충돌 처리 기록 `WP-EXT-SYNC` | `/integration/connectors`, `/features/:id/:ver` | 1차 |
 | FPW.3-A04 G3 판정·Feature 정의 승인 | FPW.3 안전요구 확정 | C (Feature Owner) | 요구 검토 판정 기록 `WP-REQ-REVIEW`, G1 Decision Record `WP-G1-DECISION`, G2 Decision Record `WP-G2-DECISION`, Feature DB 기준 행 연결 `WP-REF-LINK`, 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → G3 Decision Record·정의 승인 `WP-G3-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
-| FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | C (Feature Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies`, `/config/odd` | 1차 |
+| FPW.4-A03 Flag 정책 작성·검증 | FPW.4 안전 설계·정책 설계 | C (Feature Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 대상 차량 사양·의존 관계 `WP-FEAT-SCOPE` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/new`, `/policies`, `/config/odd` 외 1 | 1차 |
 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4 안전 설계·정책 설계 | R·A (Feature Owner) | – → 정책 근거 변경요청(CR) 연결 `WP-POLICY-CR` | `/policies/:id`, `/integration/connectors` | 1차 |
 | FPW.4-A05 G4 설계 독립 검토·판정 | FPW.4 안전 설계·정책 설계 | I (Feature Owner) | 안전 설계서 `WP-SAFETY-DESIGN`, 플랫폼 도구 신뢰도(TCL) 기록 `WP-TCL-RECORD`, Flag 정책(검증·승인본) `WP-POLICY` → G4 Decision Record `WP-G4-DECISION` | `/features/:id/:ver`, `/admin/approval` | 1차 |
 | FPW.4-A07 Flag PR 검토·병합 | FPW.4 안전 설계·정책 설계 | C (Feature Owner) | G4 Decision Record `WP-G4-DECISION` → Flag 코드 변경 검토·병합 기록 `WP-FLAG-PR-RESULT` | `/flag-code`, `/flag-code/flags/:flagKey` | 1차 |
@@ -106,6 +106,7 @@ last_updated: 2026-11-08
 | FPW.14-A03 변경 승인·반려 | FPW.14 Feature DB 운영 | I (Feature Owner) | 기준 행 변경 요청 `WP-REF-CHANGE-REQ`, Feature DB 추가 요청 `WP-REF-ADD-REQ`, 자동 점검·도메인 검토 기록 `WP-REF-REVIEW` → 변경 승인·반려 기록 `WP-REF-DECISION` | `/master/feature-db/changes/:id`, `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A04 Feature DB 버전 발행 | FPW.14 Feature DB 운영 | I (Feature Owner) | 변경 승인·반려 기록 `WP-REF-DECISION` → Feature DB 발행본 `WP-REFDB-RELEASE` | `/master/feature-db/changes` | 2차 초안 |
 | FPW.14-A05 출처 정기 점검 | FPW.14 Feature DB 운영 | I (Feature Owner) | Feature DB 발행본 `WP-REFDB-RELEASE` → 출처 정기 점검 기록 `WP-REF-SOURCE-REVIEW` | `/master/feature-db` | 2차 초안 |
+| FPW.14-A06 플랫폼 분류 계층 관리 | FPW.14 Feature DB 운영 | C (Feature Owner) | Feature DB 발행본 `WP-REFDB-RELEASE` → 플랫폼 분류 계층 기록 `WP-PLATFORM-TAXONOMY` | `/master/taxonomy/levels` | 2차 초안 |
 | FPW.15-A01 산정 범위 설정 | FPW.15 SW 개발비·원가 기준 관리 | C (Feature Owner) | Feature DB 기준 행 연결 `WP-REF-LINK` → 산정 범위·과제 `WP-COST-SCOPE` | `/procurement/sw-cost`, `/procurement/sw-cost/:estId` | 2차 초안 |
 | FPW.17-A01 차량·시장 기준 관리 | FPW.17 기준정보·공유 자산·연계 품질 | C (Feature Owner) | – → 기준 값 관리 기록 `WP-MASTER-VALUES` | `/master/reference-values` | 2차 초안 |
 | FPW.17-A02 구조·공유 자산 검토 | FPW.17 기준정보·공유 자산·연계 품질 | I (Feature Owner) | 기준 값 관리 기록 `WP-MASTER-VALUES` → 구조·공유 자산 추적 `WP-ASSET-TRACE` | `/master/taxonomy`, `/master/upg`, `/master/structure` 외 2 | 2차 초안 |
@@ -141,8 +142,8 @@ last_updated: 2026-11-08
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/policies/:id`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/bill-of-features`, `/products/configurator`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/flag-retirements`, `/flag-code/lifecycle`, `/master/feature-db/:refId`, `/data/workbench`, `/biz/trials`, `/products`
-- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/config/odd`, `/flag-code`, `/flag-code/flags/:flagKey`, `/validations/virtual`, `/flag-code/reconcile`, `/integration/code-scans`, `/verify/evidence`, `/config/compat`, `/deployments`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/verify/compliance`, `/verify/safety-case`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/audit`, `/quality/feedback`, `/trace/ads`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/procurement/sw-cost`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`, `/fleet/vehicles/:vin`
+- 주 업무 화면: `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/master/taxonomy/levels`, `/variant-conditions`, `/arch/topology`, `/features/catalogue`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/policies/:id`, `/baselines`, `/experiments`, `/products/new`, `/entitlements`, `/products/bill-of-features`, `/products/configurator`, `/products/:id/:ver`, `/activation/decide`, `/admin/approval`, `/flag-retirements`, `/flag-code/lifecycle`, `/master/feature-db/:refId`, `/data/workbench`, `/biz/trials`, `/products`
+- 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/policies/new`, `/policies`, `/config/odd`, `/policies/global-scope`, `/flag-code`, `/flag-code/flags/:flagKey`, `/validations/virtual`, `/flag-code/reconcile`, `/integration/code-scans`, `/verify/evidence`, `/config/compat`, `/deployments`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/verify/compliance`, `/verify/safety-case`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/anomalies`, `/ops/safety-kpi`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/kill`, `/audit`, `/quality/feedback`, `/trace/ads`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/procurement/sw-cost`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`, `/fleet/vehicles/:vin`
 
 ## 4. 부서 겸직 직무 분리
 

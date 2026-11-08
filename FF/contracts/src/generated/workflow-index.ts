@@ -332,12 +332,14 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "/master/define",
     "/feature/propose",
     "/features",
-    "/master/feature-db"
+    "/master/feature-db",
+    "/master/taxonomy/levels"
    ],
    "actions": [
     "createFeature",
     "createVersion",
-    "updateDraft"
+    "updateDraft",
+    "placeFeatureTaxonomy"
    ],
    "anchor": "feature-form",
    "slaHours": 48
@@ -934,12 +936,15 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "screens": [
     "/policies/new",
     "/policies",
-    "/config/odd"
+    "/config/odd",
+    "/policies/global-scope"
    ],
    "actions": [
     "createPolicy",
     "updatePolicy",
-    "validatePolicy"
+    "validatePolicy",
+    "createPolicyGlobalScope",
+    "updatePolicyGlobalScope"
    ],
    "anchor": null,
    "slaHours": null
@@ -3580,6 +3585,39 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "recordSourceReview"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.14-A06",
+   "processId": "FPW.14",
+   "processName": "Feature DB 운영",
+   "name": "플랫폼 분류 계층 관리",
+   "trigger": "Feature DB 발행 또는 플랫폼 분류 확장·수정 요청",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-RDA"
+    ],
+    "A": "R-RDA",
+    "C": [
+     "R-FO",
+     "R-ARC",
+     "R-PLM"
+    ],
+    "I": [
+     "R-DRV"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/master/taxonomy/levels"
+   ],
+   "actions": [
+    "createTaxonomyNode",
+    "updateTaxonomyNode",
+    "deleteTaxonomyNode"
    ],
    "anchor": null,
    "slaHours": null

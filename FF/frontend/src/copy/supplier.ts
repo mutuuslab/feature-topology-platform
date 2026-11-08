@@ -1,4 +1,5 @@
-export const supplier = {
+import { localizedCopy } from '../locale/runtime';
+export const supplier = /* @__PURE__ */ localizedCopy('supplier.supplier', {
   title: '협력사 이관',
   target: '협력사 패키지 대상',
   lead: 'Feature에 연결된 협력사 기능과 산출물을 확인하고, 독립 검수 결과를 남깁니다.',
@@ -25,4 +26,4 @@ export const supplier = {
   criteria: 'Feature 검수 기준', criterionReason: '기준 개정 사유', saveCriteria: '새 기준 등록', coverage: '최소 커버리지(%)', warnings: '빌드 경고 상한(건)',
   gate: '협력사 검수 현황', gateReady: '현재 대상의 협력사 검수가 유효합니다.', internal: '내부 개발 대상입니다. 개발 검증 절차에서 판정하세요.',
   saved: '저장했습니다.', refresh: '다시 읽기', close: '닫기', source: '출처',
-} as const;
+} as const);

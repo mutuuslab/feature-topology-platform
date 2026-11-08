@@ -341,12 +341,14 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       "/master/define",
       "/feature/propose",
       "/features",
-      "/master/feature-db"
+      "/master/feature-db",
+      "/master/taxonomy/levels"
      ],
      "actions": [
       "createFeature",
       "createVersion",
-      "updateDraft"
+      "updateDraft",
+      "placeFeatureTaxonomy"
      ],
      "checks": [
       "Registry에 PROPOSED Version이 생기고 소유자가 지정되었다",
@@ -1234,12 +1236,15 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      "screens": [
       "/policies/new",
       "/policies",
-      "/config/odd"
+      "/config/odd",
+      "/policies/global-scope"
      ],
      "actions": [
       "createPolicy",
       "updatePolicy",
-      "validatePolicy"
+      "validatePolicy",
+      "createPolicyGlobalScope",
+      "updatePolicyGlobalScope"
      ],
      "checks": [
       "최신 개정본의 분야별 검증이 모두 통과했다"
@@ -4832,6 +4837,15 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       "개정이 있는 출처에서 나온 후속 변경 요청 대상 행",
       "출처별 새 다음 점검일"
      ]
+    },
+    {
+     "key": "WP-PLATFORM-TAXONOMY",
+     "name": "플랫폼 분류 계층 기록",
+     "content": [
+      "노드 ID·명칭·L0~L5 수준·한 단계 위 상위 노드와 참조한 Feature DB 발행판",
+      "등록·명칭 수정·삭제 사유와 담당자·시각, 삭제 ID 묘비와 재사용 금지 결과",
+      "하위 노드·배치 Feature 점검 및 Feature별 분류 경로, 원본 발행 분류와의 경계"
+     ]
     }
    ],
    "activities": [
@@ -5017,6 +5031,44 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ],
      "checks": [
       "기한이 지난 출처마다 점검 결과와 새 다음 점검일이 있다"
+     ]
+    },
+    {
+     "id": "FPW.14-A06",
+     "name": "플랫폼 분류 계층 관리",
+     "processId": "FPW.14",
+     "raci": {
+      "R": [
+       "R-RDA"
+      ],
+      "A": "R-RDA",
+      "C": [
+       "R-FO",
+       "R-ARC",
+       "R-PLM"
+      ],
+      "I": [
+       "R-DRV"
+      ]
+     },
+     "inputs": [
+      "WP-REFDB-RELEASE"
+     ],
+     "outputs": [
+      "WP-PLATFORM-TAXONOMY"
+     ],
+     "next": [],
+     "screens": [
+      "/master/taxonomy/levels"
+     ],
+     "actions": [
+      "createTaxonomyNode",
+      "updateTaxonomyNode",
+      "deleteTaxonomyNode"
+     ],
+     "checks": [
+      "발행 원본 분류는 직접 수정하지 않았고 원본 변경은 Feature DB 변경 요청으로 처리했다",
+      "노드 ID 재사용·잘못된 상위·하위 또는 배치가 있는 노드 삭제가 거부된다"
      ]
     }
    ]

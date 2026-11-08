@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { Asil, CatalogType, ControlPointType, DependencyVerdict, GateId, GateResult, GateStatus, Lifecycle, RelationType, SaleType, TargetVersionCheck } from '../enums';
 import { AsilDeviation, FeatureRefLinks } from './refdb';
+import { TaxonomyLevelCode } from './taxonomy-level';
 
 export const MissingReason = z.enum(['미입력', '미발급', '해당 없음', '의존 관계 없음']);
 export type MissingReason = z.infer<typeof MissingReason>;
@@ -44,6 +45,8 @@ export const FeatureVersionRow = z.object({
   asilDeviation: AsilDeviation.optional(),
   /** 기준 행에서 가져온 규제·표준 조항(요구사항 ID가 아님) */
   refRegulations: z.array(z.string()).optional(),
+  /** 분류 수준 L0~L5(30-70 §1) — 없으면 Feature Master 기준 수준 L2(TX 이전 행) */
+  taxonomyLevel: TaxonomyLevelCode.optional(),
   _missing: Missing,
 });
 export type FeatureVersionRow = z.infer<typeof FeatureVersionRow>;

@@ -951,6 +951,15 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": false
     },
     {
+     "id": "FPW.14-A06",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.15-A01",
      "process": "FPW.15",
      "part": "C",
@@ -1027,6 +1036,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/arch/topology",
      "/features/catalogue",
@@ -1057,6 +1067,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/flag-code",
      "/flag-code/flags/:flagKey",
      "/validations/virtual",
@@ -1589,6 +1600,16 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": false
     },
     {
+     "id": "FPW.14-A06",
+     "process": "FPW.14",
+     "part": "C",
+     "parts": [
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.15-A03",
      "process": "FPW.15",
      "part": "C",
@@ -1636,6 +1657,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/policies/:id",
      "/flag-code",
      "/flag-code/flags/:flagKey",
@@ -1654,6 +1676,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/arch/topology",
      "/features/catalogue",
@@ -2600,6 +2623,17 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": false
     },
     {
+     "id": "FPW.14-A06",
+     "process": "FPW.14",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.17-A01",
      "process": "FPW.17",
      "part": "R",
@@ -2647,6 +2681,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/master/reference-values"
     ],
     "reference": [
@@ -2660,6 +2695,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/policies/new",
      "/policies",
      "/config/odd",
+     "/policies/global-scope",
      "/master/feature-db/:refId",
      "/master/taxonomy",
      "/master/upg",
@@ -3392,6 +3428,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/feature/propose",
      "/features",
      "/master/feature-db",
+     "/master/taxonomy/levels",
      "/variant-conditions",
      "/features/catalogue",
      "/trace/design",

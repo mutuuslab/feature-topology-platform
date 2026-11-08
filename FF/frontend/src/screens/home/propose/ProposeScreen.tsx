@@ -12,6 +12,8 @@ import { PRD_BODY_LIMIT, isPrdTemplate, proposePrd as D } from '../../../copy/pr
 import { proposeGuide as G } from '../../../copy/propose-guide';
 import { personLabel } from '../../../data/people';
 import { planning as W } from '../../../copy/planning';
+import { taxonomyLevelNames as TX } from '../../../copy/taxonomy-level-names';
+import type { TaxonomyLevelCode } from '../../../../../contracts/src/schemas/taxonomy-level';
 import { Button, Drawer, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefPicker, refWarning } from './RefPicker';
@@ -25,7 +27,7 @@ import { RegistrationReview } from './RegistrationReview';
 import { PrdEditor } from './PrdEditor';
 import { RegistrationGuide } from './RegistrationGuide';
 
-const INITIAL = { name: '', description: '', requirementIds: '', country: '', vehicleModel: '', trim: '', ownerId: '', asil: 'QM', tags: '', upgVc: '' };
+const INITIAL = { name: '', description: '', requirementIds: '', country: '', vehicleModel: '', trim: '', ownerId: '', asil: 'QM', tags: '', upgVc: '', taxonomyLevel: 'L2' };
 type Form = typeof INITIAL;
 const DUPLICATE = 'REFDB_DUPLICATE_IN_SCOPE';
 const LINK_REQUIRED = 'REFDB_LINK_REQUIRED';
@@ -158,6 +160,7 @@ export default function ProposeScreen() {
           trim: f.trim.trim(),
           ownerId: f.ownerId.trim(),
           asil: f.asil,
+          taxonomyLevel: f.taxonomyLevel as TaxonomyLevelCode,
           tags: list(f.tags),
           upgVc: list(f.upgVc),
           controlPoints: cps,
@@ -194,6 +197,7 @@ export default function ProposeScreen() {
     [!f.name.trim() || !f.description.trim() || !f.ownerId.trim(), P.requiredWhy],
     [f.description.length > PRD_BODY_LIMIT, D.bodyTooLong],
     [isPrdTemplate(f.description), D.templateFill],
+    [!f.taxonomyLevel, TX.propose.levelWhy], // @req FR-REG-001-002
     [asilChanged && asilReason.trim().length < 2, P.asilReasonWhy],
     [profile?.catalogueRole === 'SUB' && !profile.parentRefId, PR.parentWhy],
   );
@@ -307,6 +311,15 @@ export default function ProposeScreen() {
                   <select className="ds-select" name="asil" value={f.asil} onChange={set('asil')}>
                     {ASIL_VALUES.map((a) => (
                       <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
+                </Field>
+                {/* 분류 수준(FR-REG-001-001·002·008) — 필수, Feature Master 기본 L2 */}
+                <Field label={TX.propose.level} error={fe.taxonomyLevel} hint={TX.propose.levelHint}>
+                  <select className="ds-select" name="taxonomyLevel" value={f.taxonomyLevel} onChange={set('taxonomyLevel')}>
+                    <option value="">{TX.propose.choose}</option>
+                    {TX.levels.map((l) => (
+                      <option key={l} value={l}>{TX.levelName(l)}</option>
                     ))}
                   </select>
                 </Field>

@@ -71,6 +71,7 @@ last_updated: 2026-11-08
 - FPW.6-A01 출시 Baseline 확정 요청 (통보)
 - FPW.10-A07 EOL 프로비저닝 검증 (협의)
 - FPW.14-A04 Feature DB 버전 발행 (통보)
+- FPW.14-A06 플랫폼 분류 계층 관리 (협의)
 - FPW.17-A02 구조·공유 자산 검토 (협의)
 - FPW.17-A03 사전 품질 점검 (협의)
 - FPW.17-A05 생산·Legacy 대사 (협의)

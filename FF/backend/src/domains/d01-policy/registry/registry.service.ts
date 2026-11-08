@@ -6,6 +6,7 @@ import {
   bumpVersion,
   changedKeys,
   compareVersion,
+  FEATURE_BASE_LEVEL,
   fieldChanges,
   gatesToRejudge,
   SCOPE_KEYS,
@@ -40,6 +41,8 @@ export interface FeatureQuery {
   country?: string;
   vehicleModel?: string;
   latestOnly?: boolean;
+  /** 분류 수준 L0~L5 — 값이 없는 행은 L2(FR-REG-001-011) */
+  taxonomyLevel?: string;
   /** 페이지 크기 — 없으면 전체(뒤 호환, 출시 준비 RD-UX-03) */
   limit?: number;
   /** 이전 응답의 nextCursor */
@@ -82,6 +85,7 @@ export class RegistryService {
       asil: f.asil,
       tags: f.tags,
       controlPoints: f.controlPoints,
+      taxonomyLevel: f.taxonomyLevel ?? FEATURE_BASE_LEVEL,
 
       featureRefCount: (f.featureRefs ?? []).length,
       // 대표 기준 행 ID 앞 두 글자 = 공식 도메인 약어(BC-BCM-001 → BC) — Topology 도메인 레인. 연결 전이면 null
@@ -101,6 +105,7 @@ export class RegistryService {
       .filter((f) => !q.country || f.country === q.country)
       .filter((f) => !q.vehicleModel || f.vehicleModel === q.vehicleModel)
       .filter((f) => !q.latestOnly || latestOf.get(f.featureId) === f.version)
+      .filter((f) => !q.taxonomyLevel || (f.taxonomyLevel ?? FEATURE_BASE_LEVEL) === q.taxonomyLevel) // @req FR-REG-001-011
       .filter((f) => !needle || [f.featureId, f.name, f.ownerId, ...f.tags].some((s) => s.toLowerCase().includes(needle)));
     const count = (k: 'lifecycle' | 'country' | 'vehicleModel') => {
       const m: Record<string, number> = {};
@@ -219,6 +224,7 @@ export class RegistryService {
         ...(linked.asilDeviation ? { asilDeviation: linked.asilDeviation } : {}),
         // 규제·표준 조항은 요구사항 ID가 아니다 — 따로 보존하고, 주지 않으면 대표 행에서 미리 채운다(§6.3)
         refRegulations: body.refRegulations ?? regulationsOf(linked.primary),
+        taxonomyLevel: body.taxonomyLevel ?? FEATURE_BASE_LEVEL, // @req FR-REG-001-001 FR-REG-001-008
         _missing: { baselineId: '미발급', functions: '미입력', swIds: '미입력', swVersions: '미입력', ecuPnos: '미입력' },
       };
       this.features.insert(f, { createdBy: actor.id, createdAt: this.clock.iso() });

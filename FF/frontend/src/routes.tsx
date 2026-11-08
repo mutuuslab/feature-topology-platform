@@ -302,6 +302,10 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/consults/:id', element: named(() => import('./screens/workspaces/Consults'), 'ConsultScreen'), title: '협의 요청', group: 'home', parent: '/', components: ['D04-04'], v2: true },
   // 추적 커버리지(P3) — Feature별 요구·필수 Test Evidence 비율, 요구 미연결·Evidence 미등록 Feature
   { path: '/trace/coverage', element: def(() => import('./screens/master/TraceCoverage')), title: '추적 커버리지', group: 'verify', parent: '/trace/design', components: ['D01-02'], v2: true },
+  // 분류 계층 L0~L5(TX) — Feature DB 분류 아래 L2~L5 노드·수준별 분류·노드 관리
+  { path: '/master/taxonomy/levels', element: def(() => import('./screens/master/TaxonomyLevels')), title: '분류 계층 L0~L5', group: 'feature', parent: '/master/taxonomy', components: ['D01-01'], v2: true },
+  // 브랜드·권역별 정책(TX) — 브랜드(현대·기아·제네시스)·적용 지역 코드·법규 조건
+  { path: '/policies/global-scope', element: def(() => import('./screens/policy/GlobalScope')), title: '브랜드·권역별 정책', group: 'release', parent: '/policies', components: ['D01-01'], v2: true },
   // ADS 구성 마감(P5) — 출고 실물 구성 대조(ORC-UI08), OTA 설치 단계(ADS-OTA01), 전송 캠페인 역조회(ADS-BE17)
   { path: '/baselines/eol', element: def(() => import('./screens/bom/EolChecks')), title: '출고 실물 구성 대조', group: 'config', parent: '/baselines', components: ['D05-02'], v2: true },
   { path: '/ops/ota-installs', element: def(() => import('./screens/ads/OtaInstalls')), title: 'OTA 설치 단계', group: 'release', parent: '/deployments', components: ['D04-01'], v2: true },

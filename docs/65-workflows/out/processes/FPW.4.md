@@ -58,7 +58,7 @@ flowchart LR
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
 | FPW.4-A01 | 차량 내 감시·안전기제 설계 | R 아키텍트 · A 아키텍트 · C Safety Manager, 통합 조직 · I 시험 조직, 요구 Owner | WP-G3-DECISION, WP-SAFETY-REQ | WP-SAFETY-DESIGN | `/master/control-points`, `/trace/design` | FFG-LCY-006, FFG-DEAC-001, FFG-TEL-007, FFG-CLS-002 |
-| FPW.4-A03 | Flag 정책 작성·검증 | R 아키텍트 · A 아키텍트 · C 기준정보 담당, Feature Owner · I 요구 Owner | WP-SAFETY-DESIGN, WP-FEAT-SCOPE | WP-POLICY | `createPolicy`, `updatePolicy`, `validatePolicy`, `/policies/new`, `/policies`, `/config/odd` | FFG-CLS-002 |
+| FPW.4-A03 | Flag 정책 작성·검증 | R 아키텍트 · A 아키텍트 · C 기준정보 담당, Feature Owner · I 요구 Owner | WP-SAFETY-DESIGN, WP-FEAT-SCOPE | WP-POLICY | `createPolicy`, `updatePolicy`, `validatePolicy`, `createPolicyGlobalScope`, `updatePolicyGlobalScope`, `/policies/new`, `/policies`, `/config/odd`, `/policies/global-scope` | FFG-CLS-002 |
 | FPW.4-A06 | 정책 근거 변경요청(CR) 연결 | R Feature Owner · A Feature Owner · C 아키텍트 · I 요구 Owner, Release Manager |  | WP-POLICY-CR | `linkPolicyChangeRequest`, `/policies/:id`, `/integration/connectors` | – |
 | FPW.4-A04 | 정책 승인 | R 요구 Owner · A 요구 Owner · C Safety Manager · I 아키텍트, Release Manager | WP-POLICY | WP-POLICY | `decidePolicy`, `/policies/:id` | – |
 | FPW.4-A02 | 플랫폼 도구 신뢰도 분류 | R Safety Manager · A Safety Manager · C 아키텍트, CSM · I 품질 조직 | WP-SAFETY-REQ | WP-TCL-RECORD | `/arch/components` | FFG-PLT-013 |
@@ -79,8 +79,9 @@ flowchart LR
 
 #### FPW.4-A03 Flag 정책 작성·검증
 1. 대상 규칙·Variant 조건·기본값을 정책으로 작성한다
-2. 분야별 검증 8종을 실행해 배포 안전성 판정을 받는다
-3. 수정하면 새 개정본이 되므로 다시 검증한다
+2. 정책에 브랜드·적용 지역 코드·법규 룰의 조회 조건을 연결하고 Feature Owner가 변경 근거와 개정 이력을 확인한다. 이 메타데이터 연결 자체를 배포 승인이나 차량 적용으로 보지 않는다
+3. 분야별 검증 8종을 실행해 배포 안전성 판정을 받는다
+4. 수정하면 새 개정본이 되므로 다시 검증한다
 
 완료 기준:
 - [ ] 최신 개정본의 분야별 검증이 모두 통과했다

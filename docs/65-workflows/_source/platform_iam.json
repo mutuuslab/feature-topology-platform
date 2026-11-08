@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9536/admin/iam",
+  "iam_url": "http://127.0.0.1:9546/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-08T16:49:08.581Z",
+  "fetched_at": "2026-11-08T19:38:41.191Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\release-20261108-p10\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-08T16:37:39.104Z",
+  "contracts_dist_mtime": "2026-11-08T19:35:53.603Z",
   "ff_git": {
-   "head": "458b639a0bfd8f7b02d076ea812067fd8d2ab3dd",
-   "dirty_files": 17
+   "head": "ef5514288d1338e8beb0715d6ad6f583ba5409ce",
+   "dirty_files": 25
   },
-  "iam_sha256": "aad193ee93f31a465d634cd385c141fed1defa011f9e9a8faa6cff01e638c97d"
+  "iam_sha256": "e00380eb934dd993f0149bc05f770960089d4c99561b4b42f2d6698efe73ee43"
  },
  "roles": [
   {
@@ -2768,6 +2768,89 @@
    "roles": [
     "GATE_JUDGE"
    ]
+  },
+  {
+   "name": "createTaxonomyNode",
+   "method": "POST",
+   "path": "/api/taxonomy/nodes",
+   "summary": "분류 노드 등록 — 상위 존재·정확히 한 단계 아래·지운 ID 재사용 금지",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "updateTaxonomyNode",
+   "method": "PATCH",
+   "path": "/api/taxonomy/nodes/:id",
+   "summary": "분류 노드 수정 — 명칭·설명(Feature DB 분류는 변경 요청으로)",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "deleteTaxonomyNode",
+   "method": "POST",
+   "path": "/api/taxonomy/nodes/:id/delete",
+   "summary": "분류 노드 삭제 — 하위 노드·배치된 Feature가 있으면 거부, ID는 묘비로 남김",
+   "component": "D01-01",
+   "roles": [
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "placeFeatureTaxonomy",
+   "method": "PUT",
+   "path": "/api/features/:id/taxonomy",
+   "summary": "Feature 배치 — Feature 분류 수준의 노드 하나(다시 배치하면 바꿈)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "REFDB_ADMIN"
+   ]
+  },
+  {
+   "name": "createPolicyGlobalScope",
+   "method": "POST",
+   "path": "/api/policies/:id/global-scope",
+   "summary": "정책 브랜드·권역·법규 조건 등록 — 목록 밖 브랜드·지역 코드 400",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "updatePolicyGlobalScope",
+   "method": "PUT",
+   "path": "/api/policies/:id/global-scope",
+   "summary": "정책 브랜드·권역·법규 조건 수정 — Feature Owner·시스템 관리자만(그 밖 403)",
+   "component": "D01-01",
+   "roles": [
+    "FEATURE_AUTHOR",
+    "SAFETY_OFFICER",
+    "VARIANT_OWNER",
+    "FEATURE_APPROVER",
+    "IMPLEMENTER",
+    "RELEASE_MANAGER",
+    "BOM_APPROVER",
+    "PRODUCT_AUTHOR",
+    "PRODUCT_APPROVER",
+    "GATE_JUDGE",
+    "OPERATOR",
+    "SECURITY_OFFICER",
+    "OPS_LEAD",
+    "REGULATORY_OWNER",
+    "REFDB_ADMIN",
+    "DOMAIN_REVIEWER",
+    "AUDITOR",
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "COST_VIEWER",
+    "COST_BASIS_ADMIN",
+    "SYSTEM_ADMIN"
+   ]
   }
  ],
  "sod": [
@@ -3612,6 +3695,16 @@
    "path": "/trace/coverage",
    "title": "추적 커버리지",
    "group": "verify"
+  },
+  {
+   "path": "/master/taxonomy/levels",
+   "title": "분류 계층 L0~L5",
+   "group": "feature"
+  },
+  {
+   "path": "/policies/global-scope",
+   "title": "브랜드·권역별 정책",
+   "group": "release"
   },
   {
    "path": "/baselines/eol",

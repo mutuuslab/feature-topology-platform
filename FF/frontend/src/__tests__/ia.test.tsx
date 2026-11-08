@@ -1,8 +1,8 @@
 // IA 하네스 — MENU 2.0 규칙 (사용자 결정: 업무 기준 10그룹 + 내 역할 필터, 부서별·Plane별 모드 폐지).
 // 메뉴 누락·고아 화면·중복 경로·깨진 메뉴 링크가 다시 생기면 실패한다.
-import { describe, expect, it, afterEach, beforeEach } from 'vitest';
+import { describe, expect, it, afterEach, beforeEach, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SPEC_MENU } from '../data/specMenu';
 import { SCREEN_ENTRY } from '../data/uiLinks';
@@ -18,6 +18,7 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
   document.documentElement.removeAttribute('data-present');
+  vi.unstubAllGlobals();
 });
 
 describe('MENU 2.0 구조', () => {
@@ -91,6 +92,8 @@ describe('MENU 2.0 구조', () => {
   });
 });
 
+const LocationProbe = () => <output aria-label="current route">{useLocation().pathname}</output>;
+
 const renderShell = (path: string) =>
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -99,6 +102,7 @@ const renderShell = (path: string) =>
           <AppProvider>
             <Shell>
               <h1>본문</h1>
+              <LocationProbe />
             </Shell>
           </AppProvider>
         </MotionProvider>
@@ -107,6 +111,23 @@ const renderShell = (path: string) =>
   );
 
 describe('셸', () => {
+  it('모바일 대메뉴는 현재 화면을 지킨 채 열리고, Esc 또는 하위 메뉴 선택 때 닫힌다', () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+    renderShell('/feature/FEAT-00022');
+    const purchase = screen.getByRole('button', { name: '구매·SW 개발비' });
+    fireEvent.click(purchase);
+    expect(screen.getByLabelText('current route').textContent).toBe('/feature/FEAT-00022');
+    expect(purchase.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(purchase.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(purchase);
+    const panel = screen.getByRole('complementary', { name: '구매·SW 개발비' });
+    fireEvent.click(within(panel).getByRole('link', { name: '계수·단가 표' }));
+    expect(screen.getByLabelText('current route').textContent).toBe('/procurement/sw-cost/basis');
+    expect(purchase.getAttribute('aria-expanded')).toBe('false');
+    expect(purchase.getAttribute('aria-current')).toBe('true');
+  });
+
   it('레일 10개, 현재 그룹의 메뉴, breadcrumb', () => {
     renderShell('/feature/FEAT-00022');
     const rail = screen.getAllByRole('button').filter((b) => b.className.includes('sh-rail__btn') && !b.className.includes('toggle'));

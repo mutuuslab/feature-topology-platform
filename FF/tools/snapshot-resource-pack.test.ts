@@ -69,6 +69,20 @@ test('encoded traversal, unknown query families and writes cannot select or rein
   const r=await onRequest({request:new Request('https://local.test/api-snapshot/'+f.files[0],{method:'POST'}),env,next:async()=>new Response('unsafe fallback')});assert.equal(r.status,405);assert.equal(calls.length,0);
 });
 
+test('explicit executable demo bytes and capture metadata survive packing and remain cookie gated',async()=>{
+  const f=fixture(),body=Buffer.from('// Explicit allowlisted demo bytes\nexport const test = true;\n'),sha=hash(body),relative=`files/software/${sha}.mjs`;
+  mkdirSync(join(f.api,'files','software'),{recursive:true});writeFileSync(join(f.api,relative),body);
+  const index=JSON.stringify({schema:'ff.software-demo-capture.v1',items:[{asset:'api-snapshot/'+relative,expectedSha256:sha}]});writeFileSync(join(f.api,'software-demo-index.json'),index);
+  packArtifact(f.root);assert.deepEqual(readFileSync(join(f.api,relative)),body);assert.equal(readFileSync(join(f.api,'software-demo-index.json'),'utf8'),index);
+  const env={FF_GATE_SECRET:'software-demo-test-only-cookie-secret',ASSETS:assets(f.api,[])},cookie=`${COOKIE}=${await signToken(env.FF_GATE_SECRET,Date.now())}`;
+  for(const [path,bytes]of [[relative,body],['software-demo-index.json',Buffer.from(index)]] as const)for(const method of ['GET','HEAD']){
+    let reads=0;const next=async()=>{reads++;return new Response(method==='HEAD'?null:bytes,{headers:{'Content-Type':path.endsWith('.mjs')?'text/javascript':'application/json','Content-Length':String(bytes.length)}});};
+    const anonymous=new Request('https://local.test/api-snapshot/'+path,{method});assert.equal((await handle(anonymous,env,next)).status,401);assert.equal(reads,0);
+    const request=new Request(anonymous,{headers:{Cookie:cookie}}),response=await handle(request,env,()=>onRequest({request,env,next}));
+    assert.equal(response.status,200);assert.match(response.headers.get('Cache-Control')??'',/private/);assert.equal(response.headers.get('Content-Length'),String(bytes.length));assert.deepEqual(Buffer.from(await response.arrayBuffer()),method==='HEAD'?Buffer.alloc(0):bytes);
+  }
+});
+
 test('corrupt resources do not count as coverage; a packet larger than 25MiB never replaces the originals',()=>{
   const f=fixture();packArtifact(f.root);const index=JSON.parse(readFileSync(join(f.api,RESOURCE_INDEX),'utf8'));index.packets[0].file='../../outside.json';writeFileSync(join(f.api,RESOURCE_INDEX),JSON.stringify(index));assert.throws(()=>resourceLogicalFiles(f.api),/resource path/);
   const large=fixture();writeFileSync(join(large.api,large.files[0]),JSON.stringify({value:'x'.repeat(PAGES_MAX_FILE_BYTES)}));assert.throws(()=>packResources(large.api),/25MiB/);assert.equal(existsSync(join(large.api,large.files[0])),true);assert.equal(existsSync(join(large.api,RESOURCE_INDEX)),false);

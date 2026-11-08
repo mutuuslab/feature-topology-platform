@@ -4,6 +4,7 @@ import { canonicalJson, PolicySpec, policySpecOf, sourcesOf, type Entitlement, t
 import { createHash } from 'node:crypto';
 import { vehiclePseudonym } from '../../kernel/crypto';
 import { DB, type Db } from '../../kernel/db';
+import { DomainError } from '../../kernel/errors';
 import type { ValidatorResult } from '@ff/contracts';
 
 const pad = (n: number, w: number) => String(n).padStart(w, '0');
@@ -195,9 +196,27 @@ export class FleetRepo {
     this.rev++;
     this.db.run('INSERT INTO vehicle_profile (vin, source, doc) VALUES (?, ?, ?)', p.vin, p.source, JSON.stringify(p));
   }
-  insertVehicle(v: Vehicle) {
+  /**
+   * 차량 등록 — 같은 가명(sha256 앞 16자)이 이미 다른 VIN에 쓰이면 거부한다(TL-M02: Lake 중계 메시지는 가명으로만 차량을 찾는다).
+   * pseudonymOf는 시험이 충돌을 만들 때만 바꾼다
+   */
+  insertVehicle(v: Vehicle, pseudonymOf: (vin: string) => string = vehiclePseudonym) {
+    // 트랜잭션 안 연속 등록(신차 일괄 등록)은 표를 한 번만 만들어 이어 쓴다 — 등록마다 전 차량을 다시 해시하지 않게
+    const map = this.db.inTransaction ? (this.txPseudonyms ??= this.pseudonymMap()) : this.pseudonymMap();
+    const p = pseudonymOf(v.vin);
+    const owner = map.get(p);
+    if (owner && owner !== v.vin) throw new DomainError('CONFLICT', `차량 ${v.vin}의 차량 가명이 이미 등록된 다른 차량과 같습니다 — 가명으로 차량을 찾는 중계 경로가 두 차량을 구별하지 못하므로 등록하지 않습니다.`);
     this.pseudonyms = null;
     this.db.run('INSERT INTO vehicle (vin, doc) VALUES (?, ?)', v.vin, JSON.stringify(v));
+    map.set(p, v.vin);
+  }
+  private txPseudonyms: Map<string, string> | null = null;
+  private pseudonymMap(): Map<string, string> {
+    if (!this.db.inTransaction) this.txPseudonyms = null;
+    if (this.pseudonyms) return new Map(this.pseudonyms);
+    const map = new Map<string, string>();
+    for (const { vin } of this.db.all<{ vin: string }>('SELECT vin FROM vehicle')) map.set(vehiclePseudonym(vin), vin);
+    return map;
   }
   /** 가명 → VIN 표(차량이 늘 때만 다시 만든다, 트랜잭션 안에서는 만들지 않는다) — OFREP·GLEO가 요청마다 전 차량의 가명을 해시하던 것
    *  (차량 10만 대에서 요청당 해시 10만 번, 출시 준비 RD-P2-01). VIN은 바뀌지 않으므로 가명도 바뀌지 않는다 */

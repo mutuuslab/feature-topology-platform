@@ -92,6 +92,7 @@
     "211_supplier_package": "2046173c031385e15b11ba63b15b6e56fd109e004723bd5d626625d615fcac48",
     "261_taxonomy_global_scope": "a35e53375d0dc9f6cf22d1356e81693be8999a5cfabd093140e6836d870a83e3",
     "431_binary_objects": "bf5f836c6cb146df7032ff55946f06aca915ce7f9bfdf00a94b6fa1b0efe5b6c",
-    "441_software_delivery": "ec6cc13e5a86f4c6826c336a1df8e1bdedb82347c146b177b682e6a5f7228221"
+    "441_software_delivery": "ec6cc13e5a86f4c6826c336a1df8e1bdedb82347c146b177b682e6a5f7228221",
+    "311_vehicle_message_nonce": "fd730c4517585ca91b24f480400953989ab5b308905145ca695b54c2046636f5"
   }
 }

@@ -40,6 +40,8 @@ export const PublicationPayload = z.object({
   /** 차량이 적용 후 되읽어 보고해야 하는 값 — POLICY: 정책 해시, KILL: Safe 상태, RESTORE: ACTIVE */
   desired: z.string(),
   issuedAt: z.string(),
+  /** 정책 캐시 유효 기간(P9, FR-LPC-001-003) — POLICY 게시본만. 차량은 이 시각이 지나면 캐시 대신 Safe Default로 위임한다 */
+  validUntil: z.string().optional(),
 });
 export type PublicationPayload = z.infer<typeof PublicationPayload>;
 

@@ -43,6 +43,7 @@ import { PkiService } from '../../d06-qsec/pki-kms/pki.service';
 import { PublicationRepo, RuntimeRepo, type VehicleRuntimeState } from '../../d06-qsec/secure-deploy/publication.repo';
 import { GleoAdapter } from '../../../adapters/gleo/gleo.adapter';
 import { VehicleChannelRegistry } from '../vehicle-channel/vehicle-channel';
+import { assessCache, cacheEntryOf, delegatedResult, noteCache, receiveProblem, type CacheView } from './policy-cache';
 
 /** 차량 회신 지연(ms) — 차량마다 조금씩 늦게 돌아와 시연 화면에서 집계가 차오르는 모습이 보인다 */
 const LATENCY = Number(process.env.FLEET_SIM_LATENCY_MS ?? 350);
@@ -152,6 +153,11 @@ export class VehicleRuntimeService {
       return;
     }
     if (p.sequence <= (s.highest[key] ?? 0)) return reject('REPLAY');
+    // P9 FR-RTE-001-003 — 정책 게시본은 필드별 파싱·유효 기간 확인을 지나야 저장한다(순번을 쓰기 전에 — 거부한 판이 다음 판을 막지 않게)
+    if (p.kind === 'POLICY') {
+      const bad = receiveProblem(p, this.clock.now().getTime());
+      if (bad) return reject(bad);
+    }
     s.highest[key] = p.sequence;
     // v2 — 이 차량의 봉투가 있으면 Guard 경로(레거시 v1 차단은 아래 기존 경로)
     if ((p.kind === 'KILL' || p.kind === 'RESTORE') && p.kill) {
@@ -163,7 +169,8 @@ export class VehicleRuntimeService {
     }
     let observed: string;
     if (p.kind === 'POLICY' && p.policy) {
-      s.bundles[p.policy.flagKey] = { publicationId: pub.publicationId, sequence: p.sequence, payloadHash: pub.signature.payloadHash, policy: p.policy };
+      // P9 — 서명 payload·서명을 함께 두어 쓰기 전에 다시 검증하고, 지금 캐시는 직전 캐시로 남긴다(손상되면 대체)
+      s.bundles[p.policy.flagKey] = cacheEntryOf(pub, s.bundles[p.policy.flagKey]);
       observed = p.policy.contentHash;
     } else if (p.kind === 'KILL' && p.kill) {
       for (const f of p.kill.featureIds) {
@@ -427,12 +434,20 @@ export class VehicleRuntimeService {
     const vehicle = this.fleet.vehicle(vin);
     if (!vehicle) throw new DomainError('NOT_FOUND', `차량 ${vin}을(를) 찾을 수 없습니다.`);
     const s = this.runtime.get(vin);
-    const evaluations: { flagKey: string; local: FlagResult; server: FlagResult | null; drift: boolean }[] = [];
+    const evaluations: { flagKey: string; local: FlagResult; server: FlagResult | null; drift: boolean; cache: { use: CacheView['use']; publicationId: string | null; sequence: number | null; validUntil: string | null } }[] = [];
+    // P9 차량 정책 캐시 — 쓰기 전에 서명·무결성·유효 기간을 다시 보고, 손상되면 직전 캐시, 쓸 캐시가 없으면 Safe Default 위임(바뀔 때만 기록)
+    const now = this.clock.now().getTime();
+    const verify = (payload: unknown, sig: NonNullable<Publication['signature']>) => this.pki.verify(payload, sig, undefined, PUBLICATION_KEY_PURPOSE.POLICY).reason;
+    const cache: CacheView[] = [];
+    let noted = false;
     for (const [flagKey, b] of Object.entries(s.bundles).sort(([a], [z]) => a.localeCompare(z))) {
       const f = this.features.get(b.policy.featureId, b.policy.featureVersion);
       if (!f) continue;
-      const local = await evaluateFlag({
-        policy: b.policy,
+      const a = assessCache(flagKey, b, now, verify);
+      cache.push(a.view);
+      const chosen = a.chosen ? { use: a.view.use, publicationId: a.chosen.publicationId, sequence: a.chosen.sequence, validUntil: a.chosen.validUntil ?? null } : { use: a.view.use, publicationId: null, sequence: null, validUntil: null };
+      const local = !a.chosen ? delegatedResult(b.policy, flagKey, a.view.delegation!) : await evaluateFlag({
+        policy: a.policy,
         scope: { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim },
         killed: !!s.kills[b.policy.featureId],
         vehicle,
@@ -442,10 +457,14 @@ export class VehicleRuntimeService {
         // 지원 미달 차량에 구독이 생겨도 서버·차량 모두 NOT_SUPPORTED로 OFF(어긋남 없음)
         support: (({ verdict, reason }) => ({ verdict, reason }))(variantRow({ ...f, featureId: b.policy.featureId, version: b.policy.featureVersion }, vehicle)),
       });
+      noted = noteCache(s, a.view, this.clock.iso(), a.chosen && local.reason === 'ERROR_SAFE_DEFAULT' ? local.trace.at(-1)?.detail ?? 'error' : undefined) || noted;
       const server = await this.activation.decide(vin, flagKey).then((d) => d.result, () => null);
-      evaluations.push({ flagKey, local, server, drift: !!server && server.value !== local.value });
+      evaluations.push({ flagKey, local, server, drift: !!server && server.value !== local.value, cache: chosen });
     }
-    return { vehicle, runtime: s, evaluations, gleo: vehicle.gleo ? this.gleo.mode : null };
+    if (noted) this.runtime.save(s);
+    // FR-RTE-004-003 — 차량 쪽 차단·복원 이력(런타임 기록 중)
+    const killHistory = s.log.filter((l) => l.kind === 'KILL' || l.kind === 'RESTORE');
+    return { vehicle, runtime: s, evaluations, cache, killHistory, gleo: vehicle.gleo ? this.gleo.mode : null };
   }
 
   /** Fleet 실시간 적용 현황 — 차량마다 적용 게시본·Feature 상태·차량 측 값과 서버 판단(어긋남 표시) */

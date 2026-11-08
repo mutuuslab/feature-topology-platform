@@ -754,6 +754,7 @@ export const ROUTES: RouteDef[] = [
   { name: 'policyGlobalScope', method: 'GET', path: '/api/policies/:id/global-scope', summary: '정책 하나의 브랜드·권역·법규 조건과 Feature Owner', component: 'D01-01' },
   { name: 'createPolicyGlobalScope', method: 'POST', path: '/api/policies/:id/global-scope', summary: '정책 브랜드·권역·법규 조건 등록 — 목록 밖 브랜드·지역 코드 400', component: 'D01-01', roles: GLOBAL_SCOPE_AUTHOR_ROLES, body: PolicyGlobalScopeBody },
   { name: 'updatePolicyGlobalScope', method: 'PUT', path: '/api/policies/:id/global-scope', summary: '정책 브랜드·권역·법규 조건 수정 — Feature Owner·시스템 관리자만(그 밖 403)', component: 'D01-01', roles: HUMAN_ROLES, body: PolicyGlobalScopeBody },
+  { name: 'otaJobReconcile', method: 'POST', path: '/api/ota/jobs/:jobId/reconcile', summary: 'IF-05 OTA 작업 대사 — webhook이 오지 않은 작업을 OTA 서버 조회로 메운다(끝 상태는 차량 결과만)', component: 'D04-01', roles: ['RELEASE_MANAGER', 'OPS_LEAD', 'OPERATOR'], body: OtaJobActionBody },
 ];
 
 export const routeKey = (r: Pick<RouteDef, 'method' | 'path'>) => `${r.method} ${r.path}`;

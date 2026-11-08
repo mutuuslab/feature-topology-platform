@@ -35,3 +35,11 @@ export * from './rules/taxonomy-tree';
 export * from './rules/region-code';
 export * from './schemas/global-scope';
 export * from './rules/global-scope';
+
+export * from './schemas/vehicle-message';
+
+export * from './schemas/vehicle-message.vectors';
+
+export * from './rules/ota-reconcile';
+
+export * from './rules/policy-cache';

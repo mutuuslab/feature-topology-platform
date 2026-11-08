@@ -372,10 +372,10 @@ FF 저장소에서는 `node --test tools/ota-reference/conformance.test.ts`(veri
 
 ## 14. 한계(정직하게)
 
-- **집계는 차량 결과만**: Lake → FF 중계(차량 서명 FFV1-MSG, [80-75] §10, TL-M*)는 아직 구현 전이다. 그 전에는 차량 직접 창구·IF-06 `POST /api/telemetry/readback`(시스템 계정, 차량 서명 없음)으로 받는다. 경로가 없으면 OTA가 모두 `DELIVERED`여도 기한에 TIMEOUT이다(의도).
+- **집계는 차량 결과만**: Lake → FF의 차량 서명 FFV1-MSG 검증·nonce 저장·중계 정규화(P9)는 구현한다. 실제 Lake 소비 루프(TL-M04)의 연결·영속 복구는 별도로 검증한다. 그 전에는 차량 직접 창구·IF-06 `POST /api/telemetry/readback`(시스템 계정, 차량 서명 없음)으로 받는다. 경로가 없으면 OTA가 모두 `DELIVERED`여도 기한에 TIMEOUT이다(의도).
 - **U-17 승인(2026-11-07)**: OTA webhook을 OTA 사실만으로 둔 [80-75] U-17 기본안이 승인됐다 — 7.1·7.5는 그대로다.
-- **OTA 사실과 차량 결과의 불일치 경보 없음**: 어긋나면 차량 결과가 이기지만, 그 차이(OTA는 넘겼다, 차량 결과는 없다 등)를 이상 징후로 올리지는 않는다(노드 사유·OTA 전달 패널로만 보인다).
-- **조회 보충 없음**: OTA 전달 기록은 webhook만 본다. webhook이 끝내 오지 않으면 OTA 작업이 SUBMITTED로 남는다 — `GET /ota/v1/jobs`로 메우는 대사(reconcile)는 아직 없다.
+- **OTA 사실과 차량 결과의 불일치**(2026-11-07 구현): 게시본이 닫히면 차량별로 대사해 "OTA는 넘겼는데 차량 결과가 없음"·"OTA는 못 넘겼는데 차량 결과가 있음"을 전달 이상 징후(DELIVERY, 신호 코드 `OTA_DELIVERED_NO_VEHICLE_RESULT`·`VEHICLE_RESULT_WITHOUT_OTA_DELIVERY`)로 올린다. 끝 상태는 그대로 차량 결과가 정한다(신호는 판정을 바꾸지 않는다).
+- **조회 보충**(2026-11-07 구현): webhook이 끝내 오지 않아 SUBMITTED로 남은 작업은 `GET /ota/v1/jobs/{jobId}` 조회로 메운다(webhook과 같은 규칙 — 끝 결과를 되돌리지 않고, 같은 결과를 두 번 쓰지 않는다, 감사 `OTA_JOB_RECONCILE`·이벤트 `ota.job.reconciled`). 조회가 실패하면 다음 주기에 다시 한다.
 - **나누기 없음**: 작업 하나 = 게시본 하나 = 대상 전부. 10,000대가 넘는 게시본은 OTA 서버가 받아야 한다(FF가 작업을 나누지 않는다).
 - **mTLS는 FF 코드에 없다** — OAuth2 + TLS만. 송신 프록시로 붙인다(9.1).
 - **시험 OTA 서버는 차량을 흉내만 낸다** — 서명 검증·v2 상태 보고 서명이 없다. 차단 v2 끝 상태는 차량 시뮬레이터(`sim`)·실차·GLEO로 시험한다.

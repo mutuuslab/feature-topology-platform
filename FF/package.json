@@ -74,6 +74,8 @@
     "mock:codebeamer": "node tools/ext-mocks/codebeamer.ts",
     "ota:reference": "node tools/ota-reference/server.ts",
     "ota:conformance": "node tools/ota-reference/conformance.ts",
+    "lake:reference": "node tools/lake-reference/server.ts",
+    "lake:conformance": "node tools/lake-reference/conformance.ts",
     "readiness": "node tools/readiness.ts",
     "test:pg": "node tools/test-pg.ts",
     "migrations:lock": "node tools/migrations-lock.ts --update",

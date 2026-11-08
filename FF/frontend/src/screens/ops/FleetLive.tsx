@@ -9,6 +9,7 @@ import { usePlatformEvents } from '../../api/stream';
 import { ko } from '../../copy/ko';
 import { fleetSearch as FS } from '../../copy/fleet-search';
 import { control as CT } from '../../copy/control';
+import { vehicleCache as VC } from '../../copy/vehicle-cache';
 import { pickDefault } from '../../data/first-run';
 import { AsyncView, DataTable, EventStream, Explain, IdChip, KeyValue, PageHeader, Panel, Select, SummaryLine, Tabs, VerdictBadge } from '../../design';
 import { fleetAxes as FA, vehicleTabs as VTAB, axesTab, verdictsTab, customerTab } from '../../copy/ads-state';
@@ -28,6 +29,8 @@ const CustomerPanel = lazy(() => statePanels().then((m) => ({ default: m.Custome
 const FleetAxesPanel = lazy(() => statePanels().then((m) => ({ default: m.FleetAxesPanel })));
 // ADS-OTA01 — '구성과 설치' 행 상세: OTA 설치 단계(선형 5단계 + 갈림 상태)
 const InstallDetail = lazy(() => import('../ads/OtaInstalls').then((m) => ({ default: m.InstallDetail })));
+// 차량 정책 캐시(P9) — 기록 탭에서만 불러온다
+const VehicleCachePanel = lazy(() => import('./VehicleCachePanel').then((m) => ({ default: m.VehicleCachePanel })));
 const STREAM = ['publication.', 'vehicle.', 'kill.', 'virtual.'];
 /** 차량 × flag 표 한 번에 그리는 줄 — 수백 대를 다 그리면 표 하나가 수천 칸이라 메뉴를 열 때 멈췄다(CPU 4배 느림 3초) */
 const MATRIX_PAGE = 60;
@@ -243,6 +246,9 @@ interface RuntimeView {
   vehicle: { vin: string; label: string; country: string; vehicleModel: string; trim: string; swVersion: string; link: string; quality: string; gleo: boolean };
   runtime: { bootId: string; highest: Record<string, number>; bundles: Record<string, { publicationId: string; sequence: number; payloadHash: string; policy: { policyId: string; revision: number } }>; kills: Record<string, { killId: string; safeMode: string; publicationId: string }>; featureState: Record<string, string>; log: { at: string; publicationId: string; kind: string; result: string; detail: string }[] };
   evaluations: { flagKey: string; local: { value: boolean; decision: string; reason: string }; server: { value: boolean; decision: string; reason: string } | null; drift: boolean }[];
+  /** 차량 정책 캐시(P9) — 정책별 상태·유효 기간·쓴 캐시, 차량 쪽 차단 이력 */
+  cache?: import('./VehicleCachePanel').VehicleCacheRow[];
+  killHistory?: import('./VehicleCachePanel').KillHistoryRow[];
 }
 
 const VEHICLE_TABS = ['state', 'verdicts', 'customer', 'records', 'requests'] as const;
@@ -391,11 +397,17 @@ export function VehicleRuntimeScreen() {
                   { key: 'at', header: ko.audit.col.at, cell: (l) => <span className="ds-mono ds-nowrap">{when(l.at)}</span> },
                   { key: 'p', header: ko.deploy.col.id, cell: (l) => <IdChip id={l.publicationId} to={`/deployments/${l.publicationId}`} copy={false} /> },
                   { key: 'k', header: ko.deploy.col.kind, cell: (l) => <span className="ds-tag">{l.kind}</span> },
+                  // CACHE_EXCLUDED·SAFE_DEFAULT(P9 캐시 판정)은 적용이 아니다 — 실패로 보인다
                   { key: 'r', header: ko.audit.col.result, cell: (l) => <VerdictBadge value={l.result === 'APPLIED' ? 'PASS' : 'FAIL'} /> },
-                  { key: 'd', header: ko.audit.col.reason, cell: (l) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{l.detail}</span> },
+                  { key: 'd', header: ko.audit.col.reason, cell: (l) => <span className="ds-mono" style={{ fontSize: 'var(--fs-xs)' }}>{VC.reason[l.detail] ?? l.detail}</span> },
                 ]}
               />
             </Panel>
+            {d.cache && (
+              <Suspense fallback={null}>
+                <VehicleCachePanel cache={d.cache} killHistory={d.killHistory ?? []} />
+              </Suspense>
+            )}
             <StatusV2Panel vin={vin} />
             <SupportPanel vin={vin} />
           </>

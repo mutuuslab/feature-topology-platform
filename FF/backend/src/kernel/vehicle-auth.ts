@@ -9,7 +9,23 @@
 //  · 실패는 401 VEHICLE_UNAUTHENTICATED + 감사 DENIED + 보안 이벤트(14.4 진위 실패·재전송, D06-12가 onRejected로 받는다).
 // 차량 키는 소프트웨어 HSM(D06-10)이 useKeySource로 알려 준다(커널이 도메인에 의존하지 않게).
 import { Inject, Injectable } from '@nestjs/common';
-import { VEHICLE_AUTH_FAILURES, VEHICLE_AUTH_FORMAT, VEHICLE_AUTH_HEADERS, VEHICLE_AUTH_SKEW_MS, vehicleRequestCanonical, type VehicleAuthFailure } from '@ff/contracts';
+import {
+  VEHICLE_AUTH_FAILURES,
+  VEHICLE_AUTH_FORMAT,
+  VEHICLE_AUTH_HEADERS,
+  VEHICLE_AUTH_SKEW_MS,
+  VEHICLE_MESSAGE_FAILURES,
+  VEHICLE_MESSAGE_FUTURE_MS,
+  VEHICLE_MESSAGE_MAX_AGE_MS,
+  VEHICLE_MESSAGE_MAX_BODY_BYTES,
+  VEHICLE_MESSAGE_NONCE_WINDOW_MS,
+  vehicleMessageCanonical,
+  vehicleMessageIdOf,
+  VehicleMessage,
+  vehicleRequestCanonical,
+  type VehicleAuthFailure,
+  type VehicleMessageFailure,
+} from '@ff/contracts';
 import type { Request } from 'express';
 import { randomUUID } from 'node:crypto';
 import type { Actor } from './actor';
@@ -37,6 +53,22 @@ export interface VehicleAuthRejection {
   keyEpoch: number | null;
 }
 
+/** 가명 → VIN(차량 기준 정보) — 차량 원장(FleetRepo)이 useVehicleDirectory로 알려 준다 */
+export interface VehicleDirectory {
+  vinByPseudonym(pseudonym: string): string | null;
+}
+
+/**
+ * 중계 메시지(FFV1-MSG) 검증 결과(TL-M02). ACCEPTED·DUPLICATE면 서명이 맞는 차량 메시지이고 body는 원문 바이트.
+ * REJECTED·STALE은 바깥 서명 층(MESSAGE_AUTH)에서 떨어진 것 — relay.verdict check {layer: MESSAGE_AUTH, step: null, code}.
+ */
+export type VehicleMessageVerdict =
+  | { outcome: 'ACCEPTED' | 'DUPLICATE'; vin: string; code: null; message: VehicleMessage; body: Buffer; ageMs: number }
+  | { outcome: 'REJECTED' | 'STALE'; vin: string | null; code: VehicleMessageFailure; message: VehicleMessage | null };
+
+/** 보안 이벤트로 넘기는 메시지 거부 — 진위·재전송·시각(형식·미등록·나이는 Lake·운영 문제라 넘기지 않는다) */
+const MESSAGE_SECURITY: readonly VehicleMessageFailure[] = ['REQUEST_MAC_INVALID', 'REQUEST_KEY_EPOCH', 'REQUEST_TIME_SKEW', 'REQUEST_REPLAY'];
+
 export interface VehicleIdentity {
   vin: string;
   via: 'mac' | 'mtls' | 'mtls+mac' | 'header';
@@ -50,6 +82,8 @@ export class VehicleAuthService {
   readonly mode: VehicleAuthMode = vehicleAuthModeOf();
   readonly certHeader: string | null = process.env.FF_VEHICLE_CERT_HEADER?.toLowerCase() || null;
   private keys: VehicleKeySource | null = null;
+  private directory: VehicleDirectory | null = null;
+  private messageCalls = 0;
   private readonly listeners: ((r: VehicleAuthRejection) => void)[] = [];
   private calls = 0;
 
@@ -61,6 +95,10 @@ export class VehicleAuthService {
 
   useKeySource(src: VehicleKeySource) {
     this.keys = src;
+  }
+
+  useVehicleDirectory(d: VehicleDirectory) {
+    this.directory = d;
   }
 
   /** 거부 알림 — 보안 이벤트 모니터링(D06-12)이 등록한다 */
@@ -112,6 +150,57 @@ export class VehicleAuthService {
       throw new DomainError('VEHICLE_UNAUTHENTICATED', '차량 요청에는 차량 신원(X-Vehicle-Id)이 필요합니다.');
     }
     return { vin: claimed!, via: 'header' };
+  }
+
+  /**
+   * Lake가 중계한 차량 서명 메시지(FFV1-MSG) 검증(80-75 4.1 1~4, TL-M02) — Lake는 신뢰 경계가 아니다. FF가 차량 키로 직접 본다.
+   * 순서: 형식·message_id·본문 해시 → 가명 → VIN → epoch 키 → CMAC(상수 시간) → 나이(미래 5분 거부, 72시간 넘으면 STALE) → nonce 창.
+   * 서명이 맞는 메시지만 nonce를 쓴다. 처리기(상태 보고·전달 확인)와 같은 트랜잭션 안에서 부르면 처리가 실패할 때 nonce도 되돌아가
+   * 다음 중계에서 다시 처리된다(커서는 처리 뒤에만 옮긴다, 4.3).
+   */
+  verifyMessage(input: unknown, via = 'LAKE'): VehicleMessageVerdict {
+    const parsed = VehicleMessage.safeParse(input);
+    const m = parsed.success ? parsed.data : null;
+    let vin: string | null = null;
+    const fail = (code: VehicleMessageFailure, outcome: 'REJECTED' | 'STALE' = 'REJECTED'): VehicleMessageVerdict => {
+      const path = `relay:${m?.kind ?? 'UNKNOWN'}`;
+      const actor: Actor = { id: `vehicle:${vin ?? 'unknown'}`, role: 'VEHICLE', correlationId: m?.message_id ?? randomUUID() };
+      this.audit.denied(actor, 'VEHICLE_MESSAGE_AUTH', path, `${code}: ${VEHICLE_MESSAGE_FAILURES[code]} (via ${via})`);
+      if (MESSAGE_SECURITY.includes(code))
+        for (const l of this.listeners) {
+          try {
+            l({ code: code as VehicleAuthFailure, vin, method: via, path, keyEpoch: m?.auth.key_epoch ?? null });
+          } catch {
+            /* 보안 이벤트 기록 실패가 판정을 바꾸지 않는다 */
+          }
+        }
+      return { outcome, vin, code, message: m };
+    };
+    if (!m) return fail('MESSAGE_SCHEMA_INVALID');
+    if (m.message_id !== vehicleMessageIdOf(m.pseudonym, m.auth.nonce)) return fail('MESSAGE_ID_MISMATCH');
+    const body = Buffer.from(m.body_b64, 'base64');
+    // 표준 base64가 아닌 글자 배열(패딩 어긋남 등)은 다시 인코딩한 값과 달라진다 — 원문을 하나로 정한다
+    if (body.toString('base64') !== m.body_b64 || body.length > VEHICLE_MESSAGE_MAX_BODY_BYTES || sha256Hex(body) !== m.body_sha256) return fail('BODY_HASH_MISMATCH');
+    if (!this.directory) throw new Error('차량 원장(가명 → VIN)이 연결되지 않았습니다');
+    vin = this.directory.vinByPseudonym(m.pseudonym);
+    if (!vin) return fail('UNKNOWN_VEHICLE');
+    if (!this.keys) throw new Error('차량 키 공급자가 없습니다(소프트웨어 HSM 미등록)');
+    // 72시간 안에 키 epoch가 올라갔을 수 있다 — HSM이 그 epoch의 차량 키를 아직 내주면 그 키로 본다
+    const vehicleKey = this.keys.vehicleKey(vin, m.auth.key_epoch);
+    if (!vehicleKey) return fail('REQUEST_KEY_EPOCH');
+    const expected = aesCmac(requestKeyOf(vehicleKey), Buffer.from(vehicleMessageCanonical({ kind: m.kind, ref: m.ref, pseudonym: m.pseudonym, keyEpoch: m.auth.key_epoch, timestamp: m.auth.timestamp, nonce: m.auth.nonce, bodySha256: m.body_sha256 }), 'utf8'));
+    if (!equalBytes(expected, Buffer.from(m.auth.mac, 'base64url'))) return fail('REQUEST_MAC_INVALID');
+    const now = this.clock.now().getTime();
+    const ageMs = now - Number(m.auth.timestamp);
+    if (ageMs < -VEHICLE_MESSAGE_FUTURE_MS) return fail('REQUEST_TIME_SKEW');
+    if (ageMs > VEHICLE_MESSAGE_MAX_AGE_MS) return fail('MESSAGE_STALE', 'STALE');
+    if (++this.messageCalls % NONCE_PRUNE_EVERY === 0) this.db.run('DELETE FROM vehicle_message_nonce WHERE at < ?', new Date(now - VEHICLE_MESSAGE_NONCE_WINDOW_MS - VEHICLE_MESSAGE_FUTURE_MS).toISOString());
+    const seen = this.db.get<{ body_sha256: string }>('SELECT body_sha256 FROM vehicle_message_nonce WHERE vin = ? AND nonce = ? AND at >= ?', vin, m.auth.nonce, new Date(now - VEHICLE_MESSAGE_NONCE_WINDOW_MS).toISOString());
+    if (seen) return seen.body_sha256 === m.body_sha256 ? { outcome: 'DUPLICATE', vin, code: null, message: m, body, ageMs } : fail('REQUEST_REPLAY');
+    // 창 밖으로 밀려났지만 아직 정리되지 않은 같은 nonce 행은 지우고 새로 쓴다(PG 방언 번역이 OR REPLACE를 받지 않는다)
+    this.db.run('DELETE FROM vehicle_message_nonce WHERE vin = ? AND nonce = ?', vin, m.auth.nonce);
+    this.db.run('INSERT INTO vehicle_message_nonce (vin, nonce, body_sha256, kind, at) VALUES (?, ?, ?, ?, ?)', vin, m.auth.nonce, m.body_sha256, m.kind, new Date(now).toISOString());
+    return { outcome: 'ACCEPTED', vin, code: null, message: m, body, ageMs };
   }
 
   private verifyMac(req: Request & { rawBody?: Buffer }, vin: string, ctx: { method: string; path: string; keyEpoch: number | null }, fail: (code: VehicleAuthFailure, vin: string | null, d?: Record<string, unknown>) => never) {

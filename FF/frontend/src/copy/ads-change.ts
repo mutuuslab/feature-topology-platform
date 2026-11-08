@@ -196,19 +196,19 @@ export const adsChange = {
       CANARY_FIRST: 'Canary로 먼저 시작',
       OBSERVATION: 'Canary 관측 기간 미달',
       OPEN_ANOMALY: '열린 이상 징후',
-      ACTIVE_KILL: '진행 중 차단',
+      ACTIVE_KILL: '진행 중 긴급 차단',
     } as Record<string, string>,
-    // 단계 기준(F2 이상이 Canary를 넘어 넓힐 때) — 관측 기간·열린 이상 징후·진행 중 차단
+    // 단계 기준(F2 이상이 Canary를 넘어 넓힐 때) — 관측 기간·열린 이상 징후·진행 중 긴급 차단
     stage: '단계 기준',
     stageScope: (cur: number, ceil: number) => `${cur / 100}% / 승인 ${ceil / 100}%`,
-    stageCol: { scope: '효력 범위', observed: 'Canary 관측', anomalies: '열린 이상 징후', kills: '진행 중 차단' },
+    stageCol: { scope: '효력 범위', observed: 'Canary 관측', anomalies: '열린 이상 징후', kills: '진행 중 긴급 차단' },
     observed: (h: number, req: number) => `${h}시간 / ${req}시간`,
     count: (n: number) => `${n}건`,
     stageReason: {
       CANARY_FIRST: (f: string) => `${f} Feature — Canary(5% 이하)로 먼저 시작해야 넓힐 수 있습니다`,
       OBSERVATION: (h: number, req: number) => `Canary 관측 ${h}시간 — ${req}시간이 지나야 넓힙니다`,
       OPEN_ANOMALY: (n: number) => `열린 이상 징후 ${n}건 — 닫히기 전에는 확대를 멈춥니다`,
-      ACTIVE_KILL: (n: number) => `진행 중 차단 ${n}건 — 복원 전에는 확대를 멈춥니다`,
+      ACTIVE_KILL: (n: number) => `진행 중 긴급 차단 ${n}건 — 복원 전에는 확대를 멈춥니다`,
     },
     lag: (m: number) => `${m}분 지연`,
     blocks: '서버가 막음',

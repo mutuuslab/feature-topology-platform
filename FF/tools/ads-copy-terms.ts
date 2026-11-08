@@ -1,6 +1,6 @@
 // ADS·Orca 상태 용어 규칙(ORC-BE03, 설계 P-9·P-13) — ADS 화면 문구 카탈로그(copy/ads*.ts)는 위반 0건이 하드 규칙.
 // '모름'은 판단 불가·미확인 두 낱말만, '사용 준비 완료' 대신 사용 준비 확인, '차단'·'보류'는 단독으로 쓰지 않는다.
-export const ADS_COPY_FILE = /[\/]copy[\/]ads(-[a-z]+)?\.ts$/;
+export const ADS_COPY_FILE = /[/\\]copy[/\\]ads(-[a-z]+)?\.ts$/;
 
 export const ADS_TERM_RULES: [RegExp, string][] = [
   [/확인 불가|판정 불명|판단 보류|확정 불가/, "'모름'은 두 낱말만 — 판단 불가(차량 판정 UNKNOWN·근거 부족)·미확인(관측 없음·기준 시간 초과·연동 전)"],

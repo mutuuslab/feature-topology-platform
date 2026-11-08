@@ -6,13 +6,10 @@ import {
   CreateExceptionBody,
   EXCEPTION_APPROVER_ROLES,
   EXCEPTION_CHECKS,
-  EXCEPTION_KIND_LABEL,
   EXCEPTION_KINDS,
   EXCEPTION_MAX_HOURS,
   EXCEPTION_REQUEST_ROLES,
-  EXCEPTION_RESTRICTION_LABEL,
   EXCEPTION_RESTRICTIONS,
-  EXCEPTION_STATUS_LABEL,
   GATES,
   type ExceptionKind,
   type ExceptionPolicy,
@@ -25,6 +22,11 @@ import { exceptions as X } from '../../copy/exceptions';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, PageHeader, Panel, Segmented, Select, SummaryLine, Toolbar, VerdictBadge } from '../../design';
 import { usePermission, when } from '../shared';
 import { personLabel } from '../ops/shared';
+import { useUiLocale } from '../../locale/react';
+import { exceptionScopeCaption } from '../../data/exceptionCaptions';
+const EXCEPTION_KIND_LABEL=X.kindLabels;
+const EXCEPTION_RESTRICTION_LABEL=X.restrictionLabels;
+const EXCEPTION_STATUS_LABEL=X.statusLabels;
 
 type Row = ExceptionPolicy & { kindLabel: string; statusLabel: string; restrictionLabel: string; capBasisPoints: number; active: boolean; remainingMs: number | null; scope: string };
 type Detail = Row & { history: { at: string; kind: string; actorId: string; reason?: string; message?: string }[] };
@@ -36,6 +38,7 @@ type Filter = 'all' | 'active' | 'waiting' | 'closed' | 'REJECTED';
 const Badge = ({ s }: { s: ExceptionStatus }) => <VerdictBadge value={STATUS_VERDICT[s]} label={EXCEPTION_STATUS_LABEL[s]} />;
 
 export function ExceptionsScreen() {
+  useUiLocale();
   const q = useApi<{ items: Row[]; active: number }>('exceptionPolicies');
   const [sp, setSp] = useSearchParams();
   const [filter, setFilter] = useState<Filter>('all');
@@ -101,10 +104,10 @@ export function ExceptionsScreen() {
           maxHeight="52vh"
           columns={[
             { key: 'id', header: X.col.id, cell: (e) => <span className="ds-mono ds-nowrap">{e.exceptionId}</span>, sort: (e) => e.exceptionId },
-            { key: 'k', header: X.col.kind, cell: (e) => e.kindLabel, sort: (e) => e.kind },
+            { key: 'k', header: X.col.kind, cell: (e) => EXCEPTION_KIND_LABEL[e.kind], sort: (e) => e.kind },
             { key: 't', header: X.col.target, cell: (e) => <span className="ds-mono ds-nowrap">{`${e.featureId} ${e.featureVersion}${e.policyId ? ` · ${e.policyId}` : ''}`}</span>, sort: (e) => e.featureId },
-            { key: 'sc', header: X.col.scope, cell: (e) => e.scope },
-            { key: 'r', header: X.col.restriction, cell: (e) => `${e.restrictionLabel} · ${e.capBasisPoints / 100}%` },
+            { key: 'sc', header: X.col.scope, cell: (e) => exceptionScopeCaption(e) },
+            { key: 'r', header: X.col.restriction, cell: (e) => `${EXCEPTION_RESTRICTION_LABEL[e.restriction]} · ${e.capBasisPoints / 100}%` },
             { key: 'a', header: X.col.approvals, cell: (e) => X.approvals(e.approvals.length) },
             { key: 's', header: X.col.status, cell: (e) => <Badge s={e.status} />, sort: (e) => e.status },
             { key: 'x', header: X.col.expires, cell: (e) => <span className="ds-nowrap">{e.expiresAt ? `${when(e.expiresAt)}${e.remainingMs ? ` · ${X.remaining(e.remainingMs)}` : ''}` : '—'}</span>, sort: (e) => e.expiresAt ?? '' },
@@ -119,9 +122,9 @@ export function ExceptionsScreen() {
           rowKey={(c) => c.id}
           pageSize={0}
           columns={[
-            { key: 'l', header: X.col.scope, cell: (c) => c.label },
+            { key: 'l', header: X.col.scope, cell: (c) => X.checkLabels[c.id] },
             { key: 'b', header: X.col.status, cell: (c) => <VerdictBadge value={c.bypassable ? 'CONDITIONAL' : 'FAIL'} label={c.bypassable ? X.rules.open : X.rules.closed} /> },
-            { key: 'n', header: X.detail.reason, cell: (c) => c.note },
+            { key: 'n', header: X.detail.reason, cell: (c) => X.checkNotes[c.id] },
           ]}
         />
       </Panel>
@@ -160,12 +163,12 @@ function ExceptionDrawer({ id, onClose }: { id: string; onClose: () => void }) {
           <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
             <KeyValue
               rows={[
-                { k: X.col.kind, v: e.kindLabel },
+                { k: X.col.kind, v: EXCEPTION_KIND_LABEL[e.kind] },
                 { k: X.col.status, v: <Badge s={e.status} /> },
                 { k: X.col.target, v: <span className="ds-mono">{`${e.featureId} ${e.featureVersion}`}</span> },
                 ...(e.policyId ? [{ k: D.policy, v: <span className="ds-mono">{e.policyId}</span> }] : []),
-                { k: X.col.scope, v: e.scope },
-                { k: X.col.restriction, v: `${e.restrictionLabel} · ${e.capBasisPoints / 100}%` },
+                { k: X.col.scope, v: exceptionScopeCaption(e) },
+                { k: X.col.restriction, v: `${EXCEPTION_RESTRICTION_LABEL[e.restriction]} · ${e.capBasisPoints / 100}%` },
                 { k: D.requester, v: `${personLabel(e.requestedBy)} · ${when(e.requestedAt)}` },
                 { k: D.reason, v: e.reason },
                 { k: D.period, v: D.periodValue(e.periodHours) },
@@ -307,7 +310,7 @@ function RequestForm({ onDone }: { onDone: (id: string) => void }) {
             <legend>{F.checks}</legend>
             {EXCEPTION_CHECKS.filter((c) => c.bypassable && c.id !== 'RELEASE_GATE').map((c) => (
               <label key={c.id} style={{ display: 'block' }}>
-                <input type="checkbox" checked={checks.includes(c.id)} onChange={() => setChecks((l) => toggle(l, c.id))} /> {c.label}
+                <input type="checkbox" checked={checks.includes(c.id)} onChange={() => setChecks((l) => toggle(l, c.id))} /> {X.checkLabels[c.id]}
               </label>
             ))}
           </fieldset>

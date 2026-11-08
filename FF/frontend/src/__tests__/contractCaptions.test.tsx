@@ -6,6 +6,7 @@ import { complianceCriterionCaption, procedureGateCaption, roleCaptionFromSource
 import { NextTurn } from '../screens/features/NextTurn';
 import { GateChecks } from '../screens/features/GateOutcomePanel';
 import { GateRail } from '../design/lifecycle';
+import { personLabel as operationPersonLabel } from '../screens/ops/shared';
 import type { TransitionOption } from '../screens/types';
 
 afterEach(()=>{ cleanup(); __resetLocaleForTest(); });
@@ -19,6 +20,7 @@ it('localizes known compliance and gate captions without changing source labels 
  expect(procedureGateCaption('G8')).toContain('No platform Gate');
  expect(roleCaptionFromSourceLabel(ROLE_LABEL.FEATURE_APPROVER)).toBe('Feature approver');
  expect(roleCaptionFromSourceLabel('사용자 원문 역할')).toBe('사용자 원문 역할');
+ expect(operationPersonLabel('usr-quality')).toBe('박유진(Quality review)');
  expect(JSON.stringify({COMPLIANCE_CHECK_LABEL,COMPLIANCE_RULE_TYPE_LABEL,COMPLIANCE_RULE_STATUS_LABEL,GATE_META,ROLE_LABEL})).toBe(source);
  await changeUiLanguage('ko');
  expect(complianceCriterionCaption({check:'GATE_PASS',gate:'G3'})).toBe('G3 Gate 통과');

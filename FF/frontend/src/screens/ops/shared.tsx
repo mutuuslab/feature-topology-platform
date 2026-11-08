@@ -2,6 +2,7 @@
 import { ko } from '../../copy/ko';
 import { control as CT } from '../../copy/control';
 import { DEMO_ACCOUNTS } from '../../data/demoAccounts';
+import { displayRoleLabel } from '../../data/refdata';
 import { VerdictBadge } from '../../design';
 
 export interface Delivery {
@@ -45,7 +46,7 @@ export const waitedMinutes = (createdAt: string, now = Date.now()) => Math.max(0
 /** 승인자·요청자 표시 이름 — 데모 계정은 이름(담당), 그 밖은 회사 계정 ID(내부 데모 ID는 보이지 않는다) */
 export function personLabel(id: string): string {
   const a = DEMO_ACCOUNTS.find((x) => x.id === id);
-  if (a) return `${a.name}(${a.label})`;
+  if (a) return `${a.name}(${displayRoleLabel(a.key)})`;
   return id.startsWith('usr-') ? CT.approval.someone : id;
 }
 

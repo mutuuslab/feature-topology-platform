@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 88,
-  "requiredLeaves": 9357,
+  "requiredLeaves": 9383,
   "modules": [
     {
       "module": "ads-change",
@@ -16299,6 +16299,162 @@
           "kind": "text",
           "text": "승인 요청",
           "sourceHash": "c1f6e0c48552beb7e6b54cba08c717011a21f0caad9b6498154f11db8af96cd2"
+        },
+        {
+          "path": "exceptions.exceptions.kindLabels.BYPASS",
+          "kind": "text",
+          "text": "임시 우회",
+          "sourceHash": "24eb7ee977100ab9d7170d1caddcdd87d99d17e618c58f24185012c6af927243"
+        },
+        {
+          "path": "exceptions.exceptions.kindLabels.GATE_PENDING",
+          "kind": "text",
+          "text": "Gate 예외",
+          "sourceHash": "92a4270e911793ecffbd12e400ac7722a9321b080894012f7e70f1a63583c31c"
+        },
+        {
+          "path": "exceptions.exceptions.restrictionLabels.LIMITED",
+          "kind": "text",
+          "text": "제한 배포",
+          "sourceHash": "5e4688b89aa04d9dc76b389631149e903848b9c0a3e1913086abb3d57b044cd8"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.REQUESTED",
+          "kind": "text",
+          "text": "승인 요청",
+          "sourceHash": "c1f6e0c48552beb7e6b54cba08c717011a21f0caad9b6498154f11db8af96cd2"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.APPROVING",
+          "kind": "text",
+          "text": "1차 승인",
+          "sourceHash": "98e124e9cbfb4dd6a30dde800f458f36f9055844e31295c211962cccfee72f81"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.ACTIVE",
+          "kind": "text",
+          "text": "적용 중",
+          "sourceHash": "0619d3235c59fd2325da029938ae6cdaac1b63b50620529e73d052c3fd058f93"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.REJECTED",
+          "kind": "text",
+          "text": "반려",
+          "sourceHash": "d283b7dbc864793f48ce9c18b99dedb5e9a78bcd48c98229ec009539d6413422"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.EXPIRED",
+          "kind": "text",
+          "text": "만료·원복",
+          "sourceHash": "38b76cb042bbec8b2d0a8bf722ce5b04aec5461e5a075700f16c84c3e4c31c26"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.REVOKED",
+          "kind": "text",
+          "text": "회수·원복",
+          "sourceHash": "b6e1dc50bac8071d6dc44c2e09a11c9911c9b1057ec23f3bc01a92e82706a124"
+        },
+        {
+          "path": "exceptions.exceptions.statusLabels.COMPLETED",
+          "kind": "text",
+          "text": "완료(Gate 통과)",
+          "sourceHash": "90b8991e84528ff88dcec5e5c228fdc3ab81978fe4573f04cec6dc0d09d086bb"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.COMPLIANCE_RULE",
+          "kind": "text",
+          "text": "배포 시점 컴플라이언스 룰",
+          "sourceHash": "5b45f61f7196e3d68edcccee8359fce319856e7653c54fdc7ed725a52ad74d22"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.FLAG_CODE",
+          "kind": "text",
+          "text": "Flag 코드 연결 출시 관문",
+          "sourceHash": "4906b2fa11d220345098d53aa5d6e6b773c1fd0ae3f9741eb9006aece22e41eb"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.ADS_PUBLISH",
+          "kind": "text",
+          "text": "ADS 발행 조건",
+          "sourceHash": "07716984e97de779dc3b66666bf8f1c2f22af62664b61d0af8b4e2a832c22588"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.RELEASE_GATE",
+          "kind": "text",
+          "text": "출시 Gate(G8·G9) 미통과 — Shadow만",
+          "sourceHash": "07c2d886f30f533e59d9d69bf4c8d07aa2a3723e03e131c32256c0afc095f1d5"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.SIGNATURE_INTEGRITY",
+          "kind": "text",
+          "text": "서명·무결성",
+          "sourceHash": "c352773c45a6b1804dfa0b223538764ef8ab7394c350bb7ac4261096dc40d770"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.KILL_TWO_PERSON",
+          "kind": "text",
+          "text": "긴급 차단·복원 2인 승인",
+          "sourceHash": "47a0b871d0d9b6c4ecb8a4a6cece79b312ebe4fb7b46ae29cde97a433b88d7da"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.SEPARATION_OF_DUTY",
+          "kind": "text",
+          "text": "직무 분리(요청자≠승인자)",
+          "sourceHash": "203062722c25f355303a70056e18a08b70f7a6db2e0ce12bf60babf9fe7a9aff"
+        },
+        {
+          "path": "exceptions.exceptions.checkLabels.STOP_ALWAYS",
+          "kind": "text",
+          "text": "멈추기(0%)",
+          "sourceHash": "4484782c61886c310a497362a110b0f36e8a1970dd7659960e6ab340b0af68b8"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.COMPLIANCE_RULE",
+          "kind": "text",
+          "text": "지정한 룰 ID만 — 승인되지 않은 룰은 원래 판정에 들어가지 않는다",
+          "sourceHash": "1ad0af2854df99495fe44b6549e3cdd8a4fe67ff3a58c7142536ad71b7a42f9f"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.FLAG_CODE",
+          "kind": "text",
+          "text": "코드 연결 미확인 Flag의 게시",
+          "sourceHash": "67c3e59ae3e1a3b883576486d54ab375af910678407b5a22cda119961fe74394"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.ADS_PUBLISH",
+          "kind": "text",
+          "text": "분류 미등록·승인 조합 없음·승인 상한 밖 설정",
+          "sourceHash": "ce1b42384428dd74292527fc770f6891682d3f17e45ac73cb9a54e0c8a1d055f"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.RELEASE_GATE",
+          "kind": "text",
+          "text": "Gate 예외(PENDING Gate)로만 연다",
+          "sourceHash": "4c45f0c98b25706b3a3fd67786614f8d42e1073b8c346d52e56edd5121a6d87f"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.SIGNATURE_INTEGRITY",
+          "kind": "text",
+          "text": "게시본 서명·내용 해시 검증은 언제나 적용한다",
+          "sourceHash": "e0313183b68b6b03b005d14977450d893fea18a8555382942c575ac9f709e5e4"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.KILL_TWO_PERSON",
+          "kind": "text",
+          "text": "차단·복원 명령은 언제나 두 사람이 승인한다",
+          "sourceHash": "31ebf18a77ec4174e8fc9ac09942e38a1b717d39bbda0bf96786fa2630e59b22"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.SEPARATION_OF_DUTY",
+          "kind": "text",
+          "text": "요청자는 자기 요청을 승인할 수 없다",
+          "sourceHash": "f0ca26a0fb133a13cafb1b5fed8c08fc584f34a109b5858964af8e5f80e3b398"
+        },
+        {
+          "path": "exceptions.exceptions.checkNotes.STOP_ALWAYS",
+          "kind": "text",
+          "text": "멈추기는 언제나 할 수 있어 예외 대상이 아니다",
+          "sourceHash": "5115682e66af7c597dfc79b7bfabe3867728e1cdba677a55978309cc9bff57b0"
         },
         {
           "path": "exceptions.exceptions.panel.title",

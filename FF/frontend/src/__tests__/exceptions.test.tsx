@@ -1,11 +1,12 @@
 // 예외 승인 화면(/verify/exceptions, GX — FR-EXC-001·002·FR-REG-005-010)·정책 상세 '출시·예외' 패널(FR-RDD-001-006). 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { ExceptionsScreen } from '../screens/policy/Exceptions';
 import { ExceptionPanel } from '../screens/policy/ExceptionPanel';
+import { changeUiLanguage, __resetLocaleForTest } from '../locale/runtime';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -26,6 +27,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  __resetLocaleForTest();
 });
 
 const mount = (role: string, path: string, el: JSX.Element) => {
@@ -81,6 +83,30 @@ const row = (o: Record<string, unknown>) => ({
   ...o,
 });
 const WAITING = row({ exceptionId: 'EXC-00003', featureVersion: '3.2.0', status: 'APPROVING', statusLabel: '1차 승인', approvals: [row({}).approvals[0]], appliedAt: null, expiresAt: null, active: false, remainingMs: null, restriction: 'PILOT', restrictionLabel: 'Pilot', capBasisPoints: 100 });
+
+it('updates exception captions in place while preserving the draft, original reasons and two-person approval block',async()=>{
+ const item={...WAITING,history:[]}; const snapshot=JSON.stringify(item);
+ handler=url=>url.startsWith('/api/exceptions/EXC-00003')?{body:item}:url.startsWith('/api/exceptions')?{body:{items:[item],active:0}}:undefined;
+ mount('quality','/verify/exceptions?id=EXC-00003',<ExceptionsScreen/>);
+ const dialog=await screen.findByRole('dialog');
+ await within(dialog).findByText(/이미 승인했습니다/);
+ const draft=within(dialog).getByLabelText('의견·사유');
+ fireEvent.change(draft,{target:{value:'사용자가 직접 작성한 검토 의견'}});
+ await act(async()=>{await changeUiLanguage('en');});
+ expect(screen.getByRole('heading',{name:'Exception approvals',exact:true})).toBeTruthy();
+ expect(screen.getAllByText('Cannot bypass')).toHaveLength(4);
+ expect(within(dialog).getByLabelText('Comment or reason')).toBe(draft);
+ expect(draft).toHaveValue('사용자가 직접 작성한 검토 의견');
+ expect(within(dialog).getByRole('button',{name:'Approve',exact:true})).toBeDisabled();
+ expect(within(dialog).getByText('현장 품질 문의 대응')).toBeTruthy();
+ expect(screen.getAllByText('Gate exception').length).toBeGreaterThan(0);
+ expect(within(dialog).getByText('PENDING Gate G8·G9')).toBeTruthy();
+ expect(calls.filter(call=>call.method==='POST')).toEqual([]);
+ expect(JSON.stringify(item)).toBe(snapshot);
+ await act(async()=>{await changeUiLanguage('ko');});
+ expect(within(dialog).getByLabelText('의견·사유')).toBe(draft);
+ expect(draft).toHaveValue('사용자가 직접 작성한 검토 의견');
+});
 
 describe('예외 승인 화면', () => {
   it('적용 중·승인 대기 수, 목록, 예외로 열 수 있는 검사와 우회 불가 4가지', async () => {

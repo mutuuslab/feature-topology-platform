@@ -72,7 +72,7 @@ export async function saveOverlay(o: SimOverlay, requiredBinaryIds:readonly stri
     const db=await openSimDatabase();
     try{await new Promise<void>((resolve,reject)=>{
       const tx=db.transaction([STORE,'binary'],'readwrite');let problem:Error|undefined;
-      for(const id of requiredBinaryIds){const r=tx.objectStore('binary').get(id);r.onsuccess=()=>{if(!r.result){problem=new Error('첨부 바이트가 없어 산출물을 저장하지 않았습니다.');tx.abort();}};}
+      for(const id of requiredBinaryIds){const r=tx.objectStore('binary').get(id);r.onsuccess=()=>{if(!r.result||r.result.version!==o.version){problem=new Error('첨부 바이트가 없어 산출물을 저장하지 않았습니다.');tx.abort();}else tx.objectStore('binary').put({...r.result,attached:true},id);};}
       const prior=tx.objectStore(STORE).get(KEY),revision=(o.storageRevision??0)+1;
       prior.onsuccess=()=>{
         const saved=prior.result as SimOverlay|undefined;

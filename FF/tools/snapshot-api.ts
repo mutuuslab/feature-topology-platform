@@ -2,7 +2,7 @@
 // 빌드된 백엔드를 보조 포트에 띄워(메모리 DB·v0.81 시드) v2 화면이 실제로 보내는 요청 모양 그대로 받아 둔다.
 // 요청 URL·파일 이름 규칙은 @ff/contracts의 routeUrl·snapshotFile 하나를 프론트와 공유한다.
 import { spawn } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -17,6 +17,7 @@ import { snapshotP5 } from './snapshot-p5.ts';
 import { snapshotP10 } from './snapshot-p10.ts';
 import { snapshotTx } from './snapshot-tx.ts';
 import { snapshotWorkflow } from './snapshot-workflow.ts';
+import { captureSoftwareDemos } from './software-demo-capture.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, DEMO_SDK_KEY, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
@@ -706,6 +707,13 @@ async function main() {
   await snapshotP3(save, { features: all.items });
   await snapshotP10(save, { features: all.items });
   await snapshotTx(save, { features: all.items, policies: policies.items });
+  const software = await save('softwarePackages');
+  for (const item of software.items) { await save('softwarePackage', { id: item.packageId }); await save('softwareDownloadHistory', { id: item.packageId }); }
+  // Public bytes are opt-in for exact, user-approved synthetic JS hashes, never inferred from source enum alone.
+  if (process.env.FF_SOFTWARE_CAPTURE_CONFIG) {
+    const config = JSON.parse(readFileSync(resolve(process.env.FF_SOFTWARE_CAPTURE_CONFIG), 'utf8'));
+    console.log('software-demo-capture ' + JSON.stringify(await captureSoftwareDemos({ ...config, outDir: OUT })));
+  }
 
   // 운영 지표 탭 — Prometheus 텍스트(스냅샷을 찍는 동안 받은 요청)를 JSON으로 감싸 둔다. 마지막에 받아야 위 조회가 모두 들어간다
   const metricsUrl = routeUrl('healthMetrics');

@@ -41,6 +41,7 @@ import type {
 
 // ─── 등록소 ───────────────────────────────────────────────
 const handlers = new Map<string, SimHandler>();
+const downloadHandlers = new Set<string>();
 /** 요청 본문 검증기 — 화면 묶음의 경로 표는 본문 스키마를 뺀다(tools/browser-routes) → 핸들러가 contracts 스키마를 함께 등록한다 */
 const bodies = new Map<string, ZodTypeAny>();
 const readers = new Map<string, SimReader>();
@@ -54,6 +55,12 @@ export function registerSimHandler(name: string, fn: SimHandler, opts: { body?: 
   if (!r || r.method === 'GET') throw new Error(`시연 핸들러: 쓰기 경로가 아닙니다 — ${name}`);
   handlers.set(name, fn);
   if (opts.body) bodies.set(name, opts.body);
+}
+/** Binary GETs have a native download audit too. Commit their receipt atomically before releasing the verified Blob. */
+export function registerSimDownload(name: string, fn: SimHandler) {
+  const route = BY_NAME.get(name);
+  if (!route || route.method !== 'GET' || route.binary !== 'download') throw new Error(`시연 다운로드: 바이너리 GET 경로가 아닙니다 — ${name}`);
+  handlers.set(name, fn); downloadHandlers.add(name);
 }
 /** 계산 읽기 — undefined를 돌려주면 스냅샷 + 오버레이(뷰)로 넘어간다 */
 export function registerSimReader(name: string, fn: SimReader) {
@@ -583,7 +590,7 @@ export async function simCall<T>(route: RouteDef, url: string, opts: CallOptions
   const req: SimRequest = { name: route.name, route, url, params: opts.params ?? {}, query: queryOf(url), body: opts.body };
   const actor = simActor(route, opts);
   try {
-    return (route.method === 'GET' ? await readRoute(o, req, actor) : await write(o, req, actor)) as T;
+    return (route.method === 'GET' && !downloadHandlers.has(route.name) ? await readRoute(o, req, actor) : await write(o, req, actor)) as T;
   } catch (e) {
     if (e instanceof SimError) throw asApiError(e);
     throw e;

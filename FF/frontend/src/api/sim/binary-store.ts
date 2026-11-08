@@ -3,7 +3,7 @@ import { openSimDatabase } from './store';
 
 export const BLOB_STORE = 'binary';
 export const FILE_MAX = 64 * 1024 * 1024, TOTAL_MAX = 1024 * 1024 * 1024;
-export interface BrowserBinary { fileId:string;scope:string;ownerId:string;requestKey:string;version:string;expires:number;blob:Blob;file:WorkflowStoredFile }
+export interface BrowserBinary { fileId:string;scope:string;ownerId:string;requestKey:string;version:string;expires:number;attached?:boolean;blob:Blob;file:WorkflowStoredFile }
 const digest=async(blob:Blob)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))].map(v=>v.toString(16).padStart(2,'0')).join('');
 export async function readBrowserBinary(id:string):Promise<BrowserBinary> {
   const db=await openSimDatabase();
@@ -25,7 +25,7 @@ export async function stageBrowserBinary(blob:Blob,meta:{scope:string;ownerId:st
     const tx=db.transaction(BLOB_STORE,'readwrite'),s=tx.objectStore(BLOB_STORE),r=s.getAll();let result=file,problem:Error|undefined;
     r.onsuccess=()=>{
       const rows=r.result as BrowserBinary[];
-      const kept=rows.filter(row=>{const remove=row.version!==meta.version||row.expires<Date.now()&&!referenced.has(row.fileId);if(remove)s.delete(row.fileId);return !remove;});
+      const kept=rows.filter(row=>{const remove=row.version!==meta.version||row.expires<Date.now()&&!row.attached&&!referenced.has(row.fileId);if(remove)s.delete(row.fileId);return !remove;});
       const old=kept.find(row=>row.scope===meta.scope&&row.requestKey===meta.requestKey);
       if(old){if(old.ownerId!==meta.ownerId||old.file.name!==meta.name||old.file.mediaType!==meta.mediaType||old.file.sha256!==sha256||old.file.bytes!==blob.size){problem=new Error('같은 첨부 요청 번호의 내용이 다릅니다.');tx.abort();}else result=old.file;return;}
       if(kept.reduce((sum,row)=>sum+row.file.bytes,0)+blob.size>TOTAL_MAX){problem=new Error('첨부 저장소 전체 용량 1GiB를 초과합니다.');tx.abort();return;}

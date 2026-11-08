@@ -17,6 +17,7 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/f0'),
   () => import('./handlers/workflow-execution'),
   () => import('./handlers/taxonomy'),
+  () => import('./handlers/software'),
 ];
 setSimHandlerLoader(() => Promise.all(HANDLERS.map((load) => load())));
 

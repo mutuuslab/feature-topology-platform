@@ -11,9 +11,10 @@ import { DataActController, DataActService } from './api-gateway/data-act.servic
 import { DemoSdkKeySeeder, OfrepSdkKeyGuard } from './api-gateway/ofrep-sdk-key';
 import { SupplierController } from './supplier/supplier.controller';
 import { SupplierService } from './supplier/supplier.service';
+import { SupplierDirectoryModule } from './supplier/supplier-directory.module';
 
 @Module({
-  imports: [D01PolicyModule, IntegrationErrorModule],
+  imports: [D01PolicyModule, IntegrationErrorModule, SupplierDirectoryModule],
   controllers: [OfrepController, OpenFeatureController, BillingController, BizMetricsController, DataActController, SupplierController],
   providers: [OtelExporter, OfrepService, OpenFeatureGovService, BillingService, BizMetricsService, DataActService, OfrepSdkKeyGuard, DemoSdkKeySeeder, SupplierService],
   exports: [OfrepService, SupplierService],

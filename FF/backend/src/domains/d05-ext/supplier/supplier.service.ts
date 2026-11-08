@@ -13,12 +13,13 @@ import { publicArtifactUri, verifyArtifact } from './supplier-proof';
 import { SupplierStore } from './supplier.store';
 import { TraceLinkService } from '../../d01-policy/registry/trace-link.service';
 import { contractGaps, supplierScope } from '@ff/contracts';
+import { SupplierDirectoryService, type SupplierDirectoryResult } from './supplier-directory.module';
 
 @Injectable()
 @PlatformComponent('D05-01')
 export class SupplierService {
   private readonly store: SupplierStore;
-  constructor(@Inject(DB) private readonly db: Db, private readonly features: FeatureRepo, private readonly topology: TopologyRepo, private readonly clock: Clock, private readonly audit: AuditService, private readonly events: EventService, private readonly trace: TraceLinkService) { this.store = new SupplierStore(db); }
+  constructor(@Inject(DB) private readonly db: Db, private readonly features: FeatureRepo, private readonly topology: TopologyRepo, private readonly clock: Clock, private readonly audit: AuditService, private readonly events: EventService, private readonly trace: TraceLinkService, private readonly directory: SupplierDirectoryService) { this.store = new SupplierStore(db); }
 
   private feature(id: string, version?: string) {
     const f = version ? this.features.get(id, version) : this.features.versions(id).at(-1);
@@ -156,7 +157,7 @@ export class SupplierService {
     });
   }
   gate(featureId: string, version: string) { return supplierGateFacts(this.db, this.feature(featureId, version)); }
-  scope(featureId: string, version: string) {
+  async scope(featureId: string, version: string) {
     const feature = this.feature(featureId, version);
     const versions = this.features.versions(featureId);
     const previous = versions[versions.findIndex((f) => f.version === version) - 1] ?? null;
@@ -174,8 +175,10 @@ export class SupplierService {
       if (latest.TEST_EVIDENCE?.integrity !== 'VERIFIED') delete latest.TEST_EVIDENCE;
       return [p.packageId, latest];
     }));
+    let directory: SupplierDirectoryResult;
+    try { directory = await this.directory.read(); } catch (error) { directory = { mode: 'UNAVAILABLE', source: 'UNCONFIRMED', items: [], reason: error instanceof Error ? error.message : '협력사 연락처 원본 확인 실패' }; }
     const trace = this.trace.featureSummary(featureId).coverage.test;
-    const scope = supplierScope({ feature, previous, dependents, sw: this.topology.allSw(), mappings: this.store.mappings(featureId), packages, latestByPackage, hasCriteria: this.store.criteria(featureId).length > 0, directory: [], traceEvidence: { required: trace.required, withEvidence: trace.withEvidence } });
+    const scope = supplierScope({ feature, previous, dependents, sw: this.topology.allSw(), mappings: this.store.mappings(featureId), packages, latestByPackage, hasCriteria: this.store.criteria(featureId).length > 0, directory: directory.items, traceEvidence: { required: trace.required, withEvidence: trace.withEvidence } });
     const suppliers = scope.map((s) => {
       const report = s.latestPackage ? latestByPackage[s.latestPackage.packageId]?.TEST_EVIDENCE : undefined;
       return { ...s, evidence: { ...s.evidence,
@@ -186,6 +189,6 @@ export class SupplierService {
         source: report ? 'SUPPLIER_PACKAGE_BODY' as const : 'UNCONFIRMED' as const,
       } };
     });
-    return { feature: { featureId, version, name: feature.name }, suppliers, contractGaps: contractGaps(featureId, version, suppliers), unresolvedDependencies: incoming.filter((d) => !d.targetVersion).map((d) => ({ dependencyId: d.dependencyId, sourceFeatureId: d.sourceFeatureId, sourceVersion: d.sourceVersion })), traceEvidence: { scope: 'FEATURE_ID', versionBound: false, required: trace.required, withEvidence: trace.withEvidence }, directory: { mode: 'UNCONFIGURED', source: 'UNCONFIRMED', reason: '협력사 연락처 원본이 연결되지 않았습니다.' } };
+    return { feature: { featureId, version, name: feature.name }, suppliers, contractGaps: contractGaps(featureId, version, suppliers), unresolvedDependencies: incoming.filter((d) => !d.targetVersion).map((d) => ({ dependencyId: d.dependencyId, sourceFeatureId: d.sourceFeatureId, sourceVersion: d.sourceVersion })), traceEvidence: { scope: 'FEATURE_ID', versionBound: false, required: trace.required, withEvidence: trace.withEvidence }, directory: { mode: directory.mode, source: directory.source, reason: directory.reason } };
   }
 }

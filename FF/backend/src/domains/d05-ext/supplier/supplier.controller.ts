@@ -1,5 +1,5 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
-import { AddSupplierSwcBody, CreateSupplierCriteriaBody, CreateSupplierMappingBody, CreateSupplierPackageBody, ReviewSupplierPackageBody, SubmitSupplierArtifactBody, SubmitSupplierPackageBody, SUPPLIER_CRITERIA_ROLES, SUPPLIER_MAPPING_ROLES, SUPPLIER_PACKAGE_ROLES, SUPPLIER_REVIEW_ROLES } from '@ff/contracts';
+import { Body, Controller, Get, Header, HttpCode, Param, Post, Query } from '@nestjs/common';
+import { AddSupplierSwcBody, CreateSupplierCriteriaBody, CreateSupplierMappingBody, CreateSupplierPackageBody, HUMAN_ROLES, ReviewSupplierPackageBody, SubmitSupplierArtifactBody, SubmitSupplierPackageBody, SUPPLIER_CRITERIA_ROLES, SUPPLIER_MAPPING_ROLES, SUPPLIER_PACKAGE_ROLES, SUPPLIER_REVIEW_ROLES } from '@ff/contracts';
 import { CurrentActor, Roles, type Actor } from '../../../kernel/actor';
 import { singleQuery } from '../../../kernel/paging';
 import { ZodPipe } from '../../../kernel/zod.pipe';
@@ -43,5 +43,7 @@ export class SupplierController {
   @Get('features/:id/versions/:ver/supplier-gate')
   gate(@Param('id') id: string, @Param('ver') version: string) { return this.supplier.gate(id, version); }
   @Get('features/:id/versions/:ver/supplier-scope')
+  @Header('Cache-Control', 'no-store')
+  @Roles(...HUMAN_ROLES)
   scope(@Param('id') id: string, @Param('ver') version: string) { return this.supplier.scope(id, version); }
 }

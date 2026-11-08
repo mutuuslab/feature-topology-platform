@@ -2342,6 +2342,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/deployments/:id",
      "/fleet/vehicles/:vin",
      "/supplier/portal",
+     "/supplier/deliveries",
      "/admin/security",
      "/integration/openfeature",
      "/procurement/sw-cost/:estId",
@@ -3420,6 +3421,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/fleet/vehicles/:vin",
      "/quality/feedback",
      "/supplier/portal",
+     "/supplier/deliveries",
      "/admin/security",
      "/master/feature-db/changes/:id",
      "/master/feature-db/changes",
@@ -4668,7 +4670,8 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/verify/evidence",
      "/verify/safety-case",
      "/admin/approval",
-     "/supplier/portal"
+     "/supplier/portal",
+     "/supplier/deliveries"
     ],
     "reference": [
      "/analysis/impact",
@@ -5237,7 +5240,8 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "/audit/oversight",
      "/ops/kill",
      "/quality/feedback",
-     "/supplier/portal"
+     "/supplier/portal",
+     "/supplier/deliveries"
     ],
     "reference": [
      "/arch/components",
@@ -5993,7 +5997,7 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
   {
    "id": "DEP-ITSEC",
    "name": "Feature 관제실",
-   "en": "IT Infrastructure & SecOps",
+   "en": "Feature Control Center",
    "desc": "HSM·KMS에서 서명 키를 생성·순환·폐기한다(플랫폼 밖 업무 — 플랫폼에서는 조회). 플랫폼 계정 상태와 소유자가 없는 기록의 소유자 이관을 맡는다.",
    "workspace": "control",
    "roles": [
@@ -6280,7 +6284,8 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
     "reference": [
      "/analysis/impact",
      "/arch/topology",
-     "/supplier/portal"
+     "/supplier/portal",
+     "/supplier/deliveries"
     ]
    },
    "handoffs": {

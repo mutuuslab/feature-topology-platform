@@ -291,7 +291,7 @@ departments:
     desc: 차량 운행을 관제하고 이상 징후에 대응하며 긴급 차단·복원을 요청하고 단계적 확대를 실행한다.
   - id: DEP-ITSEC
     name: Feature 관제실
-    en: IT Infrastructure & SecOps
+    en: Feature Control Center
     workspace: control
     roles: [R-PKI, R-SYS]
     personas: [sysadmin]

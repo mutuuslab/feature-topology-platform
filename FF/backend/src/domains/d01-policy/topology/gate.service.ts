@@ -33,6 +33,7 @@ import { AnalysisEvidenceService } from './analysis-evidence.service';
 import { GateCheckService } from './gate-check.service';
 import { decisionUsable, gateSatisfied, GATE_STATUS_SPEC, goNoGo, type GateStatus } from '@ff/contracts';
 import { GateHooks } from '../../../kernel/gate-hooks';
+import { supplierGateFacts } from '../../d05-ext/supplier/supplier-gate';
 
 @Injectable()
 @PlatformComponent('D01-02')
@@ -198,6 +199,14 @@ export class GateService {
     if (hooked.length) {
       this.audit.failed(actor, `GATE_JUDGE ${body.gate}`, target, hooked.join(' / '), 'D01-02');
       throw new DomainError('GUARD_FAILED', `${body.gate}을(를) PASS로 판정할 codeBeamer 산출물이 완결되지 않았습니다.`, { blockers: hooked.map((message) => ({ code: 'WORK_PRODUCT', message, ref: body.gate })) });
+    }
+    if (body.gate === 'G6' && body.inputResult === 'PASS') {
+      const supplier = supplierGateFacts(this.db, f);
+      if (supplier.blockers.length) {
+        const message = `협력사 패키지 검수가 끝나지 않았습니다: ${supplier.blockers.join(' / ')}`;
+        this.audit.failed(actor, 'GATE_JUDGE G6', target, message, 'D01-02');
+        throw new DomainError('GUARD_FAILED', message, { blockers: supplier.blockers.map((message) => ({ code: 'SUPPLIER_PACKAGE', message, ref: 'G6' })) });
+      }
     }
     const deviation = body.gate === 'G2' && body.inputResult === 'PASS' && body.asilReasonReviewed ? this.analysis.asilDeviation(f) : null;
     return this.db.tx(() => {

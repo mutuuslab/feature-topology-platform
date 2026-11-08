@@ -60,7 +60,7 @@ last_updated: 2026-11-08
 | FPW.9-A01 운영 결과 품질 피드백 수용 | FPW.9 사후 검토·Flag Retirement | C (시험 조직) | 드릴 결과·G8 판정 `WP-DRILL-REPORT`, 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` → 품질 피드백 기록 `WP-QUALITY-FEEDBACK` | `/quality/feedback` | 1차 |
 | FPW.9-A04 코드·설정·시험 삭제 기록 | FPW.9 사후 검토·Flag Retirement | C (시험 조직) | Retirement 승인 기록 `WP-RETIRE-APPROVAL` → Retirement 단계 기록 `WP-RETIRE-LOG` | `/flag-retirements` | 1차 |
 | FPW.9-A06 Flag 제거 PR 병합 | FPW.9 사후 검토·Flag Retirement | C (시험 조직) | Retirement 단계 기록 `WP-RETIRE-LOG` → Flag 제거 검토·스캔 결과 `WP-FLAG-REMOVAL-SCAN` | `/flag-code/lifecycle`, `/flag-retirements` | 1차 |
-| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | R (시험 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
+| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | R (시험 조직) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN`, 협력사 릴리스 패키지 `WP-SUPPLIER-RELEASE-PACKAGE` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal`, `/supplier/deliveries` | 2차 초안 |
 | FPW.10-A07 EOL 프로비저닝 검증 | FPW.10 협력사 관리 | C (시험 조직) | 입고 검사 결과 `WP-INTAKE-RESULT` → EOL 프로비저닝 검증 기록 `WP-EOL-RECORD` | 플랫폼 밖 | 2차 초안 |
 | FPW.18-A02 운영·품질 데이터 분석 | FPW.18 운영 분석·상품 개선 | C (시험 조직) | 분석 목적·데이터 검토 `WP-ANALYSIS-SCOPE` → 운영·전환 분석 결과 `WP-OPS-ANALYSIS` | `/data/workbench`, `/ops/telemetry`, `/fleet/map` 외 2 | 2차 초안 |
 
@@ -77,5 +77,5 @@ last_updated: 2026-11-08
 
 ## 3. 쓰는 화면
 
-- 주 업무 화면: `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/supplier/portal`
+- 주 업무 화면: `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/supplier/portal`, `/supplier/deliveries`
 - 참조 화면(협의·통보): `/analysis/impact`, `/trace/design`, `/change/cr`, `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/master/control-points`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/activation/decide`, `/policies/:id`, `/verify/compliance`, `/ops/kill`, `/quality/feedback`, `/flag-retirements`, `/flag-code/lifecycle`, `/data/workbench`, `/ops/telemetry`, `/fleet/map`, `/fleet/vehicles`, `/fleet/vehicles/:vin`

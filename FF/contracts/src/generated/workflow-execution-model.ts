@@ -3734,6 +3734,16 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ]
     },
     {
+     "key": "WP-SUPPLIER-RELEASE-PACKAGE",
+     "name": "협력사 릴리스 패키지",
+     "content": [
+      "대상 Feature Version·패키지 버전·협력사 Function·SW Component·ECU 매핑",
+      "API 계약·개발 문서·매핑·지원 범위·차량 조건·진단·안전 보안·SDK Stub Mock·시험 근거·변경 안내의 필수 10항목",
+      "외부 출처와 서버 보관 본문·SHA-256·대상 manifest·제출자·제출 시각",
+      "OEM 환경 재실행 보고서와 안전 사용 가정"
+     ]
+    },
+    {
      "key": "WP-INTAKE-RESULT",
      "name": "입고 검사 결과",
      "content": [
@@ -3941,7 +3951,8 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      },
      "inputs": [
       "WP-DIA",
-      "WP-CONFIRMATION-PLAN"
+      "WP-CONFIRMATION-PLAN",
+      "WP-SUPPLIER-RELEASE-PACKAGE"
      ],
      "outputs": [
       "WP-INTAKE-RESULT"
@@ -3950,14 +3961,18 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       "FPW.10-A07"
      ],
      "screens": [
-      "/supplier/portal"
+      "/supplier/portal",
+      "/supplier/deliveries"
      ],
      "actions": [
+      "createSupplierCriteria",
+      "reviewSupplierPackage",
       "judgeGate"
      ],
      "checks": [
-      "모든 검사 항목이 OEM 환경에서 재실행되었다",
-      "판정 결과가 Supplier Gate 기록에 있다"
+      "필수 10항목 본문이 확인되고 모든 검사 항목의 OEM 환경 재실행 결과가 있다",
+      "작성·제출·요청자와 다른 검수자의 항목별 결과·현재 기준 개정·의견이 있다",
+      "현재 검수 근거와 Supplier Gate 판정이 연결되고 근거 변경 시 전이가 보류된다"
      ]
     },
     {

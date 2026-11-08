@@ -79,14 +79,17 @@ last_updated: 2026-11-08
 ### FPW.10-A06 Gate별 납품물 입고 검사 — 수행
 - 프로세스: FPW.10 협력사 관리
 - 시작: 앞 활동 완료
-- 입력: WP-DIA, WP-CONFIRMATION-PLAN → 출력: WP-INTAKE-RESULT
-- 플랫폼: `judgeGate`, `/supplier/portal`
-1. 협력사가 정한 형식으로 낸 Gate별 납품물을 협력사 이관 포털에서 받는다
-2. 입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다
-3. Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다
-4. 합격 기준으로 판정해 Supplier Gate 기록에 남긴다
-- [ ] 모든 검사 항목이 OEM 환경에서 재실행되었다
-- [ ] 판정 결과가 Supplier Gate 기록에 있다
+- 입력: WP-DIA, WP-CONFIRMATION-PLAN, WP-SUPPLIER-RELEASE-PACKAGE → 출력: WP-INTAKE-RESULT
+- 플랫폼: `createSupplierCriteria`, `reviewSupplierPackage`, `judgeGate`, `/supplier/portal`, `/supplier/deliveries`
+1. 대상 Feature Version의 협력사 기능·SW Component 매핑과 필수 10항목을 협력사 이관 포털에서 확인한다
+2. 서버 보관 본문의 체크섬·대상 manifest·메타데이터를 대조하고 본문 없이 신고만 받은 산출물은 검수 보류로 남긴다
+3. 입고 검사 항목을 OEM 환경에서 다시 실행하고, 수정 납품이면 일부가 아니라 전 항목을 다시 검사한다
+4. Safety Manual의 사용 가정 목록을 통합 조직에 넘긴다
+5. 현재 검수 기준으로 10항목을 확인하고 작성·제출·검수 요청자와 다른 검수자가 항목별 결과와 의견을 기록한다
+6. 현재 유효한 패키지만 Supplier Gate 합격 근거로 쓰고 기준 개정 뒤에는 이전 판정 기록을 보존하면서 전이를 보류한다
+- [ ] 필수 10항목 본문이 확인되고 모든 검사 항목의 OEM 환경 재실행 결과가 있다
+- [ ] 작성·제출·요청자와 다른 검수자의 항목별 결과·현재 기준 개정·의견이 있다
+- [ ] 현재 검수 근거와 Supplier Gate 판정이 연결되고 근거 변경 시 전이가 보류된다
 
 ## 2. 협의·통보 받는 활동
 

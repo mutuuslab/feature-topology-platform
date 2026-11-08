@@ -2858,9 +2858,12 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
     "FPW.10-A07"
    ],
    "screens": [
-    "/supplier/portal"
+    "/supplier/portal",
+    "/supplier/deliveries"
    ],
    "actions": [
+    "createSupplierCriteria",
+    "reviewSupplierPackage",
     "judgeGate"
    ],
    "anchor": null,

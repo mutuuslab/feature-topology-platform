@@ -1378,6 +1378,25 @@ CREATE TRIGGER owner_transfer_no_delete BEFORE DELETE ON owner_transfer BEGIN SE
 `,
   },
   {
+    name: '211_supplier_package',
+    sql: `
+CREATE TABLE supplier_mapping (map_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, supplier TEXT NOT NULL, function_id TEXT NOT NULL, doc TEXT NOT NULL, UNIQUE (feature_id, supplier, function_id));
+CREATE INDEX supplier_mapping_feature ON supplier_mapping (feature_id, supplier);
+CREATE TABLE supplier_package (package_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, feature_version TEXT NOT NULL, supplier TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('DRAFT','SUBMITTED','ACCEPTED','REJECTED')), doc TEXT NOT NULL, UNIQUE (feature_id, supplier, version));
+CREATE INDEX supplier_package_feature ON supplier_package (feature_id, feature_version, supplier);
+CREATE TABLE supplier_artifact (record_id TEXT PRIMARY KEY, package_id TEXT NOT NULL REFERENCES supplier_package(package_id), type TEXT NOT NULL, submitted_at TEXT NOT NULL, doc TEXT NOT NULL);
+CREATE INDEX supplier_artifact_package ON supplier_artifact (package_id, record_id);
+CREATE TRIGGER supplier_artifact_no_update BEFORE UPDATE ON supplier_artifact BEGIN SELECT RAISE(ABORT, '협력사 산출물은 추가만 가능'); END;
+CREATE TRIGGER supplier_artifact_no_delete BEFORE DELETE ON supplier_artifact BEGIN SELECT RAISE(ABORT, '협력사 산출물은 추가만 가능'); END;
+CREATE TABLE supplier_criteria (criteria_id TEXT PRIMARY KEY, feature_id TEXT NOT NULL, revision INTEGER NOT NULL, doc TEXT NOT NULL, UNIQUE (feature_id, revision));
+CREATE TRIGGER supplier_criteria_no_update BEFORE UPDATE ON supplier_criteria BEGIN SELECT RAISE(ABORT, '협력사 검수 기준은 개정 추가만 가능'); END;
+CREATE TRIGGER supplier_criteria_no_delete BEFORE DELETE ON supplier_criteria BEGIN SELECT RAISE(ABORT, '협력사 검수 기준은 개정 추가만 가능'); END;
+CREATE TABLE supplier_review (review_id TEXT PRIMARY KEY, package_id TEXT NOT NULL REFERENCES supplier_package(package_id), doc TEXT NOT NULL);
+CREATE TRIGGER supplier_review_no_update BEFORE UPDATE ON supplier_review BEGIN SELECT RAISE(ABORT, '협력사 검수 결과는 추가만 가능'); END;
+CREATE TRIGGER supplier_review_no_delete BEFORE DELETE ON supplier_review BEGIN SELECT RAISE(ABORT, '협력사 검수 결과는 추가만 가능'); END;
+`,
+  },
+  {
     // Lifecycle·Gate 보강(P10 — FR-REG-002-010~016·004-003·004·005-008·013·015) — Gate 해당 없음(N/A) 요청·승인, 정의 승인 반려·검증 재작업 기록(추가만),
     // 즉시 폐기 요청·승인, BOM Baseline ChangeSet(추가만), 출시 후보 통합 스냅샷(추가만, Version당 1건)
     name: '241_p10_lifecycle_gate',

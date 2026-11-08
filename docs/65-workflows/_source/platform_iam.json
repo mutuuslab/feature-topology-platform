@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9532/admin/iam",
+  "iam_url": "http://127.0.0.1:9536/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-08T16:02:24.608Z",
+  "fetched_at": "2026-11-08T16:49:08.581Z",
   "server_seed": "v0.81",
   "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\release-20261108-p10\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-08T15:58:45.396Z",
+  "contracts_dist_mtime": "2026-11-08T16:37:39.104Z",
   "ff_git": {
-   "head": "634b2542ecdd493a7602ffffc326a9bbbbdc9619",
-   "dirty_files": 27
+   "head": "458b639a0bfd8f7b02d076ea812067fd8d2ab3dd",
+   "dirty_files": 17
   },
-  "iam_sha256": "a3f3e2a23ffd102617ebfc6f996f42f44c046be510f61bf2c72621bf60ad063b"
+  "iam_sha256": "aad193ee93f31a465d634cd385c141fed1defa011f9e9a8faa6cff01e638c97d"
  },
  "roles": [
   {
@@ -2696,6 +2696,78 @@
    "roles": [
     "SYSTEM_ADMIN"
    ]
+  },
+  {
+   "name": "createSupplierMapping",
+   "method": "POST",
+   "path": "/api/supplier-mappings",
+   "summary": "협력사 기능 매핑 등록",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER",
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "addSupplierSwc",
+   "method": "POST",
+   "path": "/api/supplier-mappings/:id/swcs",
+   "summary": "동일 공급사 SW·ECU 연결",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER",
+    "FEATURE_AUTHOR"
+   ]
+  },
+  {
+   "name": "createSupplierPackage",
+   "method": "POST",
+   "path": "/api/supplier-packages",
+   "summary": "버전별 협력사 패키지 작성",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "submitSupplierArtifact",
+   "method": "POST",
+   "path": "/api/supplier-packages/:id/artifacts",
+   "summary": "산출물 본문·manifest·체크섬 검증 및 추가 보관",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "submitSupplierPackage",
+   "method": "POST",
+   "path": "/api/supplier-packages/:id/submit",
+   "summary": "필수 10항목 검수 요청",
+   "component": "D05-01",
+   "roles": [
+    "IMPLEMENTER"
+   ]
+  },
+  {
+   "name": "reviewSupplierPackage",
+   "method": "POST",
+   "path": "/api/supplier-packages/:id/reviews",
+   "summary": "독립 검수자의 항목별 합격·보완 결정",
+   "component": "D05-01",
+   "roles": [
+    "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "createSupplierCriteria",
+   "method": "POST",
+   "path": "/api/supplier-criteria",
+   "summary": "검수 기준 새 개정 등록",
+   "component": "D05-01",
+   "roles": [
+    "GATE_JUDGE"
+   ]
   }
  ],
  "sod": [
@@ -3483,6 +3555,11 @@
   },
   {
    "path": "/supplier/portal",
+   "title": "협력사 이관",
+   "group": "procurement"
+  },
+  {
+   "path": "/supplier/deliveries",
    "title": "협력사 이관",
    "group": "procurement"
   },

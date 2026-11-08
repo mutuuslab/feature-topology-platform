@@ -100,7 +100,7 @@ last_updated: 2026-11-08
 | FPW.10-A02 DIA·CIA 체결 | FPW.10 협력사 관리 | C (Safety Manager) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → DIA·CIA 계약 부속서 `WP-DIA` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A03 확인 조치 독립성 지정 | FPW.10 협력사 관리 | R·A (Safety Manager) | DIA·CIA 계약 부속서 `WP-DIA` → 확인 조치 계획 `WP-CONFIRMATION-PLAN` | 플랫폼 밖 | 2차 초안 |
 | FPW.10-A05 기존 구현 진단 | FPW.10 협력사 관리 | I (Safety Manager) | 협력사 역량 평가 결과 `WP-SUPPLIER-ASSESS` → 기존 구현 차이 보고 `WP-SUPPLIER-DIFF` | 플랫폼 밖 | 2차 초안 |
-| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | C (Safety Manager) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal` | 2차 초안 |
+| FPW.10-A06 Gate별 납품물 입고 검사 | FPW.10 협력사 관리 | C (Safety Manager) | DIA·CIA 계약 부속서 `WP-DIA`, 확인 조치 계획 `WP-CONFIRMATION-PLAN`, 협력사 릴리스 패키지 `WP-SUPPLIER-RELEASE-PACKAGE` → 입고 검사 결과 `WP-INTAKE-RESULT` | `/supplier/portal`, `/supplier/deliveries` | 2차 초안 |
 | FPW.11-A01 서명 키 계층·HSM 운영 | FPW.11 보안·키·취약점 관리 | C (Safety Manager) | HARA·TARA 결과 `WP-HARA-TARA` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A02 키 교체 플랫폼 기록 | FPW.11 보안·키·취약점 관리 | C (Safety Manager) | 서명 키 대장 `WP-KEY-REGISTER` → 서명 키 대장 `WP-KEY-REGISTER` | `/admin/security` | 2차 초안 |
 | FPW.11-A03 키 유출 대응·epoch 상향 | FPW.11 보안·키·취약점 관리 | C (Safety Manager) | 서명 키 대장 `WP-KEY-REGISTER` → 키 사고 대응 기록 `WP-KEY-INCIDENT` | `/admin/security` | 2차 초안 |
@@ -157,7 +157,7 @@ last_updated: 2026-11-08
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/admin/approval`, `/analysis/impact`, `/arch/topology`, `/arch/components`, `/verify/evidence`, `/verify/compliance`, `/verify/safety-case`, `/activation/decide`, `/ops/kill`, `/fleet/live`, `/deployments`, `/ops/rollback`, `/flag-retirements`, `/ops/safety-kpi`, `/trace/ads`
-- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/features/catalogue`, `/trace/design`, `/change/cr`, `/integration/connectors`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/flag-code/reconcile`, `/experiments`, `/notifications`, `/ops/anomalies`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/incident-reports`, `/audit/oversight`, `/audit`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/quality/feedback`, `/supplier/portal`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/data/workbench`, `/products`
+- 참조 화면(협의·통보): `/master/define`, `/feature/propose`, `/features`, `/master/feature-db`, `/variant-conditions`, `/features/catalogue`, `/trace/design`, `/change/cr`, `/integration/connectors`, `/master/control-points`, `/policies/:id`, `/validations`, `/master/artifacts`, `/validations/virtual`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/flag-code/reconcile`, `/experiments`, `/notifications`, `/ops/anomalies`, `/ops/incidents`, `/ops/incident-reports/:id`, `/ops/feature-health`, `/ops/feature-health/:findingId`, `/ops/collection`, `/integration/datalake`, `/ops/incident-reports`, `/audit/oversight`, `/audit`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/quality/feedback`, `/supplier/portal`, `/supplier/deliveries`, `/admin/security`, `/master/feature-db/changes/:id`, `/master/feature-db/changes`, `/data/workbench`, `/products`
 
 ## 4. 부서 겸직 직무 분리
 

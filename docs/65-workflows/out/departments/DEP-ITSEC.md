@@ -1,7 +1,7 @@
 ---
 id: WF-DEP-ITSEC
 type: workflow
-title: "Feature 관제실 R&R / IT Infrastructure & SecOps Roles & Responsibilities"
+title: "Feature 관제실 R&R / Feature Control Center Roles & Responsibilities"
 status: draft
 version: 0.3.0
 owner: governance

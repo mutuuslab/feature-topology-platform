@@ -4,7 +4,7 @@ import type { CostCheckStatus, CostProjectStatus } from '@ff/contracts';
 
 export const swCost = /* @__PURE__ */ localizedCopy('cost.swCost', {
   title: 'SW 개발비 산정',
-  lead: 'Feature를 담아 공수와 개발비를 계산합니다. 금액은 구매 담당 역할만 봅니다.',
+  lead: 'Feature DB 기준 행에서 시작해 공수와 개발비를 계산합니다. 등록 Feature는 선택해 연결하고, 금액은 구매 담당 역할만 봅니다.',
   keyFull: '백만원 · 승인된 과제의 총개발비 합계',
   keyMm: 'M/M · 승인된 과제의 총 공수 합계',
   keyNone: '승인된 과제가 없습니다',
@@ -82,17 +82,17 @@ export const costSettings = /* @__PURE__ */ localizedCopy('cost.costSettings', {
 });
 
 export const costLines = /* @__PURE__ */ localizedCopy('cost.costLines', {
-  add: 'Feature 담기',
-  addTitle: 'Feature 담기',
+  add: 'Feature DB 기준 행 담기',
+  addTitle: 'Feature DB 기준 행 담기',
   search: 'Feature 이름·ID',
   searchHint: 'Feature DB에 연결된 Feature만 담을 수 있습니다',
   pick: '담기',
   remove: '빼기',
   noLink: '연결 없음',
-  empty: '담긴 Feature가 없습니다. Feature 담기로 시작합니다.',
+  empty: '담긴 기준 행이 없습니다. Feature DB에서 기준 행을 먼저 선택하세요.',
   caption: (name: string) => `${name}의 기준 행`,
   cols: { ref: '기준 행', role: '연결', path: '경로', qty: '수량', change: '변경 유형', asil: 'ASIL', variants: '변형', e: '기대 공수(M/M)', labor: '인건비', check: '점검' },
-  role: { PRIMARY: '대표', INCLUDED: '포함' } as Record<string, string>,
+  role: { PRIMARY: '대표', INCLUDED: '포함', REFERENCE: '기준 행만' } as Record<string, string>,
   bundled: '번들 포함',
   edit: '줄 입력',
   editTitle: (refId: string) => `${refId} 줄 입력`,
@@ -223,4 +223,15 @@ export const costActual = /* @__PURE__ */ localizedCopy('cost.costActual', {
   hint: '같은 기준 행을 참조하는 줄들의 실적 합계입니다. 승인 결과는 그대로 두고 기록하며, 개정하면 첫 줄 입력으로 옮깁니다. 후속 기록을 지우면 승인 당시 실적을 다시 표시합니다.',
   save: '저장', clear: '승인 후 기록 지우기', mre: '실적 대비 오차(MRE)', mreAvg: '평균 MRE', mreRows: '실적 있는 기준 행',
   expected: '기대 공수(M/M)', ref: '기준 행',
+});
+export const costReference = /* @__PURE__ */ localizedCopy('cost.costReference', {
+ title:'Feature DB 기반 산정', guide:'① 기준 행 검색 → ② 출처·버전 확인 → ③ 등록 Feature 선택 연결 → ④ 자동 채운 과제와 산정 입력 확인. 등록되지 않은 기준 행도 가짜 Feature를 만들지 않고 산정할 수 있습니다.',
+ search:'기준 행 이름·별칭·ID',domain:'도메인',all:'전체',choose:'이 기준으로 산정',selected:'선택한 산정 기준',change:'기준 다시 선택',previous:'이전',next:'다음',
+ feature:'등록 Feature 연결 (선택)',none:'기준 행만 사용',featureHint:'이 기준 행을 실제로 참조하는 Feature 버전만 연결할 수 있습니다. 연결을 선택하면 요구·적용 범위를 함께 보존합니다.',
+ blocked:'산정할 수 없는 기준입니다. 상태·발행 버전·필수 계수를 먼저 확인하세요.',missing:'누락된 산정 기준',release:'Feature DB 발행',basis:'계수 표',hash:'원천 SHA-256',scope:'적용 범위',source:'출처·원천 개정',sourceGuide:'선택 당시 원천을 별도 보존합니다. 수량·공수 등 과제 입력과 원천 개정은 구분하며 최신 기준은 명시적으로 적용해야 합니다.',
+ stale:'원천 변경됨 — 제출 전 최신 기준 재확인',legacy:'이전 산정 줄 — 원천 기록은 최신 기준 명시 적용으로 생성합니다.',history:'원천 개정 이력',revision:'개정',reason:'연결·원천 변경 사유',save:'원천 확인·연결 저장',remove:'이 기준 행 빼기',edit:'산정 입력',referenceOnly:'등록 Feature 없이 산정',
+ facts:'자동 적용 기준',boundary:'산정 검토 승인은 구매 계약·지급 승인이나 기술 승인으로 간주하지 않습니다. 미확인 값은 임의의 0이나 삭감액으로 확정하지 마세요.',
+ procurement:'조달·SW 패키지',license:'라이선스 항목·과금 방식',evidence:'규모 근거·확인일·등록 버전',scopeIn:'포함 범위',scopeOut:'제외 범위',latestSource:'최신 산정 기준·원천 명시 적용',
+ assumptions:'공수 단위는 M/M이며 총개발비는 개발 NRE입니다. 반복 운영비·로열티는 별도입니다. 초기 등급과 ASIL은 과제 사양·HARA·실적으로 검토하고, 품질·안전·보안 공통 인력 및 MBD 기준값은 사내 근거를 확인하세요.',
+ autoName:(name:string)=>`${name} 개발비 산정`,autoTarget:(component:string)=>`${component} / 적용 범위 확인 필요`,
 });

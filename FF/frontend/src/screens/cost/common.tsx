@@ -1,6 +1,6 @@
 // SW 개발비 산정 화면 공통 — 응답 모양, 금액 표시(과제 통화, D-COST-10), 상태 배지, 엑셀 내보내기 받기.
 // 금액은 서버가 산정 역할에만 준다(view FULL) — 응답에 금액 필드가 없으면 그리지 않는다.
-import type { CostActualRow, CostCheckStatus, CostEstimate, CostLineInputs, CostMreRow, CostProjectStatus, CostSettingsInput, RefStatus } from '@ff/contracts';
+import type { CostActualRow, CostCheckStatus, CostEstimate, CostLineInputs, CostMreRow, CostProjectStatus, CostReferenceOrigin, CostSettingsInput, RefStatus } from '@ff/contracts';
 import { Link } from 'react-router-dom';
 import { uiLocaleTag } from '../../locale/runtime';
 import { formatters } from '../../copy/formatters';
@@ -26,6 +26,7 @@ export interface CostListItem {
   basisVersion: string;
   basisStale: boolean;
   featureCount: number;
+  referenceCount?: number;
   totals: { totalMm: number; totalCost?: number } | null;
   /** 담은 Feature(국가·차종·ASIL)와 Feature DB 기준 행(분류·T-shirt)에서 모은 값 — 목록 탐색판. components는 '도메인	컴포넌트' */
   scope?: { countries: string[]; vehicleModels: string[]; asils: string[]; tshirts: string[]; domains: string[]; components: string[] };
@@ -42,10 +43,12 @@ export type CostResult = Partial<CostEstimate> & Pick<CostEstimate, 'lines' | 'c
 
 export interface CostLineRow {
   lineNo: number;
-  featureId: string;
-  version: string;
+  featureId: string|null;
+  version: string|null;
   refId: string;
-  role: 'PRIMARY' | 'INCLUDED';
+  role: 'PRIMARY' | 'INCLUDED'|'REFERENCE';
+  sourceRevision?:number;
+  source?:CostReferenceOrigin|null;
   featureAsil: string;
   inputs: CostLineInputs;
   refStatus: RefStatus | null;
@@ -92,7 +95,7 @@ export interface CostDetailResponse {
   mre?: { rows: CostMreRow[]; n: number; missing: number; avg: number | null } | null;
   result: CostResult | null;
   error: string | null;
-  approvals: { rev: number; approvedBy: string; approvedAt: string; reason: string; basisVersion: string; resultSha256: string }[];
+  approvals: { rev: number; approvedBy: string; approvedAt: string; reason: string; basisVersion: string; resultSha256: string;sources?:{lineNo:number;revision:number;refId?:string}[] }[];
   options: {
     aace: string[];
     confidence: string[];

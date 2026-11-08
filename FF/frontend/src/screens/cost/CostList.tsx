@@ -5,9 +5,10 @@ import { uiLocaleTag } from '../../locale/runtime';
 // 새 과제는 작성 역할만 — 만들면 상세(설정 탭)로 간다.
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { COST_PROJECT_STATUSES, facetFilter, facetList, REF_EXPLORE_ORDER } from '@ff/contracts';
+import { COST_PROJECT_STATUSES, facetFilter, facetList, REF_EXPLORE_ORDER,type AddCostReferenceBody } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { COST_STATUS_LABEL, swCost as T } from '../../copy/cost';
+import { COST_STATUS_LABEL, swCost as T,costReference as R } from '../../copy/cost';
+import { CostReferencePicker } from './CostReferencePicker';
 import { costExplorer as E } from '../../copy/cost-explorer';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, PageHeader, whyDisabled } from '../../design';
 import { Workbook, type WorkbookFilter, type WorkbookTreeItem } from '../../design/workbook';
@@ -173,26 +174,32 @@ export function SwCostScreen() {
 }
 
 function CreateDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [reference,setReference]=useState<AddCostReferenceBody|null>(null);
   const [name, setName] = useState('');
   const [target, setTarget] = useState('');
   const nav = useNavigate();
   const create = useApiMutation<{ estId: string }>('costProjectCreate', ['costProjects']);
-  const why = whyDisabled([!name.trim(), T.create.name]);
+  const why = whyDisabled([!reference,R.choose],[!name.trim(), T.create.name]);
   return (
     <Drawer open={open} title={T.create.title} onClose={onClose} dirty={!!name || !!target}>
       <form
         className="ds-stack"
         onSubmit={(e) => {
           e.preventDefault();
-          create.mutate({ body: { name: name.trim(), target: target.trim() } }, { onSuccess: (r) => nav(costPath(r.estId)) });
+          if(reference) create.mutate({ body: { name: name.trim(), target: target.trim(),references:[reference] } }, { onSuccess: (r) => nav(`${costPath(r.estId)}?tab=lines`) });
         }}
       >
+        {!reference?<CostReferencePicker onChoose={(selection,p)=>{setReference(selection);setName(R.autoName(uiLocaleTag()==='en-US'?p.ref.nameEn:p.ref.nameKo));const f=p.features.find(f=>f.featureId===selection.feature?.featureId && f.version===selection.feature?.version);setTarget(f?`${p.ref.component} / ${f.name}`:R.autoTarget(p.ref.component));}}/>:<>
+        <p>{R.selected}: <span className="ds-mono">{reference.refId} · {reference.refRelease}</span> · {reference.feature?`${reference.feature.featureId} @ ${reference.feature.version}`:R.none}</p>
+        <Button onClick={()=>setReference(null)}>{R.change}</Button>
         <Field label={T.create.name}>
           <input className="ds-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={200} />
         </Field>
         <Field label={T.create.target} hint={T.create.targetHint}>
           <input className="ds-input" value={target} onChange={(e) => setTarget(e.target.value)} maxLength={300} />
         </Field>
+        <p className="ds-field__hint">{R.boundary}</p>
+        </>}
         <ErrorNote error={create.error} />
         <Button type="submit" variant="primary" disabled={!!why || create.isPending} reason={why}>
           {T.create.submit}

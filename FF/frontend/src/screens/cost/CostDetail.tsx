@@ -6,7 +6,8 @@ import { Link, useParams } from 'react-router-dom';
 import { COST_TRANSITIONS, type CostProjectStatus } from '@ff/contracts';
 import { actorFor } from '../../api/actor';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { COST_STATUS_LABEL, COST_STATUS_TONE, costDetail as T, costHistory as H } from '../../copy/cost';
+import { COST_STATUS_LABEL, COST_STATUS_TONE, costDetail as T, costHistory as H,costReference as R } from '../../copy/cost';
+import { CostReferenceEvidence } from './CostReferenceEvidence';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, PageHeader, Panel, Tabs, whyDisabled } from '../../design';
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
@@ -58,7 +59,7 @@ export function CostDetailScreen() {
             <Tabs
               tabs={[
                 { key: 'settings', label: T.tabs.settings },
-                { key: 'lines', label: T.tabs.lines, count: d.features.length },
+                { key: 'lines', label: T.tabs.lines, count: d.lines.length },
                 { key: 'result', label: T.tabs.result },
                 { key: 'review', label: T.tabs.review, count: d.checks.open || undefined },
                 { key: 'history', label: T.tabs.history, count: d.approvals.length || undefined },
@@ -165,6 +166,7 @@ function TransitionDrawer({ d, action, onClose }: { d: CostDetailResponse; actio
 
 function History({ d }: { d: CostDetailResponse }) {
   const rows = d.approvals;
+  const [source,setSource]=useState<{lineNo:number;revision:number;refId?:string}|null>(null);
   return (
     <div className="ds-stack">
       <Panel title={H.approvals}>
@@ -180,12 +182,14 @@ function History({ d }: { d: CostDetailResponse }) {
               { key: 'reason', header: H.cols.reason, cell: (r) => r.reason },
               { key: 'basis', header: H.cols.basis, cell: (r) => r.basisVersion, minor: true },
               { key: 'sha', header: H.cols.sha, cell: (r) => <span className="ds-mono">{r.resultSha256.slice(0, 12)}</span>, minor: true },
+              {key:'sources',header:R.source,cell:r=>r.sources?.map(s=><Button key={s.lineNo} onClick={()=>setSource(s)}>{s.refId ?? `#${s.lineNo}`} · {R.revision} {s.revision}</Button>) ?? '—'},
             ]}
           />
         ) : (
           <p className="ds-field__hint">{H.none}</p>
         )}
       </Panel>
+      {source && <CostReferenceEvidence d={d} editable={false} line={{lineNo:source.lineNo,refId:source.refId ?? `#${source.lineNo}`,sourceRevision:source.revision}} onClose={()=>setSource(null)}/>}
       <Panel title={H.lastReason}>
         <p>{d.project.lastReason ?? '—'}</p>
         <p className="ds-field__hint">{`${H.created} ${d.project.createdBy} · ${when(d.project.createdAt)}`}</p>

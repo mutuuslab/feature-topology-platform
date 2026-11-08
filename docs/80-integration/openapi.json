@@ -16523,6 +16523,59 @@
                       "directExpenses": []
                     },
                     "additionalProperties": false
+                  },
+                  "references": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "refId": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                        },
+                        "refRelease": {
+                          "type": "string",
+                          "pattern": "^v\\d+\\.\\d+$"
+                        },
+                        "referenceSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "feature": {
+                          "type": "object",
+                          "nullable": true,
+                          "properties": {
+                            "featureId": {
+                              "type": "string",
+                              "pattern": "^FEAT-\\d{5}$"
+                            },
+                            "version": {
+                              "type": "string",
+                              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "default": null,
+                          "required": [
+                            "featureId",
+                            "version",
+                            "sha256"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "refId",
+                        "refRelease",
+                        "referenceSha256"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 50
                   }
                 },
                 "required": [
@@ -16795,13 +16848,91 @@
         }
       }
     },
-    "/api/cost/projects/{estId}/features": {
-      "post": {
-        "summary": "Feature 담기",
+    "/api/cost/references/{refId}": {
+      "get": {
+        "summary": "Feature DB 산정 원천·등록 Feature 후보",
         "tags": [
           "D07-01"
         ],
-        "operationId": "costFeatureAdd",
+        "operationId": "costReference",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "refId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/lines/{lineNo}/sources/{revision}": {
+      "get": {
+        "summary": "고정한 산정 원천 개정 조회",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReferenceHistory",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lineNo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "revision",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/references": {
+      "post": {
+        "summary": "Feature DB 기준 행으로 산정 줄 추가",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReferenceAdd",
         "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
@@ -16819,18 +16950,48 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "featureId": {
+                  "refId": {
                     "type": "string",
-                    "minLength": 1
+                    "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
                   },
-                  "version": {
+                  "refRelease": {
                     "type": "string",
-                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                    "pattern": "^v\\d+\\.\\d+$"
+                  },
+                  "referenceSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "feature": {
+                    "type": "object",
+                    "nullable": true,
+                    "properties": {
+                      "featureId": {
+                        "type": "string",
+                        "pattern": "^FEAT-\\d{5}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "default": null,
+                    "required": [
+                      "featureId",
+                      "version",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "featureId",
-                  "version"
+                  "refId",
+                  "refRelease",
+                  "referenceSha256"
                 ],
                 "additionalProperties": false
               }
@@ -16859,13 +17020,13 @@
         }
       }
     },
-    "/api/cost/projects/{estId}/features/{featureId}/{version}": {
-      "delete": {
-        "summary": "Feature 빼기",
+    "/api/cost/projects/{estId}/lines/{lineNo}/source": {
+      "patch": {
+        "summary": "산정 원천 개정·실제 Feature 연결",
         "tags": [
           "D07-01"
         ],
-        "operationId": "costFeatureRemove",
+        "operationId": "costReferenceUpdate",
         "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
         "parameters": [
           {
@@ -16877,15 +17038,7 @@
             }
           },
           {
-            "name": "featureId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "version",
+            "name": "lineNo",
             "in": "path",
             "required": true,
             "schema": {
@@ -16898,7 +17051,70 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {},
+                "properties": {
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "refId": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}-[A-Z][A-Z0-9]{1,3}-\\d{3}$"
+                      },
+                      "refRelease": {
+                        "type": "string",
+                        "pattern": "^v\\d+\\.\\d+$"
+                      },
+                      "referenceSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "feature": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                          "featureId": {
+                            "type": "string",
+                            "pattern": "^FEAT-\\d{5}$"
+                          },
+                          "version": {
+                            "type": "string",
+                            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "default": null,
+                        "required": [
+                          "featureId",
+                          "version",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "refId",
+                      "refRelease",
+                      "referenceSha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "selection",
+                  "revision",
+                  "reason"
+                ],
                 "additionalProperties": false
               }
             }
@@ -16927,6 +17143,52 @@
       }
     },
     "/api/cost/projects/{estId}/lines/{lineNo}": {
+      "delete": {
+        "summary": "산정 기준 행 빼기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costLineRemove",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lineNo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      },
       "patch": {
         "summary": "줄 입력",
         "tags": [
@@ -17047,6 +17309,137 @@
                     "maxLength": 500
                   }
                 },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/features": {
+      "post": {
+        "summary": "Feature 담기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costFeatureAdd",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "featureId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "version": {
+                    "type": "string",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                  }
+                },
+                "required": [
+                  "featureId",
+                  "version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/features/{featureId}/{version}": {
+      "delete": {
+        "summary": "Feature 빼기",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costFeatureRemove",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
                 "additionalProperties": false
               }
             }

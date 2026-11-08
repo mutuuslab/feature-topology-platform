@@ -17,6 +17,7 @@ import {
   anchorSamples,
   anchorSuggestion,
   costMre,
+  costRefFactsOf,
   PutCostActualBody,
   type CostActualRow,
   refStatusPolicy,
@@ -262,6 +263,7 @@ export class CostService implements OnModuleInit {
     const sourceLines=this.lines(estId);
     const refs=new Map(this.refFacts());
     const hashes=new Map<string,string>();
+    for(const line of sourceLines) if(line.sourceRevision) for(const reference of this.referenceStore.load(estId,line.lineNo,line.sourceRevision).snapshot.relatedReferences ?? []) refs.set(reference.refId,costRefFactsOf(reference,0));
     for(const line of sourceLines) if(line.sourceRevision) {
       const captured=this.referenceStore.load(estId,line.lineNo,line.sourceRevision);
       const prior=hashes.get(line.refId);
@@ -325,8 +327,9 @@ export class CostService implements OnModuleInit {
   private scopeOf(estId: string, refs: ReadonlyMap<string, { domain: string; component: string; tshirt: string }>) {
     const sets = { countries: new Set<string>(), vehicleModels: new Set<string>(), asils: new Set<string>(), tshirts: new Set<string>(), domains: new Set<string>(), components: new Set<string>() };
     for (const l of this.lines(estId)) {
-      const f = l.featureId && l.version ? this.features.get(l.featureId,l.version) : undefined;
-      const r = l.sourceRevision ? this.referenceStore.load(estId,l.lineNo,l.sourceRevision).snapshot.reference : refs.get(l.refId);
+      const source=l.sourceRevision?this.referenceStore.load(estId,l.lineNo,l.sourceRevision).snapshot:null;
+      const f = source?.feature ?? (l.featureId && l.version ? this.features.get(l.featureId,l.version) : undefined);
+      const r = source?.reference ?? refs.get(l.refId);
       if (f?.country) sets.countries.add(f.country);
       if (f?.vehicleModel) sets.vehicleModels.add(f.vehicleModel);
       const asil = l.inputs.asil ?? l.featureAsil;
@@ -471,9 +474,12 @@ export class CostService implements OnModuleInit {
     return result;
   }
 
-  referenceHistory(_actor:Actor,estId:string,lineNo:number,revision:number) {
+  referenceHistory(actor:Actor,estId:string,lineNo:number,revision:number) {
     this.row(estId);
-    return this.referenceStore.view(estId,lineNo,revision);
+    const source=this.referenceStore.view(estId,lineNo,revision);
+    if(!canSeeCost(actor.role)) return source;
+    this.db.tx(()=>this.audit.record(actor,'COST_VIEW',`${estId}#${lineNo}:source:${revision}`,{componentId:'D07-01'}));
+    return {...source,snapshot:this.referenceStore.load(estId,lineNo,revision).snapshot};
   }
 
   private referenceLine(value:ReturnType<CostReferenceStore['validate']>,revision:number,inputs:CostLineInputs={qty:1}):LineDoc {

@@ -1,19 +1,19 @@
 {
  "source": {
-  "iam_url": "http://127.0.0.1:9590/admin/iam",
+  "iam_url": "http://127.0.0.1:9610/admin/iam",
   "api": [
    "/api/iam/roles",
    "/api/iam/sod-audit"
   ],
-  "fetched_at": "2026-11-08T22:23:27.335Z",
+  "fetched_at": "2026-11-08T23:47:41.070Z",
   "server_seed": "v0.81",
-  "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\release-20261108-p10\\FF\\contracts\\dist\\index.js",
-  "contracts_dist_mtime": "2026-11-08T22:16:55.826Z",
+  "contracts_dist": "C:\\project\\2026-09-23_FF_IMP\\work\\cost-db-first-20261109\\FF\\contracts\\dist\\index.js",
+  "contracts_dist_mtime": "2026-11-08T23:40:27.102Z",
   "ff_git": {
-   "head": "6c4ecde1c5cbdd9e12fa87d51f414b53c8dd2319",
-   "dirty_files": 0
+   "head": "c96da77030021f5ebaac4f18aa92dd68294c904a",
+   "dirty_files": 4
   },
-  "iam_sha256": "78c9f3d38cbfc51c5259def3497629c51e9778c30db210549d54b9eb29ced180"
+  "iam_sha256": "742c2f2fb89dcf6f00f288ec7e39700b42820c959a8f333e496c655593704526"
  },
  "roles": [
   {
@@ -1499,6 +1499,36 @@
    "method": "PATCH",
    "path": "/api/cost/projects/:estId",
    "summary": "산정 과제 설정 수정",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costReferenceAdd",
+   "method": "POST",
+   "path": "/api/cost/projects/:estId/references",
+   "summary": "Feature DB 기준 행으로 산정 줄 추가",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costReferenceUpdate",
+   "method": "PATCH",
+   "path": "/api/cost/projects/:estId/lines/:lineNo/source",
+   "summary": "산정 원천 개정·실제 Feature 연결",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costLineRemove",
+   "method": "DELETE",
+   "path": "/api/cost/projects/:estId/lines/:lineNo",
+   "summary": "산정 기준 행 빼기",
    "component": "D07-01",
    "roles": [
     "COST_ESTIMATOR"

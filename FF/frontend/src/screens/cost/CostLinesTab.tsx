@@ -1,10 +1,11 @@
-// 기능 목록 탭 — 담은 FF Feature마다 기준 행 줄(대표 먼저). 줄을 열면 입력(엑셀 03 AF~AQ)과 MBD 복잡도 작업(12)을 고친다.
-// Feature 담기는 Feature DB에 연결된 FF Feature만(D-COST-9) — 연결 없는 Feature는 서버가 막고 화면은 이유를 보인다.
+// Feature DB 기준 행 중심 목록. 실제 FF Feature 연결은 선택이며 입력과 원천 개정은 별도로 편집한다.
 import { useMemo, useState } from 'react';
 import { COST_LINE_REVIEW, COST_OWNED, COST_PRIORITIES, type CostLineInputs } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { costActual as A, costLines as T } from '../../copy/cost';
+import { costActual as A, costLines as T,costReference as R } from '../../copy/cost';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Panel, whyDisabled } from '../../design';
+import { CostReferencePicker } from './CostReferencePicker';
+import { CostReferenceEvidence } from './CostReferenceEvidence';
 import { RefChip } from '../refdb/common';
 import { usePermission } from '../shared';
 import { COST_WRITERS, FeatureLinkChip, mm, money, type CostDetailResponse, type CostLineRow } from './common';
@@ -15,16 +16,18 @@ export function CostLinesTab({ d }: { d: CostDetailResponse }) {
   const perm = usePermission(COST_WRITERS);
   const editable = perm.ok && d.project.status === 'DRAFT';
   const why = whyDisabled([!perm.ok, perm.hint], [d.project.status !== 'DRAFT', T.save]);
+  const [source,setSource]=useState<CostLineRow|null>(null);
   const [adding, setAdding] = useState(false);
   const [line, setLine] = useState<CostLineRow | null>(null);
   const [actualOf, setActualOf] = useState<CostLineRow | null>(null);
   const approvedEditable = perm.ok && d.project.status === 'APPROVED';
   const actuals = useMemo(() => new Map((d.actuals ?? []).map((row) => [row.refId, row])), [d.actuals]);
-  const remove = useApiMutation('costFeatureRemove', ['costProject', 'costProjects']);
+  const remove = useApiMutation('costLineRemove', ['costProject', 'costProjects']);
   const results = useMemo(() => new Map((d.result?.lines ?? []).map((r) => [r.refId, r])), [d.result]);
   const full = d.view === 'FULL';
   const columns = [
     { key: 'ref', header: T.cols.ref, cell: (l: CostLineRow) => <span><RefChip id={l.refId} /> {l.ref?.nameKo ?? ''}</span> },
+    {key:'feature',header:R.feature,cell:(l:CostLineRow)=>l.featureId && l.version?<FeatureLinkChip featureId={l.featureId} version={l.version}/>:R.referenceOnly,minor:true},
     { key: 'role', header: T.cols.role, cell: (l: CostLineRow) => T.role[l.role], minor: true },
     { key: 'path', header: T.cols.path, cell: (l: CostLineRow) => (results.get(l.refId)?.bundleIncluded ? T.bundled : (results.get(l.refId)?.path ?? '—')) },
     { key: 'qty', header: T.cols.qty, cell: (l: CostLineRow) => l.inputs.qty ?? 0, align: 'right' as const },
@@ -35,6 +38,7 @@ export function CostLinesTab({ d }: { d: CostDetailResponse }) {
     ...(full ? [{ key: 'labor', header: T.cols.labor, cell: (l: CostLineRow) => money(results.get(l.refId)?.laborKrw, d.project.currency, d.fx), align: 'right' as const }] : []),
     { key: 'actual', header: A.col, cell: (l: CostLineRow) => approvedEditable ? <Button variant="ghost" aria-label={A.title(l.refId)} onClick={() => setActualOf(l)}>{actuals.has(l.refId) ? mm(actuals.get(l.refId)!.actual) : A.enter}</Button> : mm(actuals.get(l.refId)?.actual ?? l.inputs.actual ?? null), align: 'right' as const },
     { key: 'check', header: T.cols.check, cell: (l: CostLineRow) => [results.get(l.refId)?.check, results.get(l.refId)?.prereqCheck].filter(Boolean).join(' · ') || '—', minor: true },
+    {key:'actions',header:R.source,cell:(l:CostLineRow)=><span><Button onClick={()=>setSource(l)}>{R.source}</Button>{' '}<Button disabled={!editable} reason={why} onClick={()=>setLine(l)}>{R.edit}</Button>{' '}<Button disabled={!editable || remove.isPending} reason={why} onClick={()=>remove.mutate({params:{estId:d.project.estId,lineNo:String(l.lineNo)}})}>{R.remove}</Button>{l.source?.stale && <span role="status">{R.stale}</span>}</span>},
   ];
   return (
     <div className="ds-stack">
@@ -43,27 +47,10 @@ export function CostLinesTab({ d }: { d: CostDetailResponse }) {
           {T.add}
         </Button>
       </div>
-      {!d.features.length && <p className="ds-field__hint">{T.empty}</p>}
-      {d.features.map((f) => {
-        const rows = d.lines.filter((l) => l.featureId === f.featureId && l.version === f.version);
-        const title = f.name ?? f.featureId;
-        return (
-          <Panel
-            key={`${f.featureId}@${f.version}`}
-            title={title}
-            actions={
-              <>
-                <FeatureLinkChip featureId={f.featureId} version={f.version} />
-                <Button disabled={!editable || remove.isPending} reason={why} onClick={() => remove.mutate({ params: { estId: d.project.estId, featureId: f.featureId, version: f.version } })}>
-                  {T.remove}
-                </Button>
-              </>
-            }
-          >
-            <DataTable<CostLineRow> rows={rows} columns={columns} rowKey={(l) => String(l.lineNo)} caption={T.caption(title)} onOpen={editable ? (l) => setLine(l) : approvedEditable ? (l) => setActualOf(l) : undefined} pageSize={50} />
-          </Panel>
-        );
-      })}
+      <p className="ds-field__hint">{R.sourceGuide}</p>
+      {!d.lines.length && <p className="ds-field__hint">{T.empty}</p>}
+      <DataTable<CostLineRow> rows={d.lines} columns={columns} rowKey={l=>String(l.lineNo)} caption={R.title} onOpen={editable?l=>setLine(l):l=>setSource(l)} pageSize={50}/>
+      {source && <CostReferenceEvidence d={d} line={source} editable={editable} onClose={()=>setSource(null)}/>}
       <ErrorNote error={remove.error} />
       {adding && <AddDrawer d={d} onClose={() => setAdding(false)} />}
       {line && <LineDrawer d={d} line={line} onClose={() => setLine(null)} />}
@@ -95,50 +82,9 @@ function ActualDrawer({ d, line, now, override, onClose }: { d: CostDetailRespon
   );
 }
 
-interface FeatureHit {
-  featureId: string;
-  version: string;
-  name: string;
-  lifecycle: string;
-  featureRefs?: { refId: string }[];
-  featureRefCount?: number;
-}
-
-function AddDrawer({ d, onClose }: { d: CostDetailResponse; onClose: () => void }) {
-  const [text, setText] = useState('');
-  const q = useApi<{ items: FeatureHit[] }>('listFeatures', { query: { q: text.trim() || undefined, latestOnly: 'true', limit: '30' } }, { enabled: text.trim().length >= 2 });
-  const add = useApiMutation('costFeatureAdd', ['costProject', 'costProjects']);
-  const taken = new Set(d.features.map((f) => `${f.featureId}@${f.version}`));
-  const hits = q.data?.items ?? [];
-  return (
-    <Drawer open title={T.addTitle} onClose={onClose}>
-      <div className="ds-stack">
-        <Field label={T.search} hint={T.searchHint}>
-          <input className="ds-input" value={text} onChange={(e) => setText(e.target.value)} />
-        </Field>
-        {text.trim().length >= 2 && (
-          <AsyncView state={asyncState(q, hits.length === 0)} error={q.error} filtered>
-            <ul className="ds-linklist">
-              {hits.map((f) => {
-                const linked = (f.featureRefCount ?? f.featureRefs?.length ?? 0) > 0;
-                const already = taken.has(`${f.featureId}@${f.version}`);
-                const why = whyDisabled([!linked, T.noLink], [already, T.pick]);
-                return (
-                  <li key={`${f.featureId}@${f.version}`}>
-                    <FeatureLinkChip featureId={f.featureId} version={f.version} /> {f.name}{' '}
-                    <Button disabled={!!why || add.isPending} reason={why} onClick={() => add.mutate({ params: { estId: d.project.estId }, body: { featureId: f.featureId, version: f.version } }, { onSuccess: onClose })}>
-                      {T.pick}
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          </AsyncView>
-        )}
-        <ErrorNote error={add.error} />
-      </div>
-    </Drawer>
-  );
+function AddDrawer({d,onClose}:{d:CostDetailResponse;onClose:()=>void}) {
+ const add=useApiMutation('costReferenceAdd',['costProject','costProjects']);
+ return <Drawer open title={T.addTitle} onClose={onClose}><CostReferencePicker basisVersion={d.project.basisVersion} excluded={d.lines.map(l=>l.refId)} pending={add.isPending} onChoose={selection=>add.mutate({params:{estId:d.project.estId},body:selection},{onSuccess:onClose})}/><ErrorNote error={add.error}/></Drawer>;
 }
 
 function LineDrawer({ d, line, onClose }: { d: CostDetailResponse; line: CostLineRow; onClose: () => void }) {

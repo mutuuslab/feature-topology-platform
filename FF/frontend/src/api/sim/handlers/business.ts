@@ -6,6 +6,13 @@
 // 날짜 규칙(유효기간·체험 기간)은 스냅샷이 찍힌 날의 '오늘'을 쓴다 — 화면에 보이는 값과 같은 기준(서버만 아는 시계는 결정적으로).
 import {
   AddCostFeatureBody,
+  AddCostReferenceBody,
+  UpdateCostReferenceBody,
+  canonicalCostSource,
+  costFeatureSourceOf,
+  costRefFactsOf,
+  costReferenceMissing,
+  costReferencePublic,
   addDays,
   AnswerConsultationBody,
   asSourceFilter,
@@ -621,7 +628,7 @@ registerSimHandler(
 
 // ═══ D07-01 개발비 산정 ═══════════════════════════════════════
 // 계산은 서버와 같은 contracts 엔진(estimate)이 한다 — 계수 표(costBasis)·Feature DB 기준 행(refDetail)은 화면이 보는 값에서.
-type CostLine = { lineNo: number; featureId: string; version: string; refId: string; role: 'PRIMARY' | 'INCLUDED'; featureAsil: string; inputs: Record<string, any> };
+type CostLine = { lineNo: number; featureId: string|null; version: string|null; refId: string; role: 'PRIMARY' | 'INCLUDED'|'REFERENCE'; sourceRevision?:number; featureAsil: string; inputs: Record<string, any> };
 type CostCheckRow = { status: string; memo: string; updatedBy: string; updatedAt: string };
 interface CostProj {
   estId: string;
@@ -631,10 +638,11 @@ interface CostProj {
   createdAt: string;
   updatedAt: string;
   lines: CostLine[];
+  sourceRevisions?:Record<string,any[]>;
   mbd: { refId: string; seq: number; counts: (number | null)[] }[];
   checks: Record<string, CostCheckRow>;
   actuals: Record<string, number>;
-  approvals: { rev: number; approvedBy: string; approvedAt: string; reason: string; basisVersion: string; resultSha256: string }[];
+  approvals: { rev: number; approvedBy: string; approvedAt: string; reason: string; basisVersion: string; resultSha256: string; sources?:{lineNo:number;revision:number}[] }[];
   /** 승인 때 고정한 결과(rev → 계산 결과) */
   results: Record<string, any>;
 }
@@ -708,10 +716,59 @@ async function refFacts(ctx: SimReadContext, refIds: string[], basis: any) {
     }),
   );
 }
+async function costReferencePreview(ctx:SimReadContext,refId:string,basisVersion?:string):Promise<any>{
+ if(!canSeeCost(ctx.actor.role))throw new SimError('FORBIDDEN','산정 원천의 금액 정보는 산정 역할만 조회할 수 있습니다.');
+ const base=await ctx.snapshot<any>('costReference',{refId});const current=await refRow(ctx,refId);
+ if(!current)throw new SimError('NOT_FOUND','기준 행이 없습니다.');
+ if(!base?.ref || !Object.hasOwn(base.ref,'benchmarkEur'))throw new SimError('CONFLICT','산정 원천의 공개 데모 스냅샷이 없습니다. 원천을 다시 수집한 뒤 산정하세요.');
+ const relatedReferences=[];for(const related of base.relatedReferences ?? []){const latest=await refRow(ctx,related.refId);relatedReferences.push(latest?{...related,...latest}:related);}
+ const ref={...base.ref,...current};const version=basisVersion ?? await latestBasis(ctx);const basis=await basisOf(ctx,version);const refRelease=await latestRefRelease(ctx);
+ const missing=costReferenceMissing(ref,basis);const candidates=new Map<string,any>();
+ for(const f of base.features ?? [])candidates.set(`${f.featureId}@${f.version}`,f);
+ for(const e of ctx.list<any>('regFeature'))candidates.set(`${e.row.featureId}@${e.row.version}`,e.row);
+ const features=[];for(const c of candidates.values()){const f=await featureRow(ctx,c.featureId,c.version);if(f && (f.featureRefs ?? []).some((l:any)=>l.refId===refId))features.push({featureId:f.featureId,version:f.version,name:f.name,asil:f.asil,lifecycle:f.lifecycle,sha256:await sha256(canonicalCostSource(costFeatureSourceOf(f)))});}
+ return {...base,ref,relatedReferences,basisVersion:version,refRelease,referenceSha256:await sha256(canonicalCostSource(ref)),features,usable:!!refRelease && refStatusPolicy(ref.status).costUsable && !missing.length,missing:[...(!refRelease?['REFERENCE_RELEASE']:[]),...missing]};
+}
+async function costValidateReference(ctx:SimWriteContext,p:CostProj,selection:any){
+ const preview=await costReferencePreview(ctx,selection.refId,p.doc.basisVersion);
+ if(selection.refRelease!==preview.refRelease || selection.refRelease!==p.doc.refRelease)ctx.fail('CONFLICT','Feature DB 발행 버전이 달라졌습니다. 과제의 최신 기준을 확인하세요.');
+ if(selection.referenceSha256!==preview.referenceSha256)ctx.fail('CONFLICT','선택한 기준 행의 내용이 변경됐습니다.');
+ if(!preview.usable)ctx.fail('VALIDATION','산정할 수 없는 기준 행이거나 필수 계수가 없습니다.',{missing:preview.missing});
+ let feature:any=null;if(selection.feature){feature=await featureRow(ctx,selection.feature.featureId,selection.feature.version);if(!feature)ctx.fail('NOT_FOUND','연결할 Feature 버전이 없습니다.');if(!(feature.featureRefs ?? []).some((l:any)=>l.refId===selection.refId))ctx.fail('VALIDATION','선택한 기준 행을 참조하는 실제 Feature만 연결할 수 있습니다.');if(await sha256(canonicalCostSource(costFeatureSourceOf(feature)))!==selection.feature.sha256)ctx.fail('CONFLICT','연결할 Feature 내용이 변경됐습니다.');}
+ return {preview,feature};
+}
+function costNextLine(p:CostProj){return Math.max(0,...p.lines.map(l=>l.lineNo),...Object.keys(p.sourceRevisions ?? {}).map(Number))+1;}
+async function costCaptureReference(ctx:SimWriteContext,p:CostProj,line:CostLine,value:any,reason:string){
+ const {preview,feature}=value;const revisions=(p.sourceRevisions ??= {})[String(line.lineNo)] ??= [];const revision=Math.max(0,...revisions.map((s:any)=>s.revision))+1;
+ const snapshot={reference:preview.ref,relatedReferences:preview.relatedReferences ?? [],facts:costRefFactsOf(preview.ref,preview.ord ?? 0),feature:feature?costFeatureSourceOf(feature):null,sources:preview.sources ?? []};
+ revisions.push({revision,release:preview.refRelease,referenceSha256:preview.referenceSha256,featureSha256:feature?await sha256(canonicalCostSource(snapshot.feature)):null,capturedBy:ctx.actor.id,capturedAt:ctx.iso(),reason,snapshot});
+ line.sourceRevision=revision;line.featureId=feature?.featureId ?? null;line.version=feature?.version ?? null;line.role=feature?(feature.featureRefs ?? []).find((l:any)=>l.refId===line.refId).role:'REFERENCE';line.featureAsil=feature?.asil ?? preview.ref.asilRep;
+}
+async function costAppendReference(ctx:SimWriteContext,p:CostProj,selection:any,reason:string){
+ if(p.lines.some(l=>l.refId===selection.refId))ctx.fail('CONFLICT','이 기준 행은 이미 과제에 있습니다. 기존 줄의 연결·원천을 변경하세요.');
+ const value=await costValidateReference(ctx,p,selection);const line:CostLine={lineNo:costNextLine(p),refId:selection.refId,featureId:null,version:null,role:'REFERENCE',featureAsil:value.preview.ref.asilRep,inputs:{qty:1}};await costCaptureReference(ctx,p,line,value,reason);p.lines.push(line);
+ ctx.audit({action:'COST_REFERENCE_ADD',target:`${p.estId}#${line.lineNo}`,after:{refId:line.refId,featureId:line.featureId,revision:line.sourceRevision,release:value.preview.refRelease,referenceSha256:value.preview.referenceSha256},reason,componentId:'D07-01'});
+}
+async function costSourceView(ctx:SimReadContext,p:CostProj,lineNo:number,revision:number,withSnapshot=false):Promise<any>{
+ const history=p.sourceRevisions?.[String(lineNo)] ?? [];const source=history.find((s:any)=>s.revision===revision);if(!source?.snapshot)throw new SimError('CONFLICT','고정한 원천 스냅샷이 없습니다. 최신 기준을 명시 적용하세요.');
+ const {snapshot,...metadata}=source;const base=await ctx.snapshot<any>('costReference',{refId:snapshot.reference.refId});const current=await refRow(ctx,snapshot.reference.refId);const currentReferenceSha256=current && base?.ref?await sha256(canonicalCostSource({...base.ref,...current})):null;
+ const feature=snapshot.feature?await featureRow(ctx,snapshot.feature.featureId,snapshot.feature.version):null;const featureSha=feature?await sha256(canonicalCostSource(costFeatureSourceOf(feature))):null;
+ let relatedStale=false;for(const related of snapshot.relatedReferences ?? []){const latest=await refRow(ctx,related.refId);if(!latest || canonicalCostSource({...related,...latest})!==canonicalCostSource(related))relatedStale=true;}
+ return {...metadata,kind:snapshot.feature?'REGISTERED_FEATURE':'FEATURE_DB',stale:relatedStale || source.referenceSha256!==currentReferenceSha256 || source.featureSha256!==featureSha,latestRelease:await latestRefRelease(ctx),currentReferenceSha256,reference:costReferencePublic(snapshot.reference),feature:snapshot.feature,sources:snapshot.sources,history:history.map(({snapshot:_s,...m}:any)=>({revision:m.revision,release:m.release,referenceSha256:m.referenceSha256,featureSha256:m.featureSha256,capturedBy:m.capturedBy,capturedAt:m.capturedAt,reason:m.reason})),...(withSnapshot && canSeeCost(ctx.actor.role)?{snapshot}:{})};
+}
+registerSimReader('costReference',ctx=>costReferencePreview(ctx,ctx.req.params.refId,ctx.req.query.basisVersion));
+registerSimReader('costReferenceHistory',async ctx=>{const p=await costOf(ctx,ctx.req.params.estId);if(!p)throw new SimError('NOT_FOUND','산정 과제가 없습니다.');return costSourceView(ctx,p,Number(ctx.req.params.lineNo),Number(ctx.req.params.revision),true);});
+registerSimHandler('costReferenceAdd',async ctx=>{const p=await costDraft(ctx,ctx.req.params.estId,'COST_REFERENCE_ADD');await costAppendReference(ctx,p,ctx.req.body,'Feature DB 기준 행 추가');saveCost(ctx,p);return costDetail(ctx,p);},{body:AddCostReferenceBody});
+registerSimHandler('costReferenceUpdate',async ctx=>{const p=await costDraft(ctx,ctx.req.params.estId,'COST_REFERENCE_UPDATE');const line=p.lines.find(l=>l.lineNo===Number(ctx.req.params.lineNo));if(!line)return ctx.fail('NOT_FOUND','산정 기준 행이 없습니다.');const body=ctx.req.body;if((line.sourceRevision ?? 0)!==body.revision)ctx.fail('CONFLICT','다른 담당자가 원천을 변경했습니다.');if(body.selection.refId!==line.refId)ctx.fail('VALIDATION','같은 기준 행의 원천만 변경할 수 있습니다.');await costCaptureReference(ctx,p,line,await costValidateReference(ctx,p,body.selection),body.reason);saveCost(ctx,p);ctx.audit({action:'COST_REFERENCE_UPDATE',target:`${p.estId}#${line.lineNo}`,after:{revision:line.sourceRevision},reason:body.reason,componentId:'D07-01'});return costDetail(ctx,p);},{body:UpdateCostReferenceBody});
+registerSimHandler('costLineRemove',async ctx=>{const p=await costDraft(ctx,ctx.req.params.estId,'COST_LINE_REMOVE');const line=p.lines.find(l=>l.lineNo===Number(ctx.req.params.lineNo));if(!line)return ctx.fail('NOT_FOUND','산정 기준 행이 없습니다.');p.lines=p.lines.filter(l=>l.lineNo!==line.lineNo);if(!p.lines.some(l=>l.refId===line.refId))p.mbd=p.mbd.filter(m=>m.refId!==line.refId);saveCost(ctx,p);ctx.audit({action:'COST_LINE_REMOVE',target:`${p.estId}#${line.lineNo}`,before:{refId:line.refId,sourceRevision:line.sourceRevision},componentId:'D07-01'});return costDetail(ctx,p);},{body:EmptyBody});
+
 async function computeCost(ctx: SimReadContext, p: CostProj) {
   const basis = await basisOf(ctx, p.doc.basisVersion);
   const lines = p.lines.map((l) => ({ refId: l.refId, ...l.inputs, asil: l.inputs.asil ?? l.featureAsil }));
-  return estimate({ basis, settings: costEngineSettings(p.doc.settings), lines: lines as any, mbd: p.mbd as any, refs: (await refFacts(ctx, p.lines.map((l) => l.refId), basis)) as any });
+  const facts=await refFacts(ctx,p.lines.map(l=>l.refId),basis);const hashes=new Map<string,string>();
+  for(const line of p.lines) if(line.sourceRevision) for(const reference of (p.sourceRevisions?.[String(line.lineNo)] ?? []).find(source=>source.revision===line.sourceRevision)?.snapshot?.relatedReferences ?? []) facts.set(reference.refId,costRefFactsOf(reference,0));
+  for(const l of p.lines) if(l.sourceRevision){const source=(p.sourceRevisions?.[String(l.lineNo)] ?? []).find(r=>r.revision===l.sourceRevision);if(!source?.snapshot)throw new CostRuleError('CONFLICT','고정한 원천 스냅샷이 없습니다. 최신 기준을 명시 적용하세요.');if(hashes.has(l.refId) && hashes.get(l.refId)!==source.referenceSha256)throw new CostRuleError('CONFLICT','같은 기준 행의 원천 개정이 다릅니다.');hashes.set(l.refId,source.referenceSha256);facts.set(l.refId,source.snapshot.facts);}
+  return estimate({basis,settings:costEngineSettings(p.doc.settings),lines:lines as any,mbd:p.mbd as any,refs:facts as any});
 }
 const resultOf = async (ctx: SimReadContext, p: CostProj): Promise<any> => (p.status === 'APPROVED' && p.results[String(p.doc.rev)] ? p.results[String(p.doc.rev)] : computeCost(ctx, p));
 
@@ -723,6 +780,8 @@ async function costOf(ctx: SimReadContext, estId: string): Promise<CostProj | nu
   if (!d?.project) return null;
   const { status, createdBy, createdAt, updatedAt, latestBasisVersion: _l, latestRefRelease: _r, ...doc } = d.project;
   const { view: _v, ...result } = d.result ?? {};
+  const sourceRevisions:Record<string,any[]>={};
+  for(const line of d.lines ?? []) for(const revision of line.source?.history ?? []){const source=await ctx.snapshot<any>('costReferenceHistory',{estId,lineNo:String(line.lineNo),revision:String(revision.revision)});if(source)(sourceRevisions[String(line.lineNo)] ??= []).push(source);}
   return {
     estId,
     doc,
@@ -730,7 +789,8 @@ async function costOf(ctx: SimReadContext, estId: string): Promise<CostProj | nu
     createdBy,
     createdAt,
     updatedAt,
-    lines: (d.lines ?? []).map(({ refStatus: _s, refKnown: _k, ref: _f, ...l }: any) => l),
+    lines: (d.lines ?? []).map(({ refStatus: _s, refKnown: _k, ref: _f,source:_source, ...l }: any) => l),
+    sourceRevisions,
     mbd: d.mbd ?? [],
     checks: Object.fromEntries((d.checks?.items ?? []).filter((c: any) => c.updatedBy).map((c: any) => [String(c.no), { status: c.status, memo: c.memo, updatedBy: c.updatedBy, updatedAt: c.updatedAt }])),
     actuals: Object.fromEntries((d.actuals ?? []).filter((a: any) => a.override).map((a: any) => [a.refId, a.actual])),
@@ -799,7 +859,7 @@ async function costDetail(ctx: SimReadContext, p: CostProj) {
   const basis = await basisOf(ctx, p.doc.basisVersion);
   const refs = new Map<string, any>();
   for (const id of new Set(p.lines.map((l) => l.refId))) refs.set(id, await refRow(ctx, id));
-  const keys = [...new Map(p.lines.map((l) => [`${l.featureId}@${l.version}`, l])).values()];
+  const keys = [...new Map(p.lines.filter(l=>l.featureId && l.version).map((l) => [`${l.featureId}@${l.version}`, l])).values()];
   const features = [];
   for (const l of keys) {
     const f = await featureRow(ctx, l.featureId, l.version);
@@ -807,10 +867,11 @@ async function costDetail(ctx: SimReadContext, p: CostProj) {
   }
   return {
     project: { ...p.doc, settings: costSettingsView(p.doc.settings, role), status: p.status, createdBy: p.createdBy, createdAt: p.createdAt, updatedAt: p.updatedAt, latestBasisVersion: (await basisList(ctx)).latest, latestRefRelease: await latestRefRelease(ctx) },
-    lines: p.lines.map((l) => {
-      const r = refs.get(l.refId);
-      return { ...l, refStatus: r?.status ?? null, refKnown: !!r, ref: r ? { nameKo: r.nameKo, component: r.component, tshirt: r.tshirt, asilRep: r.asilRep } : null };
-    }),
+    lines: await Promise.all(p.lines.map(async (l) => {
+      const source=l.sourceRevision?await costSourceView(ctx,p,l.lineNo,l.sourceRevision):null;
+      const r = source?.reference ?? refs.get(l.refId);
+      return { ...l,source, refStatus: r?.status ?? null, refKnown: !!r, ref: r ? { nameKo: r.nameKo, component: r.component, tshirt: r.tshirt, asilRep: r.asilRep } : null };
+    })),
     features,
     options: {
       aace: Object.keys(basis.aace),
@@ -864,7 +925,8 @@ async function costListRow(ctx: SimReadContext, p: CostProj, latest: string | nu
     currency: p.doc.currency,
     basisVersion: p.doc.basisVersion,
     basisStale: p.doc.basisVersion !== latest,
-    featureCount: new Set(p.lines.map((l) => `${l.featureId}@${l.version}`)).size,
+    featureCount: new Set(p.lines.filter(l=>l.featureId && l.version).map((l) => `${l.featureId}@${l.version}`)).size,
+    referenceCount:new Set(p.lines.map(l=>l.refId)).size,
     totals,
     scope: Object.fromEntries(Object.entries(sets).map(([k, v]) => [k, [...v].sort()])),
     createdBy: p.createdBy,
@@ -912,6 +974,7 @@ registerSimHandler(
     const estId = ctx.nextId('EST', known, 4);
     const doc = { estId, name: body.name, target: body.target, currency: body.currency, settings, basisVersion, refRelease: await latestRefRelease(ctx), rev: 0, lastReason: null };
     const p: CostProj = { estId, doc, status: 'DRAFT', createdBy: ctx.actor.id, createdAt: at, updatedAt: at, lines: [], mbd: [], checks: {}, actuals: {}, approvals: [], results: {} };
+    for(const selection of body.references ?? []) await costAppendReference(ctx,p,selection,'Feature DB 기준으로 산정 시작');
     ctx.put(COST, estId, p, { created: true });
     ctx.audit({ action: 'COST_PROJECT_CREATE', target: estId, after: { name: doc.name, basisVersion, refRelease: doc.refRelease }, componentId: 'D07-01' });
     return { ...doc, status: 'DRAFT' as const };
@@ -935,6 +998,13 @@ registerSimHandler(
       ...(body.useLatestBasis ? { basisVersion: await costRule(ctx, () => latestBasis(ctx)), refRelease: await latestRefRelease(ctx) } : {}),
     };
     await checkSettings(ctx, p.doc.basisVersion, p.doc.settings, p.doc.currency);
+    if(body.useLatestBasis) for(const line of p.lines) {
+      const preview=await costReferencePreview(ctx,line.refId,p.doc.basisVersion);
+      const f=line.featureId?preview.features.find((f:any)=>f.featureId===line.featureId && f.version===line.version):null;
+      if(line.featureId && !f)ctx.fail('CONFLICT','기존 Feature가 기준 행을 더 이상 참조하지 않습니다.');
+      const selection={refId:line.refId,refRelease:preview.refRelease,referenceSha256:preview.referenceSha256,feature:f?{featureId:f.featureId,version:f.version,sha256:f.sha256}:null};
+      await costCaptureReference(ctx,p,line,await costValidateReference(ctx,p,selection),'최신 산정 기준 명시 적용');
+    }
     saveCost(ctx, p);
     ctx.audit({ action: 'COST_PROJECT_UPDATE', target: estId, before: { basisVersion: before }, after: { basisVersion: p.doc.basisVersion, changed: Object.keys(body) }, componentId: 'D07-01' });
     return costDetail(ctx, p);
@@ -959,9 +1029,9 @@ registerSimHandler(
       if (!r || !refStatusPolicy(r.status).costUsable) blocked.push(l.refId);
     }
     if (blocked.length) ctx.fail('VALIDATION', `산정에 쓸 수 없는 기준 행이 있습니다(요청 중·폐기): ${blocked.join(', ')}`, { field: 'featureId', refs: blocked });
-    let no = p.lines.reduce((m, l) => Math.max(m, l.lineNo), 0);
+    let no = costNextLine(p)-1;
     // 대표 먼저, 그다음 포함 — 화면에서 Feature 아래 대표 줄이 위에 온다
-    for (const l of [...links].sort((a, b) => (a.role === b.role ? 0 : a.role === 'PRIMARY' ? -1 : 1))) p.lines.push({ lineNo: ++no, featureId: f.featureId, version: f.version, refId: l.refId, role: l.role, featureAsil: f.asil, inputs: { qty: 1 } });
+    for(const link of [...links].sort((a,b)=>a.role===b.role?0:a.role==='PRIMARY'?-1:1)){const preview=await costReferencePreview(ctx,link.refId,p.doc.basisVersion);const value=await costValidateReference(ctx,p,{refId:link.refId,refRelease:preview.refRelease,referenceSha256:preview.referenceSha256,feature:{featureId:f.featureId,version:f.version,sha256:await sha256(canonicalCostSource(costFeatureSourceOf(f)))}});const line:CostLine={lineNo:++no,featureId:f.featureId,version:f.version,refId:link.refId,role:link.role,featureAsil:f.asil,inputs:{qty:1}};await costCaptureReference(ctx,p,line,value,'등록 Feature의 기준 행 연결');p.lines.push(line);}
     saveCost(ctx, p);
     ctx.audit({ action: 'COST_FEATURE_ADD', target: estId, after: { featureId: f.featureId, version: f.version, refs: links.map((l) => l.refId) }, componentId: 'D07-01' });
     return costDetail(ctx, p);
@@ -1037,7 +1107,8 @@ registerSimHandler(
     }
     let result: any = null;
     if (body.action === 'SUBMIT' || body.action === 'APPROVE') {
-      if (!p.lines.length) fail('GUARD_FAILED', '담긴 Feature가 없습니다 — Feature를 담은 뒤 제출합니다.');
+      if(!p.lines.length)fail('GUARD_FAILED','산정 기준 행이 없습니다.');
+      for(const line of p.lines){if(!line.sourceRevision)fail('GUARD_FAILED','원천 기록이 없는 이전 산정 줄입니다. 최신 기준을 명시 적용하세요.');if((await costSourceView(ctx,p,line.lineNo,line.sourceRevision!)).stale)fail('GUARD_FAILED','선택한 산정 원천이 변경됐습니다. 최신 기준을 확인하세요.');}
       const blocked: string[] = [];
       for (const l of p.lines) {
         const r = await refRow(ctx, l.refId);
@@ -1060,7 +1131,7 @@ registerSimHandler(
     if (body.action === 'APPROVE') {
       const rev = p.doc.rev + 1;
       p.results[String(rev)] = result;
-      p.approvals = [...p.approvals, { rev, approvedBy: ctx.actor.id, approvedAt: at, reason: body.reason, basisVersion: p.doc.basisVersion, resultSha256: await sha256(JSON.stringify(result)) }];
+      p.approvals = [...p.approvals, { rev, approvedBy: ctx.actor.id, approvedAt: at, reason: body.reason, basisVersion: p.doc.basisVersion, resultSha256: await sha256(JSON.stringify(result)),sources:p.lines.map(l=>({lineNo:l.lineNo,revision:l.sourceRevision!})) }];
       p.doc = { ...p.doc, rev };
     }
     const from = p.status;

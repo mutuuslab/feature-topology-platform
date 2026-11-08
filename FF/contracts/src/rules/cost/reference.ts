@@ -32,6 +32,8 @@ export const costFeatureSourceOf = (f: FeatureVersionRow) => ({
 export type CostFeatureSource = ReturnType<typeof costFeatureSourceOf>;
 export interface CostReferenceSnapshot {
   reference:FeatureRefRow;
+  /** Unselected duplicate targets can influence bundle inclusion checks in the engine. */
+  relatedReferences?:FeatureRefRow[];
   facts:CostRefFacts;
   feature:CostFeatureSource|null;
   sources:RefSource[];

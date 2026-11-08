@@ -256,6 +256,7 @@ async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: str
   }
   for (const refId of refIds) {
     await save('refDetail', { refId });
+    await save('costReference', { refId });
     await save('listRefChanges', {}, { refId });
   }
   // Feature 상세 '기준 행' 탭 — 연결 뒤 발행된 변경(발행됨만). 연결이 하나도 없으면 탭이 표본 없이 찍힌 것이다
@@ -317,7 +318,10 @@ async function flagCodeSnapshots(save: Save, versions: { featureId: string; vers
 async function costSnapshots(save: Save) {
   await save('costCalibration');
   const projects = await save('costProjects');
-  for (const p of projects.items as { estId: string }[]) await save('costProject', { estId: p.estId });
+  for (const p of projects.items as { estId: string }[]) {
+    const detail=await save('costProject', { estId: p.estId });
+    for(const line of detail.lines ?? []) for(const revision of line.source?.history ?? []) await save('costReferenceHistory',{estId:p.estId,lineNo:String(line.lineNo),revision:String(revision.revision)});
+  }
   const basis = await save('costBasisList');
   for (const b of basis.items as { version: string }[]) await save('costBasis', { version: b.version });
 }

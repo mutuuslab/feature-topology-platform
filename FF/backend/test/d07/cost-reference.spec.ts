@@ -2,7 +2,8 @@ import type { INestApplication } from '@nestjs/common';
 import { afterAll,beforeAll,describe,expect,it } from 'vitest';
 import { actor,bootApp,withRef } from '../helpers';
 import { DB,type Db } from '../../src/kernel/db';
-import { SecretVault } from '../../src/kernel/kms/key-protection';
+import { LocalKek,SecretVault } from '../../src/kernel/kms/key-protection';
+import {randomBytes} from 'node:crypto';
 import { sealSecrets } from '../../src/kernel/kms/secret-columns';
 
 const EST=actor('cost.reference.writer','COST_ESTIMATOR');
@@ -75,6 +76,13 @@ describe('Feature DB-first cost source contract',()=>{
   expect(()=>db.run('UPDATE cost_reference_revision SET reason=? WHERE est_id=?','rewrite',id)).toThrow(/immutable/);
   expect(()=>db.run('DELETE FROM cost_reference_revision WHERE est_id=?',id)).toThrow(/append only/);
   expect(sealSecrets(db,app.get(SecretVault)).verified).toBeGreaterThan(0);
+  const oldVault=app.get(SecretVault);const rotated=new SecretVault(new LocalKek(randomBytes(32)),[oldVault.current]);
+  try{expect(sealSecrets(db,rotated).rewrapped).toBeGreaterThan(0);const changed=db.get<{doc_sealed:string}>('SELECT doc_sealed FROM cost_reference_revision WHERE est_id=?',id)!.doc_sealed;expect(changed).not.toBe(row.doc_sealed);expect(changed.split('.').slice(3)).toEqual(row.doc_sealed.split('.').slice(3));}
+  finally{sealSecrets(db,new SecretVault(oldVault.current,[rotated.current]));}
+  const raw=(await http().get(`/api/cost/projects/${id}/lines/1/sources/1`).set(EST).expect(200)).body;
+  expect(raw.snapshot.reference.refId).toBe('BC-BCM-004');
+  const hidden=(await http().get(`/api/cost/projects/${id}/lines/1/sources/1`).set(DEV).expect(200)).body;
+  expect(hidden.snapshot).toBeUndefined();
  });
 
  it('preserves SoD and pins approved source revision; removal never reuses historical line identities',async()=>{
@@ -90,5 +98,14 @@ describe('Feature DB-first cost source contract',()=>{
   const added=(await http().post(`/api/cost/projects/${id}/references`).set(EST).send(selection(current)).expect(201)).body;
   expect(added.lines[0].lineNo).toBe(2);expect(added.approvals[0].resultSha256).toBe(approved.approvals[0].resultSha256);
   await http().get(`/api/cost/projects/${id}/lines/1/sources/1`).set(DEV).expect(200);
+ });
+ it('captures unselected duplicate targets used by bundle checks and detects their later changes',async()=>{
+  const rows=db.all<{doc:string}>('SELECT doc FROM feature_ref').map(row=>JSON.parse(row.doc));const ref=rows.find(ref=>ref.duplicateOf && ref.status==='ACTIVE' && rows.some(target=>target.refId===ref.duplicateOf));expect(ref).toBeDefined();
+  const p=await preview(ref.refId);const id=await create(selection(p));
+  const source=(await http().get(`/api/cost/projects/${id}/lines/1/sources/1`).set(EST).expect(200)).body;
+  expect(source.snapshot.relatedReferences.map((ref:any)=>ref.refId)).toContain(ref.duplicateOf);
+  const old=db.get<{doc:string}>('SELECT doc FROM feature_ref WHERE ref_id=?',ref.duplicateOf)!.doc;
+  try{db.run('UPDATE feature_ref SET doc=? WHERE ref_id=?',JSON.stringify({...JSON.parse(old),adminMemo:'후속 원천 변경 시험'}),ref.duplicateOf);expect((await detail(id)).lines[0].source.stale).toBe(true);await http().post(`/api/cost/projects/${id}/transitions`).set(EST).send({action:'SUBMIT',reason:'연관 원천 변경'}).expect(422);}
+  finally{db.run('UPDATE feature_ref SET doc=? WHERE ref_id=?',old,ref.duplicateOf);}
  });
 });

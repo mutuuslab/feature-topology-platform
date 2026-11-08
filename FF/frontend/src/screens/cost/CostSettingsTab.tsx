@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { CostSettingsInput } from '@ff/contracts';
 import { useApiMutation } from '../../api/hooks';
-import { costSettings as T } from '../../copy/cost';
+import { costSettings as T,costReference as R } from '../../copy/cost';
 import { Button, ErrorNote, Field, KeyValue, Panel, Select, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { COST_WRITERS, money, type CostDetailResponse } from './common';
@@ -30,7 +30,8 @@ export function CostSettingsTab({ d }: { d: CostDetailResponse }) {
     );
   const dirty = name !== p.name || target !== p.target || currency !== p.currency || JSON.stringify(s) !== JSON.stringify(p.settings);
   const why = whyDisabled([!perm.ok, perm.hint], [p.status !== 'DRAFT', T.readOnly], [!dirty, T.save]);
-  const stale = p.basisVersion !== p.latestBasisVersion;
+  const sourceStale=p.refRelease!==p.latestRefRelease || d.lines.some(line=>!line.sourceRevision || line.source?.stale);
+  const stale = p.basisVersion !== p.latestBasisVersion || sourceStale;
   const full = d.view === 'FULL';
   return (
     <form
@@ -43,9 +44,9 @@ export function CostSettingsTab({ d }: { d: CostDetailResponse }) {
       <p className="ds-field__hint">{T.basis(p.basisVersion, p.refRelease)}</p>
       {stale && (
         <p className="ds-field__hint">
-          {T.stale(p.latestBasisVersion)}{' '}
+          {sourceStale?R.stale:T.stale(p.latestBasisVersion)}{' '}
           <Button disabled={!editable || latest.isPending} reason={whyDisabled([!editable, T.readOnly])} onClick={() => latest.mutate({ params: { estId: p.estId }, body: { useLatestBasis: true } })}>
-            {T.useLatest}
+            {R.latestSource}
           </Button>
         </p>
       )}

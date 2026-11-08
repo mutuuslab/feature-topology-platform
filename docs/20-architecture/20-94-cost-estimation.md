@@ -3,13 +3,13 @@ id: ARC-COST-ESTIMATION
 type: architecture
 title: "구매본부 SW 개발비 산정 — 산정 과제·계산 엔진·실적 교정 / SW Cost Estimation"
 status: in-review
-version: 0.2.0
+version: 0.3.0
 owner: feature-architect
 cycle: 0
 standards: [COCOMO-II, AACE-18R-97]
 traces:
   depends_on: [ARC-FEATURE-REFDB]
-last_updated: 2026-11-05
+last_updated: 2026-11-09
 ---
 
 # 20-94 구매본부 SW 개발비 산정 — 산정 과제·계산 엔진·실적 교정
@@ -20,7 +20,7 @@ last_updated: 2026-11-05
 
 ## 1. 한 줄 요약
 
-구매본부가 **산정 과제**(예: BCM 신규 개발, 차종 1종·변형 2종)를 만들고 FF Feature를 담으면, 각 Feature가 연결한 기준 행(`30-95`)의
+구매본부가 **Feature DB 기준 행부터 선택해 산정 과제**(예: BCM 신규 개발, 차종 1종·변형 2종)를 만들면, 기준 행(`30-95`)의
 규모·특성으로 **엑셀과 같은 계산**(T-shirt·MBD 복잡도·직접 입력 → ASIL·재사용·변형·프로젝트 계수 → PERT → 공통 인력·제경비·기술료·예비비·VAT)을 한다.
 계산 엔진은 `contracts`의 순수 함수 + 계수 표이고, **엑셀 예시 과제와 1원 이내로 일치**하는 기준값 시험이 지킨다.
 금액·단가는 산정 역할만 보고 개발 역할은 공수(M/M)만 본다. C2 사용자 선택에 따라 모듈은 항상 켠다.
@@ -37,7 +37,7 @@ last_updated: 2026-11-05
 | D-COST-6 | RFQ·협력사 견적 비교(`16`~`18`)와 계약 뒤 변경 요청 재산정(`19`)은 **이번 범위 제외** |
 | D-COST-7 | 기존 엑셀 산정 도구는 FF가 대체, 결과는 엑셀로 내보내기 |
 | D-COST-8 | 계수·단가 표는 별도 **원가 기준 관리자**(`COST_BASIS_ADMIN`)가 버전 발행 (C-1) |
-| D-COST-9 | 산정 과제에는 **등록된 FF Feature만** 담는다 — 기준 행 직접 추가 없음 (C-2) |
+| D-COST-9 | **2026-11-09 사용자 변경**: Feature DB 기준 행에서 산정을 시작하고 등록 FF Feature는 선택 연결한다. 미등록 기준 행도 참조만으로 산정하며 Feature/버전을 생성하거나 ID를 위조하지 않는다. 종전 C-2의 등록 Feature만 허용 조건을 이 범위에서 대체한다 |
 | D-COST-10 | 통화는 **과제마다 선택**. 계산은 원화, 과제 통화로 환산 표시 (C-3) |
 | D-COST-11 | 산정 승인은 1단계(산정 승인자) (C-4) |
 | D-COST-12 | 메뉴 이름 **"SW 개발비 산정"**(상품·출시 그룹, `/procurement/sw-cost`) (C-5) |
@@ -85,7 +85,9 @@ last_updated: 2026-11-05
 | 표 | 키 | 내용 |
 |---|---|---|
 | `cost_project` | `EST-\d{4}` | 과제명, 대상 제어기·차종·변형 수(텍스트 + 선택적 ECU·차종 연결), 작성자, AACE 등급(Class 1~5), 목표 신뢰수준(P50/P80/P90), 개발 여건 프리셋, COCOMO 드라이버 등급 13개, 단가 기준·대가 방식, 제경비율·기술료율 수정값, 공통 인력 설정, 직접경비 목록, 가격 기준 연도·통화, **고정한 계수 표 버전**(`basisVersion`), **고정한 Feature DB 발행 버전**(`refRelease`), 상태 |
-| `cost_line` | (`est_id`, `line_no`) | 출처 FF Feature(`feature_id`·`version`, 필수), `ref_id`·`role`(대표/포함), 입력: 수량·변경 유형·적용 ASIL(빈칸=Feature ASIL, 없으면 대표 ASIL)·변형 수·m/o/p 직접 입력·우선순위·기존 보유·실적 공수·검토 상태·담당 메모 |
+| `cost_line` | (`est_id`, `line_no`) | `ref_id` 필수, FF Feature(`feature_id`·`version`)는 함께 NULL 또는 실제 버전 연결. 역할은 기준 행만 `REFERENCE`, 연결 시 `PRIMARY/INCLUDED`. `sourceRevision`으로 원천 개정 지정. 입력: 수량·변경 유형·적용 ASIL(빈칸=연결 Feature ASIL, 없으면 대표 ASIL)·변형 수·m/o/p·우선순위·보유 여부·실적 공수·검토 상태·메모 |
+| `cost_reference_revision` | (`est_id`,`line_no`,`revision`) | 선택 당시 기준 행·엔진 사실·선택적 Feature 요구/범위·출처 문서 원문을 KEK 봉인. 발행 버전·원천/Feature SHA·행위자·일시·사유는 추가 전용. KEK 교체를 위한 봉인 재감싸기만 허용 |
+| `cost_approval_source` | (`est_id`,`approval_rev`,`line_no`) | 승인 결과에 사용한 원천 개정 포인터. 추가 전용. 개정·줄 삭제 후에도 승인 당시 원천 조회 가능 |
 | `cost_mbd_item` | (`est_id`, `ref_id`, `seq`) | `12_MBD복잡도` 작업 단위: 복잡도 5등급별 개수 → 시간 |
 | `cost_basis` | `basisVersion` | `05_기준값` 표 전체 + `02` §3 벤치마크 환산 + 역할별 월단가(KOSA)·공정 비중·역할 구성비 + PERT·변형·공통 인력 비율·AACE 범위·신뢰수준 z. **단가 부분은 봉투 암호화**(§8) |
 | `cost_result` | (`est_id`, `rev`) | 승인 때 고정한 결과 스냅샷: 줄별 m·o·p·E·분산·인건비·벤치마크, 원가 구성, 신뢰수준표, 입력 해시 + 계수 표 해시 + 결과 해시. **암호화**, 추가 전용 |
@@ -93,8 +95,11 @@ last_updated: 2026-11-05
 
 ### 5.1 줄의 출처
 
-- 기본: 과제에 FF Feature를 담으면 그 Feature의 `featureRefs`(대표 + 포함)가 **기준 행마다 한 줄**로 펼쳐진다(엑셀 줄 = 기준 행). 화면은 Feature 단위로 묶어 보여 준다.
-- **FF Feature만**(D-COST-9): 기준 행을 직접 담을 수 없다. 초기 견적이라도 Feature를 먼저 등록한다(PROPOSED여도 된다 — 등록 때 Feature DB 연결이 필수이므로 규모 근거는 항상 있다).
+- 기본: Feature DB 검색·도메인 필터로 기준 행을 선택하고 발행·원천 SHA·계수·출처·적용 범위를 확인한다. 과제명·대상은 자동 채운 뒤 수정할 수 있다. 새 과제 UI는 최소 1개 기준 행을 원자적으로 저장한다.
+- 등록 Feature는 해당 기준 행을 실제 참조하는 버전 중 선택한다. 연결하지 않으면 `feature_id/version=NULL`, `REFERENCE`로 산정하며 프로젝트 범위는 과제의 target과 기준 행 scope, 연결 시 Feature의 요구/국가/차종/trim으로 보존한다. Feature 상태나 판정은 변경하지 않는다.
+- 새 참조 추가는 같은 과제의 중복 기준 ID를 거부한다. 연결 변경은 기존 줄의 원천 개정으로 기록해 수량·직접 공수 입력을 유지한다. 기존 Feature 일괄 추가 API와 references 없는 빈 과제 생성 API는 이전 호출자 호환용으로 유지하며 새 UI에서는 사용하지 않는다.
+- 선택 SHA·발행 버전 또는 연결 Feature SHA가 다르면 저장을 거부한다. 필수 등급/ASIL/Lifecycle/품질 계수가 없으면 임의의 0이나 기본 계수로 계산하지 않는다. 원천 변경 후에도 초안은 고정한 사실로 계산하지만 제출·승인은 원천 재확인 전 거부한다. 최신 기준 명시 적용은 새 원천 개정을 추가한다.
+- 이전 DB의 원천 기록 없는 줄은 승인된 결과를 그대로 보존한다. 새 제출·승인은 최신 기준 명시 적용으로 원천을 캡처한 후 가능하다. 기존 원천 기록이 없는 과거 승인에 소급하여 원문을 만들어 넣지 않는다.
 - `PENDING`·`RETIRED` 기준 행은 줄이 될 수 없다. `REVIEW`·`DEPRECATED`는 경고(엑셀 `15` "이번 과제 선택 행 중 검토 필요" 지표).
 
 ### 5.2 상태
@@ -107,7 +112,8 @@ DRAFT ──제출(작성자)──▶ SUBMITTED ──승인(승인자, 사유)
 ```
 
 - 승인할 때 `basisVersion`·`refRelease`·입력을 고정하고 `cost_result`를 만든다. 계수 표나 Feature DB가 나중에 바뀌어도 **승인된 결과는 변하지 않는다.**
-- DRAFT·SUBMITTED는 계산을 저장하지 않고 요청 때마다 다시 계산한다(엔진이 결정적이므로).
+- DRAFT·SUBMITTED는 고정한 원천 개정과 편집 입력으로 요청 때마다 다시 계산한다. 승인별 원천 포인터·결과 해시는 개정 후에도 유지한다.
+- `451_cost_reference_source`는 기존 cost_line 행/doc을 그대로 옮기고 선택 Feature의 NULL 쌍 및 역할을 검증한다. 원천/승인 포인터 기록은 삭제·덮어쓰기 금지이며 봉인 원문만 KEK 재감싸기가 가능하다.
 - 마이그레이션(구현): `083_cost_estimate`(cost_basis·cost_project·cost_line·cost_mbd_item·cost_result 추가만·cost_result_doc), `084_cost_check`(검토 체크리스트). 082는 Feature DB `082_refdb_append_only`. 직무 분리 ID는 SOD-16(SOD-15는 Feature DB 검토자 ≠ 승인자).
 
 ## 6. 계산 엔진

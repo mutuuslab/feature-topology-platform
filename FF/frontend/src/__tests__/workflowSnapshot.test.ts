@@ -19,10 +19,23 @@ beforeEach(async()=>{
   add('workflowCases',{items:[{caseId:item.caseId},{caseId:other.caseId}]});
   add('workflowCase',{item,history,roleIds:['R-SYS']},{id:item.caseId}); add('workflowCase',{item:other,history:[],roleIds:['R-SYS']},{id:other.caseId});
   add('workflowCaseSources',source,{id:item.caseId});
+  add('procedureState',{capturedProcedure:true});
   vi.stubGlobal('fetch',vi.fn(async(input:string)=>{const body=responses[String(input).replace(/^\//,'')];return body?new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}}):new Response('<html>',{headers:{'Content-Type':'text/html'}});}));
   sim=await import('../api/sim'); engine=await import('../api/sim/engine');
 });
 afterEach(()=>{engine?.__resetSimForTest();vi.unstubAllEnvs();vi.unstubAllGlobals();localStorage.clear();});
+
+it('the production API client filters the very first successful captured GET before any browser write',async()=>{
+  expect(localStorage.getItem('ff.sim')).toBeNull();
+  const client=await import('../api/client');
+  expect((await client.call('workflowCases',{role:'sysadmin'})).items).toHaveLength(2);
+  const list=await client.call('workflowCases',{role:'commerce'});
+  expect(list.items.map((c:any)=>c.caseId)).toEqual([item.caseId]);
+  await expect(client.call('workflowCase',{role:'commerce',params:{id:other.caseId}})).rejects.toMatchObject({status:403});
+  expect((await client.call('workflowCase',{role:'commerce',params:{id:item.caseId}})).roleIds).toEqual(M.personas.commerce);
+  expect((await client.call('workflowRoleGrants',{role:'sysadmin'})).items).toEqual([]);
+  expect(await client.call('procedureState',{role:'commerce'})).toEqual({capturedProcedure:true});
+});
 
 it('hydrates identical server artifacts/history/sources while enforcing the requesting persona and preserving explicit role grants',async()=>{
   expect((await run('workflowCases')).items.map((c:any)=>c.caseId)).toEqual([item.caseId]);

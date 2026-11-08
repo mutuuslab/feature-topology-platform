@@ -8,6 +8,7 @@ const loaders = {
   'ads': () => import('./en/ads'),
   'alm-inbox': () => import('./en/alm-inbox'),
   'alm': () => import('./en/alm'),
+  'analysis': () => import('./en/analysis'),
   'connections': () => import('./en/connections'),
   'cost-explorer': () => import('./en/cost-explorer'),
   'cost': () => import('./en/cost'),
@@ -22,6 +23,7 @@ const loaders = {
   'external': () => import('./en/external'),
   'f0': () => import('./en/f0'),
   'flag-code': () => import('./en/flag-code'),
+  'flags': () => import('./en/flags'),
   'fleet-search': () => import('./en/fleet-search'),
   'formatters': () => import('./en/formatters'),
   'freshness': () => import('./en/freshness'),
@@ -33,12 +35,14 @@ const loaders = {
   'login': () => import('./en/login'),
   'map-scope': () => import('./en/map-scope'),
   'master': () => import('./en/master'),
+  'observability': () => import('./en/observability'),
   'operation-overview': () => import('./en/operation-overview'),
   'ops5y': () => import('./en/ops5y'),
   'ota': () => import('./en/ota'),
   'p10': () => import('./en/p10'),
   'p11': () => import('./en/p11'),
   'planning': () => import('./en/planning'),
+  'ple': () => import('./en/ple'),
   'procedure-display': () => import('./en/procedure-display'),
   'procedure-panel': () => import('./en/procedure-panel'),
   'procedureFlow': () => import('./en/procedureFlow'),
@@ -53,6 +57,7 @@ const loaders = {
   'route-recovery': () => import('./en/route-recovery'),
   'route-titles': () => import('./en/route-titles'),
   'sim': () => import('./en/sim'),
+  'software-delivery': () => import('./en/software-delivery'),
   'status-labels': () => import('./en/status-labels'),
   'supplier': () => import('./en/supplier'),
   'taxonomy-level-names': () => import('./en/taxonomy-level-names'),
@@ -68,6 +73,8 @@ const loaders = {
   'workspace-studio': () => import('./en/workspace-studio'),
 };
 const workflowParts: Array<() => Promise<{ default: Record<string, string> }>> = [
+  () => import('./en/workflow-metadata-parts/fpw-1'),
+  () => import('./en/workflow-metadata-parts/fpw-14'),
   () => import('./en/workflow-metadata-parts/fpw-2'),
 ];
 export async function loadEnglishCatalogues(): Promise<Record<string, Record<string, unknown>>> {

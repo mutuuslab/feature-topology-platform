@@ -1,5 +1,6 @@
 // Static route captions only; URI patterns and permission metadata are unchanged.
 export default {
+  '/deployments/software': 'SW packages and downloads',
   '/master/taxonomy/levels': 'Classification hierarchy',
   '/policies/global-scope': 'Policies by brand and region',
   '/': 'My dashboard', '/procedures/work': 'Work cases and artifacts', '/admin/approval': 'Standard review',

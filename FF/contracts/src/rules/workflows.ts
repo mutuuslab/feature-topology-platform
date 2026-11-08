@@ -70,6 +70,26 @@ export interface WorkflowLayout {
   joins: [number, number][];
 }
 
+export interface WorkflowBasePractice {
+  id: string;
+  name: string;
+  definition: string;
+  /** Informative context; it never changes permissions or records an approval. */
+  notes: string[];
+  activityIds: string[];
+  outcomes: string[];
+  evidence: { workProduct: string; outcomes: string[] }[];
+}
+
+export interface WorkflowReferenceModel {
+  id: string;
+  title: string;
+  version: string;
+  status: string;
+  scope: string;
+  benchmark: { title: string; version: string; url: string };
+}
+
 export interface WorkflowProcess {
   id: string;
   name: string;
@@ -79,6 +99,8 @@ export interface WorkflowProcess {
   ref: string;
   purpose: string;
   outcomes: { id: string; text: string }[];
+  /** Normative business definitions, separate from activity execution/progress. */
+  basePractices?: WorkflowBasePractice[];
   rules: string[];
   entry: string[];
   exit: string[];
@@ -127,6 +149,7 @@ export interface WorkflowDepartment {
 
 export interface WorkflowDoc {
   schema: number;
+  referenceModel?: WorkflowReferenceModel;
   note: string;
   roles: WorkflowRole[];
   /** 데모 계정(페르소나) → 맡는 조직 역할 */

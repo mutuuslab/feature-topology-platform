@@ -15,6 +15,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import yaml
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from reference_model import reference_problems  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_DIR = ROOT / "model"
@@ -639,6 +641,7 @@ def validate(m: dict, partial: bool = False) -> Report:
                 err(f"{a['id']}: 플랫폼에서 해소했다고 적었지만 아직 검출된다({key})")
         elif detectable and key not in found:
             warn(f"{a['id']}: 더 이상 검출되지 않는 불일치({key}) — 플랫폼에서 해소되었으면 status: resolved-in-platform")
+    rep.errors.extend(reference_problems(m))
     return rep
 
 

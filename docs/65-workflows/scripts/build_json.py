@@ -14,6 +14,7 @@ from typing import List
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import wf_model as wm  # noqa: E402
 import build_html  # noqa: E402
+from reference_model import practices_json  # noqa: E402
 
 OUT = wm.ROOT / "out" / "workflows.json"
 SCHEMA = 1
@@ -79,6 +80,7 @@ def process_json(m: dict, p: dict, plan: dict) -> dict:
         "ref": p.get("ref", ""),
         "purpose": " ".join(p.get("purpose_ko", "").split()),
         "outcomes": [{"id": o["id"], "text": o["text_ko"]} for o in p.get("outcomes", [])],
+        **({"basePractices": practices_json(p)} if "base_practices" in p else {}),
         "rules": p.get("rules", []),
         "entry": p.get("entry_criteria", []),
         "exit": p.get("exit_criteria", []),
@@ -122,6 +124,7 @@ def document(m: dict) -> dict:
     plan = {pl["id"]: pl for pl in m["plan"]}
     return {
         "schema": SCHEMA,
+        **({"referenceModel": m["common"]["reference_model"]} if m["common"].get("reference_model") else {}),
         "note": "docs/65-workflows/scripts/build_json.py가 모델(model/*.yaml)에서 만든다. 손으로 고치지 않는다.",
         "roles": [{"id": r["id"], "name": r["name"], "en": r.get("en", ""), "desc": r.get("desc", ""),
                    "platformRoles": r["platform_roles"]} for r in m["roles"]],

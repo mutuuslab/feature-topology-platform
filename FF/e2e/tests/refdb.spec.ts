@@ -45,7 +45,7 @@ async function nextRelease(request: APIRequestContext) {
 /** 정의 승인 직전까지 — 구현 연결 + 안전 분류 확정 + G1~G3 PASS(남는 막힘은 기준 행 연결뿐) */
 async function readyForApproval(request: APIRequestContext, featureId: string, ver: string) {
   const base = `/api/features/${featureId}/versions/${ver}`;
-  const p = await request.patch(`${API}${base}`, { headers: AUTHOR, data: { functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] } });
+  const p = await request.patch(`${API}${base}`, { headers: AUTHOR, data: { upgVc: ['F111A114001'], functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] } });
   expect(p.status(), await p.text()).toBe(200);
   await api(request, 'post', `${base}/safety/confirm`, H('usr-safety', 'SAFETY_OFFICER'), { reason: 'HARA 검토 완료' });
   await recordAnalysisApi(request, featureId, ver); // G2 PASS 근거 — HARA·TARA(P3-3)

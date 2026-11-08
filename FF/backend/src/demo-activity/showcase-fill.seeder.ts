@@ -1,3 +1,4 @@
+import { ensureShowcaseSupplierEvidence } from './showcase-supplier';
 // 전시 빈 화면 채우기 — 공개 정적 데모·로컬 데모에서 '표본 없음'·빈 표로 보이던 화면을 담당자의 실제 서비스 경로로 채운다.
 // 원장(감사·이벤트)에 직접 쓰지 않는다 — 서비스가 실제 경로로 남긴다. 새 Feature는 만들지 않는다 — 새 Version은 시연 주인공의 개선 Version 4.1.1 하나뿐(전시 184 + 1).
 //  · DB마다 한 번(meta 'seed:showcase-fill'), 켜는 조건은 데모 활동과 같다(운영 모드·FF_SEED=none·FF_DEMO_ACTIVITY=0이면 끔). FF_SHOWCASE_FILL=0이면 이것만 끈다
@@ -758,6 +759,7 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
       G7: '기능안전·사이버보안 영향 검토 — 안전 목표·위협 변경 없음',
     };
     for (const g of ['G4', 'G5', 'G6', 'G7'] as const) {
+      if (g === 'G6') ensureShowcaseSupplierEvidence(this.db, this.moduleRef, features.get(HERO.featureId, ver)!, who('integrator', 'IMPLEMENTER', 'hero-supplier'), judge);
       // G7은 Safety Manager·CSM 두 사람의 서명(지금의 HARA·TARA에 묶인다)이 먼저다
       if (g === 'G7') {
         analysis.signG7(fsm, 'SAFETY_OFFICER', HERO.featureId, ver, '보정 Version 기능안전 영향 검토 — 안전 목표 변경 없음');

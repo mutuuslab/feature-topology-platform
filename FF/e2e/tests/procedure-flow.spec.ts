@@ -108,7 +108,7 @@ test('내 업무 흐름 — 역할 전환기에서 역할을 바꾸면 흐름이
 
   // 역할을 바꾸면 그 역할의 첫 화면으로 간다 — 업무 절차로 돌아와 흐름을 본다(저장된 역할 그대로)
   await page.getByRole('combobox', { name: '역할' }).selectOption('operator');
-  await page.goto('/procedures');
+  await page.goto('/procedures?view=flow');
   await expect(page.getByRole('combobox', { name: '역할' })).toHaveValue('operator');
   await page.getByRole('radio', { name: /전체/ }).click();
   const flow2 = page.getByRole('group', { name: '내 업무 흐름' });

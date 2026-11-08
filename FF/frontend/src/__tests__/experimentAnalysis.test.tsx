@@ -14,9 +14,20 @@ describe('실험 결과의 근거와 시각화', () => {
     expect(screen.getByText('비교할 차량이 없습니다. 일치율을 표시하지 않습니다.')).toBeTruthy();
   });
   it('실제 응답의 차량 판단·표본 수만 표시한다', () => {
-    render(<ExperimentResultCharts result={{ ...result, enough: true, sampleCounts:{control:1200,treatment:1000}, fleet:{vehicles:10,agreement:.8,deployedPolicyId:'POL-00002',diverged:[{vin:'SYNTHETIC-1',shadow:false,current:true},{vin:'SYNTHETIC-2',shadow:false,current:true}]} }} type="SHADOW" minSamples={1000} />);
+    render(<ExperimentResultCharts result={{ ...result, enough: true, sampleCounts:{control:1200,treatment:1000}, fleet:{vehicles:10,comparableVehicles:10,agreement:.8,deployedPolicyId:'POL-00002',diverged:[{vin:'SYNTHETIC-1',shadow:false,current:true},{vin:'SYNTHETIC-2',shadow:false,current:true}]} }} type="SHADOW" minSamples={1000} />);
     expect(screen.getByRole('progressbar', {name:'일치'}).getAttribute('value')).toBe('0.8');
     expect(screen.getByText('불일치: 2 / 10')).toBeTruthy();
     expect(screen.getByText(/관측 표본 수: 대조군 1,200/)).toBeTruthy();
   });
+});
+
+
+it.each([
+  ['NO_BASELINE', null, 10, 0, '비교할 배포 정책이 없습니다.'],
+  ['SOURCE_UNAVAILABLE', 'POL-00002', 10, 0, '차량별 비교 근거가 완전하지 않습니다.'],
+  ['PARTIAL', 'POL-00002', 10, 9, '차량별 비교 근거가 완전하지 않습니다.'],
+] as const)('%s does not display successful agreement', (comparisonStatus, deployedPolicyId, vehicles, comparableVehicles, message) => {
+  render(<ExperimentResultCharts result={{ ...result, fleet: { comparisonStatus, deployedPolicyId, vehicles, comparableVehicles, agreement: 1, diverged: [] } }} type="SHADOW" minSamples={1000} />);
+  expect(screen.queryByRole('progressbar', {name: '일치'})).toBeNull();
+  expect(screen.getByText(message, {exact: false})).toBeTruthy();
 });

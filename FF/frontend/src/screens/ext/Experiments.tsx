@@ -8,22 +8,11 @@ import { usePermission } from '../shared';
 import type { LakeExperimentEffect } from '@ff/contracts';
 import { lake as LK } from '../../copy/lake';
 import { experimentAnalysis as A } from '../../copy/experiment-analysis';
-import { ExperimentMethods, ExperimentResultCharts, type ExperimentResults } from './ExperimentAnalysis';
+import { ExperimentMethods, ExperimentResultCharts, missingFleetEvidence, type ExperimentResults } from './ExperimentAnalysis';
 
 const X = p10.experiment;
 
-interface Results extends ExperimentResults {
-  days: number;
-  control: number;
-  treatment: number;
-  diff: number;
-  ci95: [number, number];
-  enough: boolean;
-  significant: boolean;
-  verdict: string;
-  agreement?: number;
-  fleet: { deployedPolicyId: string | null; vehicles: number; agreement: number; diverged: { vin: string; shadow: boolean | null; current: boolean | null }[] } | null;
-}
+type Results = ExperimentResults;
 interface Experiment {
   experimentId: string;
   policyId: string;
@@ -197,7 +186,7 @@ function ExperimentDrawer({ id, onClose }: { id: string | null; onClose: () => v
                   { k: X.control, v: <span className="ds-mono">{pct(r.control)}</span> },
                   { k: X.treatmentArm, v: <span className="ds-mono">{pct(r.treatment)}</span> },
                   { k: X.diff, v: <span className="ds-mono">{pct(r.diff)}</span>, note: `${X.ci} ${pct(r.ci95[0])} ~ ${pct(r.ci95[1])}` },
-                  ...(r.fleet ? [{ k: X.fleet, v: <span className="ds-mono">{X.fleetSummary(r.fleet.vehicles, pct(r.fleet.agreement), r.fleet.deployedPolicyId)}</span>, note: r.fleet.diverged.length ? `${X.diverged}: ${r.fleet.diverged.map((d) => d.vin).join(', ')}` : undefined }] : []),
+                  ...(r.fleet ? [{ k: X.fleet, v: missingFleetEvidence(r.fleet) ?? <span className="ds-mono">{X.fleetSummary(r.fleet.vehicles, pct(r.fleet.agreement), r.fleet.deployedPolicyId)}</span>, note: r.fleet.diverged.length ? `${X.diverged}: ${r.fleet.diverged.map((d) => d.vin).join(', ')}` : undefined }] : []),
                 ]}
               />
             ) : (

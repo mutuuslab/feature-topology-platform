@@ -2,7 +2,7 @@
 // 안전 관련(F2 이상) Feature는 Shadow만(FFG-CLS-006). 효과 수치는 모의 운영 데이터(실험 ID로 결정적)이고,
 // Shadow는 실제 Fleet 차량마다 대상 정책(배포 가정)과 현재 배포 정책의 판단을 평가기로 대조한 일치율을 함께 낸다.
 import { Body, Controller, Get, HttpCode, Inject, Injectable, Param, Post, Query } from '@nestjs/common';
-import { ConcludeExperimentBody, CreateExperimentBody, EXPERIMENT_METRICS, effectEstimate, effectVerdict, evaluateFlag, experimentAllowed, type Experiment, type ExperimentMetric, type Policy } from '@ff/contracts';
+import { ConcludeExperimentBody, CreateExperimentBody, EXPERIMENT_METRICS, effectEstimate, effectVerdict, evaluateFlag, experimentAllowed, shadowVerdict, type Experiment, type ExperimentMetric, type Policy } from '@ff/contracts';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { AuditAction, CurrentActor, Roles, type Actor } from '../../../kernel/actor';
@@ -144,26 +144,27 @@ export class ExperimentService {
     // Shadow — 처리군 판단 일치율 + 실제 Fleet 대조
     const fleet = await this.shadowFleet(e);
     const agreement = treatN ? treatment.events / treatN : 0;
-    const verdict = treatN < e.minSamples ? 'INSUFFICIENT' : agreement >= 0.99 && fleet.agreement === 1 ? 'CONSISTENT' : 'DIVERGENT';
+    const verdict = shadowVerdict(agreement, est.enough, fleet);
     return { days: Math.round(days * 10) / 10, metric: e.metric, metricKo: EXPERIMENT_METRICS[e.metric].ko, ...provenance, ...est, agreement: Math.round(agreement * 10000) / 10000, verdict, fleet };
   }
 
   /** Shadow 대조 — 실험 대상 정책을 배포 가정으로 평가한 값과 지금 그 flag의 배포 정책 값이 차량마다 같은가 */
   private async shadowFleet(e: Experiment) {
     const candidate = this.policies.get(e.policyId)!;
-    const deployed = this.policies.all().find((p) => p.flagKey === candidate.flagKey && p.status === 'DEPLOYED' && p.policyId !== candidate.policyId) ?? null;
+    const deployed = this.policies.deployed(candidate.flagKey) ?? null;
     const f = this.features.get(candidate.featureId, candidate.featureVersion)!;
     const scope = { country: f.country, vehicleModel: f.vehicleModel, trim: f.trim };
+    const currentFeature = deployed ? this.features.get(deployed.featureId, deployed.featureVersion) : null;
+    const currentScope = currentFeature ? { country: currentFeature.country, vehicleModel: currentFeature.vehicleModel, trim: currentFeature.trim } : null;
     const rows = [];
     for (const vehicle of this.fleet.vehicles()) {
-      const ent = this.entitlements.activeFor(vehicle.vin, candidate.featureId).active;
-      const evalWith = (p: Policy | null) => (p ? evaluateFlag({ policy: { ...p, status: 'DEPLOYED' } as Policy, scope, killed: this.kills.killed(p.featureId, vehicle.vin), vehicle, entitlementActive: p.entitlementCatalogId ? ent : null }) : null);
-      const shadow = await evalWith(candidate);
-      const current = await evalWith(deployed);
-      rows.push({ vin: vehicle.vin, shadow: shadow?.value ?? null, current: current?.value ?? null, same: !current || shadow?.value === current.value });
+      const evalWith = (p: Policy | null, ownScope: typeof scope | null) => (p && ownScope ? evaluateFlag({ policy: { ...p, status: 'DEPLOYED' } as Policy, scope: ownScope, killed: this.kills.killed(p.featureId, vehicle.vin), vehicle, entitlementActive: p.entitlementCatalogId ? this.entitlements.activeFor(vehicle.vin, p.featureId).active : null }) : null);
+      const shadow = await evalWith(candidate, scope);
+      const current = await evalWith(deployed, currentScope);
+      rows.push({ vin: vehicle.vin, shadow: shadow?.value ?? null, current: current?.value ?? null, comparable: !!shadow && !!current, same: !!current && !!shadow && shadow.value === current.value });
     }
-    const same = rows.filter((r) => r.same).length;
-    return { deployedPolicyId: deployed?.policyId ?? null, vehicles: rows.length, agreement: rows.length ? same / rows.length : 1, diverged: rows.filter((r) => !r.same) };
+    const compared = rows.filter((r) => r.comparable), same = compared.filter((r) => r.same).length;
+    return { deployedPolicyId: deployed?.policyId ?? null, vehicles: rows.length, comparableVehicles: compared.length, comparisonStatus: !deployed ? 'NO_BASELINE' : !currentFeature ? 'SOURCE_UNAVAILABLE' : !rows.length ? 'NO_VEHICLES' : 'AVAILABLE', observedAt: this.clock.iso(), agreement: compared.length ? same / compared.length : 0, diverged: compared.filter((r) => !r.same) };
   }
 
   private must(id: string) {

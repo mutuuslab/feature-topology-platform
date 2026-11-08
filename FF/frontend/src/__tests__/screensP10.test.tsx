@@ -51,7 +51,7 @@ describe('A/B 및 Shadow 테스트', () => {
     handler = (url, init) => {
       if (init?.method === 'POST') return { status: 201, body: EXP };
       if (url.startsWith('/api/policies')) return { body: { items: [{ policyId: 'POL-00002', flagKey: 'care_00022_param', featureId: 'FEAT-00022', featureVersion: '1.0.0', status: 'DEPLOYED' }] } };
-      if (url.startsWith('/api/experiments/EXP-00001')) return { body: { ...EXP, results: { days: 3, control: 0.985, treatment: 0.99, diff: 0.005, ci95: [0.001, 0.009], enough: true, significant: true, verdict: 'CONSISTENT', agreement: 0.99, fleet: { deployedPolicyId: 'POL-00002', vehicles: 12, agreement: 1, diverged: [] } } } };
+      if (url.startsWith('/api/experiments/EXP-00001')) return { body: { ...EXP, results: { days: 3, control: 0.985, treatment: 0.99, diff: 0.005, ci95: [0.001, 0.009], enough: true, significant: true, verdict: 'CONSISTENT', agreement: 0.99, fleet: { deployedPolicyId: 'POL-00002', vehicles: 12, comparableVehicles: 12, agreement: 1, diverged: [] } } } };
       if (url.startsWith('/api/experiments')) return { body: { items: [EXP] } };
     };
     mount('/experiments', '/experiments', <ExperimentsScreen />, 'release');

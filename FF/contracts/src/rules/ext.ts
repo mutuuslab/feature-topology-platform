@@ -92,6 +92,12 @@ export function effectVerdict(metric: ExperimentMetric, e: ReturnType<typeof eff
   return (EXPERIMENT_METRICS[metric].better === 'higher') === up ? 'BETTER' : 'WORSE';
 }
 
+/** Missing baseline or observations cannot establish Shadow agreement. */
+export function shadowVerdict(agreement: number, enough: boolean, fleet: { deployedPolicyId: string | null; vehicles: number; comparableVehicles?: number; agreement: number; comparisonStatus?: string }): 'INSUFFICIENT' | 'CONSISTENT' | 'DIVERGENT' {
+  if (!enough || !fleet.deployedPolicyId || !Number.isInteger(fleet.vehicles) || fleet.vehicles <= 0 || fleet.comparableVehicles !== fleet.vehicles || (fleet.comparisonStatus && fleet.comparisonStatus !== 'AVAILABLE') || !Number.isFinite(agreement) || !Number.isFinite(fleet.agreement) || agreement < 0 || agreement > 1 || fleet.agreement < 0 || fleet.agreement > 1) return 'INSUFFICIENT';
+  return agreement >= 0.99 && fleet.agreement === 1 ? 'CONSISTENT' : 'DIVERGENT';
+}
+
 // ───────────────────────── D04-05 장애·VOC 이력 연계 ─────────────────────────
 
 export const IncidentSource = z.enum(['FIELD', 'VOC', 'DEALER']);

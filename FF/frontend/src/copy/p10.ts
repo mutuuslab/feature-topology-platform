@@ -29,7 +29,7 @@ export const p10 = /* @__PURE__ */ localizedCopy('p10.p10', {
     ci: '95% 신뢰구간',
     days: (d: number) => `${d}일`,
     samples: '표본(대조 · 처리)',
-    verdicts: { BETTER: '처리군이 나음', WORSE: '처리군이 나쁨', NO_DIFFERENCE: '차이 없음', INSUFFICIENT: '표본 부족', CONSISTENT: '판단 일치', DIVERGENT: '판단 불일치' } as Record<string, string>,
+    verdicts: { BETTER: '처리군이 나음', WORSE: '처리군이 나쁨', NO_DIFFERENCE: '차이 없음', INSUFFICIENT: '근거 부족', CONSISTENT: '판단 일치', DIVERGENT: '판단 불일치' } as Record<string, string>,
     fleet: '실제 Fleet 대조 (대상 정책 vs 배포 정책)',
     fleetSummary: (n: number, pct: string, dep: string | null) => `차량 ${n}대 · 일치 ${pct}${dep ? ` · 배포 정책 ${dep}` : ' · 비교할 배포 정책 없음'}`,
     diverged: '판단이 다른 차량',

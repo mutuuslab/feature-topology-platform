@@ -1,7 +1,7 @@
 // P10 규칙 — 실험 허용(FFG-CLS-006)·효과 추정, SOTIF 트리거(FFG-SOT-003)·VOC 분류, 동기화 시장 보류(FFG-TEL-005)·대사, 레거시 해석·Legacy-SDV 계획
 import { describe, expect, it } from 'vitest';
 import { classifyAnomaly } from './anomaly';
-import { classifyVoc, effectEstimate, effectVerdict, experimentAllowed, legacyPlan, reconcile, resolveOrder, sotifTrigger, syncGate } from './ext';
+import { classifyVoc, effectEstimate, effectVerdict, experimentAllowed, legacyPlan, reconcile, resolveOrder, shadowVerdict, sotifTrigger, syncGate } from './ext';
 
 describe('실험 허용 (FFG-CLS-006)', () => {
   it.each([
@@ -89,5 +89,27 @@ describe('Legacy 연계·Legacy-SDV', () => {
     expect(legacyPlan(v, { featureId: 'FEAT-00022', fClass: 'F2', controlPoints: ['Parameter'] }, true)).toMatchObject({ supported: false });
     expect(legacyPlan(v, { featureId: 'FEAT-00003', fClass: 'F0', controlPoints: ['Event'] }, true)).toMatchObject({ supported: false });
     expect(legacyPlan(v, { featureId: 'FEAT-00003', fClass: 'F1', controlPoints: ['Parameter'] }, false).commands).toEqual([{ unit: 'BCM', did: 'F1003', value: '00', note: expect.stringContaining('끄기') }]);
+  });
+});
+
+
+describe('Shadow evidence guards', () => {
+  const fleet = { deployedPolicyId: 'POL-00002', vehicles: 10, comparableVehicles: 10, agreement: 1, comparisonStatus: 'AVAILABLE' };
+  it.each([
+    ['complete agreement', .995, true, {}, 'CONSISTENT'],
+    ['observed disagreement', .995, true, { agreement: .9 }, 'DIVERGENT'],
+    ['sample disagreement', .98, true, {}, 'DIVERGENT'],
+    ['too few samples', 1, false, {}, 'INSUFFICIENT'],
+    ['no deployed baseline', 1, true, { deployedPolicyId: null }, 'INSUFFICIENT'],
+    ['no vehicles', 1, true, { vehicles: 0, comparableVehicles: 0 }, 'INSUFFICIENT'],
+    ['partial fleet', 1, true, { comparableVehicles: 9 }, 'INSUFFICIENT'],
+    ['legacy response without counts', 1, true, { comparableVehicles: undefined }, 'INSUFFICIENT'],
+    ['source unavailable', 1, true, { comparisonStatus: 'SOURCE_UNAVAILABLE' }, 'INSUFFICIENT'],
+    ['invalid sample ratio', NaN, true, {}, 'INSUFFICIENT'],
+    ['sample ratio above one', 1.01, true, {}, 'INSUFFICIENT'],
+    ['invalid fleet ratio', 1, true, { agreement: Infinity }, 'INSUFFICIENT'],
+    ['negative fleet ratio', 1, true, { agreement: -.1 }, 'INSUFFICIENT'],
+  ] as const)('%s', (_name, rate, enough, patch, expected) => {
+    expect(shadowVerdict(rate, enough, { ...fleet, ...patch })).toBe(expected);
   });
 });

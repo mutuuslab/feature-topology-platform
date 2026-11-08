@@ -37,6 +37,7 @@ import {
   departmentName,
   effectEstimate,
   effectVerdict,
+  evaluateFlag,
   EpochBumpBody,
   ErasureExecuteBody,
   ErasureRejectBody,
@@ -81,6 +82,7 @@ import {
   ROLE_LABEL,
   RunSyncBody,
   sotifTrigger,
+  shadowVerdict,
   sourceMatches,
   syncGate,
   TranslateLegacyBody,
@@ -91,6 +93,7 @@ import {
   validateComposition,
   ValidateCompositionBody,
   variantRow,
+  VehicleSchema,
   vexImpact,
   VexStatement,
   type BaselineRef,
@@ -1435,26 +1438,55 @@ async function experimentResults(ctx: SimReadContext, e: any) {
   const control = { n: controlN, events: rate(EXP_BASE[e.metric], 3)(controlN) };
   const treatment = { n: treatN, events: rate(EXP_BASE[e.metric] + effect, 7)(treatN) };
   const est = effectEstimate(control, treatment, e.minSamples);
+  const provenance = { source: 'SIMULATED', sampleCounts: { control: controlN, treatment: treatN } };
   const head = { days: Math.round(days * 10) / 10, metric: e.metric, metricKo: EXPERIMENT_METRICS[e.metric as keyof typeof EXPERIMENT_METRICS].ko };
-  if (e.type === 'AB') return { ...head, ...est, verdict: effectVerdict(e.metric, est), fleet: null };
-  // Shadow — 실제 Fleet 대조는 같은 정책의 기록된 대조(차량 판단은 정책·차량이 같으면 같다)를 쓴다
+  if (e.type === 'AB') return { ...head, ...provenance, ...est, verdict: effectVerdict(e.metric, est), fleet: null };
+  // Evaluate the current browser records; a missing comparison is never synthetic agreement.
   const fleet = await shadowFleet(ctx, e);
   const agreement = treatN ? treatment.events / treatN : 0;
-  const verdict = treatN < e.minSamples ? 'INSUFFICIENT' : agreement >= 0.99 && fleet.agreement === 1 ? 'CONSISTENT' : 'DIVERGENT';
-  return { ...head, ...est, agreement: Math.round(agreement * 10000) / 10000, verdict, fleet };
+  const verdict = shadowVerdict(agreement, est.enough, fleet);
+  return { ...head, ...provenance, ...est, agreement: Math.round(agreement * 10000) / 10000, verdict, fleet };
 }
 async function shadowFleet(ctx: SimReadContext, e: any) {
-  const list = (await ctx.snapshot<{ items: any[] }>('experiments'))?.items ?? [];
-  for (const x of list.filter((x) => x.policyId === e.policyId && x.type === 'SHADOW')) {
-    const d = await ctx.snapshot<any>('experiment', { id: x.experimentId });
-    if (d?.results?.fleet) return d.results.fleet;
-  }
-  // 대조할 배포 정책이 없으면 모든 차량이 같다(서버 shadowFleet: current 없음 → same)
-  const policies = (await ctx.read<{ items: any[] }>('listPolicies').catch(() => ({ items: [] }))).items ?? [];
-  const candidate = policies.find((p) => p.policyId === e.policyId);
-  const deployed = policies.find((p) => p.flagKey === candidate?.flagKey && p.status === 'DEPLOYED' && p.policyId !== e.policyId) ?? null;
-  const vehicles = (await ctx.read<{ items: any[] }>('vehicles').catch(() => ({ items: [] }))).items ?? [];
-  return { deployedPolicyId: deployed?.policyId ?? null, vehicles: vehicles.length, agreement: 1, diverged: [] };
+  let vehicles: any[] = [], deployed: any = null;
+  const unavailable = (comparisonStatus = 'SOURCE_UNAVAILABLE') => ({ deployedPolicyId: deployed?.policyId ?? null, vehicles: vehicles.length, comparableVehicles: 0, comparisonStatus, agreement: 0, diverged: [] as {vin:string;shadow:boolean|null;current:boolean|null}[] });
+  try {
+    const [policies, fleet] = await Promise.all([ctx.read<{items:any[]}>('listPolicies'),ctx.read<{items:any[]}>('vehicles')]);
+    if (!Array.isArray(policies.items) || !Array.isArray(fleet.items)) return unavailable();
+    vehicles=fleet.items;
+    const candidate=(await ctx.read<any>('policyDetail',{id:e.policyId}))?.policy;
+    if (!candidate) return unavailable();
+    const current=policies.items.filter(p=>p.flagKey===candidate.flagKey&&p.status==='DEPLOYED').sort((a,b)=>(b.revision??0)-(a.revision??0))[0];
+    if (current) deployed=(await ctx.read<any>('policyDetail',{id:current.policyId}))?.policy??null;
+    if (!deployed) return unavailable('NO_BASELINE');
+    if (!vehicles.length) return unavailable('NO_VEHICLES');
+    const [target,baseline,kills]=await Promise.all([
+      ctx.read<any>('featureDetail',{id:candidate.featureId,ver:candidate.featureVersion}),
+      ctx.read<any>('featureDetail',{id:deployed.featureId,ver:deployed.featureVersion}),
+      ctx.read<{items:any[]}>('killRequests'),
+    ]);
+    if (!target?.feature || !baseline?.feature || !Array.isArray(kills.items)) return unavailable();
+    const active=new Set<string>();
+    if(candidate.entitlementCatalogId||deployed.entitlementCatalogId){
+      const [baselines,products,grants]=await Promise.all([ctx.read<{items:any[]}>('baselines'),ctx.read<{items:any[]}>('listProducts'),ctx.read<{items:any[]}>('entitlements')]);
+      if(!Array.isArray(baselines.items)||!Array.isArray(products.items)||!Array.isArray(grants.items))return unavailable();
+      const today=grants.items.some(g=>typeof g.effective!=='boolean')?await trialToday(ctx):'';
+      for(const featureId of new Set([candidate.featureId,deployed.featureId])){
+        const ids=new Set(baselines.items.filter(b=>b.featureId===featureId).map(b=>b.baselineId));
+        const cats=new Set(products.items.filter(p=>p.baselineIds?.some((id:string)=>ids.has(id))).map(p=>p.catalogId));
+        for(const g of grants.items)if(cats.has(g.catalogId)&&(typeof g.effective==='boolean'?g.effective:grantState(g,today).effective))active.add(`${featureId}|${g.vin}`);
+      }
+    }
+    const rows=[];
+    for(const raw of vehicles){
+      const parsed=VehicleSchema.safeParse(raw);if(!parsed.success)continue;const vehicle=parsed.data;
+      const evaluate=(policy:any,feature:any)=>evaluateFlag({policy:{...policy,status:'DEPLOYED'},scope:{country:feature.country,vehicleModel:feature.vehicleModel,trim:feature.trim},vehicle,killed:kills.items.some(k=>k.status==='ACTIVE'&&(k.featureIds??[k.featureId]).includes(policy.featureId)&&k.vins?.includes(vehicle.vin)),entitlementActive:policy.entitlementCatalogId?active.has(`${policy.featureId}|${vehicle.vin}`):null});
+      const shadow=await evaluate(candidate,target.feature),current=await evaluate(deployed,baseline.feature);
+      rows.push({vin:vehicle.vin,shadow:shadow.value,current:current.value,same:shadow.value===current.value});
+    }
+    const same=rows.filter(r=>r.same).length;
+    return {deployedPolicyId:deployed.policyId,vehicles:vehicles.length,comparableVehicles:rows.length,comparisonStatus:rows.length===vehicles.length?'AVAILABLE':'PARTIAL',agreement:rows.length?same/rows.length:0,diverged:rows.filter(r=>!r.same)};
+  } catch { return unavailable(); }
 }
 async function experimentOf(ctx: SimReadContext, id: string) {
   return ctx.get<any>(EXP, id) ?? (await ctx.snapshot<any>('experiment', { id }));

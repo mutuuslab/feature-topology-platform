@@ -62,7 +62,9 @@ export class PolicyService implements OnModuleInit {
     const f = this.features.get(p.featureId, p.featureVersion);
     if (!f) throw new DomainError('NOT_FOUND', '정책의 Feature Version을 찾을 수 없습니다.');
     const facts = { policy: { policyId: p.policyId, revision: p.revision, contentHash: p.contentHash, featureId: p.featureId, featureVersion: p.featureVersion, flagKey: p.flagKey }, feature: gxFeatureFacts(f), compliance: this.safety.exceptionSources(p), flagCode: { connected: this.flagCode.connected(), row: this.flagCode.detail(p.flagKey).row }, ads: this.adsGate.exceptionSources(p.featureId, p.featureVersion, this.secureDeploy.targetsFor(p.featureId, p.featureVersion)) };
-    const payload: ExceptionDeploySourcesPayload = { schema: GX_SOURCE_SCHEMA, observedAt: this.clock.iso(), validUntil: new Date(this.clock.now().getTime() + GX_SOURCE_TTL_MS).toISOString(), sourceRevision: 'sha256:' + createHash('sha256').update(jcs(facts)).digest('hex'), ...facts };
+    // Bind both signed timestamps to one clock read, including on a running wall clock.
+    const observedAt = this.clock.now();
+    const payload: ExceptionDeploySourcesPayload = { schema: GX_SOURCE_SCHEMA, observedAt: observedAt.toISOString(), validUntil: new Date(observedAt.getTime() + GX_SOURCE_TTL_MS).toISOString(), sourceRevision: 'sha256:' + createHash('sha256').update(jcs(facts)).digest('hex'), ...facts };
     return { payload, signature: this.sourceAttestation.signDetached('gate', jcs(payload)) };
   }
 

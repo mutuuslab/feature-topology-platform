@@ -41,4 +41,17 @@ last_updated: 2026-11-10
 
 앞서 REFDB 생성도 write4.36초 및 기본5초 실패가 보존돼 있다. 병렬 cold 준비·명령 처리·실조회 갱신의 변동이 있으므로 고정 sleep 대신 실제 완료 상태를 bounded wait한다. 전역 mutation onSuccess 대기 제거, fake optimistic 완료, guard 완화는 하지 않는다.
 
-증거는 시연 KIT `out/static-business-final-r4/`(원본 보고서·로그·시작끝 SHA), `out/command-latency-9805-r1/`(실제 명령 event·URL·본문·PNG), `out/mutation-phase-two-workers-r2/`(REFDB 원계측)에 보존한다. 변경 후 동일한 원7흐름/2worker는 새 실행으로 기록한다. 이 문서 작성 시점에는 미실행이다.
+증거는 시연 KIT `out/static-business-final-r4/`(원본 보고서·로그·시작끝 SHA), `out/command-latency-9805-r1/`(실제 명령 event·URL·본문·PNG), `out/mutation-phase-two-workers-r2/`(REFDB 원계측)에 보존한다. 변경 후 동일한 원7흐름/2worker는 새 실행으로 기록한다. 첫 대기 기준 변경 작성 시점에는 미실행이었으며, 후속 실행은 아래에 분리 기록한다.
+
+
+## 후속 원7 실행과 읽기·롤백 완료 대기
+
+첫 대기 기준 정정 후 원7/2worker r5는 **4 PASS/3 FAIL/3.1분**, skip/flaky0이다. 상품·체험·출시 Sign-off·기준 행 변경/업무 이관 전체는 통과했다. 더 진행한 두 정책 흐름의 롤백 실행/두 번째 미리보기와 기준 행 검색이 기본5초에서 실패했다. 시작·종료 하네스7파일 SHA 차이0 및 같은 preview release786을 확인했다. 이 실패도 원본 `out/static-business-final-r5/`에 보존한다.
+
+응답·asset·업무 상태를 바꾸지 않는 별도2worker 계측은 롤백 execute **실write3.412초 → success3.579초 → 실제 실행됨**을 확인했다. 롤백 preview는 **실write5.004초 → success5.019초**로 원5초 실패를 재현했다. 원실패를 보존한 채 별도15.25초 관측에서 실제 적용 가능 결과를 확인했다. 두 명령 모두 관측된 QueryClient 오류0이다. 계측 전체는 2 PASS/1 FAIL이며 성공으로 재분류하지 않는다(`out/rollback-read-latency-9805-r1/`).
+
+기존 롤백 승인 완료와 같은 원칙으로, 두 execute/두 preview assertion만 최대20초의 실제 상태 대기로 정정한다. 이후 실제 요청 ID·독립 반려/승인·서명 재게시·회신·최종 실행 이력과 오류 단언은 유지한다. 제품 처리 함수·권한·승인·판정 규칙은 수정하지 않는다.
+
+기준 행 검색 실패의 화면은 실제 검색결과 progressbar였다. `RefPicker`는 입력을250ms debounce하고 정적 검색은200행씩 전체 목록을 받아 계산한다. 입력 직후 이전 query가 잠시 calm인 상태를 settle로 통과시키지 않도록, **정확한 기대 refID의 가져오기 버튼**을 기존 읽기 준비 예산15초 내 긍정 결과로 기다린 후 dialog settle(로딩 종료/오류0)을 확인한다. 그 뒤 동일한 기준 ID를 선택한다. 스냅샷·필터·업무 데이터나 DOM을 조작하지 않는다. 별도 정확 refID 계측은1.476초에 실제 버튼을 확인했고 오류0이었다.
+
+전역 expect, 전체240/180/420초, CI2workers, 명시 publication5000ms, 성능 예산과 모든 최종 상태/거부/서명/영속 단언은 그대로다. 이 후속도 기능 시험 준비·완료 대기 정정이며 제품 성능 개선 주장과 구분한다.

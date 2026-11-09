@@ -145,7 +145,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await form.getByLabel('복구 사유').fill('Canary 차량 감속 이상 — 직전 배포 버전으로 되돌림');
   await form.getByRole('combobox', { name: /^승인대상자/ }).selectOption('usr-opslead');
   await form.getByRole('button', { name: '미리보기' }).click();
-  await expect(form).toContainText('적용 가능 — 요청할 수 있습니다');
+  await expect(form).toContainText('적용 가능 — 요청할 수 있습니다', { timeout: 20_000 });
   await form.getByRole('button', { name: '수동 롤백 요청' }).click();
   const created = form.getByRole('status').filter({ hasText: '만들었습니다' });
   await expect(created).toBeVisible();
@@ -166,7 +166,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   // 10. 실행(출시) — 재검증 뒤 복구 기준 버전을 같은 내용으로 다시 서명해 게시
   await as(page, 'coordinator', `/ops/rollback?request=${requestId}`);
   await page.locator(`[data-testid="rollback-pending"][id="${requestId}"]`).getByRole('button', { name: '실행', exact: true }).click();
-  await expect(page.locator(`[data-testid="rollback-pending"][id="${requestId}"]`)).toContainText('실행됨');
+  await expect(page.locator(`[data-testid="rollback-pending"][id="${requestId}"]`)).toContainText('실행됨', { timeout: 20_000 });
   await shot(page, 'rollback-executed');
 
   // 11. 차량 회신 — 게시본 목록 맨 위(정책 롤백 게시본), 회신이 몇 초에 걸쳐 들어오고 끊긴 차량은 다시 제출
@@ -340,7 +340,7 @@ async function requestSameValueRollback(page: Page, before: CapturedPolicy, curr
   await form.getByLabel('복구 사유').fill('같은 값의 직전 판 — 지정 승인대상자 검토 요청');
   await form.getByRole('combobox', { name: /^승인대상자/ }).selectOption('usr-opslead');
   await form.getByRole('button', { name: '미리보기', exact: true }).click();
-  await expect(form).toContainText('적용 가능 — 요청할 수 있습니다');
+  await expect(form).toContainText('적용 가능 — 요청할 수 있습니다', { timeout: 20_000 });
   await form.getByRole('button', { name: '수동 롤백 요청', exact: true }).click();
   const result = form.getByRole('status').filter({ hasText: '만들었습니다' });
   await expect(result).toBeVisible();
@@ -407,7 +407,7 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   await expect(item(yes.requestId)).toContainText('승인됨 — 실행 대기', { timeout: 20_000 }); // 결정 쓰기는 받아 둔 요청·계획 목록을 다시 읽어 계산 — 병렬 실행 부하에서 5초를 넘었다(통합 12단계)
   await as(page, 'coordinator', `/ops/rollback?request=${yes.requestId}`);
   await item(yes.requestId).getByRole('button', { name: '실행', exact: true }).click();
-  await expect(item(yes.requestId)).toContainText('실행됨');
+  await expect(item(yes.requestId)).toContainText('실행됨', { timeout: 20_000 });
   await shot(page, 'same-value-executed');
 
   // 실행 이력 상태 거르기(쓰기 뒤) — 새 실제 실행과 캡처 원천 이력을 구분한다.

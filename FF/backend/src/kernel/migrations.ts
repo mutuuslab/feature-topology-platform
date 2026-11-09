@@ -1,3 +1,4 @@
+import { COST_REVIEW_MIGRATION } from './migrations-cost-review';
 import { COST_REFERENCE_MIGRATION } from './migrations-cost-reference';
 import { SOFTWARE_MIGRATION } from './migrations-software';
 // 스키마 마이그레이션 — 이름 순 적용, 적용된 것은 다시 실행하지 않는다. 기존 항목은 수정하지 말고 새 항목을 추가한다.
@@ -1574,4 +1575,5 @@ CREATE TRIGGER impact_set_no_delete BEFORE DELETE ON impact_set BEGIN SELECT RAI
   BINARY_MIGRATION,
   SOFTWARE_MIGRATION,
   COST_REFERENCE_MIGRATION,
+  COST_REVIEW_MIGRATION,
 ].sort((a, b) => a.name.localeCompare(b.name));

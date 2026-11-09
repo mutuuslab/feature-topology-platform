@@ -1,3 +1,4 @@
+import { CreateCostReviewBody,PutCostReviewBody,ActCostReviewBody } from '@ff/contracts';
 // SW 개발비 산정 API(D07-01) — 경로는 contracts ROUTES(cost*). 읽기는 모든 역할이지만 금액은 산정 역할만(서버 투영, 20-94 §4).
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query, Res, StreamableFile } from '@nestjs/common';
 import type { Response } from 'express';
@@ -43,6 +44,23 @@ export class CostController {
   calibration(@CurrentActor() actor: Actor) {
     return this.s.calibration(actor);
   }
+
+  @Get('projects/:estId/reviews')
+  reviews(@CurrentActor() actor:Actor,@Param('estId') estId:string){return this.s.reviews(actor,estId);}
+  @Get('projects/:estId/reviews/:caseId')
+  review(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Param('caseId') caseId:string,@Query('revision') revision?:string){return this.s.review(actor,estId,caseId,revision===undefined?undefined:Number(revision));}
+  @Post('projects/:estId/reviews')
+  @Roles('COST_ESTIMATOR')
+  @AuditAction('COST_REVIEW_CREATE')
+  createReview(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Body(new ZodPipe(CreateCostReviewBody)) body:CreateCostReviewBody){return this.s.createReview(actor,estId,body);}
+  @Put('projects/:estId/reviews/:caseId')
+  @Roles('COST_ESTIMATOR')
+  @AuditAction('COST_REVIEW_UPDATE')
+  updateReview(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Param('caseId') caseId:string,@Body(new ZodPipe(PutCostReviewBody)) body:PutCostReviewBody){return this.s.updateReview(actor,estId,caseId,body);}
+  @Post('projects/:estId/reviews/:caseId/actions')
+  @Roles('COST_ESTIMATOR','COST_APPROVER','IMPLEMENTER','DOMAIN_REVIEWER','COST_BASIS_ADMIN')
+  @AuditAction('COST_REVIEW_ACTION')
+  actReview(@CurrentActor() actor:Actor,@Param('estId') estId:string,@Param('caseId') caseId:string,@Body(new ZodPipe(ActCostReviewBody)) body:ActCostReviewBody){return this.s.actReview(actor,estId,caseId,body);}
 
   @Post('projects')
   @Roles('COST_ESTIMATOR')

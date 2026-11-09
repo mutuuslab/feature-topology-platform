@@ -1,3 +1,4 @@
+import {CreateCostReviewBody,PutCostReviewBody,ActCostReviewBody} from './schemas/cost-procurement';
 import { ImpactConfirmBody, ImpactReevaluateBody, KillIntakeBody, KillIntakeDismissBody, RescindBody } from './rules/kill-intake';
 import { PutRoleScopeBody } from './schemas/role-scope';
 import { ApproveConfigSetBody, ApproveSecurityMinBody, ProposeSecurityMinBody } from './schemas/ads-config';
@@ -404,6 +405,11 @@ export const ROUTES: RouteDef[] = [
   // 고객 기준 값(출시 준비 RD-OPS-03) — 판매국·지역·차종·트림은 설치마다 등록한다. 데모 데이터셋 값은 시드일 뿐이다
   // SW 개발비 산정 (D07-01, 20-94 §7) — 금액은 산정 역할만, 그 밖의 역할은 공수(M/M)만(서버 투영). 금액을 돌려준 조회는 감사 COST_VIEW
   { name: 'costProjects', method: 'GET', path: '/api/cost/projects', summary: '산정 과제 목록(금액은 산정 역할만)', component: 'D07-01', personal: true, roles: COST_READ_ROLES },
+  {name:'costReviews',method:'GET',path:'/api/cost/projects/:estId/reviews',summary:'구매 6종 검토 건·출처·독립 의견',component:'D07-01',personal:true,roles:COST_READ_ROLES},
+  {name:'costReview',method:'GET',path:'/api/cost/projects/:estId/reviews/:caseId',summary:'구매 검토 개정·금액 권한 투영',component:'D07-01',personal:true,roles:COST_READ_ROLES},
+  {name:'costReviewCreate',method:'POST',path:'/api/cost/projects/:estId/reviews',summary:'구매 검토 건 작성',component:'D07-01',roles:['COST_ESTIMATOR'],body:CreateCostReviewBody},
+  {name:'costReviewUpdate',method:'PUT',path:'/api/cost/projects/:estId/reviews/:caseId',summary:'구매 검토 입력 개정·CAS',component:'D07-01',roles:['COST_ESTIMATOR'],body:PutCostReviewBody},
+  {name:'costReviewAction',method:'POST',path:'/api/cost/projects/:estId/reviews/:caseId/actions',summary:'구매 검토 독립 의견·승인·인계 준비',component:'D07-01',roles:['COST_ESTIMATOR','COST_APPROVER','IMPLEMENTER','DOMAIN_REVIEWER','COST_BASIS_ADMIN'],body:ActCostReviewBody},
   { name: 'costProjectCreate', method: 'POST', path: '/api/cost/projects', summary: '산정 과제 만들기', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: CreateCostProjectBody },
   { name: 'costProject', method: 'GET', path: '/api/cost/projects/:estId', summary: '산정 과제 상세·계산 결과(금액은 산정 역할만)', component: 'D07-01', personal: true, roles: COST_READ_ROLES, sample: { estId: 'EST-0001' } },
   { name: 'costProjectUpdate', method: 'PATCH', path: '/api/cost/projects/:estId', summary: '산정 과제 설정 수정', component: 'D07-01', roles: ['COST_ESTIMATOR'], body: UpdateCostProjectBody },

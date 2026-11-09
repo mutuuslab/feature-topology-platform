@@ -1,3 +1,5 @@
+import { CostReviewStore } from './cost-review.store';
+import { canonicalJson,type CostReviewBaseline,type CreateCostReviewBody,type PutCostReviewBody,type ActCostReviewBody } from '@ff/contracts';
 // SW 개발비 산정(D07-01, docs/20-architecture/20-94) — 산정 과제·줄·MBD·전이·계수 표 버전.
 // 계산은 contracts 엔진(rules/cost/engine.ts, 엑셀 1원 일치)이 한다. 금액은 산정 역할만 보고(D-COST-4, 서버 투영),
 // 단가가 든 계수 표와 승인 때 고정한 결과는 KEK 봉투로 봉인한다(D-COST-5). 금액을 돌려준 조회는 COST_VIEW로 감사한다.
@@ -99,6 +101,7 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 @PlatformComponent('D07-01')
 export class CostService implements OnModuleInit {
   private readonly referenceStore:CostReferenceStore;
+  private readonly reviewStore:CostReviewStore;
   private refsCache: { key: string; map: Map<string, CostRefFacts> } | null = null;
   private template: { buf: Buffer; basis: CostBasis; fdbRows: Map<string, number>; driverRows: Map<string, number> } | null = null;
 
@@ -109,7 +112,7 @@ export class CostService implements OnModuleInit {
     private readonly vault: SecretVault,
     private readonly features: FeatureRepo,
     private readonly refs: RefdbRepository,
-  ) {this.referenceStore=new CostReferenceStore(db,refs,features,vault,clock,version=>this.openBasis(version));}
+  ) {this.referenceStore=new CostReferenceStore(db,refs,features,vault,clock,version=>this.openBasis(version));this.reviewStore=new CostReviewStore(db,vault,clock,audit,estId=>this.reviewBaseline(estId));}
 
   /** 데모 시드 중 — 줄마다 상세를 다시 계산·열람 감사하지 않는다 */
   private quiet = false;
@@ -274,6 +277,19 @@ export class CostService implements OnModuleInit {
     const settings = costEngineSettings(doc.settings);
     return estimate({ basis, settings, lines, mbd: this.mbd(estId), refs });
   }
+
+  private reviewBaseline(estId:string):CostReviewBaseline {
+    const row=this.row(estId),doc=JSON.parse(row.doc)as CostProjectDoc,lines=this.lines(estId);let result:CostEstimate|null=null,error:string|null=null;
+    try{if(!lines.length)throw new Error('Feature DB 산정 기준 행을 먼저 연결하세요.');result=this.resultOf(row,doc);if(doc.basisVersion!==this.latestBasisVersion()||doc.refRelease!==(this.refs.latestRelease()?.release??null))throw new Error('과제의 계수·Feature DB 발행 기준이 최신과 다릅니다. 원천 갱신 후 재계산하세요.');}catch(e){error=e instanceof Error?e.message:String(e);}
+    const referenceState=lines.map(l=>({lineNo:l.lineNo,refId:l.refId,inputs:l.inputs,sourceRevision:l.sourceRevision,reference:l.sourceRevision?this.referenceStore.load(estId,l.lineNo,l.sourceRevision).metadata:null,current:this.refs.getRef(l.refId)}));
+    const fingerprint=sha(canonicalJson({doc,referenceState,latestBasisVersion:this.latestBasisVersion(),latestRefRelease:this.refs.latestRelease()?.release??null}));
+    return {fingerprint,basisVersion:doc.basisVersion,refRelease:doc.refRelease,referenceIds:[...new Set(lines.map(l=>l.refId))],estimateTotalMm:result?.totals.totalMm??null,estimateCost:result?.totals.totalCost??null,valid:!error,error};
+  }
+  reviews(actor:Actor,estId:string){return this.reviewStore.list(actor,estId);}
+  review(actor:Actor,estId:string,caseId:string,revision?:number){return this.reviewStore.detail(actor,estId,caseId,revision);}
+  createReview(actor:Actor,estId:string,body:CreateCostReviewBody){return this.reviewStore.create(actor,estId,body);}
+  updateReview(actor:Actor,estId:string,caseId:string,body:PutCostReviewBody){return this.reviewStore.update(actor,estId,caseId,body);}
+  actReview(actor:Actor,estId:string,caseId:string,body:ActCostReviewBody){return this.reviewStore.action(actor,estId,caseId,body);}
 
   /** 승인 때 고정한 결과(최신 rev) */
   private approvedResult(estId: string, rev: number): CostEstimate {

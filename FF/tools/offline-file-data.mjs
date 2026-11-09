@@ -65,7 +65,7 @@ function captureOf(value) {
   return { metadata: result, referenceTime };
 }
 
-export function buildOfflineData({ snapshotDir, publicDir, uiDir, outDir, captureManifest, frontendSourceCommit }) {
+export function buildOfflineData({ snapshotDir, publicDir, uiDir, outDir, captureManifest, frontendSourceCommit, supplementalDir, supplementalManifest }) {
   const snapshot = directory(snapshotDir, 'snapshotDir'), pub = directory(publicDir, 'publicDir'), ui = directory(uiDir, 'uiDir');
   if (typeof outDir !== 'string' || !outDir.trim()) fail('outDir is required');
   if (within(snapshot, resolve(outDir)) || within(pub, resolve(outDir))) fail('output must not be inside snapshot/public inputs');
@@ -80,14 +80,35 @@ export function buildOfflineData({ snapshotDir, publicDir, uiDir, outDir, captur
     if (stat && (stat.isSymbolicLink() || !stat.isFile())) fail('unsafe output file');
   };
   for (const name of ['offline-manifest.js', 'offline-provenance.json', ...BOOT_FILES]) safeOutput(join(out, name));
+  let supplemental = null;
+  if (!!supplementalDir !== !!supplementalManifest) fail('supplementalDir and supplementalManifest must be supplied together');
+  if (supplementalDir) {
+    const root = directory(supplementalDir, 'supplementalDir');
+    const metadata = typeof supplementalManifest === 'string' ? JSON.parse(readFileSync(resolve(supplementalManifest), 'utf8').replace(/^\ufeff/, '')) : supplementalManifest;
+    if (metadata?.schema !== 'ff.cost.offline.references/1' || metadata.containsSupplierQuotes !== false || metadata.containsParticipantOriginalFiles !== false || metadata.originalCaptureFilesChanged !== 0 || !Array.isArray(metadata.records)) fail('invalid supplemental provenance');
+    const inputs = listFiles(root), declared = new Map(metadata.records.map(r => [r.path,r]));
+    if (declared.size !== metadata.records.length || inputs.length !== metadata.files || inputs.length !== declared.size) fail('supplemental inventory differs');
+    const entries = inputs.map(r => {
+      if (!/^cost_references_[a-zA-Z0-9_.%-]+\.json$/.test(r.rel)) fail('supplemental file is not a cost-reference response');
+      const value = readFileSync(r.file), digest = sha(value), expected = declared.get(r.rel);
+      if (!expected || expected.sha256 !== digest || expected.bytes !== value.length) fail('supplemental bytes differ: ' + r.rel);
+      return {...r,root,path:'api-snapshot/'+r.rel,source:'supplement',bytes:value.length,digest};
+    });
+    const tree = createHash('sha256');
+    for (const r of [...entries].sort((a,b)=>a.rel.localeCompare(b.rel))) tree.update(r.rel+'\0'+r.digest+'\n');
+    if (tree.digest('hex') !== metadata.supplementalTreeSha256) fail('supplemental tree hash differs');
+    supplemental = { metadata, entries };
+  }
   const records = [
     ...listFiles(snapshot).map((r) => ({ ...r, root: snapshot, path: 'api-snapshot/' + r.rel, source: 'snapshot' })),
+    ...(supplemental?.entries ?? []),
     ...listFiles(pub, (rel) => rel === 'api-snapshot' || rel === '_headers' || rel === '_redirects').map((r) => ({ ...r, root: pub, path: r.rel, source: 'public' })),
     ...listFiles(ui, (rel, file, dir) => {
       const top = rel.split('/')[0];
       return ['data', 'archive', 'api-snapshot'].includes(top) || ['offline-manifest.js', 'offline-provenance.json', '_headers', '_redirects'].includes(rel) || /\.(?:zip|tar|tgz|7z)$/i.test(rel) || (dir && out !== ui && within(out, file));
     }).map((r) => ({ ...r, root: ui, path: r.rel, source: 'ui' })),
   ];
+  if(supplemental){const originals=new Set(records.filter(r=>r.source==='snapshot').map(r=>r.path));if(supplemental.entries.some(r=>originals.has(r.path)))fail('supplemental response shadows an original capture');}
   const dataDir = join(out, 'data');
   if (existsSync(dataDir) && (lstatSync(dataDir).isSymbolicLink() || !lstatSync(dataDir).isDirectory())) fail('unsafe output data directory');
   mkdirSync(dataDir, { recursive: true });
@@ -130,18 +151,20 @@ export function buildOfflineData({ snapshotDir, publicDir, uiDir, outDir, captur
   stats.uniqueBlobs = blobs.length; stats.shards = shardNumber;
   stats.snapshotAggregateSha256 = rawTree.digest('hex');
   if (capture.metadata.aggregateSha256 && capture.metadata.aggregateSha256 !== stats.snapshotAggregateSha256) fail('snapshot input differs from capture manifest');
-  const manifest = { schema: 'ff.offline.file/1', paths, blobs, chunks, eager: [...eager].sort((a, b) => a - b), referenceTime: capture.referenceTime, frontendSourceCommit: commit, captureMetadata: capture.metadata, anchor: { referenceTime: capture.referenceTime, sourceSHA: commit, applicationSourceCommit: capture.metadata.applicationSourceCommit ?? null, captureToolCommit: capture.metadata.captureToolCommit ?? null } };
+  if(supplemental){stats.supplementalFiles=supplemental.entries.length;stats.supplementalBytes=supplemental.entries.reduce((n,r)=>n+r.bytes,0);stats.supplementalTreeSha256=supplemental.metadata.supplementalTreeSha256;}
+  const packageId=sha(Buffer.from(stats.snapshotAggregateSha256+'|'+commit+'|'+(supplemental?.metadata.supplementalTreeSha256??'')));
+  const manifest = { schema: 'ff.offline.file/1', id:packageId, ...(supplemental?{supplementalMetadata:supplemental.metadata}:{}), paths, blobs, chunks, eager: [...eager].sort((a, b) => a - b), referenceTime: capture.referenceTime, frontendSourceCommit: commit, captureMetadata: capture.metadata, anchor: { referenceTime: capture.referenceTime, sourceSHA: commit, applicationSourceCommit: capture.metadata.applicationSourceCommit ?? null, captureToolCommit: capture.metadata.captureToolCommit ?? null } };
   // JSON.parse keeps unusual path keys as data rather than object-literal prototype setters.
   writeFileSync(join(out, 'offline-manifest.js'), 'globalThis.__FF_OFFLINE_MANIFEST__=JSON.parse(' + JSON.stringify(JSON.stringify(manifest)) + ');\n');
-  const provenance = { schema: manifest.schema, anchor: manifest.anchor, captureMode: capture.metadata.captureMode ?? null, backgroundCallbacksReplayed: capture.metadata.backgroundCallbacksReplayed ?? false, originalSignaturesPreserved: true, stats };
+  const provenance = { schema: manifest.schema, id:packageId, ...(supplemental?{supplementalMetadata:supplemental.metadata}:{}), anchor: manifest.anchor, captureMode: capture.metadata.captureMode ?? null, backgroundCallbacksReplayed: capture.metadata.backgroundCallbacksReplayed ?? false, originalSignaturesPreserved: true, stats };
   writeFileSync(join(out, 'offline-provenance.json'), JSON.stringify(provenance, null, 2) + '\n');
   for (const name of BOOT_FILES) { const source = join(pub, name); if (existsSync(source)) { regular(source, pub); const target = join(out, name); if (existsSync(target) && lstatSync(target).isSymbolicLink()) fail('unsafe boot output'); copyFileSync(source, target); } }
   return { manifest, stats, manifestFile: join(out, 'offline-manifest.js'), provenanceFile: join(out, 'offline-provenance.json') };
 }
 
 if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase()) {
-  const values = Object.create(null), allowed = new Set(['snapshot-dir', 'public-dir', 'ui-dir', 'out-dir', 'capture-manifest', 'frontend-source-commit']);
+  const values = Object.create(null), allowed = new Set(['snapshot-dir', 'public-dir', 'ui-dir', 'out-dir', 'capture-manifest', 'frontend-source-commit', 'supplemental-dir', 'supplemental-manifest']);
   for (let i = 2; i < process.argv.length; i += 2) { const key = process.argv[i]?.replace(/^--/, ''); if (!allowed.has(key) || !process.argv[i + 1]) fail('use --snapshot-dir --public-dir --ui-dir --out-dir --capture-manifest --frontend-source-commit'); values[key] = process.argv[i + 1]; }
-  const result = buildOfflineData({ snapshotDir: values['snapshot-dir'], publicDir: values['public-dir'], uiDir: values['ui-dir'], outDir: values['out-dir'], captureManifest: values['capture-manifest'], frontendSourceCommit: values['frontend-source-commit'] });
+  const result = buildOfflineData({ snapshotDir: values['snapshot-dir'], publicDir: values['public-dir'], uiDir: values['ui-dir'], outDir: values['out-dir'], captureManifest: values['capture-manifest'], frontendSourceCommit: values['frontend-source-commit'], supplementalDir:values['supplemental-dir'], supplementalManifest:values['supplemental-manifest'] });
   console.log(JSON.stringify(result.stats));
 }

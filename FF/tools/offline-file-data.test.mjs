@@ -64,3 +64,28 @@ test('rejects conflicting paths and mismatched capture hashes without rewriting 
   assert.throws(() => buildOfflineData({ ...f.options, captureManifest: { ...f.options.captureManifest, aggregateSha256: '0'.repeat(64) } }), /differs from capture/);
   assert.equal(readFileSync(join(f.snapshot, 'one.json'), 'utf8'), 'original');
 });
+
+function supplement(f) {
+  const directory=join(f.root,'cost-supplement');mkdirSync(directory);
+  const path='cost_references_CH-BRK-009.json',value=Buffer.from('{"refId":"CH-BRK-009","source":"workbook-reference"}'),sha256=hash(value);
+  writeFileSync(join(directory,path),value);
+  const metadata={schema:'ff.cost.offline.references/1',sourceCommit:'c'.repeat(40),sourceDirty:false,sourceWorkbookSha256:'d'.repeat(64),supplementalTreeSha256:hash(path+'\0'+sha256+'\n'),files:1,records:[{path,bytes:value.length,sha256,referenceSha256:'e'.repeat(64)}],containsSupplierQuotes:false,containsParticipantOriginalFiles:false,originalCaptureFilesChanged:0};
+  return {directory,metadata,path,value};
+}
+test('adds separately verified cost references without changing original capture bytes or its aggregate',t=>{
+ const f=setup(t),original=Buffer.from('{"signature":"preserved-native-signature"}');writeFileSync(join(f.snapshot,'signed.json'),original);
+ const originalTree=hash('signed.json\0'+hash(original)+'\n'),s=supplement(f);
+ const result=buildOfflineData({...f.options,captureManifest:{...f.options.captureManifest,aggregateSha256:originalTree},supplementalDir:s.directory,supplementalManifest:s.metadata}),a=archive(f.out);
+ assert.equal(result.stats.snapshotAggregateSha256,originalTree);assert.equal(result.stats.snapshotFiles,1);assert.equal(result.stats.supplementalFiles,1);
+ assert.deepEqual(a.read('api-snapshot/signed.json'),original);assert.deepEqual(a.read('api-snapshot/'+s.path),s.value);assert.equal(a.manifest.supplementalMetadata.sourceWorkbookSha256,s.metadata.sourceWorkbookSha256);
+ const first=a.manifest.id;buildOfflineData({...f.options,frontendSourceCommit:'f'.repeat(40),supplementalDir:s.directory,supplementalManifest:s.metadata});assert.notEqual(archive(f.out).manifest.id,first);
+ assert.deepEqual(readFileSync(join(f.snapshot,'signed.json')),original);
+});
+test('refuses altered or private supplemental provenance and any shadowing of the original snapshot',t=>{
+ const f=setup(t),s=supplement(f),opts={...f.options,supplementalDir:s.directory,supplementalManifest:s.metadata};
+ assert.throws(()=>buildOfflineData({...opts,supplementalManifest:{...s.metadata,containsSupplierQuotes:true}}),/provenance/);
+ assert.throws(()=>buildOfflineData({...opts,supplementalManifest:{...s.metadata,supplementalTreeSha256:'0'.repeat(64)}}),/tree hash/);
+ writeFileSync(join(s.directory,s.path),'modified');assert.throws(()=>buildOfflineData(opts),/bytes differ/);
+ writeFileSync(join(s.directory,s.path),s.value);writeFileSync(join(f.snapshot,s.path),s.value);assert.throws(()=>buildOfflineData(opts),/shadows an original/);
+ assert.deepEqual(readFileSync(join(f.snapshot,s.path)),s.value);
+});

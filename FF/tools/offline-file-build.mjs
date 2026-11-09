@@ -58,9 +58,9 @@ function guide(capture, source) {
 <h2>로그인과 화면</h2><p>ID <code>ff</code> / 비밀번호 <code>ff</code>로 로그인합니다. 팀별 업무, Feature DB, Feature 등록, 표준 검토, 배포·모니터링, A/B·Shadow 테스트와 가상 연계 화면을 사용할 수 있습니다. <a href="./twin.html?view=vehicle">3D 차량 화면</a>도 별도로 열 수 있습니다.</p>
 <h2>저장과 다운로드</h2><p>등록·수정·승인·첨부는 이 브라우저의 로컬 시연 저장소에 보관합니다. 같은 폴더의 연계 화면도 같은 시연 상태를 사용합니다. 파일 다운로드는 브라우저가 처리합니다. ZIP이나 폴더를 옮기기 전에 필요한 산출물을 내보내세요. 다른 PC나 브라우저로 입력 내용이 자동 이전되지는 않습니다.</p>
 <h2>실행 가능한 SW 파일 흐름</h2><p>SW 전달 화면에서 실행 시험용 SW를 만들고 업로드한 뒤, 작성자와 다른 승인 역할로 승인합니다. 연결한 Feature·SW·VIN·Flag 조건을 확인해 실제 파일을 다운로드할 수 있습니다. 파일 바이트와 SHA-256을 검사합니다. 차량 ECU 설치를 수행하는 프로그램은 아닙니다.</p>
-<h2>시연 기준 시각</h2><p class="note">상단에 표시한 시연 시각은 자료의 캡처 시점에서 출발하고, 창을 열어 둔 동안 진행합니다. 닫아 둔 시간은 건너뜁니다. <b>현재 실차나 외부 서비스의 상태를 조회하는 화면이 아닙니다.</b> 원본 서명·판정·관측 시각은 그대로 두고 당시 자료로 절차를 재생합니다. ‘새 시연’은 이 ZIP의 시연 입력을 초기 상태로 시작합니다.</p>
+<h2>개발비 기준과 구매 검토</h2><p>동일 Excel v1.3의 비용 기준과 캡처 v1.4의 공개 기준 행 정보를 연결한 파생 자료를 사용합니다. 회사 승인 단가나 공급사 견적을 뜻하지 않습니다. 미확정 값·확정된 0·비적용을 구분하고, 원문 파일을 첨부하면 실제 바이트와 SHA-256을 보관합니다. 승인 뒤 기준·입력이 바뀌면 재산정·재검토가 필요합니다.</p><h2>시연 기준 시각</h2><p class="note">상단에 표시한 시연 시각은 자료의 캡처 시점에서 출발하고, 창을 열어 둔 동안 진행합니다. 닫아 둔 시간은 건너뜁니다. <b>현재 실차나 외부 서비스의 상태를 조회하는 화면이 아닙니다.</b> 원본 서명·판정·관측 시각은 그대로 두고 당시 자료로 절차를 재생합니다. ‘새 시연’은 이 ZIP의 시연 입력을 초기 상태로 시작합니다.</p>
 <p>기준 자료: Feature Version ${capture.counts?.featureVersions ?? '—'}개 · 상품 Version ${capture.counts?.productVersions ?? '—'}개 · 차량 ${capture.counts?.vehicles ?? '—'}대. 기준 시각 ${escapeHtml(capture.referenceTime)}. 차량으로부터의 수신·적용 확인이 없는 항목은 ‘미확인’ 또는 Safe Default로 표시하며, 확인 완료로 바꾸지 않습니다.</p>
-<h2>외부 연계와 별도 작업</h2><p>CodeBeamer·JIRA·GitHub 화면과 변경 흐름은 내장 시연 자료로 동작합니다. 오프라인 입력을 실제 회사 서비스로 전송하지 않습니다. 연결 서비스가 필요한 협력사 작성·검수 등은 사용 제한 사유를 표시하며 완료로 기록하지 않습니다. SW 개발비의 구매 담당자 Needs 추가 반영본과 Figma 잔여 설계는 별도 작업입니다.</p>
+<h2>외부 연계와 별도 작업</h2><p>CodeBeamer·JIRA·GitHub 화면과 변경 흐름은 내장 시연 자료로 동작합니다. 오프라인 입력을 실제 회사 서비스로 전송하지 않습니다. 협력사 기능 매핑·산출물 등록·제출·독립 검수는 이 브라우저 안에서 수행합니다. 실제 서비스 연결이 필요한 작업은 제한 사유를 표시합니다. SW 개발비는 Feature DB 기준에서 출발하며 구매 6개 검토 유형의 근거·계산·독립 의견·승인 인계 자료를 연결합니다. 계약 체결·지급 승인을 대신하지 않습니다. Figma 설계 자료는 별도 링크로 제공합니다.</p>
 <h2>화면이 열리지 않을 때</h2><p>ZIP 안에서 미리보기로 실행하지 말고 폴더 전체를 먼저 압축 해제하세요. <code>index.html</code> 옆의 JS 파일과 <code>data</code> 폴더를 함께 유지하세요. 브라우저의 로컬 저장소를 차단한 모드에서는 첨부·승인을 보관할 수 없습니다. 파일 손상 안내가 보이면 ZIP을 다시 압축 해제하세요.</p>
 <small>화면 원천 ${escapeHtml(source)}<br>기준 자료 원천 ${escapeHtml(capture.applicationSourceCommit)} · 원본 서명 유지 · 로컬 시연</small></body></html>`;
 }
@@ -69,7 +69,7 @@ function bootScript(entry) {
   return `(function(){'use strict';Promise.resolve(globalThis.__FF_OFFLINE_READY__).then(function(){const script=document.createElement('script');script.src=${scriptJson('./' + entry)};script.onload=function(){if(parent!==window)parent.postMessage({type:'ff.file.loaded'},'*')};script.onerror=function(){throw new Error('프로그램 파일을 읽지 못했습니다. ZIP 전체를 압축 해제하세요.')};document.head.append(script)}).catch(function(error){if(parent!==window)parent.postMessage({type:'ff.file.failure',message:String(error.message||error)},'*');const root=document.getElementById('root');if(root)root.textContent=String(error.message||error)})})();\n`;
 }
 
-export async function buildOfflineFile({ snapshotDir, captureManifest, outDir, uiDir } = {}) {
+export async function buildOfflineFile({ snapshotDir, captureManifest, outDir, uiDir, supplementalDir, supplementalManifest } = {}) {
   if (!snapshotDir || !captureManifest || !outDir) throw new Error('snapshotDir, captureManifest and outDir are required');
   const output = resolve(outDir);
   if (existsSync(output)) throw new Error('Use a new output directory; existing packages are never overwritten');
@@ -82,7 +82,7 @@ export async function buildOfflineFile({ snapshotDir, captureManifest, outDir, u
   if (uiDir) cpSync(uiSource, output, { recursive: true });
   writeFileSync(join(output, 'release.json'), JSON.stringify({ commit: source, builtAt: new Date().toISOString(), mode: 'static', offline: true }));
   // Archive the immutable captured inputs and assets before adding wrappers and diagnostics.
-  const archive = buildOfflineData({ snapshotDir: resolve(snapshotDir), publicDir: join(FF, 'frontend/public'), uiDir: output, outDir: output, captureManifest: capture, frontendSourceCommit: source });
+  const archive = buildOfflineData({ snapshotDir: resolve(snapshotDir), publicDir: join(FF, 'frontend/public'), uiDir: output, outDir: output, captureManifest: capture, frontendSourceCommit: source, supplementalDir, supplementalManifest });
   writeFileSync(join(output, 'offline-runtime.js'), readFileSync(join(FF, 'tools/offline-file-runtime.js')));
   const modes = [
     { html: 'platform.html', script: 'app-main.js', wrapper: 'index.html', kind: 'main' },
@@ -113,7 +113,7 @@ export async function buildOfflineFile({ snapshotDir, captureManifest, outDir, u
     }
   };
   walk(output);
-  const report = { schema: 'ff.offline.package/1', frontendSourceCommit: source, sourceDirty: !!dirty, applicationCaptureSource: capture.applicationSourceCommit, captureToolCommit: capture.captureToolCommit, referenceTime: capture.referenceTime, mode: 'FILE_BROWSER_REPLAY', serverRequired: false, executableIncluded: false, ui, archive: archive.stats, files: inventory.length, bytes: inventory.reduce((n, f) => n + f.bytes, 0) };
+  const report = { schema: 'ff.offline.package/1', frontendSourceCommit: source, sourceDirty: !!dirty, applicationCaptureSource: capture.applicationSourceCommit, captureToolCommit: capture.captureToolCommit, referenceTime: capture.referenceTime, mode: 'FILE_BROWSER_REPLAY', serverRequired: false, executableIncluded: false, ui, archive: archive.stats, supplementalSource: archive.manifest.supplementalMetadata ?? null, files: inventory.length, bytes: inventory.reduce((n, f) => n + f.bytes, 0) };
   writeFileSync(join(output, 'package-info.json'), JSON.stringify(report, null, 2));
   writeFileSync(join(output, 'checksums.sha256'), inventory.map(f => `${f.sha256}  ${f.path}`).join('\n') + '\n');
   return { output, ...report };
@@ -121,7 +121,7 @@ export async function buildOfflineFile({ snapshotDir, captureManifest, outDir, u
 
 if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase()) {
   const args = process.argv.slice(2), opts = {};
-  const names = { '--snapshot': 'snapshotDir', '--capture-manifest': 'captureManifest', '--out': 'outDir', '--ui': 'uiDir' };
+  const names = { '--snapshot': 'snapshotDir', '--capture-manifest': 'captureManifest', '--out': 'outDir', '--ui': 'uiDir', '--supplemental-dir':'supplementalDir', '--supplemental-manifest':'supplementalManifest' };
   for (let i = 0; i < args.length; i += 2) { if (!names[args[i]] || !args[i + 1]) throw new Error('Usage: --snapshot <dir> --capture-manifest <json> --out <new-directory> [--ui <prebuilt-ui>]'); opts[names[args[i]]] = args[i + 1]; }
   console.log(JSON.stringify(await buildOfflineFile(opts), null, 2));
 }

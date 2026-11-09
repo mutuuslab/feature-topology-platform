@@ -57,7 +57,7 @@ export default function SupplierPackages() {
     </Toolbar>
     {gate.error && <p role="alert">{gate.error.message}</p>}
     {gate.data && <Panel title={S.gate}><p>{gate.data.applicable ? gate.data.blockers.length ? gate.data.blockers.join(' / ') : S.gateReady : S.internal}</p></Panel>}
-    <div className="supplier-layout">
+    <div className="supplier-layout" data-tour="supplier-sw">
       <Panel title={S.packageList}>
         <AsyncView state={listState} error={list.error ?? features.error ?? allPackages.error} onRetry={() => { void features.refetch(); void allPackages.refetch(); if (featureId && version) void list.refetch(); }}>
           <div className="ds-stack supplier-list">{packages.map((p) => <Button key={p.packageId} aria-pressed={p.packageId === packageId} onClick={() => setPackage(p.packageId)}><span>{p.supplier} / {p.version}</span><span>{S.status[p.status]}</span></Button>)}</div>

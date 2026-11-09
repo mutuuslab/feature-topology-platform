@@ -111,8 +111,12 @@ test('키보드 이동(끌기 대안) — 가젯 메뉴를 키보드로 열어 �
   await asRole(page, 'author');
   await edit(page);
   const menu = page.getByRole('button', { name: '바로 가기 가젯 메뉴' });
+  // 먼저 실제 버튼을 화면 안에 둔다. offscreen focus의 뒤늦은 scroll이 열린 메뉴를 닫지 않게 한다.
+  await menu.scrollIntoViewIfNeeded();
+  await expect(menu).toBeInViewport();
   await menu.focus();
-  await page.keyboard.press('Enter');
+  await expect(menu).toBeFocused();
+  await menu.press('Enter');
   await expect(page.getByRole('menu', { name: '바로 가기 가젯 메뉴' })).toBeVisible();
   await page.getByRole('menuitem', { name: '왼쪽 열로 이동' }).focus();
   await page.keyboard.press('Enter');

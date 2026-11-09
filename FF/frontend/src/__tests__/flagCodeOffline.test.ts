@@ -33,6 +33,12 @@ it('registers actual DEMO metadata, rejects remote modes, duplicate URLs, weak i
   await run('updateFlagRepository', { displayName: 'Revised DEMO', reason: 'Metadata review' }, 'coordinator', { id: r.repoId });
   expect((await get('flagRepositories')).items[0].displayName).toBe('Revised DEMO');
 });
+it('uses production handler body schemas for omitted defaults and invalid fields after browser route stripping', async () => {
+  const { scanPaths: _paths, scanIntervalMinutes: _interval, installationId: _install, ...body } = repoBody;
+  const r = await run('createFlagRepository', body, 'coordinator'); expect(r).toMatchObject({ scanPaths: [], scanIntervalMinutes: 0, installationId: null });
+  await expect(run('updateFlagRepository', { status: 'invented', reason: 'Invalid enum' }, 'coordinator', { id: r.repoId })).rejects.toMatchObject({ code: 'VALIDATION' });
+  await expect(run('rescanFlagRepository', { reason: '' }, 'integrator', { id: r.repoId })).rejects.toMatchObject({ code: 'VALIDATION' });
+});
 it('rescans exact retained bytes with real SHA/Ed25519, immutable result dedup and source readback', async () => {
   const r = await createRepo(), scan = await run('rescanFlagRepository', { reason: 'Actual local scan' }, 'integrator', { id: r.repoId });
   expect(scan.status).toBe('SUCCEEDED'); const d = await get('flagScanDetail', { id: scan.scanId }); expect(d.verified).toBe(true); expect(d.sourceFiles).toHaveLength(2);

@@ -5,7 +5,7 @@ import { domainAbbrOf } from '../../../../../contracts/src/rules/refdb/domain-al
 import { codeRemovalDue } from '../../../../../contracts/src/rules/retirement';
 import { flagPackageOf, planFeatureFlags, flagScaffoldBranch, flagRemovalBranch, flagConstantName, flagFeatureDir, reconcileFlag, summarizeFlagCoverage, flagReleaseGate, evaluateFlagPrCheck, FLAG_CODE_REQUIRED_LIFECYCLES } from '../../../../../contracts/src/rules/flag-coverage';
 import { flagPrText, flagPrResumable } from '../../../../../contracts/src/rules/flag-scaffold';
-import { FLAG_WAIVER_MAX_DAYS, FlagSourceManifestV2 } from '../../../../../contracts/src/schemas/flag-code';
+import { FLAG_WAIVER_MAX_DAYS, FlagSourceManifestV2, CreateFlagRepositoryBody, UpdateFlagRepositoryBody, RescanFlagRepositoryBody, CreateFlagPrBody, CreateFlagRemovalPrBody, FlagGateWaiverBody, FlagGateWaiverDecisionBody } from '../../../../../contracts/src/schemas/flag-code';
 import { FlagSourceManifest, flagSourceUrl } from '../../../../../contracts/src/schemas/flag-source';
 import { sha256 } from '../../software';
 import { registerSimHandler, registerSimReader, SimError } from '../engine';
@@ -40,6 +40,7 @@ async function plans(ctx: SimReadContext, f: any) {
   const computed = planFeatureFlags(f, pkg, [...new Map(allPolicies.map(p => [p.flagKey, { flagKey: p.flagKey, controlPoint: p.controlPoint }])).values()]);
   return computed.filter(e => !retired.has(e.flagKey));
 }
+const bodies: Record<string, any> = { createFlagRepository: CreateFlagRepositoryBody, updateFlagRepository: UpdateFlagRepositoryBody, rescanFlagRepository: RescanFlagRepositoryBody, createFlagPr: CreateFlagPrBody, createFlagRemovalPr: CreateFlagRemovalPrBody, requestFlagGateWaiver: FlagGateWaiverBody, decideFlagGateWaiver: FlagGateWaiverDecisionBody, importFlagSources: FlagSourceManifest };
 function write(name: string, action: string, component: string, fn: (ctx: SimWriteContext) => Promise<any>) {
   registerSimHandler(name, async ctx => {
     const target = ctx.req.params.id ?? ctx.req.body.featureId ?? ctx.req.body.flagKey ?? name;
@@ -48,7 +49,7 @@ function write(name: string, action: string, component: string, fn: (ctx: SimWri
       ctx.audit({ action, target, after: { saved: true, provenance: LOCAL }, reason: ctx.req.body.reason ?? ctx.req.body.comment ?? null, componentId: component });
       ctx.emit(action.toLowerCase().replaceAll('_', '.'), target, { provenance: LOCAL, by: ctx.actor.id }, { componentId: component }); return value;
     } catch (e) { if (e instanceof SimError) ctx.fail(e.code, e.message, e.details, { action, target, reason: e.message, componentId: component, result: ['SEPARATION_OF_DUTY', 'FORBIDDEN'].includes(e.code) ? 'DENIED' : 'FAILED' }); throw e; }
-  });
+  }, bodies[name] ? { body: bodies[name] } : undefined);
 }
 registerSimReader('flagRepositories', async ctx => ({ items: await repos(ctx) }));
 registerSimReader('flagPullRequests', async ctx => ({ items: (await prs(ctx)).filter(p => Object.entries(ctx.req.query).every(([k, v]) => !['repoId', 'featureId', 'kind', 'state'].includes(k) || !v || p[k] === v)).sort((a, b) => b.prId.localeCompare(a.prId)) }));

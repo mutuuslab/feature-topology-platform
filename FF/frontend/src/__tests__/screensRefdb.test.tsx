@@ -185,6 +185,9 @@ describe('Feature DB 목록', () => {
       await act(async () => { expect(await changeUiLanguage('en')).toBe(true); });
       expect(screen.getByRole('button', { name: /^All reference rows/ })).toBeTruthy();
       expect(screen.queryByRole('button', { name: /^전체 기준 행/ })).toBeNull();
+      expect(document.querySelector('[data-ref-status=ACTIVE]')?.textContent).toBe('Active');
+      expect(document.querySelector('[data-ref-status=ACTIVE]')?.getAttribute('title')).toBe('The evidence and size assessment for this row have been checked.');
+      expect(screen.getByRole('radio', { name: /^Review required/ })).toBeTruthy();
       expect(inputs()).toEqual(before);
       expect(screen.getByText('CH-BRK-009')).toBeTruthy();
       expect(screen.getByText('오토 홀드')).toBeTruthy();
@@ -195,6 +198,8 @@ describe('Feature DB 목록', () => {
     expect(screen.getByRole('button', { name: /^전체 기준 행/ })).toBeTruthy();
     expect(inputs()).toEqual(before);
     expect(queries()).toEqual(queryBefore);
+    expect(document.querySelector('[data-ref-status=ACTIVE]')?.textContent).toBe(REF_STATUS_POLICY.ACTIVE.ko);
+    expect(document.querySelector('[data-ref-status=ACTIVE]')?.getAttribute('title')).toBe(REF_STATUS_POLICY.ACTIVE.hint);
   });
 
 

@@ -1,13 +1,14 @@
 // Feature DB 화면 공통 — 응답 모양, 상태 배지(정책 안내 툴팁), 내 행위자, 내보내기 파일 받기.
 // 상태 → 허용 규칙은 contracts REF_STATUS_POLICY 하나(등록 화면·승인 전이·산정 과제와 같은 표).
 import { snapshotFile, REF_STATUS_POLICY, type FeatureRefRow, type RefQuality, type RefChangeStatus, type RefChange, type RefCriterionResult, type RefGlossary, type RefRelease, type RefSource, type RefStatus, type RefStatusPolicy, type RefSubfunction, type TaxonomyNode } from '@ff/contracts';
+import { useUiLocale } from '../../locale/react';
 import { Link } from 'react-router-dom';
 import { actorFor } from '../../api/actor';
 import { ApiError, pathOf, STATIC_MODE, toApiError, VIEW_ROLES } from '../../api/client';
 import { errors as E } from '../../copy/errors';
 import { OIDC_AUTH } from '../../auth-mode';
 import { useApi } from '../../api/hooks';
-import { CHANGE_STATUS_LABEL, featureDb as FD, refDetail as RD, refQualityCopy as QC } from '../../copy/refdb';
+import { refStatusText, CHANGE_STATUS_LABEL, featureDb as FD, refDetail as RD, refQualityCopy as QC } from '../../copy/refdb';
 import { IdChip, Lozenge, Panel, SummaryLine, VerdictBadge, type LozengeAppearance } from '../../design';
 import '../../design/lozenge.css';
 
@@ -84,11 +85,12 @@ const LOOK: Record<RefStatus, LozengeAppearance> = { ACTIVE: 'success', REVIEW: 
  * 이름은 엑셀 BQ 값(contracts REF_STATUS_POLICY), 툴팁은 정책 안내
  */
 export function RefStatusBadge({ status }: { status: RefStatus }) {
+  useUiLocale();
   const p = REF_STATUS_POLICY[status];
   if (!p) return <Lozenge>{status}</Lozenge>;
   return (
-    <span title={p.hint} data-ref-status={status}>
-      <Lozenge appearance={LOOK[status]}>{p.ko}</Lozenge>
+    <span title={refStatusText[status].hint} data-ref-status={status}>
+      <Lozenge appearance={LOOK[status]}>{refStatusText[status].label}</Lozenge>
     </span>
   );
 }

@@ -1,6 +1,6 @@
 // Imported display/panel copy is localized by its own catalogue. No model or user values are rewritten.
 export default {
-  'procedures.title': 'Procedures',
+  'procedures.title': 'Full workflow',
   'procedures.lead': 'Who does what and when — procedures based on the roles and Gates in standard report v1.1.',
   'procedures.notFound': 'The requested procedure was not found. Select one from the list.',
   'procedures.groups': 'Lifecycle stages',

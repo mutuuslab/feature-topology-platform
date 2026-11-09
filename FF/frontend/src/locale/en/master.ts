@@ -234,7 +234,7 @@ export default {
   "master.topology.noEdges": 'This Feature has no relationships',
   "master.inbox.key.mine": 'Approvals and confirmations awaiting my action',
   "master.inbox.key.clear": 'No approvals or confirmations awaiting my action',
-  "master.inbox.title": 'Review inbox',
+  "master.inbox.title": 'Standard review inbox',
   "master.inbox.lead": 'Work awaiting approval or confirmation and whether it is my turn.',
   "master.inbox.scope": 'View',
   "master.inbox.scopes.mine": 'My turn',

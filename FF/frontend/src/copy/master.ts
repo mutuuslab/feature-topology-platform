@@ -178,7 +178,7 @@ export const master = /* @__PURE__ */ localizedCopy('master.master', {
   },
   inbox: {
     key: { mine: '내 차례인 승인·확정', clear: '내 차례인 승인·확정이 없습니다' },
-    title: '검토함',
+    title: '표준 검토함',
     lead: '승인·확정을 기다리는 일과 내 차례인지.',
     scope: '보기',
     scopes: { mine: '내 차례', all: '전체' } as Record<string, string>,

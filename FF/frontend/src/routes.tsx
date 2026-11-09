@@ -112,7 +112,7 @@ const ALL_ROUTES: AppRoute[] = [
   // 1 홈
   { path: '/', element: named(homeScreens, 'HomeScreen'), title: '내 대시보드', group: 'home', menu: '/', v2: true },
   { path: '/procedures/work', element: named(workflowWorkScreens, 'WorkflowWorkScreen'), title: '업무 건·산출물', group: 'home', menu: '/procedures/work', v2: true },
-  { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '검토함', group: 'home', menu: '/admin/approval', v2: true },
+  { path: '/admin/approval', element: named(homeScreens, 'ApprovalInboxScreen'), title: '표준 검토함', group: 'home', menu: '/admin/approval', v2: true },
   // 표준 따라하기 — 데모·개발 빌드만(결정 D-RD-8). 운영 빌드는 라우트·묶음이 없어 직접 주소도 '찾는 항목이 없습니다'
   ...(DEMO_EXTRAS
     ? [
@@ -120,7 +120,7 @@ const ALL_ROUTES: AppRoute[] = [
         { path: '/learn/:id', element: named(learnScreens, 'LearnRun'), title: '따라하기 시나리오', group: 'home', parent: '/learn', v2: true } as AppRoute,
       ]
     : []),
-  { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '업무 절차', group: 'home', menu: '/procedures', v2: true },
+  { path: '/procedures', element: named(procedureScreens, 'ProceduresHub'), title: '전체업무흐름', group: 'home', menu: '/procedures', v2: true },
   { path: '/procedures/roles', element: named(procedureScreens, 'ProcedureRolesScreen'), title: '담당자별 업무 흐름', group: 'home', menu: '/procedures/roles', v2: true },
   { path: '/procedures/:id', element: named(procedureScreens, 'ProcessDetail'), title: '업무 절차 상세', group: 'home', parent: '/procedures', v2: true },
   // 데스크톱 배포본에서는 빌드 단계에서 빠진다(화면 청크도 만들지 않는다)

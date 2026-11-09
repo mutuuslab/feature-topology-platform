@@ -7,10 +7,10 @@ import { useUiLocale } from '../../locale/react';
 // 검색(q)·도메인 → 컴포넌트·상태·다중 선택은 URL 질의와 같이 간다(상세에서 돌아와도 같은 조건). 쪽 넘김은 서버(offset·limit).
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { facetList, REF_EXPLORE_AXES, REF_EXPLORE_ORDER, REF_EXPLORE_PARAM, REF_STATUSES, REF_STATUS_POLICY, refTreeKey, type RefExploreAxis, type RefQuality, type RefSource, type RefStatus, type TaxonomyNode } from '@ff/contracts';
+import { facetList, REF_EXPLORE_AXES, REF_EXPLORE_ORDER, REF_EXPLORE_PARAM, REF_STATUSES, refTreeKey, type RefExploreAxis, type RefQuality, type RefSource, type RefStatus, type TaxonomyNode } from '@ff/contracts';
 import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi } from '../../api/hooks';
-import { featureDb as T, refQualityCopy as QC, refSourceReview as SR } from '../../copy/refdb';
+import { refStatusText, featureDb as T, refQualityCopy as QC, refSourceReview as SR } from '../../copy/refdb';
 import { AsyncView, DataTable, PageHeader, Pager, Panel, Segmented, SummaryLine, Tabs } from '../../design';
 import { Workbook, type WorkbookFilter, type WorkbookTreeItem } from '../../design/workbook';
 import { RefChip, RefStatusBadge, TextLink, type RefRowView } from './common';
@@ -189,7 +189,7 @@ export function FeatureDbScreen() {
         <SummaryLine
           label={QC.moreStats}
           items={[
-            ...REF_STATUSES.map((s) => ({ k: REF_STATUS_POLICY[s].ko, v: qd.byStatus[s] ?? 0 })),
+            ...REF_STATUSES.map((s) => ({ k: refStatusText[s].label, v: qd.byStatus[s] ?? 0 })),
             ...(qd.statusMissing ? [{ k: T.q.statusMissing, v: qd.statusMissing }] : []),
             { k: T.q.noSource, v: qd.noSource },
             { k: QC.attrMissing, v: qd.attrMissing ?? 0 },
@@ -222,7 +222,7 @@ export function FeatureDbScreen() {
                       label={T.status}
                       value={statuses ? '__multi__' : status}
                       onChange={(v) => set({ status: v, statuses: '' })}
-                      options={[{ value: '', label: T.allStatus, count: facetTotal }, ...REF_STATUSES.map((s: RefStatus) => ({ value: s, label: REF_STATUS_POLICY[s].ko, count: byStatus?.[s] }))]}
+                      options={[{ value: '', label: T.allStatus, count: facetTotal }, ...REF_STATUSES.map((s: RefStatus) => ({ value: s, label: refStatusText[s].label, count: byStatus?.[s] }))]}
                     />
                     {STATIC_MODE && <p className="ds-field__hint">{T.staticSearch}</p>}
                     {source && (

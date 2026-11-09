@@ -1,3 +1,4 @@
+import { useUiLocale } from '../../locale/react';
 import { uiLocaleTag } from '../../locale/runtime';
 // /master/feature-db/:refId — 기준 행 상세(30-95 §5.1·§5.2·§8.3). 식별·분류 경로·03b 정의·특성·규모·근거·별칭·관계,
 // 이 행을 쓰는 Feature, 컴포넌트의 세부기능 후보(읽기 전용), 상태에 따른 사용 규칙, 변경 요청 작성(자동 점검 결과를 바로 보인다).
@@ -6,7 +7,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { EVIDENCE_STALE_MONTHS, REF_ASIL_LIST, REF_ID_PATTERN, REF_STATUS_POLICY, refAttrMissing, REGISTRATION_CRITERIA, SIZE_CLASSES, sizePoints, type RefChange, type RefChangeKind, type RefCriterionResult, type RefGlossary, type RefSource } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { refChangeForm as F, refDetail as T, KIND_LABEL, CHANGE_STATUS_LABEL, refAwaiting as AW, refBenchmark as BM, refQualityCopy as QC } from '../../copy/refdb';
+import { refStatusText, refChangeForm as F, refDetail as T, KIND_LABEL, CHANGE_STATUS_LABEL, refAwaiting as AW, refBenchmark as BM, refQualityCopy as QC } from '../../copy/refdb';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Icon, IdChip, KeyValue, LifecycleBadge, PageHeader, Panel, Segmented, SummaryLine, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { changePath, FeatureLink, RefChip, RefChips, RefStatusBadge, TextLink, type RefDetailPolicy, type RefDetailResponse, type RefRowView, type RefUsage } from './common';
@@ -19,6 +20,7 @@ const list = (v: readonly string[] | undefined | null) => (v && v.length ? v.joi
 const keep = <T extends { v: unknown }>(rows: T[]) => rows.filter((r) => has(r.v));
 
 export function RefDetailScreen() {
+  useUiLocale();
   const { refId = '' } = useParams();
   const q = useApi<RefDetailResponse>('refDetail', { params: { refId } });
   const changes = useApi<{ items: RefChange[] }>('listRefChanges', { query: { refId } });
@@ -52,7 +54,7 @@ export function RefDetailScreen() {
         }
         message={
           r && policy
-            ? { tone: 'neutral', value: d!.usedBy.length, text: T.key, status: awaiting ? { label: AW.pill, tone: 'warn' } : { label: policy.ko, tone: policy.blocksApproval ? 'danger' : policy.warn ? 'warn' : 'ok' } }
+            ? { tone: 'neutral', value: d!.usedBy.length, text: T.key, status: awaiting ? { label: AW.pill, tone: 'warn' } : { label: refStatusText[r.status].label, tone: policy.blocksApproval ? 'danger' : policy.warn ? 'warn' : 'ok' } }
             : { tone: 'neutral', text: T.title }
         }
         actions={
@@ -271,7 +273,7 @@ function Policy({ r, replacedBy, awaiting }: { r: RefRowView; replacedBy: RefDet
           <strong>{AW.pill}</strong> — {awaiting.hint} <Link to={changePath(awaiting.changeId)}>{AW.change(awaiting.changeId)}</Link>
         </p>
       ) : (
-        <p data-policy-hint>{p.hint}</p>
+        <p data-policy-hint>{refStatusText[r.status].hint}</p>
       )}
       <KeyValue
         rows={[

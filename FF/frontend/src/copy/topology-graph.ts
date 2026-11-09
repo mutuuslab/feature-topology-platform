@@ -39,7 +39,7 @@ export const topologyGraph = /* @__PURE__ */ localizedCopy('topology-graph.topol
   agg: (n: number, inner: number) => `Feature ${n} · 안쪽 관계 ${inner}`,
   aggOpen: '펼쳐서 보기',
   laneCount: (n: number) => `Feature ${n}`,
-  minimap: '전체 지도 — 누르거나 끌어 화면 이동',
+  minimap: '전체업무흐름 — 누르거나 끌어 화면 이동',
   keys: '화살표: 가까운 Feature로 이동 · Enter: 선택 · Esc: 선택 해제 · +/−: 확대·축소 · 0: 전체 맞춤 · Ctrl+휠: 확대·축소 · 끌기: 이동',
   canvas: '관계 그래프 화면 — Tab으로 들어와 화살표로 Feature를 고릅니다',
   type: { REQUIRES: '필요(REQUIRES)', EXCLUDES: '배타(EXCLUDES)', PARENT_OF: '상위(PARENT_OF)', CHILD_OF: '하위(CHILD_OF)', COMPOSED_OF: '구성(COMPOSED_OF)', OVERRIDES: '우선 적용(OVERRIDES)', FALLBACK_TO: '대체 전환(FALLBACK_TO)', DEGRADES_TO: '기능 축소(DEGRADES_TO)', REPLACES: '대체(REPLACES)', DUPLICATES: '중복(DUPLICATES)' } as Record<string, string>,

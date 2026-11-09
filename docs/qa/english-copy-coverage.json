@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9543,
-  "translated": 9543,
+  "required": 9553,
+  "translated": 9553,
   "modules": [
     {
       "module": "ads-ac",
@@ -541,7 +541,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "116965a304acb9b3d162ab4036456826c01637a0c6da7da67f05e2a3dce4c087"
+      "sourceHash": "ec2baa4a67b97c25ef22791ef6c7c6f63c559ccc81f4901e81ae224068b2271e"
     },
     {
       "module": "observability",
@@ -563,7 +563,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "7e1f664feb84c5e58a3ad2f6699614ab68203b61a8f9da77bcf23c6f9d4b5131"
+      "sourceHash": "0aeed73b1a7a604c1645faee1f4f25a69a7197a167aa2198f2d6445a087761bb"
     },
     {
       "module": "ops5y",
@@ -684,7 +684,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "7e16b0cfef91b197a4831413f61b5ead8928f34deb84f8da9269d705feae0929"
+      "sourceHash": "4bf7d56a53069a755636ae4bb0d4f62559f8f1e0c079ccbb838a1bed3c364144"
     },
     {
       "module": "procurement-home",
@@ -755,13 +755,13 @@
     {
       "module": "refdb",
       "source": "FF/frontend/src/copy/refdb.ts",
-      "required": 308,
-      "translated": 308,
+      "required": 318,
+      "translated": 318,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "d258266db3d688bfb7eeaa330a87392d57e1ca2d2c37f3f3768e0cfd6d8a7c62"
+      "sourceHash": "0c3ba7f333d7f79b1bac3f3a3d6396da808f00e819da133b1dc3e9d217f801cc"
     },
     {
       "module": "route-recovery",
@@ -849,7 +849,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "7a60584a75e34ef009f6cad868763a42f3f0d87178ae4724893894335002582f"
+      "sourceHash": "0848ac7e43d55c4b7b0bb5ee510480a216731b58ae0ad94b89216bb2546df2a1"
     },
     {
       "module": "topology-motion",

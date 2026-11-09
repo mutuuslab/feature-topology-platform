@@ -40,7 +40,7 @@ export default {
   "topologyGraph.expand": (d: string) => `Expand ${d}`,
   "topologyGraph.agg": (n: number, inner: number) => `${n} Features · ${inner} internal relationships`,
   "topologyGraph.aggOpen": 'Expand view',
-  "topologyGraph.minimap": 'Overview map — click or drag to navigate',
+  "topologyGraph.minimap": 'Full workflow — click or drag to navigate',
   "topologyGraph.keys": 'Arrows: nearest Feature · Enter: select · Esc: clear selection · +/−: zoom · 0: fit all · Ctrl+wheel: zoom · drag: pan',
   "topologyGraph.canvas": 'Relationship graph canvas — Tab to enter, then use arrows to choose Features',
   "topologyGraph.type.REQUIRES": 'Requires (REQUIRES)',

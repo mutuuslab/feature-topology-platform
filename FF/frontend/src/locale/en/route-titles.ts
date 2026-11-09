@@ -4,7 +4,7 @@ export default {
   '/deployments/software': 'SW packages and downloads',
   '/master/taxonomy/levels': 'Classification hierarchy',
   '/policies/global-scope': 'Policies by brand and region',
-  '/': 'My dashboard', '/procedures/work': 'Work cases and artifacts', '/admin/approval': 'Standard review',
+  '/': 'My dashboard', '/procedures/work': 'Work cases and artifacts', '/admin/approval': 'Standard review inbox',
   '/learn': 'Standards walkthroughs', '/learn/:id': 'Walkthrough scenario', '/procedures': 'Full workflow',
   '/procedures/roles': 'Role workflows', '/procedures/:id': 'Workflow details', '/arch/components': '42-component architecture',
   '/notifications': 'Notifications', '/notifications/rules': 'Notification recipient rules', '/admin/notifications': 'Notifications (legacy URL)',

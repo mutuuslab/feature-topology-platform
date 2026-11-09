@@ -1,6 +1,6 @@
 import { localizedCopy } from '../locale/runtime';
 // Feature DB 화면 문구 — 기준 행 목록·상세·변경 요청·발행(설계 docs/30-data-model/30-95 §4·§5.2·§8·§10).
-// 상태 이름과 정책 안내(활성·검토 필요 …)는 contracts REF_STATUS_POLICY가 원천이다 — 여기서 되풀이하지 않는다.
+// 상태 규칙은 contracts REF_STATUS_POLICY가 원천이다. 아래 문구는 표시 언어만 바꾸며 정책 값을 바꾸지 않는다.
 import type { RefChangeKind, RefChangeStatus, RefReviewOpinion } from '@ff/contracts';
 
 export const featureDb = /* @__PURE__ */ localizedCopy('refdb.featureDb', {
@@ -336,4 +336,13 @@ export const refSourceReview = /* @__PURE__ */ localizedCopy('refdb.refSourceRev
   makeChange: '영향 행 변경 요청 만들기',
   sourceFilter: (id: string) => `출처 ${id}를 쓰는 행 — 행을 열어 변경 요청을 만드세요`,
   clearSource: '출처 조건 지우기',
+});
+
+/** Status captions only; permission and approval rules remain in REF_STATUS_POLICY. */
+export const refStatusText = /* @__PURE__ */ localizedCopy('refdb.refStatusText', {
+  ACTIVE: { label: '활성', hint: '근거와 크기 판단을 확인한 행입니다.' },
+  REVIEW: { label: '검토 필요', hint: '근거가 2차 자료이거나 인용 경로가 바뀐 행입니다 — 관리 메모의 사유를 확인하세요.' },
+  DEPRECATED: { label: '폐기 예정', hint: '대체 행이 있으면 대체 행을 쓰세요.' },
+  RETIRED: { label: '폐기', hint: '더 이상 쓰지 않는 행입니다 — 다른 기준 행을 연결하세요.' },
+  PENDING: { label: '요청 중', hint: 'Feature DB 관리자 승인 전입니다 — 승인되기 전에는 Feature 정의 승인을 할 수 없습니다.' },
 });

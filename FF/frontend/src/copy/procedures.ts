@@ -3,7 +3,7 @@ import { localizedCopy } from '../locale/runtime';
 import { procedureDisplay } from './procedure-display';
 import { procedurePanel } from './procedure-panel';
 export const procedures = /* @__PURE__ */ localizedCopy('procedures.procedures', {
-  title: '업무 절차',
+  title: '전체업무흐름',
   lead: '담당자별로 누가 언제 무엇을 하는지 — 표준 보고서 v1.1의 역할·Gate 기준 절차입니다.',
   get loading() { return procedurePanel.loading; },
   get loadFail() { return procedurePanel.loadFail; },

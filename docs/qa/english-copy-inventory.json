@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 90,
-  "requiredLeaves": 9543,
+  "requiredLeaves": 9553,
   "modules": [
     {
       "module": "ads-ac",
@@ -37923,8 +37923,8 @@
         {
           "path": "master.master.inbox.title",
           "kind": "text",
-          "text": "검토함",
-          "sourceHash": "608a1cec59995a90dcdda1e94a1e66c228b80f3baf0ad705a58e3b62bb074e42"
+          "text": "표준 검토함",
+          "sourceHash": "99bb8d9f7cc0fe1eb44ac8dfd2db2ccfc5092414783f31a5c3b06207d62f4488"
         },
         {
           "path": "master.master.inbox.lead",
@@ -39288,8 +39288,8 @@
         {
           "path": "operation-overview.operationOverview.work.inbox",
           "kind": "text",
-          "text": "검토함 열기",
-          "sourceHash": "165c58bab9eb82cc0463d732eee3ce4776d402d7c42a1771b4895368a8d58276"
+          "text": "표준 검토함 열기",
+          "sourceHash": "faf75adac1a1af913986c2e459927d88d5c5b74207a79b7898848af80b5fec73"
         },
         {
           "path": "operation-overview.operationOverview.work.checking",
@@ -46590,8 +46590,8 @@
         {
           "path": "procedures.procedures.title",
           "kind": "text",
-          "text": "업무 절차",
-          "sourceHash": "1994a191790296fdd8be236eed10d743fc984e3cbd1b2875da7b053cef55907b"
+          "text": "전체업무흐름",
+          "sourceHash": "85e9348f32cb96fddb2eb8e0650104e3d3494acb5515b3658d084ea3a128f631"
         },
         {
           "path": "procedures.procedures.lead",
@@ -51735,6 +51735,66 @@
           "kind": "text",
           "text": "출처 조건 지우기",
           "sourceHash": "6c29e699e3851d1ea792c6f13c8a244a03c039f9dcb42e1712df601f604be7f3"
+        },
+        {
+          "path": "refdb.refStatusText.ACTIVE.label",
+          "kind": "text",
+          "text": "활성",
+          "sourceHash": "d9ba6551c71e529c26d3147a3280bbcb14501e78758923bb65e03c30960b1d9b"
+        },
+        {
+          "path": "refdb.refStatusText.ACTIVE.hint",
+          "kind": "text",
+          "text": "근거와 크기 판단을 확인한 행입니다.",
+          "sourceHash": "dd17a0507eb7645da36999baa58bfd0c4b4788f601398754114e9a3504acc1b8"
+        },
+        {
+          "path": "refdb.refStatusText.REVIEW.label",
+          "kind": "text",
+          "text": "검토 필요",
+          "sourceHash": "f73f56bf9d80daaaed1ccd834d21df01015091f97ffd3aab65cfb1ca8e3a5035"
+        },
+        {
+          "path": "refdb.refStatusText.REVIEW.hint",
+          "kind": "text",
+          "text": "근거가 2차 자료이거나 인용 경로가 바뀐 행입니다 — 관리 메모의 사유를 확인하세요.",
+          "sourceHash": "2c1de27791aac348df0af38b6325bf3a81b364568472f09a5c28ad46fcf982f8"
+        },
+        {
+          "path": "refdb.refStatusText.DEPRECATED.label",
+          "kind": "text",
+          "text": "폐기 예정",
+          "sourceHash": "437e9975941b7993c3b30ca0b4fbe2b66c51a244ff4afe524aa13cb8219f7d21"
+        },
+        {
+          "path": "refdb.refStatusText.DEPRECATED.hint",
+          "kind": "text",
+          "text": "대체 행이 있으면 대체 행을 쓰세요.",
+          "sourceHash": "6e2c46da9c72c9b28a3d1ba0588f9b6f0e57b63ab3cbf82a2bd30c50111c4a25"
+        },
+        {
+          "path": "refdb.refStatusText.RETIRED.label",
+          "kind": "text",
+          "text": "폐기",
+          "sourceHash": "8ea6dda9b86ce4e73251f1546664e2cf20d83410750dad0777d047d9aaf06d86"
+        },
+        {
+          "path": "refdb.refStatusText.RETIRED.hint",
+          "kind": "text",
+          "text": "더 이상 쓰지 않는 행입니다 — 다른 기준 행을 연결하세요.",
+          "sourceHash": "2d872391a1a0700a3b5564db9915bbf2b6f9b20c76874754cb704021f27c9f9a"
+        },
+        {
+          "path": "refdb.refStatusText.PENDING.label",
+          "kind": "text",
+          "text": "요청 중",
+          "sourceHash": "fd5310a4051019a6b43fcfbe39aef09918a0182214b3d0e16c8af6d5911486fc"
+        },
+        {
+          "path": "refdb.refStatusText.PENDING.hint",
+          "kind": "text",
+          "text": "Feature DB 관리자 승인 전입니다 — 승인되기 전에는 Feature 정의 승인을 할 수 없습니다.",
+          "sourceHash": "042fcec952bdff3e3fa4845610d98c2996a9d436cb7df81b964243a5fee33d26"
         }
       ],
       "connectedExports": [
@@ -51753,7 +51813,8 @@
         "refPublish",
         "refReleaseCols",
         "refChangeAudit",
-        "refSourceReview"
+        "refSourceReview",
+        "refStatusText"
       ],
       "unresolvedCopyReferences": []
     },
@@ -54355,8 +54416,8 @@
         {
           "path": "topology-graph.topologyGraph.minimap",
           "kind": "text",
-          "text": "전체 지도 — 누르거나 끌어 화면 이동",
-          "sourceHash": "26f6cf9b55e854d805d2858cde925687a5b5775205c9a9466b0b525573e8a197"
+          "text": "전체업무흐름 — 누르거나 끌어 화면 이동",
+          "sourceHash": "eab6d7da032b2ef964d8f24d3ce4d3e11bb855b0ea8f6cbe4a53ba43af566798"
         },
         {
           "path": "topology-graph.topologyGraph.keys",

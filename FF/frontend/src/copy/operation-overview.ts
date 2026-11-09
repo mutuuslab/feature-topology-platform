@@ -45,7 +45,7 @@ export const operationOverview = /* @__PURE__ */ localizedCopy('operation-overvi
     note: '세 단계는 각각의 원천 기록입니다. Unleash 동기화 성공을 차량 배포나 수신 완료로 세지 않습니다.',
     open: { SYNC: '정책·Unleash 보기', DEPLOY: '게시본 보기', READBACK: '차량 지도 보기' },
   },
-  work: { title: '내가 할 일', todo: '할 일', review: '검토', overdue: '기한 초과', procedures: '업무 절차 열기', inbox: '검토함 열기', checking: '확인 중', basis: '앞 활동이 끝나 지금 할 수 있는 내 활동 수입니다.' },
+  work: { title: '내가 할 일', todo: '할 일', review: '검토', overdue: '기한 초과', procedures: '업무 절차 열기', inbox: '표준 검토함 열기', checking: '확인 중', basis: '앞 활동이 끝나 지금 할 수 있는 내 활동 수입니다.' },
   hero: { label: '정책 신뢰 수신율', of: (received: number, total: number) => `${total}대 중 ${received}대`, bar: '신뢰 수신·미확인 비율', trend: (from: number, to: number) => `회신 기록 누적 ${from}건 → ${to}건`, trendLabel: '회신 누적' },
   basis: '집계 기준',
   safe: '차단 수신',

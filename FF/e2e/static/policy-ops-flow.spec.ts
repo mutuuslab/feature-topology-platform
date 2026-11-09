@@ -121,15 +121,19 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await visit(page, '/policies');
   await expect(page.getByRole('row', { name: new RegExp(before.policyId) })).toContainText('RETIRED');
 
-  // 6. 확대 시도(운영) — 관측 24시간 전이고 열린 이상 징후가 있어 거부(규칙 그대로, 거부도 감사)
+  // 6. 확대 예방 거부(운영) — 실제 관측 0/24시간·열린 이상 징후가 있어 제출을 막는다(서버 거부 회귀는 별도 유지)
   await as(page, 'operator', `/policies/${policyId}`);
   await page.getByRole('button', { name: '단계 조정' }).click();
   const drawer = page.getByRole('dialog');
   await drawer.getByLabel('코호트 비율 (basis points, 10000 = 100%)').fill('2000');
   await drawer.getByLabel('사유', { exact: true }).fill('Canary 결과 양호 — 20%로 확대');
-  await drawer.getByRole('button', { name: '단계 조정' }).click();
-  await expect(drawer).toContainText('관측 기간');
-  await expect(drawer).toContainText(/이상 징후 ANM-\d{5}/);
+  // The real expansion reader now exposes the existing preventive UI guard.
+  // Verify that the unsafe command cannot be submitted, rather than force-clicking it.
+  await expect(drawer.getByRole('button', { name: '단계 조정' })).toBeDisabled();
+  await expect(drawer.getByRole('note')).toContainText('Canary 관측 0시간');
+  await expect(drawer.getByRole('note')).toContainText('24시간');
+  await expect(drawer.getByRole('note')).toContainText('열린 이상 징후 1건');
+  await expect(page.locator('#expansion [data-finding="OPEN_ANOMALY"]')).toContainText(/ANM-\d{5}/);
   await shot(page, 'expand-refused');
   await page.keyboard.press('Escape');
 

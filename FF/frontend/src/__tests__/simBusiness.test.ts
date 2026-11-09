@@ -108,6 +108,41 @@ describe('상품 — 새 Catalog Version → 구성 승인 → 검증 → 고객
 });
 
 describe('체험권 — 제안 → 수락 → 구매 전환', () => {
+  it('차량 응답을 기다리는 동안 독립된 체험 원천도 읽고 실제 제안을 저장한다', async () => {
+    const originalFetch = vi.mocked(fetch).getMockImplementation()!;
+    const vehicleFile = snapshotFile(url('vehicles'));
+    const trialFile = snapshotFile(url('trials', {}, { catalogId: 'CAT-00019', source: 'FLEET', pageSize: 50 }));
+    let releaseVehicles!: () => void;
+    const vehiclesHeld = new Promise<void>((resolve) => { releaseVehicles = resolve; });
+    let vehicleRequested = false;
+    let trialRequested = false;
+    vi.stubGlobal('fetch', vi.fn(async (input: string) => {
+      const file = decodeURIComponent(String(input)).replace(/^\//, '');
+      if (file === trialFile) trialRequested = true;
+      if (file === vehicleFile) {
+        vehicleRequested = true;
+        await vehiclesHeld;
+      }
+      return originalFetch(input);
+    }));
+    const operation = run('offerTrials', { role: 'commerce', body: { catalogId: 'CAT-00019', vins: ['KMH-NX4-0001'] } });
+    const outcome = operation.then(value => ({ value, error: undefined }), error => ({ value: undefined, error }));
+    try {
+      await vi.waitFor(() => expect(vehicleRequested).toBe(true));
+      await vi.waitFor(() => expect(trialRequested).toBe(true));
+      releaseVehicles();
+      const result = await outcome;
+      if (result.error) throw result.error;
+      expect(result.value.offered).toHaveLength(1);
+      expect(result.value.offered[0]).toMatchObject({ vin: 'KMH-NX4-0001', status: 'OFFERED' });
+      const grants = await run('entitlements');
+      expect(grants.items.some((g: any) => g.grantId === result.value.offered[0].grantId)).toBe(true);
+    } finally {
+      releaseVehicles();
+      await outcome;
+    }
+  });
+
   it('목록 상태별 수·등록 차량 권한이 같은 상태가 된다', async () => {
     const q = { catalogId: 'CAT-00019', source: 'FLEET', pageSize: 50 };
     const before = await run('trials', { query: q });

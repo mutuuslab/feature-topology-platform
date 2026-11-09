@@ -432,11 +432,18 @@ registerSimHandler(
   async (ctx) => {
     const body = ctx.req.body as { catalogId: string; vins: string[]; note?: string };
     if (!(await productRows(ctx)).some((p) => p.catalogId === body.catalogId)) ctx.fail('NOT_FOUND', `${body.catalogId} 상품을 찾을 수 없습니다.`);
-    const today = await trialToday(ctx);
+    // These facts belong to the same serialized command view, but none depends
+    // on the other response. A slow vehicle read must not delay the trial read.
+    const [today, vehicleFacts, grantFacts, trialFacts] = await Promise.all([
+      trialToday(ctx),
+      ctx.read<{ items: any[] }>('vehicles').catch(() => ({ items: [] })),
+      ctx.read<{ items: Grant[] }>('entitlements').catch(() => ({ items: [] })),
+      ctx.read<{ items: Grant[] }>('trials', {}, { catalogId: body.catalogId, source: 'FLEET', pageSize: 50 }).catch(() => ({ items: [] })),
+    ]);
     ctx.state('trialToday', () => today);
-    const vehicles = (await ctx.read<{ items: any[] }>('vehicles').catch(() => ({ items: [] }))).items ?? [];
-    const known = ((await ctx.read<{ items: Grant[] }>('entitlements').catch(() => ({ items: [] }))).items ?? []).map((g) => stripView(g));
-    const fleet = (await ctx.read<{ items: Grant[] }>('trials', {}, { catalogId: body.catalogId, source: 'FLEET', pageSize: 50 }).catch(() => ({ items: [] }))).items ?? [];
+    const vehicles = vehicleFacts.items ?? [];
+    const known = (grantFacts.items ?? []).map((g) => stripView(g));
+    const fleet = trialFacts.items ?? [];
     const all = new Map<string, Grant>([...[...known, ...fleet].map((g) => [g.grantId, stripView(g)] as const), ...ctx.list<Grant>(GRANT).map((g) => [g.grantId, g] as const)]);
     const offered: unknown[] = [];
     const skipped: { vin: string; reason: string }[] = [];

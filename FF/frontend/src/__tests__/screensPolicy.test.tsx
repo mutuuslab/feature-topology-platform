@@ -8,7 +8,8 @@ import { AppProvider } from '../store';
 import { PolicyDetail, PolicyList, ValidationHistory } from '../screens/policy/Policies';
 import { ActivationScreen } from '../screens/policy/Runtime';
 
-type Handler = (url: string, init?: RequestInit) => { status?: number; body: unknown };
+type Reply = { status?: number; body: unknown };
+type Handler = (url: string, init?: RequestInit) => Reply | Promise<Reply>;
 let handler: Handler;
 const calls: { url: string; init?: RequestInit }[] = [];
 
@@ -17,7 +18,7 @@ beforeEach(() => {
   calls.length = 0;
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, init });
-    const r = handler(url, init);
+    const r = await handler(url, init);
     return new Response(JSON.stringify(r.body), { status: r.status ?? 200, headers: { 'Content-Type': 'application/json' } });
   }));
 });
@@ -71,6 +72,45 @@ describe('정책 목록', () => {
 });
 
 describe('정책 상세', () => {
+  it('사유를 적어도 대상 미리보기 완료 전에는 배포를 막고, 실제 대상 표시 후 한 번만 제출한다', async () => {
+    let ready!: (reply: Reply) => void;
+    const preview = new Promise<Reply>(resolve => { ready = resolve; });
+    handler = (url) => {
+      if (url.startsWith('/api/kill-requests/preview')) return preview;
+      if (url === `/api/policies/${POL.policyId}`) return { body: DETAIL({ policy: { ...POL, status: 'APPROVED' } }) };
+      return { body: { items: [] } };
+    };
+    mount('/policies/POL-00003', '/policies/:id', <PolicyDetail />, 'coordinator');
+    fireEvent.click(await screen.findByRole('button', { name: '서버 배포' }));
+    const dialog = await screen.findByRole('dialog', { name: '서버 배포' });
+    fireEvent.change(within(dialog).getByLabelText('사유'), { target: { value: '대상과 위험 검토 후 배포' } });
+    const submit = within(dialog).getByRole('button', { name: '서버 배포' }) as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+    expect(dialog.querySelector('[data-bulk="deploy"]')).toBeNull();
+    expect(calls.filter(c => c.url.endsWith('/deploy'))).toHaveLength(0);
+    await act(async () => ready({ body: { vehicles: [{ vin: 'VIN-REVIEWED', link: 'ONLINE' }], unknownVins: [], registry: { f_class: 'F3', deact_class: 'DC2' } } }));
+    await waitFor(() => expect((within(dialog).getByRole('button', { name: '서버 배포' }) as HTMLButtonElement).disabled).toBe(false));
+    expect(dialog.querySelector('[data-bulk="deploy"]')?.textContent).toContain('1대');
+    expect(calls.filter(c => c.url.startsWith('/api/kill-requests/preview'))).toHaveLength(1);
+    fireEvent.click(within(dialog).getByRole('button', { name: '서버 배포' }));
+    await waitFor(() => expect(calls.filter(c => c.url.endsWith('/deploy') && c.init?.method === 'POST')).toHaveLength(1));
+  });
+
+  it('대상 미리보기 조회가 실패하면 오류를 표시하고 배포를 허용하지 않는다', async () => {
+    handler = url => {
+      if (url.startsWith('/api/kill-requests/preview')) return { status: 503, body: { error: { code: 'SOURCE_UNAVAILABLE', message: '대상 원천 조회 실패' } } };
+      if (url === `/api/policies/${POL.policyId}`) return { body: DETAIL({ policy: { ...POL, status: 'APPROVED' } }) };
+      return { body: { items: [] } };
+    };
+    mount('/policies/POL-00003', '/policies/:id', <PolicyDetail />, 'coordinator');
+    fireEvent.click(await screen.findByRole('button', { name: '서버 배포' }));
+    const dialog = await screen.findByRole('dialog', { name: '서버 배포' });
+    fireEvent.change(within(dialog).getByLabelText('사유'), { target: { value: '실패한 원천으로 배포하지 않음' } });
+    await waitFor(() => expect(dialog.querySelector('[data-state="error"]')).toBeTruthy());
+    expect((within(dialog).getByRole('button', { name: '서버 배포' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(calls.filter(c => c.url.endsWith('/deploy'))).toHaveLength(0);
+  });
+
   it.each([
     ['coordinator', false],
     ['viewer', true],

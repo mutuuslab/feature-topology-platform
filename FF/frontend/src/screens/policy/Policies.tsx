@@ -19,7 +19,7 @@ import { PolicyVersions } from './PolicyVersions';
 import { PolicyHistory } from './PolicyHistory';
 import { FlagSourceSummary, FeatureFlagHighlight, FlagMapLink } from '../features/FeatureFlags';
 import { ChangeKindChip } from '../ads/ChangeImpact';
-import { PolicyDeployPreview } from '../ads/BulkPreviews';
+import { PolicyDeployPreview, type PolicyDeployPreviewData } from '../ads/BulkPreviews';
 import { stageGuard } from './expansion-text';
 
 const T = ko.policy;
@@ -297,6 +297,8 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
   const [reason, setReason] = useState('');
   const [bp, setBp] = useState(policy.stageBasisPoints ?? 10000);
   const m = kind === 'decide' ? decide : kind === 'deploy' ? deploy : stage;
+  const deployPreview = useApi<PolicyDeployPreviewData>('killPreview', { query: { featureId: policy.featureId, featureVersion: policy.featureVersion } }, { enabled: kind === 'deploy' });
+  const deployPreviewReady = deployPreview.isSuccess && !deployPreview.isFetching && Array.isArray(deployPreview.data?.vehicles);
   // 단계 확대 전 확대 판정(통합 D-INT-4) — 서버 단계 조정 거부와 같은 판정: 막는 사유(지표 지연·사전 등록 중단 기준 초과·실측 근거의 동결·경보·지연)면 막고,
   // 알림(중단 기준 미등록·표본 부족·가정값 근거)은 안내만
   const exp = useApi<PolicyExpansionView>('policyExpansion', { params: { id: policy.policyId } }, { enabled: kind === 'stage' && policy.status === 'DEPLOYED', retry: false });
@@ -310,7 +312,7 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
       <div style={{ display: 'grid', gap: 'var(--sp-3)' }}>
         {kind === 'decide' && !approval.eligible && <ErrorNote error={{ message: T.safetyDecision.HOLD, details: { blockers: approval.reasons } }} />}
         {/* 일괄 명령 미리보기(ADS-UI03) — 대상·제외·해제 범위·위험·서명 대상 digest */}
-        {kind === 'deploy' && <PolicyDeployPreview featureId={policy.featureId} featureVersion={policy.featureVersion} canSign />}
+        {kind === 'deploy' && <AsyncView state={asyncState(deployPreview)} error={deployPreview.error} onRetry={() => deployPreview.refetch()}>{Array.isArray(deployPreview.data?.vehicles) && <PolicyDeployPreview preview={deployPreview.data!} canSign />}</AsyncView>}
         {kind === 'stage' && (
           <Field label={T.field.basisPoints} hint={T.stageHint}>
             <input className="ds-input ds-input--mono" type="number" min={0} max={10000} step={100} value={bp} onChange={(e) => setBp(Number(e.target.value))} />
@@ -336,7 +338,7 @@ function PolicyActionDrawer({ kind, policy, approval, onClose }: { kind: null | 
               </Button>
             </>
           ) : kind === 'deploy' ? (
-            <Button variant="primary" icon="release" disabled={reason.trim().length < 2 || deploy.isPending} reason={whyDisabled([reason.trim().length < 2, ko.why.reason])} onClick={() => deploy.mutate({ params: { id: policy.policyId }, body: { reason } }, done)}>
+            <Button variant="primary" icon="release" disabled={!deployPreviewReady || reason.trim().length < 2 || deploy.isPending} reason={whyDisabled([!deployPreviewReady, deployPreview.error?.message ?? ko.state.loading], [reason.trim().length < 2, ko.why.reason])} onClick={() => deploy.mutate({ params: { id: policy.policyId }, body: { reason } }, done)}>
               {T.deploy}
             </Button>
           ) : (

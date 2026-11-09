@@ -74,10 +74,8 @@ export function RollbackBulkPreview({ p, requested, recovery, canSign }: { p: Ro
 }
 
 /** 정책 배포 Drawer — Feature 적용 범위 차량(긴급 차단 미리보기와 같은 범위 계산)·F등급·DC */
-export function PolicyDeployPreview({ featureId, featureVersion, canSign }: { featureId: string; featureVersion: string; canSign: boolean }) {
-  const q = useApi<KillPreviewLike>('killPreview', { query: { featureId, featureVersion } }, { enabled: !!featureId && !!featureVersion });
-  const p = Array.isArray(q.data?.vehicles) ? q.data! : null;
-  if (!p) return null;
+export type PolicyDeployPreviewData = KillPreviewLike;
+export function PolicyDeployPreview({ preview: p, canSign }: { preview: PolicyDeployPreviewData; canSign: boolean }) {
   const offline = p.vehicles.filter((v) => v.link === 'OFFLINE').length;
   return (
     <div className="adc-stack" data-bulk="deploy">

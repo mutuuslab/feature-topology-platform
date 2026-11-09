@@ -147,7 +147,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "backend/src/domains/d01-policy/registry/ads-classification.service.ts:95",
      "backend/src/domains/d01-policy/registry/ads-release-guard.ts:19",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:150"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:152"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",
@@ -294,7 +294,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/policy-version.ts:59",
      "frontend/src/screens/policy/PolicyVersions.tsx:35",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:424"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:426"
     ],
     "tests": [
      "contracts/src/rules/policy-version.test.ts",
@@ -330,7 +330,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "evidence": [
      "contracts/src/rules/lifecycle.ts:199",
      "backend/src/domains/d01-policy/registry/lifecycle.service.ts:153",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:284"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:286"
     ],
     "tests": [
      "backend/test/d01/policy.spec.ts",
@@ -364,7 +364,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "부분",
     "evidence": [
      "backend/src/domains/d01-policy/topology/gate.service.ts:127",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:308",
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:310",
      "contracts/src/rules/lifecycle.ts:173"
     ],
     "tests": [
@@ -581,7 +581,7 @@ export const ADS_TRACE: AdsTraceDoc = {
     "verdict": "구현",
     "evidence": [
      "contracts/src/rules/ads-publish.ts:28",
-     "backend/src/domains/d01-policy/policy-store/policy.service.ts:335"
+     "backend/src/domains/d01-policy/policy-store/policy.service.ts:337"
     ],
     "tests": [
      "backend/test/ads/p5-publish.spec.ts",

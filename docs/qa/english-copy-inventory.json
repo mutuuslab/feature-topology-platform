@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 91,
-  "requiredLeaves": 9858,
+  "requiredLeaves": 9866,
   "modules": [
     {
       "module": "ads-ac",
@@ -18118,6 +18118,18 @@
           "kind": "text",
           "text": "이 작업에는 연결된 서비스가 필요합니다. 오프라인 시연에서는 기준 자료를 조회할 수 있으며, 이 작업을 완료한 것으로 저장하지 않습니다.",
           "sourceHash": "084ebedf8c4de17a7b68f307b3da2261d76c2815aa6ea604775e105a84ab6a84"
+        },
+        {
+          "path": "errors.errors.capturedOtaReadOnly",
+          "kind": "text",
+          "text": "캡처된 OTA 작업은 읽기 전용입니다. 이 시연에서는 재전송하거나 차량 회신을 변경할 수 없습니다.",
+          "sourceHash": "5a9c264f3c892d4b1d67b0721f5e3864067e3afdcac097ca1eb7b4bab7cc9477"
+        },
+        {
+          "path": "errors.errors.otaSourceUnavailable",
+          "kind": "text",
+          "text": "OTA 작업의 원천을 확인할 수 없어 재전송하지 않았습니다. 브라우저에서 생성한 시연 작업을 선택하세요.",
+          "sourceHash": "e5fe17f081da231af7c0421be5db835ffc5cbf649a077ab630fd0a8b9a5beace"
         },
         {
           "path": "errors.errors.codeLabel",
@@ -37887,6 +37899,18 @@
           "sourceHash": "c0154c812ab6ed528d93ca0ed390c8a674fe3492c44b9c38be7d6bc214df42a4"
         },
         {
+          "path": "lifecycle-gate.lcGate.baseline.select",
+          "kind": "text",
+          "text": "Baseline을 선택하세요",
+          "sourceHash": "2d839ff0a935674cf95fd81bd8b164b30d9c7488212a53c33c7bc33bd294883a"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.baseline.selectPair",
+          "kind": "text",
+          "text": "기준과 비교 대상 Baseline을 선택하면 차이를 표시합니다.",
+          "sourceHash": "d0aeb2d9c05b7ca7fd4cb20e9812588daeb5ee0ba460b0ba0ed53c1d7145802f"
+        },
+        {
           "path": "lifecycle-gate.lcGate.baseline.same",
           "kind": "text",
           "text": "두 Baseline의 내용이 같습니다.",
@@ -39015,8 +39039,8 @@
         {
           "path": "master.master.supplier.title",
           "kind": "text",
-          "text": "협력사 이관",
-          "sourceHash": "ed6da423fb5ad92ba2165f58f0a2b9a225a3efcdd5592f18645af783ac68da8c"
+          "text": "협력사 SW 납품",
+          "sourceHash": "069a7453a6d88bf3a09a252b7252a413f8b25b53c8b8299ae9a06ae52f8a0cd3"
         },
         {
           "path": "master.master.supplier.lead",
@@ -53739,6 +53763,12 @@
           "sourceHash": "2e7e5464fc2e20f1c50d3dbd9635f2e743d5168f89335ddc806b4b9a3cd5b9e7"
         },
         {
+          "path": "software-delivery.softwareDelivery.key",
+          "kind": "text",
+          "text": "개 패키지의 승인과 다운로드 조건을 확인하세요",
+          "sourceHash": "c8236574fec8e3fdec4339c2b7752ca60a161357eedbde20f34e638472380da9"
+        },
+        {
           "path": "software-delivery.softwareDelivery.guide",
           "kind": "text",
           "text": "진행 방법",
@@ -54555,6 +54585,18 @@
           "kind": "text",
           "text": "협력사 이관",
           "sourceHash": "ed6da423fb5ad92ba2165f58f0a2b9a225a3efcdd5592f18645af783ac68da8c"
+        },
+        {
+          "path": "supplier.supplier.key",
+          "kind": "text",
+          "text": "대상 Feature의 검수 결과와 납품 근거를 확인하세요",
+          "sourceHash": "6f856ea8c1ce9026c481409f7e3eedf18ba5f47546d7b4e6f9678e9f12deec00"
+        },
+        {
+          "path": "supplier.supplier.holdKey",
+          "kind": "text",
+          "text": "협력사 검수 보류 사유를 먼저 확인하세요",
+          "sourceHash": "1f8bc9d87d351a40864b93554d409000b66ba082f70a0a5d94c16fb9db82f61d"
         },
         {
           "path": "supplier.supplier.offlineSimulation",
@@ -59225,6 +59267,12 @@
           "kind": "text",
           "text": "대상별로 업무를 열고 산출물을 작성한 뒤, 독립 검토와 다음 담당자의 인수까지 기록합니다.",
           "sourceHash": "59eba44719fc135114812181df4560be832adbd09ba2cf17069dd9dce561f726"
+        },
+        {
+          "path": "workflow-execution.workflowExecution.key",
+          "kind": "text",
+          "text": "개 업무 건의 산출물과 인계를 추적합니다",
+          "sourceHash": "cd6fe8e2fd46043ee4453dbf5ce2500ebbccd31dcc91f48b7964281285a1972e"
         },
         {
           "path": "workflow-execution.workflowExecution.boundary",

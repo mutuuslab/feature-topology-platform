@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9858,
-  "translated": 9858,
+  "required": 9866,
+  "translated": 9866,
   "modules": [
     {
       "module": "ads-ac",
@@ -282,13 +282,13 @@
     {
       "module": "errors",
       "source": "FF/frontend/src/copy/errors.ts",
-      "required": 18,
-      "translated": 18,
+      "required": 20,
+      "translated": 20,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "c3ae024648725a71248f780b313d60de204cb66d12e6e4f59d3760de105c95da"
+      "sourceHash": "c4fc67b25ef3f2e2207445eeb9a20b4b26ecce67b1ed3ddec5148180c878d56b"
     },
     {
       "module": "exceptions",
@@ -502,13 +502,13 @@
     {
       "module": "lifecycle-gate",
       "source": "FF/frontend/src/copy/lifecycle-gate.ts",
-      "required": 126,
-      "translated": 126,
+      "required": 128,
+      "translated": 128,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "e028c442901105f6b9440647eafbb2f2fba8b52d65eb81d9c53ee1c1cf503702"
+      "sourceHash": "249fa7ccd6afde3c4ffbb334e1d3c9ec02882680b140d7796f80c13393248eca"
     },
     {
       "module": "lists",
@@ -552,7 +552,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "ec2baa4a67b97c25ef22791ef6c7c6f63c559ccc81f4901e81ae224068b2271e"
+      "sourceHash": "d7ea109cbc95e9c6721511bf896644908085cde2f4da4df3bbfd6f05dd2dbae8"
     },
     {
       "module": "observability",
@@ -799,13 +799,13 @@
     {
       "module": "software-delivery",
       "source": "FF/frontend/src/copy/software-delivery.ts",
-      "required": 100,
-      "translated": 100,
+      "required": 101,
+      "translated": 101,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "27ff9f76d0bfd95f7d276189e3ff932e333968177f6a812121fdc20b73c73fad"
+      "sourceHash": "23a370c7462705e9eadb9ce7013438903087e5ceb92cfa1a360c3fa9e943cb8c"
     },
     {
       "module": "status-labels",
@@ -821,13 +821,13 @@
     {
       "module": "supplier",
       "source": "FF/frontend/src/copy/supplier.ts",
-      "required": 99,
-      "translated": 99,
+      "required": 101,
+      "translated": 101,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "7e0df2021faf72cff8a0b17947b94285a604636df21130b9f8df672ae9f07b41"
+      "sourceHash": "fd12dbf143b853b1ad66b9faac348daa0a6765b0a1c8f9760f93f72fb3d4b59d"
     },
     {
       "module": "taxonomy-level-names",
@@ -964,13 +964,13 @@
     {
       "module": "workflow-execution",
       "source": "FF/frontend/src/copy/workflow-execution.ts",
-      "required": 97,
-      "translated": 97,
+      "required": 98,
+      "translated": 98,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "63c2927ca06d3ec93918fc61e87e337c80c887cf3343f885a52a616e0933d35e"
+      "sourceHash": "26555962bbea59d0f234f2b6ddd2b3549004a1757b3e1d07785b44dc738a75b4"
     },
     {
       "module": "workflowReference",

@@ -1,7 +1,7 @@
 import { uiLocaleTag } from '../../locale/runtime';
 // /entitlements — 사용 권한·체험권 (D01-05 · 구매 전환 D05-04). 체험권은 차량마다 따로: 제안(14일) → 수락(30일 ON) → 만료·거절·구매 전환.
 // 체험권 차량 목록은 상태·성향 필터와 쪽 나눔, 합성 모집단(통계용 가상 데이터)은 표시해서 구분한다.
-import { lazy, Suspense, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useEffect, useState, type CSSProperties } from 'react';
 import type { OrdersView } from '@ff/contracts';
 import { orders as OR } from '../../copy/ads-state';
 import { ordersMessage } from '../ads/state-messages';
@@ -10,6 +10,7 @@ import { ADAS_USAGE, AGE_BANDS, DRIVING_STYLES, referenceCodes, TRIAL_PAGE_SIZE,
 import { useConnectionLabel } from '../../api/connections';
 import { connections as CN } from '../../copy/connections';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
+import { loadSim, networkError, STATIC_MODE } from '../../api/client';
 import { ko } from '../../copy/ko';
 import { planning as W } from '../../copy/planning';
 import { AsyncView, Button, ConnectionBadge, DataTable, ErrorNote, Field, IdChip, PageHeader, Panel, Segmented, Select, StatusGlyph, Tabs, Toolbar, VerdictBadge } from '../../design';
@@ -315,6 +316,18 @@ function TrialVehicles({ catalogId, product }: { catalogId: string; product?: Pr
 
 function OfferPanel({ catalogId, product }: { catalogId: string; product?: ProductLite }) {
   const vehicles = useApi<{ items: VehicleLite[] }>('vehicles');
+  const [preparation, setPreparation] = useState<'loading' | 'ready' | 'error'>(STATIC_MODE ? 'loading' : 'ready');
+  useEffect(() => {
+    if (!STATIC_MODE) return;
+    let active = true;
+    // Load command handlers while the form opens. This prepares code only;
+    // vehicle checks, signing, persistence and success still belong to the command.
+    void loadSim().then((sim) => sim.simReady()).then(
+      () => { if (active) setPreparation('ready'); },
+      () => { if (active) setPreparation('error'); },
+    );
+    return () => { active = false; };
+  }, []);
   const { inScope, outOfScope } = offerableVehicles(vehicles.data?.items ?? [], product);
   const [wide, setWide] = useState(false);
   const shown = wide ? [...inScope, ...outOfScope] : inScope;
@@ -327,6 +340,7 @@ function OfferPanel({ catalogId, product }: { catalogId: string; product?: Produ
   return (
     <Panel title={O.title} eyebrow={product ? `${catalogId} · ${product.name}` : catalogId} id="trial-offer">
       <p className="ds-field__hint">{O.lead}</p>
+      <AsyncView state={preparation === 'ready' ? asyncState(vehicles) : preparation} error={preparation === 'error' ? networkError() : vehicles.error} onRetry={preparation === 'error' ? () => window.location.reload() : () => void vehicles.refetch()}>
       {scope && vehicles.data && <p className="ds-field__hint" data-testid="offer-scope">{inScope.length ? W.trial.scope(scope, inScope.length) : W.trial.none(scope)}</p>}
       {outOfScope.length > 0 && (
         <label className="ds-choices">
@@ -359,6 +373,7 @@ function OfferPanel({ catalogId, product }: { catalogId: string; product?: Produ
       <Button variant="primary" disabled={!perm.ok || !vins.length || offer.isPending} title={perm.hint} onClick={() => offer.mutate({ body: { catalogId, vins, ...(note.trim() ? { note: note.trim() } : {}) } }, { onSuccess: () => setVins([]) })}>
         {O.submit}
       </Button>
+      </AsyncView>
     </Panel>
   );
 }

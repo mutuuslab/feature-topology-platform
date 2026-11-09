@@ -1,3 +1,15 @@
+---
+id: TC-COST-DB-FIRST-20261109
+type: reference
+title: Feature DB 우선 비용 산정 초기 검토 기록
+status: in-review
+version: 1.0.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-09
+related: [TC-COST-PURCHASING-20261109]
+---
+
 # Feature DB 우선 비용 산정 검토
 
 > 초기 분리 구현의 역사 기록이다. 현재 구매 6종 구현·통합 및 실제 file 브라우저 완료 증거는 [후속 검토](cost-purchasing-completion-2026-11-09.md)를 따른다. 아래 보류 상태를 현재 상태로 해석하지 않는다.

@@ -276,6 +276,7 @@ workflows:
     TC-TX-STATIC-WORKFLOWS-2026-11-09: "분류·적용 조건 정적 업무 실행 검증"
     TC-WIRE-INTEGRATION-2026-11-09: "차량 상태 보고 2.0·2.1 및 Feature epoch 통합"
     TC-WORKFLOW-ARTIFACTS-2026-11-09: "업무 건·절차 간 인계와 실제 대용량 첨부"
+    TC-COST-DB-FIRST-20261109: "Feature DB 우선 비용 산정 초기 검토 기록"
     TC-COST-PURCHASING-20261109: "Feature DB 비용·구매 6종 검토 및 직접 HTML 검증"
     TC-ENGLISH-UI-20261109: "English UI rollout and remaining catalogue"
     TC-FEATURE-PRD-20261108: "Feature PRD 문서형 등록과2000자 본문 왕복 검증"

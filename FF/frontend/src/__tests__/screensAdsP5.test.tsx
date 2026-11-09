@@ -166,6 +166,19 @@ describe('전송 캠페인 /deployments/campaigns/:id', () => {
 });
 
 describe('Feature 분류 패널 — 입력·확정·지원 종료 연습', () => {
+  it('법규 담당자는 분류와 시장 기준선이 아직 없어도 첫 시장 기준선을 입력할 수 있다', async () => {
+    handler = (url) => {
+      if (url.includes('/support-drills')) return { body: { items: [] } };
+      if (url.includes('/classification')) return { body: { featureId: 'FEAT-00019', version: '2.0.0', lifecycle: 'PROPOSED', classification: null, completeness: { classified: false, gaps: ['ADS', 'DDT', 'SAFETY', 'OWNER', 'LIFECYCLE_OWNER', 'CONFIRM'], inferred: false }, baselines: [], ownerHistory: [], ruleEnabled: true } };
+      return undefined;
+    };
+    mount('steward', '/f', '/f', <AdsClassificationPanel id="FEAT-00019" ver="2.0.0" lifecycle="PROPOSED" />);
+    fireEvent.click(await screen.findByRole('button', { name: '시장 기준선 입력' }));
+    fireEvent.change(screen.getByLabelText('시장'), { target: { value: 'KR' } });
+    fireEvent.change(screen.getByLabelText('사유'), { target: { value: '첫 시장 기준선 검토' } });
+    fireEvent.click(screen.getByRole('button', { name: '기준선 저장' }));
+    await waitFor(() => expect(calls.some(c => c.method === 'PUT' && c.url.includes('/market-baselines/FEAT-00019/2.0.0/KR'))).toBe(true));
+  });
   it('거부 규칙 켜짐 문구, 확정 전 분류는 기능안전 담당이 확정, 최근 연습 네 칸', async () => {
     handler = (url) => {
       if (url.includes('/support-drills')) return { body: { items: [{ drillId: 'DRL-00001', runBy: 'system', runAt: '2026-11-06T00:00:00Z', passed: false, horizonDays: 90, checks: [{ id: 'BASELINE_KEPT', label: '기준선 유지', result: 'FAIL', basis: '검증 기준선 보유 2/6대' }, { id: 'BLOCK_KEPT', label: '차단 유지', result: 'PASS', basis: '진행 중 차단 없음' }, { id: 'KEY_RENEWAL', label: '키 갱신 유지', result: 'PASS', basis: 'policy 2027-06-01' }, { id: 'NO_UNAPPROVED_ON', label: '미승인 ON 없음', result: 'PASS', basis: '미승인 ON 0대' }] }] } };

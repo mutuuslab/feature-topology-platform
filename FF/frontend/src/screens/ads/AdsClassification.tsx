@@ -46,6 +46,7 @@ const orUnclassified = (v: string | null | undefined) => v ?? <span className="a
 export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver: string; lifecycle: string }) {
   const q = useApi<ClassificationView>('adsClassification', { params: { id, ver } });
   const editor = usePermission(['FEATURE_AUTHOR', 'SAFETY_OFFICER']);
+  const baselineEditor = usePermission(['REGULATORY_OWNER']);
   // 다른 응답 모양(시험 기본 응답 등)은 그리지 않는다
   const v = q.data?.completeness ? q.data : undefined;
   const c = v?.classification ?? null;
@@ -108,8 +109,8 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
               </table>
             </TableScroll>
           </Panel>
-          {/* 시장 기준선 — 미분류 Feature는 출시 시장을 정하기 전이라 영역을 그리지 않는다 */}
-          {(v.baselines ?? []).length || done ? (
+          {/* Existing markets and confirmed classification are readable; regulatory owners can always add the first market. */}
+          {(v.baselines ?? []).length || done || baselineEditor.ok ? (
           <Panel title={B.title} id="ads-baselines">
             {(v.baselines ?? []).length ? (
               <div className="adc-stack">
@@ -146,12 +147,12 @@ export function AdsClassificationPanel({ id, ver, lifecycle }: { id: string; ver
                   </table>
                 </TableScroll>
                 <p className="adc-note">{B.source}</p>
-                <BaselineAction v={v} />
                 {(v.baselines ?? []).some((b) => b.assumed) ? <SimulatedDataNotice text={B.assumed} /> : null}
               </div>
             ) : (
               <p className="adc-note">{B.empty}</p>
             )}
+            <BaselineAction v={v} />
           </Panel>
           ) : null}
           <SupportDrillPanel id={id} ver={ver} />

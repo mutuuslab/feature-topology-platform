@@ -68,7 +68,7 @@ function ClassifyPanel({ levels }: { levels: LevelsView }) {
       <Segmented<TaxonomyLevelCode> label={T.tabs.classify} value={level} onChange={setLevel} options={TAXONOMY_LEVELS.map((l) => ({ value: l, label: T.levelName(l), count: levels.items.find((x) => x.level === l)?.features }))} />
       <SummaryLine
         items={[
-          { k: T.summary.nodes, v: cur.nodes },
+          { k: `${T.levelName(level)} · ${T.summary.nodes}`, v: cur.nodes },
           { k: T.summary.classified, v: cur.classifiedNodes },
           { k: T.summary.features, v: cur.features },
         ]}

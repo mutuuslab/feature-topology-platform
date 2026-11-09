@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { FeatureRefRole } from '@ff/contracts';
 import { actorFor, canAct } from '../../../api/actor';
 import { fieldErrors } from '../../../api/field-errors';
-import { useApi, useApiMutation } from '../../../api/hooks';
+import { asyncState, useApi, useApiMutation } from '../../../api/hooks';
 import { propose as P } from '../../../copy/propose';
 import { PRD_BODY_LIMIT, isPrdTemplate, proposePrd as D } from '../../../copy/propose-prd';
 import { proposeGuide as G } from '../../../copy/propose-guide';
@@ -14,7 +14,7 @@ import { personLabel } from '../../../data/people';
 import { planning as W } from '../../../copy/planning';
 import { taxonomyLevelNames as TX } from '../../../copy/taxonomy-level-names';
 import type { TaxonomyLevelCode } from '../../../../../contracts/src/schemas/taxonomy-level';
-import { Button, Drawer, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
+import { AsyncView, Button, Drawer, ErrorNote, Field, PageHeader, Panel, useUnsavedGuard, whyDisabled } from '../../../design';
 import { usePermission } from '../../shared';
 import { RefPicker, refWarning } from './RefPicker';
 import { RefRequestDrawer } from './RefRequestDrawer';
@@ -223,6 +223,8 @@ export default function ProposeScreen() {
       </div>} />
       <p className="propose-prd-lifecycle">{D.lifecycle}</p>
       {!done && <RegistrationGuide />}
+      {/* 기준 분류 조회의 지연·실패를 숨기지 않는다. 작성 중인 입력 상태는 그대로 유지한다. */}
+      {!done && <AsyncView state={asyncState(taxonomy)} error={taxonomy.error} onRetry={() => taxonomy.refetch()}>{null}</AsyncView>}
       <Panel id="propose-form" tour="feature-form">
         {notice && (
           <p className="ds-field__hint" role="status" data-testid="ref-request-notice">

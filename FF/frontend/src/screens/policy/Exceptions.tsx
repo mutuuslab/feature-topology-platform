@@ -75,8 +75,8 @@ export function ExceptionsScreen() {
       />
       <SummaryLine
         items={[
-          { k: X.kpi.active, v: active },
-          { k: X.kpi.waiting, v: waiting.length },
+          ...(!active && waiting.length ? [{ k: X.kpi.active, v: active }] : []),
+          ...(active || !waiting.length ? [{ k: X.kpi.waiting, v: waiting.length }] : []),
           { k: X.kpi.closed, v: all.filter((e) => CLOSED.includes(e.status)).length },
           { k: X.kpi.rejected, v: all.filter((e) => e.status === 'REJECTED').length },
         ]}

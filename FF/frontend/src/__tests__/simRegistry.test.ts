@@ -51,6 +51,7 @@ const GATE_SNAPSHOT144 = {
   policy: DEFAULT_GATE_POLICY, nextSeq: 18, window: { hours: 24, deactivate: 4, restore: 0, cap: 5000 },
 };
 const SNAP: Record<string, unknown> = {
+  [url('almWorkProducts', { id: 'FEAT-00144', ver: '3.3.0' })]: { featureId: 'FEAT-00144', version: '3.3.0', gateMode: 'warn', items: [] },
   [url('auditChain')]: { ok: true, verified: 10, head: 'bb'.repeat(32), checkedAt: '2026-11-06T01:00:00.000Z' },
   [url('events', {}, { limit: 500, recent: '1' })]: { items: [{ seq: 41, id: 'e41', type: 'x', at: '2026-11-06T00:00:00.000Z', aggregate: 'A', componentId: null, payload: {} }] },
   [url('audit', {}, { limit: 500 })]: { items: [{ id: 233, at: '2026-11-06T00:00:00.000Z', actorId: 'usr-author', actorRole: 'FEATURE_AUTHOR', action: 'X', target: 'Y', result: 'ALLOWED', reason: null, before: null, after: null, correlationId: null, componentId: null }], nextCursor: null },
@@ -109,6 +110,7 @@ beforeEach(async () => {
   localStorage.clear();
   sim = await import('../api/sim');
   engine = await import('../api/sim/engine');
+  await sim.simReady(); await import('../api/sim/handlers/local-feature-relations');
 });
 afterEach(() => {
   engine.__resetSimForTest();

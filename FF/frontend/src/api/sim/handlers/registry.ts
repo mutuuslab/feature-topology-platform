@@ -476,13 +476,13 @@ async function transitionContext(ctx: SimReadContext, e: FeatureEntity, extra: P
 }
 async function transitionOptions(ctx: SimReadContext, e: FeatureEntity, actor?: { id: string; role: any }) {
   const base = await transitionContext(ctx, e);
-  return nextTransitions(e.row.lifecycle).map((r) => ({
+  return Promise.all(nextTransitions(e.row.lifecycle).map(async (r) => ({
     to: r.to,
     ko: r.ko,
     auto: r.auto,
     roles: r.roles.map((x) => ROLE_LABEL[x]),
-    blockers: evaluateTransition(e.row, r.to, actor && !r.auto ? { ...base, actor, reason: 'preview' } : base).blockers,
-  }));
+    blockers: [...evaluateTransition(e.row, r.to, actor && !r.auto ? { ...base, actor, reason: 'preview' } : base).blockers, ...await (await import('./local-feature-relations')).localAlmTransitionBlockers(ctx, e.row, r.to)],
+  })));
 }
 async function transitionWarnings(ctx: SimReadContext, f: Row, to: Lifecycle): Promise<RefWarning[]> {
   if (f.lifecycle === 'PROPOSED' && to === 'APPROVED') return statusWarnings(ctx, f.featureRefs, ['REVIEW', 'DEPRECATED'], '승인은 막지 않습니다.');
@@ -512,6 +512,7 @@ async function autoAdvance(ctx: SimWriteContext, e: FeatureEntity): Promise<Feat
   for (let i = 0; i < 4; i++) {
     const rule = autoTransition(cur.row, await transitionContext(ctx, cur));
     if (!rule) break;
+    if ((await (await import('./local-feature-relations')).localAlmTransitionBlockers(ctx, cur.row, rule.to)).length) break;
     cur = await applyTransition(ctx, cur, rule.to, `자동 전이: ${rule.ko}`, true);
   }
   return cur;
@@ -1144,6 +1145,7 @@ registerSimHandler(
     const e = await requireFeature(ctx, id, ver);
     const f = e.row;
     const { rule, blockers } = evaluateTransition(f, to, await transitionContext(ctx, e, { actor: { id: ctx.actor.id, role: ctx.actor.role }, reason, issues }));
+    blockers.push(...await (await import('./local-feature-relations')).localAlmTransitionBlockers(ctx, f, to));
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
     const target = fkey(id, ver);
     if (rule?.auto) ctx.fail('CONFLICT', `${rule.ko}은(는) 조건이 갖춰지면 시스템이 자동으로 전이합니다.`, { blockers }, { action, target, reason: '자동 전이는 직접 실행할 수 없습니다', componentId: 'D01-01' });
@@ -1212,6 +1214,8 @@ registerSimHandler(
       const evidence = gateEvidenceBlockers({ gate: body.gate, inputResult: body.inputResult, current, securityRelevant: view.security.relevant, asilDeviation: view.asilDeviation, asilReasonReviewed: !!body.asilReasonReviewed, g7: view.g7.filter((s: any) => s.valid) });
       if (evidence.length) fail('GUARD_FAILED', `${body.gate}을(를) PASS로 판정할 근거가 부족합니다.`, { blockers: evidence.map((message) => ({ code: 'ANALYSIS_EVIDENCE', message, ref: body.gate })) }, evidence.join(' / '));
     }
+    const alm = await (await import('./local-feature-relations')).localAlmGateCheck(ctx, f, body.gate, body.inputResult);
+    if (alm.blockers.length) fail('GUARD_FAILED', alm.blockers.map(b => b.message).join(' / '), { blockers: alm.blockers });
     const deviation = body.gate === 'G2' && body.inputResult === 'PASS' && body.asilReasonReviewed ? view?.asilDeviation : null;
     const prev = latest[body.gate];
     const record = {
@@ -1244,6 +1248,7 @@ registerSimHandler(
         ctx.audit({ action: 'REHARA_RESOLVE', target: key, before: { requestId: x.requestId, status: 'OPEN' }, after: { status: 'RESOLVED', gateRecordId: record.gateRecordId }, componentId: 'D01-02' });
       }
     ctx.audit({ action, target, before: prev ? { gateRecordId: prev.gateRecordId, status: prev.status } : null, after: { gateRecordId: record.gateRecordId, status: record.status, evidenceRef: record.evidenceRef, decisionKid: decision.signature.kid, signatureSource: 'LOCAL_SIMULATION', ...(deviation ? { asilReasonReviewed: { from: deviation.from, to: deviation.to } } : {}) }, reason: body.rationale, componentId: 'D01-02' });
+    await (await import('./local-feature-relations')).recordLocalAlmJudgment(ctx, f, body.gate, record.gateRecordId, alm.view);
     ctx.emit('gate.judged', key, { gateRecordId: record.gateRecordId, gate: record.gate, status: record.status, by: ctx.actor.id }, { componentId: 'D01-02', notify: notifyFeature(f) });
     const feature = await autoAdvance(ctx, e);
     return { record, feature: feature.row };

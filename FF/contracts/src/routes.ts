@@ -29,7 +29,7 @@ import { CreatePolicyBody, DeclineTrialBody, OfferTrialsBody, OfrepBody, PolicyD
 import { FlagSourceManifest } from './schemas/flag-source';
 import { CreateFlagPrBody, CreateFlagRemovalPrBody, CreateFlagRepositoryBody, FlagGateWaiverBody, FlagGateWaiverDecisionBody, GithubWebhookBody, RescanFlagRepositoryBody, UpdateFlagRepositoryBody, UploadFlagScanBody } from './schemas/flag-code';
 import { ApproverKeyRegisterBody, EpochBumpBody, KeyRotateBody, KillApproveBody, KillCreateBody, KillRejectBody, ReadbackBody, RestoreRequestBody } from './schemas/ops';
-import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/access';
+import { HUMAN_ROLES, KILL_APPROVER_ROLES } from './rules/role-catalogue';
 import { NotificationReadAllBody } from './rules/notification-keys';
 import { NotificationRuleBody, NotificationSendBody } from './rules/notification-rules';
 import { PipelineRunBody } from './rules/integration-error';
@@ -91,7 +91,7 @@ const EmptyBody = z.object({}).strict();
 export const DemoLoginBody = z.object({ id: z.string().max(128), password: z.string().max(256) }).strict();
 export type DemoLoginBody = z.infer<typeof DemoLoginBody>;
 /** Feature DB 변경 요청 작성 — 사람 역할(HUMAN_ROLES) 모두에서 감사 조회자만 뺀다(30-95 §8.1). 백엔드 컨트롤러 @Roles도 이것을 쓴다.
- *  HUMAN_ROLES와 같은 식을 enums에서 바로 쓴다 — rules/access.ts가 이 파일을 먼저 읽는 순환에서 HUMAN_ROLES가 아직 없을 수 있다(access-refdb.test가 같음을 본다) */
+ *  공통 역할 값은 routes에 의존하지 않는 role-catalogue에 둔다. 이 목록은 감사 조회자를 제외한다(access-refdb.test가 같음을 본다). */
 export const REFDB_CHANGE_REQUESTERS: Role[] = ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM' && r !== 'AUDITOR');
 const ReasonBody = z.object({ reason: z.string().trim().min(2).max(500) }).strict();
 

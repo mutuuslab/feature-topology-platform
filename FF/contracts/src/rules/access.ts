@@ -2,10 +2,9 @@
 // 직무 분리(SoD) 규칙은 상세설계서의 승인 규칙을 표로 둔다 — 실제 강제는 각 서비스(감사 FAILED/DENIED로 남는다).
 import { ROLES, ROLE_LABEL, type Role } from '../enums';
 import type { ApproverRole } from '../schemas/safety';
+import { HUMAN_ROLES, REPORT_APPROVER_ROLES } from './role-catalogue';
+export { HUMAN_ROLES, REPORT_APPROVER_ROLES, KILL_APPROVER_ROLES } from './role-catalogue';
 import { ROUTES, type RouteDef } from '../routes';
-
-/** 사람 역할 — 차량 기기 신원(VEHICLE)은 역할 선택·권한표에서 뺀다 */
-export const HUMAN_ROLES = ROLES.filter((r) => r !== 'VEHICLE' && r !== 'SYSTEM') as Role[];
 
 export interface Permission {
   name: string;
@@ -50,20 +49,7 @@ export const SOD_RULES: { id: string; subject: string; rule: string; component: 
   { id: 'SOD-16', subject: 'SW 개발비 산정 승인', rule: '산정 과제 작성자는 자기 과제를 승인·반려할 수 없다', component: 'D07-01' },
 ];
 
-/** 보고서 v1.1 승인 역할(kill_command v2 approvals[].role) ↔ 플랫폼 역할 */
-export const REPORT_APPROVER_ROLES: Record<ApproverRole, Role> = {
-  FSM: 'SAFETY_OFFICER',
-  CSM: 'SECURITY_OFFICER',
-  OPS_LEAD: 'OPS_LEAD',
-  PRODUCT_OWNER: 'PRODUCT_APPROVER',
-  QA: 'GATE_JUDGE',
-  REGULATORY: 'REGULATORY_OWNER',
-};
-
 /** 플랫폼 역할 → 이 사람이 맡을 수 있는 보고서 승인 역할 */
-/** 긴급 차단·복원 승인 칸을 채울 수 있는 플랫폼 역할(보고서 승인 역할 대응) */
-export const KILL_APPROVER_ROLES: Role[] = [...new Set(Object.values(REPORT_APPROVER_ROLES))];
-
 export function reportRolesOf(roles: readonly Role[]): ApproverRole[] {
   return (Object.keys(REPORT_APPROVER_ROLES) as ApproverRole[]).filter((a) => roles.includes(REPORT_APPROVER_ROLES[a]));
 }

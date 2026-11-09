@@ -107,7 +107,7 @@
     {
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-7.ts",
       "entries": 128,
-      "sourceFingerprint": "201f09bf3011f77b341df9ba38bb678305633d286556975838097eb778ea2840",
+      "sourceFingerprint": "84d06c2bc6ad8b1dbbd33cbc407b794ec1ba1d7e39f01b2f9869dbedd2a6e032",
       "status": "MATCH"
     },
     {
@@ -5011,123 +5011,116 @@
       "english": "Every stage has an observation period, permitted differences and stop criteria"
     },
     {
-      "key": "FPW.7-A13.name",
-      "source": "출시 차단 해제 결정",
-      "sourceHash": "74b0a1c052cacec99ac158a9ccdd4704b73027edc8f969349e979859931285e1",
+      "key": "FPW.7-A10.name",
+      "source": "상품 고객 출시 승인",
+      "sourceHash": "a4cf45cec23b54ba78a65c6abacf26c6ca176bf8c61d2c73a44c5f4d2009ccf5",
       "status": "TRANSLATED",
-      "english": "Decide whether to clear the release block"
+      "english": "Approve the customer product release"
     },
     {
-      "key": "FPW.7-A13.steps.0",
-      "source": "해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다",
-      "sourceHash": "32f3881144a99f758d6619d58d9a16e830b5b40eb91091c2aae6f83e0990971d",
+      "key": "FPW.7-A10.steps.0",
+      "source": "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다",
+      "sourceHash": "e8341f7b9704bb4dc73338ece42cb597e16a30d4b56513f5f73bdeb9aed91273",
       "status": "TRANSLATED",
-      "english": "Check the waiver reason, expiry and reconciliation status at request"
+      "english": "A product Owner distinct from the configuration approver approves customer release. In the demo, approver approves configuration and productowner approves customer release"
     },
     {
-      "key": "FPW.7-A13.steps.1",
-      "source": "F2 이상이면 Safety Manager의 의견을 받는다",
-      "sourceHash": "7524c7a0b971b867bf17937040f4229b311fa95447b25673a0c1f3d14b4728f3",
+      "key": "FPW.7-A10.steps.1",
+      "source": "구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다",
+      "sourceHash": "b47a6da32106e0f78ca15a14b1a3bb2774787150011363b1164e768308f4983d",
       "status": "TRANSLATED",
-      "english": "Obtain Safety Manager input for F2 or higher"
+      "english": "The UI disables release approval for the configuration approver and explains why; the server also rejects approval by the same person"
     },
     {
-      "key": "FPW.7-A13.steps.2",
-      "source": "개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다",
-      "sourceHash": "c82eff8a7c03d654b6a237a064658bfdd6cf7e22de46c1935d68953ce39b0ef2",
+      "key": "FPW.7-A10.steps.2",
+      "source": "출시한 상품은 상세에서 체험 제안으로 이어진다",
+      "sourceHash": "784893f654e3111a7884113cbdb68bc09629b6b11ce471836b7f5d112119da6d",
       "status": "TRANSLATED",
-      "english": "Approve or reject with a personal signature and confirm the block returns after expiry"
+      "english": "Released products link from their details to trial offers"
     },
     {
-      "key": "FPW.7-A13.checks.0",
-      "source": "요청자와 결정자가 다른 사람이다",
-      "sourceHash": "8bb18e233a794dc301ab7fbe71c69ce773a6ba46cfa103b277a2663c6791c467",
+      "key": "FPW.7-A10.steps.3",
+      "source": "출시 승인 결과를 상품 기획과 운영 조직에 알린다",
+      "sourceHash": "28ad70015aff4f293c1de2d48dd1d668d5d7ef2ce429e74ef0a6e93e9fa757b7",
       "status": "TRANSLATED",
-      "english": "Requester and decision maker are different people"
+      "english": "Notify product planning and operations of the release approval result"
     },
     {
-      "key": "FPW.7-A14.name",
-      "source": "예외 요청(임시 우회·Gate 예외)",
-      "sourceHash": "02ac2de10647e0d73fb7f9b2c1a8713da744fcc3c01b3e0325b8683e24c13130",
+      "key": "FPW.7-A10.checks.0",
+      "source": "고객 출시 승인자가 구성 승인자와 다르다",
+      "sourceHash": "1d0274631ffb5848b4f77def95435b51c145b0b8b475b86ebc4e2fe5321d5305",
       "status": "TRANSLATED",
-      "english": "Request an exception (temporary bypass or Gate exception)"
+      "english": "Customer release approver and configuration approver are different people"
     },
     {
-      "key": "FPW.7-A14.trigger",
-      "source": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
-      "sourceHash": "cd852a558bd92db76393d0210fcc110b656fa484351bb783279c04fb1b396587",
+      "key": "FPW.7-A04.name",
+      "source": "Safety Case 독립 검토",
+      "sourceHash": "ae70a49d8862861af394a0b148aaf69062f17187f67b25d2bc970e745b3e6dec",
       "status": "TRANSLATED",
-      "english": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
+      "english": "Perform an independent Safety Case review"
     },
     {
-      "key": "FPW.7-A14.steps.0",
-      "source": "긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다",
-      "sourceHash": "4d56c0913b2e0a7b25ec017c54e51ab1d44d5dd3b1564d1c510b957d2ab8f215",
+      "key": "FPW.7-A04.steps.0",
+      "source": "Safety Case를 만들지 않은 검토자가 검토 자격과 대상 Version(Safety Case·도구·ADS)을 기록한다",
+      "sourceHash": "48454306d2466621e8e4aa04ab9b3d53b4f6d3212a80347cc4973559bbd97192",
       "status": "TRANSLATED",
-      "english": "Request with emergency reason, duration, checks (or PENDING Gates) and restrictions (limited rollout, Pilot or Shadow)"
+      "english": "A reviewer who did not author the Safety Case records qualifications and target Versions (Safety Case, tools, ADS)"
     },
     {
-      "key": "FPW.7-A14.steps.1",
-      "source": "Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다",
-      "sourceHash": "a985e84830ba6eff5621d42cec8b77c89c2c6b15f407a59623b6c1aeaa9a401b",
+      "key": "FPW.7-A04.steps.1",
+      "source": "증거 일부를 다시 실행해 재현하고, 공백과 불확실한 영역을 적는다",
+      "sourceHash": "e6be3a725defe0e0dc13429e92ee7f9877eea668e9fe4c3b6b23e979c4a10b7e",
       "status": "TRANSLATED",
-      "english": "For Gate exceptions, include a completion due date and residual risk"
+      "english": "Rerun selected evidence to reproduce it and document gaps and uncertain areas"
     },
     {
-      "key": "FPW.7-A14.steps.2",
-      "source": "서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다",
-      "sourceHash": "dbfe09a2493b739c18b5116e89c570760c74fdadc8962202c1f3cb2317a8fa6c",
+      "key": "FPW.7-A04.steps.2",
+      "source": "발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다",
+      "sourceHash": "85182c8e865173715106cb67f133e88b058ff4c7854f7c95ef134a8c2376aa7c",
       "status": "TRANSLATED",
-      "english": "Exceptions cannot bypass signature/integrity, two-person emergency block approval, separation of duty or stopping"
+      "english": "Record corrective actions and owners for findings, then hand them to the Safety Manager"
     },
     {
-      "key": "FPW.7-A14.checks.0",
-      "source": "적용 기간이 있고 우회 불가 항목이 없다",
-      "sourceHash": "7c7a97ec523788c8ab18678e02b7f71ebf66508ffdbfa895ce517a6f5a2546cc",
+      "key": "FPW.7-A04.checks.0",
+      "source": "검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다",
+      "sourceHash": "b8765d88901cc4b5b50e807cb3c0d2bd5e75fe522dd74f8d930d7b1483582c91",
       "status": "TRANSLATED",
-      "english": "A duration is specified and no non-bypassable item is included"
+      "english": "The review records qualifications, period, Versions, method, reproduced evidence and gaps"
     },
     {
-      "key": "FPW.7-A15.name",
-      "source": "예외 승인·만료 원복 확인",
-      "sourceHash": "031f26027bf61c7effa1228959d4e7722e68446ab5223129a3665b657ed665af",
+      "key": "FPW.7-A11.name",
+      "source": "Canary 활성화·단계적 확대",
+      "sourceHash": "65e2ef88be65ea8690baa4e350b1eeffa25fae1427782e19284cecc20cc4167d",
       "status": "TRANSLATED",
-      "english": "Approve exceptions and verify expiry reversion"
+      "english": "Activate the Canary and expand the rollout in stages"
     },
     {
-      "key": "FPW.7-A15.steps.0",
-      "source": "요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다",
-      "sourceHash": "ccc5057621f173de361628e234e7096b16872109b1506b25bdd98271275d8535",
+      "key": "FPW.7-A11.steps.0",
+      "source": "승인 범위 안에서 Canary Cohort부터 활성화를 적용한다",
+      "sourceHash": "f0cc62d51dccc3b80680ff4e2465163a31c0fa67a207f2cd20850001ae66eb8b",
       "status": "TRANSLATED",
-      "english": "Two distinct people other than the requester approve with expiry times, or reject with reasons"
+      "english": "Apply activation within the approved scope, beginning with the Canary Cohort"
     },
     {
-      "key": "FPW.7-A15.steps.1",
-      "source": "두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다",
-      "sourceHash": "cf9201ec462dbfb66376ccaae5900f0a785f32aac4137cf4e038add9db1b30bc",
+      "key": "FPW.7-A11.steps.1",
+      "source": "관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
+      "sourceHash": "eeae5c6568f1061a9e9b189ea4d907d873aa5f761db4ee1e7cfb4fa555264c17",
       "status": "TRANSLATED",
-      "english": "After the second approval, confirm deployment stays within the recorded restriction"
+      "english": "Monitor stop criteria throughout the observation period and expand to the next Cohort only when criteria are met"
     },
     {
-      "key": "FPW.7-A15.steps.2",
-      "source": "만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다",
-      "sourceHash": "1aeefab34aa6c538e215de9edb6c71e86fe20630694bc3e5f71101d5205f2861",
+      "key": "FPW.7-A11.steps.2",
+      "source": "중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다",
+      "sourceHash": "195a04ce52f59b36ae798abd9e3f774d6a04a32895d1eac39eb83ca83dc92a5d",
       "status": "TRANSLATED",
-      "english": "On expiry, the platform restores the previous policy state and reports reversion. Revoke to end earlier"
+      "english": "When stop criteria are met, halt expansion and hand over to anomaly response (FPW.8)"
     },
     {
-      "key": "FPW.7-A15.checks.0",
-      "source": "요청자와 두 승인자가 모두 다른 사람이다",
-      "sourceHash": "bbd6f2fb19c6824c412612494b1d80f0efe02fc885f07a92d5e69f772cc3618e",
+      "key": "FPW.7-A11.checks.0",
+      "source": "단계마다 관측 결과와 확대·중단 결정이 기록되었다",
+      "sourceHash": "045129636debed28cfb70275e63874103bbfbc7a746a1ce7b9904fe6b6b0286c",
       "status": "TRANSLATED",
-      "english": "The requester and both approvers are three different people"
-    },
-    {
-      "key": "FPW.7-A15.checks.1",
-      "source": "만료 일시가 있고 Gate 판정은 PENDING 그대로다",
-      "sourceHash": "2f9670b47af8e97197cdad7df591df1d62a1ac8141571bb96fdd56c8f70df7ad",
-      "status": "TRANSLATED",
-      "english": "An expiry exists and Gate decisions remain PENDING"
+      "english": "Each stage records observations and the expansion/suspension decision"
     },
     {
       "key": "FPW.7-A02.name",
@@ -5170,83 +5163,6 @@
       "sourceHash": "1a251df841be38b0d1d4ac78af4faddb55afcdca55a6219508ff98dd8bc26a23",
       "status": "TRANSLATED",
       "english": "No Experiment Flag experiment is registered for an F2-or-higher Feature"
-    },
-    {
-      "key": "FPW.7-A03.name",
-      "source": "Safety Case·SOTIF 근거 정리",
-      "sourceHash": "149f8ae9cf560d6744db78586749648e99457075d2ea008ecafb23e7cb5f6649",
-      "status": "TRANSLATED",
-      "english": "Organize Safety Case and SOTIF evidence"
-    },
-    {
-      "key": "FPW.7-A03.trigger",
-      "source": "G6 배포 완료",
-      "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
-      "status": "TRANSLATED",
-      "english": "G6 deployment complete"
-    },
-    {
-      "key": "FPW.7-A03.steps.0",
-      "source": "F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다",
-      "sourceHash": "e7440b90c44c5abf712d29197e2298d4ad24a3dd4f1c00b773782290890f29db",
-      "status": "TRANSLATED",
-      "english": "Prepare ISO 21448 release-criteria evidence and residual risks for F2-or-higher Features"
-    },
-    {
-      "key": "FPW.7-A03.steps.1",
-      "source": "Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다",
-      "sourceHash": "81904e30a33e6a9091b424c8a0a8aa3fa5b1c1a9f1aa5253bc3935da6be6f5d4",
-      "status": "TRANSLATED",
-      "english": "Attach arguments to each Safety Case claim and evidence to each argument, identified by rule IDs and test IDs"
-    },
-    {
-      "key": "FPW.7-A03.steps.2",
-      "source": "정리한 Safety Case를 독립 검토에 넘긴다",
-      "sourceHash": "2dfe3d454e452737674d54c48769f7cdf8117980a3b92075b8dc564a9efb6abd",
-      "status": "TRANSLATED",
-      "english": "Submit the prepared Safety Case for independent review"
-    },
-    {
-      "key": "FPW.7-A03.checks.0",
-      "source": "모든 주장에 논거와 증거가 하나 이상 있다",
-      "sourceHash": "7d95c558b5afbf9d5d856578ebcbdb28318af57f204b74a06ab807a7879ff3ac",
-      "status": "TRANSLATED",
-      "english": "Every claim has at least one argument and supporting evidence"
-    },
-    {
-      "key": "FPW.7-A04.name",
-      "source": "Safety Case 독립 검토",
-      "sourceHash": "ae70a49d8862861af394a0b148aaf69062f17187f67b25d2bc970e745b3e6dec",
-      "status": "TRANSLATED",
-      "english": "Perform an independent Safety Case review"
-    },
-    {
-      "key": "FPW.7-A04.steps.0",
-      "source": "Safety Case를 만들지 않은 검토자가 검토 자격과 대상 Version(Safety Case·도구·ADS)을 기록한다",
-      "sourceHash": "48454306d2466621e8e4aa04ab9b3d53b4f6d3212a80347cc4973559bbd97192",
-      "status": "TRANSLATED",
-      "english": "A reviewer who did not author the Safety Case records qualifications and target Versions (Safety Case, tools, ADS)"
-    },
-    {
-      "key": "FPW.7-A04.steps.1",
-      "source": "증거 일부를 다시 실행해 재현하고, 공백과 불확실한 영역을 적는다",
-      "sourceHash": "e6be3a725defe0e0dc13429e92ee7f9877eea668e9fe4c3b6b23e979c4a10b7e",
-      "status": "TRANSLATED",
-      "english": "Rerun selected evidence to reproduce it and document gaps and uncertain areas"
-    },
-    {
-      "key": "FPW.7-A04.steps.2",
-      "source": "발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다",
-      "sourceHash": "85182c8e865173715106cb67f133e88b058ff4c7854f7c95ef134a8c2376aa7c",
-      "status": "TRANSLATED",
-      "english": "Record corrective actions and owners for findings, then hand them to the Safety Manager"
-    },
-    {
-      "key": "FPW.7-A04.checks.0",
-      "source": "검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다",
-      "sourceHash": "b8765d88901cc4b5b50e807cb3c0d2bd5e75fe522dd74f8d930d7b1483582c91",
-      "status": "TRANSLATED",
-      "english": "The review records qualifications, period, Versions, method, reproduced evidence and gaps"
     },
     {
       "key": "FPW.7-A05.name",
@@ -5459,6 +5375,83 @@
       "english": "The signature is valid and bound to current G8/G9 decision records"
     },
     {
+      "key": "FPW.7-A14.name",
+      "source": "예외 요청(임시 우회·Gate 예외)",
+      "sourceHash": "02ac2de10647e0d73fb7f9b2c1a8713da744fcc3c01b3e0325b8683e24c13130",
+      "status": "TRANSLATED",
+      "english": "Request an exception (temporary bypass or Gate exception)"
+    },
+    {
+      "key": "FPW.7-A14.trigger",
+      "source": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+      "sourceHash": "cd852a558bd92db76393d0210fcc110b656fa484351bb783279c04fb1b396587",
+      "status": "TRANSLATED",
+      "english": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
+    },
+    {
+      "key": "FPW.7-A14.steps.0",
+      "source": "긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다",
+      "sourceHash": "4d56c0913b2e0a7b25ec017c54e51ab1d44d5dd3b1564d1c510b957d2ab8f215",
+      "status": "TRANSLATED",
+      "english": "Request with emergency reason, duration, checks (or PENDING Gates) and restrictions (limited rollout, Pilot or Shadow)"
+    },
+    {
+      "key": "FPW.7-A14.steps.1",
+      "source": "Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다",
+      "sourceHash": "a985e84830ba6eff5621d42cec8b77c89c2c6b15f407a59623b6c1aeaa9a401b",
+      "status": "TRANSLATED",
+      "english": "For Gate exceptions, include a completion due date and residual risk"
+    },
+    {
+      "key": "FPW.7-A14.steps.2",
+      "source": "서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다",
+      "sourceHash": "dbfe09a2493b739c18b5116e89c570760c74fdadc8962202c1f3cb2317a8fa6c",
+      "status": "TRANSLATED",
+      "english": "Exceptions cannot bypass signature/integrity, two-person emergency block approval, separation of duty or stopping"
+    },
+    {
+      "key": "FPW.7-A14.checks.0",
+      "source": "적용 기간이 있고 우회 불가 항목이 없다",
+      "sourceHash": "7c7a97ec523788c8ab18678e02b7f71ebf66508ffdbfa895ce517a6f5a2546cc",
+      "status": "TRANSLATED",
+      "english": "A duration is specified and no non-bypassable item is included"
+    },
+    {
+      "key": "FPW.7-A13.name",
+      "source": "출시 차단 해제 결정",
+      "sourceHash": "74b0a1c052cacec99ac158a9ccdd4704b73027edc8f969349e979859931285e1",
+      "status": "TRANSLATED",
+      "english": "Decide whether to clear the release block"
+    },
+    {
+      "key": "FPW.7-A13.steps.0",
+      "source": "해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다",
+      "sourceHash": "32f3881144a99f758d6619d58d9a16e830b5b40eb91091c2aae6f83e0990971d",
+      "status": "TRANSLATED",
+      "english": "Check the waiver reason, expiry and reconciliation status at request"
+    },
+    {
+      "key": "FPW.7-A13.steps.1",
+      "source": "F2 이상이면 Safety Manager의 의견을 받는다",
+      "sourceHash": "7524c7a0b971b867bf17937040f4229b311fa95447b25673a0c1f3d14b4728f3",
+      "status": "TRANSLATED",
+      "english": "Obtain Safety Manager input for F2 or higher"
+    },
+    {
+      "key": "FPW.7-A13.steps.2",
+      "source": "개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다",
+      "sourceHash": "c82eff8a7c03d654b6a237a064658bfdd6cf7e22de46c1935d68953ce39b0ef2",
+      "status": "TRANSLATED",
+      "english": "Approve or reject with a personal signature and confirm the block returns after expiry"
+    },
+    {
+      "key": "FPW.7-A13.checks.0",
+      "source": "요청자와 결정자가 다른 사람이다",
+      "sourceHash": "8bb18e233a794dc301ab7fbe71c69ce773a6ba46cfa103b277a2663c6791c467",
+      "status": "TRANSLATED",
+      "english": "Requester and decision maker are different people"
+    },
+    {
       "key": "FPW.7-A09.name",
       "source": "출시 전이",
       "sourceHash": "f624b029cdb3f7d24efa5cd1d91384928322d5025c8c4469523dcf4096811ef8",
@@ -5494,81 +5487,88 @@
       "english": "The Feature Version is RELEASED and the transition actor is recorded"
     },
     {
-      "key": "FPW.7-A10.name",
-      "source": "상품 고객 출시 승인",
-      "sourceHash": "a4cf45cec23b54ba78a65c6abacf26c6ca176bf8c61d2c73a44c5f4d2009ccf5",
+      "key": "FPW.7-A15.name",
+      "source": "예외 승인·만료 원복 확인",
+      "sourceHash": "031f26027bf61c7effa1228959d4e7722e68446ab5223129a3665b657ed665af",
       "status": "TRANSLATED",
-      "english": "Approve the customer product release"
+      "english": "Approve exceptions and verify expiry reversion"
     },
     {
-      "key": "FPW.7-A10.steps.0",
-      "source": "구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다",
-      "sourceHash": "e8341f7b9704bb4dc73338ece42cb597e16a30d4b56513f5f73bdeb9aed91273",
+      "key": "FPW.7-A15.steps.0",
+      "source": "요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다",
+      "sourceHash": "ccc5057621f173de361628e234e7096b16872109b1506b25bdd98271275d8535",
       "status": "TRANSLATED",
-      "english": "A product Owner distinct from the configuration approver approves customer release. In the demo, approver approves configuration and productowner approves customer release"
+      "english": "Two distinct people other than the requester approve with expiry times, or reject with reasons"
     },
     {
-      "key": "FPW.7-A10.steps.1",
-      "source": "구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다",
-      "sourceHash": "b47a6da32106e0f78ca15a14b1a3bb2774787150011363b1164e768308f4983d",
+      "key": "FPW.7-A15.steps.1",
+      "source": "두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다",
+      "sourceHash": "cf9201ec462dbfb66376ccaae5900f0a785f32aac4137cf4e038add9db1b30bc",
       "status": "TRANSLATED",
-      "english": "The UI disables release approval for the configuration approver and explains why; the server also rejects approval by the same person"
+      "english": "After the second approval, confirm deployment stays within the recorded restriction"
     },
     {
-      "key": "FPW.7-A10.steps.2",
-      "source": "출시한 상품은 상세에서 체험 제안으로 이어진다",
-      "sourceHash": "784893f654e3111a7884113cbdb68bc09629b6b11ce471836b7f5d112119da6d",
+      "key": "FPW.7-A15.steps.2",
+      "source": "만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다",
+      "sourceHash": "1aeefab34aa6c538e215de9edb6c71e86fe20630694bc3e5f71101d5205f2861",
       "status": "TRANSLATED",
-      "english": "Released products link from their details to trial offers"
+      "english": "On expiry, the platform restores the previous policy state and reports reversion. Revoke to end earlier"
     },
     {
-      "key": "FPW.7-A10.steps.3",
-      "source": "출시 승인 결과를 상품 기획과 운영 조직에 알린다",
-      "sourceHash": "28ad70015aff4f293c1de2d48dd1d668d5d7ef2ce429e74ef0a6e93e9fa757b7",
+      "key": "FPW.7-A15.checks.0",
+      "source": "요청자와 두 승인자가 모두 다른 사람이다",
+      "sourceHash": "bbd6f2fb19c6824c412612494b1d80f0efe02fc885f07a92d5e69f772cc3618e",
       "status": "TRANSLATED",
-      "english": "Notify product planning and operations of the release approval result"
+      "english": "The requester and both approvers are three different people"
     },
     {
-      "key": "FPW.7-A10.checks.0",
-      "source": "고객 출시 승인자가 구성 승인자와 다르다",
-      "sourceHash": "1d0274631ffb5848b4f77def95435b51c145b0b8b475b86ebc4e2fe5321d5305",
+      "key": "FPW.7-A15.checks.1",
+      "source": "만료 일시가 있고 Gate 판정은 PENDING 그대로다",
+      "sourceHash": "2f9670b47af8e97197cdad7df591df1d62a1ac8141571bb96fdd56c8f70df7ad",
       "status": "TRANSLATED",
-      "english": "Customer release approver and configuration approver are different people"
+      "english": "An expiry exists and Gate decisions remain PENDING"
     },
     {
-      "key": "FPW.7-A11.name",
-      "source": "Canary 활성화·단계적 확대",
-      "sourceHash": "65e2ef88be65ea8690baa4e350b1eeffa25fae1427782e19284cecc20cc4167d",
+      "key": "FPW.7-A03.name",
+      "source": "Safety Case·SOTIF 근거 정리",
+      "sourceHash": "149f8ae9cf560d6744db78586749648e99457075d2ea008ecafb23e7cb5f6649",
       "status": "TRANSLATED",
-      "english": "Activate the Canary and expand the rollout in stages"
+      "english": "Organize Safety Case and SOTIF evidence"
     },
     {
-      "key": "FPW.7-A11.steps.0",
-      "source": "승인 범위 안에서 Canary Cohort부터 활성화를 적용한다",
-      "sourceHash": "f0cc62d51dccc3b80680ff4e2465163a31c0fa67a207f2cd20850001ae66eb8b",
+      "key": "FPW.7-A03.trigger",
+      "source": "G6 배포 완료",
+      "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
       "status": "TRANSLATED",
-      "english": "Apply activation within the approved scope, beginning with the Canary Cohort"
+      "english": "G6 deployment complete"
     },
     {
-      "key": "FPW.7-A11.steps.1",
-      "source": "관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다",
-      "sourceHash": "eeae5c6568f1061a9e9b189ea4d907d873aa5f761db4ee1e7cfb4fa555264c17",
+      "key": "FPW.7-A03.steps.0",
+      "source": "F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다",
+      "sourceHash": "e7440b90c44c5abf712d29197e2298d4ad24a3dd4f1c00b773782290890f29db",
       "status": "TRANSLATED",
-      "english": "Monitor stop criteria throughout the observation period and expand to the next Cohort only when criteria are met"
+      "english": "Prepare ISO 21448 release-criteria evidence and residual risks for F2-or-higher Features"
     },
     {
-      "key": "FPW.7-A11.steps.2",
-      "source": "중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다",
-      "sourceHash": "195a04ce52f59b36ae798abd9e3f774d6a04a32895d1eac39eb83ca83dc92a5d",
+      "key": "FPW.7-A03.steps.1",
+      "source": "Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다",
+      "sourceHash": "81904e30a33e6a9091b424c8a0a8aa3fa5b1c1a9f1aa5253bc3935da6be6f5d4",
       "status": "TRANSLATED",
-      "english": "When stop criteria are met, halt expansion and hand over to anomaly response (FPW.8)"
+      "english": "Attach arguments to each Safety Case claim and evidence to each argument, identified by rule IDs and test IDs"
     },
     {
-      "key": "FPW.7-A11.checks.0",
-      "source": "단계마다 관측 결과와 확대·중단 결정이 기록되었다",
-      "sourceHash": "045129636debed28cfb70275e63874103bbfbc7a746a1ce7b9904fe6b6b0286c",
+      "key": "FPW.7-A03.steps.2",
+      "source": "정리한 Safety Case를 독립 검토에 넘긴다",
+      "sourceHash": "2dfe3d454e452737674d54c48769f7cdf8117980a3b92075b8dc564a9efb6abd",
       "status": "TRANSLATED",
-      "english": "Each stage records observations and the expansion/suspension decision"
+      "english": "Submit the prepared Safety Case for independent review"
+    },
+    {
+      "key": "FPW.7-A03.checks.0",
+      "source": "모든 주장에 논거와 증거가 하나 이상 있다",
+      "sourceHash": "7d95c558b5afbf9d5d856578ebcbdb28318af57f204b74a06ab807a7879ff3ac",
+      "status": "TRANSLATED",
+      "english": "Every claim has at least one argument and supporting evidence"
     },
     {
       "key": "FPW.7.BP1.name",
@@ -5775,17 +5775,17 @@
     },
     {
       "key": "FPW.7-S2.label",
-      "source": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
-      "sourceHash": "cd852a558bd92db76393d0210fcc110b656fa484351bb783279c04fb1b396587",
-      "status": "TRANSLATED",
-      "english": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
-    },
-    {
-      "key": "FPW.7-S3.label",
       "source": "출시 효과를 실험으로 비교해야 할 때",
       "sourceHash": "45482566a9c7e1c7559ccef3ac1bb3442be00f8cf5d6d6df452f3c77689d6efd",
       "status": "TRANSLATED",
       "english": "When release effects need experimental comparison"
+    },
+    {
+      "key": "FPW.7-S3.label",
+      "source": "G6 배포 완료",
+      "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
+      "status": "TRANSLATED",
+      "english": "G6 deployment complete"
     },
     {
       "key": "FPW.7-S4.label",
@@ -5796,10 +5796,10 @@
     },
     {
       "key": "FPW.7-S5.label",
-      "source": "G6 배포 완료",
-      "sourceHash": "1d21dcfc38a31e71d87c658686b601a4bc56db39eafe869f53b325afba8b7010",
+      "source": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+      "sourceHash": "cd852a558bd92db76393d0210fcc110b656fa484351bb783279c04fb1b396587",
       "status": "TRANSLATED",
-      "english": "G6 deployment complete"
+      "english": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
     },
     {
       "key": "FPW.7-S6.label",

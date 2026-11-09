@@ -1,4 +1,4 @@
-// sourceFingerprint: 201f09bf3011f77b341df9ba38bb678305633d286556975838097eb778ea2840
+// sourceFingerprint: 84d06c2bc6ad8b1dbbd33cbc407b794ec1ba1d7e39f01b2f9869dbedd2a6e032
 export default {
  "FPW.7.ref": "Standards report section 6.1 G7, chapter 6 FFG-LCY-009/010, chapter 12 FFG-TST-010, chapter 14 (SOTIF), chapter 3 (ADS Safety Case), chapter 5 FFG-CLS-006",
  "FPW.7.purpose": "Authorize a deployed Feature Version to take effect onboard. Check SOTIF release criteria, independent Safety Case review, Canary/Shadow decision criteria, product configuration approval, type approval and user notices, then expand from the Canary Cohort in stages.",
@@ -106,10 +106,10 @@ export default {
  "FPW.7.BP11.definition": "Perform the release transition after checking current OTA/Operations decisions and valid release accountability sign-off. Record actor, time and result; hand failures or required corrections back to development/review.",
  "FPW.7.BP12.definition": "A responsible person distinct from the configuration approver reviews customer delivery readiness and product release conditions. Record the customer release decision and hand scope and trial follow-up to product planning and operations.",
  "FPW.7.BP13.definition": "Start activation within the approved Canary scope and evaluate observations at each stage. Expand only when prerequisites are met; halt expansion and hand over to anomaly response on stop criteria.",
- "FPW.7-S2.label": "Emergency need to temporarily bypass deployment checks or PENDING release Gates",
- "FPW.7-S3.label": "When release effects need experimental comparison",
+ "FPW.7-S2.label": "When release effects need experimental comparison",
+ "FPW.7-S3.label": "G6 deployment complete",
  "FPW.7-S4.label": "G6 deployment complete",
- "FPW.7-S5.label": "G6 deployment complete"
+ "FPW.7-S5.label": "Emergency need to temporarily bypass deployment checks or PENDING release Gates"
   ,"FPW.7.O6.text": "Time-limited exceptions require two approvers distinct from the requester, permit only recorded restricted scope and restore the previous policy state on expiry.",
  "FPW.7.WP-EXCEPTION-RECORD.content.0": "Requester, emergency reason, target Feature, duration, checks or PENDING Gates, restriction, due date and residual risk",
  "FPW.7.WP-EXCEPTION-RECORD.content.1": "Two approvals and designated expiry (or rejection reason), applied deployments and prior state, expiry/revocation reversion messages",

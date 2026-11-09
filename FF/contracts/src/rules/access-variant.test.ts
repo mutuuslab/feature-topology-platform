@@ -1,5 +1,6 @@
 // IAM 권한표(ROUTES에서 파생)·Variant/지원 조건 판정
 import { describe, expect, it } from 'vitest';
+import { ROUTES } from '../routes';
 import type { Vehicle } from '../schemas/policy';
 import { HUMAN_ROLES, permissions, rolesView, SOD_RULES } from './access';
 import { requiredSw, variantMatrix, variantRow } from './variant';
@@ -17,8 +18,11 @@ describe('IAM (D06-09)', () => {
     // 감사(품질 내부감사)는 운영 상태를 바꾸지 않는 긴급 권한 사후 독립 검토 기록 하나만 쓴다(2026-11-04 사용자 결정, FFG-PLT-016)
     // + 검토 포털 협의 요청·의견(구매·법무·개인정보보호는 플랫폼 역할이 없어 조회 계정으로 들어온다, W5 P5-1) — 역시 운영 상태를 바꾸지 않는 기록
     // SW 다운로드 사전 판정은 원문 전달·배포 변경 없이 증거만 조회한다. AUDITOR는 실제 다운로드 권한은 없다.
-    expect(view.find((r) => r.role === 'AUDITOR')!.allowed).toEqual(['checkSoftwareDownload', 'recordKillPostReview', 'createConsultation', 'answerConsultation']);
-    expect(permissions().find((p) => p.name === 'softwareDownload')).toBeUndefined();
+    const common = permissions().filter((p) => HUMAN_ROLES.every((role) => p.roles.includes(role))).map((p) => p.name);
+    expect(common).toContain('readNotification');
+    expect(common).toContain('submitWorkflowActivity');
+    expect(view.find((r) => r.role === 'AUDITOR')!.allowed.filter((name) => !common.includes(name))).toEqual(['checkSoftwareDownload', 'recordKillPostReview', 'createConsultation', 'answerConsultation']);
+    expect(ROUTES.find((p) => p.name === 'softwareDownload')!.roles).not.toContain('AUDITOR');
     expect(view.find((r) => r.role === 'OPERATOR')!.allowed).toContain('issueKill');
     expect(permissions().every((p) => p.method !== 'GET')).toBe(true);
   });

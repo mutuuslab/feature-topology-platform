@@ -1,4 +1,4 @@
-import { INestApplication, Type } from '@nestjs/common';
+import { INestApplication, Type, type Abstract } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { ModuleRef } from '@nestjs/core';
@@ -37,7 +37,7 @@ export async function bootApp(opts: { controllers?: Type<unknown>[]; providers?:
   await app.init();
   delete process.env.FF_CLOCK_AT;
   const http = () => request(app.getHttpServer());
-  return { app, http, get: <T>(t: Type<T> | symbol) => app.get<T>(t as any) };
+  return { app, http, get: <T>(t: Type<T> | Abstract<T> | symbol) => app.get<T>(t as any) };
 }
 
 export const actor = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });

@@ -2,6 +2,7 @@ import { DEFAULT_GATE_POLICY, gateVerdict, profileFinding } from '@ff/contracts'
 import { compareAsBuilt,eolCheckBlockers,eolStatus,EOL_VERDICT_LABEL,EOL_STATUS_LABEL } from '../../../../../contracts/src/rules/eol';
 import { EolCheckBody } from '../../../../../contracts/src/schemas/ads-p5';
 import { registerSimHandler,registerSimReader,SimError } from '../engine';
+import { ApiError } from '../../client';
 import type { SimReadContext } from '../types';
 const CHECK='localEolCheck';
 async function vehicle(ctx:SimReadContext,vin:string){
@@ -23,7 +24,10 @@ registerSimHandler('createEolCheck',async ctx=>{
  ctx.put(CHECK,checkId,doc,{created:true});ctx.audit({action:'EOL_CHECK',target:b.vin,after:doc,reason:b.reason,componentId:'D05-02'});return doc;
 },{body:EolCheckBody});
 registerSimHandler('gatePreview',async ctx=>{
- const cmd=ctx.req.body,id=typeof cmd?.feature?.id==='string'?cmd.feature.id:'',ver=typeof cmd?.feature?.version==='string'?cmd.feature.version:'',snap=id&&ver?await ctx.snapshot<any>('gateSnapshot',{id,ver}):null,ledger=ctx.overlay.data.killLedger?.[id]??snap?.ledger;
+ const cmd=ctx.req.body,id=typeof cmd?.feature?.id==='string'?cmd.feature.id:'',ver=typeof cmd?.feature?.version==='string'?cmd.feature.version:'';
+ let snap:any=null;
+ if(id&&ver)try{snap=await ctx.read<any>('gateSnapshot',{id,ver});}catch(error){if(!(error instanceof SimError||error instanceof ApiError)||error.code!=='NOT_FOUND')throw error;}
+ const ledger=snap?.ledger;
  const registry={features:snap?.feature?{[id]:snap.feature}:{},policy:snap?.policy??DEFAULT_GATE_POLICY,ledger:ledger?{[id]:ledger}:{}},result=gateVerdict(cmd,registry,ctx.now());
  if(result.result==='SCHEMA_FAIL')return {...result,source:'LOCAL_SIMULATION',ledgerChanged:false};
  const p=profileFinding({market:cmd.target.market,request:cmd.request,fClass:snap?.feature?.f_class??null,adsFeature:!!snap?.feature?.ads_feature});

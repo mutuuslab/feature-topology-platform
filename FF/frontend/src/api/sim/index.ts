@@ -37,7 +37,9 @@ setSimHandlerLoader(async () => {
   // ADS handlers share registration-time schema bindings. Finish that dependency before
   // concurrent domain evaluation, including the first call reached through client.loadSim().
   await import('./handlers/ads-shared');
-  return Promise.all(HANDLERS.map((load) => load()));
+  await Promise.all(HANDLERS.map((load) => load()));
+  // Extensions capture the registered base reader, so load them after every base module.
+  await import('./handlers/local-gate-snapshot');
 });
 
 export { simCall, resetSim, registerSimHandler, registerSimReader, registerSimView, registerSimTask, simHandled, simReady, SimError } from './engine';

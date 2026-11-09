@@ -2,7 +2,8 @@
 // 제안(Feature 등록) → 안전 분류 확정 → 분석 근거(HARA) → Gate 판정 → 정의 승인(자동 개발 착수), Release Sign-off → 출시, Baseline 요청·결정,
 // Feature DB 추가 요청·변경 요청 → 도메인 검토 → 승인(직무 분리 SOD-13·14·15) → 발행, 업무 절차 활동 완료·취소를 서버와 같은 규칙으로 보는지 확인한다.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ROUTES, routeUrl, snapshotFile } from '@ff/contracts';
+import { DEFAULT_GATE_POLICY, ROUTES, routeUrl, snapshotFile } from '@ff/contracts';
+import exampleCommand from '../../../harness/guide/schema/examples/kill_safety_dc2_eu.ok.json';
 
 const url = (name: string, params: Record<string, string> = {}, query: Record<string, unknown> = {}) => routeUrl(name, params, query as Record<string, string>);
 const GATE = (id: string, ver: string, g: string, n: number) => ({ gateRecordId: `SIM-${g}-${String(n).padStart(6, '0')}`, featureId: id, featureVersion: ver, country: 'KR', gate: g, gateName: g, inputResult: 'PASS', rationale: '이관', evidenceRef: `EV-${g}`, judgeRole: '판정', judgedAt: '2026-03-03T09:00:00+09:00', status: 'PASS', gateStageLifecycle: 'PROPOSED', currentLifecycle: 'VERIFIED', transitionNote: '', _missing: {} });
@@ -43,6 +44,12 @@ const PROFILE144 = {
   maxActivationScope: { vehicles: 50000, perWindow: 5000 }, markets: ['KR'], rxswin: [], approvalProfile: null, evidenceManifestId: null, sbomRef: null, rollbackTarget: null, expiresAt: null, retirementPlan: null,
   confirmedBy: 'usr-quality', confirmedAt: '2026-11-01T00:00:00.000Z', confirmSig: 'sig',
 };
+const GATE_SNAPSHOT144 = {
+  featureId: F144.featureId, version: F144.version,
+  feature: { name: F144.name, version: F144.version, status: F144.lifecycle, f_class: 'F1', deact_class: 'DC1', gsr_mandatory: false, max_vehicles: 50000, max_per_window: 5000, markets_approved: ['KR'], type_approval_relevant: false, ads_feature: false, profile: { takeover_ms: 0, ramp_ms: 0, fault_ramp_ms: 0, max_pending_ms: 600000, max_cycle_wait_ms: 28800000 } },
+  ledger: { last_order_seq: 17, last_kill_approvers: ['usr-quality', 'usr-integrator'], recent: [{ request: 'deactivate', vehicles: 4, at: new Date().toISOString() }] },
+  policy: DEFAULT_GATE_POLICY, nextSeq: 18, window: { hours: 24, deactivate: 4, restore: 0, cap: 5000 },
+};
 const SNAP: Record<string, unknown> = {
   [url('auditChain')]: { ok: true, verified: 10, head: 'bb'.repeat(32), checkedAt: '2026-11-06T01:00:00.000Z' },
   [url('events', {}, { limit: 500, recent: '1' })]: { items: [{ seq: 41, id: 'e41', type: 'x', at: '2026-11-06T00:00:00.000Z', aggregate: 'A', componentId: null, payload: {} }] },
@@ -53,6 +60,7 @@ const SNAP: Record<string, unknown> = {
   [url('gates', { id: 'FEAT-00144', ver: '3.3.0' })]: { gates: Object.values(gates144).map((r: any) => ({ gate: r.gate, latest: r, decision: { state: 'IMPORTED', reason: null }, status: 'PASS', history: [r] })), lifecycle: 'VERIFIED', rehara: [] },
   [url('releaseSignoff', { id: 'FEAT-00144', ver: '3.3.0' })]: { signoff: null, valid: false, stale: false },
   [url('safetyProfile', { id: 'FEAT-00144', ver: '3.3.0' })]: { profile: PROFILE144, findings: [], asil: { conditions: [{ id: 'TOOL_CONFIDENCE', met: true }] } },
+  [url('gateSnapshot', { id: 'FEAT-00144', ver: '3.3.0' })]: GATE_SNAPSHOT144,
   [url('featureDetail', { id: 'FEAT-00013', ver: '0.3.0' })]: { feature: F13, meta: { createdBy: null, createdAt: null }, gates: {}, dependencies: { outgoing: [], incoming: [] }, functions: [], trace: [], baseline: null, products: [], pendingBaselineRequest: null, transitions: [], versions: [{ version: '0.3.0', lifecycle: 'PROPOSED', baselineId: null }] },
   [url('refDetail', { refId: 'AD-PRK-004' })]: { ref: REF('AD-PRK-004'), usedBy: usedBy144 },
   [url('refDetail', { refId: 'AD-PRK-005' })]: { ref: REF('AD-PRK-005', { nameKo: '주차 경고' }), usedBy: [] },
@@ -111,6 +119,109 @@ afterEach(() => {
 
 const CREATE = { name: '후방 주차 안내', description: '후방 카메라 주차 안내', requirementIds: ['REQ-PARK-0201'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Exclusive', ownerId: 'Parking기획팀', asil: 'QM', tags: ['parking'], upgVc: ['F111A111001'], controlPoints: ['Flag'], featureRefs: [{ refId: 'AD-PRK-004', role: 'PRIMARY' }] };
 const pass = (gate: string, extra: Record<string, unknown> = {}) => ({ gate, inputResult: 'PASS', rationale: `${gate} 통과`, evidenceRef: `EV-${gate}`, ...extra });
+
+describe('실제 Feature 모델의 Gate Registry 조회', () => {
+  it('새 ID는 실제 등록·안전 분류에서 PROPOSED Registry와 첫 명령 순번을 계산한다', async () => {
+    const f = await run('createFeature', 'author', { body: CREATE });
+    const params = { id: f.featureId, ver: f.version };
+    const actual = await run('gateSnapshot', 'author', { params });
+    const { profile } = await run('safetyProfile', 'author', { params });
+    expect(actual).toMatchObject({ featureId: f.featureId, version: f.version, feature: { name: CREATE.name, status: 'PROPOSED', f_class: profile.fClass, deact_class: profile.deactClass, markets_approved: profile.markets, max_vehicles: profile.maxActivationScope.vehicles, max_per_window: profile.maxActivationScope.perWindow }, ledger: { last_order_seq: 0, last_kill_approvers: [], recent: [] }, nextSeq: 1, policy: DEFAULT_GATE_POLICY });
+    expect(actual.window).toEqual({ hours: 24, deactivate: 0, restore: 0, cap: profile.maxActivationScope.perWindow });
+    expect(actual.feature.profile.max_pending_ms).toBe(profile.maxPendingMs);
+  });
+
+  it('새 Version은 같은 Feature ID의 실제 순번·승인자·이동 창 이력을 이어 받는다', async () => {
+    const { feature: f } = await run('createVersion', 'author', { params: { id: 'FEAT-00144' }, body: { baseVersion: '3.3.0', bump: 'minor', reason: '정책 검토', changes: { description: '문구 개선' } } });
+    const actual = await run('gateSnapshot', 'author', { params: { id: f.featureId, ver: f.version } });
+    expect(actual).toMatchObject({ version: '3.4.0', feature: { version: '3.4.0', status: 'PROPOSED' }, ledger: GATE_SNAPSHOT144.ledger, nextSeq: 18, window: GATE_SNAPSHOT144.window });
+    expect(actual.policy).toEqual(DEFAULT_GATE_POLICY);
+  });
+
+  it('변경하지 않은 native 응답은 필드를 재생성하지 않고 보존한다', async () => {
+    expect(await run('gateSnapshot', 'viewer', { params: { id: 'FEAT-00144', ver: '3.3.0' } })).toEqual(GATE_SNAPSHOT144);
+  });
+
+  it('실제 안전 분류 변경·명령 원장을 반영하고 만료된 창만 제외한다', async () => {
+    const f = await run('createFeature', 'author', { body: CREATE }), params = { id: f.featureId, ver: f.version };
+    await run('updateSafetyProfile', 'author', { params, body: { maxActivationScope: { vehicles: 120, perWindow: 30 }, markets: ['KR', 'EU'] } });
+    // These are explicit actual local command records, not invented observations.
+    engine.__overlayForTest()!.data.killLedger = { [f.featureId]: { last_order_seq: 3, last_kill_approvers: ['usr-quality'], recent: [
+      { request: 'deactivate', vehicles: 99, at: new Date(Date.now() - 25 * 3600_000).toISOString() },
+      { request: 'deactivate', vehicles: 5, at: new Date().toISOString() },
+      { request: 'restore', vehicles: 2, at: new Date().toISOString() },
+    ] } };
+    const actual = await run('gateSnapshot', 'author', { params });
+    expect(actual).toMatchObject({ feature: { max_vehicles: 120, max_per_window: 30, markets_approved: ['KR', 'EU'] }, nextSeq: 4, window: { hours: 24, deactivate: 5, restore: 2, cap: 30 } });
+    expect(actual.ledger.recent).toHaveLength(2);
+    expect(engine.__overlayForTest()!.data.killLedger[f.featureId].recent).toHaveLength(3);
+  });
+
+  it('실제 새 ID의 원천 전체 이력이 불완전하면 명령 이력 0으로 추정하지 않는다', async () => {
+    const file = '/' + snapshotFile(url('listFeatures', {}, { latestOnly: false })), original = byFile.get(file);
+    byFile.set(file, { ...(original as any), total: 3, nextCursor: 'missing-page' });
+    try {
+      const f = await run('createFeature', 'author', { body: CREATE });
+      expect(await fails(run('gateSnapshot', 'author', { params: { id: f.featureId, ver: f.version } }))).toMatchObject({ status: 422, code: 'GUARD_FAILED' });
+    }
+    finally { byFile.set(file, original); }
+  });
+
+  it('기존 ID의 새 Version은 원천 원장이 없으면 조회를 거부한다', async () => {
+    const { feature: f } = await run('createVersion', 'author', { params: { id: 'FEAT-00144' }, body: { baseVersion: '3.3.0', bump: 'minor', reason: '검토', changes: {} } });
+    const file = '/' + snapshotFile(url('gateSnapshot', { id: 'FEAT-00144', ver: '3.3.0' })), original = byFile.get(file);
+    byFile.delete(file);
+    try { expect(await fails(run('gateSnapshot', 'author', { params: { id: f.featureId, ver: f.version } }))).toMatchObject({ status: 422, code: 'GUARD_FAILED' }); }
+    finally { byFile.set(file, original); }
+  });
+
+  it('created 표시만 있는 알 수 없는 ID는 등록된 Feature로 취급하지 않는다', async () => {
+    await run('auditChain', 'viewer');
+    engine.__overlayForTest()!.created.regFeature = ['FEAT-99999@0.1.0'];
+    expect(await fails(run('gateSnapshot', 'viewer', { params: { id: 'FEAT-99999', ver: '0.1.0' } }))).toMatchObject({ status: 404, code: 'NOT_FOUND' });
+  });
+
+  it('기존 native ID에 created 표시가 붙어도 기존 순번·승인자 이력을 지우지 않는다', async () => {
+    await run('auditChain', 'viewer');
+    const overlay = engine.__overlayForTest()!;
+    overlay.entities.regFeature = { 'FEAT-00144@3.3.0': { row: F144, meta: {} } };
+    overlay.created.regFeature = ['FEAT-00144@3.3.0'];
+    const actual = await run('gateSnapshot', 'viewer', { params: { id: 'FEAT-00144', ver: '3.3.0' } });
+    expect(actual).toMatchObject({ nextSeq: 18, ledger: GATE_SNAPSHOT144.ledger, window: GATE_SNAPSHOT144.window });
+  });
+
+  it('신규 Registry로 미리 판정해도 미출시·미검증 서명을 거부하고 원장을 쓰지 않는다', async () => {
+    const f = await run('createFeature', 'author', { body: CREATE });
+    const before = structuredClone(engine.__overlayForTest()!.data.killLedger ?? {});
+    const result = await run('gatePreview', 'operator', { body: { ...exampleCommand, feature: { ...exampleCommand.feature, id: f.featureId, version: f.version } } });
+    expect(result).toMatchObject({ result: 'FAIL', approvalVerification: 'UNVERIFIED_OFFLINE', ledgerChanged: false });
+    expect(result.findings.find((finding: any) => finding.rule === 'FFG-PLT-002')).toMatchObject({ ok: false });
+    expect(result.findings.find((finding: any) => finding.rule === 'FFG-PLT-005')).toMatchObject({ ok: false });
+    expect(engine.__overlayForTest()!.data.killLedger ?? {}).toEqual(before);
+  });
+
+  it('다른 ID의 Gate 원문을 신규 Feature의 명령 원장으로 사용하지 않는다', async () => {
+    const f = await run('createFeature', 'author', { body: CREATE }), params = { id: f.featureId, ver: f.version };
+    const file = '/' + snapshotFile(url('gateSnapshot', params));
+    byFile.set(file, GATE_SNAPSHOT144);
+    try { expect(await fails(run('gateSnapshot', 'author', { params }))).toMatchObject({ status: 422, code: 'GUARD_FAILED' }); }
+    finally { byFile.delete(file); }
+  });
+
+  it.each(['ledger', 'policy'])('기존 ID의 불완전한 %s 원문을 기본값으로 대체하지 않는다', async (field) => {
+    const { feature: f } = await run('createVersion', 'author', { params: { id: 'FEAT-00144' }, body: { baseVersion: '3.3.0', bump: 'minor', reason: '검토', changes: {} } });
+    const file = '/' + snapshotFile(url('gateSnapshot', { id: 'FEAT-00144', ver: '3.3.0' })), original = byFile.get(file);
+    byFile.set(file, { ...GATE_SNAPSHOT144, [field]: {} });
+    try { expect(await fails(run('gateSnapshot', 'author', { params: { id: f.featureId, ver: f.version } }))).toMatchObject({ status: 422, code: 'GUARD_FAILED' }); }
+    finally { byFile.set(file, original); }
+  });
+
+  it('ID의 실제 원장이 있어도 존재하지 않는 Version은 404로 거부한다', async () => {
+    await run('auditChain', 'viewer');
+    engine.__overlayForTest()!.data.killLedger = { 'FEAT-00144': structuredClone(GATE_SNAPSHOT144.ledger) };
+    expect(await fails(run('gateSnapshot', 'viewer', { params: { id: 'FEAT-00144', ver: '99.0.0' } }))).toMatchObject({ status: 404, code: 'NOT_FOUND' });
+  });
+});
 
 describe('Feature 제안 → 안전 분류 → Gate → 정의 승인', () => {
   it('등록은 다음 FEAT 번호 PROPOSED 0.1.0, 목록·상세·안전 분류·감사가 같은 상태', async () => {

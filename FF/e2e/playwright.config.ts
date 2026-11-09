@@ -57,7 +57,8 @@ export default defineConfig({
     { name: 'visual', testMatch: /visual\.spec\.ts/ },
     // RAF intervals are a rendering benchmark. Axe/WebGL in another worker changes the host frame interval.
     // Run the same strict 210-event benchmark once, after every functional browser project.
-    { name: 'benchmark', testMatch: /topology-benchmark\.spec\.ts/, workers: 1, fullyParallel: false, dependencies: ['chromium', 'firefox', 'webkit', 'tablet', 'mobile', ...(process.env.E2E_ALL_ENGINES ? ['tablet-firefox', 'mobile-webkit'] : [])] },
+    // Trace DOM/source evidence remains available; omit screencast encoding from frame timing.
+    { name: 'benchmark', testMatch: /topology-benchmark\.spec\.ts/, workers: 1, fullyParallel: false, use: { trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true } }, dependencies: ['chromium', 'firefox', 'webkit', 'tablet', 'mobile', ...(process.env.E2E_ALL_ENGINES ? ['tablet-firefox', 'mobile-webkit'] : [])] },
   ],
   webServer: [
     {

@@ -386,3 +386,156 @@ describe('Feature Flag 탭 — 진행 중 긴급 차단', () => {
     expect((await flags()).kill).toBeNull();
   });
 });
+
+describe('ordinary GET의 일관된 읽기 사본과 명령 장벽', () => {
+  const deferred = <T = void>() => {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    const promise = new Promise<T>((done) => { resolve = done; });
+    return { promise, resolve };
+  };
+  const command = () => run('registerApproverKey', { role: 'integrator', body: { userId: 'usr-quality', publicKeyPem: 'P'.repeat(44), reason: '읽기·명령 순서 회귀' } });
+
+  it('대기 중 GET은 다음 명령을 막지 않고 nested read도 같은 판을 유지한다', async () => {
+    await engine.simReady();
+    engine.registerSimHandler('registerApproverKey', ctx => {
+      const revision = (ctx.get<any>('readProbe', 'one')?.revision ?? 0) + 1;
+      ctx.put('readProbe', 'one', { revision, nested: { revision } });
+      return revision;
+    });
+    await command();
+    const entered = deferred(), release = deferred();
+    engine.registerSimReader('events', ctx => ctx.get('readProbe', 'one'));
+    engine.registerSimReader('masterEcu', async ctx => {
+      const before = ctx.get<any>('readProbe', 'one');
+      entered.resolve();
+      await release.promise;
+      return { before, after: ctx.get('readProbe', 'one'), nested: await ctx.read('events') };
+    });
+    const reading = run('masterEcu');
+    await entered.promise;
+    let committed = false;
+    const writing = command().then(v => { committed = true; return v; });
+    try {
+      await vi.waitFor(() => expect(committed).toBe(true));
+    } finally { release.resolve(); }
+    expect(await writing).toBe(2);
+    expect(await reading).toEqual({ before: { revision: 1, nested: { revision: 1 } }, after: { revision: 1, nested: { revision: 1 } }, nested: { revision: 1, nested: { revision: 1 } } });
+    expect((await run('masterEcu')).after.revision).toBe(2);
+  });
+
+  it('먼저 실행 중인 명령의 실제 commit을 기다린 뒤 읽는다', async () => {
+    await engine.simReady();
+    const entered = deferred(), release = deferred();
+    engine.registerSimHandler('registerApproverKey', async ctx => {
+      ctx.put('readProbe', 'one', { revision: 1 });
+      entered.resolve(); await release.promise;
+    });
+    let readEntered = false;
+    engine.registerSimReader('masterEcu', ctx => { readEntered = true; return ctx.get('readProbe', 'one'); });
+    const writing = command(); await entered.promise;
+    const reading = run('masterEcu');
+    await Promise.resolve(); await Promise.resolve();
+    expect(readEntered).toBe(false);
+    release.resolve(); await writing;
+    expect(await reading).toEqual({ revision: 1 });
+  });
+
+  it('reset이 앞에 대기하면 요청 입구의 낡은 overlay 대신 초기화된 판을 복사한다', async () => {
+    await engine.simReady();
+    const entered = deferred(), release = deferred();
+    engine.registerSimHandler('registerApproverKey', async ctx => {
+      ctx.put('readProbe', 'one', { revision: 1 });
+      entered.resolve(); await release.promise;
+    });
+    engine.registerSimReader('masterEcu', ctx => ({ items: ctx.list('readProbe') }));
+    const writing = command(); await entered.promise;
+    const resetting = sim.resetSim();
+    const reading = run('masterEcu');
+    await Promise.resolve(); await Promise.resolve();
+    release.resolve();
+    await writing; await resetting;
+    expect(await reading).toEqual({ items: [] });
+  });
+
+  it('만료 정리는 사본 생성 전에 한 번 commit하고 다음 조회에서 중복 감사하지 않는다', async () => {
+    await engine.simReady();
+    engine.registerSimHandler('registerApproverKey', ctx => ctx.put('readProbe', 'one', { stage: 100, expired: false }));
+    await command();
+    engine.registerSimExpiryPreflight(['masterEcu'], ctx => {
+      if (ctx.get<any>('readProbe', 'one')?.expired) return;
+      ctx.put('readProbe', 'one', { stage: 0, expired: true });
+      ctx.audit({ action: 'READ_PROBE_EXPIRE', target: 'one' });
+    });
+    engine.registerSimReader('masterEcu', ctx => ctx.get('readProbe', 'one'));
+    expect(await run('masterEcu')).toEqual({ stage: 0, expired: true });
+    expect(await run('masterEcu')).toEqual({ stage: 0, expired: true });
+    expect(engine.__overlayForTest()!.audit.filter(a => a.action === 'READ_PROBE_EXPIRE')).toHaveLength(1);
+    expect(engine.__overlayForTest()!.entities.readProbe.one.stage).toBe(0);
+  });
+
+  it('이미 취소됐거나 장벽에서 기다리다 취소된 ordinary GET은 reader·만료 정리를 실행하지 않는다', async () => {
+    await engine.simReady();
+    const reader = vi.fn(() => ({ ok: true })), expiry = vi.fn();
+    engine.registerSimReader('masterEcu', reader);
+    engine.registerSimExpiryPreflight(['masterEcu'], expiry);
+    const canceled = new AbortController(); canceled.abort();
+    const call = (signal: AbortSignal) => engine.simCall(R('masterEcu'), url('masterEcu'), { signal, role: 'viewer' });
+    await expect(call(canceled.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    expect(fetch).not.toHaveBeenCalled();
+    const entered = deferred(), release = deferred();
+    engine.registerSimHandler('registerApproverKey', async () => { entered.resolve(); await release.promise; });
+    const writing = command(); await entered.promise;
+    const controller = new AbortController(), reading = call(controller.signal);
+    const rejected = expect(reading).rejects.toMatchObject({ name: 'AbortError' });
+    controller.abort(); release.resolve();
+    await writing; await rejected;
+    expect(reader).not.toHaveBeenCalled(); expect(expiry).not.toHaveBeenCalled();
+  });
+
+  it('한 ordinary GET을 취소해도 함께 읽는 원천 fetch는 취소하지 않는다', async () => {
+    await engine.simReady();
+    const source = deferred<Response>(), fetched = deferred();
+    const baseFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn((u: string, opts?: RequestInit) => {
+      if (u === '/' + snapshotFile(url('masterEcu'))) { fetched.resolve(); return source.promise; }
+      return baseFetch(u, opts);
+    }));
+    engine.registerSimReader('masterEcu', ctx => ctx.snapshot('masterEcu'));
+    const controller = new AbortController();
+    const first = engine.simCall(R('masterEcu'), url('masterEcu'), { signal: controller.signal, role: 'viewer' });
+    const second = run('masterEcu');
+    await fetched.promise;
+    controller.abort();
+    const rejected = expect(first).rejects.toMatchObject({ name: 'AbortError' });
+    source.resolve(json({ items: [{ id: 'source-kept' }] }));
+    await rejected;
+    expect(await second).toEqual({ items: [{ id: 'source-kept' }] });
+    const requests = vi.mocked(fetch).mock.calls.filter(([u]) => u === '/' + snapshotFile(url('masterEcu')));
+    expect(requests).toHaveLength(1); expect(requests[0][1]).toBeUndefined();
+  });
+
+  it('감사 대상 binary GET은 ordinary read와 달리 다음 명령까지 원자적으로 직렬화한다', async () => {
+    await engine.simReady();
+    // This fixture explicitly has no active exceptions; keep the real download
+    // expiry preflight instead of replacing or bypassing its source guard.
+    const baseFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn((u: string, opts?: RequestInit) => u === '/' + snapshotFile(url('exceptionPolicies')) ? Promise.resolve(json({ items: [] })) : baseFetch(u, opts)));
+    const entered = deferred(), release = deferred();
+    engine.registerSimDownload('softwareDownload', async ctx => {
+      ctx.put('readProbe', 'receipt', { recorded: true });
+      entered.resolve(); await release.promise;
+      ctx.audit({ action: 'READ_PROBE_DOWNLOAD', target: 'receipt' });
+      return new Blob(['verified bytes']);
+    });
+    let commandEntered = false;
+    engine.registerSimHandler('registerApproverKey', ctx => { commandEntered = true; return ctx.get('readProbe', 'receipt'); });
+    const download = run('softwareDownload', { params: { id: 'SWP-TEST' }, query: { vin: VINS[0], flagKey: 'care_00022_signal' }, role: 'integrator' });
+    await Promise.race([entered.promise, download.then(() => { throw new Error('다운로드 핸들러 진입 전에 응답했습니다.'); })]);
+    const writing = command();
+    await Promise.resolve(); await Promise.resolve();
+    expect(commandEntered).toBe(false);
+    release.resolve(); await download;
+    expect(await writing).toEqual({ recorded: true });
+    expect(engine.__overlayForTest()!.audit.filter(a => a.action === 'READ_PROBE_DOWNLOAD')).toHaveLength(1);
+  });
+});

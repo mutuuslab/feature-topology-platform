@@ -616,14 +616,27 @@ function schedule(t: SimTask) {
 // ─── 입구 ─────────────────────────────────────────────────
 /** API 클라이언트(정적 모드)가 부른다 — 쓰기는 핸들러, 읽기는 스냅샷 + 오버레이 */
 export async function simCall<T>(route: RouteDef, url: string, opts: CallOptions): Promise<T> {
+  if (route.method === 'GET' && route.binary !== 'download') opts.signal?.throwIfAborted();
   const o = await ensure();
   const req: SimRequest = { name: route.name, route, url, params: opts.params ?? {}, query: queryOf(url), body: opts.body };
   const actor = simActor(route, opts);
   try {
-    return (route.method === 'GET' && !downloadHandlers.has(route.name) ? await serial(async () => {
-      for (const preflight of preflights.get(req.name) ?? []) await run(o, req, SYSTEM, (ctx) => preflight(ctx, {}), true);
-      return readRoute(o, req, actor);
-    }) : await write(o, req, actor)) as T;
+    if (route.method !== 'GET' || downloadHandlers.has(route.name)) return await write(o, req, actor) as T;
+    // Wait for preceding commands/expiry, then keep one isolated view throughout
+    // all nested async reads. Slow snapshot IO/computation must not hold the
+    // command queue. Select at the barrier: resetSim may have replaced overlay.
+    const snapshot = await serial(async () => {
+      opts.signal?.throwIfAborted();
+      const current = overlay ?? o;
+      for (const preflight of preflights.get(req.name) ?? []) await run(current, req, SYSTEM, (ctx) => preflight(ctx, {}), true);
+      opts.signal?.throwIfAborted();
+      return structuredClone(current);
+    });
+    opts.signal?.throwIfAborted();
+    const result = await readRoute(snapshot, req, actor);
+    // Cancellation belongs to this reader, never to the shared snapshot fetch.
+    opts.signal?.throwIfAborted();
+    return result as T;
   } catch (e) {
     if (e instanceof SimError) throw asApiError(e);
     throw e;

@@ -71,3 +71,21 @@ Executed evidence:
 
 Probe/order experiments are isolated in kit `out/gx-*` and are not source dependencies or committed runtime artifacts. Failed intermediate candidates were not reported as passing or included in the final result.
 
+## Ordinary read command barrier — 2026-11-10
+
+`simCall` previously awaited the entire ordinary GET inside the command queue. A pending source fetch therefore prevented a later command from committing. It also selected the overlay before entering that queue, so a reset queued ahead of the GET could leave that GET reading the old overlay.
+
+The barrier now selects the current overlay, runs only the existing explicitly registered expiry transactions, and takes one `structuredClone`. The ordinary reader and every nested `ctx.read` then compute from that same request-local copy outside the queue. Writes, binary download receipts, scheduled tasks, CAS storage revisions, actor/body checks, signatures and approval rules retain their original serialized transactions. Aborted ordinary reads are rejected before admission, at the barrier and before returning; their signals never cancel the shared source-fetch cache.
+
+Purity review found that workflow snapshot hydration caches captured cases/history in its supplied read context. This cache now stays in the request copy; the existing command wrapper independently hydrates before writing, preserving original artifacts/history and optimistic versions. The copied state consists of browser overlay records, audit/events and metadata/JWKs. The 80k captured source files and separate IndexedDB binary bytes are not copied. Each concurrent read owns its overlay copy until completion, so large browser overlays still incur proportional allocation and synchronous copy cost; this change does not make synchronous JavaScript computations parallel.
+
+Executed evidence on isolated branch based on `70bbccd08e4156d7431406c1b739d73baaf90e23`:
+
+- New engine regressions: **7/7 PASS**. These cover a command committing while a GET waits, stable nested reads across that write, waiting for a preceding commit, reset selecting the new overlay, expiry committing once, cancellation admission/barrier checks, shared source fetch survival, and binary download serialization.
+- The unchanged pre-fix engine was restored in the isolated worktree (`git diff --exit-code` confirmed HEAD source) and the two new queue/reset cases actually **failed 2/2**. The fixed engine was restored byte-for-byte afterward. Valid baseline evidence is `out/sim-read-snapshot-baseline-r2.log`; the earlier r1 comparison did not switch source because of a local write permission error and is not baseline evidence.
+- Full engine plus GX preflight/trust and workflow snapshot/transfer/execution suites: **6 files / 60 PASS**. Workflow captured-source reads, original artifact revisions, role separation and stale-version refusal remain covered.
+- Own contracts build and frontend production typecheck: **PASS**.
+- The first binary regression fixture lacked the mandatory exception source and correctly failed closed. Its final fixture explicitly declares a captured empty exception list and retains the real expiry preflight; no source guard was bypassed.
+
+The existing UI five-second acceptance limits and test skips were not changed. Final two-worker business/policy browser verification and the exact integrated release CI remain integration work; these unit results do not claim that those browser gates already pass.
+

@@ -4,19 +4,37 @@ import { classificationConfirmHash } from '../../../../../contracts/src/rules/ad
 import { sha256 } from '../../software';
 import { registerSimReader } from '../engine';
 import type { SimReadContext } from '../types';
-import { fail, feature, items, LOCAL, merge, source, write } from './ads-shared';
+import { fail, feature, LOCAL, merge, source, write } from './ads-shared';
 
 const CLASS = 'adsClassification', BASE = 'adsMarketBaseline';
 const key = (id: string, ver: string) => id + '@' + ver;
-async function baselines(ctx: SimReadContext) { return merge((await items(ctx, 'adsMarketBaselines')).map(b => ({ ...b, localKey: b.featureId + '@' + b.version + '#' + b.market })), ctx.list(BASE), 'localKey'); }
+async function classificationSource(ctx: SimReadContext, id: string, ver: string) {
+  const created = ctx.get<any>('regFeature', key(id, ver));
+  if (created?.meta?.createdBy && ctx.overlay.created.regFeature?.includes(key(id, ver))) return { featureId: id, version: ver, classification: null, baselines: [], ownerHistory: [], safetyProfileStatus: null, provenance: LOCAL };
+  const result = await ctx.snapshot<any>('adsClassification', { id, ver });
+  if (result) return result;
+  fail('INTERNAL', 'ADS classification source is unavailable.');
+}
+async function baselines(ctx: SimReadContext, id?: string, ver?: string) {
+  // Capture stores these exact native facts inside each ClassificationView. Do not assume an uncaptured unfiltered GET is empty.
+  const fs = id && ver ? [{ featureId: id, version: ver }] : (await ctx.read<any>('listFeatures', {}, { latestOnly: false }))?.items;
+  if (!Array.isArray(fs)) fail('INTERNAL', 'Market baseline Feature sources are unavailable.');
+  const base: any[] = [];
+  for (const f of fs.filter(f => (!id || f.featureId === id) && (!ver || f.version === ver))) {
+    const classification = await classificationSource(ctx, f.featureId, f.version);
+    if (!Array.isArray(classification.baselines)) fail('INTERNAL', 'Captured market baseline facts are unavailable.');
+    base.push(...classification.baselines);
+  }
+  return merge(base.map(b => ({ ...b, localKey: b.featureId + '@' + b.version + '#' + b.market })), ctx.list(BASE), 'localKey').filter(b => (!id || b.featureId === id) && (!ver || b.version === ver));
+}
 async function view(ctx: SimReadContext, id: string, ver: string) {
   const f = await feature(ctx, id, ver), own = ctx.get<any>(CLASS, key(id, ver));
-  const base = await source(ctx, 'adsClassification', { id, ver });
+  const base = await classificationSource(ctx, id, ver);
   const classification = own?.classification ?? base.classification;
-  return { ...base, featureId: id, version: ver, lifecycle: f.lifecycle, classification, completeness: classificationCompleteness(classification), baselines: (await baselines(ctx)).filter(b => b.featureId === id && b.version === ver), ownerHistory: [...(base.ownerHistory ?? []), ...(own?.ownerHistory ?? [])], ruleEnabled: true };
+  return { ...base, featureId: id, version: ver, lifecycle: f.lifecycle, classification, completeness: classificationCompleteness(classification), baselines: await baselines(ctx, id, ver), ownerHistory: [...(base.ownerHistory ?? []), ...(own?.ownerHistory ?? [])], ruleEnabled: true };
 }
 registerSimReader('adsClassification', ctx => view(ctx, ctx.req.params.id, ctx.req.params.ver));
-registerSimReader('adsMarketBaselines', async ctx => ({ items: (await baselines(ctx)).filter(b => (!ctx.req.query.featureId || b.featureId === ctx.req.query.featureId) && (!ctx.req.query.version || b.version === ctx.req.query.version)) }));
+registerSimReader('adsMarketBaselines', async ctx => ({ items: await baselines(ctx, ctx.req.query.featureId, ctx.req.query.version) }));
 registerSimReader('adsUnclassified', async ctx => {
   const fs = await ctx.read<any>('listFeatures', {}, { latestOnly: false });
   if (!Array.isArray(fs?.items)) fail('INTERNAL', 'Feature classification source is unavailable.');
@@ -40,7 +58,7 @@ write('updateAdsClassification', 'ADS_CLASSIFICATION_UPDATE', 'D01-01', async ct
   for (const state of LIFECYCLE_OWNER_STATES) if (Object.hasOwn(b.lifecycleOwners, state) && before?.lifecycleOwners?.[state] !== lifecycleOwners[state]) ownerHistory.push({ state, ownerId: lifecycleOwners[state] ?? null, assignedAt: ctx.iso(), assignedBy: ctx.actor.id });
   ctx.put(CLASS, key(id, ver), { classification: next, ownerHistory });
   // ctx.read is committed-state only; return the actual staged result explicitly.
-  return { ...current, classification: next, completeness: classificationCompleteness(next as any), ownerHistory: [...((await source(ctx, 'adsClassification', { id, ver })).ownerHistory ?? []), ...ownerHistory] };
+  return { ...current, classification: next, completeness: classificationCompleteness(next as any), ownerHistory: [...((await classificationSource(ctx, id, ver)).ownerHistory ?? []), ...ownerHistory] };
 });
 write('confirmAdsClassification', 'ADS_CLASSIFICATION_CONFIRM', 'D01-01', async ctx => {
   const { id, ver } = ctx.req.params, current = await view(ctx, id, ver), c = current.classification;

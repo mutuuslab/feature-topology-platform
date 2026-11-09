@@ -123,3 +123,9 @@ it('fails closed on missing source and serializes independent incident revisions
   delete snapshots[u('securityMins')]; await expect(run('proposeSecurityMin', { swId: 'SW-LOCAL', version: '1.0.0', rationale: 'Missing source must not be empty' }, 'steward')).rejects.toMatchObject({ code: 'INTERNAL' });
   const audits = engine.__overlayForTest()!.audit; expect(audits.every(a => !!a.hash)).toBe(true); expect(audits[0].result).toBe('FAILED');
 });
+it('reads exact market facts embedded in native classification when the standalone baseline list was not captured', async () => {
+  delete snapshots[u('adsMarketBaselines')];
+  snapshots[u('adsClassification', { id: f.featureId, ver: f.version })].baselines = [{ featureId: f.featureId, version: f.version, market: 'KR', approvalStatus: 'PENDING' }];
+  expect((await get('adsClassification', { id: f.featureId, ver: f.version })).baselines[0].market).toBe('KR');
+  expect((await get('adsMarketBaselines')).items).toHaveLength(1);
+});

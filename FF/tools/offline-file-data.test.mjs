@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, rmdirSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, rmdirSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { runInNewContext } from 'node:vm';
@@ -54,7 +54,9 @@ test('does not recursively ingest its own data/archive results when UI and outpu
 });
 test('refuses source/output symlink escapes and refuses output inside immutable input before creating it', (t) => {
   const f = setup(t), external = join(f.root, 'external'); mkdirSync(external); writeFileSync(join(external, 'keep'), 'unchanged');
-  symlinkSync(external, join(f.snapshot, 'escape'), 'junction'); assert.throws(() => buildOfflineData(f.options), /symlink/); rmdirSync(join(f.snapshot, 'escape'));
+  const escape=join(f.snapshot,'escape');symlinkSync(external,escape,'junction');assert.throws(()=>buildOfflineData(f.options),/symlink/);
+  assert.equal(lstatSync(escape).isSymbolicLink(),true);
+  if(process.platform==='win32')rmdirSync(escape);else unlinkSync(escape);
   const nested = join(f.public, 'new-output'); assert.throws(() => buildOfflineData({ ...f.options, outDir: nested }), /inside/); assert.equal(existsSync(nested), false);
   symlinkSync(external, join(f.out, 'offline-manifest.js'), 'junction'); assert.throws(() => buildOfflineData(f.options), /unsafe output/); assert.equal(readFileSync(join(external, 'keep'), 'utf8'), 'unchanged');
 });

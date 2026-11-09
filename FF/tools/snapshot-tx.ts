@@ -18,6 +18,8 @@ export async function snapshotTx(save: Save, ctx: SnapshotTxContext) {
   await save('taxonomyLevels');
   for (const level of LEVELS) await save('taxonomyLevel', { level });
   await save('taxonomyNodes');
+  // The query preflight also reads the exact level URL before the browser-local reader derives its filtered view.
+  for (const level of LEVELS) await save('taxonomyNodes', {}, { level });
   // Feature 상세 '분류 경로'
   for (const id of new Set(ctx.features.map((f) => f.featureId))) await save('featureTaxonomy', { id });
   // 적용 지역 코드 — 대응 표와 룰 등록 서랍의 코드별 후보(코드 하나씩 읽는다)

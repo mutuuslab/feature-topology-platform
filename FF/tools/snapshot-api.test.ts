@@ -3,6 +3,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError, snapshotCostReferencePicker } from './snapshot-api.ts';
+import { snapshotTx } from './snapshot-tx.ts';
+
+test('captures the complete taxonomy tree and the exact level queries used by the classification editor',async()=>{
+  const calls:{name:string;params:Record<string,string>;query:Record<string,unknown>}[]=[];
+  await snapshotTx(async(name,params={},query={})=>{calls.push({name,params,query});return {items:[]};},{features:[],policies:[]});
+  const nodes=calls.filter(c=>c.name==='taxonomyNodes');
+  assert.deepEqual(nodes.map(c=>c.query.level??'ALL'),['ALL','L0','L1','L2','L3','L4','L5']);
+  assert.deepEqual(nodes.find(c=>c.query.level==='L2'),{name:'taxonomyNodes',params:{},query:{level:'L2'}});
+});
 
 test('출력 꼬리는 색 코드를 빼고 빈 줄 없이 마지막 N줄만', () => {
   const tail: string[] = [];

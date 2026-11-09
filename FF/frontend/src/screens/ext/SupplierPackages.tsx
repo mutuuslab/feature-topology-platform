@@ -9,6 +9,7 @@ import { call } from '../../api/client';
 import { supplier as S } from '../../copy/supplier';
 import { AsyncView, Button, DataTable, Field, IdChip, PageHeader, Panel, Select, Toolbar } from '../../design';
 import { usePermission, when } from '../shared';
+import { isLocalFile } from '../../file-routing';
 import './supplier.css';
 
 type Feature = { featureId: string; version: string; name: string };
@@ -17,6 +18,12 @@ type Detail = { package: SupplierPackageRow; artifacts: Artifact[]; check: Accep
 const INVALIDATE = ['supplierPackages', 'supplierPackage', 'supplierMappings', 'supplierCriteria', 'supplierGate'];
 const errorText = (e: unknown) => e instanceof Error ? e.message : S.invalidInput;
 const Result = ({ m }: { m: { error: Error | null; isSuccess: boolean } }) => m.error ? <p role="alert" className="ds-error">{m.error.message}</p> : m.isSuccess ? <p role="status" className="ds-ok">{S.saved}</p> : null;
+
+// Supplier mutations require the connected service; this file archive retains read evidence only.
+function useSupplierPermission(allowed: Parameters<typeof usePermission>[0]) {
+  const permission = usePermission(allowed);
+  return isLocalFile() ? { ...permission, ok: false, hint: S.offlineReadOnly } : permission;
+}
 
 export default function SupplierPackages() {
   useUiLocale();
@@ -39,12 +46,13 @@ export default function SupplierPackages() {
   const suppliers = [...new Set((list.data?.items ?? []).map((p) => p.supplier))];
   const packageId = packages.find((p) => p.packageId === pickedPackage)?.packageId ?? packages[0]?.packageId ?? '';
   const detail = useApi<Detail>('supplierPackage', { params: { id: packageId } }, { enabled: !!packageId });
-  const impl = usePermission(['IMPLEMENTER']);
-  const mapPerm = usePermission(['IMPLEMENTER', 'FEATURE_AUTHOR']);
-  const quality = usePermission(['GATE_JUDGE']);
+  const impl = useSupplierPermission(['IMPLEMENTER']);
+  const mapPerm = useSupplierPermission(['IMPLEMENTER', 'FEATURE_AUTHOR']);
+  const quality = useSupplierPermission(['GATE_JUDGE']);
   const unique = [...new Map(rows.map((f) => [f.featureId, f])).values()];
   return <div className="ds-screen">
     <PageHeader title={S.title} codes="D05-01" lead={S.lead} actions={<Link to="/supplier/deliveries">{S.deliveries}</Link>} message={{ tone: gate.data?.blockers.length ? 'warn' : 'neutral', text: gate.data?.blockers.length ? S.hold : S.gate }} />
+    {isLocalFile() && <p role="note" className="ds-field__hint">{S.offlineReadOnly}</p>}
     <Toolbar label={S.target}>
       <Select label={S.feature} value={featureId} onChange={(e) => { setId(e.target.value); setVer(''); setPackage(''); setSupplier(''); }}>{unique.map((f) => <option key={f.featureId} value={f.featureId}>{f.name} ({f.featureId})</option>)}</Select>
       <Select label={S.version} value={version} onChange={(e) => { setVer(e.target.value); setPackage(''); }}>{versions.map((f) => <option key={f.version} value={f.version}>{f.version}</option>)}</Select>
@@ -75,8 +83,8 @@ export default function SupplierPackages() {
 
 function PackageDetail({ d }: { d: Detail }) {
   const p = d.package;
-  const impl = usePermission(['IMPLEMENTER']);
-  const quality = usePermission(['GATE_JUDGE']);
+  const impl = useSupplierPermission(['IMPLEMENTER']);
+  const quality = useSupplierPermission(['GATE_JUDGE']);
   const request = useApiMutation('submitSupplierPackage', INVALIDATE);
   const review = useApiMutation('reviewSupplierPackage', INVALIDATE);
   const [note, setNote] = useState('');

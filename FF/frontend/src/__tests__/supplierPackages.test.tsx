@@ -7,18 +7,25 @@ import { AppProvider } from '../store';
 import { ROUTES } from '../routes';
 import { __resetLocaleForTest, changeUiLanguage } from '../locale/runtime';
 
+const fileMode = vi.hoisted(() => ({ enabled: false }));
+vi.mock('../file-routing', async (original) => ({ ...await original<typeof import('../file-routing')>(), isLocalFile: () => fileMode.enabled }));
+
 const pkg = { packageId: 'SPK-00001', featureId: 'FEAT-00010', featureVersion: '2.0.0', supplier: 'Tier1-B', version: '2.0.0', status: 'SUBMITTED', createdBy: 'usr-impl', submittedBy: 'usr-impl' };
 let verdict = 'NOT_MET';
+let retained = false;
 let writes: { url: string; body: any }[];
 beforeEach(() => {
+  fileMode.enabled = false;
+  pkg.status = 'SUBMITTED';
   localStorage.clear();
   localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'quality' }));
   writes = [];
   verdict = 'NOT_MET';
+  retained = false;
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     if (init?.method === 'POST') writes.push({ url, body: JSON.parse(String(init.body)) });
-    const body = url.includes('/supplier-packages/SPK-00001')
-      ? { package: pkg, artifacts: [{ recordId: 'SPA-00001', type: 'HUMAN_DOC', title: '개발 안내', version: '2.0.0', integrity: 'DECLARED', contentUrl: null }], latest: {}, criteria: { revision: 1 }, reviews: [], check: { verdict, criteriaRevision: 1, missing: [], criteria: [], packaging: [{ key: 'PKG_INTEGRITY', label: '본문 체크섬 대조', result: 'NOT_EVALUABLE', detail: '체크섬만 신고 10건' }] } }
+    const body = url.includes('/supplier-artifacts/SPA-00001/content') ? { text: 'DEMO synthetic reference body', verified: true } : url.includes('/supplier-packages/SPK-00001')
+      ? { package: pkg, artifacts: [{ recordId: 'SPA-00001', type: 'HUMAN_DOC', title: '개발 안내', version: '2.0.0', integrity: 'DECLARED', contentUrl: retained ? '/api/supplier-artifacts/SPA-00001/content' : null }], latest: {}, criteria: { revision: 1 }, reviews: [], check: { verdict, criteriaRevision: 1, missing: [], criteria: [], packaging: [{ key: 'PKG_INTEGRITY', label: '본문 체크섬 대조', result: 'NOT_EVALUABLE', detail: '체크섬만 신고 10건' }] } }
       : url.includes('/supplier-packages') ? { items: [pkg] }
       : url.includes('/supplier-gate') ? { applicable: true, suppliers: ['Tier1-B'], accepted: [], blockers: ['검증 본문이 필요합니다'] }
       : url.includes('/supplier-mappings') ? { items: [] }
@@ -63,4 +70,56 @@ it('기준을 충족해도 항목별 확인과 검수 의견 없이 승인하지
   await waitFor(() => expect(accept).toBeEnabled());
   fireEvent.click(accept);
   await waitFor(() => expect(writes.some((w) => w.url.endsWith('/reviews') && w.body.decision === 'ACCEPT' && w.body.items.length === 10)).toBe(true));
+});
+
+it('file archive keeps supplier review evidence readable and blocks every review mutation even when acceptance criteria pass', async () => {
+  fileMode.enabled = true;
+  verdict = 'MET';
+  mount();
+  await screen.findByRole('heading', { name: '협력사 이관', level: 1 });
+  expect(screen.getByRole('note')).toHaveTextContent('연결된 서비스');
+  expect(await screen.findByRole('button', { name: '검수 합격' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '보완 요청' })).toBeDisabled();
+  expect(screen.getByLabelText('검수 의견')).toBeDisabled();
+  expect(screen.getAllByRole('checkbox').every((box) => box.hasAttribute('disabled'))).toBe(true);
+  expect(screen.queryByText('기준 등록')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '검수 합격' }));
+  await act(async () => { await changeUiLanguage('en'); });
+  expect(screen.getByRole('note')).toHaveTextContent('require the connected service');
+  expect(screen.getByText('Content not retained')).toBeInTheDocument();
+  expect(writes).toEqual([]);
+});
+
+it.each(['integrator', 'planner'])('file archive hides supplier creation, artifact submission and mapping forms for %s', async (role) => {
+  fileMode.enabled = true;
+  localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
+  pkg.status = 'DRAFT';
+  mount();
+  await screen.findByRole('heading', { name: '협력사 이관', level: 1 });
+  await screen.findByRole('button', { name: /Tier1-B \/ 2.0.0/ });
+  expect(screen.queryByText('패키지 작성')).not.toBeInTheDocument();
+  expect(screen.queryByText('매핑 등록')).not.toBeInTheDocument();
+  expect(screen.queryByText('산출물 등록')).not.toBeInTheDocument();
+  expect(screen.queryByLabelText('검수 요청 의견')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '다시 읽기' })).toBeEnabled();
+  expect(writes).toEqual([]);
+});
+
+it('HTTP supplier service retains creation, mapping and artifact forms for an implementer', async () => {
+  localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'integrator' }));
+  pkg.status = 'DRAFT';
+  mount();
+  expect((await screen.findAllByText('패키지 작성')).length).toBeGreaterThan(0);
+  expect((await screen.findAllByText('매핑 등록')).length).toBeGreaterThan(0);
+  expect((await screen.findAllByText('산출물 등록')).length).toBeGreaterThan(0);
+  expect(screen.queryByRole('note')).not.toBeInTheDocument();
+});
+
+it('file archive still reads a captured supplier artifact body without posting changes', async () => {
+  fileMode.enabled = true;
+  retained = true;
+  mount();
+  fireEvent.click(await screen.findByRole('button', { name: '본문 보기' }));
+  expect(await screen.findByText('DEMO synthetic reference body')).toBeInTheDocument();
+  expect(writes).toEqual([]);
 });

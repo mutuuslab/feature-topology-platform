@@ -839,12 +839,14 @@ registerSimReader('refChangeDetail', async (ctx) => {
   const c = ctx.get<any>(CHANGE, ctx.req.params.id);
   if (!c) return undefined;
   const users = await usersOf(ctx, c.refId);
-  const recalcFields = c.kind === 'ADD' ? [] : ['asilRep', 'tshirt'].filter((k) => k in (c.after ?? {}));
+  const recalcFields = c.kind === 'ADD' ? [] : Object.keys(c.after??{}).filter(k=>canonicalJson(c.before?.[k]??null)!==canonicalJson(c.after?.[k]??null));
+  const projects=(await ctx.read<any>('costProjects')).items??[];const costProjects=[];
+  for(const p of projects){const d=await ctx.read<any>('costProject',{estId:p.estId});const lines=d.lines.filter((l:any)=>l.refId===c.refId);if(lines.length)costProjects.push({estId:p.estId,name:p.name,status:p.status,lineNos:lines.map((l:any)=>l.lineNo),basisVersion:d.project.basisVersion,refRelease:d.project.refRelease,recalcRequired:recalcFields.length>0,awaitingPublish:c.status!=='PUBLISHED'});}
   return {
     change: await changeView(ctx, c),
     diff: fieldDiff(c.before, c.after),
     checks: c.checks ?? [],
-    impact: { features: users.map((u) => ({ featureId: u.featureId, version: u.version, role: u.role, refVersion: u.refVersion, name: u.name ?? null, ownerId: u.ownerId ?? null, lifecycle: u.lifecycle })), recalcRequired: recalcFields.length > 0, recalcFields, costProjects: [] },
+    impact: { features: users.map((u) => ({ featureId: u.featureId, version: u.version, role: u.role, refVersion: u.refVersion, name: u.name ?? null, ownerId: u.ownerId ?? null, lifecycle: u.lifecycle })), recalcRequired: recalcFields.length > 0, recalcFields, costProjects },
     usedBy: users.map((u) => ({ featureId: u.featureId, version: u.version, refId: c.refId, role: u.role, refVersion: u.refVersion })),
   };
 });

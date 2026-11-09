@@ -8,7 +8,7 @@ import { AppProvider } from '../store';
 import { SwCostScreen } from '../screens/cost/CostList';
 import { CostDetailScreen } from '../screens/cost/CostDetail';
 import { CostBasisScreen } from '../screens/cost/CostBasis';
-import { costActual as A, costBasis as B, costCalib as C, costDetail as D, costLines as LN, swCost as L } from '../copy/cost';
+import { costActual as A, costBasis as B, costCalib as C, costDetail as D, costLines as LN, swCost as L,costReference as R } from '../copy/cost';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -114,20 +114,17 @@ describe('SW 개발비 산정 목록', () => {
 });
 
 describe('SW 개발비 산정 상세', () => {
-  it('Feature 후보 목록의 연결 수로 담기를 허용한다 — 목록에 전체 featureRefs가 없어도 된다', async () => {
-    handler = (url, init) => url.startsWith('/api/features?')
-      ? { body: { items: [{ featureId: 'FEAT-00999', version: '0.1.0', name: '연결된 BCM 기능', featureRefCount: 2 }] } }
-      : url.endsWith('/features') && init?.method === 'POST'
-        ? { body: detail() }
-        : url === '/api/cost/projects/EST-0001' ? { body: detail() } : undefined;
-    mount('viewer', '/procurement/sw-cost/EST-0001', '/procurement/sw-cost/:estId', <CostDetailScreen />);
-    fireEvent.click(await screen.findByRole('tab', { name: new RegExp(D.tabs.lines) }));
-    fireEvent.click(screen.getByRole('button', { name: LN.add }));
-    fireEvent.change(await screen.findByLabelText(new RegExp(`^${LN.search}`)), { target: { value: 'BCM' } });
-    const add = await screen.findByRole('button', { name: LN.pick, exact: true });
-    expect((add as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(add);
-    await waitFor(() => expect(calls.find((c) => c.method === 'POST')?.body).toEqual({ featureId: 'FEAT-00999', version: '0.1.0' }));
+  it('starts additions with a Feature DB row and keeps a real Feature link optional', async () => {
+    const ref={refId:'BC-BCM-099',nameKo:'새 기준 기능',nameEn:'New reference',status:'ACTIVE',domain:'BC',component:'BCM',sourceIds:[],definition:{scopeIn:[],scopeOut:[]}};
+    handler=(url,init)=>url.startsWith('/api/refdb/refs?')?{body:{items:[ref],total:1,facets:{domain:{BC:1}}}}:url.startsWith('/api/cost/references/BC-BCM-099')?{body:{ref,basisVersion:'v1.3',refRelease:'v1.3',referenceSha256:'a'.repeat(64),usable:true,missing:[],sources:[],features:[]}}:init?.method==='POST'?{body:detail()}:url==='/api/cost/projects/EST-0001'?{body:detail()}:undefined;
+    mount('viewer','/procurement/sw-cost/EST-0001?tab=lines','/procurement/sw-cost/:estId',<CostDetailScreen/>);
+    fireEvent.click(await screen.findByRole('button',{name:LN.add}));
+    expect(await screen.findByLabelText(new RegExp('^'+R.search))).toBeTruthy();
+    fireEvent.click(await screen.findByRole('button',{name:R.choose,exact:true}));
+    await screen.findByRole('combobox',{name:new RegExp('^'+R.feature.split(' (')[0])});
+    fireEvent.click(screen.getByRole('button',{name:R.choose,exact:true}));
+    await waitFor(()=>expect(calls.find(c=>c.method==='POST')).toMatchObject({url:'/api/cost/projects/EST-0001/references',body:{refId:ref.refId,refRelease:'v1.3',referenceSha256:'a'.repeat(64),feature:null}}));
+    expect(calls.some(c=>c.url.startsWith('/api/features'))).toBe(false);
   });
 
   it('총개발비 백만원이 핵심 숫자 — 작성자는 승인 요청을 보내고, 사유가 본문에 담긴다', async () => {
@@ -208,7 +205,7 @@ describe('승인 후 기준 행 실적', () => {
     const project = { ...detail({ status: 'APPROVED' }), actuals: [{ refId: 'BC-BCM-002', actual: 9, override: true }], mre: { rows: [], n: 0, missing: 0, avg: null } };
     handler = (url, init) => init?.method === 'PUT' ? { body: project } : url === '/api/cost/projects/EST-0001' ? { body: project } : undefined;
     mount('viewer', '/procurement/sw-cost/EST-0001?tab=lines', '/procurement/sw-cost/:estId', <CostDetailScreen />);
-    fireEvent.click(await screen.findByText('실내등 제어'));
+    fireEvent.click(await screen.findByRole('button',{name:A.title('BC-BCM-002')}));
     const input = await screen.findByLabelText(new RegExp(`^${A.field.replace(/[()]/g, '\\$&')}`));
     fireEvent.change(input, { target: { value: '0' } });
     expect((screen.getByRole('button', { name: A.save, exact: true }) as HTMLButtonElement).disabled).toBe(true);
@@ -216,7 +213,7 @@ describe('승인 후 기준 행 실적', () => {
     fireEvent.click(screen.getByRole('button', { name: A.save, exact: true }));
     await waitFor(() => expect(calls.find((call) => call.method === 'PUT')).toMatchObject({ url: '/api/cost/projects/EST-0001/actuals/BC-BCM-002', body: { actual: 6 } }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    fireEvent.click(screen.getByText('실내등 제어'));
+    fireEvent.click(screen.getByRole('button',{name:A.title('BC-BCM-002')}));
     fireEvent.click(await screen.findByRole('button', { name: A.clear }));
     await waitFor(() => expect(calls.filter((call) => call.method === 'PUT').at(-1)?.body).toEqual({ actual: null }));
   });

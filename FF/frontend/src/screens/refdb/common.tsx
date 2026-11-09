@@ -64,7 +64,7 @@ export type RefChangeView = RefChange & { awaitingPublish?: boolean; domain?: st
 export interface RefChangeDetailResponse {
   change: RefChangeView;
   checks?: RefCriterionResult[];
-  impact?: { features: RefUsage[]; recalcRequired: boolean; recalcFields: string[]; costProjects: unknown[] };
+  impact?: { features: RefUsage[]; recalcRequired: boolean; recalcFields: string[]; costProjects: {estId:string;name:string;status:string;lineNos:number[];basisVersion:string;refRelease:string|null;recalcRequired:boolean;awaitingPublish:boolean}[] };
   usedBy: RefUsage[];
 }
 

@@ -16,6 +16,8 @@ import { CostLinesTab } from './CostLinesTab';
 import { CostResultTab } from './CostResultTab';
 import { CostReviewTab } from './CostReviewTab';
 import { CostSettingsTab } from './CostSettingsTab';
+import {CostPurchasingTab} from './CostPurchasingTab';
+import {costPurchasing as P} from '../../copy/cost-purchasing';
 import './cost-detail.css';
 
 type Action = (typeof COST_TRANSITIONS)[number]['action'];
@@ -62,6 +64,7 @@ export function CostDetailScreen() {
                 { key: 'lines', label: T.tabs.lines, count: d.lines.length },
                 { key: 'result', label: T.tabs.result },
                 { key: 'review', label: T.tabs.review, count: d.checks.open || undefined },
+                { key: 'purchasing', label: P.title },
                 { key: 'history', label: T.tabs.history, count: d.approvals.length || undefined },
               ]}
             >
@@ -72,6 +75,8 @@ export function CostDetailScreen() {
                   <CostLinesTab d={d} />
                 ) : tab === 'result' ? (
                   <CostResultTab d={d} />
+                ) : tab === 'purchasing' ? (
+                  <CostPurchasingTab d={d} />
                 ) : tab === 'review' ? (
                   <CostReviewTab d={d} />
                 ) : (

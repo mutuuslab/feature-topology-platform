@@ -12,6 +12,7 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/registry'),
   () => import('./handlers/policy-ops'),
   () => import('./handlers/business'),
+  () => import('./handlers/cost-purchasing'),
   () => import('./handlers/ext-mock'),
   () => import('./handlers/p10-readonly'),
   () => import('./handlers/f0'),

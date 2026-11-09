@@ -15,6 +15,7 @@ import { AsyncView, Button, DataTable, DiffView, ErrorNote, Field, IdChip, KeyVa
 import { useAppShell } from '../../store';
 import { usePermission, when } from '../shared';
 import { ChangeStatusBadge, changePath, downloadExport, myActorId, RefChip, TextLink, type RefChangeDetailResponse, type RefChangeView, type RefPublishResponse, type RefReleasesResponse } from './common';
+import {costPurchasing as CP} from '../../copy/cost-purchasing';
 import { Checks, UsageTable } from './RefDetail';
 
 /** 처리 중 — 작성·검토 중(검토 의견·승인 결정을 받을 수 있다) */
@@ -300,6 +301,7 @@ export function RefChangeDetailScreen() {
               </Panel>
               <Panel title={D.impact} id="cr-impact" eyebrow={String(usedBy.length)}>
                 {recalc && <p className="ds-field__hint" data-recalc>{D.recalc}</p>}
+                {!!q.data?.impact?.costProjects.length&&<><h4>{CP.affected}</h4>{q.data.impact.costProjects.map(p=><p key={p.estId}><Link to={'/procurement/sw-cost/'+p.estId}>{p.name} · {p.estId}</Link> · {CP.labels.referenceLineNos} {p.lineNos.join(', ')} · {p.awaitingPublish?CP.pendingPublish:CP.stale}</p>)}</>}
                 {usedBy.length ? <UsageTable rows={usedBy} caption={D.impact} /> : <p className="ds-field__hint">{D.impactNone}</p>}
               </Panel>
               <AuditTrail changeId={c.changeId} />

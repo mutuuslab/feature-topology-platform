@@ -15,7 +15,7 @@ export function CostReferencePicker({basisVersion,initialRef,excluded=[],onChoos
  const locale=useUiLocale();const [text,setText]=useState('');const [domain,setDomain]=useState('');const [offset,setOffset]=useState(0);const [selected,setSelected]=useState(initialRef ?? '');const [feature,setFeature]=useState('');
  const q=useRefSearch<RefSearchRow>({q:text.trim()||undefined,domain:domain||undefined,limit:10,offset});
  const preview=useApi<CostReferencePreview>('costReference',{params:{refId:selected},query:{basisVersion}},{enabled:!!selected});
- const p=preview.data;const rows=q.data?.items ?? [];const domains=Object.keys(q.data?.facets?.domain ?? {});
+ const p=preview.data?.ref?preview.data:undefined;const rows=q.data?.items ?? [];const domains=Object.keys(q.data?.facets?.domain ?? {});
  const name=(r:Pick<FeatureRefRow,'nameKo'|'nameEn'>)=>locale.language==='en'?r.nameEn:r.nameKo;
  return <div className="ds-stack">
   <p className="ds-field__hint">{T.guide}</p>

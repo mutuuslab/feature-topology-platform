@@ -61,6 +61,10 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
   await expect(drawer.getByRole('table', { name: '차량별 봉투' })).toContainText('lead-01');
   await expect(drawer.getByRole('meter').first()).toHaveAttribute('aria-valuenow', '1', { timeout: 10_000 });
   await expect(drawer).toContainText('적용 확인');
+  const deliveryLink = drawer.locator('a[href^="/deployments/"]');
+  await expect(deliveryLink).toHaveCount(1);
+  const deliveryHref = (await deliveryLink.getAttribute('href'))!;
+  expect(deliveryHref).toMatch(/^\/deployments\/PUB-\d+$/);
 
   // Fleet 실시간 적용 현황 — lead-01은 차량 측에서 Safe(차단) 상태
   // 차단한 flag(care_00022_param) 열로 찾는다 — 다른 차종 전용 flag(GN7 adas_00004_assist 등)가 앞 열에 올 수 있다
@@ -80,8 +84,10 @@ test('긴급 차단 v2: 요청 → FSM·CSM 승인 → 게이트·서명·긴급
   await search.clear();
 
   // 서명 배포 현황 — 차단 게시본은 차단 용도 키로 서명 검증 통과
-  await page.goto('/deployments');
-  await page.getByRole('row', { name: /차단/ }).first().click();
+  // Select the publication of this exact kill, not a seeded or parallel request's first row.
+  await page.goto(`/ops/kill?id=${killId}`);
+  await page.getByRole('dialog').locator(`a[href="${deliveryHref}"]`).click();
+  await expect(page).toHaveURL(new RegExp(`${deliveryHref}$`));
   await expect(page.getByText('SIGNATURE_VALID')).toBeVisible();
 
   // 복원 요청(운영자, 재검증 Evidence·Cohort) → 차단 승인자(품질 검토)는 막힘 → 두 번째 Safety Manager·운영 리더 승인

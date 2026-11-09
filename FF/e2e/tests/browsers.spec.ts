@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { errorActions } from '../../frontend/src/copy/error-actions';
 import { errors } from '../../frontend/src/copy/errors';
 import { openRefPicker, pickPrimaryRef, submitProposedFeature, REF } from './refdb';
+import { lockKill, releaseKillLocks } from './kill-lock';
 
 const E = { ...errors, ...errorActions };
 
@@ -20,6 +21,8 @@ async function asRole(page: Page, role: string) {
 }
 
 const noPageOverflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+
+test.afterEach(releaseKillLocks);
 
 test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
@@ -76,7 +79,9 @@ test('Feature 등록 — 기준 Feature를 고르고 제안 폼으로 등록하�
   await expect(page.locator('#main')).toContainText(name);
 });
 
-test('긴급 차단 요청 — 영향 범위·규칙 점검·확인 입력(type-to-confirm)까지, 확인 전에는 보내지 않는다', async ({ page }) => {
+test('긴급 차단 요청 — 영향 범위·규칙 점검·확인 입력(type-to-confirm)까지, 확인 전에는 보내지 않는다', async ({ page, request }) => {
+  // This preview reads the same Feature as ops/persona/learn. Keep its no-POST check isolated too.
+  await lockKill(request, 'FEAT-00022');
   await asRole(page, 'operator');
   await page.goto('/ops/kill');
   await page.getByRole('button', { name: '긴급 차단 요청' }).click();

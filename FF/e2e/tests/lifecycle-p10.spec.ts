@@ -96,7 +96,9 @@ test('변경 이력 탭·Baseline 비교: 변경자로 걸러지고, 두 Baselin
   await expect(table.getByRole('row').nth(1).getByRole('cell').nth(1)).toHaveText(who);
   await page.goto('/features/FEAT-00022/1.0.0?tab=baseline');
   await expect(page.getByRole('table', { name: 'Baseline 이력' })).toContainText('BL-00028');
-  await page.getByRole('combobox', { name: /^기준/ }).selectOption({ index: 0 });
+  // The first option is the explicit unselected guide. Compare two actual seeded Baseline IDs.
+  await page.getByRole('combobox', { name: /^기준/ }).selectOption('BL-00001');
+  await page.getByRole('combobox', { name: '비교 대상', exact: true }).selectOption('BL-00028');
   await expect(page.getByTestId('bl-compare-summary')).toContainText('변경');
   await noSeriousAxe(page);
 });

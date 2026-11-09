@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ACCEPTANCE_GROUP_LABEL, ACCEPTANCE_STATE_LABEL, EOL_DECISION_LABEL } from '../../../../contracts/src/rules/eol';
 import { STATIC_MODE } from '../../api/client';
+import { localManagement } from '../../copy/ext-gateway';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { eol as E } from '../../copy/ads-p5';
 import { personName } from '../../data/people';
@@ -166,7 +167,7 @@ function CheckForm({ d }: { d: Detail }) {
   const perm = usePermission(['BOM_APPROVER']);
   const [f, setF] = useState({ decision: 'REWORK', cause: '', reworkRef: '', recheckResult: '', shippedEvidence: '', reason: '' });
   const m = useApiMutation('createEolCheck', ['eolMismatches', 'eolVehicle', 'audit']);
-  if (!perm.ok) return <BlockedAction label={E.release} reason={STATIC_MODE ? E.readOnly : E.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={E.release} reason={E.noPermission} />;
   if (f.decision === 'RELEASE' && d.verdict !== 'MATCH' && f.recheckResult !== 'PASS') return (
     <div className="adsc-stack">
       <BlockedAction label={E.release} reason={E.releaseBlocked(d.parts.length)} />
@@ -176,6 +177,7 @@ function CheckForm({ d }: { d: Detail }) {
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   return (
     <div className="adsc-stack" data-eol-form>
+      {STATIC_MODE && <p className="ds-field__hint">{localManagement.hint}</p>}
       <Select label={E.decision} value={f.decision} onChange={set('decision')}>
         {Object.entries(EOL_DECISION_LABEL).map(([k, l]) => (
           <option key={k} value={k}>

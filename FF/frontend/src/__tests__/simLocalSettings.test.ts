@@ -1,5 +1,6 @@
 import { beforeEach,afterEach,it,expect,vi } from 'vitest';
 import { ROUTES,routeUrl,snapshotFile } from '@ff/contracts';
+import command from '../../../harness/guide/schema/examples/kill_safety_dc2_eu.ok.json';
 const files=new Map<string,unknown>();
 let sim:typeof import('../api/sim'),engine:typeof import('../api/sim/engine');
 const run=(name:string,role:string,body?:unknown,params:Record<string,string>={},query:Record<string,unknown>={})=>sim.simCall<any>(ROUTES.find(r=>r.name===name)!,routeUrl(name,params,query as any),{role,body,params});
@@ -88,4 +89,23 @@ it('local settlement hashes the actual grant aggregate, excludes synthetic grant
  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(r.payload))))].map(x=>x.toString(16).padStart(2,'0')).join('');expect(r.payloadSha256).toBe(hash);
  expect((await run('settlementUsage','viewer',undefined,{}, {period:'2026-10'})).sent.transmissionId).toBe(r.transmissionId);
  await expect(run('sendSettlement','operator',{period:'2026-10',reason:'중복 시도'})).rejects.toMatchObject({code:'CONFLICT'});expect((await run('settlementTransmissions','viewer')).items).toHaveLength(1);
+});
+it('EOL decisions use the captured scan comparison, preserve source facts and refuse unverified release evidence',async()=>{
+ const vin='KMH-NX4-0001',scan={vin,plant:'TMA',scannedAt:'2026-11-01T00:00:00Z',orderEcus:[{ecuPno:'ECU-1',hwRevision:'A'}],builtEcus:[{ecuPno:'ECU-1',hwRevision:'B'}],checks:[],lastCheck:null,acceptance:{summary:{accepted:0,total:1}}};
+ put('eolVehicle',scan,{vin});put('eolMismatches',{items:[{...scan,verdict:'MISMATCH',status:'QUALITY_HOLD'}],summary:{total:1,hold:1,unconfirmed:0,match:0,shippedWithMismatch:0}});
+ const body={vin,decision:'REWORK',cause:'개정 불일치',reason:'품질 보류 검토'};
+ await expect(run('createEolCheck','viewer',body)).rejects.toMatchObject({code:'FORBIDDEN'});
+ const made=await run('createEolCheck','steward',body);expect(made).toMatchObject({source:'LOCAL_SIMULATION',factoryRecordUpdated:false});
+ expect((await run('eolVehicle','viewer',undefined,{vin})).status).toBe('REWORK');
+ await expect(run('createEolCheck','steward',{...body,decision:'RELEASE'})).rejects.toMatchObject({code:'GUARD_FAILED'});
+ await expect(run('createEolCheck','steward',{...body,decision:'RELEASE',shippedEvidence:'입력된 출고 근거'})).rejects.toMatchObject({code:'GUARD_FAILED'});
+ await run('createEolCheck','steward',{...body,decision:'RELEASE',recheckResult:'PASS',reworkRef:'RW-DEMO-1'});
+ const detail=await run('eolVehicle','viewer',undefined,{vin});expect(detail).toMatchObject({status:'RECHECK_PASSED',verdict:'MISMATCH',scannedAt:scan.scannedAt,orderEcus:scan.orderEcus,builtEcus:scan.builtEcus,acceptance:scan.acceptance});expect(detail.checks).toHaveLength(2);
+ const list=await run('eolMismatches','viewer');expect(list.items[0].status).toBe('RECHECK_PASSED');expect(list.summary.shippedWithMismatch).toBe(0);
+});
+it('gate preview returns schema/rule findings without updating the ledger or attesting unavailable native approval signatures',async()=>{
+ const before=JSON.stringify(engine.__overlayForTest()?.data.killLedger??{});
+ const bad=await run('gatePreview','operator',{type:'invalid'});expect(bad).toMatchObject({result:'SCHEMA_FAIL',ledgerChanged:false});
+ const v=await run('gatePreview','operator',command);expect(v).toMatchObject({result:'FAIL',approvalVerification:'UNVERIFIED_OFFLINE',ledgerChanged:false});expect(v.findings.find((f:any)=>f.rule==='FFG-PLT-005')).toMatchObject({ok:false});
+ expect(JSON.stringify(engine.__overlayForTest()?.data.killLedger??{})).toBe(before);expect(engine.__overlayForTest()!.entities.publication??{}).toEqual({});
 });

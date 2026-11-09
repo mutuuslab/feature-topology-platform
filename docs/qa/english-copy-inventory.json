@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 91,
-  "requiredLeaves": 9842,
+  "requiredLeaves": 9847,
   "modules": [
     {
       "module": "ads-ac",
@@ -22482,6 +22482,36 @@
       "module": "flag-code",
       "file": "FF/frontend/src/copy/flag-code.ts",
       "leaves": [
+        {
+          "path": "flag-code.flagCode.local.notice",
+          "kind": "text",
+          "text": "오프라인 DEMO: FF가 생성한 정확한 코드 원문·SHA·로컬 서명을 검증합니다. 원격 Git 커밋·일반 소스 AST·GitHub/OIDC·실차 적용 검증이 아닙니다. 처음 재스캔하면 현재 Feature 계획으로 독립 시연 원문을 생성합니다.",
+          "sourceHash": "bdb137671dc44ea4e522cce48c4f4c959db4af03c5f7c3c315a7078edbd56f30"
+        },
+        {
+          "path": "flag-code.flagCode.local.remote",
+          "kind": "text",
+          "text": "원격 저장소 작업은 연결 서비스가 필요합니다. 오프라인에서는 시연 저장소를 선택하세요.",
+          "sourceHash": "c7f92b80c2bac6b1c901a0dcd75495bd33a22540f90c22ab6c5d75fd40d09870"
+        },
+        {
+          "path": "flag-code.flagCode.local.source",
+          "kind": "text",
+          "text": "로컬 시연 원문 · SHA256 및 Ed25519 검증",
+          "sourceHash": "10bf5dd6c33daa419f9e9ab193fc7f924b07ccb24040ff28d854c80294fd20ef"
+        },
+        {
+          "path": "flag-code.flagCode.local.download",
+          "kind": "text",
+          "text": "원문 다운로드",
+          "sourceHash": "b28f921674a627ceead6bc4abbbbcde3eb1822f0a3a31254051fdd5ade186ca3"
+        },
+        {
+          "path": "flag-code.flagCode.local.declared",
+          "kind": "text",
+          "text": "CI v1 가져오기는 선언 자료(미검증)로 보관합니다. 서명 스캔·출시 관문의 코드 근거로 사용하지 않습니다.",
+          "sourceHash": "8a071c33911fbd17cd05e06adfa4b2f15a2630fe7c5984dd066a49115c2b5a9f"
+        },
         {
           "path": "flag-code.flagCode.nav.label",
           "kind": "text",

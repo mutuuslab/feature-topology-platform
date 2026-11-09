@@ -25,6 +25,7 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/compliance-workflows'),
   () => import('./handlers/operations-workflows'),
   () => import('./handlers/local-settings'),
+  () => import('./handlers/eol-gate-preview'),
   () => import('./handlers/ads-classification'),
   () => import('./handlers/ads-config'),
   () => import('./handlers/ads-review'),

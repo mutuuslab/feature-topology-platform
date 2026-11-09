@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES, routeUrl, snapshotFile, trialListQuery, trialTableQuery } from '@ff/contracts';
 
-const SNAP_DIR = join(__dirname, '..', '..', 'public');
+const SNAP_DIR = process.env.FF_TEST_SNAPSHOT_PUBLIC ?? join(__dirname, '..', '..', 'public');
 const json = (v: string) => new Response(v, { headers: { 'Content-Type': 'application/json' } });
 const html = () => new Response('<!doctype html>', { headers: { 'Content-Type': 'text/html' } });
 /** 공개 스냅샷에 더 얹는 파일(경로 → 본문) */

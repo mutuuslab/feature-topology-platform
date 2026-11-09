@@ -205,10 +205,10 @@ export function ExternalWorkspace() {
   const identity = identities.find((entry) => entry.id === externalUser);
   return <div className="external-app" data-tool={system} data-view={view} data-external-demo="ff-external-demo-v1">
     <header className="external-header">
-      <div className="external-product"><a className="external-wordmark" href="/" aria-label={name + ' · ' + T.home}><ExtBrandLogo system={system} height={system === 'jira' ? 32 : 27} /></a>{!seamless && <span className="external-demo-badge">{T.badge}</span>}</div>
+      <div className="external-product"><a className="external-wordmark" href={localAppHref('/')} aria-label={name + ' · ' + T.home}><ExtBrandLogo system={system} height={system === 'jira' ? 32 : 27} /></a>{!seamless && <span className="external-demo-badge">{T.badge}</span>}</div>
       {system === 'codebeamer' && <p className="external-title">{T.cbTitle}</p>}
       <label className="external-search"><Icon name="search" size={16} /><input className="ds-input" aria-label={T.search} placeholder={T.search} value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-      <a href="/integration/connectors?tab=sync">{T.back}<Icon name="link" size={16} /></a>
+      <a href={localAppHref('/integration/connectors?tab=sync')}>{T.back}<Icon name="link" size={16} /></a>
       {system === 'codebeamer' && <span className="external-user" title={identity?.label}><span className="external-avatar" aria-hidden="true">{externalUser.slice(0, 1).toUpperCase()}</span><span className="ds-sr">{T.externalUserLabel} </span>{externalUser}</span>}
     </header>
     {system === 'codebeamer' && <div className="external-product-tabs" ref={tabsRef} role="region" aria-label={T.tracker}>{T.productTabs.map((tab) => {
@@ -250,7 +250,7 @@ export function ExternalWorkspace() {
         </aside>}
       </div>}
     </main>
-    {system === 'codebeamer' && <footer className="external-footer"><span>{T.footer}</span><span>{T.refreshHint}</span><a href="/">{T.platform}</a></footer>}
+    {system === 'codebeamer' && <footer className="external-footer"><span>{T.footer}</span><span>{T.refreshHint}</span><a href={localAppHref('/')}>{T.platform}</a></footer>}
   </div>;
 }
 

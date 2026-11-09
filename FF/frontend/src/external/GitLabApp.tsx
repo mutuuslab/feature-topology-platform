@@ -87,11 +87,11 @@ export function GitLabWorkspace() {
   return (
     <div className="external-app gl-app" data-tool="gitlab" data-external-demo="ff-external-demo-v1">
       <header className="gl-header">
-        <a className="gl-brand" href="/" aria-label={`${T.name} · ${D.home}`}><ExtBrandLogo system="gitlab" height={24} decorative /><strong>{T.name}</strong></a>
+        <a className="gl-brand" href={localAppHref('/')} aria-label={`${T.name} · ${D.home}`}><ExtBrandLogo system="gitlab" height={24} decorative /><strong>{T.name}</strong></a>
         <span className="external-demo-badge">{D.badge}</span>
         <span className="gl-project"><Icon name="layers" size={16} />{T.project}</span>
         <label className="gl-search"><Icon name="search" size={16} /><input className="ds-input" aria-label={T.search} placeholder={T.search} value={search} onChange={(e) => setSearch(e.target.value)} /></label>
-        <a className="gl-back" href="/integration/connectors?tab=sync">{D.back}<Icon name="link" size={16} /></a>
+        <a className="gl-back" href={localAppHref('/integration/connectors?tab=sync')}>{D.back}<Icon name="link" size={16} /></a>
       </header>
       <div className="external-notice"><Icon name="link" size={16} /><p>{T.notice}</p></div>
       {itemsQuery.isPending ? <p role="status" className="gl-pad">{D.loading}</p> : itemsQuery.isError ? <p className="external-error gl-pad" role="alert">{itemsQuery.error.message}</p> : (

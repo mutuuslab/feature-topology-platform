@@ -3,6 +3,7 @@
 // 차량 좌표는 GeoJSON으로 브라우저 안에서만 그린다 — 타일 요청에는 보고 있는 지도 범위만 담긴다.
 // 색은 CSS 토큰에서 읽는다(밝은/어두운 테마를 따라간다). 모든 값은 백엔드 /api/fleet/map 응답 그대로다.
 import { useEffect, useRef, useState } from 'react';
+import { isLocalFile } from '../../file-routing';
 import type { ActivationState, FleetMapCluster, FleetMapVehicle, MapLens, SubscriptionState } from '@ff/contracts';
 import { ACTIVATION_LABEL, LOCATION_PRECISION_LABEL, SUBSCRIPTION_LABEL, layoutMapVehicles, type MapVehicleGroup } from '@ff/contracts';
 import { ko } from '../../copy/ko';
@@ -192,12 +193,14 @@ export function groupElement(g: MapVehicleGroup, label: (state: string) => strin
 
 function fallbackStyle(el: Element) {
   const land = new URL(`${import.meta.env.BASE_URL ?? '/'}map/world-land.geojson`, window.location.href).href;
+  // File delivery preloads and verifies this GeoJSON before boot; workers cannot fetch file URLs.
+  const localLand = isLocalFile() ? (window as Window & { __FF_OFFLINE_WORLD_LAND__?: object }).__FF_OFFLINE_WORLD_LAND__ : undefined;
   return {
     version: 8 as const,
     sources: {
       land: {
         type: 'geojson' as const,
-        data: land,
+        data: localLand ?? land,
         attribution: 'Natural Earth (public domain)',
       },
     },

@@ -1,5 +1,5 @@
 {
-  "note": "판정은 사람이 검토해 적는다(구현 = 백엔드 강제 + 시험 근거, 부분 = 일부, 미구현 = 근거 없음, 범위 밖 = 외부 시스템 몫). 코드에 @req를 달거나 결함을 고치면 여기 판정도 함께 갱신한다.",
+  "note": "판정은 사람이 검토해 적는다(구현 = 백엔드 강제 + 시험 근거, 부분 = 일부, 미구현 = 근거 없음, 범위 밖 = 외부 시스템 몫). 코드에 @req를 달거나 결함을 고치면 여기 판정도 함께 갱신한다. · 2026-11-09 후속(원천0fef3a7e): 표식77개가 가리키는 중복 없는 말단32개를 실제 규칙·native API·화면·시험으로 다시 검토했다. 30개 구현/차량 캐시2개 부분; source.reviewedAt/Commit은 최초 전체 검토 이력이며 이번 검토 범위·판정 근거는 해당 verdict.detail/evidence/gap에 기록한다. 그 밖의 말단을 이번에 재검토한 것으로 표시하지 않는다.",
   "source": {
     "sha256": "96591b14470489dd02303b054a9bb4bf71112c6902aeda15a150e9ce66066b04",
     "reviewedAt": "2026-10-17",
@@ -9,6 +9,7 @@
     {
       "sheet": "01_Feature 정책 관리",
       "notes": [
+        "아래 수량·기능 부재 진술은 2026-10-17 최초 검토 당시 이력이다. 2026-11-09 후속32개 말단의 현행 판정은 verdicts의 개별 detail/evidence/gap을 우선한다.",
         "입력: `.sim/req/slim/04_01_Feature_정책_관리.tsv` (기능명세서 Review Revision, v0.5 이관) — 리프 행만 판정",
         "대상: `FF` 저장소 (contracts / backend / frontend). 읽기 전용 검토, 2026-10-17",
         "판정 기준: 구현 = 백엔드에서 강제되고 시험 근거 있음 · 부분 = 일부만 · 미구현 = 근거 없음 · 범위 밖 = 별도 외부 시스템 몫",
@@ -19,6 +20,7 @@
     {
       "sheet": "02_차량 런타임 실행",
       "notes": [
+        "아래 수량·기능 부재 진술은 2026-10-17 최초 검토 당시 이력이다. 2026-11-09 후속32개 말단의 현행 판정은 verdicts의 개별 detail/evidence/gap을 우선한다.",
         "대상: `.sim/req/slim/05_02_차량_런타임_실행.tsv` 말단 요구사항 81건 (그룹 헤더 제외)",
         "기준 코드: FF `e7898ee` (읽기 전용 검토)",
         "판정: **구현**(백엔드 강제 + 시험 근거) / **부분**(빠진 점 명시) / **미구현** / **범위 밖**",
@@ -30,6 +32,7 @@
     {
       "sheet": "03_안전·검증",
       "notes": [
+        "아래 수량·기능 부재 진술은 2026-10-17 최초 검토 당시 이력이다. 2026-11-09 후속32개 말단의 현행 판정은 verdicts의 개별 detail/evidence/gap을 우선한다.",
         "입력: `.sim/req/slim/06_03_안전_검증.tsv` (리프 요구사항 109건, 그룹 헤더 제외)",
         "기준: 백엔드 집행 + 시험 근거 우선, 화면 표기만 있으면 '부분'으로 본다.",
         "판정 집계: **구현 23 / 부분 31 / 미구현 55 / 범위 밖 0**",
@@ -53,6 +56,7 @@
     {
       "sheet": "05_시스템 연계·확장",
       "notes": [
+        "아래 수량·기능 부재 진술은 2026-10-17 최초 검토 당시 이력이다. 2026-11-09 후속32개 말단의 현행 판정은 verdicts의 개별 detail/evidence/gap을 우선한다.",
         "입력: `.sim/req/slim/08_05_시스템_연계_확장.tsv` (기능명세서 Review Revision, 시트 \"05_시스템 연계·확장\")",
         "대상: `C:\\project\\2026-06-04_Feature_Platform\\FF` (D05-01~07, `backend/src/domains/d05-ext/**`, `backend/src/domains/ext.module.ts`, `backend/src/adapters/if-mocks/**`)",
         "판정 대상: 하위 요구사항 34건 (그룹 헤더 FR-XXX-001 제외)",
@@ -108,9 +112,10 @@
       "gap": "값은 '선택'이 아니라 전이로만 바뀜(의도된 설계)"
     },
     "FR-REG-001-008": {
-      "verdict": "미구현",
-      "evidence": "L0~L5 모델 없음 (`/api/master/taxonomy`는 태그·범위 집계뿐, `topology/master.controller.ts:119-126`)",
-      "gap": "Taxonomy Level enum·필드 추가 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 등록 본문은 L0~L5 enum만 받고 Registry가 선택값(생략 시 L2)을 저장한다. 수준 필터·분류 경로·유효하지 않은 L7 등록 거부가 실제 API 시험에 있다.",
+      "evidence": "contracts/src/schemas/taxonomy-level.ts:5 · contracts/src/schemas/api.ts:37 · backend/src/domains/d01-policy/registry/registry.service.ts:227 · backend/test/d01/taxonomy.spec.ts:91",
+      "gap": ""
     },
     "FR-REG-001-009": {
       "verdict": "구현",
@@ -333,9 +338,10 @@
       "gap": "Feature별 9 Gate 집계 Go/No-Go 값"
     },
     "FR-REG-005-010": {
-      "verdict": "미구현",
-      "evidence": "강제 통과 경로 의도적으로 없음 (`gate.service.ts:89-91` FFG-LCY-002)",
-      "gap": "**설계와 충돌** — 예외 승인 도입 시 fail-closed 원칙과 조정(제한 배포만 허용 등) — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. Gate PENDING 예외에 승인자·제한 배포/Pilot/Shadow·완료 예정일·잔여 리스크를 저장한다. 미기재·이미 PASS/FAIL인 Gate를 거부하고 원래 Gate 판정/서명을 PASS로 바꾸지 않는다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:197 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:69 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-REG-005-011": {
       "verdict": "부분",
@@ -388,34 +394,40 @@
       "gap": "Safe Default 등록·Rollback Plan·Kill 실행 가능 여부 자동 검사"
     },
     "FR-CAT-001-001": {
-      "verdict": "미구현",
-      "evidence": "Taxonomy 계층 모델 없음(태그만)",
-      "gap": "Taxonomy Node·Level 모델 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. L0 Domain/Capability 분류 조회: classifyByLevel은 배치 노드의 상위 경로와 하위 구성 노드를 모두 대조한다. GET /api/taxonomy/levels/:level이 노드·경로·연결 Feature를 반환하고 화면의 수준 선택이 같은 API를 읽는다.",
+      "evidence": "contracts/src/rules/taxonomy-tree.ts:101 · backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:142 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts:38 · backend/test/d01/taxonomy.spec.ts:32 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-001-002": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. L1 Customer/Business 분류 조회: classifyByLevel은 배치 노드의 상위 경로와 하위 구성 노드를 모두 대조한다. GET /api/taxonomy/levels/:level이 노드·경로·연결 Feature를 반환하고 화면의 수준 선택이 같은 API를 읽는다.",
+      "evidence": "contracts/src/rules/taxonomy-tree.ts:101 · backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:142 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts:38 · backend/test/d01/taxonomy.spec.ts:32 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": "Feature DB 도메인은 L0, 클러스터·컴포넌트는 L1로 연결하고 플랫폼 L0~L5 노드와 합친다. L5 조회는 분류 기능이며 실제 차량 코드 적용을 뜻하지 않는다."
     },
     "FR-CAT-001-003": {
-      "verdict": "미구현",
-      "evidence": "위와 같음",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. L2 Vehicle/System 분류 조회: classifyByLevel은 배치 노드의 상위 경로와 하위 구성 노드를 모두 대조한다. GET /api/taxonomy/levels/:level이 노드·경로·연결 Feature를 반환하고 화면의 수준 선택이 같은 API를 읽는다.",
+      "evidence": "contracts/src/rules/taxonomy-tree.ts:101 · backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:142 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts:38 · backend/test/d01/taxonomy.spec.ts:32 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-001-004": {
-      "verdict": "미구현",
-      "evidence": "(SW 구조 `/api/master/structure`는 ECU→SW→Function→Feature로 별개)",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. L3 Software 분류 조회: classifyByLevel은 배치 노드의 상위 경로와 하위 구성 노드를 모두 대조한다. GET /api/taxonomy/levels/:level이 노드·경로·연결 Feature를 반환하고 화면의 수준 선택이 같은 API를 읽는다.",
+      "evidence": "contracts/src/rules/taxonomy-tree.ts:101 · backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:142 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts:38 · backend/test/d01/taxonomy.spec.ts:32 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-001-005": {
-      "verdict": "미구현",
-      "evidence": "(`/api/master/control-points`는 CP 유형별 정책 목록으로 일부 대체)",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. L4 Policy/Flag/Parameter 분류 조회: classifyByLevel은 배치 노드의 상위 경로와 하위 구성 노드를 모두 대조한다. GET /api/taxonomy/levels/:level이 노드·경로·연결 Feature를 반환하고 화면의 수준 선택이 같은 API를 읽는다.",
+      "evidence": "contracts/src/rules/taxonomy-tree.ts:101 · backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:142 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts:38 · backend/test/d01/taxonomy.spec.ts:32 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-001-006": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. L5 Code/Signal/Internal Logic 분류 조회: classifyByLevel은 배치 노드의 상위 경로와 하위 구성 노드를 모두 대조한다. GET /api/taxonomy/levels/:level이 노드·경로·연결 Feature를 반환하고 화면의 수준 선택이 같은 API를 읽는다.",
+      "evidence": "contracts/src/rules/taxonomy-tree.ts:101 · backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:142 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts:38 · backend/test/d01/taxonomy.spec.ts:32 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": "Feature DB 도메인은 L0, 클러스터·컴포넌트는 L1로 연결하고 플랫폼 L0~L5 노드와 합친다. L5 조회는 분류 기능이며 실제 차량 코드 적용을 뜻하지 않는다."
     },
     "FR-CAT-002-001": {
       "verdict": "구현",
@@ -473,54 +485,64 @@
       "gap": "매핑 해제(이력 보존형)"
     },
     "FR-CAT-004-001": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "Taxonomy Node 엔터티·API — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. Node ID·이름·L0~L5·상위 ID를 검증해 저장하고 등록자는 클라이언트 임의값 대신 실제 인증 actor로 기록한다. 권한 없는 POST는 403이다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:190 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:47 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-002": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 등록 전 nodeMap의 실제 상위 Node 존재·활성 여부를 검사하며 누락 상위는 저장하지 않고 사유와 감사 FAILED를 남긴다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:190 · contracts/src/rules/taxonomy-tree.ts:25 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:47 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. levelIndex(child)=levelIndex(parent)+1을 강제한다. L0은 상위가 없어야 하고 같은 수준·두 단계 건너뜀은 거부한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:190 · contracts/src/rules/taxonomy-tree.ts:25 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:47 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-004": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. Level 정합성 실패는 VALIDATION 400으로 반환하고 INSERT 전 reject한다. 순수 규칙과 실제 HTTP의 오류 코드·FAILED 감사 시험이 있다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:190 · contracts/src/rules/taxonomy-tree.ts:25 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:47 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-005": {
-      "verdict": "미구현",
-      "evidence": "태그 목록만 (`master.controller.ts:119-126`)",
-      "gap": "계층 조회 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. GET /api/taxonomy/nodes는 루트부터 children 계층·하위 수·배치 수를 반환하며 수준/상위 필터의 평면 목록도 제공한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:128 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:40 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-006": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 권한 역할의 PATCH는 노드 명칭·설명을 저장하고 updatedBy/updatedAt 및 전후 감사·이벤트를 남긴다. Feature DB 관리 노드는 직접 수정하지 않는다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:203 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:61 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": "수준·상위 재지정은 수정 API 대상이 아니며 Feature DB 원천 수정·폐기는 발행 변경 요청으로 처리한다."
     },
     "FR-CAT-004-007": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 권한 역할의 삭제 요청은 참조 없는 플랫폼 Node만 제거하고 삭제 ID 묘비·삭제자·시각·사유·감사를 보존한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:219 · contracts/src/rules/taxonomy-tree.ts:38 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:67 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-008": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 삭제 전 실제 하위 Node 수를 검사하며 하위가 있으면 CONFLICT로 거부한다. Feature 배치 참조 및 Feature DB 관리 노드도 별도 보호한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:219 · contracts/src/rules/taxonomy-tree.ts:38 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:67 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-009": {
-      "verdict": "미구현",
-      "evidence": "태그 지정만 가능",
-      "gap": "Node 배치 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. PUT /api/features/:id/taxonomy가 존재하는 Feature와 같은 수준의 활성 Node만 연결하고 실제 배치자·시각을 저장한다. 다른 수준·권한 없는 역할은 거부한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:234 · contracts/src/rules/taxonomy-tree.ts:46 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:100 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-CAT-004-010": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "L0~L5 경로 조회 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. GET /api/features/:id/taxonomy는 배치·L0부터의 전체 경로·배치 노드 아래 SW/Flag/구성 노드를 반환한다. 실제 API 시험은 경로와 L3~L5 아래 구성을 확인한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts:162 · backend/src/domains/d01-policy/taxonomy/taxonomy.controller.ts · backend/test/d01/taxonomy.spec.ts:100 · frontend/src/screens/master/TaxonomyLevels.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-DEP-001-001": {
       "verdict": "구현",
@@ -1099,39 +1121,46 @@
       "gap": "—"
     },
     "FR-EXC-001-001": {
-      "verdict": "미구현",
-      "evidence": "예외·우회 정책 기능 없음",
-      "gap": "**설계 검토 필요** — fail-closed·강제 통과 금지(FFG-LCY-002)와 조정 — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 긴급 요청은 실제 요청자·긴급 사유·Feature/Version·적용 시간·우회 정책 ID/검사를 저장한다. 임시 우회의 대상 정책 및 기간 상한과 우회 불가 항목을 API가 검증한다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:197 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:164 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-EXC-001-002": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "위와 같음 — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 승인자·의견·승인 일시·지정 만료 일시를 추가 이력으로 저장한다. 요청자 자기 승인·중복 승인자를 거부하고 반려 시 사람·일시·사유를 저장하며 다시 승인할 수 없다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:255 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:188 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-EXC-001-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. active=true 조회는 sweep과 현재 만료 시각 검사 후 실제 적용 중 예외만 반환한다. 없는 경우 items=[]이며 만료·회수된 항목은 적용 중 목록에서 빠진다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:150 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:118 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-EXC-002-001": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 2인 승인 완료 시 적용 기간 및 두 승인자의 지정 기한 중 가장 이른 시각을 최종 만료로 확정해 저장한다. 적용 전 승인 대기와 실제 ACTIVE를 구분한다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:255 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:82 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-EXC-002-002": {
-      "verdict": "미구현",
-      "evidence": "(체험권 만료 sweep은 권한용으로 별개)",
-      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 승인에는 승인자가 지정한 유효한 expiresAt이 필수다. 두 승인 기록의 지정 기한과 최종 기한을 모두 보존하고 무기한 예외를 허용하지 않는다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:255 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:82 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-EXC-002-003": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 주기 예약 작업과 조회/배포 검사에서 현재 시각을 만료 일시와 비교한다. 만료된 ACTIVE를 EXPIRED로 닫고 만료 예외로 배포 조건을 열 수 없다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:310 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:118 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-EXC-002-004": {
-      "verdict": "미구현",
-      "evidence": "—",
-      "gap": "만료 시 이전 정책 자동 원복 — 결정 D4(c) 확정: 명세대로(예외 승인·임시 우회·미승인 룰은 검증 기준에서 제외) + 2인 승인·만료·자동 원복·감사. 우회 불가 4가지 — 서명·무결성, 긴급 차단 2인 승인, 직무 분리(요청자≠승인자), 멈추기(0%)는 언제나 가능 — 묶음 GX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 만료/회수 시 실제 적용 기록을 역순으로 되돌려 이전 배포 정책·단계를 복구하거나 원래 배포가 없던 Flag를 0%로 멈춘다. 결과 메시지·감사·이벤트와 화면 상세의 원복 결과를 보존한다.",
+      "evidence": "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts:347 · contracts/src/schemas/exception-policy.ts · contracts/src/rules/exception-policy.ts · backend/test/d03/exception-policy.spec.ts:176 · frontend/src/screens/policy/Exceptions.tsx · frontend/src/screens/policy/ExceptionPanel.tsx · frontend/src/__tests__/exceptions.test.tsx",
+      "gap": "플랫폼 정책 배포/예외 효력의 원복을 구현한 것이며 실차 SW 설치나 차량 수렴의 성공을 만들어 보고하지 않는다."
     },
     "FR-CON-001-001": {
       "verdict": "부분",
@@ -1652,9 +1681,10 @@
       "gap": "—"
     },
     "FR-LPC-001-003": {
-      "verdict": "미구현",
-      "evidence": "POLICY 게시본·캐시에 유효 기간 없음(ops.ts:29-43)",
-      "gap": "정책 유효 기간 필드·만료 식별"
+      "verdict": "부분",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 서명된 Publication payload에 validUntil을 넣고 수신/사용 전 유효 기간·형식을 검사한다. 만료·서명 미확인·무결성 불일치 상태를 분리하며 wrapper 기한 변경으로 서명 기한을 연장할 수 없다. 공유 순수 규칙과 native 차량 시뮬레이터/API·UI 시험을 확인했다.",
+      "evidence": "contracts/src/rules/policy-cache.ts:32 · backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts · backend/test/d02/policy-cache.spec.ts · backend/test/d02/policy-cache-trust.spec.ts · frontend/src/screens/ops/VehicleCachePanel.tsx",
+      "gap": "현재 저장소의 실재 근거는 공유 판정 규칙·플랫폼 Fleet 시뮬레이터와 브라우저 DEMO다. 실 ECU 로컬 저장·실차 적용은 검증하지 않았으므로 차량 요구 전체 완료로 상향하지 않는다."
     },
     "FR-LPC-002-001": {
       "verdict": "부분",
@@ -1668,9 +1698,10 @@
       "gap": "—"
     },
     "FR-LPC-002-003": {
-      "verdict": "미구현",
-      "evidence": "만료 개념 없음(001-003 의존)",
-      "gap": "만료 → Safe Default 위임·기록"
+      "verdict": "부분",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 사용 시점에 만료된 정상 캐시는 직전 캐시로 되돌리지 않고 Safe Default에 위임한다. 정책·Feature·publicationId·시각·CACHE_EXPIRED 사유를 런타임 기록으로 보존하고 새 서명 게시본을 받으면 재평가한다. 실제 만료·재취득과 원문 변조 거부 회귀를 확인했다.",
+      "evidence": "contracts/src/rules/policy-cache.ts:67 · backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts:86 · backend/test/d02/policy-cache.spec.ts · backend/test/d02/policy-cache-trust.spec.ts",
+      "gap": "차량 측 로컬 캐시/안전 기본값 제어의 실 ECU 이식과 실제 통신 단절 차량 시험은 이번 검증 범위에 포함되지 않는다. 플랫폼 시뮬레이터 구현만으로 실차 요구를 구현 판정하지 않는다."
     },
     "FR-LPC-002-004": {
       "verdict": "부분",
@@ -1708,14 +1739,16 @@
       "gap": "적용 지역 코드 체계(1~9·A~D·G)는 결정 대기(D8, FR-CRC-001-002) — 지금은 시장 구분(MARKETS)"
     },
     "FR-CRC-001-002": {
-      "verdict": "미구현",
-      "evidence": "지역 코드 체계 없음, 시장 enum `schemas/wire.ts` Market만",
-      "gap": "1~9·A~D·G 코드 체계 정의, 시장(market)·country와의 매핑, 등록 시 거부·사유 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 지역 코드 1~9·A~D·G만 enum/규칙으로 허용한다. 컴플라이언스 등록 시 잘못된 코드·시장과 불일치한 코드는 400과 사유를 반환한다.",
+      "evidence": "contracts/src/rules/region-code.ts:42 · contracts/src/schemas/compliance-rule.ts · backend/test/d01/taxonomy.spec.ts:121 · contracts/src/rules/region-code.test.ts",
+      "gap": ""
     },
     "FR-CRC-001-003": {
-      "verdict": "미구현",
-      "evidence": "Variant Rule 엔티티 없음(`rules/variant.ts:7`은 Feature 속성)",
-      "gap": "Variant Rule을 독립 개념으로 둘지 결정 후 지역 코드 기준 후보 조회 — Variant Rule 대응(결정 D8): 독립 엔티티로 두지 않고 기존 Variant 조건(`d02-runtime/variant-conditions`) + 26580 구성 규칙으로 대응 — 조회 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. GET /api/region-codes/variant-candidates?codes=...는 대응 국가의 기존 Variant 조건·상품 구성 규칙을 후보로 반환한다. 화면은 코드별 후보를 표시하며 빈 코드는 요청하지 않고 잘못된 코드는 API가 거부한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts:173 · contracts/src/rules/region-code.ts · backend/test/d01/taxonomy.spec.ts:130 · frontend/src/screens/master/RegionCandidates.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": "새 Variant Rule을 자동 확정하지 않고 실제 기존 조건과 26580 구성 규칙을 후보로 제공한다."
     },
     "FR-CRC-001-004": {
       "verdict": "부분",
@@ -2789,19 +2822,22 @@
       "gap": "권역·법규 조건 엔터티와 정책 연계 저장, \"조건으로 연계 정책 조회\" API 없음. 글로벌 출시 관리 컴포넌트가 manifest(D05-01~07)에 없음 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
     },
     "FR-GLB-001-002": {
-      "verdict": "미구현",
-      "evidence": "브랜드 속성이 데이터 모델에 없음(`VehicleSchema` contracts/src/schemas/policy.ts:81-99, grep brand 0건)",
-      "gap": "브랜드 목록(현대·기아·제네시스) 상수, 정책↔브랜드 연계, 목록 외 브랜드 400 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 현대·기아·제네시스의 사전 정의된 브랜드만 본문에 허용하고 정책/브랜드 연결과 개정·작성자·사유를 트랜잭션으로 저장한다. 목록 밖 브랜드는 등록 전 400으로 거부한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts:105 · contracts/src/schemas/global-scope.ts · contracts/src/rules/global-scope.ts · backend/test/d01/taxonomy.spec.ts:156 · backend/test/d01/global-scope-human.spec.ts · frontend/src/screens/policy/GlobalScope.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-GLB-001-003": {
-      "verdict": "미구현",
-      "evidence": "해당 경로 없음",
-      "gap": "브랜드 식별자 조회·빈 목록 계약 — 결정 D8(b) 확정: Feature DB 분류 표(taxonomy_node L0~L2)를 L5까지 넓히고 노드 배치·경로 조회, 브랜드 3종(현대·기아·제네시스), 지역 코드(1~9·A~D·G) ↔ 시장·국가 대응 표 — 묶음 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 브랜드별 조회는 연결된 실제 정책을 반환하고 등록 항목이 없는 조건은 빈 목록이다. 잘못된 브랜드 식별자는 400으로 거부한다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts:78 · contracts/src/schemas/global-scope.ts · contracts/src/rules/global-scope.ts · backend/test/d01/taxonomy.spec.ts:164 · backend/test/d01/global-scope-human.spec.ts · frontend/src/screens/policy/GlobalScope.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-GLB-001-004": {
-      "verdict": "미구현",
-      "evidence": "해당 경로 없음",
-      "gap": "Feature Owner·시스템 관리자만 수정(403) 규칙 — 결정 D-GAP-1: 시스템 관리자 역할(SYSTEM_ADMIN)·Feature Owner(ownerId) 인가 도우미는 F0, 적용 TX"
+      "verdict": "구현",
+      "detail": "2026-11-09 후속 검토 · 원천 0fef3a7e. 수정은 실제 Feature Owner 계정 또는 SYSTEM_ADMIN인 사람만 가능하다. 다른 작성자·구현자·SYSTEM/VEHICLE는 거부하고 Owner의 다른 인간 역할과 관리자는 허용하는 native 시험이 있다.",
+      "evidence": "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts:116 · contracts/src/schemas/global-scope.ts · contracts/src/rules/global-scope.ts · backend/test/d01/taxonomy.spec.ts:176 · backend/test/d01/global-scope-human.spec.ts · frontend/src/screens/policy/GlobalScope.tsx · frontend/src/__tests__/taxonomyLevels.test.tsx",
+      "gap": ""
     },
     "FR-FSP-001-001": {
       "verdict": "구현",

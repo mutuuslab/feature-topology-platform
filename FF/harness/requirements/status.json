@@ -4,34 +4,34 @@
   "summary": {
     "total": 628,
     "verdicts": {
-      "구현": 299,
-      "부분": 205,
-      "미구현": 83,
+      "구현": 329,
+      "부분": 207,
+      "미구현": 51,
       "범위 밖": 41
     },
     "sheets": [
       {
         "sheet": "01_Feature 정책 관리",
         "leaves": 239,
-        "구현": 137,
+        "구현": 162,
         "부분": 59,
-        "미구현": 32,
+        "미구현": 7,
         "범위 밖": 11
       },
       {
         "sheet": "02_차량 런타임 실행",
         "leaves": 81,
         "구현": 17,
-        "부분": 46,
-        "미구현": 10,
+        "부분": 48,
+        "미구현": 8,
         "범위 밖": 8
       },
       {
         "sheet": "03_안전·검증",
         "leaves": 109,
-        "구현": 82,
+        "구현": 84,
         "부분": 19,
-        "미구현": 5,
+        "미구현": 3,
         "범위 밖": 3
       },
       {
@@ -45,9 +45,9 @@
       {
         "sheet": "05_시스템 연계·확장",
         "leaves": 34,
-        "구현": 22,
+        "구현": 25,
         "부분": 7,
-        "미구현": 3,
+        "미구현": 0,
         "범위 밖": 2
       },
       {
@@ -59,13 +59,42 @@
         "범위 밖": 1
       }
     ],
-    "traced": 171,
+    "traced": 217,
     "untracedImplemented": 154,
     "defects": 0,
     "decisionsPending": 0,
     "specIssues": 3
   },
   "traces": {
+    "FR-REG-001-001": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/registry.service.ts"
+      ],
+      "tested": [
+        "backend/test/d01/taxonomy.spec.ts"
+      ]
+    },
+    "FR-REG-001-002": {
+      "implemented": [
+        "frontend/src/screens/home/propose/ProposeScreen.tsx"
+      ],
+      "tested": []
+    },
+    "FR-REG-001-008": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "backend/src/domains/d01-policy/registry/registry.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-REG-001-011": {
+      "implemented": [
+        "backend/src/domains/d01-policy/registry/registry.service.ts"
+      ],
+      "tested": []
+    },
     "FR-REG-001-013": {
       "implemented": [
         "backend/src/domains/d01-policy/registry/feature-draft.service.ts"
@@ -229,6 +258,17 @@
       ],
       "tested": []
     },
+    "FR-REG-005-010": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/d03/exception-policy.spec.ts",
+        "frontend/src/__tests__/exceptions.test.tsx",
+        "e2e/tests/exceptions.spec.ts"
+      ]
+    },
     "FR-REG-005-011": {
       "implemented": [
         "contracts/src/schemas/api.ts"
@@ -296,6 +336,159 @@
       ],
       "tested": [
         "backend/test/d01/policy.spec.ts"
+      ]
+    },
+    "FR-CAT-001-001": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-001-002": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-003": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-004": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-005": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-001-006": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-001": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-004-002": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-003": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-004": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-005": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-004-006": {
+      "implemented": [
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-CAT-004-007": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-008": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts"
+      ]
+    },
+    "FR-CAT-004-009": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-CAT-004-010": {
+      "implemented": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "contracts/src/rules/taxonomy-tree.ts",
+        "backend/src/domains/d01-policy/taxonomy/taxonomy.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/taxonomy-tree.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
       ]
     },
     "FR-DEP-001-001": {
@@ -502,6 +695,15 @@
         "backend/test/d04/lake-loop.spec.ts"
       ]
     },
+    "FR-ROL-002-008": {
+      "implemented": [
+        "backend/src/domains/d01-policy/staged-rollout/staged-rollout.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/d03/exception-policy.spec.ts"
+      ]
+    },
     "FR-PVER-002-001": {
       "implemented": [
         "contracts/src/rules/policy-version.ts"
@@ -545,6 +747,54 @@
       "tested": [
         "contracts/src/rules/gate-p10.test.ts"
       ]
+    },
+    "FR-EXC-001-001": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts"
+      ]
+    },
+    "FR-EXC-001-002": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts"
+      ]
+    },
+    "FR-EXC-001-003": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-002-001": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "backend/test/d03/exception-policy.spec.ts"
+      ]
+    },
+    "FR-EXC-002-002": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-002-003": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
+    },
+    "FR-EXC-002-004": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": []
     },
     "FR-CON-001-003": {
       "implemented": [
@@ -595,12 +845,49 @@
         "backend/test/d01/audit-export.spec.ts"
       ]
     },
+    "FR-SUP-004-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/support-conditions/eligibility.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/ads/config.spec.ts"
+      ]
+    },
+    "FR-RTE-001-002": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": []
+    },
+    "FR-RTE-001-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-cache.test.ts",
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
     "FR-RTE-001-004": {
       "implemented": [
         "backend/src/domains/d02-runtime/vehicle-runtime/vehicle-runtime.service.ts"
       ],
       "tested": [
         "backend/test/requirements/defects.spec.ts"
+      ]
+    },
+    "FR-RTE-002-004": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-RTE-004-003": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts",
+        "frontend/src/__tests__/vehicleCachePanel.test.tsx"
       ]
     },
     "FR-RTE-005-001": {
@@ -611,6 +898,54 @@
         "backend/test/requirements/defects.spec.ts"
       ]
     },
+    "FR-LPC-001-003": {
+      "implemented": [
+        "contracts/src/rules/policy-cache.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-cache.test.ts",
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-002-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-002-004": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-003-001": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-003-002": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
+    "FR-LPC-003-003": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/policy-cache.test.ts",
+        "backend/test/d02/policy-cache.spec.ts"
+      ]
+    },
     "FR-CRC-001-001": {
       "implemented": [
         "contracts/src/schemas/compliance-rule.ts",
@@ -618,6 +953,29 @@
       ],
       "tested": [
         "contracts/src/rules/compliance-rule.test.ts"
+      ]
+    },
+    "FR-CRC-001-002": {
+      "implemented": [
+        "contracts/src/rules/region-code.test.ts",
+        "contracts/src/rules/region-code.ts",
+        "contracts/src/schemas/compliance-rule.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/region-code.test.ts",
+        "backend/test/d01/taxonomy.spec.ts"
+      ]
+    },
+    "FR-CRC-001-003": {
+      "implemented": [
+        "contracts/src/rules/region-code.test.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/region-code.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
       ]
     },
     "FR-CRC-001-004": {
@@ -699,6 +1057,12 @@
       "tested": []
     },
     "FR-CRC-001-016": {
+      "implemented": [
+        "contracts/src/rules/compliance-rule.ts"
+      ],
+      "tested": []
+    },
+    "FR-CRC-001-017": {
       "implemented": [
         "contracts/src/rules/compliance-rule.ts"
       ],
@@ -840,6 +1204,26 @@
         "backend/test/d04/notify-recipients.spec.ts"
       ]
     },
+    "FR-KSW-001-002": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d03/p11a-kill.spec.ts",
+        "frontend/src/__tests__/killScope.test.tsx"
+      ]
+    },
+    "FR-KSW-002-006": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d03/p11a-kill.spec.ts",
+        "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-KSW-003-002": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d03/p11a-kill.spec.ts"
+      ]
+    },
     "FR-KSW-003-003": {
       "implemented": [
         "contracts/src/rules/notification.ts"
@@ -847,6 +1231,29 @@
       "tested": [
         "contracts/src/rules/notification.test.ts",
         "backend/test/d04/notifications.spec.ts"
+      ]
+    },
+    "FR-KSW-004-001": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d03/p11a-kill.spec.ts"
+      ]
+    },
+    "FR-KSW-004-002": {
+      "implemented": [],
+      "tested": [
+        "backend/test/helpers.ts",
+        "frontend/src/__tests__/controlRoom.test.tsx",
+        "frontend/src/__tests__/simEngine.test.ts",
+        "e2e/tests/learn.spec.ts",
+        "e2e/tests/ops.spec.ts",
+        "e2e/tests/persona-ops.spec.ts"
+      ]
+    },
+    "FR-KSW-004-004": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d03/p11a-kill.spec.ts"
       ]
     },
     "FR-KSW-004-005": {
@@ -1081,6 +1488,21 @@
         "contracts/src/rules/notification.test.ts"
       ]
     },
+    "FR-RDD-001-006": {
+      "implemented": [
+        "backend/src/domains/d03-safety/exception-policy/exception-policy.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/exception-policy.test.ts",
+        "backend/test/d01/policy.spec.ts",
+        "backend/test/d03/exception-policy.spec.ts",
+        "backend/test/helpers.ts",
+        "frontend/src/__tests__/exceptions.test.tsx",
+        "e2e/tests/policy-rollback.spec.ts",
+        "e2e/tests/policy.spec.ts",
+        "e2e/tests/release.ts"
+      ]
+    },
     "FR-CICD-001-001": {
       "implemented": [
         "backend/src/domains/d04-ops/pipeline-link/pipeline-run.service.ts"
@@ -1108,6 +1530,12 @@
         "backend/test/d04/notify-recipients.spec.ts"
       ]
     },
+    "FR-QGV-002-002": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/supplier.test.ts"
+      ]
+    },
     "FR-QGV-003-005": {
       "implemented": [
         "contracts/src/rules/notification.ts"
@@ -1115,6 +1543,13 @@
       "tested": [
         "contracts/src/rules/notification-gaps.test.ts",
         "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-AGW-001-002": {
+      "implemented": [],
+      "tested": [
+        "backend/test/d03/p11a-kill.spec.ts",
+        "frontend/src/__tests__/killIncident.test.tsx"
       ]
     },
     "FR-AGW-001-003": {
@@ -1265,6 +1700,80 @@
         "frontend/src/__tests__/requirementGaps.test.tsx"
       ]
     },
+    "FR-GLB-001-001": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/global-scope.ts",
+        "contracts/src/schemas/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/region-code.test.ts",
+        "backend/test/d01/taxonomy.spec.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-GLB-001-002": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/schemas/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts"
+      ]
+    },
+    "FR-GLB-001-003": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-GLB-001-004": {
+      "implemented": [
+        "contracts/src/rules/global-scope.test.ts",
+        "contracts/src/rules/global-scope.ts",
+        "backend/src/domains/d01-policy/taxonomy/global-scope.service.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ],
+      "tested": [
+        "contracts/src/rules/global-scope.test.ts",
+        "frontend/src/__tests__/taxonomyLevels.test.tsx"
+      ]
+    },
+    "FR-SPM-002-001": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/supplier.test.ts"
+      ]
+    },
+    "FR-SPM-003-002": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/supplier.test.ts"
+      ]
+    },
+    "FR-SPM-004-001": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/supplier.test.ts"
+      ]
+    },
+    "FR-SVS-002-001": {
+      "implemented": [],
+      "tested": [
+        "contracts/src/rules/kill-intake.test.ts",
+        "backend/test/d03/p11a-kill.spec.ts"
+      ]
+    },
     "FR-VHM-002-003": {
       "implemented": [
         "backend/src/domains/d01-policy/audit-history/history-export.service.ts"
@@ -1279,6 +1788,14 @@
       ],
       "tested": [
         "backend/test/d04/notify-recipients.spec.ts"
+      ]
+    },
+    "FR-SDM-002-002": {
+      "implemented": [
+        "backend/src/domains/d02-runtime/vehicle-runtime/policy-cache.ts"
+      ],
+      "tested": [
+        "frontend/src/__tests__/vehicleCachePanel.test.tsx"
       ]
     }
   },

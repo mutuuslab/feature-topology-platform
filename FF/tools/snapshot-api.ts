@@ -212,6 +212,13 @@ export async function snapshotCostReferencePicker(save: Save) {
   await save('listRefs', {}, { limit: 10, offset: 0 });
 }
 
+/** Deployed flags remain valid deep links before a vehicle reports an evaluation. */
+export async function snapshotFleetMapFlags(save: Save, observed: string[], deployed: string[]) {
+  for (const flagKey of new Set([...observed, ...deployed])) {
+    await save('fleetMap', {}, { source: 'FLEET', flagKey });
+  }
+}
+
 async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: string }[] }[]) {
   // 예시 변경 요청 — 수정(대표 ASIL·T-shirt) + 도메인 검토 의견 하나(승인 전). 정적 데모는 읽기 전용이라 여기서만 만든다
   const AUTHOR = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
@@ -523,7 +530,7 @@ async function main() {
   // 전세계 차량 지도(D02-03) — 정적 데모는 찍은 시점 위치로 멈춰 있다(5초 갱신 없음)
   await save('fleetPopulation');
   const fm = await save('fleetMap', {}, { source: 'FLEET' });
-  for (const flagKey of fm.flagKeys) await save('fleetMap', {}, { source: 'FLEET', flagKey });
+  await snapshotFleetMapFlags(save, fm.flagKeys, flagKeys);
   for (const c of fm.catalogs) await save('fleetMap', {}, { source: 'FLEET', catalogId: c.catalogId });
   const fs = await save('fleetMap', {}, { source: 'SYNTHETIC' });
   for (const c of fs.catalogs) await save('fleetMap', {}, { source: 'SYNTHETIC', catalogId: c.catalogId });

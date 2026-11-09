@@ -240,6 +240,29 @@ for (const t of targets) {
   });
 }
 
+test('정적 데모: 배포 Flag 지도 직접 진입은 차량 관측 유무와 관계없이 실제 조회를 제공한다', async ({ page }) => {
+  const { missing, errors } = watch(page);
+  const deployed = await page.request.get('/' + snapshotFile(routeUrl('listPolicies', {}, { status: 'DEPLOYED' })));
+  expect(deployed.status()).toBe(200);
+  expect(deployed.headers()['content-type']).toContain('json');
+  const keys = [...new Set<string>((await deployed.json()).items.map((p: { flagKey: string }) => p.flagKey))];
+  expect(keys.length).toBeGreaterThan(0);
+  for (const flagKey of keys) {
+    const path = '/' + snapshotFile(routeUrl('fleetMap', {}, { source: 'FLEET', flagKey }));
+    const response = await page.request.get(path);
+    expect(response.status(), path).toBe(200);
+    expect(response.headers()['content-type'], path).toContain('json');
+    expect((await response.json()).items.length, path).toBeGreaterThan(0);
+  }
+  await page.goto('/fleet/map?lens=activation&flagKey=' + encodeURIComponent(keys[0]));
+  await expect(page.locator('#main h1')).toBeVisible();
+  await expect(page.getByRole('combobox', { name: '플래그', exact: true })).toHaveValue(keys[0]);
+  await page.waitForLoadState('networkidle');
+  await noErrorAnywhere(page, '배포 Flag 지도 직접 진입');
+  expect([...missing]).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
 test('정적 데모: 관측 Events 직접 진입은 이벤트 JSON 스냅샷과 표를 읽는다', async ({ page }) => {
   const { missing, errors } = watch(page);
   const snapshot = await page.request.get('/api-snapshot/events_limit_500_recent_1.json');

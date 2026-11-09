@@ -2,7 +2,7 @@
 // 원인(바깥 timeout이 프로세스 트리를 끊음·포트 충돌)을 알 수 없었다. 종료 신호·코드·포트·마지막 출력과 힌트가 보이는지 본다.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError, snapshotCostReferencePicker } from './snapshot-api.ts';
+import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError, snapshotCostReferencePicker, snapshotFleetMapFlags } from './snapshot-api.ts';
 import { snapshotTx } from './snapshot-tx.ts';
 
 test('captures the complete taxonomy tree and the exact level queries used by the classification editor',async()=>{
@@ -11,6 +11,19 @@ test('captures the complete taxonomy tree and the exact level queries used by th
   const nodes=calls.filter(c=>c.name==='taxonomyNodes');
   assert.deepEqual(nodes.map(c=>c.query.level??'ALL'),['ALL','L0','L1','L2','L3','L4','L5']);
   assert.deepEqual(nodes.find(c=>c.query.level==='L2'),{name:'taxonomyNodes',params:{},query:{level:'L2'}});
+});
+
+test('captures deployed flag map deep links even when no vehicle has reported a flag evaluation', async () => {
+  const calls: unknown[] = [];
+  const save = async (...args: unknown[]) => { calls.push(args); return {}; };
+  await snapshotFleetMapFlags(save, [], ['care_signal', 'care_param']);
+  assert.deepEqual(calls, [
+    ['fleetMap', {}, { source: 'FLEET', flagKey: 'care_signal' }],
+    ['fleetMap', {}, { source: 'FLEET', flagKey: 'care_param' }],
+  ]);
+  calls.length = 0;
+  await snapshotFleetMapFlags(save, ['care_signal'], ['care_signal', 'care_param']);
+  assert.equal(calls.length, 2, 'an observed/deployed overlap must not duplicate the native GET');
 });
 
 test('출력 꼬리는 색 코드를 빼고 빈 줄 없이 마지막 N줄만', () => {

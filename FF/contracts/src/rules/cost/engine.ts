@@ -329,7 +329,10 @@ export function estimate(input: CostEstimateInput) {
   });
   const range = basis.aace[settings.aace];
   if (!range) throw new Error(`계수 표에 AACE 등급 '${settings.aace}'이 없습니다`);
-  const aaceRange = range.map((r) => ({ ratio: r, amount: totalCost * (1 + r) }));
+  const aaceRange = range.map((r) => {
+    if (typeof r !== 'number' || !Number.isFinite(r)) throw new Error(`계수 표의 AACE 범위 '${settings.aace}'가 숫자가 아닙니다`);
+    return { ratio: r, amount: totalCost * (1 + r) };
+  });
 
   const benchEur = sum(rows.map((x) => x.benchEur));
   const benchKrw = benchEur * basis.benchmark.fx;

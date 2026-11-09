@@ -4,7 +4,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { RefdbRepository } from '../../src/domains/d01-policy/refdb/refdb.repository';
-import { actor, bootApp, confirmSafety } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety } from '../helpers';
 
 const AUTHOR = actor('usr-author', 'FEATURE_AUTHOR');
 const JUDGE = actor('choi.judge', 'GATE_JUDGE');
@@ -21,7 +21,10 @@ describe('Release Sign-off (보고서 6.1 G7 — Feature Owner 승인)', () => {
 
   beforeAll(async () => {
     ({ app, http } = await bootApp({ at: '2026-10-18T01:00:00.000Z' }));
-    for (const v of ['2.1.0', '2.2.0']) await confirmSafety(http, 'FEAT-00001', v);
+    for (const v of ['2.1.0', '2.2.0']) {
+      await confirmSafety(http, 'FEAT-00001', v);
+      completeTestSupplierEvidence(app, 'FEAT-00001', v);
+    }
   });
   afterAll(async () => app?.close());
 
@@ -84,7 +87,10 @@ describe('Release Sign-off·출시 — 연결된 기준 행이 폐기 예정·�
     const b = await bootApp({ at: AT });
     ({ app, http } = b);
     repo = b.get(RefdbRepository);
-    for (const v of ['2.1.0', '2.2.0']) await confirmSafety(http, 'FEAT-00001', v);
+    for (const v of ['2.1.0', '2.2.0']) {
+      await confirmSafety(http, 'FEAT-00001', v);
+      completeTestSupplierEvidence(app, 'FEAT-00001', v);
+    }
   });
   afterAll(async () => app?.close());
 

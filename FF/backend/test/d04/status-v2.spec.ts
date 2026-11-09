@@ -160,7 +160,7 @@ describe('차량 Guard (FFG-VEH-002 · FFG-VEH-013)', () => {
     const reports = (await http().get('/api/vehicles/ego-01/status').expect(200)).body;
     expect(reports.features[0].report).toMatchObject({ request_result: 'REJECTED', reject_code: 'AUTH_FAILED', state: 'DISABLED' });
     expect(reports.recent.slice(0, 3).every((x: any) => x.accepted && x.state === 'DISABLED')).toBe(true);
-    const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log;
+    const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.filter((l: any) => l.kind === 'KILL');
     expect(log.slice(-4).map((l: any) => l.detail)).toEqual([expect.stringMatching(/재수신/), 'REPLAY', 'SIGNATURE_INVALID', 'AUTH_FAILED']); // 서명은 봉투 전체(vehicle_auth 포함)를 덮는다
   });
 });
@@ -212,7 +212,7 @@ describe('요청 유형별 Guard 동작 (9.6 SYNC · FFG-LCY-010 활성화 · FF
     expect(await state()).toBe('ACT_PENDING');
     advance(2_000);
     expect(await state()).toBe('ACTIVE');
-    const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.map((l: any) => l.detail);
+    const log = (await http().get('/api/vehicles/ego-01/runtime').expect(200)).body.runtime.log.filter((l: any) => l.kind === 'KILL').map((l: any) => l.detail);
     expect(log.slice(-4)).toEqual(['sync DC2 수락', 'SIGNATURE_INVALID', 'STATE_NOT_ALLOWED', 'activate DC2 수락']);
   });
 });

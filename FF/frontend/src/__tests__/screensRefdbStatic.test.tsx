@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from '../store';
 import { propose as P } from '../copy/propose';
+import { proposePrd as D } from '../copy/propose-prd';
+import { proposeGuide as G } from '../copy/propose-guide';
 import { featureDb as L } from '../copy/refdb';
 import { ko } from '../copy/ko';
 
@@ -70,6 +72,7 @@ describe('정적 데모 — Feature DB 검색', () => {
 
   it('등록 1단계 검색도 같다', async () => {
     mount('author', '/feature/propose', <ProposeScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: D.chooseRefs }));
     fireEvent.change(await screen.findByLabelText(/^기능 검색/), { target: { value: '오토' } });
     expect(await screen.findByRole('button', { name: 'CH-BRK-009 기본 정보 가져오기' }, { timeout: 3000 })).toBeTruthy();
     expect(screen.getByText(P.searchHintStatic)).toBeTruthy();
@@ -90,14 +93,14 @@ describe('정적 데모 — 등록 화면은 브라우저 안 시연 데이터�
   // 2026-11-06 — 공개 사이트의 쓰기는 브라우저 안 시연 데이터가 처리한다(20-60). 권한은 서버와 같은 역할 규칙 — 읽기 전용 안내 없음
   it("작성자에게는 등록 안내(읽기 전용 아님), 작성자가 아니면 '작성자만' 안내", async () => {
     mount('author', '/feature/propose', <ProposeScreen />);
-    const btn = await screen.findByRole('button', { name: P.requestNew });
-    expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(P.key.pick);
+    const btn = await screen.findByRole('button', { name: G.requestMissing });
+    expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(D.key);
     expect(document.body.textContent).not.toContain(P.key.cannot);
     await waitFor(() => expect(btn).toHaveProperty('disabled', false));
     expect(document.body.textContent).not.toContain(ko.page.readOnly);
     cleanup();
     mount('viewer', '/feature/propose', <ProposeScreen />);
-    await screen.findByRole('button', { name: P.requestNew });
+    await screen.findByRole('button', { name: G.requestMissing });
     expect(document.querySelector('[data-key-message] .ds-key__text')!.textContent).toBe(P.key.cannot);
   });
 });

@@ -8,7 +8,7 @@ import { AppProvider } from '../store';
 import { FeatureDbScreen } from '../screens/refdb/RefList';
 import { RefDetailScreen } from '../screens/refdb/RefDetail';
 import { RefChangeDetailScreen, RefChangesScreen } from '../screens/refdb/Changes';
-import { featureDb as L, refChangeDetail as D, refChanges as C, refDetail as RD, refSources as S } from '../copy/refdb';
+import { featureDb as L, refChangeDetail as D, refChanges as C, refDetail as RD, refSources as S, refQualityCopy as QC } from '../copy/refdb';
 import { workbook as WB } from '../copy/workbook';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
@@ -180,7 +180,9 @@ describe('Feature DB 목록', () => {
     // pill은 낱말 — 수(2)는 요약 줄이 말한다(⑪, pill이 '발행 대기 2'로 요약 줄을 되풀이하던 결함)
     expect(key.querySelector('.ds-key__status')!.textContent).toBe(L.awaiting);
     expect(key.querySelector('.ds-key__status')!.textContent).not.toMatch(/d/);
-    const summary = screen.getByRole('group', { name: L.quality });
+    expect(screen.getByRole('group', { name: L.quality }).textContent).toContain('발행 대기 2');
+    fireEvent.click(screen.getByText(QC.moreStats, { selector: 'summary' }));
+    const summary = screen.getByRole('group', { name: QC.moreStats });
     expect(summary.textContent).toContain(`${L.q.stale} 12`);
     expect(summary.textContent).toContain('83.6%');
     expect(document.querySelector('.ds-kpis')).toBeNull();

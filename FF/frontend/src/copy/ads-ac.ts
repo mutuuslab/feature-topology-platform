@@ -45,6 +45,6 @@ export const roleScope = /* @__PURE__ */ localizedCopy('ads-ac.roleScope', {
   commands: '범위를 보는 명령',
   col: { account: '계정', markets: '시장', features: 'Feature', envs: '환경', reason: '사유', by: '지정', at: '지정 시각' },
   analysisOnly: '분석 전용(감사 조회자)은 범위와 관계없이 긴급 차단·해제·정책 배포를 할 수 없습니다.',
-  command: { issueKill: '긴급 차단 요청', approveKill: '긴급 차단 승인', rejectKill: '긴급 차단 거절', requestRestore: '복원 요청', approveRestore: '복원 승인', rejectRestore: '복원 거절', releaseKill: '차단 해제', rescindKill: '사건 범위 해제', deployPolicy: '정책 배포' } as Record<string, string>,
+  command: { issueKill: '긴급 차단 요청', approveKill: '긴급 차단 승인', rejectKill: '긴급 차단 거절', requestRestore: '복원 요청', approveRestore: '복원 승인', rejectRestore: '복원 거절', releaseKill: '긴급 차단 해제', rescindKill: '사건 범위 해제', deployPolicy: '정책 배포' } as Record<string, string>,
   error: '권한 범위를 불러오지 못했습니다 — 다시 시도',
 });

@@ -84,10 +84,10 @@ export function IncidentsScreen() {
               key: 'vin',
               header: C.vin,
               cell: (r) => (
-                <span style={{ display: 'grid', gap: 2 }}>
-                  <span className="ds-mono ds-nowrap">{r.vin ?? '—'}</span>
+                <span style={{ display: 'grid', gap: 'var(--sp-1)', minWidth: 0 }}>
+                  <span className="ds-mono" style={{ overflowWrap: 'anywhere' }}>{r.vin ?? '—'}</span>
                   {r.vehicleScope && r.vehicleScope.fit !== 'IN_SCOPE' && (
-                    <span className="ds-nowrap" style={{ fontSize: 'var(--fs-xs)', color: 'var(--warn)' }} title={r.vehicleScope.message}>
+                    <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--warn)', overflowWrap: 'anywhere' }} title={r.vehicleScope.message}>
                       {CT.incident.scope[r.vehicleScope.fit]}
                     </span>
                   )}

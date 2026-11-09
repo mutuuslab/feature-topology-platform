@@ -68,7 +68,7 @@ export function ExperimentsScreen() {
       </Drawer>
       {/* 실험이 하나도 없으면 핵심 메시지가 '진행 중인 실험이 없습니다'라고 말한다 — 빈 상자로 되풀이하지 않는다(3초 ⑩) */}
       <p className="ds-field__hint">{A.observedBody} {A.notCollected}</p>
-      <AsyncView state={asyncState(list, visible.length === 0)} empty={{ title: X.empty }} error={list.error} onRetry={() => list.refetch()}>
+      <AsyncView state={asyncState(list, visible.length === 0)} emptyHidden={rows.length === 0} empty={{ title: X.empty }} error={list.error} onRetry={() => list.refetch()}>
         <DataTable
           caption={X.title}
           rows={visible}

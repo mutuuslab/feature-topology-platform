@@ -175,7 +175,7 @@ describe('내 대시보드 · Feature 제안 · 등록 v2', () => {
       return inboxApi(url);
     };
     mount('author', '/', <HomeScreen />);
-    expect(await screen.findByText('업무 절차 지도')).toBeTruthy();
+    expect(await screen.findByText('전체업무흐름')).toBeTruthy();
     const node = await screen.findByRole('link', { name: /Feature 등록·분류/ });
     expect(node.textContent).toContain('1/6');
     expect(node.textContent).toContain('내 차례 2');

@@ -395,8 +395,8 @@
         {
           "path": "ads-ac.roleScope.command.releaseKill",
           "kind": "text",
-          "text": "차단 해제",
-          "sourceHash": "0d92b6145764491191bdafcbdcd6db799cbe9e2b7d2b05d5a631a93f9850143a"
+          "text": "긴급 차단 해제",
+          "sourceHash": "47a4c1f29011a186b9fe98f96f545033cafeb6ccba17d0a901b23c6d450b7ac2"
         },
         {
           "path": "ads-ac.roleScope.command.rescindKill",

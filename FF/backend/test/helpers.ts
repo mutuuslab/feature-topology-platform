@@ -150,6 +150,10 @@ export async function releaseVersion(http: () => request.Agent | ReturnType<type
   const base = `/api/features/${featureId}/versions/${version}`;
   const h = http as () => ReturnType<typeof request>;
   for (const gate of ['G8', 'G9']) await h().post(`${base}/gates`).set(who.judge).send({ gate, inputResult: 'PASS', rationale: '출시 조건 확인', evidenceRef: `EV-${gate}` }).expect(201);
-  await h().post(`${base}/release-signoff`).set(who.owner).send({ reason: '출시 책임 확인' }).expect(201);
-  await h().post(`${base}/transitions`).set(who.release).send({ to: 'RELEASED', reason: '출시' }).expect(200);
+  await h().post(`${base}/release-signoff`).set(who.owner).send({ reason: '출시 책임 확인' }).expect((r) => {
+    if (r.status !== 201) throw new Error(`Release sign-off ${featureId}@${version}: HTTP ${r.status} ${JSON.stringify(r.body)}`);
+  }).expect(201);
+  await h().post(`${base}/transitions`).set(who.release).send({ to: 'RELEASED', reason: '출시' }).expect((r) => {
+    if (r.status !== 200) throw new Error(`Release ${featureId}@${version}: HTTP ${r.status} ${JSON.stringify(r.body)}`);
+  }).expect(200);
 }

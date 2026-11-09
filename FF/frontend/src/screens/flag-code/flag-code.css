@@ -9,6 +9,7 @@
 
 /* 상태 표식 — 앞 사각 표식만 색, 글자는 본문 색 */
 .fc-status { display: inline-flex; align-items: center; gap: var(--sp-1h); font-size: var(--fs-xs); font-weight: 600; white-space: nowrap; padding: 1px var(--sp-1h); border-radius: var(--r-sm); background: var(--surface-3); color: var(--ink); }
+.ds-table td .fc-status { white-space: normal; overflow-wrap: anywhere; max-width: 100%; box-sizing: border-box; }
 .fc-status::before { content: ''; width: var(--sp-2); height: var(--sp-2); border-radius: 50%; background: var(--c, var(--mark-neutral)); flex: none; }
 .fc-status[data-sev='BLOCKER'] { --c: var(--danger); background: var(--danger-soft); }
 .fc-status[data-sev='WARNING'] { --c: var(--warn); background: var(--warn-soft); }

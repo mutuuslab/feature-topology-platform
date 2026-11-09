@@ -58,8 +58,11 @@ interface V21ReportDoc {
   inhibits: string[];
 }
 
-/** 서버가 건 종료 차단 참조 — 사건(이상 징후)에서 나온 차단은 사건 ID, 아니면 명령 ID(차량 봉투의 incident_id·command_id와 같은 값) */
-export const inhibitRefOf = (k: Pick<KillRequest, 'anomalyId' | 'command'>): string | null => k.anomalyId ?? k.command?.commandId ?? null;
+/** 차량 봉투와 같은 참조: F2 이상 또는 이상 징후 차단은 명시 사건 ID, 이전 행은 이상 ID·명령 ID. */
+export const inhibitRefOf = (k: Pick<KillRequest, 'incidentId' | 'anomalyId' | 'fClass' | 'command'>): string | null => {
+  const incident = k.incidentId ?? k.anomalyId;
+  return incident && (k.anomalyId || ['F2', 'F3', 'F4'].includes(k.fClass ?? '')) ? incident : k.command?.commandId ?? null;
+};
 
 @Injectable()
 @PlatformComponent('D04-03')

@@ -49,7 +49,7 @@ export function CollectionScreen() {
               rowKey={(c) => c.collectionId}
               onOpen={(c) => setOpen(c.collectionId)}
               columns={[
-                { key: 't', header: C.col.title, cell: (c) => <span><strong>{c.title}</strong> <span className="ds-mono">{c.collectionId}</span></span>, sort: (c) => c.collectionId },
+                { key: 't', header: C.col.title, cell: (c) => <span style={{ display: 'grid', gap: 'var(--sp-1)', minWidth: 0, overflowWrap: 'anywhere' }}><strong>{c.title}</strong><span className="ds-mono">{c.collectionId}</span></span>, sort: (c) => c.collectionId },
                 { key: 's', header: C.col.signals, cell: (c) => <span title={c.signals.join(', ')}>{c.signals.slice(0, 2).join(', ')}{c.signals.length > 2 ? ` +${c.signals.length - 2}` : ''}</span> },
                 { key: 'g', header: C.col.target, cell: (c) => c.target },
                 { key: 'tr', header: C.col.trigger, cell: (c) => c.trigger },

@@ -95,10 +95,10 @@ const decision = (at: string, over: Record<string, unknown> = {}) => ({
 });
 
 describe('2.0·2.1 동시 수락', () => {
-  it('시뮬 차량의 차단 회신은 2.1 — 실제 실행 TERMINATED·전달 단계 APPLIED·Feature epoch 1·종료 차단=명령 ID, 수신 시각 ≠ 적용 시각, 6축에는 가상 데이터로', async () => {
+  it('시뮬 차량의 차단 회신은 2.1 — 실제 실행 TERMINATED·전달 단계 APPLIED·Feature epoch 1·종료 차단=사건별 Kill ID, 수신 시각 ≠ 적용 시각, 6축에는 가상 데이터로', async () => {
     const b = await boot();
     const { k, last } = await killed(b);
-    expect(last).toMatchObject({ schema_version: '2.1', state: 'DISABLED', runtime_state: 'TERMINATED', feature_epoch: 1, inhibits: [k.command.commandId], delivery: { subject_kind: 'KILL', subject_id: k.publicationId, stage: 'APPLIED' } });
+    expect(last).toMatchObject({ schema_version: '2.1', state: 'DISABLED', runtime_state: 'TERMINATED', feature_epoch: 1, inhibits: [k.killId], delivery: { subject_kind: 'KILL', subject_id: k.publicationId, stage: 'APPLIED' } });
     expect(Date.parse(last.received_at)).toBeLessThan(Date.parse(last.applied_at));
     const acks = b.db.all<{ stage: string; source: string }>("SELECT stage, source FROM delivery_ack WHERE subject_id = ? AND vin = 'ego-01' ORDER BY id", k.publicationId);
     expect(acks.map((a) => a.stage)).toEqual(['ACCEPTED', 'ACCEPTED', 'APPLIED']);
@@ -107,7 +107,7 @@ describe('2.0·2.1 동시 수락', () => {
     expect(axes).toMatchObject({ simulated: true, runtime: { current: 'TERMINATED' }, freshness: { state: 'FRESH' } });
     // 재연결 대조 — 서버 의도와 같다
     const rc = (await b.http().get('/api/vehicles/ego-01/reconcile').expect(200)).body;
-    expect(rc.features.find((f: { featureId: string }) => f.featureId === 'FEAT-00022')).toMatchObject({ intent: { epoch: 1, inhibits: [k.command.commandId] }, reported: { featureEpoch: 1 }, mismatches: [], unconfirmed: null });
+    expect(rc.features.find((f: { featureId: string }) => f.featureId === 'FEAT-00022')).toMatchObject({ intent: { epoch: 1, inhibits: [k.killId] }, reported: { featureEpoch: 1 }, mismatches: [], unconfirmed: null });
   });
 
   it('회귀: 2.0 보고는 그대로 받아들이고 ADS 상태 투영(차량 보고 행)은 만들지 않는다', async () => {
@@ -247,11 +247,11 @@ describe('재시동 복구·재연결 대조', () => {
     expect(r).toMatchObject({ accepted: true, violation: null });
     const c = b.db.all<{ kind: string; doc: string }>("SELECT kind, doc FROM ads_vehicle_case WHERE vin = 'ego-01'");
     expect(c.map((x) => x.kind)).toEqual(['RESTORE_UNVERIFIED']);
-    expect(JSON.parse(c[0].doc).detail).toMatchObject({ code: 'INHIBIT_NOT_RESTORED', missing: [k.command.commandId] });
+    expect(JSON.parse(c[0].doc).detail).toMatchObject({ code: 'INHIBIT_NOT_RESTORED', missing: [k.killId] });
     const axes = (await b.http().get('/api/vehicles/ego-01/feature-state').expect(200)).body.features.find((f: { featureId: string }) => f.featureId === 'FEAT-00022');
     expect(axes.runtime).toMatchObject({ current: null, past: 'TERMINATED' });
     const rc = (await b.http().get('/api/vehicles/ego-01/reconcile').expect(200)).body.features.find((f: { featureId: string }) => f.featureId === 'FEAT-00022');
-    expect(rc.mismatches).toEqual([{ kind: 'INHIBIT_MISSING', ref: k.command.commandId, expected: k.command.commandId, reported: null }]);
+    expect(rc.mismatches).toEqual([{ kind: 'INHIBIT_MISSING', ref: k.killId, expected: k.killId, reported: null }]);
     expect(rc.unconfirmed).toEqual({ from: offline, to: obs });
     expect((await b.http().get('/api/anomalies?kind=SECURITY&featureId=FEAT-00022').expect(200)).body.items[0].reasons.join(' ')).toContain('RESTORE_UNVERIFIED');
   });

@@ -13,6 +13,9 @@ Object.assign(process.env, {
   FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-ops5y-')),
 });
 import { INestApplication } from '@nestjs/common';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DB, type Db } from '../../src/kernel/db';
 import { AuditService } from '../../src/kernel/audit.service';
@@ -24,7 +27,8 @@ import { replay, type Launches, type ReplayReport } from '../../src/ops5y/engine
 import { checkInvariants, type InvariantResult } from '../../src/ops5y/invariants';
 import { HsmService } from '../../src/domains/d06-qsec/pki-kms/hsm.service';
 import { signVehicleRequest } from '../../src/kernel/vehicle-auth-client';
-import { bootApp } from '../helpers';
+import { loadFixtures } from '../../src/kernel/seed';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety, releaseVersion } from '../helpers';
 
 const END = '2026-10-17';
 /** 앞당긴 일정 — 개시 후 0~3개월 안에 모든 흐름 */
@@ -46,9 +50,25 @@ describe('5년 운영 재생 — 짧은 재생', () => {
   let report: ReplayReport;
   let inv: InvariantResult[];
   beforeAll(async () => {
+    // Build a separate historical seed input before boot. Source fixtures and persisted history are untouched.
+    // Future 2026 seed Gate dates must not outrank actual 2021 judgments in this positive replay scenario.
+    const fixtures = loadFixtures();
+    const shift = Date.parse('2021-10-16T00:00:00Z') - Math.max(...fixtures.gateRecords.map(g => Date.parse(g.judgedAt)));
+    fixtures.gateRecords = fixtures.gateRecords.map(g => ({ ...g, judgedAt: new Date(Date.parse(g.judgedAt) + shift).toISOString() }));
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'ff-ops5y-fixture-'));
+    for (const [name, rows] of Object.entries(fixtures)) writeFileSync(join(fixtureDir, `${name}.json`), JSON.stringify(rows));
+    process.env.FF_FIXTURES = fixtureDir;
     const boot = await bootApp({ at: '2021-10-17T00:00:00.000Z' });
+    delete process.env.FF_FIXTURES;
     app = boot.app;
     const http = boot.http;
+    // Positive launch/rollback scenario: actual G6 artifacts, independent review and native release approval.
+    // Unreleased Versions remain denied by the normal deployment guard.
+    for (const version of ['2.1.0', '2.2.0']) {
+      await confirmSafety(http, 'FEAT-00001', version);
+      completeTestSupplierEvidence(app, 'FEAT-00001', version);
+      await releaseVersion(http, 'FEAT-00001', version, { judge: actor('choi.judge', 'GATE_JUDGE'), owner: actor('usr-author', 'FEATURE_AUTHOR'), release: actor('usr-coordinator', 'RELEASE_MANAGER') });
+    }
     report = await replay(
       async (method, path, headers, body) => {
         const req = method === 'GET' ? http().get(path) : http().post(path).send((body ?? {}) as object);
@@ -74,7 +94,7 @@ describe('5년 운영 재생 — 짧은 재생', () => {
   }, 600_000);
   afterAll(async () => {
     await app.close();
-    for (const k of ['FF_SCHEDULER', 'GLEO_MODE', 'UNLEASH_MODE', 'FF_DATASET', 'FF_SYNTHETIC', 'FF_BOOT_PUBLISH', 'FF_SEED_ANCHOR', 'CARLA_RUNNER', 'FF_EVIDENCE_DIR']) delete process.env[k];
+    for (const k of ['FF_SCHEDULER', 'GLEO_MODE', 'UNLEASH_MODE', 'FF_DATASET', 'FF_SYNTHETIC', 'FF_BOOT_PUBLISH', 'FF_SEED_ANCHOR', 'CARLA_RUNNER', 'FF_EVIDENCE_DIR', 'FF_FIXTURES']) delete process.env[k];
   });
 
   it('개시일부터 125일 — 결함(5xx) 0건', () => {

@@ -23,6 +23,7 @@ export const TELEMETRY_READS: { route: string; store: string; category: DataCate
   { route: 'vehicleStatusView', store: 'status_report', category: 'SAFETY_OPERATION' },
   { route: 'readbacks', store: 'readback', category: 'SAFETY_OPERATION' },
   { route: 'vehicleRequests', store: 'vehicle_request', category: 'SAFETY_OPERATION' },
+  { route: 'vehicleReconcile', store: 'status_report', category: 'SAFETY_OPERATION' },
   { route: 'securityEvents', store: 'security_event', category: 'SECURITY_MONITORING' },
 ];
 

@@ -92,6 +92,8 @@ describe('정책 파이프라인 · 활성화 판단 · OFREP', () => {
       const f = await http().post('/api/features').set(AUTHOR).send(withRef({ name: '정책 시험 Feature', description: 'P7', requirementIds: ['REQ-P7-1'], country: 'KR', vehicleModel: 'NX4 PE', trim: 'Premium', ownerId: 'ADAS상품기획팀', asil: 'QM', upgVc: ['F111A114001'], controlPoints: ['Flag'] })).expect(201);
       fid = f.body.featureId;
       await http().patch(`/api/features/${fid}/versions/0.1.0`).set(AUTHOR).send({ functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] }).expect(200);
+      await http().put(`/api/features/${fid}/versions/0.1.0/classification`).set(AUTHOR).send({ adsFeature: false, ddtImpact: 'NONE', safetyRelated: false, owner: 'ADAS상품기획팀', lifecycleOwners: { CREATE: 'ADAS상품기획팀', OPERATE: '차량운영센터', SUSPEND: 'ADAS상품기획팀', DISPOSE: 'ADAS상품기획팀' }, reason: '시험 Feature의 비ADS 분류 입력' }).expect(200);
+      await http().post(`/api/features/${fid}/versions/0.1.0/classification/confirm`).set(actor('usr-safety', 'SAFETY_OFFICER')).send({ reason: '비ADS 분류 여섯 축 검토' }).expect(201);
       await confirmSafety(http, fid, '0.1.0');
       for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/${fid}/versions/0.1.0/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
       await http().post(`/api/features/${fid}/versions/0.1.0/transitions`).set(APPROVER).send({ to: 'APPROVED', reason: '승인' }).expect(200);

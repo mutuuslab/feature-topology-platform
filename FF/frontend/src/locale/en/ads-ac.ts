@@ -55,7 +55,7 @@ export default {
   'roleScope.command.requestRestore': 'Request restoration',
   'roleScope.command.approveRestore': 'Approve restoration',
   'roleScope.command.rejectRestore': 'Reject restoration',
-  'roleScope.command.releaseKill': 'Release a kill',
+  'roleScope.command.releaseKill': 'Release an emergency block',
   'roleScope.command.rescindKill': 'Release an incident scope',
   'roleScope.command.deployPolicy': 'Deploy a policy',
   'roleScope.error': 'Could not load account scopes. Try again.',

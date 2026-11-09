@@ -2,7 +2,7 @@
 // G2 PASS 근거, G7 SM·CSM 두 사람 서명, P3-4 판정 Evidence 원장·딥링크, P3-10 단계 가드 문구(코드 없음).
 import { afterEach, describe, expect, it } from 'vitest';
 import { DB, type Db } from '../../src/kernel/db';
-import { actor, bootApp, nextRefId, withRef } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, nextRefId, withRef } from '../helpers';
 import { AnalysisEvidenceService } from '../../src/domains/d01-policy/topology/analysis-evidence.service';
 
 let close: (() => Promise<void>) | null = null;
@@ -133,9 +133,10 @@ async function toDeveloping(http: Http, id: string) {
 
 describe('G7 Safety/Security Gate — SM·CSM 두 사람 서명', () => {
   it.each(['HARA', 'TARA'])('바인딩한 %s 본문을 DB에서 변조하면 기존 G7 서명도 무효이고 PASS할 수 없다', async (kind) => {
-    const { http, db } = await boot();
+    const { http, db, app } = await boot();
     const id = await newFeature(http, 'B');
     await toDeveloping(http, id);
+    completeTestSupplierEvidence(app, id, '0.1.0');
     for (const g of ['G4', 'G5', 'G6']) await judge(http, id, g).expect(201);
     await http().post(url(id, '/analysis/g7-safety')).set(SM).send({ reason: '안전 근거 확인' }).expect(201);
     await http().post(url(id, '/analysis/g7-security')).set(CSM).send({ reason: '보안 근거 확인' }).expect(201);
@@ -179,9 +180,10 @@ describe('G7 Safety/Security Gate — SM·CSM 두 사람 서명', () => {
   });
 
   it('서명 없이 PASS 422, 한 사람이 두 역할로 서명 불가, 두 사람 서명 뒤 PASS. HARA를 다시 쓰면 이전 서명은 효력이 없다', async () => {
-    const { http } = await boot();
+    const { http, app } = await boot();
     const id = await newFeature(http, 'B');
     await toDeveloping(http, id);
+    completeTestSupplierEvidence(app, id, '0.1.0');
     for (const g of ['G4', 'G5', 'G6']) await judge(http, id, g).expect(201);
     const none = await judge(http, id, 'G7').expect(422);
     expect(none.body.error.details.blockers).toHaveLength(2);

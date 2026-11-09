@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom';
 import { configure } from '@testing-library/react';
+import { vi } from 'vitest';
+// jsdom never starts a MapLibre worker. Keep the asset URL deterministic without resolving a shared node_modules junction.
+// Production Vite builds and browser E2E still load and validate the real worker asset.
+vi.mock('maplibre-gl/dist/maplibre-gl-worker.mjs?url', () => ({ default: '/test-maplibre-worker.js' }));
 // 화면은 보고서 규칙 카탈로그를 필요할 때 읽는다(design/rule-catalog.ts) — 시험은 처음부터 설치해 규칙 제목이 바로 보이게 한다
 import '../../../contracts/src/rules/report-catalog-installed';
 

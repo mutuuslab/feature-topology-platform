@@ -15,6 +15,8 @@ export async function snapshotP3(save: SnapshotSave, ctx: SnapshotP3Context) {
   await save('traceCoverage');
   for (const filter of ['noRequirement', 'missingEvidence']) await save('traceCoverage', {}, { filter });
   await save('traceLinks');
+  // Browser trace writes validate against the complete list, including unlink history.
+  await save('traceLinks', {}, { status: 'ALL' });
   // Topology 관계 표의 유형 선택 — 10종
   const byType = new Map<string, { items: { dependencyId: string }[] }>();
   for (const type of RELATION_TYPE_LIST) byType.set(type, await save('dependencies', {}, { type }));

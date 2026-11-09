@@ -1,3 +1,4 @@
+import { localAppHref } from '../file-routing';
 // GitLab MR 시연 창 — 공유 모의 원장(mockExtItems gitlab)의 MR·파이프라인을 GitLab MR 화면 구조로 보인다(읽기 전용).
 // Feature 연결은 제목으로 추측하지 않고 플랫폼 연계 원장(extFeatureTrace의 mergeRequests)에 이 MR이 실제로 있는지 확인한 뒤에만 잇는다.
 import { useEffect, useState } from 'react';
@@ -174,7 +175,7 @@ function MrDetail({ item, pipelines, fromLink }: { item: MockExternalItem; pipel
                 <a className="gl-feature" href={featureHref(target)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}><strong>{featureKey(target)}</strong><span>{feature?.name ?? featureKey(target)}</span></a>
                 {feature && <p className="gl-meta">{feature.lifecycle}{feature.ownerId ? ` · ${feature.ownerId}` : ''}</p>}
                 {trace.data!.policies.length ? (
-                  <ul className="gl-flags" aria-label={T.flags}>{trace.data!.policies.map((p) => <li key={p.policyId}><code>{p.flagKey}</code><a href={'/policies/' + p.policyId} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{T.policy} {p.policyId}</a><span>{p.status}</span></li>)}</ul>
+                  <ul className="gl-flags" aria-label={T.flags}>{trace.data!.policies.map((p) => <li key={p.policyId}><code>{p.flagKey}</code><a href={localAppHref('/policies/' + p.policyId)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{T.policy} {p.policyId}</a><span>{p.status}</span></li>)}</ul>
                 ) : (
                   <p className="gl-meta">{T.controlPoints} · {(feature?.controlPoints ?? []).join(', ') || featureKey(target)}</p>
                 )}

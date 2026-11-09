@@ -199,7 +199,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
       <header className="sh-top">
         <Link to="/" className="sh-brand" aria-label={`Mutuus Lab ${ko.app.name}`} title={ko.app.name}>
           {/* 회사 로고(심볼 + Mutuus Lab) — 로그인 화면과 같은 파일 */}
-          <img className="sh-brand__logo" src="/brand/mutuuslab_logo.png" alt="" width="788" height="101" />
+          <img className="sh-brand__logo" src={`${import.meta.env.BASE_URL}brand/mutuuslab_logo.png`} alt="" width="788" height="101" />
           <span className="sh-brand__divider" aria-hidden />
           <span className="sh-brand__name">{ko.app.name}</span>
           <span className="sh-brand__sub">{ko.app.tagline}</span>

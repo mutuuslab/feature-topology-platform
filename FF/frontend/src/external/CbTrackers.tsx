@@ -1,3 +1,4 @@
+import { localAppHref } from '../file-routing';
 // codeBeamer Trackers 화면 — 참고 화면의 3단 구성(Release 트리·그룹 표·상세 패널)을 공유 모의 원장에 적용한다.
 // 원장에 Epic·Story가 따로 없으므로 계층은 요구 ID 그룹 → 요구 항목 → 기존 추적으로 확인된 Feature Version으로 둔다.
 import { useMemo, useState, type ReactNode } from 'react';
@@ -162,7 +163,7 @@ export function CbTrackers({ items, visible, selected, selectedKey, role, onSele
                       <span className="cb-child__label">{G.linked}</span>
                       <a href={featureHref(feature)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{featureKey(feature)}</a>
                       <span>{feature.name ?? T.confirm}</span>
-                      {flags.map((row) => <span key={row.flagKey} className="cb-child__flag"><span className="cb-child__label">{G.flags}</span><a href={flagMapHref(row.flagKey)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}><code>{row.flagKey}</code></a>{row.policy && <a href={'/policies/' + row.policy.policyId} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{G.policy} {row.policy.policyId} · r{row.policy.revision}</a>}</span>)}
+                      {flags.map((row) => <span key={row.flagKey} className="cb-child__flag"><span className="cb-child__label">{G.flags}</span><a href={flagMapHref(row.flagKey)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}><code>{row.flagKey}</code></a>{row.policy && <a href={localAppHref('/policies/' + row.policy.policyId)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{G.policy} {row.policy.policyId} · r{row.policy.revision}</a>}</span>)}
                     </span></td>
                   </tr>;
                 }),

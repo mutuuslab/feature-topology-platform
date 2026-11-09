@@ -1,3 +1,4 @@
+import { localAppHref } from '../../file-routing';
 // Unleash 평가·서명 게시본·차량 수신은 독립 근거다. 현재 정책 개정과 서명 검증이 일치하는 상세만 수신 시각/VIN으로 사용한다.
 import { useQuery } from '@tanstack/react-query';
 import type { FeatureFlagRow } from '@ff/contracts';
@@ -27,5 +28,5 @@ export function useFlagPublication(row: FeatureFlagRow) {
     queryFn: ({ signal }) => call('publicationDetail', { params, signal }), retry: false });
   return { ...query, evidence: query.isSuccess ? flagPublicationEvidence(row, query.data) : null };
 }
-export const flagPublicationPath = (id: string) => '/deployments/' + encodeURIComponent(id);
-export const flagReceiptVehiclePath = (vin: string) => '/fleet/vehicles/' + encodeURIComponent(vin);
+export const flagPublicationPath = (id: string) => localAppHref('/deployments/' + encodeURIComponent(id));
+export const flagReceiptVehiclePath = (vin: string) => localAppHref('/fleet/vehicles/' + encodeURIComponent(vin));

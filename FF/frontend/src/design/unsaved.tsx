@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { unsaved as U } from '../copy/unsaved';
 import { Button } from './primitives';
+import { isLocalFile, localNavigationTarget } from '../file-routing';
 
 const dirty = new Set<string>();
 let pending: string | null = null;
@@ -43,6 +44,7 @@ function inAppLink(e: MouseEvent): HTMLAnchorElement | null {
   const a = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
   if (!a || a.target && a.target !== '_self' || a.hasAttribute('download')) return null;
   const url = new URL(a.href, location.href);
+  if (isLocalFile()) return localNavigationTarget(url.href, location.href) ? a : null;
   if (url.origin !== location.origin) return null;
   // 같은 화면 안 이동(#조각)만 바뀌면 묻지 않는다
   if (url.pathname === location.pathname && url.search === location.search) return null;
@@ -63,7 +65,7 @@ export function UnsavedPrompt() {
       e.stopPropagation();
       const url = new URL(a.href, location.href);
       const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-      pending = (url.pathname.startsWith(base) ? url.pathname.slice(base.length) || '/' : url.pathname) + url.search + url.hash;
+      pending = isLocalFile() ? localNavigationTarget(url.href, location.href) : (url.pathname.startsWith(base) ? url.pathname.slice(base.length) || '/' : url.pathname) + url.search + url.hash;
       emit();
     };
     const onUnload = (e: BeforeUnloadEvent) => {

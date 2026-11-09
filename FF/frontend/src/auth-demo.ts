@@ -6,6 +6,7 @@
 // 공개 데모 게이트(백엔드 FF_DEMO_GATE=on, 클라우드 VM 20-99): 서버가 같은 ID/PW로 세션 쿠키를 준다 — 그때는 서버 판정이 기준이고
 // (서버 비밀번호를 바꿔도 동작), 서버 세션이 끝나면(401) 화면도 로그인으로 돌아간다. 게이트 없는 백엔드·정적 데모는 지금처럼 브라우저 판정.
 import { useSyncExternalStore } from 'react';
+import { isLocalFile } from './file-routing';
 
 /** 번들 검사 표식 — 데모 로그인 폼(data-demo-login)이 쓴다. 운영 빌드에 이 문자열이 있으면 데모 로그인이 실린 것이다 */
 export const DEMO_LOGIN_MARKER = 'ff-demo-login-v1';
@@ -57,7 +58,7 @@ export const staticSite = (): boolean => import.meta.env.VITE_DATA_MODE === 'sta
  * 정적 사이트의 게이트(Pages 미들웨어)는 auth-gate.ts가 맡는다(DemoLoginForm이 나눈다).
  */
 export async function loginWithServer(id: string, password: string): Promise<boolean> {
-  if (staticSite()) return login(id, password);
+  if (isLocalFile() || staticSite()) return login(id, password);
   let res: Response;
   try {
     res = await fetch('/api/auth/demo-login', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ id, password }) });
@@ -84,8 +85,8 @@ export function logout(): void {
     /* noop */
   }
   // 정적 사이트는 Pages 게이트 쿠키를 지운다(게이트가 없으면 404 — 무시). 서버 게이트 세션도 지운다(응답을 기다리지 않는다 — 화면은 바로 로그인으로)
-  if (staticSite()) void fetch(`${import.meta.env.BASE_URL}__auth/logout`, { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(() => undefined);
-  else if (gate) void fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' }).catch(() => undefined);
+  if (!isLocalFile() && staticSite()) void fetch(`${import.meta.env.BASE_URL}__auth/logout`, { method: 'POST', credentials: 'same-origin', keepalive: true }).catch(() => undefined);
+  else if (!isLocalFile() && gate) void fetch('/api/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}' }).catch(() => undefined);
   emit();
 }
 

@@ -1,5 +1,6 @@
 import type { MouseEvent } from 'react';
 import { DEMO_EXTRAS } from '../auth-mode';
+import { isLocalFile, localAppHref, siblingDocument } from '../file-routing';
 
 export type ExternalSystem = 'codebeamer' | 'jira';
 /** 독립 시연 창 — GitLab은 MR 열람 창(쓰기 없음)이라 JIRA·codeBeamer 공용 작업 화면과 따로 그린다 */
@@ -12,6 +13,7 @@ export function externalUrl(system: ExternalWindow, key?: string, role?: string,
   if (key) query.set('key', key);
   if (feature) query.set('feature', feature);
   if (role) query.set('role', role);
+  if (isLocalFile()) { const url = siblingDocument('external.html'); url.search = query.toString(); return url.href; }
   return `/external.html?${query}`;
 }
 
@@ -33,6 +35,7 @@ export function externalReferenceUrl(ref: { system: string; url: string; key: st
 
 /** 사용자 클릭 중에 호출하므로 팝업 차단을 피한다. noopener의 null 반환에 재시도하면 창이 두 개 열린다. */
 export function openExternalWindow(event: MouseEvent<HTMLAnchorElement>) {
+  if (isLocalFile()) event.currentTarget.href = localAppHref(event.currentTarget.getAttribute('href') ?? event.currentTarget.href);
   if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
   window.open(event.currentTarget.href, '_blank', 'popup=yes,noopener,noreferrer,width=1366,height=900');

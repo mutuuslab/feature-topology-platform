@@ -1,3 +1,4 @@
+import { localAppHref } from '../file-routing';
 import { useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { JIRA_CR_STATUS, JIRA_EPIC_STATUS, type FeatureFlagRow } from '@ff/contracts';
@@ -39,7 +40,7 @@ function ExternalFlagProgress({ row }: { row: FeatureFlagRow }) {
   const query = useFlagPublication(row);
   const evidence = query.evidence;
   return <ol className="external-delivery-flow" aria-label={T.deliveryFlow}>
-    <li><strong>{T.unleash}</strong>{row.policy ? <a href={'/policies/' + row.policy.policyId + '#unleash-h'} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{T.evaluation}</a> : <span>{T.confirm}</span>}<small>{T.evaluationBoundary}</small></li>
+    <li><strong>{T.unleash}</strong>{row.policy ? <a href={localAppHref('/policies/' + row.policy.policyId + '#unleash-h')} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{T.evaluation}</a> : <span>{T.confirm}</span>}<small>{T.evaluationBoundary}</small></li>
     <li><strong>{T.vehicleDelivery}</strong>{row.publication ? <a href={flagPublicationPath(row.publication.publicationId)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{T.deliveryEvidence} · {row.publication.publicationId}</a> : <span>{T.noPublication}</span>}</li>
     <li><strong>{T.vehicleReceipt}</strong>{!row.publication ? <span>{T.receiptNone}</span> : query.isPending ? <span>{T.receiptChecking}</span> : !evidence ? <span role="status">{query.isError ? T.receiptFailed : T.receiptUnverified}</span> : <><span>{T.publicationStates[evidence.status] ?? evidence.status} · {T.reply(evidence.confirmed, evidence.denominator)}</span>{evidence.latest ? <><small>{T.receiptLatest} · {when(evidence.latest.at)} KST</small><a href={flagReceiptVehiclePath(evidence.latest.vin)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{evidence.latest.vin}</a>{evidence.latest.rejected && <small>{T.receiptRejected}</small>}</> : <small>{T.receiptWaiting}</small>}</>}<a className="external-map-link" href={flagMapHref(row.flagKey)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{T.map}</a></li>
   </ol>;
@@ -100,7 +101,7 @@ function TracePanel({ item, siblings, role }: { item: MockExternalItem; siblings
     {!busy && !error && !partial && !data.features.length && <p className="external-empty">{T.noFeature}</p>}
     {data.flags.map((row) => <section className="external-flag" key={row.flagKey + '@' + row.version} aria-label={T.flag + ' ' + row.flagKey}>
       <h4><code>{row.flagKey}</code></h4>
-      {row.policy && <p><a href={'/policies/' + row.policy.policyId} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{row.policy.policyId} · r{row.policy.revision}</a><span>{T.policyStates[row.policy.status] ?? row.policy.status} · {row.policy.controlPoint}</span></p>}
+      {row.policy && <p><a href={localAppHref('/policies/' + row.policy.policyId)} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{row.policy.policyId} · r{row.policy.revision}</a><span>{T.policyStates[row.policy.status] ?? row.policy.status} · {row.policy.controlPoint}</span></p>}
       <ExternalFlagProgress row={row} />
       {row.sources.length ? row.sources.map((source) => <div className="external-source" key={source.repository + '@' + source.commit + ':' + source.path + ':' + source.line}>
         <a href={source.url} target="_blank" rel="noopener noreferrer" onClick={openExternalWindow}>{source.path}:{source.line}</a>

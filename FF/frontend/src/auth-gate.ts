@@ -2,12 +2,14 @@
 // 서버에 로그인을 보내 서명 쿠키를 받고, 승인되면 기존 표식 ff.auth도 세운다.
 // 게이트가 없는 정적 호스팅(로컬 vite preview·정적 e2e·GitHub Pages)은 응답 표식이 없으니 기존 브라우저 로그인(auth-demo.ts)으로 처리한다.
 import { login, markAuthed } from './auth-demo';
+import { isLocalFile } from './file-routing';
 
 /** 게이트 응답 표식 — 미들웨어 GATE_MARK와 같다 */
 export const GATE_MARK = 'ff-gate-v1';
 
 /** 정적 사이트 로그인 — 게이트가 승인하면 쿠키(서버)와 ff.auth(화면)를 함께, 게이트가 거부하면 false */
 export async function gateLogin(id: string, password: string): Promise<boolean> {
+  if (isLocalFile()) return login(id, password);
   let body: { gate?: unknown; ok?: unknown } | null = null;
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}__auth/login`, {

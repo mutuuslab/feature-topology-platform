@@ -1,3 +1,4 @@
+import { localAppHref } from '../file-routing';
 // 독립 외부 화면의 읽기 전용 결합. 제목·본문·Flag 이름으로 연결을 추측하지 않는다.
 import type { FeatureFlagRow } from '@ff/contracts';
 
@@ -35,8 +36,8 @@ export const featureTarget = (id: unknown, version: unknown): Pick<ExternalFeatu
   const ver = fieldText(version);
   return featureId && /^FEAT-\d{5}$/.test(featureId) && ver && /^\d+\.\d+\.\d+$/.test(ver) ? { featureId, version: ver } : null;
 };
-export const featureHref = (feature: Pick<ExternalFeature, 'featureId' | 'version'>, tab = 'ext') => `/features/${feature.featureId}/${feature.version}?${new URLSearchParams({ tab })}`;
-export const flagMapHref = (flagKey: string) => `/fleet/map?${new URLSearchParams({ lens: 'activation', flagKey })}`;
+export const featureHref = (feature: Pick<ExternalFeature, 'featureId' | 'version'>, tab = 'ext') => localAppHref(`/features/${feature.featureId}/${feature.version}?${new URLSearchParams({ tab })}`);
+export const flagMapHref = (flagKey: string) => localAppHref(`/fleet/map?${new URLSearchParams({ lens: 'activation', flagKey })}`);
 
 /** 읽기 응답이 깨졌을 때 링크를 만들어 내거나 렌더 중 멈추지 않도록, 화면에서 사용하는 필드를 확인한다. */
 export function validFlagRows(value: unknown): value is FeatureFlagRow[] {

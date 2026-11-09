@@ -136,7 +136,7 @@ export function SwCostScreen() {
     { key: 'mm', header: T.cols.mm, cell: (p: CostListItem) => mm(p.totals?.totalMm), align: 'right' as const, sort: (p: CostListItem) => p.totals?.totalMm ?? -1 },
     ...(full ? [{ key: 'cost', header: T.cols.cost, cell: (p: CostListItem) => money(p.totals?.totalCost), align: 'right' as const, sort: (p: CostListItem) => p.totals?.totalCost ?? -1 }] : []),
     { key: 'basis', header: T.cols.basis, cell: (p: CostListItem) => (p.basisStale ? `${p.basisVersion} · ${T.stale}` : p.basisVersion), minor: true },
-    { key: 'updated', header: T.cols.updated, cell: (p: CostListItem) => when(p.updatedAt), sort: (p: CostListItem) => p.updatedAt, minor: true },
+    { key: 'updated', header: T.cols.updated, cell: (p: CostListItem) => <span className="ds-nowrap">{when(p.updatedAt)}</span>, sort: (p: CostListItem) => p.updatedAt, minor: true },
   ];
   return (
     <div className="ds-screen">

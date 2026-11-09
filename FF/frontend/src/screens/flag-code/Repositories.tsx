@@ -149,7 +149,7 @@ export function CodeRepositoriesScreen() {
                 cell: (r) => (
                   <span>
                     <Link to={`/integration/code-repositories/${r.repoId}`}>{r.displayName}</Link>
-                    <span className="fc-sub fc-file">{r.repository.replace(/^https:\/\//, '')}</span>
+                    <span className="fc-sub fc-file ds-nowrap">{r.repository.replace(/^https:\/\//, '')}</span>
                   </span>
                 ),
               },

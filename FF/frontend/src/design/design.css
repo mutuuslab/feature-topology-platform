@@ -101,17 +101,19 @@ h3 {
   cursor: not-allowed;
   transform: none;
 }
-/* 이유 글자는 흐름 밖(버튼 바로 아래)에 둔다 — 흐름 안에 두면 끝 맞춤 폼에서 버튼이 입력칸보다 올라갔다 */
+/* 비활성 사유도 실제 레이아웃 높이에 포함한다. 절대 배치는 긴 권한 안내가 다음 표·옆 버튼을 덮고 화면 밖으로 나갔다. */
 .ds-btn-why {
   position: relative;
-  display: inline-flex;
+  display: inline-grid;
+  justify-items: start;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
 }
 .ds-btn-why__text {
-  position: absolute;
-  top: calc(100% + 2px);
-  left: 0;
-  width: max-content;
-  max-width: 32ch;
+  position: static;
+  width: auto;
+  max-width: min(32ch, 100%);
   font-size: var(--fs-xs);
   color: var(--muted);
   pointer-events: none;

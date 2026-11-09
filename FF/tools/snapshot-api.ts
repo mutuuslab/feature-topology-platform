@@ -2,7 +2,7 @@ import { snapshotP11a } from './snapshot-p11a.ts';
 // npm run snapshot:api — 정적 데모(Cloudflare, VITE_DATA_MODE=static)용 GET 응답 스냅샷.
 // 빌드된 백엔드를 보조 포트에 띄워(메모리 DB·v0.81 시드) v2 화면이 실제로 보내는 요청 모양 그대로 받아 둔다.
 // 요청 URL·파일 이름 규칙은 @ff/contracts의 routeUrl·snapshotFile 하나를 프론트와 공유한다.
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
@@ -22,7 +22,7 @@ import { snapshotWorkflow } from './snapshot-workflow.ts';
 import { snapshotAc } from './snapshot-ac.ts';
 import { snapshotW } from './snapshot-w.ts';
 import { snapshotSupplier } from './snapshot-supplier.ts';
-import { captureSoftwareDemos } from './software-demo-capture.ts';
+import { captureSoftwareDemos, prepareSnapshotSoftwareDemo } from './software-demo-capture.ts';
 
 const require = createRequire(import.meta.url);
 const { ROUTES, routeUrl, snapshotFile, LIFECYCLE, TRIAL_STATES, SEGMENT_DIMENSIONS, trialListQuery, trialAnalyticsQuery, INTEGRATION_ERROR_SYSTEMS, ofrepSnapshotFile, DEMO_SDK_KEY, virtualEvidenceSnapshotFile, publicSimStatus, NOTIFICATION_CATEGORIES, trialTableQuery, TRIAL_TABLE_PAGE } = require(join(FF, 'contracts', 'dist', 'index.js')) as typeof import('../contracts/src/index');
@@ -41,6 +41,7 @@ async function freePort(): Promise<number> {
 
 let PORT = 0;
 let BASE = '';
+let SOURCE_SHA = '';
 // 출력 폴더(그 아래 api-snapshot/) — SNAPSHOT_OUT으로 바꾼다(tools/static-build.ts가 포트별 폴더로, 같은 폴더의 다른 작업과 겹치지 않게)
 const OUT = process.env.SNAPSHOT_OUT ? resolve(process.env.SNAPSHOT_OUT) : join(FF, 'frontend', 'public');
 /** 정적 데모 검색용 전체 목록 한 쪽 — frontend screens/refdb/refSearch.ts STATIC_SEARCH_PAGE(= 서버 REF_PAGE_MAX)와 같다 */
@@ -108,6 +109,8 @@ export function snapshotServerEnv(src: Record<string, string | undefined>, port:
 
 /** 보조 백엔드 시작 — 직접 실행할 때만(시험은 claimSnapshotFile만 읽는다) */
 async function start() {
+  SOURCE_SHA=process.env.FF_BUILD_SHA??execFileSync('git',['rev-parse','HEAD'],{cwd:FF,encoding:'utf8'}).trim();
+  if(!/^[a-f0-9]{40}$/.test(SOURCE_SHA))throw new Error('snapshot source requires a full commit SHA');
   PORT = process.env.SNAPSHOT_PORT ? Number(process.env.SNAPSHOT_PORT) : await freePort(); // 8000 금지
   BASE = `http://127.0.0.1:${PORT}`;
   // 가상검증 실행 기록 — 정적 배포에는 CARLA 검증 서버가 없다. 같은 입출력 계약의 시험 대역(결정적)으로 실행 기록·Evidence를 만들고,
@@ -115,7 +118,7 @@ async function start() {
   EVIDENCE = mkdtempSync(join(tmpdir(), 'ff-snapshot-evidence-'));
   const sim = { SIM_MODE: 'auto', CARLA_RUNNER: join(FF, 'backend', 'test', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FAKE_SIM_PROBE_FAIL: '1', FF_EVIDENCE_DIR: EVIDENCE };
   const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', join(FF, 'backend', 'dist', 'main.js')], {
-    env: snapshotServerEnv(process.env, PORT, sim),
+    env: snapshotServerEnv({...process.env,FF_BUILD_SHA:SOURCE_SHA}, PORT, sim),
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   const onOut = (d: Buffer) => {
@@ -730,15 +733,20 @@ async function main() {
   await snapshotP3(save, { features: all.items });
   await snapshotP10(save, { features: all.items });
   await snapshotTx(save, { features: all.items, policies: policies.items });
-  const software = await save('softwarePackages');
-  for (const item of software.items) { await save('softwarePackage', { id: item.packageId }); await save('softwareDownloadHistory', { id: item.packageId }); }
-  // Public bytes are opt-in for exact, user-approved synthetic JS hashes, never inferred from source enum alone.
+  // Public bytes stay opt-in and hash-allowlisted. The showcase preset generates only our public test template.
   if (process.env.FF_SOFTWARE_CAPTURE_CONFIG) {
     const config = JSON.parse(readFileSync(resolve(process.env.FF_SOFTWARE_CAPTURE_CONFIG), 'utf8'));
     console.log('software-demo-capture ' + JSON.stringify(await captureSoftwareDemos({ ...config, outDir: OUT })));
+  } else if(process.env.FF_PUBLIC_SOFTWARE_DEMO==='1') {
+    if(process.env.FF_SHOWCASE!=='1')throw new Error('public software demo requires the isolated showcase snapshot');
+    const config=await prepareSnapshotSoftwareDemo({apiUrl:BASE,expectedBuildSha:SOURCE_SHA});
+    console.log('software-demo-capture '+JSON.stringify(await captureSoftwareDemos({...config,outDir:OUT})));
   } else {
     writeFileSync(join(OUT, 'api-snapshot', 'software-demo-index.json'), JSON.stringify({ schema: 'ff.software-demo-capture.v1', items: [] }));
   }
+  // Capture after the actual demo download so list, detail and native history describe the same source state.
+  const software = await save('softwarePackages');
+  for (const item of software.items) { await save('softwarePackage', { id: item.packageId }); await save('softwareDownloadHistory', { id: item.packageId }); }
 
   // 운영 지표 탭 — Prometheus 텍스트(스냅샷을 찍는 동안 받은 요청)를 JSON으로 감싸 둔다. 마지막에 받아야 위 조회가 모두 들어간다
   const metricsUrl = routeUrl('healthMetrics');

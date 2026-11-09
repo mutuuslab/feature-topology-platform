@@ -39,7 +39,7 @@ jobs:
           npm ci
           npm run build:contracts
           npm run build -w feature-topology-backend
-          FF_SHOWCASE=1 FF_SHOWCASE_SCALE=2 FF_SHOWCASE_VEHICLES=480 FF_SYNTHETIC=24000 npm run snapshot:api
+          FF_SHOWCASE=1 FF_SHOWCASE_SCALE=2 FF_SHOWCASE_VEHICLES=480 FF_SYNTHETIC=24000 FF_PUBLIC_SOFTWARE_DEMO=1 npm run snapshot:api
           VITE_DATA_MODE=static npm run build -w feature-topology-frontend
           node -e "require('node:fs').writeFileSync('frontend/dist/release.json', JSON.stringify({commit:process.env.GITHUB_SHA,builtAt:new Date().toISOString(),mode:'static'}))"
       - name: Validate Pages publish artifact

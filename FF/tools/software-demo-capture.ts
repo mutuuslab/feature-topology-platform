@@ -1,5 +1,5 @@
 // Only explicitly allowlisted, independently reviewed executable demos may enter a public static artifact.
-import { createHash, verify } from 'node:crypto';
+import { createHash, randomUUID, verify } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
@@ -13,6 +13,33 @@ export interface SoftwareDemoAllow {packageId:string;vin:string;flagKey:string;e
 export interface SoftwareDemoCaptureOptions {apiUrl:string;outDir:string;expectedBuildSha:string;allowlist:SoftwareDemoAllow[];headers?:Record<string,string>}
 const hash=(bytes:Uint8Array|string)=>createHash('sha256').update(bytes).digest('hex');
 function requireValue(value:unknown,message:string):asserts value{if(!value)throw new Error(`SW demo capture: ${message}`);}
+/** Explicit public showcase preset. Only our generated test source enters the isolated snapshot API. */
+export async function prepareSnapshotSoftwareDemo(options:{apiUrl:string;expectedBuildSha:string}):Promise<Omit<SoftwareDemoCaptureOptions,'outDir'>>{
+  const url=new URL(options.apiUrl);
+  requireValue(url.protocol==='http:'&&['127.0.0.1','localhost','[::1]'].includes(url.hostname)&&!url.username&&!url.password&&!url.search&&!url.hash,'snapshot preparation requires a loopback demo API');
+  requireValue(/^[a-f0-9]{40}$/.test(options.expectedBuildSha),'full snapshot source SHA required');
+  const author={'X-Actor-Id':'usr-integrator','X-Actor-Role':'IMPLEMENTER'};
+  const reviewer={'X-Actor-Id':'usr-coordinator','X-Actor-Role':'RELEASE_MANAGER'};
+  async function call(path:string,init:RequestInit={}){
+    const response=await fetch(options.apiUrl.replace(/\/$/,'')+path,{...init,headers:{...author,...init.headers}});
+    requireValue(response.ok,`snapshot preparation HTTP ${response.status}`);return response;
+  }
+  const health=await(await call(routeUrl('health'))).json();
+  requireValue(health.status==='ok'&&health.mode==='demo'&&health.commit===options.expectedBuildSha,'snapshot API source or demo mode mismatch');
+  const {feature:f}=await(await call(routeUrl('featureDetail',{id:'FEAT-00022',ver:'1.0.0'}))).json();
+  requireValue(f?.featureId==='FEAT-00022'&&f.version==='1.0.0'&&Array.isArray(f.swIds)&&typeof f.swIds[0]==='string'&&f.swIds[0],'public showcase Feature and SW component required');
+  const metadata={featureId:f.featureId,featureVersion:f.version,swId:f.swIds[0],source:'EXECUTABLE_DEMO',installationPerformed:false};
+  const bytes=Buffer.from(SOFTWARE_DEMO_PREFIX+`export const metadata = ${JSON.stringify(metadata,null,2)};\nexport function calculate(a, b) { return Number(a) + Number(b); }\nconsole.log(JSON.stringify({ ...metadata, selfTest: calculate(2, 3) === 5 }));\n`);
+  const sha256=hash(bytes),name=`${f.featureId}-${f.version}-demo.mjs`;
+  const uploaded=await(await call(routeUrl('uploadSoftware'),{method:'POST',headers:{'Content-Type':'application/octet-stream','Idempotency-Key':randomUUID(),'X-File-Name':name,'X-File-Type':'text/javascript'},body:bytes})).json();
+  requireValue(typeof uploaded.fileId==='string'&&uploaded.sha256===sha256&&uploaded.bytes===bytes.length,'uploaded public demo bytes must match the generated template');
+  const draft=await(await call(routeUrl('createSoftwarePackage'),{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':randomUUID()},body:JSON.stringify({fileId:uploaded.fileId,featureId:f.featureId,featureVersion:f.version,swId:f.swIds[0],sha256,source:'EXECUTABLE_DEMO',reason:'Public snapshot: generated test software; no vehicle installation.'})})).json();
+  requireValue(/^SWP-[A-Za-z0-9-]+$/.test(draft.packageId)&&draft.status==='DRAFT'&&draft.createdBy===author['X-Actor-Id']&&draft.sha256===sha256,'native draft must preserve the generated source and author');
+  const reviewed=await(await call(routeUrl('reviewSoftwarePackage',{id:draft.packageId}),{method:'POST',headers:{...reviewer,'Content-Type':'application/json','Idempotency-Key':randomUUID()},body:JSON.stringify({revision:draft.revision,decision:'APPROVE',reason:'Public snapshot: separate demo-role review of the generated template; no installation.'})})).json();
+  requireValue(reviewed.packageId===draft.packageId&&reviewed.status==='APPROVED'&&reviewed.createdBy===author['X-Actor-Id']&&reviewed.reviewedBy===reviewer['X-Actor-Id']&&reviewed.sha256===sha256,'separate native demo-role review required');
+  // The strict capture still performs the actual Flag verdict, native download, Ed25519 and byte verification.
+  return {apiUrl:options.apiUrl,expectedBuildSha:options.expectedBuildSha,allowlist:[{packageId:draft.packageId,vin:'KMH-NX4-0001',flagKey:'care_00022_signal',expectedSha256:sha256}]};
+}
 export async function captureSoftwareDemos(options:SoftwareDemoCaptureOptions){
   requireValue(/^https?:\/\//.test(options.apiUrl)&&/^[a-f0-9]{40}$/.test(options.expectedBuildSha),'explicit API URL and full source SHA required');
   requireValue(Array.isArray(options.allowlist)&&options.allowlist.length>0&&new Set(options.allowlist.map(a=>a.packageId)).size===options.allowlist.length,'unique explicit package allowlist required');

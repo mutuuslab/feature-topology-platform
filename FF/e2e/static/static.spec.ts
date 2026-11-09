@@ -8,6 +8,7 @@ import { openRefPicker } from '../tests/refdb';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { routeUrl, snapshotFile } from '@ff/contracts';
 import { DRILLDOWNS, MENU_ENTRIES } from '../tests/menu';
 import { EMPTY_PATTERN, EMPTY_PHRASES } from './empty-copy';
 
@@ -35,13 +36,87 @@ async function noErrorBox(page: Page, where: string) {
  * 빈 상태 허용 — [주소 정규식, 표식 정규식, 이유]. 데이터상 0이 정상인 안내만, 최소로.
  * 표식은 '종류 [패널 제목] 글자'(빈 상자·문구·로딩).
  */
-const ALLOW: [RegExp, RegExp, string][] = [
+type EmptyProof = (page: Page) => Promise<void>;
+/** A normal zero is accepted only when the actual captured API confirms it.
+ * Missing files, malformed responses, errors and loaders remain failures. */
+const capturedZero = (name: string, arrays = ['items'], params: Record<string, string> = {}, query: Record<string, string> = {}): EmptyProof => async page => {
+  const path = '/' + snapshotFile(routeUrl(name, params, query));
+  const response = await page.request.get(path);
+  expect(response.status(), path).toBe(200);
+  expect(response.headers()['content-type'], path).toContain('json');
+  const body = await response.json();
+  for (const field of arrays) {
+    expect(Array.isArray(body[field]), `${path}.${field} must be an array`).toBe(true);
+    expect(body[field], `${path}.${field}: a populated source must never be waived`).toHaveLength(0);
+  }
+};
+const capturedExperiment = (check: 'baseline' | 'samples' | 'draft'): EmptyProof => async page => {
+  const id = (await page.locator('.ds-drawer').innerText()).match(/\bEXP-\d+\b/)?.[0];
+  expect(id, 'the visible drawer must identify its actual experiment').toBeTruthy();
+  const response = await page.request.get('/' + snapshotFile(routeUrl('experiment', { id: id! })));
+  expect(response.status()).toBe(200);
+  expect(response.headers()['content-type']).toContain('json');
+  const data = await response.json();
+  expect(data.experimentId).toBe(id);
+  if (check === 'draft') {
+    expect(data.status).toBe('DRAFT');
+    expect(data.startedAt).toBeNull();
+    expect(data.results).toBeNull();
+  } else if (check === 'baseline') {
+    expect(data.type).toBe('SHADOW');
+    expect(data.results.fleet.comparisonStatus).toBe('NO_BASELINE');
+    expect(data.results.fleet.deployedPolicyId).toBeNull();
+    expect(data.results.fleet.comparableVehicles).toBe(0);
+  } else {
+    expect(data.results.verdict).toBe('INSUFFICIENT');
+    expect(data.results.enough).toBe(false);
+    expect(Math.min(data.results.sampleCounts.control, data.results.sampleCounts.treatment)).toBeLessThan(data.minSamples);
+  }
+};
+const capturedUnknownImpact: EmptyProof = async page => {
+  const drawer = page.locator('.ds-drawer');
+  await expect(drawer).toContainText('판단 불가 — 확정 영향군이 아직 없습니다');
+  const id = (await drawer.innerText()).match(/\bKILL-\d+\b/)?.[0];
+  expect(id).toBeTruthy();
+  const read = async (name: string, id: string) => {
+    const response = await page.request.get('/' + snapshotFile(routeUrl(name, { id })));
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toContain('json');
+    return response.json();
+  };
+  const kill = await read('killDetail', id!);
+  const impact = await read('impactSet', kill.incidentId ?? kill.killId);
+  expect(impact.accuracy.status).toBe('UNKNOWN');
+  expect(impact.accuracy.value).toBeNull();
+  expect(impact.confirmed).toBeNull();
+};
+const ALLOW: [RegExp, RegExp, string, RegExp?, EmptyProof?][] = [
   [/^\/audit\/oversight/, /겸직 계정이 없습니다/, '직무 분리 감사의 정상 결과 — 겸직 0건이 통과 기준이다(FFG-PLT-016)'],
   [/^\/feature\/propose/, /아직 고른 기준 행이 없습니다/, '등록 1단계의 입력 전 칸 — 사람이 기준 행을 고르기 전 상태(실서버 빈 화면 하네스와 같은 허용)'],
   [/^\/data\/workbench/, /저장한 조회가 없습니다|실행한 조회가 없습니다/, '이 브라우저·계정의 개인 목록 — 사람이 조회를 저장·실행하기 전 칸(스냅샷 데이터가 아니다)'],
+  [/^\/fleet\/live$/, /^문구 \[배포·차단 이벤트\] 아직 이벤트가 없습니다$/, '접속 이후의 실시간 변경 전용 피드 — 과거 감사 이력과 구분한다', /정책 값 대조$/],
+  [/^\/fleet\/map$/, /^문구 \[실시간 변경\] 아직 이벤트가 없습니다$/, '접속 이후의 실시간 변경 전용 피드 — 접속 직후 새 변경은 0건이다', /^\/fleet\/map$/],
+  [/^\/ops\/telemetry$/, /^빈 상자 \[운영 데이터·이벤트\]/, '수동 스케줄러의 동결 원천에 차량 회신이 없다 — 회신을 만들어 적용 완료로 표시하지 않는다', /^(\/ops\/telemetry|\/ops\/telemetry › 회신 \(readback\)|\/ops\/telemetry › 지표·추적·이벤트 › 차량 회신)$/, capturedZero('readbacks')],
+  [/^\/ops\/telemetry$/, /^빈 상자 \[운영 데이터·이벤트\]/, '수신하지 않은 차량 상태는 UNKNOWN — 원천 features/recent가 모두 0임을 확인한다', / › 상태 보고 v2$/, capturedZero('vehicleStatusView', ['features', 'recent'], { vin: 'ego-01' })],
+  [/^\/fleet\/vehicles(?:\/ego-01)?$/, /^문구 \[상태 보고 v2 .* 받아들인 상태 보고가 없습니다 .*UNKNOWN\)/, '차량 적용 증거 없음은 비활성 판정이 아니다 — 원천 0과 UNKNOWN 안내를 함께 확인한다', / › 정책 게시본·수신 기록$/, capturedZero('vehicleStatusView', ['features', 'recent'], { vin: 'ego-01' })],
+  [/^\/integration\/openfeature$/, /^빈 상자 \[OpenFeature 범위\]/, 'ego-01 내장 provider에 수집된 평가가 없다 — 서버 범위 표와 차량 관측을 구분한다', /^(\/integration\/openfeature|\/integration\/openfeature › 차량 내장 provider \(OF-6\))$/, capturedZero('vehicleOpenFeature', ['items'], { vin: 'ego-01' })],
+  [/^\/procurement\/sw-cost\/EST-0001$/, /^문구 .* 등록된 검토 건이 없습니다\.$/, '보존 대상 기존 초안은 아직 구매 검토를 시작하지 않았다 — 신규 산정과 독립 승인은 별도 업무 흐름에서 검증한다', / › 구매 검토$/, capturedZero('costReviews', ['items'], { estId: 'EST-0001' })],
+  [/^\/policies\/POL-00001$/, /^문구 \[진행 중인 되돌리기\] (진행 중인 되돌리기 요청이 없습니다\.|요청이 없습니다\.)$/, '진행 중인 롤백 요청 0은 정상 — 요청·반려·실행은 별도 실제 업무 흐름으로 검증한다', undefined, capturedZero('rollbackRequests', ['items'], {}, { status: 'REQUESTED' })],
+  [/^\/ops\/rollback$/, /^빈 상자 \[롤백 이력\]/, '아직 실행하지 않은 롤백의 이력은 0건 — 실제 실행 업무 흐름과 구분한다', /^\/ops\/rollback$/, capturedZero('rollbacks')],
+  [/^\/experiments$/, /^문구 \[배포 정책과 후보 정책의 판단 비교\] 비교할 배포 정책이 없습니다\. 일치한 것으로 판정하지 않습니다\.$/, '비교 기준이 없는 음성 대조군 — 실제 원천 NO_BASELINE을 확인하고 일치 판정하지 않는다', / 행 \d+ 서랍$/, capturedExperiment('baseline')],
+  [/^\/experiments$/, /^문구 \[(배포 정책과 후보 정책의 판단 비교)?\] 아직 결론을 낼 수 없습니다$/, '최소 표본 미달의 음성 대조군 — 실제 원천 INSUFFICIENT와 각 군 표본 수를 확인한다', / 행 \d+ 서랍$/, capturedExperiment('samples')],
+  [/^\/experiments$/, /^문구 \[효과 추정\] 시작 전 — 결과가 없습니다$/, '실험 초안은 시작 전 결과가 없어야 한다 — 실제 DRAFT·미시작·결과null을 확인한다', / 행 \d+ 서랍$/, capturedExperiment('draft')],
+  [/^\/ops\/kill$/, /^문구 \[KILL-\d+\] 아직 없습니다$/, '확정 영향군이 없는 안전 음성 대조군 — 실제 원천 정확도UNKNOWN·확정null과 전체 안내 문장을 함께 확인한다', / 행 \d+ 서랍$/, capturedUnknownImpact],
 ];
 
-const allowed = (url: string, mark: string) => ALLOW.some(([u, m]) => u.test(url) && m.test(mark));
+async function allowed(page: Page, url: string, mark: string, trail: string) {
+  if (mark.startsWith('로딩 ')) return false;
+  const rule = ALLOW.find(([u, m, , t]) => u.test(url) && m.test(mark) && (!t || t.test(trail)));
+  if (!rule) return false;
+  await rule[4]?.(page);
+  test.info().annotations.push({ type: 'normal-zero', description: `${trail} — ${rule[2]}` });
+  return true;
+}
 
 /** 다 그려진 범위(본문·팝오버)의 빈 상태 표식 */
 async function emptyMarks(page: Page, scope: string): Promise<string[]> {
@@ -91,7 +166,7 @@ async function collectEmpty(page: Page, scope: string, where: string, into: stri
     await page.waitForTimeout(200); // hygiene-ok: 로딩 0이 세 번 이어지는지 보는 조건 대기의 간격(상한 10초) — 못 끝나면 '로딩' 표식으로 실패에 남는다
   }
   const url = new URL(page.url()).pathname;
-  for (const mark of await emptyMarks(page, scope)) if (!allowed(url, mark)) into.push(`${where} — ${mark}`);
+  for (const mark of await emptyMarks(page, scope)) if (!(await allowed(page, url, mark, where))) into.push(`${where} — ${mark}`);
 }
 
 /** 탭 묶음(role=tablist)에 깊이(바깥 탭 패널 수)별 표식을 붙이고 수를 센다 — 안쪽 탭은 바깥 탭마다 다시 센다 */
@@ -403,6 +478,24 @@ for (const url of ['/ops/anomalies', '/experiments', '/ops/kill', '/baselines', 
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await page.waitForLoadState('networkidle');
     const rows = page.locator('#main tbody tr[data-clickable="true"]');
+    if (url === '/ops/rollback') {
+      const response = await page.request.get('/' + snapshotFile(routeUrl('rollbacks')));
+      expect(response.status()).toBe(200);
+      expect(response.headers()['content-type']).toContain('json');
+      const data = await response.json();
+      expect(Array.isArray(data.items)).toBe(true);
+      if (data.items.length === 0) {
+        await capturedZero('rollbacks')(page);
+        const history = page.getByRole('region', { name: '롤백 이력', exact: true });
+        await expect(history.locator('[data-state="empty"]')).toBeVisible();
+        await expect(history.locator('tbody tr[data-clickable="true"]')).toHaveCount(0);
+        await noErrorAnywhere(page, '롤백 미실행 원천 0건');
+        expect([...missing]).toEqual([]);
+        expect(errors).toEqual([]);
+        test.info().annotations.push({ type: 'normal-zero', description: '원천 rollback 실행 이력 0건과 일치 — 생성·독립 승인·실행은 policy-ops-flow에서 검증' });
+        return;
+      }
+    }
     await expect(rows.first(), '열 수 있는 행이 한 줄 이상').toBeVisible();
     const empties: string[] = [];
     const n = Math.min(await rows.count(), 30);

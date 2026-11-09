@@ -169,6 +169,7 @@ test('정적 시연: Release Sign-off → 출시 — 알림·감사가 같은 �
   // 처음 상태로
   await page.getByTestId('demo-reset-open').click();
   await page.getByTestId('demo-reset').getByRole('button', { name: '처음 상태로 되돌리기' }).click();
+  await expect(page.getByTestId('demo-reset')).toBeHidden();
   await page.goto(F);
   await expect(main(page).getByRole('button', { name: /RELEASED로 전이/ })).toBeVisible();
   expect(errors).toEqual([]);
@@ -210,6 +211,8 @@ test('정적 시연: Feature DB 변경 요청 → 도메인 검토 → 승인, �
   await main(page).getByRole('button', { name: 'Evidence·서명' }).click();
   await drawer(page).getByRole('checkbox', { name: /개인 서명/ }).check();
   await drawer(page).getByRole('button', { name: '완료로 표시' }).click();
+  // 완료 취소는 낙관적으로 먼저 보인다. 실제 저장 뒤 닫힌 서랍을 확인하고 인계한다.
+  await expect(drawer(page)).toHaveCount(0);
   await expect(main(page).getByRole('button', { name: '완료 취소' })).toBeVisible();
   await shot(page, 'procedure-done');
   await as(page, 'steward', '/procedures/FPW.1?a=FPW.1-A02');

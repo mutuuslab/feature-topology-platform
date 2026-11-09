@@ -16,7 +16,7 @@ last_updated: 2026-11-09
 
 코드: `FF/frontend/src/api/sim/` · 시험 `FF/frontend/src/__tests__/simEngine.test.ts`, 정적 e2e `FF/e2e/static/kill-flow.spec.ts` · 쓰기 경로 배분표 `C:\tmp\ff-static-audit\sim-routes.md`(작업용).
 
-2026-11-09 전달 방식은 ZIP 전체 압축 해제 후 `index.html`을 브라우저에서 여는 **file 실행**이다. `tools/offline-file-build.mjs`가 IIFE 화면·해시 검증 데이터 아카이브·독립 창·IndexedDB를 묶으며 서버·포트·EXE를 만들지 않는다. 실제 외부 연계와 실차 SW 적용은 사용자 지시로 현재 제외한다. 아래 긴급 차단 예의 합성 회신을 실차 관측으로 해석하지 않는다.
+2026-11-09 최신 사용자 지시에 따라 통합본은 기존 GitHub/Cloudflare 경로로 정상 웹 게시한다. 서버 없는 실행은 앞으로의 필수 조건이 아니다. 앞서 전달한 file 실행 ZIP과 `tools/offline-file-build.mjs`는 별도 전달 방식의 이력으로 보존한다. 웹 게시본은 서명 쿠키 접근 게이트와 스냅샷 조회, 브라우저별 IndexedDB 변경을 사용한다. 실제 외부 연계와 실차 SW 적용은 사용자 지시로 현재 제외한다. 아래 긴급 차단 예의 합성 회신을 실차 관측으로 해석하지 않는다.
 
 ## 1. 구조
 

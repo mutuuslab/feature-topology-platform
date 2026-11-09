@@ -66,3 +66,14 @@ test('스냅샷 흔적 게이트 — 단독 실행도 실패하고 흔적 있는
     rmSync(base, { recursive: true, force: true });
   }
 });
+
+
+test('Supplier private-host rejection rules are allowed only as exact regexes in their bundle', () => {
+  const prefix = String.raw`/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/i`;
+  const suffix = String.raw`/\.(localhost|local|internal)$/i`;
+  const file = 'assets/supplier-Abc123.js';
+  assert.deepEqual(kinds(`${prefix}.test(host)&&${suffix}.test(host)`, file), []);
+  assert.deepEqual(kinds(`${prefix};fetch("https://localhost/private")`, file), ['localhost']);
+  assert.deepEqual(kinds(prefix, 'api-snapshot/supplier.json'), ['localhost']);
+  assert.deepEqual(kinds(suffix, 'assets/other.js'), ['localhost']);
+});

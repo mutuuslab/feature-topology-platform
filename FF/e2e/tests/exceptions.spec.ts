@@ -31,7 +31,7 @@ test('예외 목록: 적용 중·1차 승인·반려·만료 예외와 우회 �
 
 test('두 번째 승인 — 1차 승인자는 못 하고, 다른 운영 리더가 만료 일시와 함께 승인하면 적용 중', async ({ page, request }) => {
   const list = (await (await request.get(`${API}/api/exceptions?status=APPROVING`)).json()).items as { exceptionId: string; approvals: { by: string }[] }[];
-  test.skip(!list.length, '1차 승인 예외 없음');
+  expect(list.length, '데모 시드에는 독립 2차 승인 검증 대상이 있어야 한다').toBeGreaterThan(0);
   const id = list[0].exceptionId;
   await page.goto('/_design');
   await asRole(page, 'quality');

@@ -30,6 +30,9 @@ export const RULES: { kind: string; re: RegExp }[] = [
 /** 허용 — 공개본에 있어도 빌드 PC와 상관없는 라이브러리 기본 문자열(파일 종류·글자 그대로) */
 export const ALLOW: { why: string; file: RegExp; text: string }[] = [
   { why: 'react-router — 기준 URL이 없을 때 쓰는 자리표시 원점(요청하지 않는다)', file: /\.js$/, text: '"http://localhost"' },
+  // Supplier artifact validation rejects private/local hosts; these exact regex literals are rules, never request targets.
+  { why: '협력사 공개 HTTPS 산출물 검증 — 로컬·사설 호스트 거부 정규식', file: /(?:^|\/)supplier-[\w-]+\.js$/, text: '/^(localhost|127\\.|0\\.|10\\.|192\\.168\\.|169\\.254\\.|172\\.(1[6-9]|2\\d|3[01])\\.)/i' },
+  { why: '협력사 공개 HTTPS 산출물 검증 — 로컬 도메인 접미사 거부 정규식', file: /(?:^|\/)supplier-[\w-]+\.js$/, text: '/\\.(localhost|local|internal)$/i' },
 ];
 
 /** 빌드 사용자 이름(4자 이상만 — 짧으면 일반 단어와 겹친다) */

@@ -409,7 +409,7 @@ export function SharedAssetsScreen() {
   const rows = useMemo(() => (kind === 'ALL' ? items : items.filter((i) => i.kind === kind)), [items, kind]);
   const cnt = q.data?.counts;
   const chips = (xs: string[], to: (x: string) => string): ReactNode => (
-    <span className="cat-node__real">
+    <span className="cat-node__real shared-asset-links">
       {xs.slice(0, 5).map((x) => (
         <Link key={x} to={to(x)} className="ds-mono">{x}</Link>
       ))}

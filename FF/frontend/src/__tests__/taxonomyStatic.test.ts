@@ -24,6 +24,8 @@ beforeEach(async () => {
   set('featureDetail', { feature: f1 }, { id: F1, ver: f1.version });
   set('featureDetail', { feature: f2 }, { id: F2, ver: f2.version });
   set('policyDetail', { policy }, { id: P1 });
+  // Policy reads run the independent exception-expiry preflight; this fixture has no exceptions.
+  set('exceptionPolicies', {items:[]});
   set('globalScopes', { total: 0, items: [] });
   set('policyGlobalScope', { policyId: P1, featureId: F1, ownerId: f1.ownerId, scope: null }, { id: P1 });
   set('complianceRules', { items: [{ ruleId: 'RULE-01', name: 'Example rule', scope: { markets: ['KR'], regionCodes: ['1'] }, status: 'APPROVED' }] });

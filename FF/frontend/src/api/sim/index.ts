@@ -33,7 +33,12 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./p9'),
   () => import('./gx'),
 ];
-setSimHandlerLoader(() => Promise.all(HANDLERS.map((load) => load())));
+setSimHandlerLoader(async () => {
+  // ADS handlers share registration-time schema bindings. Finish that dependency before
+  // concurrent domain evaluation, including the first call reached through client.loadSim().
+  await import('./handlers/ads-shared');
+  return Promise.all(HANDLERS.map((load) => load()));
+});
 
 export { simCall, resetSim, registerSimHandler, registerSimReader, registerSimView, registerSimTask, simHandled, simReady, SimError } from './engine';
 export type * from './types';

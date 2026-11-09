@@ -5,6 +5,7 @@
 // 단계별 화면은 SHOTS 폴더(1366 폭)에 남긴다.
 import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { settle } from '../tests/settle';
 
 const SHOTS = process.env.BUSINESS_SHOTS ?? 'C:/tmp/ff-static-audit/pw-out/business/shots';
 let n = 0;
@@ -12,11 +13,18 @@ const shot = async (page: Page, name: string) => {
   mkdirSync(SHOTS, { recursive: true });
   await page.screenshot({ path: `${SHOTS}/${String(++n).padStart(2, '0')}-${name}.png` });
 };
+/** Normal internal navigation: wait for the actual module/data read, then reject errors. */
+async function visit(page: Page, url: string) {
+  await page.goto(url);
+  await page.waitForLoadState('networkidle');
+  await settle(page);
+}
+
 /** 데모 역할 전환(상단 역할 선택) — 역할 홈으로 옮겨 간 뒤 원하는 화면으로 */
 async function as(page: Page, role: string, url: string) {
   await page.getByRole('combobox', { name: '역할', exact: true }).selectOption(role);
   await page.waitForURL((u) => !u.pathname.startsWith('/login'));
-  await page.goto(url);
+  await visit(page, url);
 }
 async function login(page: Page) {
   await page.goto('/login');
@@ -69,9 +77,9 @@ test('정적 시연: 상품 새 Version → 구성 승인 → 검증 → 고객 
   await expect(page.getByRole('button', { name: /신규 판매 중단/ })).toBeVisible();
   await shot(page, 'product-released');
   // 목록·감사가 같은 상태
-  await page.goto('/products');
+  await visit(page, '/products');
   await expect(page.getByRole('article', { name: /CAT-00002/ }).filter({ hasText: 'CAT-00002@4.2.0' })).toBeVisible();
-  await page.goto('/audit');
+  await visit(page, '/audit');
   await expect(page.getByRole('row', { name: /상품 단계 전이 VERIFIED→RELEASED CAT-00002@4\.2\.0/ })).toBeVisible();
   expect(await unhandled(page)).toEqual([]);
   expect(errors).toEqual([]);
@@ -119,7 +127,7 @@ test('정적 시연: 개발비 과제 만들기 → Feature 담기 → 승인 �
   await expect(page.getByRole('cell', { name: 'usr-approver' })).toBeVisible();
   await shot(page, 'cost-approved');
 
-  await page.goto('/procurement/sw-cost');
+  await visit(page, '/procurement/sw-cost');
   await expect(page.getByRole('row', { name: new RegExp(estId) })).toContainText('승인됨');
   expect(await unhandled(page)).toEqual([]);
   expect(errors).toEqual([]);
@@ -143,7 +151,7 @@ test('정적 시연: 협의 의견·체험 제안이 목록에 바로 반영된�
   // 협의 의견 — 구매 부서(받은 부서)가 품질 부서의 협의 요청에 의견
   await page.locator('[data-dept-select]').first().selectOption('DEP-PUR');
   await page.waitForURL((u) => u.pathname === '/');
-  await page.goto('/consults/CON-2026-004');
+  await visit(page, '/consults/CON-2026-004');
   const form = page.getByRole('region', { name: '의견 남기기' });
   await form.getByRole('radio', { name: '보완' }).click();
   await form.getByLabel(/메모/).fill('계약서 시정 조항을 보완해 주세요');
@@ -176,7 +184,7 @@ test('정적 시연: 외부 JIRA·연계 화면에서 바꾸면 플랫폼 판정
   expect(await unhandled(page)).toEqual([]);
 
   // 기본 seamless에서는 내부 모의 폼을 숨기고 외부 도구 창을 쓴다(D-ALM-17).
-  await page.goto('/integration/connectors?tab=sync');
+  await visit(page, '/integration/connectors?tab=sync');
   await expect(page.locator('#sync-simulate')).toHaveCount(0);
   // 아래는 지원되는 labeled 표시 모드의 모의 입력 도구 검증이다.
   // presentation만 바꾸고 원본 연결 mode·항목·권한·업무 핸들러는 그대로 쓴다.
@@ -211,7 +219,7 @@ test('정적 시연: 외부 JIRA·연계 화면에서 바꾸면 플랫폼 판정
   await sim.getByRole('combobox', { name: '항목 키', exact: true }).selectOption('vehicle/feature-sw!101');
   await sim.getByRole('button', { name: '보내기' }).click();
   await expect(page.getByTestId('simulate-result')).toContainText('변경 기록 CHG-GL-101 r1');
-  await page.goto('/audit/oversight?tab=changes');
+  await visit(page, '/audit/oversight?tab=changes');
   await expect(page.getByText('CHG-GL-101').first()).toBeVisible();
   expect(await unhandled(page)).toEqual([]);
   expect(errors).toEqual([]);

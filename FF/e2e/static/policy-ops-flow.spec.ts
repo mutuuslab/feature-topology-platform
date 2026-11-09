@@ -15,11 +15,18 @@ const shot = async (page: Page, name: string) => {
   mkdirSync(SHOTS, { recursive: true });
   await page.screenshot({ path: `${SHOTS}/${String(++n).padStart(2, '0')}-${name}.png` });
 };
+/** Normal internal navigation: wait for the actual module/data read, then reject errors. */
+async function visit(page: Page, url: string) {
+  await page.goto(url);
+  await page.waitForLoadState('networkidle');
+  await settle(page);
+}
+
 /** 데모 역할 전환(상단 역할 선택) — 역할 홈으로 옮겨 간 뒤 원하는 화면으로 */
 async function as(page: Page, role: string, url: string) {
   await page.getByRole('combobox', { name: '역할', exact: true }).selectOption(role);
   await page.waitForURL((u) => !u.pathname.startsWith('/login'));
-  await page.goto(url);
+  await visit(page, url);
 }
 
 test.use({ storageState: { cookies: [], origins: [] }, viewport: { width: 1366, height: 900 } });
@@ -62,7 +69,6 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
 
   // 1. 작성 — 같은 flag의 새 판(감속 시작 거리 조정)
   await as(page, 'author', '/policies/new');
-  await page.waitForLoadState('networkidle');
   const create = page.locator('#main form');
   await create.getByLabel('Feature ID', { exact: true }).fill(FEAT);
   await create.getByLabel('Version', { exact: true }).fill('1.0.0');
@@ -112,7 +118,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await expect(page.locator('#main')).toContainText('DEPLOYED');
   await expect(page.getByRole('region', { name: 'Feature Flag 정책·승인' })).toContainText('5% / 100%');
   await shot(page, 'deployed-canary');
-  await page.goto('/policies');
+  await visit(page, '/policies');
   await expect(page.getByRole('row', { name: new RegExp(before.policyId) })).toContainText('RETIRED');
 
   // 6. 확대 시도(운영) — 관측 24시간 전이고 열린 이상 징후가 있어 거부(규칙 그대로, 거부도 감사)
@@ -129,7 +135,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
 
   // 7. 이상 징후 확인(운영) — 중단 기준이 된 열린 현장 이상
   const anomaly = (await (await page.request.get('/api-snapshot/anomalies.json')).json()).items.find((a: { featureId: string; status: string; kind: string }) => a.featureId === FEAT && a.status === 'OPEN' && a.kind !== 'DELIVERY');
-  await page.goto(`/ops/anomalies?id=${anomaly.anomalyId}`);
+  await visit(page, `/ops/anomalies?id=${anomaly.anomalyId}`);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('Canary 차량 감속 이상 보고 — 롤백 검토');
   await page.getByRole('dialog').getByRole('button', { name: '확인', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('확인됨');
@@ -170,7 +176,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await shot(page, 'rollback-executed');
 
   // 11. 차량 회신 — 게시본 목록 맨 위(정책 롤백 게시본), 회신이 몇 초에 걸쳐 들어오고 끊긴 차량은 다시 제출
-  await page.goto('/deployments');
+  await visit(page, '/deployments');
   const top = page.locator('#main tbody tr').first();
   await expect(top).toContainText(FLAG);
   await top.click();
@@ -209,27 +215,26 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await shot(page, 'rollback-confirmed');
 
   // 12. 롤백 완료(게시본이 모두 확인되면) — 이력, 복구 기준 버전 DEPLOYED, Unleash 대조(배포가 바뀌어 drift → 동기화 → 같음)
-  await page.goto('/ops/rollback');
-  await settle(page);
+  await visit(page, '/ops/rollback');
   await expect(page.locator('#main')).toContainText(rollbackPub);
   const latest = page.getByRole('row', { name: /RBX-\d{5}/ }).first();
   await expect.poll(async () => (await page.reload(), await settle(page), await latest.innerText()), { timeout: 40_000, intervals: [2_000] }).toContain('완료');
   await shot(page, 'rollback-completed');
-  await page.goto(`/policies/${before.policyId}`);
+  await visit(page, `/policies/${before.policyId}`);
   await expect(page.locator('#main')).toContainText('DEPLOYED');
   const unleash = page.getByRole('region', { name: 'Policy Tool 연계 (Unleash)' });
   await expect(unleash).toContainText(`fp-policy=${before.policyId}@r1`);
   await unleash.getByRole('button', { name: 'Unleash 동기화' }).click();
   await expect(unleash).toContainText('계획과 같습니다', { timeout: 20_000 });
   await shot(page, 'unleash-synced');
-  await page.goto('/audit');
+  await visit(page, '/audit');
   await expect(page.locator('#main')).toContainText(/되돌리기 실행/);
 
   // 13. 처음 상태로 — 상단 '시연 데이터 초기화'
   await page.getByTestId('demo-reset-open').click();
   await page.getByTestId('demo-reset').getByRole('button', { name: '처음 상태로 되돌리기' }).click();
   await expect(page.getByTestId('demo-reset')).toBeHidden();
-  await page.goto('/policies');
+  await visit(page, '/policies');
   await expect(page.locator('#main')).not.toContainText(policyId);
   // Policy-list reads may rehydrate internal GX metadata after reset. Check the
   // actual business overlay rather than mistaking its routing marker for policy edits.
@@ -284,8 +289,6 @@ async function createApprovedPolicy(page: Page, before: CapturedPolicy, descript
   await page.getByRole('dialog').getByRole('button', { name: '정책 승인', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await as(page, 'coordinator', `/policies/${policyId}`);
-  await page.waitForLoadState('networkidle');
-  await settle(page);
   await page.getByRole('button', { name: '서버 배포', exact: true }).click();
   await reviewDeployScope(page);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('같은 차량 값의 새 판 — 복구 이력 검증');
@@ -297,7 +300,7 @@ async function createApprovedPolicy(page: Page, before: CapturedPolicy, descript
 
 /** Establish confirmed local delivery; captured native receipts are never rewritten. */
 async function completePolicyDelivery(page: Page, flagKey: string) {
-  await page.goto('/deployments');
+  await visit(page, '/deployments');
   const row = page.locator('#main tbody tr').first();
   await expect(row).toContainText(flagKey);
   await row.click();
@@ -425,7 +428,7 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   await expect(history.getByRole('row', { name: new RegExp(yes.requestId) })).toBeVisible();
   await clean();
   await completePolicyDelivery(page, yes.flagKey);
-  await page.goto(`/ops/rollback?request=${yes.requestId}`);
+  await visit(page, `/ops/rollback?request=${yes.requestId}`);
   await expect.poll(async () => {
     await page.reload();
     return history.getByRole('row', { name: new RegExp(yes.requestId) }).innerText();

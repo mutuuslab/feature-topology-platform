@@ -14,11 +14,18 @@ const shot = async (page: Page, name: string) => {
   mkdirSync(SHOTS, { recursive: true });
   await page.screenshot({ path: `${SHOTS}/${String(++n).padStart(2, '0')}-${name}.png` });
 };
+/** Normal internal navigation: wait for the actual module/data read, then reject errors. */
+async function visit(page: Page, url: string) {
+  await page.goto(url);
+  await page.waitForLoadState('networkidle');
+  await settle(page);
+}
+
 /** 데모 역할 전환(상단 역할 선택) — 역할 홈으로 옮겨 간 뒤 원하는 화면으로 */
 async function as(page: Page, role: string, url: string) {
   await page.getByRole('combobox', { name: '역할', exact: true }).selectOption(role);
   await page.waitForURL((u) => !u.pathname.startsWith('/login'));
-  await page.goto(url);
+  await visit(page, url);
 }
 async function login(page: Page) {
   await page.goto('/login');
@@ -67,7 +74,7 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await shot(page, 'registered');
 
   // 같은 상태를 목록도 — Feature 목록(최신 Version)에 새 Feature
-  await page.goto(`/features?q=${id}`);
+  await visit(page, `/features?q=${id}`);
   await expect(main(page).getByRole('row', { name: new RegExp(id) })).toContainText('PROPOSED');
 
   // 2. 기능안전(품질) — 안전 분류 확정(개인 서명) → HARA 기록
@@ -89,7 +96,7 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await shot(page, 'safety-confirmed-hara');
 
   // 3. Gate G1~G3 — 품질 판정(G2 근거는 HARA 기록 번호)
-  await page.goto(`/features/${id}/0.1.0?tab=gates`);
+  await visit(page, `/features/${id}/0.1.0?tab=gates`);
   await judge(page, 'G1', 'EV-SVM-G1');
   await judge(page, 'G2', anl);
   await judge(page, 'G3', 'EV-SVM-G3');
@@ -124,15 +131,11 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await expect(drawer(page)).toContainText('결정자 usr-steward');
   await expect(drawer(page)).toContainText('체크리스트 통과 — 확정');
   await shot(page, 'baseline-decided');
-  await page.goto(`/features/${id}/0.1.0?tab=baseline`);
-  await page.waitForLoadState('networkidle');
-  await settle(page);
+  await visit(page, `/features/${id}/0.1.0?tab=baseline`);
   await expect(main(page)).toContainText(/BL-\d{5}/);
 
   // 7. 감사 — 이 Version의 기록(등록·안전 분류·Gate·전이·Baseline)
-  await page.goto(`/features/${id}/0.1.0?tab=audit`);
-  await page.waitForLoadState('networkidle');
-  await settle(page);
+  await visit(page, `/features/${id}/0.1.0?tab=audit`);
   for (const a of ['Feature 등록', '안전 분류 확정', 'HARA 판단 기록', 'Gate 판정 G2', 'PROPOSED→APPROVED', 'Baseline 확정 요청', 'BASELINE_APPROVE']) await expect(main(page).getByRole('row', { name: new RegExp(`${a}.*허용`) }).first()).toBeVisible();
   await shot(page, 'audit');
   expect(errors).toEqual([]);
@@ -169,14 +172,14 @@ test('정적 시연: Release Sign-off → 출시 — 알림·감사가 같은 �
   await expect(main(page).getByRole('button', { name: /DEPRECATED로 전이/ })).toBeVisible();
   await shot(page, 'released');
   // 감사 화면 — 같은 기록
-  await page.goto('/audit?prefix=FEAT-00144@3.3.0');
+  await visit(page, '/audit?prefix=FEAT-00144@3.3.0');
   await expect(main(page)).toContainText('RELEASE_SIGNOFF');
   await expect(main(page)).toContainText('VERIFIED→RELEASED');
   // 처음 상태로
   await page.getByTestId('demo-reset-open').click();
   await page.getByTestId('demo-reset').getByRole('button', { name: '처음 상태로 되돌리기' }).click();
   await expect(page.getByTestId('demo-reset')).toBeHidden();
-  await page.goto(F);
+  await visit(page, F);
   await expect(main(page).getByRole('button', { name: /RELEASED로 전이/ })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -210,9 +213,7 @@ test('정적 시연: Feature DB 변경 요청 → 도메인 검토 → 승인, �
   await main(page).getByRole('button', { name: '승인', exact: true }).click();
   await expect(main(page)).toContainText(/발행 대기|승인됨/);
   await shot(page, 'refchange-approved');
-  await page.goto('/master/feature-db/changes');
-  await page.waitForLoadState('networkidle');
-  await settle(page);
+  await visit(page, '/master/feature-db/changes');
   await expect(main(page).getByRole('row', { name: new RegExp(cr) })).toBeVisible();
   // 4. 업무 절차 — Feature Owner가 등록 활동을 Evidence·개인 서명으로 마치면 PLM 기준정보 차례
   await as(page, 'author', '/procedures/FPW.1?a=FPW.1-A01');

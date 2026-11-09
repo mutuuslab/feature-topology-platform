@@ -58,3 +58,12 @@ last_updated: 2026-11-10
 
 
 같은 원칙으로 `offerTrials`의 실제 제안 결과 status도 최대20초로 기다린다. 원5초 변동 실패는 r2/r3에 보존돼 있고, 첫 모듈 읽기·seed·실 handler/조회 경계를 별도 계측했다. 준비 UI의 loading/error/reload 복구는 유지하며 최종 성공 결과와 실제 제안/협의 목록 반영 단언은 그대로다. 새 제품5초 SLA나 전역 timeout을 만들지 않는다.
+
+
+## 내부 화면 읽기 준비 감사
+
+r6는 같은 app786/native70bb 진단판에서 원7/2workers **6 PASS/1 FAIL/3.2분**, skip/flaky0이다. 하네스7파일 시작·종료SHA 차이0 및 release 동일을 확인했다. 첫 정책 전체의 확대 거부·독립 롤백·재서명·회신·초기화와 상품·체험·제안·Sign-off·기준 행 업무 이관은 통과했다. 남은 실패는 같은값 복구 준비에서 `/deployments` 이동 직후 첫 행을 읽은 지점이며 실제 화면은 목록 progressbar였다. 원5초 실패는 `out/static-business-final-r6/`에 보존한다.
+
+세 spec의 일반 내부 `goto` 및 역할 전환 helper를 함께 감사해 같은 `visit` 준비로 일치시켰다. `networkidle`로 새 module/request 시작을 기다린 후 기존 standard `settle`로 실제 loading 종료와 오류0을 확인하고, 그 다음 기존 업무 상태를 단언한다. 고정 sleep은 없다. 기존 중복 준비는 공통 helper로 모았다. 로그인과 별도 external.html 이동은 기존 방식이며, 명시적인 reload 검증·publication5000ms·전체180/240/420초·전역expect·성능예산·모든 업무/권한/영속/서명/최종결과 단언은 변경하지 않는다.
+
+이 보완도 로딩 중인 화면에서 기능 결과를 판정하지 않도록 기능 시험의 준비를 정정한 것이며, 제품 처리 소스나 원본 캡처를 수정하지 않는다. 최종 동일 원7 재실행은 별도 결과로 기록한다.

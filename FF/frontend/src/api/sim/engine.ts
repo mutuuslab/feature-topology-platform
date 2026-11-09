@@ -69,6 +69,15 @@ export function registerSimDownload(name: string, fn: SimHandler) {
 export function registerSimReader(name: string, fn: SimReader) {
   readers.set(name, fn);
 }
+/** Add a specialized reader after the base modules load. Only undefined delegates;
+ * empty results and source/guard errors must retain their original meaning. */
+export function extendSimReader(name: string, fn: SimReader) {
+  const previous = readers.get(name);
+  readers.set(name, async (ctx) => {
+    const result = await fn(ctx);
+    return result !== undefined ? result : previous?.(ctx);
+  });
+}
 /** 스냅샷 목록·상세에 컬렉션 오버레이를 덮는다 */
 export function registerSimView(name: string, view: SimView) {
   views.set(name, view);

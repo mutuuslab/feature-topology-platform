@@ -135,6 +135,54 @@ afterEach(() => {
   localStorage.clear();
 });
 
+describe('계산 읽기 확장', () => {
+  it('특화 결과가 undefined일 때만 같은 요청·행위자로 기존 reader에 위임한다', async () => {
+    await engine.simReady();
+    const base = vi.fn((ctx) => ({ id: ctx.req.params.id, actor: ctx.actor.id }));
+    const specialized = vi.fn(() => undefined);
+    engine.registerSimReader('featureDetail', base);
+    engine.extendSimReader('featureDetail', specialized);
+    expect(await run('featureDetail', { params: { id: FEAT, ver: '1.0.0' }, role: 'viewer' }))
+      .toEqual({ id: FEAT, actor: 'usr-viewer' });
+    expect(base).toHaveBeenCalledOnce();
+    expect(base.mock.calls[0][0]).toBe(specialized.mock.calls[0][0]);
+  });
+
+  it.each([0, null, [], false])('실제 빈 결과 %j를 이전 성공 값으로 바꾸지 않는다', async (value) => {
+    await engine.simReady();
+    const base = vi.fn(() => ({ fabricated: true }));
+    engine.registerSimReader('masterEcu', base);
+    engine.extendSimReader('masterEcu', () => value);
+    expect(await run('masterEcu')).toEqual(value);
+    expect(base).not.toHaveBeenCalled();
+  });
+
+  it('특화 조회의 거부는 기존 성공 결과로 우회하지 않는다', async () => {
+    await engine.simReady();
+    const base = vi.fn(() => ({ ok: true }));
+    engine.registerSimReader('masterEcu', base);
+    engine.extendSimReader('masterEcu', () => { throw new Error('source guard rejected'); });
+    await expect(run('masterEcu')).rejects.toThrow('source guard rejected');
+    expect(base).not.toHaveBeenCalled();
+  });
+
+  it('위임된 기존 조회의 거부도 그대로 유지한다', async () => {
+    await engine.simReady();
+    engine.registerSimReader('masterEcu', () => { throw new Error('base source unavailable'); });
+    engine.extendSimReader('masterEcu', () => undefined);
+    await expect(run('masterEcu')).rejects.toThrow('base source unavailable');
+  });
+
+  it('기존 reader가 없거나 양쪽 모두 undefined이면 실제 스냅샷을 읽는다', async () => {
+    await engine.simReady();
+    engine.extendSimReader('auditChain', () => undefined);
+    expect(await run('auditChain')).toMatchObject({ ok: true, verified: 10 });
+    engine.registerSimReader('featureDetail', () => undefined);
+    engine.extendSimReader('featureDetail', () => undefined);
+    expect(await run('featureDetail', { params: { id: FEAT, ver: '1.0.0' } })).toEqual(SNAP[url('featureDetail', { id: FEAT, ver: '1.0.0' })]);
+  });
+});
+
 describe('시연 라우터', () => {
   it('등록 안 된 쓰기는 처리됨 + 감사·개발 목록, 화면을 깨지 않는다', async () => {
     window.__simUnhandled = [];

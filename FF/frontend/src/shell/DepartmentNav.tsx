@@ -1,5 +1,5 @@
 // 부서 메뉴(데모 부서 보기) — 8그룹 레일·패널 대신 그 부서의 업무 화면만. 구조는 하나이고 배치는 화면 유형이 정한다(shell.css
-// [data-workspace]): SW개발비 및 정보보안은 위쪽 가로 메뉴, 상품기획·표준 검토함·엔지니어링 검토·배포 및 모니터링은 왼쪽 세로 메뉴.
+// [data-workspace]): 모든 부서가 특성별로 분류한 왼쪽 메뉴를 사용한다.
 // 메뉴에 없는 화면도 주소로 열 수 있다(데모 — 화면 차단 없음). '전체 메뉴 보기'는 전체 보기(8그룹)로 돌아간다.
 import { useEffect, useMemo, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -14,7 +14,6 @@ import { useAppShell } from '../store';
 import { procedurePanel } from '../copy/procedure-panel';
 import './department-navigation.css';
 
-const horizontal = (w: string) => w === 'portal';
 /** 번들 검사 표식 — 운영 빌드(OIDC)에 이 문자열이 있으면 데모 부서 보기가 실린 것이다(tools/prod-bundle.test.ts) */
 export const DEPT_VIEW_MARKER = 'ff-dept-view-v1';
 
@@ -51,7 +50,6 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
-  const flat = horizontal(dept.workspace);
   const link = (item: DeptMenuItem) => (
     <li key={item.to}>
       <NavLink to={item.to} className={() => (!rnr && isActive(loc.pathname, item) ? 'active' : '')} end={item.to === '/'}>
@@ -71,7 +69,7 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
       <div className="sh-dnav__head">
         <p className="sh-dnav__eyebrow">{D.workspace[dept.workspace]}</p>
         <p className="sh-dnav__name">{name}</p>
-        {!flat && <p className="sh-dnav__counts">{D.counts(dept.counts.R, dept.counts.A, dept.counts.C)}</p>}
+        <p className="sh-dnav__counts">{D.counts(dept.counts.R, dept.counts.A, dept.counts.C)}</p>
       </div>
       <ul className="sh-dnav__list sh-dnav__list--fixed">
         <li>

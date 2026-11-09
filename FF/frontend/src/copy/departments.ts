@@ -5,7 +5,7 @@ import type { Workspace } from '@ff/contracts';
 
 export const departments = /* @__PURE__ */ localizedCopy('departments.departments', {
   all: '전체 보기',
-  allHint: '모든 메뉴(8그룹)를 보여 줍니다',
+  allHint: '모든 업무 메뉴를 보여 줍니다',
   switcher: '담당 부서',
   persona: '부서 안 역할',
   login: { label: '담당 부서', hint: '로그인 뒤 상단 바에서 언제든 바꿀 수 있습니다' },
@@ -21,7 +21,7 @@ export const departments = /* @__PURE__ */ localizedCopy('departments.department
     home: '내 작업공간',
     primary: '내 업무',
     reference: '협의·참조',
-    procedures: '업무 절차',
+    procedures: '전체업무흐름',
     rnr: '부서 R&R',
     allMenu: '전체 메뉴 보기',
     more: '더 보기',
@@ -42,7 +42,7 @@ export const departments = /* @__PURE__ */ localizedCopy('departments.department
     alsoR: '수행 겸',
     partRA: '수행·책임',
     moreItems: (n: number) => `외 ${n}건 더 보기`,
-    procedures: '업무 절차 전체',
+    procedures: '전체업무흐름',
     // 인계가 없는 부서(법무·개인정보) — 빈 칸 대신 의견·통보로 함께 하는 활동을 보인다
     consults: '의견·통보로 함께 하는 활동',
     handoffNone: '다른 부서와 주고받는 인계 없이 이 부서 안에서 끝나는 업무입니다',

@@ -1,4 +1,4 @@
-// 검토 포털 협의 요청(업무 절차의 협의 C) — 다른 부서가 구매·법무·개인정보보호 부서에 의견을 구하는 건.
+// SW개발비 및 정보보안 협의 요청(업무 절차의 협의 C) — 다른 부서가 구매·법무·개인정보보호 부서에 의견을 구하는 건.
 // 한 건 = 대상(Feature·협력사 납품 패키지·정책·기준 행) + 요청 부서 + 기한 + 살펴볼 것. 포털 부서는 동의·보완·반대 의견과 메모를 남긴다.
 // 근거 활동(activityId)은 업무 절차 모델에서 그 부서 역할이 협의(C)·통보(I)인 활동이어야 한다(서버가 확인) — 화면에는 코드를 보이지 않는다.
 import { z } from 'zod';
@@ -10,7 +10,7 @@ const required = text.min(1);
 /** 협의 요청 번호 — CON-연도-일련번호 */
 export const ConsultId = z.string().regex(/^CON-\d{4}-\d{3,}$/);
 
-/** 검토 포털 부서(업무 절차 모델의 workspace=portal) — 표는 생성 파일이 원천이다 */
+/** SW개발비 및 정보보안 부서(업무 절차 모델의 workspace=portal) — 표는 생성 파일이 원천이다 */
 export const CONSULT_DEPARTMENTS: readonly string[] = DEPARTMENTS.departments.filter((d) => d.workspace === 'portal').map((d) => d.id);
 /** 모든 부서 ID — 요청 부서 확인 */
 export const DEPARTMENT_IDS: readonly string[] = DEPARTMENTS.departments.map((d) => d.id);
@@ -20,7 +20,7 @@ export const departmentName = (deptId: string): string => DEPARTMENTS.department
 /** Demo membership comes from the same generated department model, never a role-name guess. */
 export const departmentPersonas = (deptId: string): readonly string[] => DEPARTMENTS.departments.find((d) => d.id === deptId)?.personas ?? [];
 
-const PortalDept = z.string().refine((d) => CONSULT_DEPARTMENTS.includes(d), { message: '검토 포털 부서(구매·법무·개인정보보호)만 협의 요청을 받습니다.' });
+const PortalDept = z.string().refine((d) => CONSULT_DEPARTMENTS.includes(d), { message: 'SW개발비 및 정보보안 부서(구매·법무·개인정보보호)만 협의 요청을 받습니다.' });
 const AnyDept = z.string().refine((d) => DEPARTMENT_IDS.includes(d), { message: '업무 절차 모델의 부서가 아닙니다.' });
 
 /** 협의 대상 — Feature 버전·협력사 납품 패키지·정책·Feature DB 기준 행 */

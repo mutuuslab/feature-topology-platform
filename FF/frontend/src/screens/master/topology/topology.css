@@ -57,6 +57,7 @@
   background-color: var(--surface);
 }
 /* 그래프 층·레인 머리 층 — 끄는 동안만 합성층(will-change)으로 올린다 */
+.topo-viewport { position: absolute; inset: 0; overflow: hidden; }
 .topo-world, .topo-heads { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .topo-heads { pointer-events: none; }
 .topo-heads .topo-lanehead__toggle, .topo-heads .topo-lanehead__bg { pointer-events: auto; }

@@ -1,3 +1,4 @@
+import { DateText } from '../../design/date-text';
 // 감사 기록 표 — 감사 화면(/audit)과 Feature 상세 감사 탭이 함께 쓴다(UX3-02: 역할 한글 라벨, 예외만 배지).
 // 보강(W5 P5-6): 행위는 한글 이름(원 코드값은 툴팁), 전후 값 한 칸(금액은 서버가 감사에 남기지 않는다).
 import { AUDIT_KEY_KO, auditActionKo, auditPlus as AP } from '../../copy/audit';
@@ -48,11 +49,11 @@ export function AuditChange({ before, after }: { before: unknown; after: unknown
   const keys = [...new Set([...Object.keys(a), ...Object.keys(b)])].filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
   if (!keys.length) return <>{AP.changeNone}</>;
   return (
-    <span className="ds-stack" title={keys.map((k) => line(k, b, a)).join(' / ')} data-audit-change>
+    <span className="ds-stack" style={{ wordBreak: 'normal', overflowWrap: 'normal' }} title={keys.map((k) => line(k, b, a)).join(' / ')} data-audit-change>
       {keys.slice(0, 3).map((k) => (
         <span key={k}>
           {/* 값 안의 규칙·컴포넌트 코드는 설명 모드로(UX3-01) */}
-          <CodeFreeText text={clip(sayLine(k, b, a))} />
+          <DateText text={clip(sayLine(k, b, a))} renderText={(text) => <CodeFreeText text={text} />} />
         </span>
       ))}
       {keys.length > 3 && <span className="ds-field__hint">{AP.more(keys.length - 3)}</span>}

@@ -58,6 +58,7 @@ export const GraphStage = memo(function GraphStage({
   onReady?: (h: StageHandle) => void;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
   const world = useRef<HTMLDivElement>(null);
   const heads = useRef<HTMLDivElement>(null);
   const canvas = useRef<SVGSVGElement>(null);
@@ -113,7 +114,11 @@ export const GraphStage = memo(function GraphStage({
   }, []);
   const apply = useCallback((moving = true) => {
     const { x, y, k } = view.current;
-    if (world.current) world.current.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${k.toFixed(4)})`;
+    // The fixed lane header paints above the graph. Clip that covered strip explicitly,
+    // preserving every world coordinate when pan/zoom changes its screen width.
+    const headerPx = hw * k;
+    if (viewport.current) viewport.current.style.left = `${headerPx.toFixed(4)}px`;
+    if (world.current) world.current.style.transform = `translate(${(x - headerPx).toFixed(4)}px,${y.toFixed(1)}px) scale(${k.toFixed(4)})`;
     if (heads.current) heads.current.style.transform = `translate(0px,${y.toFixed(1)}px) scale(${k.toFixed(4)})`;
     if (miniView.current) {
       miniView.current.setAttribute('x', String(-x / k));
@@ -128,7 +133,7 @@ export const GraphStage = memo(function GraphStage({
     if (!moving) return settle();
     if (wrap.current && !wrap.current.dataset.moving) wrap.current.dataset.moving = '1';
     settleTimer.current = window.setTimeout(settle, 160);
-  }, [size.w, size.h, layout.lanes, compact, settle]);
+  }, [size.w, size.h, hw, layout.lanes, compact, settle]);
   useEffect(() => () => clearTimeout(settleTimer.current), []);
 
   const goTo = useCallback(
@@ -385,6 +390,7 @@ export const GraphStage = memo(function GraphStage({
       onKeyDown={onKey}
       onPointerLeave={tipOff}
     >
+      <div ref={viewport} className="topo-viewport">
       <div ref={world} className="topo-world">
       <svg ref={canvas} className="ds-topo topo-canvas" width={layout.width} height={layout.height} viewBox={`0 0 ${layout.width} ${layout.height}`} role="group" aria-label={G.canvas} aria-describedby="topo-keys">
         <defs>
@@ -456,6 +462,7 @@ export const GraphStage = memo(function GraphStage({
           </g>
         </g>
       </svg>
+      </div>
       </div>
       <div ref={heads} className="topo-heads">
       <svg width={hw} height={layout.height} viewBox={`0 0 ${hw} ${layout.height}`} className="topo-heads__svg">

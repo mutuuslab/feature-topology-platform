@@ -1,5 +1,6 @@
 // /ops/incident-reports — ADS 사건 보고(규제) (D04-05, ADS-UI07·BE13). 목록(기한 중심) + 정기 보고 탭, 상세 /ops/incident-reports/:id(타임라인·근거).
 // 보고 대상 확정은 안전·법규 담당의 기록 행위 — 확정 전에는 보고 대상 수·기한 경보에 세지 않고 후보는 보조 줄로만. 시장 기한 표가 승인 전이면 기한을 계산하지 않는다.
+import { DateText } from '../../design/date-text';
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import type { AdsDetermination, AdsIncidentSummary, AdsIncidentView, AdsMarketDeadline, AdsPeriodicReport, AdsReportStatus, Role } from '@ff/contracts';
@@ -58,7 +59,7 @@ function NoticeCell({ r }: { r: AdsIncidentView }) {
   return (
     <span className="ds-stack">
       <span>{T.notice(r.elapsedHours)}</span>
-      <span className="ds-field__hint">{r.firstNoticeAt ? T.noticeAt(when(r.firstNoticeAt)) : T.noticeMissing}</span>
+      <span className="ds-field__hint">{r.firstNoticeAt ? <DateText text={T.noticeAt(when(r.firstNoticeAt))} /> : T.noticeMissing}</span>
     </span>
   );
 }

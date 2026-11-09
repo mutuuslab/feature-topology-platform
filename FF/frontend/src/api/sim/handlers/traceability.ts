@@ -2,13 +2,19 @@
 import { compareVersion, type Role } from '@ff/contracts';
 import { CreateTraceLinkBody, UnlinkTraceLinkBody, CreateTestEvidenceBody, TRACE_KINDS, type TraceLinkRow, type TestEvidenceRow } from '../../../../../contracts/src/schemas/trace-link';
 import { featureTraceCoverage, groupTraceLinks, testCaseStatus, TRACE_KIND_RULES, TEST_EVIDENCE_ROLES } from '../../../../../contracts/src/rules/trace-link';
-import { registerSimHandler, registerSimReader } from '../engine';
+import { registerSimHandler, registerSimReader, SimError } from '../engine';
 import type { SimReadContext,SimWriteContext } from '../types';
 import { p10Registry as R } from './registry';
 const L='localTraceLinks',E='localTestEvidence';
 const rows=(x:any):any[]=>Array.isArray(x)?x:x?.items??[];
 const merge=(a:any[],b:any[],key:string)=>[...new Map([...a,...b].map(x=>[x[key],x])).values()];
-async function allLinks(ctx:SimReadContext){return merge(rows(await ctx.snapshot('traceLinks',{}, {status:'ALL'})).length?rows(await ctx.snapshot('traceLinks',{}, {status:'ALL'})):rows(await ctx.snapshot('traceLinks')),ctx.list(L),'linkId');}
+const capturedRows=(x:any):any[]|undefined=>Array.isArray(x)?x:Array.isArray(x?.items)?x.items:undefined;
+async function allLinks(ctx:SimReadContext){
+ const captured=capturedRows(await ctx.snapshot('traceLinks',{}, {status:'ALL'}));
+ // Creating IDs and preserving unlink history require the full history, including a valid empty list.
+ if(!captured)throw new SimError('NOT_FOUND','Complete trace-link source is unavailable.',{source:'traceLinks',status:'ALL'});
+ return merge(captured,ctx.list(L),'linkId');
+}
 async function summary(ctx:SimReadContext,id:string){
  const original=await ctx.snapshot<any>('featureTrace',{id});
  const versions=(await R.allSummaries(ctx)).filter(f=>f.featureId===id).sort((a,b)=>compareVersion(a.version,b.version)),latest=versions.at(-1);
@@ -21,9 +27,14 @@ async function summary(ctx:SimReadContext,id:string){
 }
 function allowed(ctx:SimWriteContext,roles:readonly Role[],action:string,target:string){if(!roles.includes(ctx.actor.role))ctx.fail('FORBIDDEN','이 연결을 변경할 역할이 아닙니다.',{allowed:roles},{action,target,reason:'연결 종류별 권한 불일치',componentId:'D01-02',result:'DENIED'});}
 registerSimReader('traceLinks',async ctx=>{
- if(!ctx.list(L).length)return undefined;
- const q=ctx.req.query;if(q.kind&&!TRACE_KINDS.includes(q.kind as any))throw new (await import('../engine')).SimError('VALIDATION','알 수 없는 연결 종류입니다.');
- const items=(await allLinks(ctx)).filter(l=>(!q.featureId||l.featureId===q.featureId)&&(!q.kind||l.kind===q.kind)&&(!q.elementType||l.elementType===q.elementType)&&(!q.sourceSystem||l.sourceSystem===q.sourceSystem)&&((q.status==='ALL')||l.status===(q.status||'ACTIVE')));
+ const q=ctx.req.query,local=ctx.list(L);if(q.kind&&!TRACE_KINDS.includes(q.kind as any))throw new SimError('VALIDATION','알 수 없는 연결 종류입니다.');
+ if(q.status&&!['ACTIVE','UNLINKED','ALL'].includes(q.status))throw new SimError('VALIDATION','status must be ACTIVE, UNLINKED or ALL.');
+ if(!local.length&&capturedRows(await ctx.snapshot('traceLinks',ctx.req.params,q)))return undefined;
+ let captured=capturedRows(await ctx.snapshot('traceLinks',{}, {status:'ALL'}));
+ // The unfiltered native default is complete for ACTIVE only. It cannot prove no historical links.
+ if(!captured&&(!q.status||q.status==='ACTIVE'))captured=capturedRows(await ctx.snapshot('traceLinks'));
+ if(!captured){if(!local.length)return undefined;throw new SimError('NOT_FOUND','Complete trace-link source is unavailable.',{source:'traceLinks',status:q.status||'ACTIVE'});}
+ const items=merge(captured,local,'linkId').filter(l=>(!q.featureId||l.featureId===q.featureId)&&(!q.kind||l.kind===q.kind)&&(!q.elementType||l.elementType===q.elementType)&&(!q.sourceSystem||l.sourceSystem===q.sourceSystem)&&((q.status==='ALL')||l.status===(q.status||'ACTIVE')));
  return {items,groups:groupTraceLinks(items.filter(l=>l.status==='ACTIVE'))};
 });
 registerSimReader('featureTrace',ctx=>ctx.list<TraceLinkRow>(L).some(l=>l.featureId===ctx.req.params.id)||ctx.list<TestEvidenceRow>(E).some(l=>l.featureId===ctx.req.params.id)?summary(ctx,ctx.req.params.id):undefined);

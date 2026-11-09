@@ -175,12 +175,45 @@ describe('P10 local commands with independent approval',()=>{
   expect((await call('listFeatures',{}, {latestOnly:false})).items).toEqual([]);await expect(call('featureDetail',{id,ver})).rejects.toMatchObject({code:'NOT_FOUND'});
   expect((await call('deletedDrafts')).items).toContainEqual(expect.objectContaining({recordId:id+'@'+ver}));
  });
+ it('deletes a draft without an exact filtered trace capture by filtering the complete captured list',async()=>{
+  seed();files.delete('/'+snapshotFile(url('traceLinks',{}, {featureId:id})));
+  files.set('/'+snapshotFile(url('traceLinks',{}, {status:'ALL'})),{items:[{linkId:'TRL-OTHER',featureId:'FEAT-00999',status:'ACTIVE',kind:'REQUIREMENT'}]});
+  expect((await call('traceLinks',{}, {featureId:id})).items).toEqual([]);
+  expect(await call('deleteFeatureDraft',{id,ver},{},{reason:'필터 원천 없는 신규 초안 정리'})).toMatchObject({recordId:id+'@'+ver});
+ });
+ it('retains trace reference guards when only the complete captured list exists',async()=>{
+  seed();files.delete('/'+snapshotFile(url('traceLinks',{}, {featureId:id})));
+  files.set('/'+snapshotFile(url('traceLinks',{}, {status:'ALL'})),{items:[{linkId:'TRL-OWN',featureId:id,status:'ACTIVE',kind:'REQUIREMENT'}]});
+  await expect(call('deleteFeatureDraft',{id,ver},{},{reason:'연결된 초안 삭제 시도'})).rejects.toMatchObject({code:'GUARD_FAILED',details:{code:'DRAFT_REFERENCED'}});
+  expect((await call('featureDetail',{id,ver})).feature.lifecycle).toBe('PROPOSED');
+ });
+ it('does not treat absent complete and filtered trace sources as no references',async()=>{
+  seed();files.delete('/'+snapshotFile(url('traceLinks',{}, {featureId:id})));
+  await expect(call('deleteFeatureDraft',{id,ver},{},{reason:'원천 없는 초안 삭제 시도'})).rejects.toMatchObject({code:'NOT_FOUND'});
+  expect((await call('deletedDrafts')).items).toEqual([]);
+ });
+ it('uses the complete ACTIVE default only for active queries and refuses to invent unlink history',async()=>{
+  seed();files.delete('/'+snapshotFile(url('traceLinks',{}, {featureId:id})));
+  files.set('/'+snapshotFile(url('traceLinks')),{items:[]});
+  expect((await call('traceLinks',{}, {featureId:id})).items).toEqual([]);
+  await expect(call('traceLinks',{}, {featureId:id,status:'ALL'})).rejects.toMatchObject({code:'NOT_FOUND'});
+  await expect(call('traceLinks',{}, {featureId:id,status:'UNLINKED'})).rejects.toMatchObject({code:'NOT_FOUND'});
+  await expect(call('traceLinks',{}, {featureId:id,status:'UNKNOWN'})).rejects.toMatchObject({code:'VALIDATION'});
+ });
+ it('honors an explicitly empty ALL source rather than falling back to stale active rows',async()=>{
+  seed();files.delete('/'+snapshotFile(url('traceLinks',{}, {featureId:id})));
+  files.set('/'+snapshotFile(url('traceLinks',{}, {status:'ALL'})),{items:[]});
+  files.set('/'+snapshotFile(url('traceLinks')),{items:[{linkId:'TRL-STALE',featureId:id,status:'ACTIVE',kind:'REQUIREMENT'}]});
+  expect((await call('traceLinks',{}, {featureId:id})).items).toEqual([]);
+ });
  it('denies deletion of a referenced draft and preserves its state',async()=>{
   seed('PROPOSED',[{policyId:'POL-X',featureId:id,featureVersion:ver,status:'DRAFT'}]);await expect(call('deleteFeatureDraft',{id,ver},{},{reason:'참조 초안 삭제 시도'},'author')).rejects.toMatchObject({code:'GUARD_FAILED',details:{code:'DRAFT_REFERENCED'}});
   expect((await call('featureDetail',{id,ver})).feature.lifecycle).toBe('PROPOSED');
  });
  it('deletes a draft relation and updates source membership without resurrecting it',async()=>{
   seed();const dependency={dependencyId:'DEP-09999',sourceFeatureId:id,sourceVersion:ver,targetFeatureId:'FEAT-00022',targetVersion:'1.0.0'};
+  files.delete('/'+snapshotFile(url('traceLinks',{}, {featureId:id})));
+  files.set('/'+snapshotFile(url('traceLinks')),{items:[]});
   files.set('/'+snapshotFile(url('dependencies')),{items:[dependency]});
   const detailKey='/'+snapshotFile(url('featureDetail',{id,ver})),d=files.get(detailKey) as any;files.set(detailKey,{...d,feature:{...d.feature,dependencyIds:[dependency.dependencyId]}});
   await call('deleteRelationDraft',{id:dependency.dependencyId},{},{reason:'잘못 맺은 초안 관계 정리'},'author');

@@ -272,6 +272,7 @@ workflows:
     TC-SHOWCASE-DOUBLE-2026-11-09: "공개 시연 데이터 확장 검증 — 2026-11-09"
     TC-SOFTWARE-DELIVERY-2026-11-09: "실제 Flag 조건 SW 원문 다운로드"
     TC-SOFTWARE-STATIC-DELIVERY-2026-11-09: "정적 SW 원문 전달·공개 시험용 캡처 검증"
+    TC-STATIC-COMMAND-WAITS-2026-11-10: "정적 업무 명령 완료 대기 기준 검토"
     TC-TX-NATIVE-INTEGRATION-2026-11-09: "분류·지역·브랜드 기능 통합 체크포인트"
     TC-TX-STATIC-WORKFLOWS-2026-11-09: "분류·적용 조건 정적 업무 실행 검증"
     TC-WIRE-INTEGRATION-2026-11-09: "차량 상태 보고 2.0·2.1 및 Feature epoch 통합"

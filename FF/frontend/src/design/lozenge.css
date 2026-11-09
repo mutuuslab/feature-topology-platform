@@ -25,6 +25,8 @@
 .ds-lozenge[data-appearance='moved'] { background: var(--loz-moved-bg); color: var(--loz-moved-ink); }
 .ds-lozenge[data-appearance='new'] { background: var(--loz-new-bg); color: var(--loz-new-ink); }
 .ds-lozenge.ds-badge { --c: var(--muted); display: inline-flex; height: 22px; font-family: var(--font-sans); font-size: var(--fs-xs); text-transform: none; background: color-mix(in srgb, var(--c) 10%, var(--surface)); color: color-mix(in srgb, var(--c) 72%, var(--ink)); border-color: color-mix(in srgb, var(--c) 35%, transparent); }
+/* 기준정보 상태의 중첩 래퍼도 KeyValue의 글자 기준선을 따른다. */
+.ds-kv [data-ref-status] .ds-lozenge { align-items: baseline; vertical-align: baseline; }
 .ds-lozenge[data-appearance='inprogress'], .ds-lozenge[data-appearance='new'] { --c: var(--info); }
 .ds-lozenge[data-appearance='success'] { --c: var(--ok); }
 .ds-lozenge[data-appearance='removed'] { --c: var(--danger); }

@@ -132,3 +132,24 @@ it('reads exact market facts embedded in native classification when the standalo
   expect((await get('adsClassification', { id: f.featureId, ver: f.version })).baselines[0].market).toBe('KR');
   expect((await get('adsMarketBaselines')).items).toHaveLength(1);
 });
+it('retains all native body schemas after browser route stripping, rejects malformed input before any state write', async () => {
+  const cases: [string, any, string, Record<string, string>][] = [
+    ['approveOddProfile', { reason: '' }, 'quality', { id: draftId }],
+    ['createConfigSet', { ...config, ecuSw: [{ ecuPno: 'ECU-DEMO', swId: 'SW-LOCAL', version: 'broken' }] }, 'steward', {}],
+    ['approveConfigSet', { reason: '' }, 'quality', { id: 'CFG-MISSING' }],
+    ['proposeSecurityMin', { swId: 'SW-LOCAL', version: 'broken', rationale: 'Malformed version' }, 'steward', {}],
+    ['approveSecurityMin', { reason: '' }, 'integrator', { id: 'SM-MISSING' }],
+    ['adsIncidentDetermination', { decision: 'invented', reason: 'Invalid enum' }, 'quality', { id: 'AIR-0001' }],
+    ['adsReviewFindingCreate', { manifestId: 'EVM-0001', severity: 'invented', summary: 'Invalid enum' }, 'quality', {}],
+    ['adsCloseImpactPath', { reason: '' }, 'quality', { id: 'CI-0001', path: 'SAFETY' }],
+    ['addOddSite', { reason: '' }, 'author', { id: profileId }],
+    ['approveOddSite', { reason: '' }, 'quality', { id: profileId, siteId: 'SITE-1' }],
+    ['createRecoveryDecision', { reason: '' }, 'quality', {}],
+    ['updateAdsClassification', { ...classification, ddtImpact: 'invented' }, 'author', { id: f.featureId, ver: f.version }],
+    ['confirmAdsClassification', { reason: '' }, 'quality', { id: f.featureId, ver: f.version }],
+    ['putMarketBaseline', { approvalStatus: 'invented' }, 'steward', { id: f.featureId, ver: f.version, market: 'KR' }],
+    ['runSupportDrill', { horizonDays: -1, reason: 'Invalid horizon' }, 'quality', { id: f.featureId, ver: f.version }],
+  ];
+  for (const [name, body, role, params] of cases) await expect(run(name, body, role, params), name).rejects.toMatchObject({ code: 'VALIDATION' });
+  expect(Object.keys(engine.__overlayForTest()!.entities)).toHaveLength(0);
+});

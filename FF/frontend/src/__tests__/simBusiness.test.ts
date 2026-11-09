@@ -1,11 +1,32 @@
 // 공개 시연 사이트 브라우저 안 쓰기 — 업무 묶음(api/sim/handlers/business.ts). 서버와 같은 규칙(contracts)으로 판정하는지,
-// 쓰기 뒤 목록·상세·감사·이벤트가 같은 상태인지 본다. 스냅샷은 공개 배포와 같은 frontend/public/api-snapshot을 그대로 읽는다.
-import { existsSync, readFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// 쓰기 뒤 목록·상세·감사·이벤트가 같은 상태인지 본다. 기본 단위 시험은 커밋한 합성 캡처를 사용하며, 명시한 스냅샷 경로는 별도 통합 입력으로 읽는다.
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { gunzipSync, gzipSync } from 'node:zlib';
+import { join } from 'node:path';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES, routeUrl, snapshotFile } from '@ff/contracts';
 
 const SNAP_DIR = process.env.FF_TEST_SNAPSHOT_PUBLIC ?? join(__dirname, '..', '..', 'public');
+const BUNDLE = join(__dirname, 'fixtures', 'sim-business.json.gz');
+// Unit tests use committed synthetic capture facts. An explicit source is a separate
+// integration input; refresh records only files actually consumed by this suite.
+const REFRESH = process.env.SIM_BUSINESS_EXT_FIXTURE_REFRESH === '1';
+const captured: Record<string, unknown> = REFRESH ? {} : JSON.parse(gunzipSync(readFileSync(BUNDLE)).toString('utf8'));
+const loadSnapshot = (path: string): unknown => {
+  const rel = decodeURIComponent(path).replace(/^\//, '');
+  if (!REFRESH && !process.env.FF_TEST_SNAPSHOT_PUBLIC) return captured[rel];
+  const file = join(SNAP_DIR, rel);
+  const supplemental = process.env.FF_TEST_SNAPSHOT_SUPPLEMENTAL;
+  const derived = supplemental && rel.split('/').at(-1)?.startsWith('cost_references_') ? join(supplemental, rel.split('/').at(-1)!) : null;
+  const source = existsSync(file) ? file : derived && existsSync(derived) ? derived : null;
+  if (!source) return undefined;
+  const value = JSON.parse(readFileSync(source, 'utf8'));
+  if (REFRESH) captured[rel] = value;
+  return value;
+};
+afterAll(() => {
+  if (REFRESH) writeFileSync(BUNDLE, gzipSync(JSON.stringify(Object.fromEntries(Object.keys(captured).sort().map(key => [key, captured[key]])))));
+});
 const json = (v: string) => new Response(v, { headers: { 'Content-Type': 'application/json' } });
 const html = () => new Response('<!doctype html>', { headers: { 'Content-Type': 'text/html' } });
 
@@ -24,13 +45,8 @@ beforeEach(async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (u: string) => {
-      const file = join(SNAP_DIR, decodeURIComponent(u));
-      const supplemental = process.env.FF_TEST_SNAPSHOT_SUPPLEMENTAL;
-      if (!existsSync(file) && supplemental && basename(file).startsWith('cost_references_')) {
-        const derived = join(supplemental, basename(file));
-        if (existsSync(derived)) return json(readFileSync(derived, 'utf8'));
-      }
-      return existsSync(file) ? json(readFileSync(file, 'utf8')) : html();
+      const value = loadSnapshot(u);
+      return value === undefined ? html() : json(JSON.stringify(value));
     }),
   );
   localStorage.clear();
@@ -45,8 +61,8 @@ afterEach(() => {
 });
 
 describe('스냅샷 준비', () => {
-  it('시험이 읽는 공개 스냅샷이 있다', () => {
-    for (const u of [url('listProducts'), url('trials', {}, { catalogId: 'CAT-00019', source: 'FLEET', pageSize: 50 }), url('costProjects'), url('listConsultations')]) expect(existsSync(join(SNAP_DIR, snapshotFile(u)))).toBe(true);
+  it('커밋된 합성 캡처에 필수 공개 응답이 있다', () => {
+    for (const u of [url('listProducts'), url('trials', {}, { catalogId: 'CAT-00019', source: 'FLEET', pageSize: 50 }), url('costProjects'), url('listConsultations')]) expect(loadSnapshot(snapshotFile(u))).toBeDefined();
   });
 });
 

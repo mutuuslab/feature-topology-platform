@@ -2,12 +2,33 @@
 // 회귀(2026-11-06): 정적 시연에서 외부 화면(ExternalApp)의 상태 변경·댓글과 연계 화면의 '외부에서 바꿔 보기'·'Epic 만들기'가 처리되지 않았고(정적 쓰기 차단·미처리),
 // 상품 권리 화면의 성향 필터·검색·다음 쪽도 막혀 있었다. 서버 ext-sync.service(mockAct·mockCreate·apply)와 같은 결과·되돌림·감사를 본다.
 // 플랫폼 쪽 판정(Lifecycle 전이·Feature 등록·정책 승인)은 그 묶음의 핸들러를 매핑된 사람으로 같은 반영 안에서 부른다(simInvoke).
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES, routeUrl, snapshotFile, trialListQuery, trialTableQuery } from '@ff/contracts';
 
 const SNAP_DIR = process.env.FF_TEST_SNAPSHOT_PUBLIC ?? join(__dirname, '..', '..', 'public');
+const BUNDLE = join(__dirname, 'fixtures', 'sim-ext-mock.json.gz');
+// Unit tests use committed synthetic capture facts. An explicit source is a separate
+// integration input; refresh records only files actually consumed by this suite.
+const REFRESH = process.env.SIM_BUSINESS_EXT_FIXTURE_REFRESH === '1';
+const captured: Record<string, unknown> = REFRESH ? {} : JSON.parse(gunzipSync(readFileSync(BUNDLE)).toString('utf8'));
+const loadSnapshot = (path: string): unknown => {
+  const rel = decodeURIComponent(path).replace(/^\//, '');
+  if (!REFRESH && !process.env.FF_TEST_SNAPSHOT_PUBLIC) return captured[rel];
+  const file = join(SNAP_DIR, rel);
+  const supplemental = process.env.FF_TEST_SNAPSHOT_SUPPLEMENTAL;
+  const derived = supplemental && rel.split('/').at(-1)?.startsWith('cost_references_') ? join(supplemental, rel.split('/').at(-1)!) : null;
+  const source = existsSync(file) ? file : derived && existsSync(derived) ? derived : null;
+  if (!source) return undefined;
+  const value = JSON.parse(readFileSync(source, 'utf8'));
+  if (REFRESH) captured[rel] = value;
+  return value;
+};
+afterAll(() => {
+  if (REFRESH) writeFileSync(BUNDLE, gzipSync(JSON.stringify(Object.fromEntries(Object.keys(captured).sort().map(key => [key, captured[key]])))));
+});
 const json = (v: string) => new Response(v, { headers: { 'Content-Type': 'application/json' } });
 const html = () => new Response('<!doctype html>', { headers: { 'Content-Type': 'text/html' } });
 /** 공개 스냅샷에 더 얹는 파일(경로 → 본문) */
@@ -33,8 +54,8 @@ beforeEach(async () => {
     vi.fn(async (u: string) => {
       const path = decodeURIComponent(u);
       if (path in EXTRA) return json(JSON.stringify(EXTRA[path]));
-      const file = join(SNAP_DIR, path);
-      return existsSync(file) ? json(readFileSync(file, 'utf8')) : html();
+      const value = loadSnapshot(path);
+      return value === undefined ? html() : json(JSON.stringify(value));
     }),
   );
   localStorage.clear();

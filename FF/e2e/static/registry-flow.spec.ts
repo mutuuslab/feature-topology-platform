@@ -51,6 +51,8 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await pickPrimaryRef(page, 'AD-PRK-004', 'AD-PRK-004');
   await main(page).getByLabel('이름').fill('서라운드 뷰 주차 안내 · 시연');
   await main(page).getByLabel(/요구사항 ID/).fill('REQ-PARK-0301');
+  await main(page).locator('input[name=country]').fill('KR');
+  await main(page).locator('input[name=vehicleModel]').fill('NX4 PE');
   await main(page).getByLabel('트림').fill('Signature');
   await main(page).getByLabel(/UPG-VC/).fill('F111A111001');
   await main(page).getByLabel('담당').fill('Parking기획팀');

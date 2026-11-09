@@ -20,7 +20,7 @@ const merge = (a: any[], b: any[], key: string) => [...new Map([...a, ...b].map(
 async function repos(ctx: SimReadContext) { return merge(asList(await source(ctx, 'flagRepositories'), 'flagRepositories'), ctx.list(REPO), 'repoId'); }
 async function repo(ctx: SimReadContext, id: string) { return (await repos(ctx)).find(r => r.repoId === id) ?? fail('NOT_FOUND', 'Flag repository is missing.'); }
 function demo(r: any) { if (r.mode !== 'DEMO_MIRROR') fail('NOT_IMPLEMENTED', 'Offline mode cannot contact GitHub, GitLab or Actions OIDC. Use an explicit DEMO repository.'); }
-async function prs(ctx: SimReadContext) { return merge(asList(await source(ctx, 'flagPullRequests'), 'flagPullRequests'), ctx.list(PR), 'prId'); }
+async function prs(ctx: SimReadContext) { return merge(asList(await source(ctx, 'flagPullRequests'), 'flagPullRequests'), ctx.list(PR), 'prId').sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.prId.localeCompare(a.prId)); }
 async function scans(ctx: SimReadContext) { return merge(asList(await source(ctx, 'flagScans'), 'flagScans'), ctx.list(SCAN), 'scanId'); }
 async function fs(ctx: SimReadContext) { const value = await ctx.read<any>('listFeatures', {}, { latestOnly: false }); return asList(value, 'listFeatures'); }
 async function feature(ctx: SimReadContext, id: string, ver: string) { return (await ctx.read<any>('featureDetail', { id, ver }))?.feature ?? fail('NOT_FOUND', `Feature ${id}@${ver} is missing.`); }
@@ -227,7 +227,7 @@ async function coverage(ctx: SimReadContext, scope?: { featureId: string; versio
     }
     const times = [...touched.values()].filter(Boolean).map(x => x.manifest.scannedAt);
     r.code = { usages: kept, lastScanAt: [r.code.lastScanAt, ...times].filter(Boolean).sort().at(-1) ?? null, lastSeen: !kept.length && previous.length ? { repoId: previous[0].repoId, commit: previous[0].commit, at: previous[0].importedAt } : kept.length ? null : r.code.lastSeen };
-    const related = allPrs.filter(p => p.flagKeys.includes(r.flagKey)), scaffold = related.find(p => p.kind === 'SCAFFOLD'), pr = related.at(-1);
+    const related = allPrs.filter(p => p.flagKeys.includes(r.flagKey)), scaffold = related.find(p => p.kind === 'SCAFFOLD'), pr = related[0];
     if (pr) r.pullRequest = { prId: pr.prId, kind: pr.kind, state: pr.state, number: pr.number, url: pr.url };
     const ret = retirement.find(x => x.flagKey === r.flagKey && ['APPROVED', 'RETIRED'].includes(x.status) && x.approvedAt), plan = localPlans.find(p => p.flagKey === r.flagKey);
     const approved = waivers.find(w => w.flagKey === r.flagKey && w.featureId === r.featureId && w.version === r.version && w.state === 'APPROVED' && Date.parse(w.expiresAt) > ctx.now().getTime());

@@ -50,6 +50,7 @@ it('rejects source injection, updated bytes with recomputed SHA, signature tampe
   expect((await get('flagScanDetail', { id: s.scanId })).verified).toBe(false); await expect(get('flagCoverage')).rejects.toMatchObject({ code: 'GUARD_FAILED' });
 });
 it('creates an open PR, refuses duplicates, merges exact bytes and preserves actual scan/PR state', async () => {
+  data[url('flagPullRequests')].items.push({ prId: 'FPR-000001', repoId: 'older-repository', featureId: id, version: ver, flagKeys: [key], kind: 'SCAFFOLD', state: 'CLOSED', createdAt: '2026-01-01T00:00:00Z' });
   const r = await createRepo(), b = { featureId: id, version: ver, repoId: r.repoId }, p = await run('createFlagPr', b, 'integrator'); expect(p.state).toBe('OPEN');
   expect((await get('flagCoverage')).rows[0].status).toBe('PR_OPEN');
   await expect(run('createFlagPr', b, 'integrator')).rejects.toMatchObject({ code: 'CONFLICT' });

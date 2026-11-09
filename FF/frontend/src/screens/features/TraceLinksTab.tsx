@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TRACE_ELEMENT_TYPES, TRACE_KINDS, TRACE_SOURCES, type TestEvidenceRow, type TraceKind, type TraceLinkRow } from '../../../../contracts/src/schemas/trace-link';
 import { TEST_EVIDENCE_ROLES, TRACE_KIND_RULES, type FeatureTraceCoverage, type TestCaseStatus } from '../../../../contracts/src/rules/trace-link';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { traceCopy as T } from '../../copy/trace-links';
 import { DEMO_ACCOUNTS } from '../../data/demoAccounts';
@@ -175,7 +174,6 @@ function RowActions({ link }: { link: Row }) {
   const perm = usePermission(TRACE_KIND_RULES[link.kind].roles);
   const evPerm = usePermission(TEST_EVIDENCE_ROLES);
   const [mode, setMode] = useState<'unlink' | 'evidence' | null>(null);
-  if (STATIC_MODE) return <span className="ds-field__hint">—</span>;
   return (
     <div className="ds-stack">
       <div className="ds-toolbar">
@@ -276,7 +274,6 @@ function CreateLink({ kind, featureId, prefill }: { kind: TraceKind; featureId: 
   const [check, setCheck] = useState(false);
   const lookup = useApi<Lookup>('traceSourceLookup', { query: { kind, elementId: f.elementId, elementVersion: f.elementVersion || undefined } }, { enabled: check && !!f.elementId && kind !== 'REQUIREMENT' });
   const set = (k: 'elementId' | 'elementType' | 'elementVersion' | 'elementName' | 'sourceSystem') => (e: { target: { value: string } }) => (setCheck(false), setF((x) => ({ ...x, [k]: e.target.value })));
-  if (STATIC_MODE) return null;
   const F = T.form;
   const body = {
     featureId,

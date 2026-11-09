@@ -164,6 +164,9 @@ async function collectEmpty(page: Page, scope: string, where: string, into: stri
   for (let calm = 0, end = Date.now() + 10_000; calm < 3 && Date.now() < end; ) {
     calm = (await loading.count()) === 0 ? calm + 1 : 0;
     await page.waitForTimeout(200); // hygiene-ok: 로딩 0이 세 번 이어지는지 보는 조건 대기의 간격(상한 10초) — 못 끝나면 '로딩' 표식으로 실패에 남는다
+    // A lazy tab can mount during the last interval. That interval is not calm
+    // when a loader has appeared at its end; keep the same ten-second deadline.
+    if (await loading.count()) calm = 0;
   }
   const url = new URL(page.url()).pathname;
   for (const mark of await emptyMarks(page, scope)) if (!(await allowed(page, url, mark, where))) into.push(`${where} — ${mark}`);

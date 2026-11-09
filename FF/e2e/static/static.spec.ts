@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { routeUrl, snapshotFile } from '@ff/contracts';
 import { DRILLDOWNS, MENU_ENTRIES } from '../tests/menu';
+import { settle } from '../tests/settle';
 import { EMPTY_PATTERN, EMPTY_PHRASES } from './empty-copy';
 
 const targets = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), ...DRILLDOWNS.map((d) => ({ title: d.title, url: d.url }))];
@@ -580,8 +581,9 @@ for (const url of ['/ops/anomalies', '/experiments', '/ops/kill', '/baselines', 
         // 행이 상세 화면으로 옮겨 간다(정책 목록 → 정책 상세) — 그 화면을 본 뒤 목록으로 돌아온다
         await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
         await page.goto(before);
-        await expect(rows.first()).toBeVisible();
         await page.waitForLoadState('networkidle');
+        await settle(page);
+        await expect(rows.first()).toBeVisible();
       }
     }
     expect.soft(empties, '상세 서랍에 빈 상태가 보인다').toEqual([]);

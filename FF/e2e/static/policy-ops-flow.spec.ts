@@ -133,9 +133,13 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await expect(drawer.getByRole('note')).toContainText('Canary 관측 0시간');
   await expect(drawer.getByRole('note')).toContainText('24시간');
   await expect(drawer.getByRole('note')).toContainText('열린 이상 징후 1건');
-  await expect(page.locator('#expansion [data-finding="OPEN_ANOMALY"]')).toContainText(/ANM-\d{5}/);
   await shot(page, 'expand-refused');
   await page.keyboard.press('Escape');
+  // Panel.id labels its heading; the accessible region is the actual panel container.
+  // Read the background finding after the modal closes, keeping the ANM guard mandatory.
+  const expansion = page.getByRole('region', { name: '확대 판정', exact: true });
+  await expansion.scrollIntoViewIfNeeded();
+  await expect(expansion.locator('[data-finding="OPEN_ANOMALY"]')).toContainText(/ANM-\d{5}/);
 
   // 7. 이상 징후 확인(운영) — 중단 기준이 된 열린 현장 이상
   const anomaly = (await (await page.request.get('/api-snapshot/anomalies.json')).json()).items.find((a: { featureId: string; status: string; kind: string }) => a.featureId === FEAT && a.status === 'OPEN' && a.kind !== 'DELIVERY');

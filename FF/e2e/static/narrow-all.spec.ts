@@ -3,6 +3,7 @@
 // 메뉴·하위 화면 전부(menu.ts — static.spec과 같은 목록)와 외부 시스템 창·로그인 화면을 390×844로 연다.
 import { expect, test } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from '../tests/menu';
+import { settle } from '../tests/settle';
 import { measureNarrow } from './narrow-measure';
 
 const targets = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), ...DRILLDOWNS.map((d) => ({ title: d.title, url: d.url }))];
@@ -20,8 +21,9 @@ test.describe('390 폭 전 화면', () => {
     test(`정적 데모 390: ${t.title} (${t.url})`, async ({ page }) => {
       test.fail(t.url in KNOWN, KNOWN[t.url]);
       await page.goto(t.url);
-      await expect(page.locator('#main h1').first()).toBeVisible();
       await page.waitForLoadState('networkidle');
+      await settle(page);
+      await expect(page.locator('#main h1').first()).toBeVisible();
       const m = await measureNarrow(page);
       expect(m.doc, '문서 가로 넘침(px)').toBeLessThanOrEqual(1);
       expect(m.main, `본문 상자 가로 넘침(px) — ${m.culprits.join(', ')}`).toBeLessThanOrEqual(1);

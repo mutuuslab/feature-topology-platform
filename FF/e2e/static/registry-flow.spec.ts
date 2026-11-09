@@ -243,7 +243,8 @@ test('정적 시연: 직무 분리 — Feature DB 관리자는 자기가 낸 변
   await size.selectOption((await size.inputValue()) === 'XL' ? 'L' : 'XL');
   await drawer(page).getByRole('textbox', { name: '요청 사유' }).fill('외부 공개 자료 개정 반영');
   await drawer(page).getByRole('button', { name: '변경 요청 보내기' }).click();
-  await expect(main(page)).toContainText(/CR-\d{4}-\d{3}/);
+  // 같은 변경 요청 명령의 정상 흐름과 동일하게 실제 CR 생성·이동을 기다린다(전체 직무 분리 예산은 유지).
+  await expect(main(page)).toContainText(/CR-\d{4}-\d{3}/, { timeout: 20_000 });
   const cr = (/CR-\d{4}-\d{3}/.exec(await main(page).innerText()) ?? [''])[0];
   // 도메인 검토(동의)를 받아도 요청자인 관리자에게 승인·반려가 막히고, 막힌 이유가 보인다
   await as(page, 'approver', `/master/feature-db/changes/${cr}`);

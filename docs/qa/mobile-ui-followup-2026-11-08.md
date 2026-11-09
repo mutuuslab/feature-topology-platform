@@ -3,7 +3,7 @@ id: TC-MOBILE-UX-20261108
 type: reference
 title: 모바일 등록 선택·정책 상태·탭 이동 UX 근거
 status: in-review
-version: 0.2.0
+version: 0.2.1
 owner: feature-architect
 cycle: 1
 last_updated: 2026-11-09
@@ -12,6 +12,8 @@ last_updated: 2026-11-09
 # 모바일 UI 후속 판단
 
 ## 2026-11-09 추가: 남은 390px 넘침 8경로
+
+후속으로 `/ops/flag-evaluations`와 `/flag-code/flags/care_00022_signal`도 기존 `measureNarrow`를 변경 없이 390px에서 확인했다. 두 화면 모두 최초 및 방향키 상세값 표시 상태에서 doc/main 0, culprits/clippedTools 빈 배열이며 JS·HTTP·실패요청·외부요청 0이었다. 실제 SVG 3개(운영 평가 2개, Flag 상세 1개)의 모든 텍스트가 그림 경계 안에 있고 원본 데이터·곡선·축·상세값 PNG를 직접 검토했다. 해당 두 `narrow-all` 원래 시험도 PASS한 뒤 남은 KNOWN 2개만 제거해 현재 예외 0이다. 근거는 시연 키트 `out/flag-mobile-ratchet-20261109/{release,results}.json`, SVG·키보드 PNG와 `out/flag-mobile-exact-narrow-tests.log`다. 미리보기 9786은 UI `35cde8eb`와 기존 9783 읽기 원천(health.commit 미기록)의 **진단용 조합**이며, 최종 릴리스 계보나 게시 검증을 뜻하지 않는다.
 
 독립 원천 `e481e787` 기반에서 `/validations/virtual`, `/fleet/live`, `/biz/trials`, `/_design`, `/twin/impact`, `/twin/simulation`, `/twin/fleet`, `/twin/vehicle/VIN-DEMO-017`을 수정했다. 실행 도구의 줄바꿈, 가용 폭을 넘지 않는 격자, 레거시 key/value 열의 min-content 해제, 텔레메트리 이름의 별도 행, 모바일 단계 흐름의 수직 연결선을 적용했다. 화면 낭독용 절대 위치 텍스트는 `.table-wrap`을 기준으로 배치했다. 표의 원문·가로 스크롤·키보드 이동과 단계 순서는 유지한다.
 

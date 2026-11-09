@@ -11,10 +11,7 @@ const targets = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), 
  * 결함 기록(래칫) — 지금 390 폭에서 넘치는 화면과 원인. test.fail이라 고쳐지면 '예상 밖 통과'로 실패한다 → 이 목록에서 지운다.
  * 새 화면이 넘치면 바로 실패한다. (2026-11-06 하네스 리뷰 — 공용 원인 3가지는 design.css에서 고쳤다: 고르기 칸·머리 행동 줄·격자 자식 min-width)
  */
-const KNOWN: Record<string, string> = {
-  '/flag-code/flags/care_00022_signal': '평가 추이 그림(biz/charts TrendChart — /biz/trials와 같은 그림)의 오른쪽 값 글자가 본문 밖 — flag-code/trend.tsx(통합 12단계)',
-  '/ops/flag-evaluations': '평가 추이 그림(biz/charts TrendChart — 서명 오류 급증 Flag 시계열)의 오른쪽 값 글자가 본문 밖 — flag-code/trend.tsx(통합 12단계)',
-};
+const KNOWN: Record<string, string> = {};
 
 test.describe('390 폭 전 화면', () => {
   test.use({ viewport: { width: 390, height: 844 } });

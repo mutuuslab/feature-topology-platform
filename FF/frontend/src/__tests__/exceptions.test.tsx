@@ -108,6 +108,24 @@ it('updates exception captions in place while preserving the draft, original rea
  expect(draft).toHaveValue('사용자가 직접 작성한 검토 의견');
 });
 
+it('active exception exposes a reason and sends the actual revoke POST; language switch preserves the draft', async () => {
+  let item = { ...row({}), history: [] };
+  handler = (url, init) => {
+    if (url.endsWith('/EXC-00002/revoke') && init?.method === 'POST') { item = { ...item, status: 'REVOKED', active: false }; return { body: item }; }
+    return url.startsWith('/api/exceptions/EXC-00002') ? { body: item } : url.startsWith('/api/exceptions') ? { body: { items: [item], active: Number(item.active) } } : undefined;
+  };
+  mount('opslead', '/verify/exceptions?id=EXC-00002', <ExceptionsScreen />);
+  const dialog = await screen.findByRole('dialog');
+  const reason = await within(dialog).findByLabelText('의견·사유');
+  expect(within(dialog).getByRole('button', { name: '회수(원복)', exact: true })).toBeDisabled();
+  fireEvent.change(reason, { target: { value: 'Revoke after independent operational review' } });
+  await act(async () => { await changeUiLanguage('en'); });
+  expect(within(dialog).getByLabelText('Comment or reason')).toBe(reason);
+  expect(reason).toHaveValue('Revoke after independent operational review');
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Revoke and revert', exact: true }));
+  await waitFor(() => expect(calls.find((c) => c.method === 'POST' && c.url.endsWith('/EXC-00002/revoke'))).toMatchObject({ body: { reason: 'Revoke after independent operational review' } }));
+});
+
 describe('예외 승인 화면', () => {
   it('적용 중·승인 대기 수, 목록, 예외로 열 수 있는 검사와 우회 불가 4가지', async () => {
     handler = (url) => (url.startsWith('/api/exceptions') ? { body: { items: [row({}), WAITING], active: 1 } } : undefined);

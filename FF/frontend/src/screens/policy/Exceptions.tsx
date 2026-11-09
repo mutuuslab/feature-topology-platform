@@ -213,6 +213,9 @@ function ExceptionDrawer({ id, onClose }: { id: string; onClose: () => void }) {
             {(pending || e.status === 'ACTIVE') && (
               <Panel title={X.act.revoke}>
                 <p className="ds-field__hint">{X.act.revokeHint}</p>
+                {!pending && <Field label={X.act.reason}>
+                  <textarea className="ds-input" rows={2} value={reason} onChange={(ev) => setReason(ev.target.value)} />
+                </Field>}
                 <Button variant="danger" disabled={!revoker.ok || reason.trim().length < 2 || revoke.isPending} reason={revoker.hint} onClick={() => revoke.mutate({ params: { id }, body: { reason: reason.trim() } })}>
                   {X.act.revoke}
                 </Button>

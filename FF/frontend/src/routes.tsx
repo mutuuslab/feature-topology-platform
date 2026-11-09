@@ -52,6 +52,8 @@ export interface AppRoute {
   components?: string[];
   /** v0.81 재디자인 화면 여부 — 라벨=h1 등 엄격 규칙 대상 */
   v2?: boolean;
+  /** This legacy demo screen consumes the isolated in-browser Twin simulation context. */
+  twin?: boolean;
 }
 
 const named = <T extends Record<string, unknown>>(load: () => Promise<T>, name: keyof T) =>
@@ -163,7 +165,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/decisions/report', element: legacyTo('/analysis/impact'), title: '결정 보고서 (이전 주소)', group: 'config', parent: '/analysis/impact' },
   { path: '/decisions/center', element: legacyTo('/analysis/impact'), title: '결정 센터 (이전 주소)', group: 'config', parent: '/analysis/impact' },
   { path: '/decisions/deploy', element: legacyTo('/analysis/impact'), title: '배포 결정 (이전 주소)', group: 'config', parent: '/analysis/impact' },
-  { path: '/twin/impact', element: named(twin, 'TwinImpact'), title: '변경 영향 시뮬레이션 (BDC 데모)', group: 'config', parent: '/analysis/impact' },
+  { path: '/twin/impact', element: named(twin, 'TwinImpact'), title: '변경 영향 시뮬레이션 (BDC 데모)', group: 'config', parent: '/analysis/impact', twin: true },
   { path: '/variant-conditions', element: named(accessScreens, 'VariantScreen'), title: 'Variant·지원 조건', group: 'config', menu: '/variant-conditions', components: ['D02-01', 'D02-02'], v2: true },
   { path: '/master/product-spec', element: legacyTo('/variant-conditions'), title: 'Variant·적용 조건 (이전 주소)', group: 'config', parent: '/variant-conditions' },
   { path: '/variants/:id', element: legacyTo('/variant-conditions'), title: 'Variant 매트릭스 (이전 주소)', group: 'config', parent: '/variant-conditions' },
@@ -197,7 +199,7 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/quality/feedback', element: named(anomalyScreens, 'FeedbackScreen'), title: '품질 피드백', group: 'verify', menu: '/quality/feedback', components: ['D04-06'], v2: true },
   { path: '/validations/virtual', element: named(virtualScreens, 'VirtualValidationScreen'), title: 'CARLA 가상검증', group: 'verify', menu: '/validations/virtual', components: ['D06-03', 'D04-02'], v2: true },
   { path: '/verify/scenario', element: legacyTo('/validations/virtual'), title: '차량 시나리오 (이전 주소)', group: 'verify', parent: '/validations/virtual' },
-  { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual' },
+  { path: '/twin/simulation', element: named(twin, 'TwinSimulation'), title: 'What-if 시뮬레이션 (BDC 데모)', group: 'verify', parent: '/validations/virtual', twin: true },
   { path: '/experiments', element: named(experimentScreens, 'ExperimentsScreen'), title: 'A/B 및 Shadow 테스트', group: 'verify', menu: '/experiments', components: ['D01-07'], v2: true },
   { path: '/verify/experiment', element: legacyTo('/experiments'), title: 'A/B 및 Shadow 테스트 (이전 주소)', group: 'verify', parent: '/experiments' },
   { path: '/trace/design', element: named(traceScreens, 'DesignTraceScreen'), title: '요구·안전 추적', group: 'verify', menu: '/trace/design', components: ['D06-07', 'D01-02'], v2: true },
@@ -239,15 +241,15 @@ const ALL_ROUTES: AppRoute[] = [
   { path: '/fleet/map', element: named(() => import('./screens/ops/FleetMap'), 'FleetMapScreen'), title: '전세계 차량 지도', group: 'ops', menu: '/fleet/map', components: ['D02-03'], v2: true },
   { path: '/twin/live', element: named(fleetScreens, 'LegacyLiveRedirect'), title: 'Fleet 실시간 적용 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/fleet', element: legacyTo('/fleet/live'), title: '차량 운영 현황 (이전 주소)', group: 'ops', parent: '/fleet/live' },
-  { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet (BDC 데모)', group: 'ops', parent: '/fleet/live' },
+  { path: '/twin/fleet', element: named(twin, 'TwinFleet'), title: '3D Fleet (BDC 데모)', group: 'ops', parent: '/fleet/live', twin: true },
   // 메뉴는 차량을 고르지 않은 주소 — 예시 차량(ego-01)이 있으면 그 차량, 없으면 첫 차량, 차량이 없으면 빈 상태(출시 준비 RD-OPS-02)
   { path: '/fleet/vehicles', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량별 적용 상태', group: 'ops', menu: '/fleet/vehicles', components: ['D02-03'], v2: true },
   { path: '/fleet/vehicles/:vin', element: named(fleetScreens, 'VehicleRuntimeScreen'), title: '차량 적용 상세', group: 'ops', parent: '/fleet/vehicles', components: ['D02-03'], v2: true },
   { path: '/twin/applied/:vin', element: legacyTo('/fleet/vehicles/:vin'), title: '차량 적용 상태 (이전 주소)', group: 'ops', parent: '/fleet/vehicles/:vin' },
-  { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 상세 (BDC 데모)', group: 'ops', parent: '/fleet/vehicles/:vin' },
+  { path: '/twin/vehicle/:vin', element: named(twinOps, 'TwinVehicle'), title: '차량 상세 (BDC 데모)', group: 'ops', parent: '/fleet/vehicles/:vin', twin: true },
   { path: '/ops/kill', element: named(killScreens, 'KillConsole'), title: '긴급 차단·복구', group: 'ops', menu: '/ops/kill', components: ['D03-03', 'D03-04'], v2: true },
   { path: '/ops/rollback', element: named(() => import('./screens/ops/Rollback'), 'RollbackScreen'), title: '롤백', group: 'ops', menu: '/ops/rollback', components: ['D03-04'], v2: true },
-  { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill' },
+  { path: '/twin/incident', element: named(twinOps, 'TwinIncident'), title: '긴급 차단 시나리오 (BDC 데모)', group: 'ops', parent: '/ops/kill', twin: true },
   { path: '/ops/:id', element: legacyTo('/fleet/live'), title: 'Feature 운영 대시보드 (이전 주소)', group: 'ops', parent: '/fleet/live' },
   { path: '/ops/anomalies', element: named(anomalyScreens, 'AnomalyScreen'), title: '이상 징후 대응', group: 'ops', menu: '/ops/anomalies', components: ['D06-12'], v2: true },
   { path: '/ops/safety-kpi', element: named(kpiScreens, 'SafetyKpiScreen'), title: '운행 중 감시 지표', group: 'ops', menu: '/ops/safety-kpi', components: ['D04-03'], v2: true },

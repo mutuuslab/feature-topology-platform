@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { isLocalFile } from './file-routing';
 import { AppProvider } from './store';
-import { TwinProvider } from './state/twinStore';
+import { DeferredTwinProvider } from './state/DeferredTwinProvider';
 import { MotionProvider } from './state/motion';
 import { ToastHost } from './components/patterns';
 import { CommandPalette } from './shell/CommandPalette';
@@ -36,11 +36,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Router basename={routerBase}>
       <MotionProvider>
         <AppProvider>
-          <TwinProvider>
+          <DeferredTwinProvider>
             <App />
             <CommandPalette />
             <ToastHost />
-          </TwinProvider>
+          </DeferredTwinProvider>
         </AppProvider>
       </MotionProvider>
     </Router>

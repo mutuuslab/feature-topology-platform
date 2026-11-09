@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { SETTLEMENT_SENDERS, type SettlementTransmissionView, type SettlementUsageView } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { settlement as S } from '../../copy/ext-gateway';
+import { settlement as S, localManagement } from '../../copy/ext-gateway';
+import { STATIC_MODE } from '../../api/client';
 import { AsyncView, Button, DataTable, ErrorNote, Field, KeyValue, Panel, Select, Toolbar, VerdictBadge, whyDisabled } from '../../design';
 import { personLabel, personName } from '../../data/people';
 import { usePermission, when } from '../shared';
@@ -28,6 +29,7 @@ export default function SettlementTab() {
   return (
     <div className="ds-stack" data-testid="settlement">
       <p className="ds-field__hint">{S.lead}</p>
+      {STATIC_MODE && <p className="ds-stale" role="note">{localManagement.hint}</p>}
       <Toolbar label={S.tab}>
         <Select label={S.period} value={shown} onChange={(e) => setPeriod(e.target.value)}>
           {[...new Set([shown, ...periods].filter(Boolean))].map((p) => (

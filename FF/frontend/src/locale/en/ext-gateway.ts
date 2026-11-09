@@ -1,5 +1,6 @@
 
 export default {
+  'localManagement.hint': 'Offline demo settings, approvals and keys are stored in this browser. No external connection, authentication or transmission is performed.',
   "apiKeys.tab": 'API keys',
   "apiKeys.lead": 'API keys used by external systems. The original key is shown only once, at issuance.',
   "apiKeys.key": (active: number, all: number) => `${active} active keys · ${all} total`,

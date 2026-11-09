@@ -196,6 +196,19 @@ describe('초기화·판', () => {
 
 describe('대표 흐름 — 긴급 차단 → 2인 승인 → 회신 → 재전송 → 복원', () => {
   const issueBody = { featureId: FEAT, featureVersion: '1.0.0', reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', reason: '전방 거리 오판정 의심', confirm: FEAT };
+  it('접수를 차단 요청으로 한 번만 옮기며 다른 Feature·닫힌 접수는 거부한다',async()=>{
+    const intake={intakeId:'KIN-00001',featureId:FEAT,status:'RECEIVED',anomalyId:'ANM-00001',receivedAt:'2026-11-01T00:00:00Z',killId:null};
+    const file='/'+snapshotFile(url('killIntakes',{}, {status:'RECEIVED'}));byFile.set(file,{items:[intake]});
+    try {
+      const body={...issueBody,intakeId:intake.intakeId,containmentJustification:'현장 조사 중 봉쇄'};
+      await expect(run('issueKill',{role:'operator',body:{...body,featureId:'FEAT-00099',confirm:'FEAT-00099'}})).rejects.toMatchObject({code:'VALIDATION'});
+      const k=await run('issueKill',{role:'operator',body});expect(k).toMatchObject({status:'REQUESTED',intakeId:intake.intakeId,incidentId:intake.anomalyId,anomalyId:intake.anomalyId});
+      expect((await run('killIntakes',{query:{status:'RECEIVED'}})).items).toHaveLength(0);
+      const done=(await run('killIntakes')).items.find((x:any)=>x.intakeId===intake.intakeId);expect(done).toMatchObject({status:'CONVERTED',killId:k.killId,receivedAt:intake.receivedAt});
+      await expect(run('issueKill',{role:'operator',body})).rejects.toMatchObject({code:'CONFLICT'});
+      expect(engine.__overlayForTest()!.audit.filter(a=>a.action==='KILL_INTAKE_CONVERT')).toHaveLength(1);
+    } finally {byFile.delete(file);}
+  });
 
   it('사전 점검은 서버와 같은 게이트 규칙 — 봉쇄 근거가 없으면 PLT-009만 실패, 있으면 통과', async () => {
     const without = await run('killPreview', { query: { featureId: FEAT, featureVersion: '1.0.0', reasonCategory: 'SAFETY' } });

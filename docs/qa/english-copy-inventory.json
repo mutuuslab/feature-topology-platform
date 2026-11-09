@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 91,
-  "requiredLeaves": 9840,
+  "requiredLeaves": 9842,
   "modules": [
     {
       "module": "ads-ac",
@@ -12159,8 +12159,8 @@
         {
           "path": "cost-purchasing.costPurchasing.lead",
           "kind": "text",
-          "text": "Feature DB 산정 기준과 연결해 견적 범위·공수·변경·조건·가격·MCU 대안을 검토합니다. 계약 체결·지급은 별도 절차이며 여기서는 승인된 인계 자료를 준비합니다.",
-          "sourceHash": "39df2559fb4b7aff0b6c963dabaf01c58a89aa9853c2392fcadc574845f6ed6e"
+          "text": "Feature DB 기준으로 견적·공수·변경·가격·MCU 대안을 검토하고 승인 인계 자료를 준비합니다.",
+          "sourceHash": "61cf5912cd6a3c18cf29158ffb5f19423f547601f0ddfb64689550808b39240f"
         },
         {
           "path": "cost-purchasing.costPurchasing.guides.SCOPE",
@@ -12197,6 +12197,12 @@
           "kind": "text",
           "text": "모든 대안에 같은 ECU 전체를 배정하고 이식·검증·착수·사용권을 확인합니다. 공통 비용은 같은 식별자로 한 번만 계산하며 물량별 총액과 손익분기 물량을 비교합니다.",
           "sourceHash": "2f83881e499589b2cd3bed50a85439801544582ac061a75a72f0d1679c21caec"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.CHANGE_CURRENCY_SCOPE",
+          "kind": "text",
+          "text": "하나의 변경 청구 검토에서는 같은 통화·세금 기준을 사용하세요. 다른 기준은 별도 검토로 분리하며 임의 환산하지 않습니다.",
+          "sourceHash": "793c4a573a20b262f7d92c4d5a6339ec8be1fc014de58383efd9e1bcf0c042ad"
         },
         {
           "path": "cost-purchasing.costPurchasing.findings.EVIDENCE_REQUIRED",
@@ -13639,8 +13645,8 @@
         {
           "path": "cost.swCost.lead",
           "kind": "text",
-          "text": "Feature DB 기준 행에서 시작해 공수와 개발비를 계산합니다. 등록 Feature는 선택해 연결하고, 금액은 구매 담당 역할만 봅니다.",
-          "sourceHash": "13da4342572e81e30713a6b4e529a6008f58508269f50806e01f64d905fadc04"
+          "text": "Feature DB 기준 행으로 공수·개발비를 산정합니다. 등록 Feature는 선택 연결하고 금액은 구매 역할만 봅니다.",
+          "sourceHash": "dfecf8b72c92b4bd83b5556879e29637eea44dcbc0ca61437be13ef3bc9d10de"
         },
         {
           "path": "cost.swCost.keyFull",
@@ -18936,6 +18942,12 @@
       "file": "FF/frontend/src/copy/ext-gateway.ts",
       "leaves": [
         {
+          "path": "ext-gateway.localManagement.hint",
+          "kind": "text",
+          "text": "오프라인 시연의 설정·승인·키는 이 브라우저에 저장됩니다. 실제 외부 연결·인증·전송은 수행하지 않습니다.",
+          "sourceHash": "45ef36cdebe0d42441fe6dca5e1dfd19f7f7d69d793e294e89156aa4d5023852"
+        },
+        {
           "path": "ext-gateway.apiKeys.tab",
           "kind": "text",
           "text": "API 키",
@@ -20119,6 +20131,7 @@
         }
       ],
       "connectedExports": [
+        "localManagement",
         "apiKeys",
         "apiSpec",
         "legacyLinks",

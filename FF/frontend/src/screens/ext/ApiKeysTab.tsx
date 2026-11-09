@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { API_KEY_ADMIN_ROLES, API_KEY_ROLES, type ApiKeyView, type IssuedApiKey } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { apiKeys as K } from '../../copy/ext-gateway';
+import { apiKeys as K, localManagement } from '../../copy/ext-gateway';
+import { STATIC_MODE } from '../../api/client';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Toolbar, VerdictBadge } from '../../design';
 import { personLabel, personName } from '../../data/people';
 import { usePermission, when } from '../shared';
@@ -22,6 +23,7 @@ export default function ApiKeysTab() {
   return (
     <div className="ds-stack" data-testid="api-keys">
       <p className="ds-field__hint">{K.lead}</p>
+      {STATIC_MODE && <p className="ds-stale" role="note">{localManagement.hint}</p>}
       <Toolbar label={K.tab}>
         <span className="ds-badge">{K.key(rows.filter((r) => r.state === 'ACTIVE').length, rows.length)}</span>
         <Button variant="primary" disabled={!perm.ok} reason={perm.hint} onClick={() => setIssuing(true)}>

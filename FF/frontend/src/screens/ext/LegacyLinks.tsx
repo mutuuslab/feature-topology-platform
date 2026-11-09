@@ -16,7 +16,8 @@ import {
   type LegacySystemKind,
 } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
-import { legacyLinks as L, legacyMessages as M, legacyRules as R } from '../../copy/ext-gateway';
+import { legacyLinks as L, legacyMessages as M, legacyRules as R, localManagement } from '../../copy/ext-gateway';
+import { STATIC_MODE } from '../../api/client';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, KeyValue, Panel, VerdictBadge } from '../../design';
 import { personLabel, personName } from '../../data/people';
 import { usePermission, when } from '../shared';
@@ -48,6 +49,7 @@ export function LegacyLinksPanel() {
       }
     >
       <p className="ds-field__hint">{L.lead}</p>
+      {STATIC_MODE && <p className="ds-stale" role="note">{localManagement.hint}</p>}
       <ErrorNote error={run.error} />
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()}>
         <DataTable

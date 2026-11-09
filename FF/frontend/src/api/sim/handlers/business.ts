@@ -1844,10 +1844,7 @@ registerSimReader('legacyOrders', async (ctx) => {
   const plant = ctx.req.query.plant;
   return { ...base, items: overlayList(ctx, ORDER, base.items, (o: any) => o.orderId, (o) => !plant || o.plant === plant).sort((a, b) => a.orderId.localeCompare(b.orderId)) };
 });
-registerSimHandler(
-  'importPlantOrders',
-  async (ctx) => {
-    const plant = ctx.req.body.plant as string;
+export async function importLocalPlantOrders(ctx: SimWriteContext, plant: string) {
     const mappings = ((await ctx.read<{ items: any[] }>('legacyMappings').catch(() => ({ items: [] }))).items ?? []) as LegacyMapping[];
     const at = ctx.iso();
     const out = (PLANT_ORDERS as PlantOrder[]).filter((o) => o.plant === plant).map((o) => ({ ...resolveOrder(o, mappings), importedAt: at }));
@@ -1857,9 +1854,8 @@ registerSimHandler(
     ctx.audit({ action: 'PLANT_ORDER_IMPORT', target: plant, after: { orders: out.length, unresolved }, componentId: 'D05-03' });
     ctx.emit('legacy.orders.imported', plant, { plant, orders: out.length, unresolved }, { componentId: 'D05-03' });
     return { plant, orders: out, unresolved };
-  },
-  { body: ImportOrdersBody },
-);
+}
+registerSimHandler('importPlantOrders',ctx=>importLocalPlantOrders(ctx,ctx.req.body.plant),{body:ImportOrdersBody});
 
 registerSimHandler(
   'translateLegacy',

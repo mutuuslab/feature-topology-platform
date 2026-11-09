@@ -8,6 +8,7 @@ export default {
   'costPurchasing.guides.PRICE': 'Record original fixed costs, unit prices, periods, ownership, recovery terms and increase factors. Compare unit differences and volume totals. Do not infer fixed costs from a negotiated unit price.',
   'costPurchasing.guides.MCU': 'Allocate the same complete ECU set to every alternative. Check porting, validation, startup and licensing. Count a shared cost once by its identifier and compare volume totals and break-even volumes.',
   'costPurchasing.findings.EVIDENCE_REQUIRED': 'No source material is available for review.',
+  'costPurchasing.findings.CHANGE_CURRENCY_SCOPE': 'Use one currency and tax basis within a change-claim review. Review other bases separately; no automatic conversion is assumed.',
   'costPurchasing.findings.DUPLICATE_ID': 'An identifier is used more than once.',
   'costPurchasing.findings.NOT_APPLICABLE_REASON': 'For not applicable values, provide evidence and a reason and leave the number empty.',
   'costPurchasing.findings.VALUE_UNCONFIRMED': 'Unconfirmed values are not calculated as zero. Confirm the source and value first.',

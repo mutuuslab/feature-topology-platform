@@ -453,6 +453,12 @@ async function offlineOf(ctx: SimReadContext, k: any): Promise<Set<string>> {
 
 registerSimHandler('issueKill', async (ctx) => {
   const b = ctx.req.body;
+  const intake = b.intakeId ? (await (await import('./local-settings')).localIntakes(ctx)).find(i => i.intakeId === b.intakeId) : null;
+  if (b.intakeId) {
+    if (!intake) ctx.fail('NOT_FOUND', '차단 요청 접수를 찾을 수 없습니다.');
+    if (intake.status !== 'RECEIVED') ctx.fail('CONFLICT', '이미 처리한 접수입니다.');
+    if (intake.featureId !== b.featureId) ctx.fail('VALIDATION', '접수와 차단 요청의 Feature가 다릅니다.');
+  }
   if (String(b.confirm).trim() !== b.featureId) ctx.fail('VALIDATION', `확인 입력이 차단 대상 Feature ID(${b.featureId})와 다릅니다.`, undefined, { action: 'KILL_REQUEST', target: b.featureId, reason: 'type-to-confirm 불일치', componentId: 'D03-03' });
   const pv = await ctx.read<any>('killPreview', {}, { featureId: b.featureId, featureVersion: b.featureVersion, reasonCategory: b.reasonCategory, vins: b.vins?.length ? b.vins.join(',') : undefined }).catch(() => null);
   if (!pv) ctx.fail('NOT_FOUND', `${b.featureId} ${b.featureVersion}을(를) 찾을 수 없습니다.`);
@@ -497,7 +503,9 @@ registerSimHandler('issueKill', async (ctx) => {
     releasedAt: null,
     releaseReason: null,
     restorePublicationId: null,
-    anomalyId: b.anomalyId ?? null,
+    anomalyId: b.anomalyId ?? intake?.anomalyId ?? null,
+    intakeId: intake?.intakeId ?? null,
+    incidentId: b.incidentId ?? b.anomalyId ?? intake?.anomalyId ?? null,
     version: 2,
     reasonCategory: b.reasonCategory,
     reasonCode: b.reasonCode,
@@ -516,7 +524,12 @@ registerSimHandler('issueKill', async (ctx) => {
     rejectReason: null,
     restoreRequest: null,
   };
+  k.incidentId ??= k.killId;
   ctx.put(KILL, k.killId, k, { created: true });
+  if (intake) {
+    ctx.put('localKillIntake', intake.intakeId, {...intake, status:'CONVERTED', killId:k.killId, closedBy:ctx.actor.id, closedAt:k.requestedAt, closeReason:null});
+    ctx.audit({action:'KILL_INTAKE_CONVERT',target:intake.intakeId,before:{status:'RECEIVED'},after:{status:'CONVERTED',killId:k.killId},componentId:'D03-03'});
+  }
   ctx.audit({ action: 'KILL_REQUEST', target: k.killId, after: { featureId: k.featureId, vins: k.vins.length, reason: `${k.reasonCategory}/${k.reasonCode}`, deactClass: k.deactClass, fsmRequired: plan.fsm }, reason: b.reason, componentId: 'D03-03' });
   const candidates = nextApprovers(accounts(), { requestedBy: k.requestedBy, approvals: [], plan }).map((c) => c.id);
   ctx.emit(

@@ -1,4 +1,7 @@
 import { localizedCopy } from '../locale/runtime';
+export const localManagement = /* @__PURE__ */ localizedCopy('ext-gateway.localManagement', {
+  hint: '오프라인 시연의 설정·승인·키는 이 브라우저에 저장됩니다. 실제 외부 연결·인증·전송은 수행하지 않습니다.',
+});
 // 외부 API 키·명세·버전, Legacy 연계 설정·변환 규칙·메시지 변환, 사용량 정산 전송 화면 문구(묶음 P2).
 
 export const apiKeys = /* @__PURE__ */ localizedCopy('ext-gateway.apiKeys', {

@@ -3,6 +3,8 @@ import { uiLocaleTag } from '../../locale/runtime';
 // /integration/datalake — Data Lake 연계(TL-UI10, 80-70 6장 10). 외부 시스템 화면: Lake가 주인인 데이터 계약·모델을 FF가 읽어 보이고,
 // FF가 주인인 것(모델 사용 승인 — 2인·직무 분리, 라벨 보내기)을 다룬다. 핵심 메시지: "데이터 계약 N건 지연" 또는 "모두 기준 안".
 import { FreshnessChip } from '../../design/freshness';
+import { STATIC_MODE } from '../../api/client';
+import { localManagement } from '../../copy/ext-gateway';
 import { useState } from 'react';
 import { MODEL_USE_REQUIRED, type DataContractRow, type LabelFeedResponse, type LakeModelRow, type LakeStatusResponse, type Role } from '@ff/contracts';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
@@ -33,6 +35,7 @@ export function DataLakeScreen() {
   return (
     <div className="ds-screen">
       <PageHeader codes="D05-01 · IF-15" title={D.title} lead={D.lead} message={message(s)} meta={<ConnectionBadge state={conn} system={CN.system.datalake} />} />
+      {STATIC_MODE && <p className="ds-stale" role="note">{localManagement.hint}</p>}
       <LakeOff connected={s?.connected}>
         {s && (
           <SummaryLine

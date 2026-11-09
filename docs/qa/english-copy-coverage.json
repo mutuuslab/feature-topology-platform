@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9840,
-  "translated": 9840,
+  "required": 9842,
+  "translated": 9842,
   "modules": [
     {
       "module": "ads-ac",
@@ -205,13 +205,13 @@
     {
       "module": "cost-purchasing",
       "source": "FF/frontend/src/copy/cost-purchasing.ts",
-      "required": 245,
-      "translated": 245,
+      "required": 246,
+      "translated": 246,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "a05ac5103a351b7d35dbdf5ac209094cef90f34fa5149fd805a7258916bdf287"
+      "sourceHash": "c02ae14e37d6071d5e52515e38ad4808ffdcf558b77e95722a2d9660143b8676"
     },
     {
       "module": "cost",
@@ -222,7 +222,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "53aa41ea3bd6b8872c6a0c2502aec9ab3a93a524a8951a70e76d2ee9a89d7772"
+      "sourceHash": "2aab5a0698f83ab2ab88f7423f2c027f3b6231189c099aa63c8d19997fd4169c"
     },
     {
       "module": "dashboard-department",
@@ -315,13 +315,13 @@
     {
       "module": "ext-gateway",
       "source": "FF/frontend/src/copy/ext-gateway.ts",
-      "required": 197,
-      "translated": 197,
+      "required": 198,
+      "translated": 198,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "61f6ca14f18b06371154c1ec088fca5445198f6d67687d38a5517b6c05f573be"
+      "sourceHash": "06717965139aa5adb4c15d9065b695aa09b7cdd00ccbd45589d1c42f3e3fe1db"
     },
     {
       "module": "ext-sync",

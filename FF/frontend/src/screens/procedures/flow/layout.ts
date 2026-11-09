@@ -256,10 +256,10 @@ export function layoutFlow<N extends LNode, E extends LEdge>(input: { nodes: N[]
     }
     if(!improved)break;
   }
-  // Dense procedures need document placement as well as lane order. Try existing
+  // Moderately dense procedures also need document placement as well as lane order. Try existing
   // process columns, nearest first; accept strictly fewer
   // actual routed crossings and keep every node/edge and geometry invariant.
-  if(score>=24){
+  if(score>=12){
     let columns:Record<string,number>={...opt.documentColumns};
     for(let pass=0;pass<2;pass++){
       let improved=false;

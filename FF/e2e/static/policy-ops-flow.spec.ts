@@ -5,6 +5,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { settle } from '../tests/settle';
 
 const SHOTS = process.env.POLICY_OPS_SHOTS ?? join(__dirname, '..', 'test-results', 'policy-ops-shots');
 const FEAT = 'FEAT-00022';
@@ -31,6 +32,20 @@ async function login(page: Page) {
   await expect(page).toHaveURL(/\/$/);
 }
 
+/** Review the real signing cohort before submitting, rather than clicking while scope is absent. */
+async function reviewDeployScope(page: Page) {
+  const preview = page.getByRole('dialog').locator('[data-bulk="deploy"]');
+  await settle(page, { scope: '[role="dialog"]' });
+  await expect(preview).toBeVisible();
+  const heading = await preview.locator('.adc-path__state').innerText();
+  expect(heading).toMatch(/^서명 대상 [\d,]+대 — 제외 0대$/);
+  const count = Number(heading.match(/서명 대상 ([\d,]+)대/)![1].replace(/,/g, ''));
+  expect(count).toBeGreaterThan(0);
+  await expect(preview.getByRole('region', { name: '일괄 명령 미리보기', exact: true })).toBeVisible();
+  await expect(preview).toContainText('F3');
+  await expect(preview).toContainText('DC2');
+}
+
 test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 → 확대 판정 → 이상 확인 → 롤백 → 차량 회신 → 처음 상태로', async ({ page }) => {
   test.setTimeout(420_000);
   const errors: string[] = [];
@@ -38,8 +53,12 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
 
   await login(page);
   // 지금 배포된 이 flag의 정책(롤백 복구 기준이 된다)
-  const before = (await (await page.request.get('/api-snapshot/policies_status_DEPLOYED.json')).json()).items.find((p: { flagKey: string }) => p.flagKey === FLAG);
-  expect(before, `${FLAG} 배포 정책이 스냅샷에 있어야 한다`).toBeTruthy();
+  const captured = (await (await page.request.get('/api-snapshot/policies_status_DEPLOYED.json')).json()).items.find((p: { flagKey: string }) => p.flagKey === FLAG);
+  expect(captured, `${FLAG} 배포 정책이 스냅샷에 있어야 한다`).toBeTruthy();
+  // The native capture honestly has no vehicle confirmation. Build a real local
+  // approved/confirmed baseline instead of manufacturing a completed native artifact.
+  const before = await createApprovedPolicy(page, captured, `${captured.description} · 확인된 복구 기준판`);
+  await completePolicyDelivery(page, before.flagKey);
 
   // 1. 작성 — 같은 flag의 새 판(감속 시작 거리 조정)
   await as(page, 'author', '/policies/new');
@@ -82,6 +101,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   // 5. 서버 배포(출시) — F3라 Canary 5%, 이전 배포본은 RETIRED, 서명 게시본(OTA)
   await as(page, 'coordinator', `/policies/${policyId}`);
   await page.getByRole('button', { name: '서버 배포' }).click();
+  await reviewDeployScope(page);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('감속 시작 거리 조정판 — Canary부터');
   await page.getByRole('dialog').getByRole('button', { name: '서버 배포' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -119,7 +139,7 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await expect(form.getByLabel('복구 기준 버전')).toContainText(before.policyId);
   await form.getByLabel('복구 기준 버전').selectOption((await form.getByLabel('복구 기준 버전').locator('option', { hasText: before.policyId }).getAttribute('value'))!);
   await form.getByLabel('복구 사유').fill('Canary 차량 감속 이상 — 직전 배포 버전으로 되돌림');
-  await form.getByLabel('승인대상자').selectOption('usr-opslead');
+  await form.getByRole('combobox', { name: /^승인대상자/ }).selectOption('usr-opslead');
   await form.getByRole('button', { name: '미리보기' }).click();
   await expect(form).toContainText('적용 가능 — 요청할 수 있습니다');
   await form.getByRole('button', { name: '수동 롤백 요청' }).click();
@@ -186,9 +206,10 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
 
   // 12. 롤백 완료(게시본이 모두 확인되면) — 이력, 복구 기준 버전 DEPLOYED, Unleash 대조(배포가 바뀌어 drift → 동기화 → 같음)
   await page.goto('/ops/rollback');
+  await settle(page);
   await expect(page.locator('#main')).toContainText(rollbackPub);
   const latest = page.getByRole('row', { name: /RBX-\d{5}/ }).first();
-  await expect.poll(async () => (await page.reload(), await latest.innerText()), { timeout: 40_000, intervals: [2_000] }).toContain('완료');
+  await expect.poll(async () => (await page.reload(), await settle(page), await latest.innerText()), { timeout: 40_000, intervals: [2_000] }).toContain('완료');
   await shot(page, 'rollback-completed');
   await page.goto(`/policies/${before.policyId}`);
   await expect(page.locator('#main')).toContainText('DEPLOYED');
@@ -203,23 +224,139 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   // 13. 처음 상태로 — 상단 '시연 데이터 초기화'
   await page.getByTestId('demo-reset-open').click();
   await page.getByTestId('demo-reset').getByRole('button', { name: '처음 상태로 되돌리기' }).click();
+  await expect(page.getByTestId('demo-reset')).toBeHidden();
   await page.goto('/policies');
   await expect(page.locator('#main')).not.toContainText(policyId);
-  expect(await page.evaluate(() => localStorage.getItem('ff.sim'))).toBeNull();
+  // Policy-list reads may rehydrate internal GX metadata after reset. Check the
+  // actual business overlay rather than mistaking its routing marker for policy edits.
+  const resetState = await page.evaluate(() => new Promise<unknown>((resolve, reject) => {
+    const request = indexedDB.open('ff-sim');
+    request.onupgradeneeded = () => { request.transaction?.abort(); reject(new Error('시연 DB가 없습니다.')); };
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('overlay')) { db.close(); reject(new Error('시연 store가 없습니다.')); return; }
+      const get = db.transaction('overlay', 'readonly').objectStore('overlay').get('current');
+      get.onerror = () => { db.close(); reject(get.error); };
+      get.onsuccess = () => { const row = get.result; db.close(); resolve({ policyIds: Object.keys(row?.entities?.policy ?? {}), createdPolicyIds: row?.created?.policy ?? [], audit: row?.audit ?? [], events: row?.events ?? [] }); };
+    };
+  }));
+  expect(resetState).toEqual({ policyIds: [], createdPolicyIds: [], audit: [], events: [] });
   expect(await page.evaluate(() => (window as any).__simUnhandled ?? [])).toEqual([]);
   expect(errors).toEqual([]);
 });
 
-// 같은 값의 새 판 — 스냅샷의 배포 Flag마다 차량 값이 같은 새 판이 배포돼 있고 운영자가 앞 판 되돌리기를 운영 리더 승인 대기로 올려 두었다.
+// 같은 값의 새 판 — 실제 승인·회신 완료된 기준판과 문구만 다른 새 판을 만들고, 운영 리더 검토로 복구한다.
 // 운영 리더가 하나는 반려, 하나는 승인 → 출시 담당이 실행(앞 판 재서명 게시). 실행 이력의 상태 거르기는 어느 상태를 골라도 오류 상자가 없다.
+type CapturedPolicy = { policyId: string; featureId: string; featureVersion: string; controlPoint: string; flagKey: string; description: string; enabled: boolean; safeDefault: boolean; entitlementCatalogId: string | null; strategies: unknown[]; rollout: { mode: string; basisPoints: number; salt: string } };
+
+/** No fabricated pending requests: prepare a same-value successor and its rollback through actual UI actions. */
+async function createApprovedPolicy(page: Page, before: CapturedPolicy, description: string) {
+  expect(before.strategies).toEqual([]);
+  expect(before.rollout).toEqual({ mode: 'ALL', basisPoints: 10000, salt: 'FF-COHORT-SALT-1' });
+  await as(page, 'author', '/policies/new');
+  const create = page.locator('#main form');
+  await create.getByLabel('Feature ID', { exact: true }).fill(before.featureId);
+  await create.getByLabel('Version', { exact: true }).fill(before.featureVersion);
+  await create.getByLabel('Control Point').selectOption(before.controlPoint);
+  await create.getByLabel('flagKey').fill(before.flagKey);
+  await create.getByLabel('설명').fill(description);
+  await create.getByRole('checkbox', { name: /^정책 값:/ }).setChecked(before.enabled);
+  await create.getByRole('checkbox', { name: /^Safe Default/ }).setChecked(before.safeDefault);
+  await create.getByLabel('필요 사용 권한 상품 (선택)').fill(before.entitlementCatalogId ?? '');
+  await create.getByRole('combobox', { name: '배포 범위', exact: true }).selectOption(before.rollout.mode);
+  await create.getByRole('button', { name: '새 정책', exact: true }).click();
+  await page.waitForURL(/\/policies\/POL-\d{5}$/);
+  const policyId = new URL(page.url()).pathname.split('/').pop()!;
+  const virtual = page.getByRole('region', { name: 'CARLA 가상검증' });
+  await virtual.getByRole('button', { name: '가상검증 실행' }).click();
+  await expect(virtual.locator('tbody tr')).toHaveCount(3, { timeout: 20_000 });
+  await page.getByRole('button', { name: '분야별 검증 실행' }).first().click();
+  await expect(page.locator('#main')).toContainText('GO — 승인 가능', { timeout: 20_000 });
+  await expect(page.getByRole('region', { name: '분야별 검증 8종 (병렬)' }).locator('.ds-validator[data-result="PASS"]')).toHaveCount(8);
+  await as(page, 'approver', `/policies/${policyId}`);
+  await page.getByRole('button', { name: '정책 승인 / 반려' }).click();
+  await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('동일 차량 값·검증 근거 독립 확인');
+  await page.getByRole('dialog').getByRole('button', { name: '정책 승인', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await as(page, 'coordinator', `/policies/${policyId}`);
+  await page.getByRole('button', { name: '서버 배포', exact: true }).click();
+  await reviewDeployScope(page);
+  await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('같은 차량 값의 새 판 — 복구 이력 검증');
+  await page.getByRole('dialog').getByRole('button', { name: '서버 배포', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.locator('#main')).toContainText('DEPLOYED');
+  return { ...before, policyId, description };
+}
+
+/** Establish confirmed local delivery; captured native receipts are never rewritten. */
+async function completePolicyDelivery(page: Page, flagKey: string) {
+  await page.goto('/deployments');
+  const row = page.locator('#main tbody tr').first();
+  await expect(row).toContainText(flagKey);
+  await row.click();
+  await page.waitForURL(/\/deployments\/PUB-\d{5}$/);
+  const id = new URL(page.url()).pathname.split('/').pop()!;
+  const publication = page.locator(`[data-publication-id="${id}"]`);
+  await expect(publication).toHaveAttribute('data-publication-targets', /^\d+$/);
+  const targets = Number(await publication.getAttribute('data-publication-targets'));
+  expect(targets).toBeGreaterThan(0);
+  const retry = page.getByRole('button', { name: '다시 제출' }).first();
+  await expect.poll(async () => (await publication.getAttribute('data-publication-status')) === 'CONFIRMED' || await retry.isVisible(), { timeout: 30_000 }).toBe(true);
+  if (await retry.isVisible()) {
+    await retry.click();
+    await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('실제 미회신 코호트 통신 복구 확인 — 재전송');
+    await page.getByRole('dialog').getByRole('button', { name: '다시 제출', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+  }
+  await expect(publication).toHaveAttribute('data-publication-status', 'CONFIRMED', { timeout: 30_000 });
+  await expect(publication.locator('[data-key-message]')).toContainText(`대상 ${targets}대 모두 적용 확인`);
+  await expect(publication.locator('[data-state="error"]')).toHaveCount(0);
+  return id;
+}
+
+async function prepareSameValueRollback(page: Page, source: CapturedPolicy) {
+  const before = await createApprovedPolicy(page, source, `${source.description} · 확인된 복구 기준판`);
+  await completePolicyDelivery(page, before.flagKey);
+  // Vehicle values remain identical; the reviewed description is part of the signed PolicySpec.
+  const current = await createApprovedPolicy(page, source, `${source.description} · 문구 정리판`);
+  return requestSameValueRollback(page, before, current);
+}
+
+async function requestSameValueRollback(page: Page, before: CapturedPolicy, current: CapturedPolicy) {
+  await as(page, 'coordinator', '/ops/rollback');
+  await page.getByRole('row', { name: new RegExp(before.flagKey) }).first().click();
+  const form = page.getByRole('region', { name: '롤백 요청' });
+  const recovery = form.getByLabel('복구 기준 버전');
+  const option = recovery.locator('option', { hasText: before.policyId });
+  await expect(option).toHaveCount(1);
+  await recovery.selectOption((await option.getAttribute('value'))!);
+  await form.getByLabel('복구 사유').fill('같은 값의 직전 판 — 지정 승인대상자 검토 요청');
+  await form.getByRole('combobox', { name: /^승인대상자/ }).selectOption('usr-opslead');
+  await form.getByRole('button', { name: '미리보기', exact: true }).click();
+  await expect(form).toContainText('적용 가능 — 요청할 수 있습니다');
+  await form.getByRole('button', { name: '수동 롤백 요청', exact: true }).click();
+  const result = form.getByRole('status').filter({ hasText: '만들었습니다' });
+  await expect(result).toBeVisible();
+  const requestId = (await result.innerText()).match(/RBR-\d{5}/)![0];
+  return { requestId, policyId: current.policyId, flagKey: before.flagKey, before, current };
+}
+
 test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려·승인 → 실행, 실행 이력 상태 거르기', async ({ page }) => {
   test.setTimeout(180_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await login(page);
-  const pending = (await (await page.request.get('/api-snapshot/rollback-requests_status_REQUESTED.json')).json()).items as { requestId: string; deploymentId: string }[];
-  expect(pending.length, '운영 리더 승인 대기 되돌리기 요청이 둘 이상').toBeGreaterThan(1);
-  const [no, yes] = [pending[pending.length - 1], pending[pending.length - 2]];
+  const source = await page.request.get('/api-snapshot/policies_status_DEPLOYED.json');
+  expect(source.ok()).toBe(true);
+  const deployed = (await source.json()).items as CapturedPolicy[];
+  const candidates = ['care_00022_param', 'care_00022_signal'].map((flag) => deployed.find((p) => p.flagKey === flag));
+  expect(candidates.every(Boolean), '실제 배포된 두 Flag 원천이 있어야 한다').toBe(true);
+  const priorResponse = await page.request.get('/api-snapshot/rollbacks.json');
+  expect(priorResponse.ok()).toBe(true);
+  const prior = (await priorResponse.json()).items as { executionId: string; status: string }[];
+  const completedBefore = prior.filter((r) => r.status === 'COMPLETED');
+  const no = await prepareSameValueRollback(page, candidates[0]!);
   const item = (id: string) => page.locator(`[data-testid="rollback-pending"][id="${id}"]`);
 
   await as(page, 'opslead', `/ops/rollback?request=${no.requestId}`);
@@ -229,6 +366,7 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   const empty = history.locator('[data-state="empty"]');
   const pick = async (label: string) => {
     await history.getByLabel('상태').selectOption({ label });
+    await settle(page, { scope: 'section.ds-panel:has(#rb-history-h)' });
     await expect(history.locator('[data-state="loading"]')).toHaveCount(0);
   };
   const clean = async () => {
@@ -241,7 +379,8 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   await expect(empty).toBeAttached();
   await clean();
   await pick('완료');
-  await expect(history.getByRole('row', { name: /RBX-00001/ })).toBeVisible();
+  await expect(history.getByRole('row', { name: /RBX-\d{5}/ })).toHaveCount(completedBefore.length);
+  for (const row of completedBefore) await expect(history.getByRole('row', { name: new RegExp(row.executionId) })).toBeVisible();
   await clean();
   await pick('전체');
 
@@ -252,8 +391,11 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   await expect(item(no.requestId).getByRole('button')).toHaveCount(0);
   await shot(page, 'same-value-rejected');
 
-  // 승인 → 실행(출시) — 앞 판을 같은 값으로 다시 서명해 게시
-  await page.goto(`/ops/rollback?request=${yes.requestId}`);
+  // 반려는 배포·확인된 복구 기준판을 바꾸지 않는다. 같은 두 판을 다시
+  // 미리보기해 새 요청을 만들고, 독립 승인 뒤 실행한다(새 정책판을 중복 작성하지 않음).
+  const yes = await requestSameValueRollback(page, no.before, no.current);
+  expect(yes.requestId).not.toBe(no.requestId);
+  await as(page, 'opslead', `/ops/rollback?request=${yes.requestId}`);
   await item(yes.requestId).getByLabel('승인 의견').fill('문구 정리 판 현장 확인 전 — 앞 판으로 되돌림 승인');
   await item(yes.requestId).getByRole('button', { name: '승인', exact: true }).click();
   await expect(item(yes.requestId)).toContainText('승인됨 — 실행 대기', { timeout: 20_000 }); // 결정 쓰기는 받아 둔 요청·계획 목록을 다시 읽어 계산 — 병렬 실행 부하에서 5초를 넘었다(통합 12단계)
@@ -262,17 +404,31 @@ test('정적 시연: 같은 값의 새 판 되돌리기 — 운영 리더 반려
   await expect(item(yes.requestId)).toContainText('실행됨');
   await shot(page, 'same-value-executed');
 
-  // 실행 이력 상태 거르기(쓰기 뒤) — 실행 중 = 방금 실행, 완료 = 스냅샷 이력
+  // 실행 이력 상태 거르기(쓰기 뒤) — 새 실제 실행과 캡처 원천 이력을 구분한다.
   await pick('실행 중');
   await expect(history.getByRole('row', { name: new RegExp(yes.requestId) })).toBeVisible();
-  await expect(history.getByRole('row', { name: /RBX-00001/ })).toHaveCount(0);
+  await expect(history.getByRole('row', { name: /RBX-\d{5}/ })).toHaveCount(prior.filter(row => row.status === 'RUNNING').length + 1);
+  for (const row of completedBefore) await expect(history.getByRole('row', { name: new RegExp(row.executionId) })).toHaveCount(0);
   await pick('완료');
-  await expect(history.getByRole('row', { name: /RBX-00001/ })).toBeVisible();
+  await expect(history.getByRole('row', { name: /RBX-\d{5}/ })).toHaveCount(completedBefore.length);
+  for (const row of completedBefore) await expect(history.getByRole('row', { name: new RegExp(row.executionId) })).toBeVisible();
   await expect(history.getByRole('row', { name: new RegExp(yes.requestId) })).toHaveCount(0);
   await pick('실패');
   await expect(empty).toBeAttached();
   await pick('전체');
   await expect(history.getByRole('row', { name: new RegExp(yes.requestId) })).toBeVisible();
+  await clean();
+  await completePolicyDelivery(page, yes.flagKey);
+  await page.goto(`/ops/rollback?request=${yes.requestId}`);
+  await expect.poll(async () => {
+    await page.reload();
+    return history.getByRole('row', { name: new RegExp(yes.requestId) }).innerText();
+  }, { timeout: 40_000, intervals: [2_000] }).toContain('완료');
+  await pick('완료');
+  await expect(history.getByRole('row', { name: new RegExp(yes.requestId) })).toBeVisible();
+  await expect(history.getByRole('row', { name: /RBX-\d{5}/ })).toHaveCount(completedBefore.length + 1);
+  await pick('실행 중');
+  await expect(history.getByRole('row', { name: new RegExp(yes.requestId) })).toHaveCount(0);
   await clean();
   await shot(page, 'history-filter');
   expect(await page.evaluate(() => (window as any).__simUnhandled ?? [])).toEqual([]);

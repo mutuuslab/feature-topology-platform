@@ -53,6 +53,8 @@ async function audit(page: Page, path: string, info: TestInfo) {
       for (const message of visible) expect(message).toContain('Version-specific captured code evidence');
     }
     records.push({ tab, queries: current });
+    // Preserve completed reads locally even if a later tab fails.
+    await info.attach(`actual-feature-tab-${tab}`, { body: JSON.stringify({ path, tab, queries: current }), contentType: 'application/json' });
   }
   const required = ['featureFlags', 'featureEvaluations', 'featureTrace', 'featureOpsMetrics', 'featureVariability', 'almWorkProducts', 'gateSnapshot', 'supportDrills'];
   const all = records.flatMap(r => r.queries);

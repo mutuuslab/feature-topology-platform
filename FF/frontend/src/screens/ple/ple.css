@@ -74,6 +74,8 @@
 .cat-node__name { font-weight: 600; }
 .cat-node__meta { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: center; justify-content: flex-end; }
 .cat-node__real { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--sp-1); font-size: var(--fs-xs); }
+.shared-asset-links { align-items: center; }
+.shared-asset-links > a { display: inline-flex; align-items: center; min-width: var(--sp-6); min-height: var(--sp-6); }
 
 /* ── Bill-of-Features 격자(상품 × 주요 feature) ── */
 .bof-grid-wrap { overflow: auto; max-block-size: 60vh; border: 1px solid var(--line); border-radius: var(--r); }

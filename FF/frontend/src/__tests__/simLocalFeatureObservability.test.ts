@@ -128,6 +128,30 @@ it('missing complete trace history is not an empty source', async () => {
   await expect(run('featureTrace', 'viewer', undefined, { id: f.featureId })).rejects.toMatchObject({ code: 'NOT_FOUND' });
 });
 
+it('actual SW selection counts exact SW-Version source requirements and deduplicates the system denominator', async () => {
+  const f = await create();
+  put('masterSw', { items: [
+    { swId: 'SW-1', version: '1.0.0', ecuPno: 'ECU-1', requirementId: 'REQ-SW-1' },
+    { swId: 'SW-1', version: '2.0.0', ecuPno: 'ECU-1', requirementId: 'REQ-WRONG-VERSION' },
+    { swId: 'SW-2', version: '1.0.0', ecuPno: 'ECU-1', requirementId: 'REQ-NEW' },
+    { swId: 'SW-3', version: '1.0.0', ecuPno: 'ECU-1', requirementId: null },
+  ] });
+  put('masterEcu', { items: [{ ecuPno: 'ECU-1', lifecycle: 'ACTIVE' }] });
+  await run('updateDraft', 'author', { swIds: ['SW-1', 'SW-2', 'SW-3'], swVersions: ['1.0.0', '1.0.0', '1.0.0'], ecuPnos: ['ECU-1', 'ECU-1', 'ECU-1'] }, { id: f.featureId, ver: f.version });
+  const actual = await run('featureTrace', 'viewer', undefined, { id: f.featureId });
+  expect(actual.requirements).toEqual([{ reqId: 'REQ-NEW', type: 'SYSTEM', linked: false }, { reqId: 'REQ-SW-1', type: 'SW', linked: false }]);
+  expect(actual.coverage.requirement.total).toBe(2);
+  expect(actual.links).toEqual([]); expect(actual.evidence).toEqual([]);
+});
+
+it('legacy SW captures without the requirement projection still fail closed for a new SW scope', async () => {
+  const f = await create();
+  put('masterSw', { items: [{ swId: 'SW-1', version: '1.0.0', ecuPno: 'ECU-1' }] });
+  put('masterEcu', { items: [{ ecuPno: 'ECU-1', lifecycle: 'ACTIVE' }] });
+  await run('updateDraft', 'author', { swIds: ['SW-1'], swVersions: ['1.0.0'], ecuPnos: ['ECU-1'] }, { id: f.featureId, ver: f.version });
+  await expect(run('featureTrace', 'viewer', undefined, { id: f.featureId })).rejects.toMatchObject({ code: 'GUARD_FAILED' });
+});
+
 it('evaluation period validates native bounds and local findings retain the actual status with no measured effect', async () => {
   const f = await create(), o = engine.__overlayForTest()!;
   o.entities.localHealthFinding = { F: { findingId: 'F', featureId: f.featureId, version: '0.1.0', status: 'VERIFYING', dueAt: '2026-11-01T00:00:00Z', effect: { after: null, met: null } } };

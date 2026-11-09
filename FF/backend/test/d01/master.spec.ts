@@ -2,6 +2,7 @@
 import { INestApplication } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { bootApp } from '../helpers';
+import { TopologyRepo } from '../../src/domains/d01-policy/repos';
 
 describe('기준정보·추적 조회', () => {
   let app: INestApplication;
@@ -22,6 +23,20 @@ describe('기준정보·추적 조회', () => {
     const tree = (await http().get('/api/master/structure').expect(200)).body.items;
     const fns = tree.flatMap((e: any) => e.sw.flatMap((s: any) => s.functions));
     expect(fns.length).toBe(122);
+  });
+
+  it('SW 요구 식별자는 실제 SW·Version 원문과 일치하며 추적 분모를 잃지 않는다', async () => {
+    const sw = (await http().get('/api/master/sw').expect(200)).body.items;
+    const original = app.get(TopologyRepo).allSw();
+    expect(original.some(s => !!s.requirementId)).toBe(true);
+    for (const row of sw) {
+      expect(row).toHaveProperty('requirementId');
+      expect(row.requirementId).toBe(original.find(s => s.swId === row.swId && s.version === row.version && s.ecuPno === row.ecuPno)?.requirementId ?? null);
+    }
+    const detail = (await http().get('/api/features/FEAT-00022/versions/1.0.0').expect(200)).body;
+    for (const trace of detail.trace) {
+      if (trace.sw) expect(sw.find((s: any) => s.swId === trace.swId && s.version === trace.swVersion)?.requirementId).toBe(trace.sw.requirementId ?? null);
+    }
   });
 
   it('UPG-VC — Feature가 지원하는 코드와 Fleet 차량 코드, 제어점은 BD-06 단일 묶음', async () => {

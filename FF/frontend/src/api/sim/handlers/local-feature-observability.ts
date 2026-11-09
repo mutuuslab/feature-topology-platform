@@ -106,10 +106,18 @@ extendSimReader('featureTrace', async ctx => {
   const evidence = merge<TestEvidenceRow>(original?.evidence ?? [], ctx.list<TestEvidenceRow>('localTestEvidence').filter(e => e.featureId === id), 'recordId');
   const requirements: { reqId: string; type: string }[] = (f.requirementIds ?? []).map((reqId: string) => ({ reqId, type: 'SYSTEM' }));
   if (f.swIds?.length) {
-    const previous = original?.feature?.version ? (await ctx.snapshot<any>('featureDetail', { id, ver: original.feature.version }, {}))?.feature : null;
-    if (!previous || JSON.stringify([previous.swIds, previous.swVersions]) !== JSON.stringify([f.swIds, f.swVersions])) throw new SimError('GUARD_FAILED', 'Version-specific SW requirement source is unavailable.', { featureId: id, version: f.version });
-    requirements.push(...original.requirements.filter((r: any) => r.type === 'SW'));
+    const master = rows(await ctx.snapshot('masterSw', {}, {}));
+    const exact = f.swIds.map((swId: string, i: number) => master?.find(s => s.swId === swId && s.version === f.swVersions?.[i]));
+    // null is an explicit native "no requirement"; an absent property is an old/incomplete projection.
+    if (exact.every((s: any) => s && Object.prototype.hasOwnProperty.call(s, 'requirementId') && (s.requirementId === null || typeof s.requirementId === 'string'))) {
+      requirements.push(...exact.filter((s: any) => !!s.requirementId).map((s: any) => ({ reqId: s.requirementId, type: 'SW' })));
+    } else {
+      const previous = original?.feature?.version ? (await ctx.snapshot<any>('featureDetail', { id, ver: original.feature.version }, {}))?.feature : null;
+      if (!previous || JSON.stringify([previous.swIds, previous.swVersions]) !== JSON.stringify([f.swIds, f.swVersions])) throw new SimError('GUARD_FAILED', 'Version-specific SW requirement source is unavailable.', { featureId: id, version: f.version });
+      requirements.push(...original.requirements.filter((r: any) => r.type === 'SW'));
+    }
   }
-  const unique = [...new Map(requirements.map(r => [r.reqId, r])).values()], linked = new Set(links.filter(l => l.status === 'ACTIVE' && l.kind === 'REQUIREMENT').map(l => l.elementId));
+  const seen = new Set<string>(), unique = requirements.filter(r => !seen.has(r.reqId) && !!seen.add(r.reqId));
+  const linked = new Set(links.filter(l => l.status === 'ACTIVE' && l.kind === 'REQUIREMENT').map(l => l.elementId));
   return { feature: { featureId: id, version: f.version, name: f.name, lifecycle: f.lifecycle, ownerId: f.ownerId }, links: links.map(l => l.kind === 'TEST_CASE' ? { ...l, test: testCaseStatus(l, evidence) } : l), groups: groupTraceLinks(links.filter(l => l.status === 'ACTIVE')), requirements: unique.map(r => ({ ...r, linked: linked.has(r.reqId) })), evidence, coverage: featureTraceCoverage(links, evidence, unique.map(r => r.reqId)), provenance: LOCAL };
 });

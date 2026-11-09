@@ -61,6 +61,7 @@ export class MasterDataService {
         lifecycle: s.lifecycle,
         artifactId: s.artifactId,
         checksum: s.checksum,
+        requirementId: s.requirementId ?? null,
         features: [...new Set(fns.filter((f) => f.swId === s.swId && f.swVersion === s.version).map((f) => `${f.featureId}@${f.featureVersion}`))],
       }));
   }

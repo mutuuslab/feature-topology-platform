@@ -16,7 +16,7 @@ interface CandidateView {
 
 /** 코드 하나의 후보 — 부모가 코드마다 이 훅을 부른다 */
 function useCandidates(code: string) {
-  return useApi<CandidateView>('regionVariantCandidates', { query: { codes: code } });
+  return useApi<CandidateView>('regionVariantCandidates', { query: { codes: code } }, { enabled: !!code.trim() });
 }
 
 function One({ code }: { code: string }) {

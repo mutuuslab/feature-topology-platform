@@ -49,10 +49,16 @@ test('분할 파일 경로를 임의 ID로 만들거나 같은 프로세스를 �
   assert.throws(() => renderLazyModules({ ...doc, processes: [{ ...doc.processes[0], id: '../escape' }] }), /Invalid workflow process ID/);
   assert.throws(() => renderLazyModules({ ...doc, processes: [doc.processes[0], doc.processes[0]] }), /Duplicate workflow process ID/);
 });
-test('실행 모델은127활동의 RACI·입출력·인계·원천 action과125WP 필수 내용을 손실 없이 보존한다',()=>{
+test('실행 모델은128활동의 RACI·입출력·인계·원천 action과126WP 필수 내용을 손실 없이 보존한다',()=>{
   const doc=JSON.parse(readFileSync(SOURCE,'utf8')),model=executionModelOf(doc);
-  assert.equal(model.processes.flatMap(p=>p.activities).length,127);
-  assert.equal(new Set(model.processes.flatMap(p=>p.products.map(w=>w.key))).size,125);
+  assert.equal(model.processes.flatMap(p=>p.activities).length,128);
+  assert.equal(new Set(model.processes.flatMap(p=>p.products.map(w=>w.key))).size,126);
+  const procurement=model.processes.find(p=>p.id==='FPW.15')!;
+  const purchase=procurement.activities.find(a=>a.id==='FPW.15-A08')!;
+  assert.deepEqual(purchase.actions,['costReviewCreate','costReviewUpdate','costReviewAction']);
+  assert.deepEqual(purchase.inputs,['WP-COST-CALC','WP-COST-BASIS']);
+  assert.deepEqual(purchase.outputs,['WP-COST-PURCHASING']);
+  assert.ok(procurement.products.find(w=>w.key==='WP-COST-PURCHASING')!.content.some((line:string)=>line.includes('PREPARED')));
   for(const process of doc.processes){
     const actual=model.processes.find(p=>p.id===process.id)!;
     assert.deepEqual(actual.products,process.workProducts.map((w:any)=>({key:w.key,name:w.name,content:w.content})));

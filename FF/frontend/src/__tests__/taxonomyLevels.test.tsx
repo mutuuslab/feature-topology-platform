@@ -183,6 +183,15 @@ describe('브랜드·권역별 정책 @req FR-GLB-001-001 FR-GLB-001-003 FR-GLB-
 });
 
 describe('룰 지역 코드 후보 @req FR-CRC-001-003', () => {
+  it('빈 지역 코드는 요청하지 않고 유효한 코드만 조회한다', async () => {
+    handler = () => ({ body: { codes: ['1'], countries: ['KR'], variantConditions: [{ key: 'KR/NX4/P/', country: 'KR', vehicleModel: 'NX4', trim: 'P', upgVc: [], featureIds: [] }], compositions: [] } });
+    mount('steward', '/x', '/x', <RegionCandidates codes={['', ' ', '1']} />);
+    expect(await screen.findByText('KR/NX4/P')).toBeTruthy();
+    const requests = calls.filter(c => c.url.includes('/api/region-codes/variant-candidates'));
+    expect(requests).toHaveLength(1);
+    expect(new URL(requests[0].url, 'https://example.test').searchParams.get('codes')).toBe('1');
+  });
+
   it('코드마다 Variant 조건·상품 구성 후보를 읽는다', async () => {
     handler = (url) =>
       url.includes('codes=2')

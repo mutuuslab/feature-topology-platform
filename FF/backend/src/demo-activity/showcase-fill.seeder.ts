@@ -979,17 +979,18 @@ export class ShowcaseFillSeeder implements OnApplicationBootstrap, OnApplication
         policies.decide(who('approver', 'FEATURE_APPROVER', step), n.policyId, PolicyDecisionBody.parse({ decision: 'APPROVE', reason: '8종 검증 GO — 값 같음, 설명만 정리' }));
         const r = policies.deploy(who('coordinator', 'RELEASE_MANAGER', step), n.policyId, `${p.flagKey} 운영 문구 정리 배포(값 같음)`);
         made.push({ prev: p.policyId, policyId: n.policyId, publicationId: r.publicationId as string });
+        // The next revision's validation/signing must not consume this publication's real reply deadline.
+        // Await the actual terminal result before starting another revision; no fabricated readback or longer deadline.
+        if (!(await this.until(() => this.closed(r.publicationId as string), 30_000))) break;
         if (canaryStart(p)) out.push(`${n.policyId} Canary ${(r.stageBasisPoints ?? 0) / 100}% 시작`);
       } catch (err) {
         out.push(`${p.flagKey} 건너뜀: ${(err as Error).message.slice(0, 160)}`);
       }
     }
-    await this.until(() => made.every((x) => this.closed(x.publicationId)), 30_000);
     const ok = (id: string) => ['CONFIRMED', 'PARTIAL'].includes(this.svc(PublicationRepo).get(id)?.status ?? '');
     for (const m of made) {
       if (!ok(m.publicationId)) {
-        out.push(`${m.policyId} 회신 미완(${this.svc(PublicationRepo).get(m.publicationId)?.status}) — 되돌리기 요청 건너뜀`);
-        continue;
+        throw new Error(`${m.policyId} 회신 미완(${this.svc(PublicationRepo).get(m.publicationId)?.status}) — 되돌리기 요청을 완료하지 못했습니다`);
       }
       const r = rollback.requestPolicyRollback(who('operator', 'OPERATOR', 'rollback'), m.policyId, PolicyRollbackBody.parse({ recovery: { policyId: m.prev }, expectedDeploymentId: m.publicationId, reason: '문구 정리 판의 현장 확인 전 — 앞 판으로 되돌림 검토(운영 리더 승인 대기)', approvers: ['usr-opslead'] }));
       out.push(`${m.prev}→${m.policyId}(${m.publicationId}) 되돌리기 ${r.requestId} ${r.status}`);

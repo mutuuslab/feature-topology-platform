@@ -136,54 +136,51 @@ process:
         - 모든 단계에 관측 기간·허용 차이·중단 기준이 있다
       platform: {screens: [/activation/decide, /policies/:id]}
       next: [FPW.7-A08]
-    - id: FPW.7-A13
-      name: 출시 차단 해제 결정
-      outcomes: [O1]
+    - id: FPW.7-A10
+      name: 상품 고객 출시 승인
+      outcomes: [O3]
       rules: []
-      independent_of: [FPW.5-A07]
-      raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-FO], I: [R-REL, R-INT]}
-      inputs: [WP-INTEGRATION-REC]
-      outputs: [WP-FLAG-WAIVER]
+      raci: {R: [R-PO], A: R-PO, C: [R-FO], I: [R-PDA, R-OPS]}
+      inputs: [WP-RELEASE-RECORD, WP-PRODUCT-APPROVAL]
+      outputs: [WP-PRODUCT-RELEASE]
       steps:
-        - 해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다
-        - F2 이상이면 Safety Manager의 의견을 받는다
-        - 개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다
+        - 구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다
+        - 구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다
+        - 출시한 상품은 상세에서 체험 제안으로 이어진다
+        - 출시 승인 결과를 상품 기획과 운영 조직에 알린다
       checks:
-        - 요청자와 결정자가 다른 사람이다
-      platform: {actions: [decideFlagGateWaiver], screens: [/flag-code/reconcile]}
-      next: [FPW.7-A12]
-    - id: FPW.7-A14
-      name: 예외 요청(임시 우회·Gate 예외)
-      trigger: 긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때
-      outcomes: [O6]
-      rules: [FFG-LCY-002]
-      raci: {R: [R-REL], A: R-REL, C: [R-OPS, R-FO], I: [R-SM]}
-      inputs: [WP-CANARY-PLAN]
-      outputs: [WP-EXCEPTION-RECORD]
+        - 고객 출시 승인자가 구성 승인자와 다르다
+      platform: {actions: [productTransition], screens: [/products/:id/:ver]}
+    - id: FPW.7-A04
+      name: Safety Case 독립 검토
+      outcomes: [O2]
+      rules: [FFG-ADS-012]
+      independent_of: [FPW.7-A03]
+      raci: {R: [R-QA], A: R-SM, C: [R-TST], I: [R-FO, R-REG]}
+      inputs: [WP-SAFETY-CASE]
+      outputs: [WP-SC-REVIEW]
       steps:
-        - 긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다
-        - Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다
-        - 서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다
+        - Safety Case를 만들지 않은 검토자가 검토 자격과 대상 Version(Safety Case·도구·ADS)을 기록한다
+        - 증거 일부를 다시 실행해 재현하고, 공백과 불확실한 영역을 적는다
+        - 발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다
       checks:
-        - 적용 기간이 있고 우회 불가 항목이 없다
-      platform: {actions: [createExceptionPolicy], screens: [/verify/exceptions, /policies/:id]}
-      next: [FPW.7-A15]
-    - id: FPW.7-A15
-      name: 예외 승인·만료 원복 확인
-      outcomes: [O6]
-      rules: [FFG-LCY-002]
-      independent_of: [FPW.7-A14]
-      raci: {R: [R-SM, R-OPS], A: R-SM, C: [R-FO], I: [R-REL, R-QA]}
-      inputs: [WP-EXCEPTION-RECORD]
-      outputs: [WP-EXCEPTION-RECORD]
+        - 검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다
+      next: [FPW.7-A08]
+    - id: FPW.7-A11
+      name: Canary 활성화·단계적 확대
+      outcomes: [O5]
+      rules: [FFG-LCY-009, FFG-TST-010]
+      raci: {R: [R-OPS], A: R-OPS, C: [R-SM, R-REL], I: [R-FO, R-QA]}
+      inputs: [WP-RELEASE-RECORD, WP-CANARY-PLAN]
+      outputs: [WP-ROLLOUT-RECORD]
       steps:
-        - 요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다
-        - 두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다
-        - 만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다
+        - 승인 범위 안에서 Canary Cohort부터 활성화를 적용한다
+        - 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다
+        - 중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다
       checks:
-        - 요청자와 두 승인자가 모두 다른 사람이다
-        - 만료 일시가 있고 Gate 판정은 PENDING 그대로다
-      platform: {actions: [decideExceptionPolicy, revokeExceptionPolicy], screens: [/verify/exceptions]}
+        - 단계마다 관측 결과와 확대·중단 결정이 기록되었다
+      platform: {actions: [stageRollout], screens: [/activation/decide, /fleet/live, /features/:id/:ver, /notifications]}
+
     - id: FPW.7-A02
       name: 효과 실험 계획 등록
       trigger: 출시 효과를 실험으로 비교해야 할 때
@@ -199,37 +196,6 @@ process:
       checks:
         - F2 이상 Feature에 Experiment Flag 실험이 등록되지 않았다
       platform: {actions: [createExperiment], screens: [/experiments]}
-      next: [FPW.7-A08]
-    - id: FPW.7-A03
-      name: Safety Case·SOTIF 근거 정리
-      trigger: G6 배포 완료
-      outcomes: [O2]
-      rules: [FFG-SOT-004, FFG-ADS-008]
-      raci: {R: [R-SM], A: R-SM, C: [R-FO, R-TST], I: [R-QA]}
-      inputs: [WP-SOTIF-ANALYSIS, WP-G5-EVIDENCE, WP-HARA-TARA]
-      outputs: [WP-SAFETY-CASE]
-      steps:
-        - F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다
-        - Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다
-        - 정리한 Safety Case를 독립 검토에 넘긴다
-      checks:
-        - 모든 주장에 논거와 증거가 하나 이상 있다
-      platform: {screens: [/verify/evidence, /verify/compliance, /verify/safety-case]}
-      next: [FPW.7-A04]
-    - id: FPW.7-A04
-      name: Safety Case 독립 검토
-      outcomes: [O2]
-      rules: [FFG-ADS-012]
-      independent_of: [FPW.7-A03]
-      raci: {R: [R-QA], A: R-SM, C: [R-TST], I: [R-FO, R-REG]}
-      inputs: [WP-SAFETY-CASE]
-      outputs: [WP-SC-REVIEW]
-      steps:
-        - Safety Case를 만들지 않은 검토자가 검토 자격과 대상 Version(Safety Case·도구·ADS)을 기록한다
-        - 증거 일부를 다시 실행해 재현하고, 공백과 불확실한 영역을 적는다
-        - 발견사항의 개선 조치와 담당을 기록해 Safety Manager에게 넘긴다
-      checks:
-        - 검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다
       next: [FPW.7-A08]
     - id: FPW.7-A05
       name: 상품 구성 작성
@@ -316,6 +282,38 @@ process:
         ui: {fields: [reason], buttons: [signRelease]}
       sla_hours: 24
       next: [FPW.7-A09]
+    - id: FPW.7-A14
+      name: 예외 요청(임시 우회·Gate 예외)
+      trigger: 긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때
+      outcomes: [O6]
+      rules: [FFG-LCY-002]
+      raci: {R: [R-REL], A: R-REL, C: [R-OPS, R-FO], I: [R-SM]}
+      inputs: [WP-CANARY-PLAN]
+      outputs: [WP-EXCEPTION-RECORD]
+      steps:
+        - 긴급 사유·적용 기간·우회할 검사(또는 PENDING Gate)와 제한 조건(제한 배포·Pilot·Shadow)을 적어 요청한다
+        - Gate 예외는 완료 예정일과 잔여 리스크를 함께 적는다
+        - 서명·무결성, 긴급 차단 2인 승인, 직무 분리, 멈추기는 예외로 요청할 수 없다
+      checks:
+        - 적용 기간이 있고 우회 불가 항목이 없다
+      platform: {actions: [createExceptionPolicy], screens: [/verify/exceptions, /policies/:id]}
+      next: [FPW.7-A15]
+    - id: FPW.7-A13
+      name: 출시 차단 해제 결정
+      outcomes: [O1]
+      rules: []
+      independent_of: [FPW.5-A07]
+      raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-FO], I: [R-REL, R-INT]}
+      inputs: [WP-INTEGRATION-REC]
+      outputs: [WP-FLAG-WAIVER]
+      steps:
+        - 해제 요청의 사유·만료·요청 당시 대사 상태를 확인한다
+        - F2 이상이면 Safety Manager의 의견을 받는다
+        - 개인 서명으로 승인 또는 반려하고 만료 뒤 다시 막히는 것을 확인한다
+      checks:
+        - 요청자와 결정자가 다른 사람이다
+      platform: {actions: [decideFlagGateWaiver], screens: [/flag-code/reconcile]}
+      next: [FPW.7-A12]
     - id: FPW.7-A09
       name: 출시 전이
       outcomes: [O4]
@@ -331,36 +329,38 @@ process:
         - Feature Version이 RELEASED이고 전이 수행자가 기록되었다
       platform: {actions: [transition], screens: [/features/:id/:ver]}
       next: [FPW.7-A10, FPW.7-A11]
-    - id: FPW.7-A10
-      name: 상품 고객 출시 승인
-      outcomes: [O3]
-      rules: []
-      raci: {R: [R-PO], A: R-PO, C: [R-FO], I: [R-PDA, R-OPS]}
-      inputs: [WP-RELEASE-RECORD, WP-PRODUCT-APPROVAL]
-      outputs: [WP-PRODUCT-RELEASE]
+    - id: FPW.7-A15
+      name: 예외 승인·만료 원복 확인
+      outcomes: [O6]
+      rules: [FFG-LCY-002]
+      independent_of: [FPW.7-A14]
+      raci: {R: [R-SM, R-OPS], A: R-SM, C: [R-FO], I: [R-REL, R-QA]}
+      inputs: [WP-EXCEPTION-RECORD]
+      outputs: [WP-EXCEPTION-RECORD]
       steps:
-        - 구성 승인자가 아닌 상품 Owner가 고객 출시를 승인한다. 데모에서는 approver가 구성을, productowner가 고객 출시를 승인한다
-        - 구성 승인자에게는 화면이 출시 승인 버튼을 미리 막고 이유를 보인다. 서버도 같은 사람의 승인을 거부한다
-        - 출시한 상품은 상세에서 체험 제안으로 이어진다
-        - 출시 승인 결과를 상품 기획과 운영 조직에 알린다
+        - 요청자가 아닌 두 사람(서로 다른 승인자)이 만료 일시를 정해 승인하거나 사유를 적어 반려한다
+        - 두 번째 승인 뒤 기록된 제한 범위까지만 배포되는지 확인한다
+        - 만료되면 플랫폼이 이전 정책 상태로 되돌리고 원복을 알린다. 더 일찍 끝내야 하면 회수한다
       checks:
-        - 고객 출시 승인자가 구성 승인자와 다르다
-      platform: {actions: [productTransition], screens: [/products/:id/:ver]}
-    - id: FPW.7-A11
-      name: Canary 활성화·단계적 확대
-      outcomes: [O5]
-      rules: [FFG-LCY-009, FFG-TST-010]
-      raci: {R: [R-OPS], A: R-OPS, C: [R-SM, R-REL], I: [R-FO, R-QA]}
-      inputs: [WP-RELEASE-RECORD, WP-CANARY-PLAN]
-      outputs: [WP-ROLLOUT-RECORD]
+        - 요청자와 두 승인자가 모두 다른 사람이다
+        - 만료 일시가 있고 Gate 판정은 PENDING 그대로다
+      platform: {actions: [decideExceptionPolicy, revokeExceptionPolicy], screens: [/verify/exceptions]}
+    - id: FPW.7-A03
+      name: Safety Case·SOTIF 근거 정리
+      trigger: G6 배포 완료
+      outcomes: [O2]
+      rules: [FFG-SOT-004, FFG-ADS-008]
+      raci: {R: [R-SM], A: R-SM, C: [R-FO, R-TST], I: [R-QA]}
+      inputs: [WP-G5-EVIDENCE, WP-SOTIF-ANALYSIS, WP-HARA-TARA]
+      outputs: [WP-SAFETY-CASE]
       steps:
-        - 승인 범위 안에서 Canary Cohort부터 활성화를 적용한다
-        - 관측 기간 동안 중단 기준을 감시하고 만족할 때만 다음 Cohort로 넓힌다
-        - 중단 기준에 걸리면 확대를 멈추고 이상 징후 대응(FPW.8)으로 넘긴다
+        - F2 이상 Feature의 ISO 21448 출시 기준 충족 근거와 잔여 위험을 정리한다
+        - Safety Case의 주장마다 논거를, 논거마다 증거를 두고 규칙 ID·시험 ID를 식별자로 붙인다
+        - 정리한 Safety Case를 독립 검토에 넘긴다
       checks:
-        - 단계마다 관측 결과와 확대·중단 결정이 기록되었다
-      platform: {actions: [stageRollout], screens: [/activation/decide, /fleet/live, /features/:id/:ver, /notifications]}
-
+        - 모든 주장에 논거와 증거가 하나 이상 있다
+      platform: {screens: [/verify/evidence, /verify/compliance, /verify/safety-case]}
+      next: [FPW.7-A04]
   base_practices:
     - id: FPW.7.BP1
       name: Canary·Shadow 판정 기준 정의

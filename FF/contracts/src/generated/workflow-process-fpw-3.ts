@@ -261,9 +261,9 @@ export const PROCESS: WorkflowProcess = {
     ]
    },
    "inputs": [
-    "WP-HARA-TARA",
+    "WP-G2-DECISION",
     "WP-SOTIF-ANALYSIS",
-    "WP-G2-DECISION"
+    "WP-HARA-TARA"
    ],
    "outputs": [
     "WP-SAFETY-REQ"

@@ -76,7 +76,7 @@ process:
       outcomes: [O1]
       rules: [FFG-LCY-006, FFG-DEAC-001, FFG-TEL-007, FFG-CLS-002]
       raci: {R: [R-ARC], A: R-ARC, C: [R-SM, R-INT], I: [R-TST, R-REQ]}
-      inputs: [WP-G3-DECISION, WP-SAFETY-REQ]
+      inputs: [WP-SAFETY-REQ, WP-G3-DECISION]
       outputs: [WP-SAFETY-DESIGN]
       steps:
         - F2 이상 Feature가 FTTI 안에서 자기 고장을 감지해 Safety Guard에 보고하는 감시 구조를 설계한다

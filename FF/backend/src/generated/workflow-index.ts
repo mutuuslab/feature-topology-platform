@@ -1603,99 +1603,93 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": null
   },
   {
-   "id": "FPW.7-A13",
+   "id": "FPW.7-A10",
    "processId": "FPW.7",
    "processName": "출시·활성화·단계적 확대",
-   "name": "출시 차단 해제 결정",
+   "name": "상품 고객 출시 승인",
    "trigger": null,
    "gateDecision": null,
    "raci": {
     "R": [
-     "R-REQ"
+     "R-PO"
     ],
-    "A": "R-REQ",
+    "A": "R-PO",
     "C": [
-     "R-SM",
      "R-FO"
     ],
     "I": [
-     "R-REL",
-     "R-INT"
-    ]
-   },
-   "next": [
-    "FPW.7-A12"
-   ],
-   "screens": [
-    "/flag-code/reconcile"
-   ],
-   "actions": [
-    "decideFlagGateWaiver"
-   ],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
-   "id": "FPW.7-A14",
-   "processId": "FPW.7",
-   "processName": "출시·활성화·단계적 확대",
-   "name": "예외 요청(임시 우회·Gate 예외)",
-   "trigger": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-REL"
-    ],
-    "A": "R-REL",
-    "C": [
-     "R-OPS",
-     "R-FO"
-    ],
-    "I": [
-     "R-SM"
-    ]
-   },
-   "next": [
-    "FPW.7-A15"
-   ],
-   "screens": [
-    "/verify/exceptions",
-    "/policies/:id"
-   ],
-   "actions": [
-    "createExceptionPolicy"
-   ],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
-   "id": "FPW.7-A15",
-   "processId": "FPW.7",
-   "processName": "출시·활성화·단계적 확대",
-   "name": "예외 승인·만료 원복 확인",
-   "trigger": null,
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-SM",
+     "R-PDA",
      "R-OPS"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/products/:id/:ver"
+   ],
+   "actions": [
+    "productTransition"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.7-A04",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "Safety Case 독립 검토",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-QA"
     ],
     "A": "R-SM",
     "C": [
-     "R-FO"
+     "R-TST"
     ],
     "I": [
-     "R-REL",
+     "R-FO",
+     "R-REG"
+    ]
+   },
+   "next": [
+    "FPW.7-A08"
+   ],
+   "screens": [],
+   "actions": [],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.7-A11",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "Canary 활성화·단계적 확대",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-OPS"
+    ],
+    "A": "R-OPS",
+    "C": [
+     "R-SM",
+     "R-REL"
+    ],
+    "I": [
+     "R-FO",
      "R-QA"
     ]
    },
    "next": [],
    "screens": [
-    "/verify/exceptions"
+    "/activation/decide",
+    "/fleet/live",
+    "/features/:id/:ver",
+    "/notifications"
    ],
    "actions": [
-    "decideExceptionPolicy",
-    "revokeExceptionPolicy"
+    "stageRollout"
    ],
    "anchor": null,
    "slaHours": null
@@ -1729,66 +1723,6 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "actions": [
     "createExperiment"
    ],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
-   "id": "FPW.7-A03",
-   "processId": "FPW.7",
-   "processName": "출시·활성화·단계적 확대",
-   "name": "Safety Case·SOTIF 근거 정리",
-   "trigger": "G6 배포 완료",
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-SM"
-    ],
-    "A": "R-SM",
-    "C": [
-     "R-FO",
-     "R-TST"
-    ],
-    "I": [
-     "R-QA"
-    ]
-   },
-   "next": [
-    "FPW.7-A04"
-   ],
-   "screens": [
-    "/verify/evidence",
-    "/verify/compliance",
-    "/verify/safety-case"
-   ],
-   "actions": [],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
-   "id": "FPW.7-A04",
-   "processId": "FPW.7",
-   "processName": "출시·활성화·단계적 확대",
-   "name": "Safety Case 독립 검토",
-   "trigger": null,
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-QA"
-    ],
-    "A": "R-SM",
-    "C": [
-     "R-TST"
-    ],
-    "I": [
-     "R-FO",
-     "R-REG"
-    ]
-   },
-   "next": [
-    "FPW.7-A08"
-   ],
-   "screens": [],
-   "actions": [],
    "anchor": null,
    "slaHours": null
   },
@@ -1955,6 +1889,72 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": 24
   },
   {
+   "id": "FPW.7-A14",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "예외 요청(임시 우회·Gate 예외)",
+   "trigger": "긴급 상황에서 배포 검사나 PENDING 출시 Gate를 기한부로 비켜 가야 할 때",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-REL"
+    ],
+    "A": "R-REL",
+    "C": [
+     "R-OPS",
+     "R-FO"
+    ],
+    "I": [
+     "R-SM"
+    ]
+   },
+   "next": [
+    "FPW.7-A15"
+   ],
+   "screens": [
+    "/verify/exceptions",
+    "/policies/:id"
+   ],
+   "actions": [
+    "createExceptionPolicy"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.7-A13",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "출시 차단 해제 결정",
+   "trigger": null,
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-REQ"
+    ],
+    "A": "R-REQ",
+    "C": [
+     "R-SM",
+     "R-FO"
+    ],
+    "I": [
+     "R-REL",
+     "R-INT"
+    ]
+   },
+   "next": [
+    "FPW.7-A12"
+   ],
+   "screens": [
+    "/flag-code/reconcile"
+   ],
+   "actions": [
+    "decideFlagGateWaiver"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
    "id": "FPW.7-A09",
    "processId": "FPW.7",
    "processName": "출시·활성화·단계적 확대",
@@ -1988,66 +1988,66 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    "slaHours": null
   },
   {
-   "id": "FPW.7-A10",
+   "id": "FPW.7-A15",
    "processId": "FPW.7",
    "processName": "출시·활성화·단계적 확대",
-   "name": "상품 고객 출시 승인",
+   "name": "예외 승인·만료 원복 확인",
    "trigger": null,
    "gateDecision": null,
    "raci": {
     "R": [
-     "R-PO"
+     "R-SM",
+     "R-OPS"
     ],
-    "A": "R-PO",
+    "A": "R-SM",
     "C": [
      "R-FO"
     ],
     "I": [
-     "R-PDA",
-     "R-OPS"
-    ]
-   },
-   "next": [],
-   "screens": [
-    "/products/:id/:ver"
-   ],
-   "actions": [
-    "productTransition"
-   ],
-   "anchor": null,
-   "slaHours": null
-  },
-  {
-   "id": "FPW.7-A11",
-   "processId": "FPW.7",
-   "processName": "출시·활성화·단계적 확대",
-   "name": "Canary 활성화·단계적 확대",
-   "trigger": null,
-   "gateDecision": null,
-   "raci": {
-    "R": [
-     "R-OPS"
-    ],
-    "A": "R-OPS",
-    "C": [
-     "R-SM",
-     "R-REL"
-    ],
-    "I": [
-     "R-FO",
+     "R-REL",
      "R-QA"
     ]
    },
    "next": [],
    "screens": [
-    "/activation/decide",
-    "/fleet/live",
-    "/features/:id/:ver",
-    "/notifications"
+    "/verify/exceptions"
    ],
    "actions": [
-    "stageRollout"
+    "decideExceptionPolicy",
+    "revokeExceptionPolicy"
    ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.7-A03",
+   "processId": "FPW.7",
+   "processName": "출시·활성화·단계적 확대",
+   "name": "Safety Case·SOTIF 근거 정리",
+   "trigger": "G6 배포 완료",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-SM"
+    ],
+    "A": "R-SM",
+    "C": [
+     "R-FO",
+     "R-TST"
+    ],
+    "I": [
+     "R-QA"
+    ]
+   },
+   "next": [
+    "FPW.7-A04"
+   ],
+   "screens": [
+    "/verify/evidence",
+    "/verify/compliance",
+    "/verify/safety-case"
+   ],
+   "actions": [],
    "anchor": null,
    "slaHours": null
   },

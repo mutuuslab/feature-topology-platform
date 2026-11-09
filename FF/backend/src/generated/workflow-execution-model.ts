@@ -897,9 +897,9 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       ]
      },
      "inputs": [
-      "WP-HARA-TARA",
+      "WP-G2-DECISION",
       "WP-SOTIF-ANALYSIS",
-      "WP-G2-DECISION"
+      "WP-HARA-TARA"
      ],
      "outputs": [
       "WP-SAFETY-REQ"
@@ -1187,8 +1187,8 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       ]
      },
      "inputs": [
-      "WP-G3-DECISION",
-      "WP-SAFETY-REQ"
+      "WP-SAFETY-REQ",
+      "WP-G3-DECISION"
      ],
      "outputs": [
       "WP-SAFETY-DESIGN"
@@ -2248,114 +2248,109 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ]
     },
     {
-     "id": "FPW.7-A13",
-     "name": "출시 차단 해제 결정",
+     "id": "FPW.7-A10",
+     "name": "상품 고객 출시 승인",
      "processId": "FPW.7",
      "raci": {
       "R": [
-       "R-REQ"
+       "R-PO"
       ],
-      "A": "R-REQ",
+      "A": "R-PO",
       "C": [
-       "R-SM",
        "R-FO"
       ],
       "I": [
-       "R-REL",
-       "R-INT"
-      ]
-     },
-     "inputs": [
-      "WP-INTEGRATION-REC"
-     ],
-     "outputs": [
-      "WP-FLAG-WAIVER"
-     ],
-     "next": [
-      "FPW.7-A12"
-     ],
-     "screens": [
-      "/flag-code/reconcile"
-     ],
-     "actions": [
-      "decideFlagGateWaiver"
-     ],
-     "checks": [
-      "요청자와 결정자가 다른 사람이다"
-     ]
-    },
-    {
-     "id": "FPW.7-A14",
-     "name": "예외 요청(임시 우회·Gate 예외)",
-     "processId": "FPW.7",
-     "raci": {
-      "R": [
-       "R-REL"
-      ],
-      "A": "R-REL",
-      "C": [
-       "R-OPS",
-       "R-FO"
-      ],
-      "I": [
-       "R-SM"
-      ]
-     },
-     "inputs": [
-      "WP-CANARY-PLAN"
-     ],
-     "outputs": [
-      "WP-EXCEPTION-RECORD"
-     ],
-     "next": [
-      "FPW.7-A15"
-     ],
-     "screens": [
-      "/verify/exceptions",
-      "/policies/:id"
-     ],
-     "actions": [
-      "createExceptionPolicy"
-     ],
-     "checks": [
-      "적용 기간이 있고 우회 불가 항목이 없다"
-     ]
-    },
-    {
-     "id": "FPW.7-A15",
-     "name": "예외 승인·만료 원복 확인",
-     "processId": "FPW.7",
-     "raci": {
-      "R": [
-       "R-SM",
+       "R-PDA",
        "R-OPS"
+      ]
+     },
+     "inputs": [
+      "WP-RELEASE-RECORD",
+      "WP-PRODUCT-APPROVAL"
+     ],
+     "outputs": [
+      "WP-PRODUCT-RELEASE"
+     ],
+     "next": [],
+     "screens": [
+      "/products/:id/:ver"
+     ],
+     "actions": [
+      "productTransition"
+     ],
+     "checks": [
+      "고객 출시 승인자가 구성 승인자와 다르다"
+     ]
+    },
+    {
+     "id": "FPW.7-A04",
+     "name": "Safety Case 독립 검토",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-QA"
       ],
       "A": "R-SM",
       "C": [
-       "R-FO"
+       "R-TST"
       ],
       "I": [
-       "R-REL",
+       "R-FO",
+       "R-REG"
+      ]
+     },
+     "inputs": [
+      "WP-SAFETY-CASE"
+     ],
+     "outputs": [
+      "WP-SC-REVIEW"
+     ],
+     "next": [
+      "FPW.7-A08"
+     ],
+     "screens": [],
+     "actions": [],
+     "checks": [
+      "검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다"
+     ]
+    },
+    {
+     "id": "FPW.7-A11",
+     "name": "Canary 활성화·단계적 확대",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-OPS"
+      ],
+      "A": "R-OPS",
+      "C": [
+       "R-SM",
+       "R-REL"
+      ],
+      "I": [
+       "R-FO",
        "R-QA"
       ]
      },
      "inputs": [
-      "WP-EXCEPTION-RECORD"
+      "WP-RELEASE-RECORD",
+      "WP-CANARY-PLAN"
      ],
      "outputs": [
-      "WP-EXCEPTION-RECORD"
+      "WP-ROLLOUT-RECORD"
      ],
      "next": [],
      "screens": [
-      "/verify/exceptions"
+      "/activation/decide",
+      "/fleet/live",
+      "/features/:id/:ver",
+      "/notifications"
      ],
      "actions": [
-      "decideExceptionPolicy",
-      "revokeExceptionPolicy"
+      "stageRollout"
      ],
      "checks": [
-      "요청자와 두 승인자가 모두 다른 사람이다",
-      "만료 일시가 있고 Gate 판정은 PENDING 그대로다"
+      "단계마다 관측 결과와 확대·중단 결정이 기록되었다"
      ]
     },
     {
@@ -2392,76 +2387,6 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ],
      "checks": [
       "F2 이상 Feature에 Experiment Flag 실험이 등록되지 않았다"
-     ]
-    },
-    {
-     "id": "FPW.7-A03",
-     "name": "Safety Case·SOTIF 근거 정리",
-     "processId": "FPW.7",
-     "raci": {
-      "R": [
-       "R-SM"
-      ],
-      "A": "R-SM",
-      "C": [
-       "R-FO",
-       "R-TST"
-      ],
-      "I": [
-       "R-QA"
-      ]
-     },
-     "inputs": [
-      "WP-SOTIF-ANALYSIS",
-      "WP-G5-EVIDENCE",
-      "WP-HARA-TARA"
-     ],
-     "outputs": [
-      "WP-SAFETY-CASE"
-     ],
-     "next": [
-      "FPW.7-A04"
-     ],
-     "screens": [
-      "/verify/evidence",
-      "/verify/compliance",
-      "/verify/safety-case"
-     ],
-     "actions": [],
-     "checks": [
-      "모든 주장에 논거와 증거가 하나 이상 있다"
-     ]
-    },
-    {
-     "id": "FPW.7-A04",
-     "name": "Safety Case 독립 검토",
-     "processId": "FPW.7",
-     "raci": {
-      "R": [
-       "R-QA"
-      ],
-      "A": "R-SM",
-      "C": [
-       "R-TST"
-      ],
-      "I": [
-       "R-FO",
-       "R-REG"
-      ]
-     },
-     "inputs": [
-      "WP-SAFETY-CASE"
-     ],
-     "outputs": [
-      "WP-SC-REVIEW"
-     ],
-     "next": [
-      "FPW.7-A08"
-     ],
-     "screens": [],
-     "actions": [],
-     "checks": [
-      "검토 기록에 자격·기간·Version·방법·재현 증거·공백이 모두 있다"
      ]
     },
     {
@@ -2655,6 +2580,80 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ]
     },
     {
+     "id": "FPW.7-A14",
+     "name": "예외 요청(임시 우회·Gate 예외)",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-REL"
+      ],
+      "A": "R-REL",
+      "C": [
+       "R-OPS",
+       "R-FO"
+      ],
+      "I": [
+       "R-SM"
+      ]
+     },
+     "inputs": [
+      "WP-CANARY-PLAN"
+     ],
+     "outputs": [
+      "WP-EXCEPTION-RECORD"
+     ],
+     "next": [
+      "FPW.7-A15"
+     ],
+     "screens": [
+      "/verify/exceptions",
+      "/policies/:id"
+     ],
+     "actions": [
+      "createExceptionPolicy"
+     ],
+     "checks": [
+      "적용 기간이 있고 우회 불가 항목이 없다"
+     ]
+    },
+    {
+     "id": "FPW.7-A13",
+     "name": "출시 차단 해제 결정",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-REQ"
+      ],
+      "A": "R-REQ",
+      "C": [
+       "R-SM",
+       "R-FO"
+      ],
+      "I": [
+       "R-REL",
+       "R-INT"
+      ]
+     },
+     "inputs": [
+      "WP-INTEGRATION-REC"
+     ],
+     "outputs": [
+      "WP-FLAG-WAIVER"
+     ],
+     "next": [
+      "FPW.7-A12"
+     ],
+     "screens": [
+      "/flag-code/reconcile"
+     ],
+     "actions": [
+      "decideFlagGateWaiver"
+     ],
+     "checks": [
+      "요청자와 결정자가 다른 사람이다"
+     ]
+    },
+    {
      "id": "FPW.7-A09",
      "name": "출시 전이",
      "processId": "FPW.7",
@@ -2693,77 +2692,78 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ]
     },
     {
-     "id": "FPW.7-A10",
-     "name": "상품 고객 출시 승인",
+     "id": "FPW.7-A15",
+     "name": "예외 승인·만료 원복 확인",
      "processId": "FPW.7",
      "raci": {
       "R": [
-       "R-PO"
+       "R-SM",
+       "R-OPS"
       ],
-      "A": "R-PO",
+      "A": "R-SM",
       "C": [
        "R-FO"
       ],
       "I": [
-       "R-PDA",
-       "R-OPS"
-      ]
-     },
-     "inputs": [
-      "WP-RELEASE-RECORD",
-      "WP-PRODUCT-APPROVAL"
-     ],
-     "outputs": [
-      "WP-PRODUCT-RELEASE"
-     ],
-     "next": [],
-     "screens": [
-      "/products/:id/:ver"
-     ],
-     "actions": [
-      "productTransition"
-     ],
-     "checks": [
-      "고객 출시 승인자가 구성 승인자와 다르다"
-     ]
-    },
-    {
-     "id": "FPW.7-A11",
-     "name": "Canary 활성화·단계적 확대",
-     "processId": "FPW.7",
-     "raci": {
-      "R": [
-       "R-OPS"
-      ],
-      "A": "R-OPS",
-      "C": [
-       "R-SM",
-       "R-REL"
-      ],
-      "I": [
-       "R-FO",
+       "R-REL",
        "R-QA"
       ]
      },
      "inputs": [
-      "WP-RELEASE-RECORD",
-      "WP-CANARY-PLAN"
+      "WP-EXCEPTION-RECORD"
      ],
      "outputs": [
-      "WP-ROLLOUT-RECORD"
+      "WP-EXCEPTION-RECORD"
      ],
      "next": [],
      "screens": [
-      "/activation/decide",
-      "/fleet/live",
-      "/features/:id/:ver",
-      "/notifications"
+      "/verify/exceptions"
      ],
      "actions": [
-      "stageRollout"
+      "decideExceptionPolicy",
+      "revokeExceptionPolicy"
      ],
      "checks": [
-      "단계마다 관측 결과와 확대·중단 결정이 기록되었다"
+      "요청자와 두 승인자가 모두 다른 사람이다",
+      "만료 일시가 있고 Gate 판정은 PENDING 그대로다"
+     ]
+    },
+    {
+     "id": "FPW.7-A03",
+     "name": "Safety Case·SOTIF 근거 정리",
+     "processId": "FPW.7",
+     "raci": {
+      "R": [
+       "R-SM"
+      ],
+      "A": "R-SM",
+      "C": [
+       "R-FO",
+       "R-TST"
+      ],
+      "I": [
+       "R-QA"
+      ]
+     },
+     "inputs": [
+      "WP-G5-EVIDENCE",
+      "WP-SOTIF-ANALYSIS",
+      "WP-HARA-TARA"
+     ],
+     "outputs": [
+      "WP-SAFETY-CASE"
+     ],
+     "next": [
+      "FPW.7-A04"
+     ],
+     "screens": [
+      "/verify/evidence",
+      "/verify/compliance",
+      "/verify/safety-case"
+     ],
+     "actions": [],
+     "checks": [
+      "모든 주장에 논거와 증거가 하나 이상 있다"
      ]
     }
    ]

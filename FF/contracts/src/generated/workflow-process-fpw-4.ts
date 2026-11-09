@@ -291,8 +291,8 @@ export const PROCESS: WorkflowProcess = {
     ]
    },
    "inputs": [
-    "WP-G3-DECISION",
-    "WP-SAFETY-REQ"
+    "WP-SAFETY-REQ",
+    "WP-G3-DECISION"
    ],
    "outputs": [
     "WP-SAFETY-DESIGN"

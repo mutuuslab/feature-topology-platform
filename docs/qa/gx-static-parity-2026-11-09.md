@@ -34,6 +34,7 @@ Base: independent `work/gx-static-20261109`, `feat/gx-static-20261109`, root `33
 - Actual native snapshot capture completed (base 7,902 responses plus F2/F3/hero additions; local-PC leak scan 0). Production static bundle r2 on own preview 9612: ff login, GX exception list with current/expired/pending/rejected records, **page errors 0**. `out/gx-browser-20261109/results.json` and screenshot hold the evidence. Integrated final Publish remains root's gate.
 - Extended production browser flow **PASS**: create real local EXC-00005 against captured synthetic Feature 3.3.0; quality first approval; same-approver button disabled; independent opslead second approval reaches ACTIVE; browser clock advances six minutes beyond the explicitly shortened approval expiry; reload preserves EXPIRED history in IndexedDB. Desktop and mobile 390 screenshot inspected; mobile page overflow 0, page errors 0. Creation verifies the captured raw native Gate signatures in real WebCrypto. Browser automation initially used a nonexistent `fsm` persona and was corrected to actual `quality`; only the final successful run is counted.
 - Visual review uncovered an actual existing UI defect: an ACTIVE exception required a revoke reason but displayed no input (the input existed only in the pending approval panel). Added the existing translated reason field to the active revoke panel. Seven exception UI tests pass, including a new real POST assertion with English-switch draft preservation. This UI-only repair uses existing copy; native/static separation and reason guards remain.
+- Final production bundle r3 on own preview 9613 includes the repair: the actual ACTIVE captured synthetic EXC-00002 was opened, the reason entered, and the real browser-local revoke POST reached REVOKED with history/rollback message; **page errors 0**. It also repeated the full create/two-approval/expiry/CAS/mobile sequence successfully. No native company state was changed.
 - Fresh-snapshot `simBusiness` 10 + `simExtMock` 9 + `screensPolicy` 13: **32/32 PASS** after correcting two historical dataset assumptions (multiple conflicts per connector; FFE-15 now maps to a different actual Feature/version). This preserves failed transition audit assertions and exact remaining conflict counts. ExceptionPanel now rejects malformed generic mock/API response shape instead of reading undefined `.length`.
 - Unrelated follow-up diagnostics: FleetMap suite fails before tests with shared-junction maplibre worker `?url` Denied; RefdbStatic has old label/button expectations after Feature DB-first registration changes. These are owned by root, not suppressed here.
 
@@ -48,3 +49,25 @@ No company attachment bytes, private keys, real GitHub token or real company con
 - Preserve root `snapshotAc`, `snapshotW` (after vehicles), and `snapshotP11a` (after kills); GX import/call is only next to `snapshotTx` and immediately after `const policies = await save('listPolicies')`.
 - Preserve root native `kills.activeForFeature` deployment guard before GX. This branch implements the same actual remaining VIN/category/dependency-scope check in static `gxActiveKills`; root may replace its equivalent local calculation with the newly merged pure helper.
 - Source route/controller/service/module, Gate read field, ADS/compliance read getters, contracts schema export, GX modules, engine expiry registration, registry local signing and policy-ops deployment/stage hooks are the explicit scope.
+
+# Workflow geometry release gate — 2026-11-09
+
+The unchanged total-crossings quality ratchet (`<=250`) failed at 281 after the expanded workflow/GX model. The release candidate now measures **245**, with all 18 `layoutProblems` arrays empty. FPW.7 fell from 105 to 76. No edge/node was hidden or removed and the assertion threshold remains 250.
+
+The canonical changes are limited to **FPW.3/FPW.4 input display order** and **FPW.7 activity/input display order** in `docs/65-workflows/model/processes/*.yaml`. Each original activity object, input/output set, RACI, action, screen, next dependency and work product is preserved. The first activity is preserved. The unowned diagram end marker can change its visual lane when the final listed independent branch changes; no activity's responsible lane changes. FPW.7 retains 49 raw nodes and 62 raw edges (55 rendered plus the same seven pre-existing hidden dependency edges).
+
+The existing deterministic layout optimizer now also tests lane insertion and document positions in existing process columns, nearest first, for dense diagrams. Search is bounded to two passes and accepts only strictly fewer actual routed crossings with `layoutProblems(candidate).length===0`. Input/output lanes stay pinned. Dependencies, RACI, visible edge membership and shape count are unchanged. Unproductive three-lane rotations and extra passes were removed; the smaller final implementation still measures 245.
+
+The YAML was regenerated through the actual source pipeline: `python scripts/build_json.py`, then `node --experimental-strip-types FF/tools/workflow-sync.ts`. The generated JSON/TS is included; it is not edited independently. Regeneration also updates derived department/navigation/assignment display ordering, so integration must preserve root's newer common/reference/English sources and regenerate from the merged YAML.
+
+Executed evidence:
+
+- `python -I scripts/wf_model.py`: **OK — 18 processes, 127 activities, warnings 0**.
+- `workflow-sync.ts --check`: **PASS**.
+- Frontend production typecheck: **PASS**.
+- `procedureFlowLayout.test.ts`: **184/184 PASS** after canonical generation; final smaller search measured the same 245 and all geometry invariants empty, followed by the same regression gate.
+- Source semantic comparison normalizes only activity display order and input/output list order. All other YAML fields compare equal. Graph comparison preserves all original node/edge IDs and fields except the non-activity end marker's placement lane.
+- Exact final per-process crossing counts: `13,8,4,6,8,2,76,37,3,9,16,28,8,7,8,5,7,0` for FPW.1–18.
+
+Probe/order experiments are isolated in kit `out/gx-*` and are not source dependencies or committed runtime artifacts. Failed intermediate candidates were not reported as passing or included in the final result.
+

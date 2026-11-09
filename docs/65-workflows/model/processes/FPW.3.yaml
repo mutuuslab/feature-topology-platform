@@ -70,7 +70,7 @@ process:
       outcomes: [O1]
       rules: [FFG-LCY-005, FFG-LCY-012]
       raci: {R: [R-REQ], A: R-REQ, C: [R-SM, R-ARC], I: [R-TST, R-FO]}
-      inputs: [WP-HARA-TARA, WP-SOTIF-ANALYSIS, WP-G2-DECISION]
+      inputs: [WP-G2-DECISION, WP-SOTIF-ANALYSIS, WP-HARA-TARA]
       outputs: [WP-SAFETY-REQ]
       steps:
         - Safety Goal별로 기능·기술 안전요구를 도출하고 SW에 할당된 요구를 SW 안전요구로 나눈다

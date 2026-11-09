@@ -50,6 +50,8 @@ export interface LayoutOptions {
   innerBand?: number;
   /** 자리를 바꾸지 않는 레인(맨 위 입력·맨 아래 산출물) */
   pinnedLanes?: string[];
+  /** Internal solver hint for document columns; never changes process dependencies. */
+  documentColumns?: Readonly<Record<string, number>>;
 }
 
 export type PNode<N extends LNode = LNode> = N & {
@@ -229,6 +231,19 @@ export function layoutFlow<N extends LNode, E extends LEdge>(input: { nodes: N[]
     }
     if(!improved)break;
   }
+  // Moving a lane across several neighbours can improve a document-heavy graph
+  // even when every individual swap is worse. Keep fixed document lanes in place.
+  for(let pass=0;pass<2;pass++){
+    let improved=false;
+    for(let from=0;from<best.lanes.length;from++)for(let to=0;to<best.lanes.length;to++){
+      if(Math.abs(from-to)<2||pinned.has(best.lanes[from].id)||pinned.has(best.lanes[to].id))continue;
+      const order=best.lanes.map(l=>l.id),lane=order.splice(from,1)[0];order.splice(to,0,lane);
+      if(best.lanes.some((l,i)=>pinned.has(l.id)&&order[i]!==l.id))continue;
+      const candidate=layoutFlowOnce({...input,nodes:nodeOrder,laneOrder:order},opt,true),next=crossings(candidate);
+      if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;improved=true;}
+    }
+    if(!improved)break;
+  }
   // Parallel activities occupying the same role/column can exchange rows without changing order dependencies.
   for(let pass=0;pass<2;pass++){
     let improved=false;
@@ -240,6 +255,35 @@ export function layoutFlow<N extends LNode, E extends LEdge>(input: { nodes: N[]
       if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;nodeOrder=nodes;improved=true;}
     }
     if(!improved)break;
+  }
+  // Dense procedures need document placement as well as lane order. Try existing
+  // process columns, nearest first; accept strictly fewer
+  // actual routed crossings and keep every node/edge and geometry invariant.
+  if(score>=24){
+    let columns:Record<string,number>={...opt.documentColumns};
+    for(let pass=0;pass<2;pass++){
+      let improved=false;
+      for(const doc of nodeOrder.filter(n=>n.free)){
+        const at=new Map(best.nodes.map(n=>[n.id,n.rank]));
+        const current=at.get(doc.id)!,max=Math.max(...best.nodes.map(n=>n.rank));
+        const linked=input.edges.flatMap(e=>e.route!=='vert'?[]:e.from===doc.id?[at.get(e.to)!]:e.to===doc.id?[at.get(e.from)!]:[]);
+        const candidates=[...new Set([...linked,current-1,current+1,...Array.from({length:max+1},(_,r)=>r)])].filter(r=>r>=0&&r<=max&&r!==current).sort((a,b)=>Math.abs(a-current)-Math.abs(b-current)||a-b);
+        for(const rank of candidates){
+          const nextColumns={...columns,[doc.id]:rank};
+          const candidate=layoutFlowOnce({...input,nodes:nodeOrder,laneOrder:best.lanes.map(l=>l.id)},{...opt,documentColumns:nextColumns},true),next=crossings(candidate);
+          if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;columns=nextColumns;improved=true;}
+        }
+      }
+      // Revisit lane order after document columns move; the earlier optimum may
+      // no longer be optimal for the new object-flow routes.
+      for(let i=0;i<best.lanes.length;i++)for(let j=i+1;j<best.lanes.length;j++){
+        if(pinned.has(best.lanes[i].id)||pinned.has(best.lanes[j].id))continue;
+        const order=best.lanes.map(l=>l.id);[order[i],order[j]]=[order[j],order[i]];
+        const candidate=layoutFlowOnce({...input,nodes:nodeOrder,laneOrder:order},{...opt,documentColumns:columns},true),next=crossings(candidate);
+        if(next<score&&!layoutProblems(candidate).length){best=candidate;score=next;improved=true;}
+      }
+      if(!improved)break;
+    }
   }
   return best;
 }
@@ -317,8 +361,8 @@ function layoutFlowOnce<N extends LNode, E extends LEdge>(input: { nodes: N[]; e
     const wantOf = (id: string) => {
       const to = vert.filter((e) => e.from === id && !isFree.get(e.to)).map((e) => rank.get(e.to)!);
       const from = vert.filter((e) => e.to === id && !isFree.get(e.from)).map((e) => rank.get(e.from)!);
-      if (from.length) return { want: Math.min(...from), dir: 1 };
-      if (to.length) return { want: Math.min(...to), dir: -1 };
+      if (from.length) return { want: opt.documentColumns?.[id] ?? Math.min(...from), dir: 1 };
+      if (to.length) return { want: opt.documentColumns?.[id] ?? Math.min(...to), dir: -1 };
       return { want: 0, dir: 1 };
     };
     const free = input.nodes.filter((n) => n.free).map((n) => ({ n, ...wantOf(n.id) }));

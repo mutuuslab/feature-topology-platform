@@ -3,7 +3,7 @@
 // 정책 검증의 차량 시나리오 검증(D06-03)·안전 동작 검증(D06-06)은 시험 대역 가상검증(fake-carla) 실행을 근거로 쓴다
 Object.assign(process.env, { CARLA_RUNNER: require('node:path').resolve(__dirname, '..', 'fixtures', 'fake-carla', 'ffcarla_cli.mjs'), FF_EVIDENCE_DIR: require('node:fs').mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'ff-odd-')) });
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { actor, bootApp, confirmSafety, signG7 } from '../helpers';
+import { actor, bootApp, completeTestSupplierEvidence, confirmSafety, releaseVersion, signG7 } from '../helpers';
 
 const AUTHOR = actor('kim.author', 'FEATURE_AUTHOR');
 const APPROVER = actor('lee.approver', 'FEATURE_APPROVER');
@@ -26,6 +26,11 @@ describe('ODD 축소 정책 (FFG-SOT-002)', () => {
     const http = b.http;
     const v = await http().post('/api/features/FEAT-00022/versions').set(AUTHOR).send({ baseVersion: '1.0.0', reason: 'ODD 축소(안개 조건 제한)', changes: { description: '안개 조건 제한', featureRefs: [{ refId: 'AD-LON-009', role: 'PRIMARY' }] } }).expect(201);
     const ver: string = v.body.feature.version;
+    const source=(await http().get('/api/features/FEAT-00022/versions/1.0.0/classification').expect(200)).body.classification;
+    const {adsFeature,ddtImpact,safetyRelated,owner,lifecycleOwners}=source;
+    await http().put(`/api/features/FEAT-00022/versions/${ver}/classification`).set(AUTHOR).send({adsFeature,ddtImpact,safetyRelated,owner,lifecycleOwners,reason:'축소 전 Version과 같은 ADS 분류·상태 책임 유지'}).expect(200);
+    const classification=(await http().post(`/api/features/FEAT-00022/versions/${ver}/classification/confirm`).set(actor('usr-safety','SAFETY_OFFICER')).send({reason:'새 Version 분류·책임 독립 확인'}).expect(201)).body;
+    expect(classification.completeness.classified).toBe(true);
     if (patch) await http().put(`/api/features/FEAT-00022/versions/${ver}/safety`).set(AUTHOR).send(patch).expect(200);
     await confirmSafety(http, 'FEAT-00022', ver);
     for (const g of ['G1', 'G2', 'G3']) await http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
@@ -37,12 +42,24 @@ describe('ODD 축소 정책 (FFG-SOT-002)', () => {
   const approvedPolicy = async (ver: string, flagKey: string) => {
     const http = b.http;
     const c = await http().post('/api/policies').set(AUTHOR).send({ featureId: 'FEAT-00022', featureVersion: ver, controlPoint: 'Signal', flagKey, description: '안개 조건에서 기능 제한', safeDefault: false, oddRestriction: { ...ODD, baseVersion: '1.0.0' } }).expect(201);
-    await http().post('/api/virtual-validations').set(AUTHOR).send({ policyId: c.body.policyId }).expect(201);
+    const ids=[c.body.policyId];
+    const feature=(await http().get(`/api/features/FEAT-00022/versions/${ver}`).expect(200)).body.feature;
+    for(const controlPoint of feature.controlPoints.filter((point:string)=>point!=='Signal')){
+      const other=await http().post('/api/policies').set(AUTHOR).send({featureId:'FEAT-00022',featureVersion:ver,controlPoint,flagKey:`${flagKey}_${controlPoint.toLowerCase()}`,description:'출시의 다른 Control Point 준비',safeDefault:false}).expect(201);
+      ids.push(other.body.policyId);
+    }
+    for(const policyId of ids)await http().post('/api/virtual-validations').set(AUTHOR).send({policyId}).expect(201);
     await signG7(http, 'FEAT-00022', ver); // G7 — SM·CSM 두 사람 서명(P3-3)
+    completeTestSupplierEvidence(b.app,'FEAT-00022',ver);
     for (const g of ['G5', 'G6', 'G7']) await http().post(`/api/features/FEAT-00022/versions/${ver}/gates`).set(JUDGE).send({ gate: g, inputResult: 'PASS', rationale: '확인', evidenceRef: `EV-${g}` }).expect(201);
-    const val = await http().post(`/api/policies/${c.body.policyId}/validate`).set(AUTHOR).send({}).expect(200);
-    expect(val.body.run.reasons).toEqual([]);
-    await http().post(`/api/policies/${c.body.policyId}/decision`).set(APPROVER).send({ decision: 'APPROVE', reason: '검증 GO' }).expect(200);
+    for(const policyId of ids){
+      const val = await http().post(`/api/policies/${policyId}/validate`).set(AUTHOR).send({}).expect(200);
+      expect(val.body.run.reasons).toEqual([]);
+      await http().post(`/api/policies/${policyId}/decision`).set(APPROVER).send({ decision: 'APPROVE', reason: '검증 GO' }).expect(200);
+    }
+    const current=await http().get(`/api/features/FEAT-00022/versions/${ver}`).expect(200);
+    expect(current.body.feature.lifecycle,JSON.stringify(current.body.transitions)).toBe('VERIFIED');
+    await releaseVersion(http,'FEAT-00022',ver);
     return c.body.policyId as string;
   };
 

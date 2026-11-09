@@ -15,6 +15,23 @@ beforeEach(async()=>{
  sim=await import('../api/sim');engine=await import('../api/sim/engine');
 });
 afterEach(()=>{engine?.__resetSimForTest();vi.useRealTimers();vi.unstubAllGlobals();vi.unstubAllEnvs();});
+it('trace writes require captured ALL history even when an ACTIVE source exists',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(u:string)=>files.has(u)?new Response(JSON.stringify(files.get(u)),{headers:{'Content-Type':'application/json'}}):new Response('',{status:404})));
+ put('traceLinks',{items:[]});
+ const body={featureId:id,kind:'REQUIREMENT',elementId:'REQ-1',elementType:'SYSTEM',sourceSystem:'CODEBEAMER'};
+ await expect(run('createTraceLink','author',body)).rejects.toMatchObject({code:'NOT_FOUND'});
+ expect(engine.__overlayForTest()!.entities.localTraceLinks).toBeUndefined();
+});
+it('trace writes preserve captured unlink IDs and history rather than reusing them',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(u:string)=>files.has(u)?new Response(JSON.stringify(files.get(u)),{headers:{'Content-Type':'application/json'}}):new Response('',{status:404})));
+ const body={featureId:id,kind:'REQUIREMENT',elementId:'REQ-1',elementType:'SYSTEM',sourceSystem:'CODEBEAMER'};
+ const old={linkId:'TRL-00001',featureId:id,status:'UNLINKED',kind:'REQUIREMENT',elementId:'REQ-OLD',elementType:'SYSTEM',sourceSystem:'CODEBEAMER'};
+ put('traceLinks',{items:[old]},{},{status:'ALL'});
+ const created=await run('createTraceLink','author',body);expect(created.linkId).toBe('TRL-00002');
+ await run('unlinkTraceLink','author',{reason:'로컬 연결 검토 후 해제'},{id:created.linkId});
+ const all=(await run('traceLinks','viewer',undefined,{}, {status:'ALL'})).items;
+ expect(all).toContainEqual(old);expect(all).toHaveLength(2);expect(all.every((row:any)=>row.status==='UNLINKED')).toBe(true);
+});
 it('trace links and append-only Test Evidence recompute coverage, keep unlink history and reject invalid source/duplicates/future times',async()=>{
  const req=await run('createTraceLink','author',{featureId:id,kind:'REQUIREMENT',elementId:'REQ-1',elementType:'SYSTEM',sourceSystem:'CODEBEAMER'});expect(req.existence).toBe('NOT_CHECKED');
  const b={featureId:id,kind:'TEST_CASE',elementId:'TC-1',elementType:'HIL',sourceSystem:'TMS',required:true};

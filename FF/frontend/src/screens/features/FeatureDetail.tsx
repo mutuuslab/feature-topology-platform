@@ -58,6 +58,7 @@ import { ChangeKindChip } from '../ads/ChangeImpact';
 import { AdsClassificationPanel } from '../ads/AdsClassification';
 import { BaselineHistory, HistoryTab, IssueInputs, RejectAction, ReleaseCandidatePanel, RetireAction, ReviewRecords } from './LifecyclePanels';
 import { lcGate } from '../../copy/lifecycle-gate';
+import { DraftDeleteAction } from './DraftDeleteAction';
 import type { IssueItem } from '../../../../contracts/src/rules/feature-retire';
 
 const T = ko.detail;
@@ -124,6 +125,7 @@ export default function FeatureDetail() {
               actions={
                 <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                   <FeatureVersionActions key={`${id}@${ver}`} f={d.feature} latest={d.versions[d.versions.length - 1]?.version === ver} />
+                  <DraftDeleteAction entity="feature" id={id} version={ver} lifecycle={d.feature.lifecycle} createdBy={d.meta?.createdBy} onDeleted={() => { const remaining = d.versions.filter(v => v.version !== ver); nav(remaining.length ? `/features/${id}/${remaining[remaining.length - 1].version}` : '/features'); }} />
                   <Select label={T.versions} value={ver} onChange={(e) => nav(`/features/${id}/${e.target.value}`)}>
                     {/* 고른 Version의 Lifecycle은 핵심 메시지가 말한다 — 닫힌 선택 상자에 되풀이하지 않고, 다른 Version만 상태를 붙인다 */}
                     {d.versions.map((v) => (
@@ -306,6 +308,7 @@ function Deps({ d }: { d: Detail }) {
           { key: 'tgt', header: 'Target', cell: (r) => (r.targetVersion ? <IdChip id={r.targetFeatureId} version={r.targetVersion} to={`/features/${r.targetFeatureId}/${r.targetVersion}`} copy={false} /> : <span className="ds-mono">{r.targetFeatureId}</span>) },
           { key: 'v', header: ko.audit.col.result, cell: (r) => <VerdictBadge value={r.verdict} /> },
           { key: 'why', header: ko.page.reason, cell: (r) => <span style={{ fontSize: 'var(--fs-xs)' }}>{r.rationale}</span> },
+          { key: 'delete', header: lcGate.draft.relation, cell: (r) => r.sourceFeatureId === d.feature.featureId && r.sourceVersion === d.feature.version ? <DraftDeleteAction entity="relation" id={r.dependencyId} lifecycle={d.feature.lifecycle} /> : null },
         ]}
       />
     ) : (

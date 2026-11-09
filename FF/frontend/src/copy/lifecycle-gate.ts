@@ -3,6 +3,11 @@ import { localizedCopy } from '../locale/runtime';
 import type { ChangeArea, ChangeType } from '../../../contracts/src/rules/baseline-p10';
 
 export const lcGate = /* @__PURE__ */ localizedCopy('lifecycle-gate.lcGate', {
+  draft: {
+    feature: '초안 Feature 삭제', relation: '초안 관계 삭제', owner: '이 Feature Version 작성자만 삭제할 수 있습니다.',
+    hint: '아직 초안이고 승인 이력과 다른 참조가 없어야 삭제됩니다. 조건을 만족하지 않으면 사유를 표시하고 기록을 유지합니다. 삭제한 ID는 재사용할 수 없으며 삭제 사유와 마지막 상태는 감사·묘비로 보존합니다.',
+    reason: '삭제 사유', reasonHint: '삭제 사유를 4자 이상 입력하세요.', confirm: '선택한 초안과 삭제 조건을 검토했습니다.', submit: '검토한 초안 삭제',
+  },
   goNoGo: {
     title: '최종 판정',
     GO: 'Go — 필수 Gate 모두 PASS',

@@ -1,5 +1,13 @@
 
 export default {
+  'lcGate.draft.feature': 'Delete draft Feature',
+  'lcGate.draft.relation': 'Delete draft relation',
+  'lcGate.draft.owner': 'Only the author of this Feature Version can delete it.',
+  'lcGate.draft.hint': 'Deletion requires a draft with no approval history or references. Otherwise the reason is shown and the record is retained. Deleted IDs cannot be reused; the reason and final state remain in the audit and tombstone.',
+  'lcGate.draft.reason': 'Deletion reason',
+  'lcGate.draft.reasonHint': 'Enter at least four characters for the deletion reason.',
+  'lcGate.draft.confirm': 'I reviewed the selected draft and deletion conditions.',
+  'lcGate.draft.submit': 'Delete reviewed draft',
   "lcGate.goNoGo.title": 'Final decision',
   "lcGate.goNoGo.GO": 'Go — all required Gates PASS',
   "lcGate.goNoGo.NO_GO": 'No-Go — a required Gate has FAIL',

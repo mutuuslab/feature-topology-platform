@@ -144,27 +144,38 @@ describe('C4 교정·승인 후 실적', () => {
 });
 
 describe('선택 산정 시연 데이터', () => {
-  it('기본2과제는 보존하고 선택 시22과제·상태3종·승인후실적을 멱등하게 더한다', async () => {
+  it('기본2과제를 보존하고 선택 cost 시드만22과제·정확한3상태 분포·승인후실적을 멱등하게 더한다', async () => {
     const previous = process.env.FF_SHOWCASE;
-    process.env.FF_SHOWCASE = '1';
-    const { app, http, get } = await bootApp({ costDemo: true });
+    process.env.FF_SHOWCASE = '0';
+    let app: INestApplication | undefined;
     try {
-      const db = get<Db>(DB);
-      expect(db.get<{ n: number }>('SELECT count(*) AS n FROM cost_project')!.n).toBe(24);
-      const rows = db.all<{ status: string; created_by: string; doc: string }>('SELECT status, created_by, doc FROM cost_project');
-      expect(new Set(rows.map((row) => row.status))).toEqual(new Set(['DRAFT', 'SUBMITTED', 'APPROVED']));
+      // Isolate this cost seeder from unrelated full-showcase Feature/vehicle scenarios.
+      const boot = await bootApp({ costDemo: true, showcaseFill: false });
+      app = boot.app; const { http, get } = boot, db = get<Db>(DB);
+      const projects = () => db.all<{ est_id: string; status: string; created_by: string; doc: string }>('SELECT est_id, status, created_by, doc FROM cost_project ORDER BY est_id');
+      const initial = projects();
+      expect(initial.map(row=>[row.est_id,row.status])).toEqual([['EST-0001','DRAFT'],['EST-0002','APPROVED']]);
+      process.env.FF_SHOWCASE = '1';
+      get(CostShowcaseSeed).onApplicationBootstrap();
+      const rows = projects();
+      expect(rows.map(row=>row.est_id)).toEqual(Array.from({length:24},(_,i)=>`EST-${String(i+1).padStart(4,'0')}`));
+      expect(rows.slice(0,2)).toEqual(initial);
+      const counts = rows.reduce((out,row)=>({...out,[row.status]:(out[row.status]??0)+1}),{} as Record<string,number>);
+      expect(counts).toEqual({ DRAFT: 9, SUBMITTED: 7, APPROVED: 8 });
       const approvals = db.all<{ approved_by: string }>('SELECT approved_by FROM cost_result');
-      expect(approvals.every((row) => row.approved_by === 'usr-approver')).toBe(true);
-      expect(rows.every((row) => row.created_by === 'usr-viewer')).toBe(true);
-      const c = (await http().get('/api/cost/calibration').set(VIEW).expect(200)).body;
+      expect(approvals).toHaveLength(8);
+      expect(approvals.every(row=>row.approved_by==='usr-approver')).toBe(true);
+      expect(rows.every(row=>row.created_by==='usr-viewer')).toBe(true);
+      const c=(await http().get('/api/cost/calibration').set(VIEW).expect(200)).body;
       expect(c.mre.projects).toBe(7);
       expect(c.mre.n).toBeGreaterThan(0);
       expect(c.mre.byComponent.length).toBeGreaterThan(0);
       get(CostShowcaseSeed).onApplicationBootstrap();
-      expect(db.get<{ n: number }>('SELECT count(*) AS n FROM cost_project')!.n).toBe(24);
+      expect(projects()).toEqual(rows);
+      expect(db.all('SELECT approved_by FROM cost_result')).toEqual(approvals);
     } finally {
-      await app.close();
-      if (previous === undefined) delete process.env.FF_SHOWCASE; else process.env.FF_SHOWCASE = previous;
+      await app?.close();
+      if(previous===undefined)delete process.env.FF_SHOWCASE;else process.env.FF_SHOWCASE=previous;
     }
   });
 });

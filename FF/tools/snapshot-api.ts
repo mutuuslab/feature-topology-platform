@@ -542,6 +542,9 @@ async function main() {
   const pubs = await save('publications');
   for (const kind of ['POLICY', 'KILL', 'RESTORE']) await save('publications', {}, { kind });
   for (const p of pubs.items) await save('publicationDetail', { id: p.publicationId });
+  // Keep native OTA job evidence with the publication details. The default sim
+  // channel legitimately returns items: []; a missing file is not that evidence.
+  await save('otaJobs');
   const kills = await save('killRequests');
   await snapshotP11a(save, { kills: kills.items });
   // 롤백(D03-04) — 배포 목록·배포별 상세·이력(실행 기록 상세는 아래 '상세 서랍')

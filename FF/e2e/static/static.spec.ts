@@ -474,9 +474,45 @@ test('정적 데모: 운영 지표 탭 — 스냅샷의 처리 지표 표', asyn
   expect(errors).toEqual([]);
 });
 
+test('정적 데모: OTA 전달 작업은 같은 native 캡처의 게시본 전달 근거와 일치한다', async ({ request }) => {
+  const json = async (url: string) => {
+    const response = await request.get('/' + snapshotFile(url));
+    expect(response.status(), url).toBe(200);
+    expect(response.headers()['content-type'], url).toContain('json');
+    return response.json();
+  };
+  const jobs = await json(routeUrl('otaJobs'));
+  expect(Array.isArray(jobs.items)).toBe(true);
+  expect(jobs.items.length).toBeLessThanOrEqual(200);
+  expect(new Set(jobs.items.map((job: { jobId: string }) => job.jobId)).size).toBe(jobs.items.length);
+  for (const job of jobs.items) {
+    expect(job.jobId).toEqual(expect.any(String));
+    expect(job.publicationId).toEqual(expect.any(String));
+  }
+  const channel = await json(routeUrl('vehicleChannel'));
+  const publications = await json(routeUrl('publications'));
+  expect(Array.isArray(publications.items)).toBe(true);
+  expect(publications.items.length).toBeGreaterThan(0);
+  const details = await Promise.all(publications.items.map((p: { publicationId: string }) => json(routeUrl('publicationDetail', { id: p.publicationId }))));
+  for (const detail of details) {
+    if (detail.delivery === null) continue;
+    expect(detail.delivery.jobId).toEqual(expect.any(String));
+    // A capped list cannot prove absence. Join only when it is complete, or
+    // when the actual native job is present in its returned window.
+    const job = jobs.items.find((j: { jobId: string }) => j.jobId === detail.delivery.jobId);
+    if (jobs.items.length < 200 || job) expect(job).toMatchObject({ jobId: detail.delivery.jobId, publicationId: detail.publication.publicationId });
+  }
+  if (channel.active === 'sim' && details.every((detail) => detail.delivery === null)) {
+    expect(jobs.items).toEqual([]);
+    test.info().annotations.push({ type: 'normal-zero', description: '실제 sim 전달 채널·게시본 delivery:null·native OTA 작업 items:[] 일치. 논리 OTA 채널만으로 작업을 만들지 않는다.' });
+  }
+});
+
 test('정적 데모: 활성화 판단 — OFREP 응답과 OpenFeature 값(차량·Flag 바꾸기)', async ({ page }) => {
   const { missing, errors } = watch(page);
   await page.goto('/activation/decide?tab=policy'); // OFREP·OpenFeature는 '정책 평가' 탭(ADS-UI, 통합 12단계)
+  await page.waitForLoadState('networkidle');
+  await expect(page.locator('#main h1').first()).toBeVisible();
   const ofrep = page.getByTestId('ofrep-response');
   await expect(ofrep).toContainText('"key"');
   await expect(page.getByTestId('of-value')).toHaveText(/^(ON|OFF)$/);
@@ -501,8 +537,8 @@ for (const url of ['/ops/anomalies', '/experiments', '/ops/kill', '/baselines', 
     test.setTimeout(180_000);
     const { missing, errors } = watch(page);
     await page.goto(url);
-    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     const rows = page.locator('#main tbody tr[data-clickable="true"]');
     if (url === '/ops/rollback') {
       const response = await page.request.get('/' + snapshotFile(routeUrl('rollbacks')));

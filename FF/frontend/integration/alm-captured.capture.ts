@@ -1,0 +1,11 @@
+// Explicit integration harness: requires a public synthetic capture, never silently skips.
+// FF_ALM_CAPTURE_PUBLIC=<public> vitest run --config vitest.alm-captured.config.ts
+import {existsSync,readFileSync,writeFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {beforeEach,afterEach,it,expect,vi} from 'vitest';
+import {ROUTES,routeUrl} from '@ff/contracts';
+let sim:typeof import('../src/api/sim'),engine:typeof import('../src/api/sim/engine');
+const call=(n:string,body?:any,p:Record<string,string>={},role='integrator',q:Record<string,any>={})=>sim.simCall<any>(ROUTES.find(r=>r.name===n)!,routeUrl(n,p,q),{body,params:p,role});
+beforeEach(async()=>{if(!process.env.FF_ALM_CAPTURE_PUBLIC)throw new Error('FF_ALM_CAPTURE_PUBLIC must point to an explicitly supplied public synthetic capture');vi.resetModules();vi.stubEnv('VITE_DATA_MODE','static');localStorage.clear();sim=await import('../src/api/sim');engine=await import('../src/api/sim/engine');});
+afterEach(()=>{engine?.__resetSimForTest();vi.unstubAllEnvs();vi.unstubAllGlobals();localStorage.clear();});
+it('captured DEMO source replay is deterministic and does not rewrite Gate evidence',async()=>{const root=process.env.FF_ALM_CAPTURE_PUBLIC!;vi.stubGlobal('fetch',vi.fn(async(u:string)=>{const file=join(root,decodeURIComponent(String(u)).replace(/^\//,''));return existsSync(file)?new Response(readFileSync(file,'utf8'),{headers:{'content-type':'application/json'}}):new Response('<!doctype html>',{headers:{'content-type':'text/html'}});}));const p={id:'FEAT-00022',ver:'1.0.0'},before=await call('almWorkProducts',undefined,p),first=await call('refreshAlmWorkProducts',{},p),second=await call('refreshAlmWorkProducts',{},p);expect(first.evidence).toEqual(before.evidence);expect(second.localRecalculation.changed).toBe(0);const full=await call('runExtReconcile',{system:'JIRA',kind:'FULL'}),again=await call('runExtReconcile',{system:'JIRA',kind:'FULL'});expect(again.applied).toBe(0);expect(again.errors).toBe(0);const proof={source:'captured DEMO inputs; no HTTP/server',feature:p,firstRefresh:first.localRecalculation,secondRefresh:second.localRecalculation,originalGateEvidencePreserved:true,firstFull:full,secondFull:again};if(process.env.FF_ALM_PROOF_OUT)writeFileSync(process.env.FF_ALM_PROOF_OUT,JSON.stringify(proof,null,2)+'\n');},120000);

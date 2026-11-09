@@ -91,3 +91,65 @@ describe('업무 절차 요약 다시 읽기', () => {
     expect([summaryCalls, inboxCalls]).toEqual([1, 1]);
   });
 });
+
+
+const deferred = <T,>() => { let resolve!: (value:T)=>void; const promise=new Promise<T>(r=>{resolve=r;});return {promise,resolve}; };
+const completed = (activityId:string) => ({activityId,processId:'FPW.1',roleId:'R-FO',completedBy:'usr-author',completedRole:'FEATURE_AUTHOR',completedAt:'2026-11-10T00:00:00Z',note:null,evidence:[],signature:{signedBy:'usr-author'},signatureValid:true});
+const state = (ids:string[]) => ({items:ids.map(completed),done:ids,updatedAt:null});
+
+describe('업무 완료와 늦은 최초 조회의 경합',()=>{
+ it('실완료 뒤 도착한 옛 조회는 완료를 지우지 않고 다른 서버 완료도 보존한다',async()=>{
+  const read=deferred<ReturnType<typeof json>>();const done=completed('FPW.1-A01');
+  vi.stubGlobal('fetch',vi.fn(async(url:string)=>String(url).includes('/state')?read.promise:json({completion:done})));
+  procedureStore.hydrate('author');await procedureStore.complete('author',done.activityId,{evidence:[],sign:true});
+  read.resolve(json(state(['FPW.4-A01'])));await waitFor(()=>expect(procedureStore.snapshot().status).toBe('ready'));
+  expect(procedureStore.doneOf()).toEqual({'FPW.1-A01':true,'FPW.4-A01':true});
+  expect(procedureStore.snapshot().items).toEqual(expect.arrayContaining([done,completed('FPW.4-A01')]));
+ });
+ it('낙관적 표시 뒤 읽기가 먼저 도착해도 실완료 응답으로 완료를 다시 확정한다',async()=>{
+  const read=deferred<ReturnType<typeof json>>(),write=deferred<ReturnType<typeof json>>();
+  vi.stubGlobal('fetch',vi.fn(async(url:string)=>String(url).includes('/state')?read.promise:write.promise));
+  procedureStore.hydrate('author');const saving=procedureStore.complete('author','FPW.1-A01',{evidence:[],sign:true});
+  read.resolve(json(state([])));await waitFor(()=>expect(procedureStore.snapshot().status).toBe('ready'));
+  write.resolve(json({completion:completed('FPW.1-A01')}));await saving;
+  expect(procedureStore.isDone('FPW.1-A01')).toBe(true);
+ });
+ it('실제 취소 뒤 도착한 옛 완료 조회는 취소를 되돌리지 않는다',async()=>{
+  localStorage.setItem('ff.proc.done.v2',JSON.stringify({'FPW.1-A01':true}));__resetProcedureStore();
+  const read=deferred<ReturnType<typeof json>>();
+  vi.stubGlobal('fetch',vi.fn(async(url:string)=>String(url).includes('/state')?read.promise:json(state(['FPW.4-A01']))));
+  procedureStore.hydrate('author');await procedureStore.undo('author','FPW.1-A01');
+  read.resolve(json(state(['FPW.1-A01','FPW.4-A01'])));await waitFor(()=>expect(procedureStore.snapshot().status).toBe('ready'));
+  expect(procedureStore.doneOf()).toEqual({'FPW.4-A01':true});expect(procedureStore.snapshot().items.map(x=>x.activityId)).toEqual(['FPW.4-A01']);
+ });
+});
+
+
+describe('업무 진행 조회 경계 보존',()=>{
+ it('서버가 거부한 완료는 확인된 변경으로 남지 않는다',async()=>{
+  const read=deferred<ReturnType<typeof json>>();
+  vi.stubGlobal('fetch',vi.fn(async(url:string)=>String(url).includes('/state')?read.promise:{...json({error:{code:'FORBIDDEN',message:'수행 권한이 없습니다'}}),ok:false,status:403}));
+  procedureStore.hydrate('author');
+  await expect(procedureStore.complete('author','FPW.1-A01',{evidence:[],sign:true})).rejects.toMatchObject({status:403});
+  await act(async()=>{read.resolve(json(state(['FPW.4-A01'])));await read.promise;});
+  expect(procedureStore.isDone('FPW.1-A01')).toBe(false);expect(procedureStore.doneOf()).toEqual({'FPW.4-A01':true});
+  expect(procedureStore.snapshot().items.map(item=>item.activityId)).toEqual(['FPW.4-A01']);
+ });
+ it('reset 이전 조회의 응답과 finally는 새 역할의 진행 중 조회를 덮지 않는다',async()=>{
+  const old=deferred<ReturnType<typeof json>>(),fresh=deferred<ReturnType<typeof json>>();let calls=0;
+  vi.stubGlobal('fetch',vi.fn(async()=>++calls===1?old.promise:fresh.promise));
+  procedureStore.hydrate('author');__resetProcedureStore();procedureStore.hydrate('steward');
+  await act(async()=>{old.resolve(json(state(['FPW.1-A01'])));await old.promise;});
+  expect(procedureStore.snapshot().status).toBe('loading');expect(procedureStore.doneOf()).toEqual({});
+  procedureStore.hydrate('quality');expect(calls).toBe(2);
+  await act(async()=>{fresh.resolve(json(state(['FPW.4-A01'])));await fresh.promise;});
+  expect(procedureStore.snapshot().status).toBe('ready');expect(procedureStore.doneOf()).toEqual({'FPW.4-A01':true});
+ });
+ it('기존 연결 실패의 로컬 표시를 유지하며 서버 서명 완료를 꾸미지 않는다',async()=>{
+  const fetcher=vi.fn(async()=>{throw new TypeError('network unreachable');});vi.stubGlobal('fetch',fetcher);
+  procedureStore.hydrate('author');await waitFor(()=>expect(procedureStore.snapshot().status).toBe('error'));
+  expect(procedureStore.snapshot().error).toContain('이 브라우저에만');
+  await procedureStore.complete('author','FPW.1-A01',{evidence:[],sign:true});
+  expect(procedureStore.isDone('FPW.1-A01')).toBe(true);expect(procedureStore.snapshot().items).toEqual([]);expect(fetcher).toHaveBeenCalledTimes(1);
+ });
+});

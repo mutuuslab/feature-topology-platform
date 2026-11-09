@@ -49,6 +49,10 @@ const sameDone = (a: Done, b: Done) => {
 };
 const listeners = new Set<() => void>();
 let hydrating: Promise<void> | null = null;
+let storeEpoch = 0;
+let commandRevision = 0;
+// Only successful server commands can supersede an older in-flight state read.
+const confirmedChanges = new Map<string, { revision: number; completion: ProcedureCompletion | null }>();
 
 const emit = () => {
   version += 1;
@@ -78,26 +82,35 @@ function hydrate(role: string): void {
   status = 'loading';
   error = null;
   emit();
-  hydrating = call<ProcedureStateView>('procedureState', { role })
+  const epoch = storeEpoch;
+  const revision = commandRevision;
+  const pending = call<ProcedureStateView>('procedureState', { role })
     .then((s) => {
-      items = s.items;
+      if (epoch !== storeEpoch) return;
+      const newer = [...confirmedChanges].filter(([, change]) => change.revision > revision);
+      const changed = new Set(newer.map(([id]) => id));
+      items = [...s.items.filter(item => !changed.has(item.activityId)), ...newer.flatMap(([, change]) => change.completion ? [change.completion] : [])];
       // 서버가 정본 — 이 브라우저에만 있던 완료는 서버에 없으면 지운다
       const next: Done = Object.fromEntries(s.done.map((id) => [id, true]));
+      for (const [id, change] of newer) { if (change.completion) next[id] = true; else delete next[id]; }
       if (!sameDone(done, next)) doneVersion += 1;
       done = next;
       writeLocal(done);
       status = 'ready';
     })
     .catch((e: ApiError) => {
+      if (epoch !== storeEpoch) return;
       // 백엔드가 없는 데모에서도 로컬 완료 표시는 유지한다
       if (e.status === 0) offline = true;
       status = 'error';
       error = e.status === 0 ? '플랫폼 백엔드에 연결할 수 없어 이 브라우저에만 저장합니다.' : e.message;
     })
     .finally(() => {
+      if (hydrating !== pending) return;
       hydrating = null;
       emit();
     });
+  hydrating = pending;
 }
 
 async function complete(role: string, activityId: string, body: ProcedureCompleteBody): Promise<void> {
@@ -107,6 +120,9 @@ async function complete(role: string, activityId: string, body: ProcedureComplet
   if (offline) return;
   try {
     const r = await call<{ completion: ProcedureCompletion }>('completeProcedureActivity', { role, params: { id: activityId }, body });
+    confirmedChanges.set(activityId, { revision: ++commandRevision, completion: r.completion });
+    done = { ...done, [activityId]: true };
+    writeLocal(done);
     items = [...items.filter((i) => i.activityId !== activityId), r.completion];
     status = 'ready';
     error = null;
@@ -139,6 +155,9 @@ async function undo(role: string, activityId: string): Promise<void> {
   if (offline) return;
   try {
     const s = await call<ProcedureStateView>('undoProcedureActivity', { role, params: { id: activityId } });
+    confirmedChanges.set(activityId, { revision: ++commandRevision, completion: null });
+    done = Object.fromEntries(s.done.map(id => [id, true]));
+    writeLocal(done);
     items = s.items;
     status = 'ready';
     error = null;
@@ -194,6 +213,9 @@ export function useProgress(role: string, enabled = true) {
 
 /** 시험 전용 — localStorage를 비운 뒤 모듈 상태를 다시 읽는다 */
 export function __resetProcedureStore(): void {
+  storeEpoch += 1;
+  commandRevision = 0;
+  confirmedChanges.clear();
   done = typeof localStorage === 'undefined' ? {} : readLocal();
   items = [];
   status = 'idle';

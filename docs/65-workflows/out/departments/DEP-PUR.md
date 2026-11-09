@@ -34,7 +34,7 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 9 · 책임 10 · 협의 8 · 통보 9 (활동 14개)
+수행 10 · 책임 11 · 협의 9 · 통보 10 (활동 15개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
@@ -52,6 +52,7 @@ last_updated: 2026-11-08
 | FPW.15-A05 산정 승인·반려 | FPW.15 SW 개발비·원가 기준 관리 | R·A (SW 개발비 산정 승인자) · C (구매) · I (SW 개발비 산정 작성자, SW 개발비 산정 열람자) | 산정 검토·승인 기록 `WP-COST-REVIEW`, 산정 입력·계산 결과 `WP-COST-CALC` → 산정 검토·승인 기록 `WP-COST-REVIEW` | `/procurement/sw-cost/:estId` | 2차 초안 |
 | FPW.15-A06 승인 결과 열람·공유 | FPW.15 SW 개발비·원가 기준 관리 | R (SW 개발비 산정 열람자) · A (구매) · C (SW 개발비 산정 작성자) · I (SW 개발비 산정 승인자) | 산정 검토·승인 기록 `WP-COST-REVIEW` → 산정 결과 공유 기록 `WP-COST-SHARE` | `/procurement/sw-cost`, `/procurement/sw-cost/:estId` | 2차 초안 |
 | FPW.15-A07 실적·교정 검토 | FPW.15 SW 개발비·원가 기준 관리 | R (SW 개발비 산정 작성자) · A (원가 기준 관리자) · C (구매) · I (SW 개발비 산정 승인자) | 산정 검토·승인 기록 `WP-COST-REVIEW` → 실적·오차 검토 `WP-COST-ACTUAL` | `/procurement/sw-cost/:estId`, `/procurement/sw-cost/basis` | 2차 초안 |
+| FPW.15-A08 구매 견적·변경·대안 검토 | FPW.15 SW 개발비·원가 기준 관리 | R (SW 개발비 산정 작성자) · A (SW 개발비 산정 승인자) · C (원가 기준 관리자, 구매) · I (SW 개발비 산정 열람자) | 산정 입력·계산 결과 `WP-COST-CALC`, 발행 원가 기준 `WP-COST-BASIS` → 구매 검토·승인 인계 묶음 `WP-COST-PURCHASING` | `/procurement/sw-cost/:estId` | 2차 초안 |
 
 ## 2. 부서 간 인계
 

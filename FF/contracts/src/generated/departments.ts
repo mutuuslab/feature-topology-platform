@@ -257,7 +257,7 @@ export const DEPARTMENTS: DepartmentsDoc = {
    "counts": {
     "R": 15,
     "A": 14,
-    "C": 24,
+    "C": 25,
     "I": 25
    }
   },
@@ -766,10 +766,10 @@ export const DEPARTMENTS: DepartmentsDoc = {
     ]
    },
    "counts": {
-    "R": 9,
-    "A": 10,
-    "C": 8,
-    "I": 9
+    "R": 10,
+    "A": 11,
+    "C": 9,
+    "I": 10
    }
   },
   {

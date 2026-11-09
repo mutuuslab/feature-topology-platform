@@ -13,7 +13,15 @@
    "head": "c96da77030021f5ebaac4f18aa92dd68294c904a",
    "dirty_files": 4
   },
-  "iam_sha256": "742c2f2fb89dcf6f00f288ec7e39700b42820c959a8f333e496c655593704526"
+  "iam_sha256": "742c2f2fb89dcf6f00f288ec7e39700b42820c959a8f333e496c655593704526",
+  "offlineDerivation": {
+   "mode": "CONTRACT_SERVICE_EQUIVALENT_NO_HTTP",
+   "sourceCommit": "30f77f32a17c06de7eaead3847f292f84e95a808",
+   "contractsSha256": "86bac5e18316865cf41626c8df117c9a80e89e311758c3087178e5b64063d5f3",
+   "liveHttpVerified": false,
+   "priorCapturePreserved": true,
+   "permissionsSha256": "09a39d8836e6d2427b341d346f16f27ab7a1e7e377444c33f5c9e5a11a8a3eb3"
+  }
  },
  "roles": [
   {
@@ -1188,7 +1196,7 @@
    "name": "vehicleStatus",
    "method": "POST",
    "path": "/vehicle/v1/:vin/status",
-   "summary": "IF-06 차량 상태 보고 v2 — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 위반은 이상 징후로",
+   "summary": "IF-06 차량 상태 보고 v2(2.0·2.1) — 6단계 수신 검사(스키마·state_auth·report_seq·대상·명령 이력·영속), 2.1은 판정·전달 단계·제어 책임·MRC를 ADS 상태에 투영, 위반은 이상 징후로",
    "component": "D04-03",
    "roles": [
     "VEHICLE"
@@ -1482,6 +1490,40 @@
    "component": "D05-01",
    "roles": [
     "REGULATORY_OWNER"
+   ]
+  },
+  {
+   "name": "costReviewCreate",
+   "method": "POST",
+   "path": "/api/cost/projects/:estId/reviews",
+   "summary": "산정 검토 건 작성",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costReviewUpdate",
+   "method": "PUT",
+   "path": "/api/cost/projects/:estId/reviews/:caseId",
+   "summary": "산정 검토 입력 개정·CAS",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR"
+   ]
+  },
+  {
+   "name": "costReviewAction",
+   "method": "POST",
+   "path": "/api/cost/projects/:estId/reviews/:caseId/actions",
+   "summary": "산정 검토 독립 의견·승인·인계 준비",
+   "component": "D07-01",
+   "roles": [
+    "COST_ESTIMATOR",
+    "COST_APPROVER",
+    "IMPLEMENTER",
+    "DOMAIN_REVIEWER",
+    "COST_BASIS_ADMIN"
    ]
   },
   {
@@ -3069,6 +3111,102 @@
     "OPS_LEAD",
     "SECURITY_OFFICER",
     "GATE_JUDGE"
+   ]
+  },
+  {
+   "name": "approveConfigSet",
+   "method": "POST",
+   "path": "/api/config-sets/:id/approve",
+   "summary": "승인 조합 승인 — 제안자 본인 제외, 보안 최소 버전 표 재확인",
+   "component": "D02-01",
+   "roles": [
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "proposeSecurityMin",
+   "method": "POST",
+   "path": "/api/security-mins",
+   "summary": "보안 최소 버전 제안(올리기만)",
+   "component": "D02-01",
+   "roles": [
+    "SECURITY_OFFICER",
+    "VARIANT_OWNER"
+   ]
+  },
+  {
+   "name": "approveSecurityMin",
+   "method": "POST",
+   "path": "/api/security-mins/:id/approve",
+   "summary": "보안 최소 버전 승인 — 사이버보안 담당, 제안자 본인 제외",
+   "component": "D02-01",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "putRoleScope",
+   "method": "PUT",
+   "path": "/api/iam/scopes/:accountId",
+   "summary": "권한 범위 지정(추가만 이력)",
+   "component": "D06-09",
+   "roles": [
+    "SECURITY_OFFICER"
+   ]
+  },
+  {
+   "name": "extKillIntake",
+   "method": "POST",
+   "path": "/api/ext/v1/kill-intake",
+   "summary": "외부 시스템 차단 요청 접수(API 키) — 실행하지 않고 사람의 차단 요청·2인 승인 대기열로. 접수 ID·상태를 돌려준다",
+   "component": "D03-03",
+   "roles": [
+    "SYSTEM"
+   ]
+  },
+  {
+   "name": "dismissKillIntake",
+   "method": "POST",
+   "path": "/api/kill-intake/:id/dismiss",
+   "summary": "차단 요청 접수 닫기(사유)",
+   "component": "D03-03",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "rescindKill",
+   "method": "POST",
+   "path": "/api/kill-requests/:id/rescind",
+   "summary": "사건 범위 선택 해제 — 이 차단의 사건만(다른 사건 409), 복원 요청·2인 승인 그대로, 다른 사건 차단이 남는 차량",
+   "component": "D03-04",
+   "roles": [
+    "OPERATOR",
+    "SAFETY_OFFICER"
+   ]
+  },
+  {
+   "name": "reevaluateImpactSet",
+   "method": "POST",
+   "path": "/api/incidents/:id/impact-set/reevaluate",
+   "summary": "영향 차량 재평가 — 구성 기준 시각, 새 스냅샷(이전 불변)",
+   "component": "D03-03",
+   "roles": [
+    "SAFETY_OFFICER",
+    "OPS_LEAD",
+    "OPERATOR"
+   ]
+  },
+  {
+   "name": "confirmImpactSet",
+   "method": "POST",
+   "path": "/api/incidents/:id/impact-set/confirm",
+   "summary": "확정 영향군 저장 — 분석 근거 필수, 후보 산정 복사 거부",
+   "component": "D03-03",
+   "roles": [
+    "SAFETY_OFFICER",
+    "OPS_LEAD"
    ]
   }
  ],

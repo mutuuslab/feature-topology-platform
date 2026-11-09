@@ -38,14 +38,14 @@ last_updated: 2026-11-08
 
 ## 1. 업무 (활동당 한 줄)
 
-수행 15 · 책임 14 · 협의 24 · 통보 25 (활동 57개)
+수행 15 · 책임 14 · 협의 25 · 통보 25 (활동 58개)
 
 | 활동 | 프로세스 | 몫 | 입력 → 출력 | 플랫폼 화면 | 범위 |
 |---|---|---|---|---|---|
 | FPW.2-A04 형식승인 영향 1차 판단 | FPW.2 HARA·변경 영향 판단 | I (Release Manager) | 변경 영향 분석서 `WP-IMPACT-ANALYSIS` → 형식승인 영향 판단서 `WP-HOMOLOGATION-IMPACT` | 플랫폼 밖 | 1차 |
 | FPW.3-A05 구현 연결 입력 | FPW.3 안전요구 확정 | R·A (통합 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ` → 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` | `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors` | 1차 |
 | FPW.3-A06 외부 연계 동기화·충돌 해결 | FPW.3 안전요구 확정 | R·A (통합 조직) | 구현 연결(Function·SW·제어기) `WP-IMPL-LINK` → 외부 연계 동기화·충돌 처리 기록 `WP-EXT-SYNC` | `/integration/connectors`, `/features/:id/:ver` | 1차 |
-| FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | C (통합 조직) | G3 Decision Record·정의 승인 `WP-G3-DECISION`, 안전요구·추적 연결 `WP-SAFETY-REQ` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
+| FPW.4-A01 차량 내 감시·안전기제 설계 | FPW.4 안전 설계·정책 설계 | C (통합 조직) | 안전요구·추적 연결 `WP-SAFETY-REQ`, G3 Decision Record·정의 승인 `WP-G3-DECISION` → 안전 설계서 `WP-SAFETY-DESIGN` | `/master/control-points`, `/trace/design` | 1차 |
 | FPW.4-A06 정책 근거 변경요청(CR) 연결 | FPW.4 안전 설계·정책 설계 | I (Release Manager) | – → 정책 근거 변경요청(CR) 연결 `WP-POLICY-CR` | `/policies/:id`, `/integration/connectors` | 1차 |
 | FPW.4-A04 정책 승인 | FPW.4 안전 설계·정책 설계 | I (Release Manager) | Flag 정책(검증·승인본) `WP-POLICY` → Flag 정책(검증·승인본) `WP-POLICY` | `/policies/:id` | 1차 |
 | FPW.4-A07 Flag PR 검토·병합 | FPW.4 안전 설계·정책 설계 | R (통합 조직) · I (Release Manager) | G4 Decision Record `WP-G4-DECISION` → Flag 코드 변경 검토·병합 기록 `WP-FLAG-PR-RESULT` | `/flag-code`, `/flag-code/flags/:flagKey` | 1차 |
@@ -64,14 +64,14 @@ last_updated: 2026-11-08
 | FPW.6-A06 G6 서명 배포 실행 | FPW.6 서명 배포 | R·A (Release Manager) | OTA Gate 판정 기록 `WP-OTA-GATE`, 출시 Baseline `WP-RELEASE-BASELINE` → G6 배포 기록 `WP-G6-DECISION` | `/deployments`, `/deployments/software`, `/integration/connectors` 외 2 | 1차 |
 | FPW.6-A07 코드 저장소 연결 관리 | FPW.6 서명 배포 | R·A (Release Manager) · C (통합 조직) | – → 코드 저장소 연결·변경 기록 `WP-REPO-CONNECTION` | `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/integration/code-scans` | 1차 |
 | FPW.7-A01 Canary·Shadow 판정 기준 정의 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE`, G6 배포 기록 `WP-G6-DECISION` → Canary·Shadow 판정 기준 `WP-CANARY-PLAN` | `/activation/decide`, `/policies/:id` | 1차 |
-| FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager, 통합 조직) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
-| FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions`, `/policies/:id` | 1차 |
-| FPW.7-A15 예외 승인·만료 원복 확인 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 예외 승인 기록 `WP-EXCEPTION-RECORD` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions` | 1차 |
+| FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | C (Release Manager) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live`, `/features/:id/:ver` 외 1 | 1차 |
 | FPW.7-A02 효과 실험 계획 등록 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 안전 분류(네 축) `WP-SAFETY-PROFILE` → 실험 계획 `WP-EXPERIMENT-PLAN` | `/experiments` | 1차 |
 | FPW.7-A08 G7 출시·활성화 판정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, 실험 계획 `WP-EXPERIMENT-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW`, 상품 구성 승인 기록 `WP-PRODUCT-APPROVAL`, 활성화 조건 확인서 `WP-ACTIVATION-PRECHECK` → G7 Decision Record `WP-G7-DECISION` | `/activation/decide`, `/admin/approval` | 1차 |
 | FPW.7-A12 Release Sign-off(출시 책임 확인) | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN`, Safety Case 독립 검토 기록 `WP-SC-REVIEW` → Release Sign-off 기록 `WP-RELEASE-SIGNOFF` | `/features/:id/:ver` | 1차 |
+| FPW.7-A14 예외 요청(임시 우회·Gate 예외) | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions`, `/policies/:id` | 1차 |
+| FPW.7-A13 출시 차단 해제 결정 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager, 통합 조직) | 통합 검증 기록 `WP-INTEGRATION-REC` → 출시 차단 해제 결정 기록 `WP-FLAG-WAIVER` | `/flag-code/reconcile` | 1차 |
 | FPW.7-A09 출시 전이 | FPW.7 출시·활성화·단계적 확대 | R·A (Release Manager) | G7 Decision Record `WP-G7-DECISION`, Release Sign-off 기록 `WP-RELEASE-SIGNOFF` → 출시 전이 기록 `WP-RELEASE-RECORD` | `/features/:id/:ver` | 1차 |
-| FPW.7-A11 Canary 활성화·단계적 확대 | FPW.7 출시·활성화·단계적 확대 | C (Release Manager) | 출시 전이 기록 `WP-RELEASE-RECORD`, Canary·Shadow 판정 기준 `WP-CANARY-PLAN` → 단계적 확대 기록 `WP-ROLLOUT-RECORD` | `/activation/decide`, `/fleet/live`, `/features/:id/:ver` 외 1 | 1차 |
+| FPW.7-A15 예외 승인·만료 원복 확인 | FPW.7 출시·활성화·단계적 확대 | I (Release Manager) | 예외 승인 기록 `WP-EXCEPTION-RECORD` → 예외 승인 기록 `WP-EXCEPTION-RECORD` | `/verify/exceptions` | 1차 |
 | FPW.8-A12 Flag 평가 이상 확인 | FPW.8 운영·긴급 차단·복원 | C (통합 조직) | – → Flag 평가 이상 조사 기록 `WP-FLAG-EVAL-INVESTIGATION` | `/ops/flag-evaluations` | 1차 |
 | FPW.8-A10 단계적 복원·관측 | FPW.8 운영·긴급 차단·복원 | C (Release Manager) | 복원 승인 기록 `WP-RESTORE-DECISION` → 단계적 복원 관측 기록 `WP-RESTORE-ROLLOUT` | `/fleet/live` | 1차 |
 | FPW.8-A13 정책 롤백 요청·계획 | FPW.8 운영·긴급 차단·복원 | C (Release Manager) | – → 정책 롤백 요청·계획 `WP-RBK-REQ` | `/ops/rollback`, `/policies/:id` | 1차 |
@@ -94,6 +94,7 @@ last_updated: 2026-11-08
 | FPW.11-A06 OSS 라이선스·보안 프로그램 운영 | FPW.11 보안·키·취약점 관리 | I (통합 조직) | 공급망 원산지 기록 `WP-ORIGIN-RECORD` → OSS 관리 프로그램 기록 `WP-OSS-PROGRAM` | 플랫폼 밖 | 2차 초안 |
 | FPW.12-A02 평가 컨텍스트 개인정보 검토 | FPW.12 운영 데이터·데이터 보호 | I (통합 조직) | Flag 정책(검증·승인본) `WP-POLICY` → 평가 컨텍스트 속성 검토 기록 `WP-CONTEXT-REVIEW` | `/integration/openfeature` | 2차 초안 |
 | FPW.15-A03 공수·규모 입력 | FPW.15 SW 개발비·원가 기준 관리 | C (통합 조직) | 산정 범위·과제 `WP-COST-SCOPE`, 발행 원가 기준 `WP-COST-BASIS` → 산정 입력·계산 결과 `WP-COST-CALC` | `/procurement/sw-cost/:estId` | 2차 초안 |
+| FPW.15-A08 구매 견적·변경·대안 검토 | FPW.15 SW 개발비·원가 기준 관리 | C (통합 조직) | 산정 입력·계산 결과 `WP-COST-CALC`, 발행 원가 기준 `WP-COST-BASIS` → 구매 검토·승인 인계 묶음 `WP-COST-PURCHASING` | `/procurement/sw-cost/:estId` | 2차 초안 |
 | FPW.17-A01 차량·시장 기준 관리 | FPW.17 기준정보·공유 자산·연계 품질 | I (통합 조직) | – → 기준 값 관리 기록 `WP-MASTER-VALUES` | `/master/reference-values` | 2차 초안 |
 | FPW.17-A02 구조·공유 자산 검토 | FPW.17 기준정보·공유 자산·연계 품질 | C (통합 조직) | 기준 값 관리 기록 `WP-MASTER-VALUES` → 구조·공유 자산 추적 `WP-ASSET-TRACE` | `/master/taxonomy`, `/master/upg`, `/master/structure` 외 2 | 2차 초안 |
 | FPW.17-A03 사전 품질 점검 | FPW.17 기준정보·공유 자산·연계 품질 | R·A (통합 조직) | 구조·공유 자산 추적 `WP-ASSET-TRACE` → 데이터 사전 점검 `WP-DATA-QUALITY` | `/precheck`, `/trace/coverage` | 2차 초안 |
@@ -126,4 +127,4 @@ last_updated: 2026-11-08
 ## 3. 쓰는 화면
 
 - 주 업무 화면: `/features/:id/:ver`, `/master/artifacts`, `/integration/connectors`, `/flag-code`, `/flag-code/flags/:flagKey`, `/flag-code/reconcile`, `/integration/code-scans`, `/deployments`, `/deployments/software`, `/ops/ota-installs`, `/deployments/campaigns/:id`, `/integration/code-repositories`, `/integration/code-repositories/:repoId`, `/verify/exceptions`, `/policies/:id`, `/flag-code/lifecycle`, `/flag-retirements`, `/precheck`, `/trace/coverage`
-- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/experiments`, `/fleet/live`, `/notifications`, `/ops/flag-evaluations`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/supplier/portal`, `/supplier/deliveries`, `/admin/security`, `/integration/openfeature`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`
+- 참조 화면(협의·통보): `/master/control-points`, `/trace/design`, `/arch/topology`, `/validations`, `/validations/virtual`, `/verify/evidence`, `/verify/safety-case`, `/admin/approval`, `/baselines`, `/config/compat`, `/activation/decide`, `/fleet/live`, `/notifications`, `/experiments`, `/ops/flag-evaluations`, `/ops/rollback`, `/deployments/:id`, `/fleet/vehicles/:vin`, `/supplier/portal`, `/supplier/deliveries`, `/admin/security`, `/integration/openfeature`, `/procurement/sw-cost/:estId`, `/master/reference-values`, `/master/taxonomy`, `/master/upg`, `/master/structure`, `/features/shared-assets`, `/change/eo`, `/integration/sync`, `/integration/legacy`, `/field`, `/baselines/eol`

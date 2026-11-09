@@ -27,6 +27,7 @@ flowchart LR
     FPW_15_A03["A03 공수·규모 입력"]
     FPW_15_A04["A04 산정 검토 요청"]
     FPW_15_A07["A07 실적·교정 검토"]
+    FPW_15_A08["A08 구매 견적·변경·대안 검토"]
   end
   subgraph R_CBA["원가 기준 관리자"]
     FPW_15_A02["A02 원가 기준 발행"]
@@ -43,26 +44,28 @@ flowchart LR
   FPW_15_A04 --> FPW_15_A05
   FPW_15_A05 --> FPW_15_A06
   T_FPW_15_A07(("승인 뒤 실적 확보")) -.-> FPW_15_A07
+  T_FPW_15_A08(("견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우")) -.-> FPW_15_A08
 ```
 
 ## 2. 활동
 
 | ID | 활동 | RACI | 입력 | 출력 | 플랫폼 권한·화면 | 이행 규칙 |
 |---|---|---|---|---|---|---|
-| FPW.15-A01 | 산정 범위 설정 | R SW 개발비 산정 작성자 · A SW 개발비 산정 작성자 · C Feature Owner, 구매 · I SW 개발비 산정 승인자 | WP-REF-LINK | WP-COST-SCOPE | `costProjectCreate`, `costFeatureAdd`, `costProjectUpdate`, `/procurement/sw-cost`, `/procurement/sw-cost/:estId` | – |
+| FPW.15-A01 | 산정 범위 설정 | R SW 개발비 산정 작성자 · A SW 개발비 산정 작성자 · C Feature Owner, 구매 · I SW 개발비 산정 승인자 | WP-REF-LINK | WP-COST-SCOPE | `costProjectCreate`, `costReferenceAdd`, `costReferenceUpdate`, `costProjectUpdate`, `/procurement/sw-cost`, `/procurement/sw-cost/:estId` | – |
 | FPW.15-A02 | 원가 기준 발행 | R 원가 기준 관리자 · A 원가 기준 관리자 · C SW 개발비 산정 작성자, 구매 · I SW 개발비 산정 승인자 |  | WP-COST-BASIS | `costBasisDraft`, `costBasisPublish`, `/procurement/sw-cost/basis` | – |
 | FPW.15-A03 | 공수·규모 입력 | R SW 개발비 산정 작성자 · A SW 개발비 산정 작성자 · C 아키텍트, 통합 조직 · I SW 개발비 산정 승인자 | WP-COST-SCOPE, WP-COST-BASIS | WP-COST-CALC | `costLineUpdate`, `costMbdPut`, `/procurement/sw-cost/:estId` | – |
 | FPW.15-A04 | 산정 검토 요청 | R SW 개발비 산정 작성자 · A SW 개발비 산정 작성자 · C 구매 · I SW 개발비 산정 승인자 | WP-COST-CALC | WP-COST-REVIEW | `costCheckPut`, `costTransition`, `/procurement/sw-cost/:estId` | – |
 | FPW.15-A05 | 산정 승인·반려 | R SW 개발비 산정 승인자 · A SW 개발비 산정 승인자 · C 구매 · I SW 개발비 산정 작성자, SW 개발비 산정 열람자 | WP-COST-REVIEW, WP-COST-CALC | WP-COST-REVIEW | `costCheckPut`, `costTransition`, `/procurement/sw-cost/:estId` | – |
 | FPW.15-A06 | 승인 결과 열람·공유 | R SW 개발비 산정 열람자 · A 구매 · C SW 개발비 산정 작성자 · I SW 개발비 산정 승인자 | WP-COST-REVIEW | WP-COST-SHARE | `/procurement/sw-cost`, `/procurement/sw-cost/:estId` | – |
 | FPW.15-A07 | 실적·교정 검토 | R SW 개발비 산정 작성자 · A 원가 기준 관리자 · C 구매 · I SW 개발비 산정 승인자 | WP-COST-REVIEW | WP-COST-ACTUAL | `costActualPut`, `/procurement/sw-cost/:estId`, `/procurement/sw-cost/basis` | – |
+| FPW.15-A08 | 구매 견적·변경·대안 검토 | R SW 개발비 산정 작성자 · A SW 개발비 산정 승인자 · C 통합 조직, 원가 기준 관리자, 구매 · I SW 개발비 산정 열람자 | WP-COST-CALC, WP-COST-BASIS | WP-COST-PURCHASING | `costReviewCreate`, `costReviewUpdate`, `costReviewAction`, `/procurement/sw-cost/:estId` | – |
 
 ### 수행 절차와 완료 기준
 
 #### FPW.15-A01 산정 범위 설정
-1. 대상 Feature와 기준 행의 버전을 확인한다
-2. 차량·시장 범위와 포함·제외 및 가정을 적어 과제를 만든다
-3. 작성 책임자와 산정에 사용할 기준 버전을 확인한다
+1. 발행된 Feature DB 기준 행을 먼저 선택하고 출처·버전을 확인한다
+2. 실제 연결된 등록 Feature는 선택해 연결하고 차량·시장·포함·제외·가정을 확인한다
+3. 자동 채운 과제명·산정 입력과 책임자 및 계수 표 발행 버전을 확인한다
 
 완료 기준:
 - [ ] 대상과 가정이 과제 설정에 남는다
@@ -78,7 +81,7 @@ flowchart LR
 - [ ] 기준 버전과 변경 사유가 남는다
 
 #### FPW.15-A03 공수·규모 입력
-1. 과제에 대상 Feature를 담고 입력 행과 중복을 확인한다
+1. 기준 행별 수량·사양과 선택한 Feature의 실제 연결 범위를 확인한다
 2. 규모·복잡도·재사용과 MBD 작업별 공수 근거를 입력한다
 3. 오류와 합계를 계산해 기준 버전 및 제외 항목을 재확인한다
 
@@ -122,21 +125,36 @@ flowchart LR
 - [ ] 실적 입력이 승인 금액을 소급 변경하지 않는다
 - [ ] 교정 제안은 기준 개정 전 자동 적용되지 않는다
 
+#### FPW.15-A08 구매 견적·변경·대안 검토
+- 트리거: 견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우
+1. Feature DB 기준 행과 발행 계수·과제 버전을 확인하고 실제 연결 요구·출처를 자동 채운다
+2. 공급사와 지역을 구분해 동등 요구·작업·시험 범위를 비교하고 실제 작업 유형에 맞는 공수·단가·환산 출처를 확인한다
+3. 변경 전 승인 기준·변경 요구·작업·청구·계약 포함 여부와 인정 제안을 나누고 중복 수행 비용을 검토한다
+4. 라이선스의 과금·차종·파생·유지보수·재사용 Terms와 원계약의 고정비·회수·물량·가격 인상 요인을 확인한다
+5. 같은 ECU 전체를 MCU 대안에 배정해 공통비를 한 번만 합산하고 물량별 총액·손익분기 및 비재무 제약을 비교한다
+6. 원문 SHA·미확정을 보존해 독립 기술 의견·Terms 근거 확인·비용 승인을 받고 기준 변경 때 재산정·재승인한 PREPARED 인계 자료를 준비한다
+
+완료 기준:
+- [ ] 서로 다른 실제 사람의 작성·기술 의견·비용 승인과 금액 비공개 투영이 유지된다
+- [ ] 원문 훼손·동시 수정·오래된 기준과 미확정 값은 검토 완료를 막는다
+- [ ] 인계 준비를 회사 계약 체결·구매 승인·지급 완료로 표시하지 않는다
+
 ## 3. 산출물
 
 | 키 | 이름 | 종류 | 주요 내용 |
 |---|---|---|---|
-| WP-COST-SCOPE | 산정 범위·과제 | 산출 | 대상 Feature/버전·기준 행·작성자; 차량/시장·포함/제외·가정과 과제 설정 |
+| WP-COST-SCOPE | 산정 범위·과제 | 산출 | Feature DB 기준 행·발행 버전·선택 연결 Feature·작성자; 차량/시장·포함/제외·가정과 과제 설정 |
 | WP-COST-BASIS | 발행 원가 기준 | 산출 | 단가·계수·통화·근거 출처와 버전; 초안과 발행자·사유·적용 시점 |
 | WP-COST-CALC | 산정 입력·계산 결과 | 산출 | 줄별 규모·공수·MBD 입력과 근거; 계산 오류·합계·적용 기준 버전 |
 | WP-COST-REVIEW | 산정 검토·승인 기록 | 산출 | 검토 체크·제출·승인/반려 사유와 사람·시각; 승인 스냅샷과 개정 관계 |
 | WP-COST-SHARE | 산정 결과 공유 기록 | 산출 | 열람/내보내기 대상·권한·버전; 내보내기 감사 기록과 공유 제한 |
 | WP-COST-ACTUAL | 실적·오차 검토 | 산출 | 승인 뒤 실적 공수·출처·편차; 교정 제안과 다음 기준 개정의 채택/보류 근거 |
+| WP-COST-PURCHASING | 구매 검토·승인 인계 묶음 | 산출 | 구매 05·12·13·15·21·23의 견적 범위·공수 단가·변경 청구·요구 연결·가격·MCU 비교와 근거 원문 SHA-256; Feature DB·계수 표·과제 기준 지문과 미확정·비적용·확정 0을 구별한 계산 결과; 작성자와 다른 기술 의견·Terms 근거 확인·독립 비용 승인 및 개정 이력; 승인 원문 지문을 가진 PREPARED 인계 자료이며 회사 계약 체결·지급은 별도 절차 |
 
 ## 4. 진입·완료 기준
 
 **진입**
-- 산정 대상 Feature 또는 Feature DB 기준 행과 담당자가 식별되어 있다
+- 발행된 Feature DB 기준 행과 산정 담당자가 식별되어 있다
 - 산정 역할과 금액 열람 권한이 기존 IAM에 부여되어 있다
 
 **완료**
@@ -203,6 +221,13 @@ Feature별 규모·공수·재사용과 MBD 작업을 출처에 따라 입력하
 - 기여 성과: O4
 - 연결 활동: FPW.15-A07
 
+### FPW.15.BP8 구매 견적·변경·대안 검토
+
+Feature DB 기준 산정과 구매 여섯 검토 유형을 연결한다. 원문·범위·공수·가격·MCU 비교와 독립 의견·비용 승인을 추적하고 기준 변경 뒤 재승인한다. 승인 원문을 인계 자료로 준비하되 회사 계약 체결·지급과 구분한다.
+
+- 기여 성과: O2, O3, O4
+- 연결 활동: FPW.15-A08
+
 ### BP × 성과
 
 | BP | O1 | O2 | O3 | O4 |
@@ -214,6 +239,7 @@ Feature별 규모·공수·재사용과 MBD 작업을 출처에 따라 입력하
 | FPW.15.BP5 | – | – | ● | – |
 | FPW.15.BP6 | – | – | – | ● |
 | FPW.15.BP7 | – | – | – | ● |
+| FPW.15.BP8 | – | ● | ● | ● |
 
 ### 출력 근거 × 성과
 
@@ -227,3 +253,4 @@ Feature별 규모·공수·재사용과 MBD 작업을 출처에 따라 입력하
 | WP-COST-REVIEW | – | – | ● | – | FPW.15.BP4, FPW.15.BP5 |
 | WP-COST-SHARE | – | – | – | ● | FPW.15.BP6 |
 | WP-COST-ACTUAL | – | – | – | ● | FPW.15.BP7 |
+| WP-COST-PURCHASING | – | ● | ● | ● | FPW.15.BP8 |

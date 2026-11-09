@@ -2317,6 +2317,15 @@ export const WORKFLOWS: WorkflowDoc = {
      "firstScope": false
     },
     {
+     "id": "FPW.15-A08",
+     "process": "FPW.15",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.17-A01",
      "process": "FPW.17",
      "part": "I",
@@ -6417,6 +6426,18 @@ export const WORKFLOWS: WorkflowDoc = {
     },
     {
      "id": "FPW.15-A07",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A08",
      "process": "FPW.15",
      "part": "R",
      "parts": [
@@ -27717,11 +27738,35 @@ export const WORKFLOWS: WorkflowDoc = {
        ]
       }
      ]
+    },
+    {
+     "id": "FPW.15.BP8",
+     "name": "구매 견적·변경·대안 검토",
+     "definition": "Feature DB 기준 산정과 구매 여섯 검토 유형을 연결한다. 원문·범위·공수·가격·MCU 비교와 독립 의견·비용 승인을 추적하고 기준 변경 뒤 재승인한다. 승인 원문을 인계 자료로 준비하되 회사 계약 체결·지급과 구분한다.",
+     "notes": [],
+     "activityIds": [
+      "FPW.15-A08"
+     ],
+     "outcomes": [
+      "O2",
+      "O3",
+      "O4"
+     ],
+     "evidence": [
+      {
+       "workProduct": "WP-COST-PURCHASING",
+       "outcomes": [
+        "O2",
+        "O3",
+        "O4"
+       ]
+      }
+     ]
     }
    ],
    "rules": [],
    "entry": [
-    "산정 대상 Feature 또는 Feature DB 기준 행과 담당자가 식별되어 있다",
+    "발행된 Feature DB 기준 행과 산정 담당자가 식별되어 있다",
     "산정 역할과 금액 열람 권한이 기존 IAM에 부여되어 있다"
    ],
    "exit": [
@@ -27736,7 +27781,7 @@ export const WORKFLOWS: WorkflowDoc = {
      "kind": "output",
      "retained": false,
      "content": [
-      "대상 Feature/버전·기준 행·작성자",
+      "Feature DB 기준 행·발행 버전·선택 연결 Feature·작성자",
       "차량/시장·포함/제외·가정과 과제 설정"
      ]
     },
@@ -27794,6 +27839,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "승인 뒤 실적 공수·출처·편차",
       "교정 제안과 다음 기준 개정의 채택/보류 근거"
      ]
+    },
+    {
+     "key": "WP-COST-PURCHASING",
+     "name": "구매 검토·승인 인계 묶음",
+     "en": "Procurement review and approved handoff package",
+     "kind": "output",
+     "retained": true,
+     "content": [
+      "구매 05·12·13·15·21·23의 견적 범위·공수 단가·변경 청구·요구 연결·가격·MCU 비교와 근거 원문 SHA-256",
+      "Feature DB·계수 표·과제 기준 지문과 미확정·비적용·확정 0을 구별한 계산 결과",
+      "작성자와 다른 기술 의견·Terms 근거 확인·독립 비용 승인 및 개정 이력",
+      "승인 원문 지문을 가진 PREPARED 인계 자료이며 회사 계약 체결·지급은 별도 절차"
+     ]
     }
    ],
    "activities": [
@@ -27827,9 +27885,9 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-COST-SCOPE"
      ],
      "steps": [
-      "대상 Feature와 기준 행의 버전을 확인한다",
-      "차량·시장 범위와 포함·제외 및 가정을 적어 과제를 만든다",
-      "작성 책임자와 산정에 사용할 기준 버전을 확인한다"
+      "발행된 Feature DB 기준 행을 먼저 선택하고 출처·버전을 확인한다",
+      "실제 연결된 등록 Feature는 선택해 연결하고 차량·시장·포함·제외·가정을 확인한다",
+      "자동 채운 과제명·산정 입력과 책임자 및 계수 표 발행 버전을 확인한다"
      ],
      "checks": [
       "대상과 가정이 과제 설정에 남는다"
@@ -27837,7 +27895,8 @@ export const WORKFLOWS: WorkflowDoc = {
      "platform": {
       "actions": [
        "costProjectCreate",
-       "costFeatureAdd",
+       "costReferenceAdd",
+       "costReferenceUpdate",
        "costProjectUpdate"
       ],
       "screens": [
@@ -27941,7 +28000,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "WP-COST-CALC"
      ],
      "steps": [
-      "과제에 대상 Feature를 담고 입력 행과 중복을 확인한다",
+      "기준 행별 수량·사양과 선택한 Feature의 실제 연결 범위를 확인한다",
       "규모·복잡도·재사용과 MBD 작업별 공수 근거를 입력한다",
       "오류와 합계를 계산해 기준 버전 및 제외 항목을 재확인한다"
      ],
@@ -28191,11 +28250,76 @@ export const WORKFLOWS: WorkflowDoc = {
      },
      "slaHours": null,
      "next": []
+    },
+    {
+     "id": "FPW.15-A08",
+     "name": "구매 견적·변경·대안 검토",
+     "trigger": "견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우",
+     "gateDecision": null,
+     "independentOf": [],
+     "outcomes": [
+      "O2",
+      "O3",
+      "O4"
+     ],
+     "rules": [],
+     "raci": {
+      "R": [
+       "R-CE"
+      ],
+      "A": "R-CA",
+      "C": [
+       "R-INT",
+       "R-CBA",
+       "R-PUR"
+      ],
+      "I": [
+       "R-CV"
+      ]
+     },
+     "inputs": [
+      "WP-COST-CALC",
+      "WP-COST-BASIS"
+     ],
+     "outputs": [
+      "WP-COST-PURCHASING"
+     ],
+     "steps": [
+      "Feature DB 기준 행과 발행 계수·과제 버전을 확인하고 실제 연결 요구·출처를 자동 채운다",
+      "공급사와 지역을 구분해 동등 요구·작업·시험 범위를 비교하고 실제 작업 유형에 맞는 공수·단가·환산 출처를 확인한다",
+      "변경 전 승인 기준·변경 요구·작업·청구·계약 포함 여부와 인정 제안을 나누고 중복 수행 비용을 검토한다",
+      "라이선스의 과금·차종·파생·유지보수·재사용 Terms와 원계약의 고정비·회수·물량·가격 인상 요인을 확인한다",
+      "같은 ECU 전체를 MCU 대안에 배정해 공통비를 한 번만 합산하고 물량별 총액·손익분기 및 비재무 제약을 비교한다",
+      "원문 SHA·미확정을 보존해 독립 기술 의견·Terms 근거 확인·비용 승인을 받고 기준 변경 때 재산정·재승인한 PREPARED 인계 자료를 준비한다"
+     ],
+     "checks": [
+      "서로 다른 실제 사람의 작성·기술 의견·비용 승인과 금액 비공개 투영이 유지된다",
+      "원문 훼손·동시 수정·오래된 기준과 미확정 값은 검토 완료를 막는다",
+      "인계 준비를 회사 계약 체결·구매 승인·지급 완료로 표시하지 않는다"
+     ],
+     "platform": {
+      "actions": [
+       "costReviewCreate",
+       "costReviewUpdate",
+       "costReviewAction"
+      ],
+      "screens": [
+       "/procurement/sw-cost/:estId"
+      ],
+      "gates": [],
+      "anchor": null,
+      "ui": {
+       "fields": [],
+       "buttons": []
+      }
+     },
+     "slaHours": null,
+     "next": []
     }
    ],
    "layout": {
     "width": 1646,
-    "height": 482,
+    "height": 572,
     "lanes": [
      {
       "role": "R-CE",
@@ -28203,13 +28327,13 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 0,
       "w": 1646,
-      "h": 188
+      "h": 278
      },
      {
       "role": "R-CBA",
       "label": "원가 기준 관리자",
       "x": 0,
-      "y": 188,
+      "y": 278,
       "w": 1646,
       "h": 98
      },
@@ -28217,7 +28341,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-CA",
       "label": "SW 개발비 산정 승인자",
       "x": 0,
-      "y": 286,
+      "y": 376,
       "w": 1646,
       "h": 98
      },
@@ -28225,7 +28349,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "role": "R-CV",
       "label": "SW 개발비 산정 열람자",
       "x": 0,
-      "y": 384,
+      "y": 474,
       "w": 1646,
       "h": 98
      }
@@ -28268,11 +28392,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.15-A08",
+      "kind": "action",
+      "label": "구매 견적·변경·대안 검토",
+      "x": 198,
+      "y": 196,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.15-A02",
       "kind": "action",
       "label": "원가 기준 발행",
       "x": 198,
-      "y": 204,
+      "y": 294,
       "w": 188,
       "h": 66
      },
@@ -28281,7 +28414,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "산정 승인·반려",
       "x": 1038,
-      "y": 302,
+      "y": 392,
       "w": 188,
       "h": 66
      },
@@ -28290,7 +28423,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "action",
       "label": "승인 결과 열람·공유",
       "x": 1318,
-      "y": 400,
+      "y": 490,
       "w": 188,
       "h": 66
      },
@@ -28308,7 +28441,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "start",
       "label": "원가 기준 개정 필요",
       "x": 146,
-      "y": 228,
+      "y": 318,
       "w": 18,
       "h": 18
      },
@@ -28322,11 +28455,20 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.15-S4",
+      "kind": "start",
+      "label": "견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우",
+      "x": 146,
+      "y": 220,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.15-E1",
       "kind": "end",
       "label": "종료",
       "x": 400,
-      "y": 228,
+      "y": 318,
       "w": 18,
       "h": 18
      },
@@ -28335,7 +28477,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "kind": "end",
       "label": "종료",
       "x": 1520,
-      "y": 424,
+      "y": 514,
       "w": 18,
       "h": 18
      },
@@ -28345,6 +28487,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 130,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E4",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 220,
       "w": 18,
       "h": 18
      }
@@ -28372,11 +28523,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         164,
-        237
+        327
        ],
        [
         198,
-        237
+        327
        ]
       ]
      },
@@ -28392,6 +28543,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         198,
         139
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-S4",
+      "to": "FPW.15-A08",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        229
+       ],
+       [
+        198,
+        229
        ]
       ]
      },
@@ -28440,11 +28606,11 @@ export const WORKFLOWS: WorkflowDoc = {
        ],
        [
         1026,
-        335
+        425
        ],
        [
         1038,
-        335
+        425
        ]
       ]
      },
@@ -28455,19 +28621,19 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1226,
-        335
+        425
        ],
        [
         1306,
-        335
+        425
        ],
        [
         1306,
-        433
+        523
        ],
        [
         1318,
-        433
+        523
        ]
       ]
      },
@@ -28478,11 +28644,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         386,
-        237
+        327
        ],
        [
         400,
-        237
+        327
        ]
       ]
      },
@@ -28493,11 +28659,11 @@ export const WORKFLOWS: WorkflowDoc = {
       "points": [
        [
         1506,
-        433
+        523
        ],
        [
         1520,
-        433
+        523
        ]
       ]
      },
@@ -28515,13 +28681,28 @@ export const WORKFLOWS: WorkflowDoc = {
         139
        ]
       ]
+     },
+     {
+      "from": "FPW.15-A08",
+      "to": "FPW.15-E4",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        229
+       ],
+       [
+        400,
+        229
+       ]
+      ]
      }
     ],
     "joins": []
    },
    "departmentLayout": {
     "width": 1646,
-    "height": 278,
+    "height": 368,
     "lanes": [
      {
       "department": "DEP-PUR",
@@ -28529,7 +28710,7 @@ export const WORKFLOWS: WorkflowDoc = {
       "x": 0,
       "y": 0,
       "w": 1646,
-      "h": 278
+      "h": 368
      }
     ],
     "nodes": [
@@ -28597,6 +28778,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 66
      },
      {
+      "id": "FPW.15-A08",
+      "kind": "action",
+      "label": "구매 견적·변경·대안 검토",
+      "x": 198,
+      "y": 286,
+      "w": 188,
+      "h": 66
+     },
+     {
       "id": "FPW.15-S1",
       "kind": "start",
       "label": "시작",
@@ -28624,6 +28814,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "h": 18
      },
      {
+      "id": "FPW.15-S4",
+      "kind": "start",
+      "label": "견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우",
+      "x": 146,
+      "y": 310,
+      "w": 18,
+      "h": 18
+     },
+     {
       "id": "FPW.15-E1",
       "kind": "end",
       "label": "종료",
@@ -28647,6 +28846,15 @@ export const WORKFLOWS: WorkflowDoc = {
       "label": "종료",
       "x": 400,
       "y": 220,
+      "w": 18,
+      "h": 18
+     },
+     {
+      "id": "FPW.15-E4",
+      "kind": "end",
+      "label": "종료",
+      "x": 400,
+      "y": 310,
       "w": 18,
       "h": 18
      }
@@ -28694,6 +28902,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         198,
         229
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-S4",
+      "to": "FPW.15-A08",
+      "kind": "trigger",
+      "points": [
+       [
+        164,
+        319
+       ],
+       [
+        198,
+        319
        ]
       ]
      },
@@ -28799,6 +29022,21 @@ export const WORKFLOWS: WorkflowDoc = {
        [
         400,
         229
+       ]
+      ]
+     },
+     {
+      "from": "FPW.15-A08",
+      "to": "FPW.15-E4",
+      "kind": "end",
+      "points": [
+       [
+        386,
+        319
+       ],
+       [
+        400,
+        319
        ]
       ]
      }

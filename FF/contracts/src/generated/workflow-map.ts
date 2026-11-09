@@ -122,7 +122,7 @@ export const WORKFLOW_MAP: WorkflowMapDoc = {
    "name": "SW 개발비·원가 기준 관리",
    "group": "지원",
    "gates": [],
-   "activities": 7
+   "activities": 8
   },
   {
    "id": "FPW.16",

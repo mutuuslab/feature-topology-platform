@@ -2316,6 +2316,15 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
      "firstScope": false
     },
     {
+     "id": "FPW.15-A08",
+     "process": "FPW.15",
+     "part": "C",
+     "parts": [
+      "C"
+     ],
+     "firstScope": false
+    },
+    {
      "id": "FPW.17-A01",
      "process": "FPW.17",
      "part": "I",
@@ -6416,6 +6425,18 @@ export const WORKFLOW_HEADER: Omit<WorkflowDoc, 'processes'> = {
     },
     {
      "id": "FPW.15-A07",
+     "process": "FPW.15",
+     "part": "R",
+     "parts": [
+      "R",
+      "A",
+      "C",
+      "I"
+     ],
+     "firstScope": false
+    },
+    {
+     "id": "FPW.15-A08",
      "process": "FPW.15",
      "part": "R",
      "parts": [

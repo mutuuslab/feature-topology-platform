@@ -5169,7 +5169,7 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      "key": "WP-COST-SCOPE",
      "name": "산정 범위·과제",
      "content": [
-      "대상 Feature/버전·기준 행·작성자",
+      "Feature DB 기준 행·발행 버전·선택 연결 Feature·작성자",
       "차량/시장·포함/제외·가정과 과제 설정"
      ]
     },
@@ -5212,6 +5212,16 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
       "승인 뒤 실적 공수·출처·편차",
       "교정 제안과 다음 기준 개정의 채택/보류 근거"
      ]
+    },
+    {
+     "key": "WP-COST-PURCHASING",
+     "name": "구매 검토·승인 인계 묶음",
+     "content": [
+      "구매 05·12·13·15·21·23의 견적 범위·공수 단가·변경 청구·요구 연결·가격·MCU 비교와 근거 원문 SHA-256",
+      "Feature DB·계수 표·과제 기준 지문과 미확정·비적용·확정 0을 구별한 계산 결과",
+      "작성자와 다른 기술 의견·Terms 근거 확인·독립 비용 승인 및 개정 이력",
+      "승인 원문 지문을 가진 PREPARED 인계 자료이며 회사 계약 체결·지급은 별도 절차"
+     ]
     }
    ],
    "activities": [
@@ -5247,7 +5257,8 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      ],
      "actions": [
       "costProjectCreate",
-      "costFeatureAdd",
+      "costReferenceAdd",
+      "costReferenceUpdate",
       "costProjectUpdate"
      ],
      "checks": [
@@ -5468,6 +5479,46 @@ export const WORKFLOW_EXECUTION_MODEL: WorkflowExecutionModel = {
      "checks": [
       "실적 입력이 승인 금액을 소급 변경하지 않는다",
       "교정 제안은 기준 개정 전 자동 적용되지 않는다"
+     ]
+    },
+    {
+     "id": "FPW.15-A08",
+     "name": "구매 견적·변경·대안 검토",
+     "processId": "FPW.15",
+     "raci": {
+      "R": [
+       "R-CE"
+      ],
+      "A": "R-CA",
+      "C": [
+       "R-INT",
+       "R-CBA",
+       "R-PUR"
+      ],
+      "I": [
+       "R-CV"
+      ]
+     },
+     "inputs": [
+      "WP-COST-CALC",
+      "WP-COST-BASIS"
+     ],
+     "outputs": [
+      "WP-COST-PURCHASING"
+     ],
+     "next": [],
+     "screens": [
+      "/procurement/sw-cost/:estId"
+     ],
+     "actions": [
+      "costReviewCreate",
+      "costReviewUpdate",
+      "costReviewAction"
+     ],
+     "checks": [
+      "서로 다른 실제 사람의 작성·기술 의견·비용 승인과 금액 비공개 투영이 유지된다",
+      "원문 훼손·동시 수정·오래된 기준과 미확정 값은 검토 완료를 막는다",
+      "인계 준비를 회사 계약 체결·구매 승인·지급 완료로 표시하지 않는다"
      ]
     }
    ]

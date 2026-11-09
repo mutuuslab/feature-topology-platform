@@ -16608,6 +16608,1979 @@
         }
       }
     },
+    "/api/cost/projects/{estId}/reviews": {
+      "get": {
+        "summary": "구매 6종 검토 건·출처·독립 의견",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReviews",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "post": {
+        "summary": "산정 검토 건 작성",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReviewCreate",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "SCOPE",
+                      "TUNING",
+                      "CHANGE",
+                      "QUOTE",
+                      "PRICE",
+                      "MCU"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "kind",
+                  "title"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/reviews/{caseId}": {
+      "get": {
+        "summary": "구매 검토 개정·금액 권한 투영",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReview",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, SW 개발비 산정 열람자, 원가 기준 관리자, Feature 작성자, 기능안전 담당자(FSM), 차량 사양·Variant 담당자, Feature 승인자, 구현 담당자, Feature 출시 담당자, BOM 승인자, 상품 작성자, 상품 승인자, Gate 판정자, 운영자, 사이버보안 담당자(CSM), 운영 리더, 법규 담당, Feature DB 관리자, 도메인 검토자, 운영·감사 조회자, 시스템 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          }
+        }
+      },
+      "put": {
+        "summary": "산정 검토 입력 개정·CAS",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReviewUpdate",
+        "description": "허용 역할: SW 개발비 산정 작성자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
+                  "inputs": {
+                    "type": "object",
+                    "properties": {
+                      "requirements": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "revision": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "title": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "testWaiverSource": {
+                              "type": "string",
+                              "maxLength": 1000,
+                              "default": ""
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "revision",
+                            "title",
+                            "sourceId"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 500
+                      },
+                      "evidence": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "revision": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "location": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1000
+                            },
+                            "confirmed": {
+                              "type": "boolean"
+                            },
+                            "synthetic": {
+                              "type": "boolean",
+                              "default": false
+                            },
+                            "filename": {
+                              "type": "string",
+                              "maxLength": 180
+                            },
+                            "mediaType": {
+                              "type": "string",
+                              "maxLength": 120
+                            },
+                            "bodyBase64": {
+                              "type": "string",
+                              "maxLength": 710000
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "revision",
+                            "sha256",
+                            "location",
+                            "confirmed"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 500
+                      },
+                      "offers": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "supplier": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "region": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3
+                            },
+                            "tax": {
+                              "type": "string",
+                              "enum": [
+                                "EXCLUDED",
+                                "INCLUDED",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "period": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "quoteRevision": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "quotedTotal": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "number",
+                                  "nullable": true,
+                                  "minimum": -1000000000000,
+                                  "maximum": 1000000000000
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "UNCONFIRMED",
+                                    "CONFIRMED",
+                                    "NOT_APPLICABLE"
+                                  ],
+                                  "default": "UNCONFIRMED"
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                },
+                                "note": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                }
+                              },
+                              "required": [
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "works": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                  },
+                                  "title": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "requirementIds": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 100
+                                    },
+                                    "maxItems": 100
+                                  },
+                                  "referenceLineNos": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true
+                                    },
+                                    "maxItems": 100
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "PARAMETER",
+                                      "NEW_LOGIC",
+                                      "PORTING",
+                                      "TEST",
+                                      "OTHER",
+                                      "UNKNOWN"
+                                    ]
+                                  },
+                                  "basisKind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "PARAMETER",
+                                      "NEW_LOGIC",
+                                      "PORTING",
+                                      "TEST",
+                                      "OTHER",
+                                      "UNKNOWN"
+                                    ]
+                                  },
+                                  "effort": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "effortUnit": {
+                                    "type": "string",
+                                    "enum": [
+                                      "MM",
+                                      "DAY",
+                                      "HOUR"
+                                    ]
+                                  },
+                                  "rate": {
+                                    "type": "object",
+                                    "properties": {
+                                      "amount": {
+                                        "type": "object",
+                                        "properties": {
+                                          "value": {
+                                            "type": "number",
+                                            "nullable": true,
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          },
+                                          "state": {
+                                            "type": "string",
+                                            "enum": [
+                                              "UNCONFIRMED",
+                                              "CONFIRMED",
+                                              "NOT_APPLICABLE"
+                                            ],
+                                            "default": "UNCONFIRMED"
+                                          },
+                                          "sourceId": {
+                                            "type": "string",
+                                            "maxLength": 1000,
+                                            "default": ""
+                                          },
+                                          "note": {
+                                            "type": "string",
+                                            "maxLength": 1000,
+                                            "default": ""
+                                          }
+                                        },
+                                        "required": [
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "unit": {
+                                        "type": "string",
+                                        "enum": [
+                                          "MM",
+                                          "DAY",
+                                          "HOUR"
+                                        ]
+                                      },
+                                      "daysPerMonth": {
+                                        "type": "object",
+                                        "properties": {
+                                          "value": {
+                                            "type": "number",
+                                            "nullable": true,
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          },
+                                          "state": {
+                                            "type": "string",
+                                            "enum": [
+                                              "UNCONFIRMED",
+                                              "CONFIRMED",
+                                              "NOT_APPLICABLE"
+                                            ],
+                                            "default": "UNCONFIRMED"
+                                          },
+                                          "sourceId": {
+                                            "type": "string",
+                                            "maxLength": 1000,
+                                            "default": ""
+                                          },
+                                          "note": {
+                                            "type": "string",
+                                            "maxLength": 1000,
+                                            "default": ""
+                                          }
+                                        },
+                                        "required": [
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "hoursPerDay": {
+                                        "type": "object",
+                                        "properties": {
+                                          "value": {
+                                            "type": "number",
+                                            "nullable": true,
+                                            "minimum": -1000000000000,
+                                            "maximum": 1000000000000
+                                          },
+                                          "state": {
+                                            "type": "string",
+                                            "enum": [
+                                              "UNCONFIRMED",
+                                              "CONFIRMED",
+                                              "NOT_APPLICABLE"
+                                            ],
+                                            "default": "UNCONFIRMED"
+                                          },
+                                          "sourceId": {
+                                            "type": "string",
+                                            "maxLength": 1000,
+                                            "default": ""
+                                          },
+                                          "note": {
+                                            "type": "string",
+                                            "maxLength": 1000,
+                                            "default": ""
+                                          }
+                                        },
+                                        "required": [
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "amount",
+                                      "unit",
+                                      "daysPerMonth",
+                                      "hoursPerDay"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "executionId": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "scopeKey": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "standardRevision": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "variant": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "sampleCount": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "deliverable": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "sourceId": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "disposition": {
+                                    "type": "string",
+                                    "enum": [
+                                      "INCLUDED",
+                                      "EXCLUDED",
+                                      "UNCONFIRMED"
+                                    ]
+                                  },
+                                  "exclusionReason": {
+                                    "type": "string",
+                                    "maxLength": 1000,
+                                    "default": ""
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "title",
+                                  "requirementIds",
+                                  "referenceLineNos",
+                                  "kind",
+                                  "basisKind",
+                                  "effort",
+                                  "effortUnit",
+                                  "rate",
+                                  "executionId",
+                                  "scopeKey",
+                                  "standardRevision",
+                                  "variant",
+                                  "sampleCount",
+                                  "deliverable",
+                                  "sourceId",
+                                  "disposition"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "maxItems": 500
+                            },
+                            "extras": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                  },
+                                  "title": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "quantity": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "unitPrice": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "sourceId": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "title",
+                                  "quantity",
+                                  "unitPrice",
+                                  "sourceId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "maxItems": 100
+                            },
+                            "license": {
+                              "type": "object",
+                              "nullable": true,
+                              "properties": {
+                                "model": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ONE_TIME",
+                                    "PER_UNIT",
+                                    "ANNUAL",
+                                    "COMBINED",
+                                    "UNKNOWN"
+                                  ]
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                },
+                                "oneTime": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "number",
+                                      "nullable": true,
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "UNCONFIRMED",
+                                        "CONFIRMED",
+                                        "NOT_APPLICABLE"
+                                      ],
+                                      "default": "UNCONFIRMED"
+                                    },
+                                    "sourceId": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    },
+                                    "note": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "perUnit": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "number",
+                                      "nullable": true,
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "UNCONFIRMED",
+                                        "CONFIRMED",
+                                        "NOT_APPLICABLE"
+                                      ],
+                                      "default": "UNCONFIRMED"
+                                    },
+                                    "sourceId": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    },
+                                    "note": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "annual": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "number",
+                                      "nullable": true,
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "UNCONFIRMED",
+                                        "CONFIRMED",
+                                        "NOT_APPLICABLE"
+                                      ],
+                                      "default": "UNCONFIRMED"
+                                    },
+                                    "sourceId": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    },
+                                    "note": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "volume": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "number",
+                                      "nullable": true,
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "UNCONFIRMED",
+                                        "CONFIRMED",
+                                        "NOT_APPLICABLE"
+                                      ],
+                                      "default": "UNCONFIRMED"
+                                    },
+                                    "sourceId": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    },
+                                    "note": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "years": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "number",
+                                      "nullable": true,
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "UNCONFIRMED",
+                                        "CONFIRMED",
+                                        "NOT_APPLICABLE"
+                                      ],
+                                      "default": "UNCONFIRMED"
+                                    },
+                                    "sourceId": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    },
+                                    "note": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "modelScope": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                },
+                                "derivativeTerms": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                },
+                                "maintenanceTerms": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                },
+                                "reuseTerms": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                },
+                                "confirmed": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "model",
+                                "sourceId",
+                                "oneTime",
+                                "perUnit",
+                                "annual",
+                                "volume",
+                                "years",
+                                "modelScope",
+                                "derivativeTerms",
+                                "maintenanceTerms",
+                                "reuseTerms",
+                                "confirmed"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "supplier",
+                            "region",
+                            "currency",
+                            "tax",
+                            "period",
+                            "quoteRevision",
+                            "sourceId",
+                            "quotedTotal",
+                            "works",
+                            "extras",
+                            "license"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 20
+                      },
+                      "claims": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "changeId": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "baselineApproval": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "requirementIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 100
+                              },
+                              "maxItems": 100
+                            },
+                            "workIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 100
+                              },
+                              "maxItems": 100
+                            },
+                            "executionId": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "scopeKey": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "contractIncluded": {
+                              "type": "string",
+                              "enum": [
+                                "YES",
+                                "NO",
+                                "UNKNOWN"
+                              ]
+                            },
+                            "claimed": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "number",
+                                  "nullable": true,
+                                  "minimum": -1000000000000,
+                                  "maximum": 1000000000000
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "UNCONFIRMED",
+                                    "CONFIRMED",
+                                    "NOT_APPLICABLE"
+                                  ],
+                                  "default": "UNCONFIRMED"
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                },
+                                "note": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                }
+                              },
+                              "required": [
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "recognizedProposal": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "number",
+                                  "nullable": true,
+                                  "minimum": -1000000000000,
+                                  "maximum": 1000000000000
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "UNCONFIRMED",
+                                    "CONFIRMED",
+                                    "NOT_APPLICABLE"
+                                  ],
+                                  "default": "UNCONFIRMED"
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                },
+                                "note": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                }
+                              },
+                              "required": [
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "reason": {
+                              "type": "string",
+                              "maxLength": 1000
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "changeId",
+                            "baselineApproval",
+                            "requirementIds",
+                            "workIds",
+                            "executionId",
+                            "scopeKey",
+                            "sourceId",
+                            "contractIncluded",
+                            "claimed",
+                            "recognizedProposal",
+                            "reason"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 100
+                      },
+                      "price": {
+                        "type": "object",
+                        "nullable": true,
+                        "properties": {
+                          "contractId": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
+                          "sourceId": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
+                          "model": {
+                            "type": "string",
+                            "enum": [
+                              "FIXED_PLUS_UNIT",
+                              "UNIT_ONLY",
+                              "UNKNOWN"
+                            ]
+                          },
+                          "termsConfirmed": {
+                            "type": "boolean"
+                          },
+                          "ownershipTerms": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
+                          "recoveryTerms": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
+                          "tierTerms": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
+                          "period": {
+                            "type": "string",
+                            "maxLength": 1000
+                          },
+                          "originalFixed": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "number",
+                                "nullable": true,
+                                "minimum": -1000000000000,
+                                "maximum": 1000000000000
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "UNCONFIRMED",
+                                  "CONFIRMED",
+                                  "NOT_APPLICABLE"
+                                ],
+                                "default": "UNCONFIRMED"
+                              },
+                              "sourceId": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              },
+                              "note": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "originalUnit": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "number",
+                                "nullable": true,
+                                "minimum": -1000000000000,
+                                "maximum": 1000000000000
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "UNCONFIRMED",
+                                  "CONFIRMED",
+                                  "NOT_APPLICABLE"
+                                ],
+                                "default": "UNCONFIRMED"
+                              },
+                              "sourceId": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              },
+                              "note": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "requestedUnit": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "number",
+                                "nullable": true,
+                                "minimum": -1000000000000,
+                                "maximum": 1000000000000
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "UNCONFIRMED",
+                                  "CONFIRMED",
+                                  "NOT_APPLICABLE"
+                                ],
+                                "default": "UNCONFIRMED"
+                              },
+                              "sourceId": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              },
+                              "note": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "baseVolume": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "type": "number",
+                                "nullable": true,
+                                "minimum": -1000000000000,
+                                "maximum": 1000000000000
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "UNCONFIRMED",
+                                  "CONFIRMED",
+                                  "NOT_APPLICABLE"
+                                ],
+                                "default": "UNCONFIRMED"
+                              },
+                              "sourceId": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              },
+                              "note": {
+                                "type": "string",
+                                "maxLength": 1000,
+                                "default": ""
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "scenarioVolumes": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "type": "number",
+                                  "nullable": true,
+                                  "minimum": -1000000000000,
+                                  "maximum": 1000000000000
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "UNCONFIRMED",
+                                    "CONFIRMED",
+                                    "NOT_APPLICABLE"
+                                  ],
+                                  "default": "UNCONFIRMED"
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                },
+                                "note": {
+                                  "type": "string",
+                                  "maxLength": 1000,
+                                  "default": ""
+                                }
+                              },
+                              "required": [
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 10
+                          },
+                          "factors": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 100
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                },
+                                "amountPerUnit": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "type": "number",
+                                      "nullable": true,
+                                      "minimum": -1000000000000,
+                                      "maximum": 1000000000000
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "UNCONFIRMED",
+                                        "CONFIRMED",
+                                        "NOT_APPLICABLE"
+                                      ],
+                                      "default": "UNCONFIRMED"
+                                    },
+                                    "sourceId": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    },
+                                    "note": {
+                                      "type": "string",
+                                      "maxLength": 1000,
+                                      "default": ""
+                                    }
+                                  },
+                                  "required": [
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "sourceId": {
+                                  "type": "string",
+                                  "maxLength": 1000
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "title",
+                                "amountPerUnit",
+                                "sourceId"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "maxItems": 100
+                          }
+                        },
+                        "required": [
+                          "contractId",
+                          "sourceId",
+                          "model",
+                          "termsConfirmed",
+                          "ownershipTerms",
+                          "recoveryTerms",
+                          "tierTerms",
+                          "period",
+                          "originalFixed",
+                          "originalUnit",
+                          "requestedUnit",
+                          "baseVolume",
+                          "scenarioVolumes",
+                          "factors"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "ecuIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
+                      },
+                      "candidates": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 100
+                            },
+                            "title": {
+                              "type": "string",
+                              "maxLength": 1000
+                            },
+                            "baseline": {
+                              "type": "boolean"
+                            },
+                            "allocations": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "ecuId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                  },
+                                  "mcu": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "unitsPerVehicle": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "unitPrice": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "royalty": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "porting": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "validation": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "startup": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "sharedCostId": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "sharedCost": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": -1000000000000,
+                                        "maximum": 1000000000000
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "enum": [
+                                          "UNCONFIRMED",
+                                          "CONFIRMED",
+                                          "NOT_APPLICABLE"
+                                        ],
+                                        "default": "UNCONFIRMED"
+                                      },
+                                      "sourceId": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      },
+                                      "note": {
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "default": ""
+                                      }
+                                    },
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "sourceId": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "scopeKey": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  },
+                                  "started": {
+                                    "type": "string",
+                                    "enum": [
+                                      "YES",
+                                      "NO",
+                                      "UNKNOWN"
+                                    ]
+                                  },
+                                  "constraints": {
+                                    "type": "string",
+                                    "maxLength": 1000
+                                  }
+                                },
+                                "required": [
+                                  "ecuId",
+                                  "mcu",
+                                  "unitsPerVehicle",
+                                  "unitPrice",
+                                  "royalty",
+                                  "porting",
+                                  "validation",
+                                  "startup",
+                                  "sharedCostId",
+                                  "sharedCost",
+                                  "sourceId",
+                                  "scopeKey",
+                                  "started",
+                                  "constraints"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "maxItems": 100
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "baseline",
+                            "allocations"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 20
+                      },
+                      "scenarioVolumes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "nullable": true,
+                              "minimum": -1000000000000,
+                              "maximum": 1000000000000
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "UNCONFIRMED",
+                                "CONFIRMED",
+                                "NOT_APPLICABLE"
+                              ],
+                              "default": "UNCONFIRMED"
+                            },
+                            "sourceId": {
+                              "type": "string",
+                              "maxLength": 1000,
+                              "default": ""
+                            },
+                            "note": {
+                              "type": "string",
+                              "maxLength": 1000,
+                              "default": ""
+                            }
+                          },
+                          "required": [
+                            "value"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 10
+                      },
+                      "selectedOfferId": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "selectedCandidateId": {
+                        "type": "string",
+                        "maxLength": 1000
+                      },
+                      "decisionReason": {
+                        "type": "string",
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": [
+                      "requirements",
+                      "evidence",
+                      "offers",
+                      "claims",
+                      "price",
+                      "ecuIds",
+                      "candidates",
+                      "scenarioVolumes",
+                      "selectedOfferId",
+                      "selectedCandidateId",
+                      "decisionReason"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "revision",
+                  "inputs",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
+    "/api/cost/projects/{estId}/reviews/{caseId}/actions": {
+      "post": {
+        "summary": "산정 검토 독립 의견·승인·인계 준비",
+        "tags": [
+          "D07-01"
+        ],
+        "operationId": "costReviewAction",
+        "description": "허용 역할: SW 개발비 산정 작성자, SW 개발비 산정 승인자, 구현 담당자, 도메인 검토자, 원가 기준 관리자 (헤더 X-Actor-Id, X-Actor-Role)",
+        "parameters": [
+          {
+            "name": "estId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
+                  },
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "REFRESH_BASELINE",
+                      "SUBMIT",
+                      "TECHNICAL_AGREE",
+                      "TECHNICAL_CHANGES",
+                      "TERMS_CONFIRMED",
+                      "TERMS_CHANGES",
+                      "APPROVE",
+                      "REJECT",
+                      "REVISE",
+                      "HANDOFF"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "revision",
+                  "action",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "201": {
+            "description": "생성"
+          },
+          "400": {
+            "description": "입력 검증 실패 (오류 봉투)"
+          },
+          "403": {
+            "description": "역할·직무 분리 위반 (오류 봉투)"
+          },
+          "404": {
+            "description": "없음 (오류 봉투)"
+          },
+          "422": {
+            "description": "전이·체크리스트 조건 미충족 (오류 봉투)"
+          }
+        }
+      }
+    },
     "/api/cost/projects/{estId}": {
       "get": {
         "summary": "산정 과제 상세·계산 결과(금액은 산정 역할만)",

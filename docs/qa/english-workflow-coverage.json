@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "scope": "Read-only workflow display metadata; source order, IDs, RACI, routes, decision values and numeric artifact keys are unchanged. Source fingerprints record translation provenance, never organizational or source approval.",
-  "total": 1822,
+  "total": 1842,
   "missing": 0,
-  "translated": 1460,
-  "sourceEnglish": 362,
+  "translated": 1478,
+  "sourceEnglish": 364,
   "duplicate": [],
   "unknown": [],
   "fingerprints": [
@@ -58,8 +58,8 @@
     },
     {
       "file": "frontend/src/locale/en/workflow-metadata-parts/fpw-15.ts",
-      "entries": 66,
-      "sourceFingerprint": "4adeaa49ebb699a36dff5f057a911b2995f77b044d426d3d43fb14dcc3aa1b66",
+      "entries": 84,
+      "sourceFingerprint": "6c1c288ea9bfb893810bb05d1ddbf3deeb5651e379059de9f7c7ac276c438ec1",
       "status": "MATCH"
     },
     {
@@ -11004,10 +11004,10 @@
     },
     {
       "key": "FPW.15.entry.0",
-      "source": "산정 대상 Feature 또는 Feature DB 기준 행과 담당자가 식별되어 있다",
-      "sourceHash": "ae81da43e09d2494d40017212ad9646f7427df641b3620569889cf78fb51a546",
+      "source": "발행된 Feature DB 기준 행과 산정 담당자가 식별되어 있다",
+      "sourceHash": "e8e284d6e4d7980cafb45242e12b5f98103b343aae966648a3e98f6b2985ef13",
       "status": "TRANSLATED",
-      "english": "Target Features or Feature DB baseline rows and responsible persons are identified"
+      "english": "Published Feature DB reference rows and the cost estimator are identified"
     },
     {
       "key": "FPW.15.entry.1",
@@ -11039,10 +11039,10 @@
     },
     {
       "key": "FPW.15.WP-COST-SCOPE.content.0",
-      "source": "대상 Feature/버전·기준 행·작성자",
-      "sourceHash": "b17e925a851fc744acbb8f8e512d9e6b3960e3630020c22f48345e576cd09ae6",
+      "source": "Feature DB 기준 행·발행 버전·선택 연결 Feature·작성자",
+      "sourceHash": "067716c370c09e02fd114155c0da20982ad0133868748857b0e531dceadd5252",
       "status": "TRANSLATED",
-      "english": "Target Feature/Version, baseline row and author"
+      "english": "Feature DB reference rows, publication Version, optional linked Features and author"
     },
     {
       "key": "FPW.15.WP-COST-SCOPE.content.1",
@@ -11157,6 +11157,41 @@
       "english": "Calibration proposals and adoption/hold evidence for the next revision"
     },
     {
+      "key": "FPW.15.WP-COST-PURCHASING.name",
+      "source": "구매 검토·승인 인계 묶음",
+      "sourceHash": "aa62f57a221739439dc76b4d60bda64e0373c252a5ca2331b038a794993d2230",
+      "status": "TRANSLATED",
+      "english": "Procurement review and approved handoff package"
+    },
+    {
+      "key": "FPW.15.WP-COST-PURCHASING.content.0",
+      "source": "구매 05·12·13·15·21·23의 견적 범위·공수 단가·변경 청구·요구 연결·가격·MCU 비교와 근거 원문 SHA-256",
+      "sourceHash": "a0ba7bfdf580a253b398ff3395b5af4bff90930ca94c8a627aec2792cb2580ff",
+      "status": "TRANSLATED",
+      "english": "Procurement needs 05/12/13/15/21/23: scope, effort rates, change claims, requirement links, prices, MCU comparisons and original evidence SHA-256"
+    },
+    {
+      "key": "FPW.15.WP-COST-PURCHASING.content.1",
+      "source": "Feature DB·계수 표·과제 기준 지문과 미확정·비적용·확정 0을 구별한 계산 결과",
+      "sourceHash": "1169940d8de60f93418431604572718549c2b9ae321883b609f365043aec1498",
+      "status": "TRANSLATED",
+      "english": "Feature DB, cost-basis and project fingerprints with calculations distinguishing unknown, not-applicable and confirmed zero"
+    },
+    {
+      "key": "FPW.15.WP-COST-PURCHASING.content.2",
+      "source": "작성자와 다른 기술 의견·Terms 근거 확인·독립 비용 승인 및 개정 이력",
+      "sourceHash": "614ae884bcaeb03000ca86f64e4dd07a2bda4843debb14c4db5d2e5d8b7d85db",
+      "status": "TRANSLATED",
+      "english": "Technical opinions, Terms evidence acknowledgment, independent cost approval and revision history from people distinct from the author"
+    },
+    {
+      "key": "FPW.15.WP-COST-PURCHASING.content.3",
+      "source": "승인 원문 지문을 가진 PREPARED 인계 자료이며 회사 계약 체결·지급은 별도 절차",
+      "sourceHash": "f0d235fbebd6e567026c8520fa6b0806129c21bfa8853076ab98a4d8ba6cabbc",
+      "status": "TRANSLATED",
+      "english": "PREPARED handoff evidence identifies the approved content fingerprint; corporate contracting and payment remain separate procedures"
+    },
+    {
       "key": "FPW.15-A01.name",
       "source": "산정 범위 설정",
       "sourceHash": "af98cf8b292e18cec4a4be05bea3d23a86b10739cba69ce8406bca3da84cb655",
@@ -11165,24 +11200,24 @@
     },
     {
       "key": "FPW.15-A01.steps.0",
-      "source": "대상 Feature와 기준 행의 버전을 확인한다",
-      "sourceHash": "ff56f440db1d1ff5592e9abdbe5b75718af965f2bb17313b2826ceeaf58084b0",
+      "source": "발행된 Feature DB 기준 행을 먼저 선택하고 출처·버전을 확인한다",
+      "sourceHash": "53a36384dc211a7f7b0b136415cde42c85a8b85fd5e99143dc013de5c4e2bc15",
       "status": "TRANSLATED",
-      "english": "Check target Feature and baseline-row Versions"
+      "english": "Select published Feature DB reference rows first and verify their sources and Versions"
     },
     {
       "key": "FPW.15-A01.steps.1",
-      "source": "차량·시장 범위와 포함·제외 및 가정을 적어 과제를 만든다",
-      "sourceHash": "598a820bbab882d665f70f9950b530d8490e73a896ce28678a51815bbc208429",
+      "source": "실제 연결된 등록 Feature는 선택해 연결하고 차량·시장·포함·제외·가정을 확인한다",
+      "sourceHash": "ed05726d83e05c6b85834a9e2b3b00da28c29017c15ef9f4222d6c6768b3c3fd",
       "status": "TRANSLATED",
-      "english": "Create the project with vehicle/market scope, inclusions/exclusions and assumptions"
+      "english": "Optionally link actual registered Features and confirm vehicle/market scope, inclusions, exclusions and assumptions"
     },
     {
       "key": "FPW.15-A01.steps.2",
-      "source": "작성 책임자와 산정에 사용할 기준 버전을 확인한다",
-      "sourceHash": "e88e063f66a653054b0e303fd2bbf7f5f636453c18e79b83477087f0083f8700",
+      "source": "자동 채운 과제명·산정 입력과 책임자 및 계수 표 발행 버전을 확인한다",
+      "sourceHash": "0ab603095ea46d927c6e3ea8ee5936e9eadfeddc7f08a28cf7a4272e9d301c79",
       "status": "TRANSLATED",
-      "english": "Confirm the author and estimation-basis Version"
+      "english": "Check automatically filled project names and estimate inputs, responsibility and published cost-basis Version"
     },
     {
       "key": "FPW.15-A01.checks.0",
@@ -11249,10 +11284,10 @@
     },
     {
       "key": "FPW.15-A03.steps.0",
-      "source": "과제에 대상 Feature를 담고 입력 행과 중복을 확인한다",
-      "sourceHash": "88dee2d57723437a16713c192077b3634d555bc7d27b432506eca25f68f6037e",
+      "source": "기준 행별 수량·사양과 선택한 Feature의 실제 연결 범위를 확인한다",
+      "sourceHash": "c2237ef60391a8e580d5dd841c15654b0ee28eb3cc72017f053fbaeb96efa838",
       "status": "TRANSLATED",
-      "english": "Add target Features to the project and check input rows and duplicates"
+      "english": "Check each reference row quantity and variant and the actual scope of optional linked Features"
     },
     {
       "key": "FPW.15-A03.steps.1",
@@ -11451,6 +11486,83 @@
       "english": "Calibration proposals are not automatically applied before basis revision"
     },
     {
+      "key": "FPW.15-A08.name",
+      "source": "구매 견적·변경·대안 검토",
+      "sourceHash": "fc73ed89f1a8d1cfb72c26b56cac2bf39df9993a51b7313c36829f0558e77f74",
+      "status": "TRANSLATED",
+      "english": "Procurement quote, change and alternative review"
+    },
+    {
+      "key": "FPW.15-A08.trigger",
+      "source": "견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우",
+      "sourceHash": "8ee3b6e44cd790a6b562958da8ff7f6b6e83f2ec6637c9f924837a8f163bebee",
+      "status": "TRANSLATED",
+      "english": "Quote scope, change claims, prices or MCU alternatives require review"
+    },
+    {
+      "key": "FPW.15-A08.steps.0",
+      "source": "Feature DB 기준 행과 발행 계수·과제 버전을 확인하고 실제 연결 요구·출처를 자동 채운다",
+      "sourceHash": "9356239d251b6ee1c59364e742c4b8f67dd24803f1389ecb526bc5be052b7ee7",
+      "status": "TRANSLATED",
+      "english": "Verify Feature DB reference rows and published cost/project Versions and automatically fill actual linked requirements and sources"
+    },
+    {
+      "key": "FPW.15-A08.steps.1",
+      "source": "공급사와 지역을 구분해 동등 요구·작업·시험 범위를 비교하고 실제 작업 유형에 맞는 공수·단가·환산 출처를 확인한다",
+      "sourceHash": "5d0a96bdbb1114503448ef8bc48507c453d6e260dd4878d560cd10e7244ab153",
+      "status": "TRANSLATED",
+      "english": "Keep suppliers and regions separate, compare equivalent requirements/work/test scope and verify work types, effort, rates and unit-conversion sources"
+    },
+    {
+      "key": "FPW.15-A08.steps.2",
+      "source": "변경 전 승인 기준·변경 요구·작업·청구·계약 포함 여부와 인정 제안을 나누고 중복 수행 비용을 검토한다",
+      "sourceHash": "86fcac24dbcd61277f32876b5f7551078f97e5cafc047b4de0b373dcd7df4f8b",
+      "status": "TRANSLATED",
+      "english": "Separate prior approval baselines, change requirements, work, claims, contractual inclusion and recognition proposals; check duplicate execution costs"
+    },
+    {
+      "key": "FPW.15-A08.steps.3",
+      "source": "라이선스의 과금·차종·파생·유지보수·재사용 Terms와 원계약의 고정비·회수·물량·가격 인상 요인을 확인한다",
+      "sourceHash": "ae9fd2c0f6bf5be8b4e5d86bf9e1f47e5050cc978797377200397eff6f05513a",
+      "status": "TRANSLATED",
+      "english": "Verify license charging, model/derivative/maintenance/reuse Terms and original fixed costs, recovery conditions, volumes and price-increase factors"
+    },
+    {
+      "key": "FPW.15-A08.steps.4",
+      "source": "같은 ECU 전체를 MCU 대안에 배정해 공통비를 한 번만 합산하고 물량별 총액·손익분기 및 비재무 제약을 비교한다",
+      "sourceHash": "11069434eb23136e34d163f529338719b2ac9c9b655ffea03834db2b76dfe60c",
+      "status": "TRANSLATED",
+      "english": "Allocate every target ECU in each MCU alternative, count shared costs once and compare volume totals, break-even volumes and nonfinancial constraints"
+    },
+    {
+      "key": "FPW.15-A08.steps.5",
+      "source": "원문 SHA·미확정을 보존해 독립 기술 의견·Terms 근거 확인·비용 승인을 받고 기준 변경 때 재산정·재승인한 PREPARED 인계 자료를 준비한다",
+      "sourceHash": "8830ea41c9318bfaf72c552498af84580fe9e62be7fdc996217531b08fdf8993",
+      "status": "TRANSLATED",
+      "english": "Retain source SHA and unknown values; obtain independent technical opinions, Terms evidence acknowledgment and cost approval; recalculate/reapprove changed baselines before preparing a PREPARED handoff"
+    },
+    {
+      "key": "FPW.15-A08.checks.0",
+      "source": "서로 다른 실제 사람의 작성·기술 의견·비용 승인과 금액 비공개 투영이 유지된다",
+      "sourceHash": "788e7a0840f6341bcccdb9e1de57b46a8d0db7931981af2bcb3f6391c8243a14",
+      "status": "TRANSLATED",
+      "english": "Distinct actual people retain authorship, technical opinions and cost approval; nonfinancial projections hide amounts"
+    },
+    {
+      "key": "FPW.15-A08.checks.1",
+      "source": "원문 훼손·동시 수정·오래된 기준과 미확정 값은 검토 완료를 막는다",
+      "sourceHash": "0e42be82f5d8e5fed8c3320999d315c610fb6dfca82fc7b5fd1fe48fffbb1d82",
+      "status": "TRANSLATED",
+      "english": "Tampered source bytes, concurrent edits, stale baselines and unknown values block completion"
+    },
+    {
+      "key": "FPW.15-A08.checks.2",
+      "source": "인계 준비를 회사 계약 체결·구매 승인·지급 완료로 표시하지 않는다",
+      "sourceHash": "321db7cdf95bc7302513966a29e828ab103ffe8c92b080438f5f9544288176b1",
+      "status": "TRANSLATED",
+      "english": "Handoff preparation does not indicate corporate contracting, purchase approval or completed payment"
+    },
+    {
       "key": "FPW.15.BP1.name",
       "source": "산정 범위 설정",
       "sourceHash": "af98cf8b292e18cec4a4be05bea3d23a86b10739cba69ce8406bca3da84cb655",
@@ -11549,6 +11661,20 @@
       "english": "Record post-approval actuals separately, analyze estimation errors and propose rate/factor revisions. Decide adoption through new basis publication, separately from past approvals."
     },
     {
+      "key": "FPW.15.BP8.name",
+      "source": "구매 견적·변경·대안 검토",
+      "sourceHash": "fc73ed89f1a8d1cfb72c26b56cac2bf39df9993a51b7313c36829f0558e77f74",
+      "status": "SOURCE_ENGLISH",
+      "english": "Procurement quote, change and alternative review"
+    },
+    {
+      "key": "FPW.15.BP8.definition",
+      "source": "Feature DB 기준 산정과 구매 여섯 검토 유형을 연결한다. 원문·범위·공수·가격·MCU 비교와 독립 의견·비용 승인을 추적하고 기준 변경 뒤 재승인한다. 승인 원문을 인계 자료로 준비하되 회사 계약 체결·지급과 구분한다.",
+      "sourceHash": "423ac825d82eef67afaa56f280ad70e012442b40cfaa470201f4721acd183139",
+      "status": "TRANSLATED",
+      "english": "Link Feature DB estimates to six procurement review types. Trace source documents, scope, effort, price/MCU comparisons, independent opinions and cost approvals, and reapprove after baseline changes. Prepare approved content for handoff separately from corporate contracts and payments."
+    },
+    {
       "key": "FPW.15-S1.label",
       "source": "시작",
       "sourceHash": "b1f28cd21af730b22ed30302c4078cf8a25118d1172485004a8318cbba5c5e82",
@@ -11570,6 +11696,13 @@
       "english": "Actuals available after approval"
     },
     {
+      "key": "FPW.15-S4.label",
+      "source": "견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우",
+      "sourceHash": "8ee3b6e44cd790a6b562958da8ff7f6b6e83f2ec6637c9f924837a8f163bebee",
+      "status": "TRANSLATED",
+      "english": "Quote scope, change claims, prices or MCU alternatives require review"
+    },
+    {
       "key": "FPW.15-E1.label",
       "source": "종료",
       "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
@@ -11585,6 +11718,13 @@
     },
     {
       "key": "FPW.15-E3.label",
+      "source": "종료",
+      "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
+      "status": "SOURCE_ENGLISH",
+      "english": "End"
+    },
+    {
+      "key": "FPW.15-E4.label",
       "source": "종료",
       "sourceHash": "086bb5335d174a9a330cd69a7a8162436e2551fc0d8b8f304e718cfebafa3dd4",
       "status": "SOURCE_ENGLISH",

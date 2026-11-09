@@ -3721,7 +3721,8 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "costProjectCreate",
-    "costFeatureAdd",
+    "costReferenceAdd",
+    "costReferenceUpdate",
     "costProjectUpdate"
    ],
    "anchor": null,
@@ -3910,6 +3911,39 @@ export const WORKFLOW_INDEX: WorkflowIndexDoc = {
    ],
    "actions": [
     "costActualPut"
+   ],
+   "anchor": null,
+   "slaHours": null
+  },
+  {
+   "id": "FPW.15-A08",
+   "processId": "FPW.15",
+   "processName": "SW 개발비·원가 기준 관리",
+   "name": "구매 견적·변경·대안 검토",
+   "trigger": "견적 범위·변경 청구·가격 또는 MCU 대안 검토가 필요한 경우",
+   "gateDecision": null,
+   "raci": {
+    "R": [
+     "R-CE"
+    ],
+    "A": "R-CA",
+    "C": [
+     "R-INT",
+     "R-CBA",
+     "R-PUR"
+    ],
+    "I": [
+     "R-CV"
+    ]
+   },
+   "next": [],
+   "screens": [
+    "/procurement/sw-cost/:estId"
+   ],
+   "actions": [
+    "costReviewCreate",
+    "costReviewUpdate",
+    "costReviewAction"
    ],
    "anchor": null,
    "slaHours": null

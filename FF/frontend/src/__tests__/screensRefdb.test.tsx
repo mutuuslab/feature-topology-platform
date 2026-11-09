@@ -1,6 +1,6 @@
 // Feature DB 화면(30-95 §4·§5.2·§8) — 목록(품질 지표·패싯·검색), 상세(연결 Feature·상태 정책·금액 칸), 변경 요청(차이·검토·승인 버튼 이유). 모의 API.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { REF_STATUS_POLICY, type RefChange } from '@ff/contracts';
@@ -10,6 +10,7 @@ import { RefDetailScreen } from '../screens/refdb/RefDetail';
 import { RefChangeDetailScreen, RefChangesScreen } from '../screens/refdb/Changes';
 import { featureDb as L, refChangeDetail as D, refChanges as C, refDetail as RD, refSources as S, refQualityCopy as QC } from '../copy/refdb';
 import { workbook as WB } from '../copy/workbook';
+import { changeUiLanguage } from '../locale/runtime';
 
 type Handler = (url: string, init?: RequestInit) => { status?: number; body?: unknown } | undefined;
 let handler: Handler;
@@ -170,6 +171,33 @@ const api: Handler = (url) => {
 };
 
 describe('Feature DB 목록', () => {
+  it('분류 트리의 전체 기준 행은 KO→EN→KO로 바뀌고 검색·범위·기준 행은 유지한다', async () => {
+    handler = api;
+    const path = '/master/feature-db?q=AVH&domain=Chassis+%26+Vehicle+Dynamics&statuses=ACTIVE';
+    mount('viewer', path, '/master/feature-db', <FeatureDbScreen />);
+    expect(await screen.findByText('오토 홀드')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^전체 기준 행/ })).toBeTruthy();
+    const inputs = () => [...document.querySelectorAll<HTMLInputElement>('input')].map((input) => [input.name, input.value, input.checked]);
+    const before = inputs();
+    const queries = () => calls.filter((c) => c.url.startsWith('/api/refdb/refs')).map((c) => c.url);
+    const queryBefore = queries();
+    try {
+      await act(async () => { expect(await changeUiLanguage('en')).toBe(true); });
+      expect(screen.getByRole('button', { name: /^All reference rows/ })).toBeTruthy();
+      expect(screen.queryByRole('button', { name: /^전체 기준 행/ })).toBeNull();
+      expect(inputs()).toEqual(before);
+      expect(screen.getByText('CH-BRK-009')).toBeTruthy();
+      expect(screen.getByText('오토 홀드')).toBeTruthy();
+      expect(queries()).toEqual(queryBefore);
+    } finally {
+      await act(async () => { await changeUiLanguage('ko'); });
+    }
+    expect(screen.getByRole('button', { name: /^전체 기준 행/ })).toBeTruthy();
+    expect(inputs()).toEqual(before);
+    expect(queries()).toEqual(queryBefore);
+  });
+
+
   it('기준 행 수와 발행 대기 pill, 품질 지표 한 줄, 행과 도메인 → 컴포넌트 패싯을 보인다', async () => {
     handler = api;
     mount('viewer', '/master/feature-db', '/master/feature-db', <FeatureDbScreen />);

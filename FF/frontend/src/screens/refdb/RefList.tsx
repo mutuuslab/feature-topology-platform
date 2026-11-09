@@ -1,4 +1,5 @@
 import { uiLocaleTag } from '../../locale/runtime';
+import { useUiLocale } from '../../locale/react';
 // /master/feature-db — Feature DB 목록(30-95 §4·§8.4). 머리: 발행본 행 수(+요청 중) + 발행 대기 pill, 품질 지표 한 줄(KPI 타일 줄 대신).
 // 목록은 탐색판 — 왼쪽 분류(도메인 › 컴포넌트)·근거 출처 트리, 가운데 지금 조건의 요약 수치 + 표, 오른쪽 다중 선택 필터(ASIL·수명주기·SW 계층·T-shirt·차종·지역).
 // 트리·필터 수·요약은 같은 행 집합에서 서버(또는 정적 데모의 화면 검색)가 contracts exploreRefs로 센다.
@@ -39,6 +40,7 @@ function axisOptions(axis: RefExploreAxis, counts: Record<string, number> | unde
 }
 
 export function FeatureDbScreen() {
+  const { language } = useUiLocale();
   const nav = useNavigate();
   const [sp, setSp] = useSearchParams();
   const q = sp.get('q') ?? '';
@@ -120,7 +122,7 @@ export function FeatureDbScreen() {
       }),
     ];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, treeCounts, domain, component, spKey]);
+  }, [nodes, treeCounts, domain, component, spKey, language]);
 
   // 근거 출처 — 지금 조건에서 쓰인 출처를 많은 순으로(고른 출처는 0이어도 둔다)
   const sourceCounts = facets?.source;

@@ -127,7 +127,7 @@ export function RetireAction({ featureId, version, lifecycle, createdBy }: { fea
           style={{ display: 'grid', gap: 'var(--sp-3)' }}
           onSubmit={(e) => {
             e.preventDefault();
-            if (STATIC_MODE || reason.trim().length < 5) return;
+            if (reason.trim().length < 5) return;
             request.mutate({ params: { id: featureId, ver: version }, body: { reason } }, { onSuccess: () => (setOpen(false), setReason('')) });
           }}
         >

@@ -1,0 +1,20 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
+import { AppProvider } from '../store';
+import { RetireAction } from '../screens/features/LifecyclePanels';
+const { mutate } = vi.hoisted(() => ({ mutate: vi.fn() }));
+vi.mock('../api/client', async original => ({ ...await original<typeof import('../api/client')>(), STATIC_MODE: true }));
+vi.mock('../api/hooks', async original => ({ ...await original<typeof import('../api/hooks')>(), useApi: () => ({ data: { items: [] } }), useApiMutation: () => ({ mutate, isPending: false, error: null }) }));
+afterEach(() => { cleanup(); localStorage.clear(); mutate.mockReset(); });
+it('submits a valid retire request from the static UI instead of silently returning after click', async () => {
+  localStorage.setItem('fp.state.v2', JSON.stringify({ role: 'author' }));
+  render(<QueryClientProvider client={new QueryClient()}><AppProvider><MemoryRouter><RetireAction featureId="FEAT-00022" version="1.0.0" lifecycle="PROPOSED" createdBy="usr-author" /></MemoryRouter></AppProvider></QueryClientProvider>);
+  fireEvent.click(screen.getByRole('button', { name: '즉시 폐기 요청', exact: true }));
+  const dialog = await screen.findByRole('dialog', { name: '즉시 폐기' });
+  expect(within(dialog).getByRole('button', { name: '폐기 요청' })).toBeDisabled();
+  fireEvent.change(within(dialog).getByLabelText('폐기 사유'), { target: { value: 'Offline business cancellation' } });
+  fireEvent.click(within(dialog).getByRole('button', { name: '폐기 요청' }));
+  expect(mutate).toHaveBeenCalledWith({ params: { id: 'FEAT-00022', ver: '1.0.0' }, body: { reason: 'Offline business cancellation' } }, expect.anything());
+});

@@ -1,5 +1,5 @@
 import { changedKeys, gatesToRejudge } from '@ff/contracts';
-import { adsIncidentSummary, adsIncidentView, promotionVerdict, reviewerIndependenceBlocker } from '../../../../../contracts/src/rules/ads-evidence';
+import { adsIncidentSummary, adsIncidentView, adsPeriodicReport, promotionVerdict, reviewerIndependenceBlocker } from '../../../../../contracts/src/rules/ads-evidence';
 import { ADS_IMPACT_PATHS, classifyChange, openPathCounts, pathItems, PATH_CLOSER, type AdsImpactPath } from '../../../../../contracts/src/rules/ads-change';
 import { registerSimReader } from '../engine';
 import type { SimReadContext } from '../types';
@@ -20,6 +20,14 @@ registerSimReader('adsIncidentReports', async ctx => {
   if (!Array.isArray(base.items)) fail('INTERNAL', 'Incident list source is unavailable.');
   const result = await Promise.all(base.items.map((r: any) => incident(ctx, r.reportId)));
   return { ...base, items: result, summary: adsIncidentSummary(result), at: ctx.now().toISOString() };
+});
+registerSimReader('adsPeriodicReport', async ctx => {
+  const year = Number(ctx.req.params.year);
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) fail('VALIDATION', 'Report year must be a four-digit year from 2000 to 2100.');
+  const base = await source(ctx, 'adsPeriodicReport', { year: String(year) });
+  if (!Array.isArray(base.months)) fail('INTERNAL', 'Captured monthly exposure source is unavailable.');
+  const reports = await items(ctx, 'adsIncidentReports'), current = await Promise.all(reports.map(r => incident(ctx, r.reportId)));
+  return { ...base, ...adsPeriodicReport(year, base.months, current), at: ctx.now().toISOString() };
 });
 write('adsIncidentDetermination', 'ADS_INCIDENT_DETERMINE', 'D04-05', async ctx => {
   const id = ctx.req.params.id, current = await incident(ctx, id), version = (current.determination?.version ?? 0) + 1;

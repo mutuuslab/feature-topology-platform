@@ -25,6 +25,7 @@ function setup() {
     [u('configSets')]: { items: [], unverified: [], summary: {}, pending: 0 }, [u('securityMins')]: { items: [], current: [], pending: 0, unregistered: [] },
     [u('recoveryDecisions')]: { items: [] }, [u('vehicles')]: { items: [{ vin, country: f.country, vehicleModel: f.vehicleModel, trim: f.trim }], total: 1 },
     [u('adsIncidentReport', { id: 'AIR-0001' })]: report, [u('adsIncidentReports')]: { items: [report], markets: [] },
+    [u('adsPeriodicReport', { year: String(new Date().getFullYear()) })]: { months: [{ month: new Date().toISOString().slice(0, 7), hours: 100, km: 1000 }], years: [new Date().getFullYear()], basis: 'Synthetic captured monthly exposure' },
     [u('adsEvidenceManifest', { id: 'EVM-0001' })]: { manifestId: 'EVM-0001', featureId: f.featureId, author: 'usr-author', findings: [] },
     [u('adsSafetyCase', { featureId: f.featureId })]: { featureId: f.featureId, featureVersion: f.version, findings: [], features: [{ featureId: f.featureId }], claims: [], counts: {}, promotion: { promotable: true, openMajor: 0 } },
     [u('adsChangeImpacts')]: { items: [impact], counts: {}, rejudgeGates: 1 },
@@ -97,8 +98,10 @@ it('records safe recovery work and explicit review hold without inventing full v
 it('keeps append-only incident determinations and recalculates list status rather than returning success without changing it', async () => {
   await run('adsIncidentDetermination', { decision: 'REPORTABLE', reason: 'Independent incident determination' }, 'quality', { id: 'AIR-0001' });
   expect((await get('adsIncidentReports')).summary.reportable).toBe(1);
+  expect((await get('adsPeriodicReport', { year: String(new Date().getFullYear()) })).incidents.reportable).toBe(1);
   await run('adsIncidentDetermination', { decision: 'NOT_REPORTABLE', reason: 'Corrected determination with retained history' }, 'steward', { id: 'AIR-0001' });
   const d = await get('adsIncidentReport', { id: 'AIR-0001' }); expect(d.reportStatus).toBe('NOT_REPORTABLE'); expect(d.determinations.map((d: any) => d.version)).toEqual([1, 2]); expect(d.audit).toHaveLength(2);
+  const periodic = await get('adsPeriodicReport', { year: String(new Date().getFullYear()) }); expect(periodic.incidents.reportable).toBe(0); expect(periodic.exposure.hours).toBe(100); expect(periodic.exposure.km).toBe(1000);
 });
 it('blocks an Evidence author from reviewing and persists independent major findings into both manifest and promotion', async () => {
   const m = snapshots[u('adsEvidenceManifest', { id: 'EVM-0001' })]; m.author = 'usr-quality';

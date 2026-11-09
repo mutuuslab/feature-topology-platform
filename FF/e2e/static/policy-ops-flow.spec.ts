@@ -100,6 +100,9 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
 
   // 5. 서버 배포(출시) — F3라 Canary 5%, 이전 배포본은 RETIRED, 서명 게시본(OTA)
   await as(page, 'coordinator', `/policies/${policyId}`);
+  // Review all current policy evidence before opening the deployment command.
+  await page.waitForLoadState('networkidle');
+  await settle(page);
   await page.getByRole('button', { name: '서버 배포' }).click();
   await reviewDeployScope(page);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('감속 시작 거리 조정판 — Canary부터');
@@ -280,6 +283,8 @@ async function createApprovedPolicy(page: Page, before: CapturedPolicy, descript
   await page.getByRole('dialog').getByRole('button', { name: '정책 승인', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await as(page, 'coordinator', `/policies/${policyId}`);
+  await page.waitForLoadState('networkidle');
+  await settle(page);
   await page.getByRole('button', { name: '서버 배포', exact: true }).click();
   await reviewDeployScope(page);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('같은 차량 값의 새 판 — 복구 이력 검증');

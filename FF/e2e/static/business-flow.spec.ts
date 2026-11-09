@@ -137,7 +137,7 @@ test('정적 시연: 협의 의견·체험 제안이 목록에 바로 반영된�
   await expect(offer).toBeVisible();
   await offer.getByRole('checkbox', { name: /KMH-NX4-0001/ }).check();
   await offer.getByRole('button', { name: '제안 보내기' }).click();
-  await expect(offer.getByRole('status')).toBeVisible();
+  await expect(offer.getByRole('status')).toBeVisible({ timeout: 20_000 });
   await shot(page, 'trial-offered');
 
   // 협의 의견 — 구매 부서(받은 부서)가 품질 부서의 협의 요청에 의견

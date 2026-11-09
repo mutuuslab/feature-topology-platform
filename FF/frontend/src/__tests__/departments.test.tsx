@@ -88,7 +88,7 @@ describe('부서 메뉴', () => {
     mount({role:'viewer',department:'DEP-PUR'},'/procedures/work');
     const nav=await screen.findByRole('navigation',{name:'구매팀 메뉴'});
     expect(within(nav).getByRole('link',{name:'업무 건·산출물'})).toHaveClass('active');
-    expect(within(nav).getByRole('link',{name:/^업무 절차/})).not.toHaveClass('active');
+    expect(within(nav).getByRole('link',{name:/^전체업무흐름/})).not.toHaveClass('active');
   });
   it('실제 구성·검증·추적·개인정보 업무를 외부 연계로 잘못 묶지 않는다',()=>{
     const paths=['/baselines','/variant-conditions','/validations','/trace/design','/admin/data','/admin/security','/field'];

@@ -18,10 +18,30 @@ import { StatusBadge } from '../screens/flag-code/badge';
 import { vehicleCache } from '../copy/vehicle-cache';
 import { ota } from '../copy/ota';
 import { exceptions } from '../copy/exceptions';
+import { costPurchasing } from '../copy/cost-purchasing';
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); localStorage.clear(); __resetLocaleForTest(); });
 
 describe('reactive UI language catalogues', () => {
+  it('loads purchasing review guidance, findings and field captions while preserving decision keys', async () => {
+    const keys = { kinds: Object.keys(costPurchasing.kind), actions: Object.keys(costPurchasing.actions), findings: Object.keys(costPurchasing.findings) };
+    const original = costPurchasing.guides.MCU;
+    await changeUiLanguage('en');
+    expect(costPurchasing.title).toBe('Purchasing review');
+    expect(costPurchasing.guides.MCU).toContain('same complete ECU set');
+    expect(costPurchasing.findings.VALUE_UNCONFIRMED).toContain('not calculated as zero');
+    expect(costPurchasing.labels.recognizedProposal).toBe('Proposed recognized amount');
+    expect(costPurchasing.actions.APPROVE).toBe('Approve costs independently');
+    expect({ kinds: Object.keys(costPurchasing.kind), actions: Object.keys(costPurchasing.actions), findings: Object.keys(costPurchasing.findings) }).toEqual(keys);
+    const walk = (value: unknown): void => {
+      if (typeof value === 'string') expect(value).not.toMatch(/[가-힣]/);
+      else if (value && typeof value === 'object') Object.values(value).forEach(walk);
+    };
+    walk(costPurchasing);
+    expect(untranslatedCopyPaths()).toEqual([]);
+    await changeUiLanguage('ko');
+    expect(costPurchasing.guides.MCU).toBe(original);
+  });
   it('translates exception scope and two-person guidance while retaining history codes and numeric limits', async()=>{
     const keys=Object.keys(exceptions.detail.historyKind);
     const ko=exceptions.act.selfApproval;

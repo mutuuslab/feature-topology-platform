@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
-  "moduleCount": 90,
-  "requiredLeaves": 9553,
+  "moduleCount": 91,
+  "requiredLeaves": 9840,
   "modules": [
     {
       "module": "ads-ac",
@@ -12147,6 +12147,1486 @@
       "unresolvedCopyReferences": []
     },
     {
+      "module": "cost-purchasing",
+      "file": "FF/frontend/src/copy/cost-purchasing.ts",
+      "leaves": [
+        {
+          "path": "cost-purchasing.costPurchasing.title",
+          "kind": "text",
+          "text": "구매 검토",
+          "sourceHash": "d9149bdf3ddb49c3f07390f5024f31fd7f042dabc1856b37fd8e64553a204571"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.lead",
+          "kind": "text",
+          "text": "Feature DB 산정 기준과 연결해 견적 범위·공수·변경·조건·가격·MCU 대안을 검토합니다. 계약 체결·지급은 별도 절차이며 여기서는 승인된 인계 자료를 준비합니다.",
+          "sourceHash": "39df2559fb4b7aff0b6c963dabaf01c58a89aa9853c2392fcadc574845f6ed6e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guides.SCOPE",
+          "kind": "text",
+          "text": "공급사와 지역을 각각 기록하고 요구·작업·시험 범위를 맞춰 비교하세요. 인증 수나 보고서 제목만으로 동등하다고 판단하지 않습니다.",
+          "sourceHash": "2c29824f31f8ee89d6efbc446318001b28b621598cce7d09b08d043dde13f9bc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guides.TUNING",
+          "kind": "text",
+          "text": "실제 작업 유형과 적용 공수 기준 유형을 구별하세요. 파라미터 조정 단가를 신규 로직에 적용하지 말고 수행·산출물·계약 포함 근거를 연결합니다.",
+          "sourceHash": "d08ea6ae893f5dba8bf7b303c821f033b8df77b73a159353de535d25b4816ebb"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guides.CHANGE",
+          "kind": "text",
+          "text": "변경 전 승인 기준과 변경 요구를 먼저 연결하고 작업·시험·청구를 나눕니다. 청구액과 인정 제안액은 구별하며 계약 포함 여부를 확인합니다.",
+          "sourceHash": "bb61073d4550fcfb9f9068d87f4e88d89deeb9c5ef610549d7a11a55a978a38d"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guides.QUOTE",
+          "kind": "text",
+          "text": "하나의 작업을 여러 요구에 연결해도 한 번만 합산합니다. 별도 비용과 라이선스의 과금·차종·파생·유지보수·재사용 조건을 확인하세요.",
+          "sourceHash": "583328a568602842fb34fcb4b7d515deb0eb01d007ece814d232cb2a127a1142"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guides.PRICE",
+          "kind": "text",
+          "text": "원계약의 고정비·대당 단가·기간·귀속·회수 조건과 인상 요인을 기록하세요. 인상 차액과 물량별 총액을 비교하며 협상 단가에서 고정비를 역산하지 않습니다.",
+          "sourceHash": "ea3161f7c141c16340d426a38d0cc6f895509c1f936acf02dc50969d83b20a5a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guides.MCU",
+          "kind": "text",
+          "text": "모든 대안에 같은 ECU 전체를 배정하고 이식·검증·착수·사용권을 확인합니다. 공통 비용은 같은 식별자로 한 번만 계산하며 물량별 총액과 손익분기 물량을 비교합니다.",
+          "sourceHash": "2f83881e499589b2cd3bed50a85439801544582ac061a75a72f0d1679c21caec"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.EVIDENCE_REQUIRED",
+          "kind": "text",
+          "text": "검토할 원문 자료가 없습니다.",
+          "sourceHash": "6b633fd85491057fe5bfb2c2761840c7be2014dd8c871581f39bc15df2ce7149"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.DUPLICATE_ID",
+          "kind": "text",
+          "text": "같은 식별자를 중복 사용했습니다.",
+          "sourceHash": "0871ab34cab300b77e5ccc9d2794e16913a9642c51cbbcd3640c20b35994fccd"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.NOT_APPLICABLE_REASON",
+          "kind": "text",
+          "text": "비적용은 근거·사유를 적고 숫자는 비워 둡니다.",
+          "sourceHash": "f1074a4daadc69bd3f7b3dc4c03ee3e6fe6f7a9d249dab7392674fc7f8276911"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.VALUE_UNCONFIRMED",
+          "kind": "text",
+          "text": "미확정 값은 0으로 계산하지 않습니다. 자료 확인 후 값을 확정하세요.",
+          "sourceHash": "48599d6b819028ea793770a82214fa5e2995627a224296d93812c967cfe01a67"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.REQUIREMENTS_REQUIRED",
+          "kind": "text",
+          "text": "실제 요구와 작업의 연결이 필요합니다.",
+          "sourceHash": "25c3e200dca43c5acbc97d62a24171892ad4a190db0b40d319b1cd764681d351"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.OFFERS_REQUIRED",
+          "kind": "text",
+          "text": "동일 범위를 비교할 견적·지역·업체를 구분해 등록하세요.",
+          "sourceHash": "13871ebafcb9c69df15be69569213840e8087c1b47908c12298a9b4635f528f1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.QUOTE_BASIS_REQUIRED",
+          "kind": "text",
+          "text": "공급사·지역·기간·원문 개정·세금 기준을 확인하세요.",
+          "sourceHash": "7e4fcf4a3138494ed0af3c57c8242c338b6bc4c70ec32002c08967b05ae013cf"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.EXCLUSION_REASON",
+          "kind": "text",
+          "text": "제외 판단의 근거와 사유가 필요합니다.",
+          "sourceHash": "020ba5382cfa2f6f712f73ad2cada97464b89a3341aa338dfbea6ef811da9be1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.WORK_UNCONFIRMED",
+          "kind": "text",
+          "text": "작업 포함 여부가 미확정입니다.",
+          "sourceHash": "bfde3a1cab7b6156bc7a02f65029218fa724555ea334df04e455e2573f193c60"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.WORK_REQUIREMENT_LINK",
+          "kind": "text",
+          "text": "작업과 실제 요구를 연결하세요. 같은 작업은 여러 요구에 연결해도 한 번만 합산합니다.",
+          "sourceHash": "c0f15317a327859fc2afe0480a106d5d05fda949e05353fab3247f10cabb76dc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.REFERENCE_LINE_REQUIRED",
+          "kind": "text",
+          "text": "Feature DB 산정 줄과 작업을 연결하세요.",
+          "sourceHash": "3bc77e3474c428d4682020168becd8da7bade15089c2bdb744a9768aaec91926"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.WORK_SCOPE_REQUIRED",
+          "kind": "text",
+          "text": "작업 범위 식별 근거가 필요합니다.",
+          "sourceHash": "25df9044649221451d2b7a50c271aca951fad6af891864a95842091eec7df051"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.WORK_KIND_UNKNOWN",
+          "kind": "text",
+          "text": "실제 작업과 적용한 공수 기준의 유형을 확인하세요.",
+          "sourceHash": "979bab2048be35ead5bc9aad4283cb84170af34e0481306d6eb4c651a9ef470e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.WORK_BASIS_MISMATCH",
+          "kind": "text",
+          "text": "신규 로직에 파라미터 조정 기준을 적용할 수 없습니다.",
+          "sourceHash": "9ca9fd46e5c87da76cc5f3ab872a6c0a06c180ed5bc3c1ee12e8f6e7496d08cc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.DUPLICATE_EXECUTION",
+          "kind": "text",
+          "text": "같은 수행 ID와 범위의 작업 비용이 겹칩니다. 보고서 이름만 같다는 이유로 중복 처리하지는 않습니다.",
+          "sourceHash": "1d9009eba730c3cc4f2fc6fe72da4793471ca9e60c1bcef8d593efc1ce46698c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.TEST_SCOPE_REQUIRED",
+          "kind": "text",
+          "text": "시험 수행·범위·규격 개정·사양이 있어야 같은 시험인지 비교할 수 있습니다.",
+          "sourceHash": "d211885109c0b7a85e5e7039cbdbb20fa3cc0e2d49f2343dd45aee95f09d5891"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.UNIT_ZERO",
+          "kind": "text",
+          "text": "단위 환산의 작업일·시간은 0보다 커야 합니다.",
+          "sourceHash": "201ad53ff7649e0c13c65e7c539295f51d10fad09fc3410cd179f82d7ce5b4a3"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.REQUIREMENT_UNCOVERED",
+          "kind": "text",
+          "text": "요구에 연결된 작업이 없습니다.",
+          "sourceHash": "ef99d785899b300c832fd28f0a97a5bfcd7d198bdbb0725597c038f1a603cc9f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.TEST_MISSING",
+          "kind": "text",
+          "text": "해당 요구의 시험 작업 또는 명시적인 시험 면제 근거가 필요합니다.",
+          "sourceHash": "341af904e1ae22b4065379639694313df9b32b08534e94c6cab057cbba76ac23"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.LICENSE_TERMS_REQUIRED",
+          "kind": "text",
+          "text": "과금 방식·차종·파생·유지보수·재사용 조건을 원문과 확인하세요.",
+          "sourceHash": "a7ead555db17d0689c33a363f9361bf2160edc99350e02650442f08a0a3ed1bd"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.QUOTE_RESIDUAL",
+          "kind": "text",
+          "text": "제출 총액과 공수·별도비·사용권 합계의 차액을 설명하고 원문을 보완하세요. 자동 삭감하지 않습니다.",
+          "sourceHash": "08a595dbc6fe691e4d3e4a72c8c76e30dd59827472fecf4339f31f5e54e7701b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.SCOPE_NOT_EQUIVALENT",
+          "kind": "text",
+          "text": "동등 범위가 확인되지 않았습니다. 인증 개수·기관·보고서명만으로 차액을 인정하거나 삭감하지 않습니다.",
+          "sourceHash": "390c35f7dc12d3d431301ebbd34836a53642a7d7bcc08b83a3acb0824a537c3b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.CLAIMS_REQUIRED",
+          "kind": "text",
+          "text": "변경 요청·승인 기준선·작업·비용 근거를 연결하세요.",
+          "sourceHash": "799b43ab0a07d7e044f4a5c1c50bc95ee4ffdf3a8fd5c5914ed6c4f9967be5c0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.CHANGE_TRACE_REQUIRED",
+          "kind": "text",
+          "text": "전후 요구·승인 기준선·변경점·작업·사유를 연결하세요.",
+          "sourceHash": "7c22a0ec677a07d54424559d2fcc9e6f621d17ba4acb9fd25c55a6e4a00cdc33"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.DUPLICATE_CLAIM",
+          "kind": "text",
+          "text": "같은 수행·범위의 청구가 겹칩니다.",
+          "sourceHash": "5d69f89aaf9bece14718fa8ebcf44821f31611e4ea44fc44cc95eb38cb28b7b0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.CONTRACT_SCOPE_UNKNOWN",
+          "kind": "text",
+          "text": "원 계약 포함 여부가 미확정입니다.",
+          "sourceHash": "dc89ff1af5f1b3c16ce008b9d456641a6dc491f8249ebadc9e59669ed02808d5"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.RECOGNITION_EXCEEDS_CLAIM",
+          "kind": "text",
+          "text": "인정 제안액이 청구액을 넘습니다.",
+          "sourceHash": "316399252b0012db5ed194ead366332705c3ed3c2f3b457f62629755dcde8d04"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.CONTRACT_ALREADY_INCLUDED",
+          "kind": "text",
+          "text": "계약에 포함된 작업을 추가 비용으로 다시 인정할 수 없습니다.",
+          "sourceHash": "0be106087f2bd2582f0883080004701ecfce0e750cd2b1848e5f3e3ba2df96ee"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.PRICE_TERMS_REQUIRED",
+          "kind": "text",
+          "text": "최초 가격 모델·귀속·회수·물량 구간·기간 확인이 필요합니다. 협의 가격에서 고정비를 역산하지 않습니다.",
+          "sourceHash": "e466812897b44dde22e0a3a86e7b893b872e3f438254bc47ce466cbd3fe43d27"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.INCREASE_FACTORS_REQUIRED",
+          "kind": "text",
+          "text": "인상 요청이 비어 있으면 검토 완료로 보지 않습니다.",
+          "sourceHash": "41fd57b464ff7603a4ad4131abc22948e606abd15adc214f56007f54372f2ad4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.INCREASE_RESIDUAL",
+          "kind": "text",
+          "text": "원인별 인상 합계와 요청 차액이 일치하지 않습니다. 미설명 잔차를 보완하세요.",
+          "sourceHash": "8487ea371bbf91a33f972d32ede484adcd930cca781b140686833b8152922ef9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.VOLUME_SCENARIOS_REQUIRED",
+          "kind": "text",
+          "text": "검토할 물량 조건이 없습니다.",
+          "sourceHash": "8a0337ea0f81b731ce410d94c74c007c8b214c0286681da6f891deffde5922a8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.MCU_COMPARISON_REQUIRED",
+          "kind": "text",
+          "text": "기준 대안 하나와 비교 대안, 실제 ECU 배정을 등록하세요.",
+          "sourceHash": "62cb47bc134281586f03e62dbb4ac14eef7e7c7f5501321ece9b7d015483f1c6"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.ECU_ALLOCATION_INCOMPLETE",
+          "kind": "text",
+          "text": "대안마다 같은 ECU 전체에 배정해야 합니다. 누락 ECU를 0으로 보지 않습니다.",
+          "sourceHash": "ce9e63ccda18eaea232b9dee13868ccd5e4cd690cb51687d615d2dc62511066a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.MCU_SCOPE_REQUIRED",
+          "kind": "text",
+          "text": "MCU·동등 기능/검증 범위·비재무 제약·착수 여부가 필요합니다.",
+          "sourceHash": "16b9b6ebf336fd187d832a300b6c3faba3bfa68d83dbc91cae3e4bc7f7bcb064"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.SHARED_COST_CONFLICT",
+          "kind": "text",
+          "text": "같은 공통비의 금액이 다릅니다.",
+          "sourceHash": "76602fb051ff74434eca49b4ea85aa652712a0fbbc91b99106abfe2dc55d0abb"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.SHARED_COST_SCOPE",
+          "kind": "text",
+          "text": "공통비 식별자를 지정하거나 비적용 근거를 남기세요.",
+          "sourceHash": "b45ff88c128ea0f9abb0c345e3f330737e161fb44d518cb0025a566f9adb62af"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.DECISION_TARGET_REQUIRED",
+          "kind": "text",
+          "text": "선택한 견적 또는 대안을 명시하세요.",
+          "sourceHash": "9c5861f7da47018b5d3c26025766b24e2067bf2a6af49a20d0189cbe5811a24b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.DECISION_REASON_REQUIRED",
+          "kind": "text",
+          "text": "판단 근거와 미해결 사항을 기록하세요.",
+          "sourceHash": "33402d84e84d4f496a2fe69edd241055e6644b99f919cbab045d8beb4e2ecc4b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.findings.CALCULATION_RANGE",
+          "kind": "text",
+          "text": "계산 범위가 지원 정밀도를 넘었습니다.",
+          "sourceHash": "7da2da36fd01221e968cd55107c9c2f61405eb58efa7a0d2d7562aabbaf6a660"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.kind.SCOPE",
+          "kind": "text",
+          "text": "05 · 견적 범위 동등성",
+          "sourceHash": "1753caddfb2893d34b78a10e2060aa49617542a8cf2db4b0cd4500d1e7350310"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.kind.TUNING",
+          "kind": "text",
+          "text": "12 · 작업·공수 단가",
+          "sourceHash": "196a1bffd15d62f00da206c7ffa7b57617a70e99da66adf6635391f28704e4a1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.kind.CHANGE",
+          "kind": "text",
+          "text": "13 · 변경 청구 분리",
+          "sourceHash": "0ec938a8fe868fb66ac87ef6c75aacb72d2e2e740d09bf3b8b2ac8a77f93b9f9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.kind.QUOTE",
+          "kind": "text",
+          "text": "15 · 요구·견적·라이선스 연결",
+          "sourceHash": "af20bbe80484a32fab90f345baa44fba8aff8afa11553aec63f9f68887acffd2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.kind.PRICE",
+          "kind": "text",
+          "text": "21 · 가격 인상 근거",
+          "sourceHash": "d3967e0af6e8252330446a7bdf3828dd94e51c5cc5281162f88c6165ee29c63f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.kind.MCU",
+          "kind": "text",
+          "text": "23 · MCU 대안·물량 비교",
+          "sourceHash": "4071f23d078e5ad881a24eab2475742114c63f7e7cf9516d5d1c22051e86ce44"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.discard",
+          "kind": "text",
+          "text": "저장하지 않은 입력을 버리고 이동할까요?",
+          "sourceHash": "12cf110d48336b9f14b0762309b5d0d5e66526bb5e2c3ae7e706f7319708a1c9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.affected",
+          "kind": "text",
+          "text": "영향받는 개발비 산정 과제",
+          "sourceHash": "dd0a4713345fb08a83926d853e3a8ff948133df14fb4f83de5442fb8417cd5b0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.pendingPublish",
+          "kind": "text",
+          "text": "기준 발행 후 원천 갱신·재산정 필요",
+          "sourceHash": "e8194ca7035157083d7583ab5c9fcb21ee110152a0ab224d4100301814cbbc1a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.new",
+          "kind": "text",
+          "text": "검토 건 만들기",
+          "sourceHash": "9e3405b3265943673d29d2a8ec885025b68a3c3669172873bec49439b557426a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.save",
+          "kind": "text",
+          "text": "입력 저장",
+          "sourceHash": "ad0afd5458460229995c1db7ceeff5461872c5df144ad2602d1f2ae773d80805"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.add",
+          "kind": "text",
+          "text": "추가",
+          "sourceHash": "b73accca8a4a51d3d53f509927666c08e28e1ac49d6f36b081b98b6c5796b4ae"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.remove",
+          "kind": "text",
+          "text": "삭제",
+          "sourceHash": "6139b6c3ed73cd4aa3849fcf25698abce9b6d870ddb9fcb0565ad1372a97c06c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.empty",
+          "kind": "text",
+          "text": "등록된 검토 건이 없습니다.",
+          "sourceHash": "66edcaa7294023548068f3332a04e9f41627d3c005f7436f92c518ffcb8b98be"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.loadDemo",
+          "kind": "text",
+          "text": "공개 합성 예시 불러오기",
+          "sourceHash": "73f74122217854817748a145a0bdcf8b9d9b0372ee7bea7045866a843cb937e4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.demoHint",
+          "kind": "text",
+          "text": "예시를 불러오면 현재 입력을 합성 데이터로 바꿉니다. 실제 견적·계약·지급 근거가 아닙니다.",
+          "sourceHash": "51ef3ca6e43d7ee11f55154d26c32b0d3d0b74422dc9349a969e16af195942b8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.autofill",
+          "kind": "text",
+          "text": "Feature DB 요구·출처 채우기",
+          "sourceHash": "fca0457f0cd361b37a98091a151332c8bc840b3cd6d4a4e331ba35b9080105b0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.autoHint",
+          "kind": "text",
+          "text": "현재 기준 행과 실제 연결된 요구만 가져옵니다. 공급사 공수·계약 단가는 자동 확정하지 않습니다.",
+          "sourceHash": "51dcc4229e02d5d1cc0e652c5168be001fa4e6e0698f4f0b30e60a29cc0397f8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.unknown",
+          "kind": "text",
+          "text": "미확정",
+          "sourceHash": "d7fbe9c338939b7b0431a95f274a3f27d66e7ad442865d5e0014919ce35d7eb2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.yes",
+          "kind": "text",
+          "text": "예",
+          "sourceHash": "2eb73fba696e2fe4ea0a206ed3d21758e35c7594905d6181d9c34ff19556b17a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.no",
+          "kind": "text",
+          "text": "아니요",
+          "sourceHash": "9474acc7539b7e2cedafe13bd8d11322d13c13f1698fd919d6cbcd4533730c55"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.source",
+          "kind": "text",
+          "text": "근거 파일 추가",
+          "sourceHash": "d48badd4405e8c2cd1cb1885ed5c06100801db66dbc6775d0ac2e0390f1c7304"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.sourceHint",
+          "kind": "text",
+          "text": "512 KiB 이하의 원문을 선택하면 실제 바이트와 SHA-256을 함께 저장합니다. 확인 상태는 직접 판단하세요.",
+          "sourceHash": "f1d2d235a11475413677bae6ef00b00eaabbd8193d5782166cdcc954f141ad45"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.download",
+          "kind": "text",
+          "text": "원문 다운로드",
+          "sourceHash": "b28f921674a627ceead6bc4abbbbcde3eb1822f0a3a31254051fdd5ade186ca3"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.export",
+          "kind": "text",
+          "text": "승인 인계 자료 다운로드",
+          "sourceHash": "8efb11ae74f368275f7178b80f6c5acfede2faeecfdd97fe68922a890021ef74"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.reason",
+          "kind": "text",
+          "text": "변경·판단 사유",
+          "sourceHash": "08d250b25d682ab466ffa7fa58fc4db763185abdd2c90ba796fd10931da6eb3b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.stale",
+          "kind": "text",
+          "text": "산정 기준이 바뀌었습니다. 과제 원천과 산식을 갱신한 후 검토 기준을 다시 확인하세요.",
+          "sourceHash": "f28cdae14fa579a36ccda7bc228525ea66be97d40ff97638c5fe5d603fff5e8a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.ready",
+          "kind": "text",
+          "text": "입력 검증 통과",
+          "sourceHash": "e00d5867008f97a244fe00954f03d1ba498839dbc4ec8fc054c51a968a5040fa"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.notReady",
+          "kind": "text",
+          "text": "보완이 필요합니다",
+          "sourceHash": "9ed7ed930b2043af1bbd322a3254323297df51bf6baf0a4f50555af0f7375550"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.guide",
+          "kind": "text",
+          "text": "빈 값은 미확정으로 남습니다. 확정된 0과 비적용을 구별하며, 비적용에는 근거와 사유가 필요합니다. 단위 환산 일수·시간도 해당 원문을 확인하세요.",
+          "sourceHash": "0a578426c2c8711be2dac8296ccfa007af38b1532d45ddf02771e9f238c47189"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.history",
+          "kind": "text",
+          "text": "저장·의견·승인 이력",
+          "sourceHash": "b0753ba674a9aacad34e02438454f69c9f09a0ceebeb9432d76adadde1febed9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.current",
+          "kind": "text",
+          "text": "최신 개정",
+          "sourceHash": "a6d15705bb6b8e971337488ddf11f86337a8db455a92a793e6bbaa30de8fed68"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.version",
+          "kind": "text",
+          "text": "개정",
+          "sourceHash": "ca973e0aa5b599b2c4fb10ac23f6ba628eda1bb25d32343f30ad81d9be9aea1e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.input",
+          "kind": "text",
+          "text": "작성 내용",
+          "sourceHash": "e837c1d1be5c67b6a504a1809d164f0882c648269ce1b73c536628cc21d7ebfe"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.result",
+          "kind": "text",
+          "text": "계산·비교 결과",
+          "sourceHash": "9d862aa2ea7d40c86d32660ac1afaa1e4a9ccd0a7501258a8ccb6eef1a44f243"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.readOnly",
+          "kind": "text",
+          "text": "현재 역할에는 기술 범위·공수만 표시합니다. 금액과 원문은 표시하지 않습니다.",
+          "sourceHash": "50237ae15686d832d7cd8c50810aebdf893fcd23462f5fe9f2f8d7a2a6febaa0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.derivedSource",
+          "kind": "text",
+          "text": "비용 기준은 동일 Excel v1.3의 기준 값과 캡처 v1.4의 공개 행 정보를 연결한 파생 자료입니다. 회사 승인 단가나 공급사 견적이 아닙니다.",
+          "sourceHash": "0777debe8db072a115f26d5ce8f984b075bdbe1cb8ba87ae4a772b8137f05a09"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.sourceVersion",
+          "kind": "text",
+          "text": "기준·출처",
+          "sourceHash": "56a974a40a43acb2708ead2a3860cdb1ba799c6c85a17cef1696d2aeb3a1173e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.REFRESH_BASELINE",
+          "kind": "text",
+          "text": "최신 기준으로 재확인",
+          "sourceHash": "ad74716568f0b3030ca5875b9c7caafdf858fa1f93c205b84e9ede170add6653"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.SUBMIT",
+          "kind": "text",
+          "text": "독립 검토 요청",
+          "sourceHash": "a1e16126aabe86be2b6e17adedfa9a0fe5f4fca37330f86f07c124115c8acb37"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.TECHNICAL_AGREE",
+          "kind": "text",
+          "text": "기술 범위 동의",
+          "sourceHash": "7e333c4358381c08fe94d1e9a04af07c9eb14f248d36291503c2cfc9a543c4f0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.TECHNICAL_CHANGES",
+          "kind": "text",
+          "text": "기술 보완 요청",
+          "sourceHash": "d802df05022ddb8bbf2b6dcfc5e8546295617fe789f1968af5bea2ffdcc826f6"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.TERMS_CONFIRMED",
+          "kind": "text",
+          "text": "Terms 근거 확인",
+          "sourceHash": "26c565d8acfad32c8d578f2552041640bfd85c19e23d7c2b4b68cca915e350cc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.TERMS_CHANGES",
+          "kind": "text",
+          "text": "Terms 보완 요청",
+          "sourceHash": "37b1f5ec242565295dddd97af27aeb89f945b59a2c26ca03e5b926ef06b5220b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.APPROVE",
+          "kind": "text",
+          "text": "독립 비용 승인",
+          "sourceHash": "954584bc992b9ca75781a8c6e6fecd7dbc6786db6021b149f9cea551f71e8162"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.REJECT",
+          "kind": "text",
+          "text": "반려",
+          "sourceHash": "d283b7dbc864793f48ce9c18b99dedb5e9a78bcd48c98229ec009539d6413422"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.REVISE",
+          "kind": "text",
+          "text": "개정 시작",
+          "sourceHash": "3b3e44f5be4b88bd0037fb0f219226ba21384105afad788e839edd0961159574"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.actions.HANDOFF",
+          "kind": "text",
+          "text": "승인 인계 자료 준비",
+          "sourceHash": "d09b7262ea3f14b3fcec2dfd476962ed989a6137a763267a18a4f69c1f658f08"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.requirements",
+          "kind": "text",
+          "text": "요구사항",
+          "sourceHash": "3131473dcf61b625381b0e003c29101e4624ac8566478963a368d2e412ca7b4c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.evidence",
+          "kind": "text",
+          "text": "근거 원문",
+          "sourceHash": "d6f65c68ae048bd28343a6b6da827b8661774ec325e1bc246f8afb67d6fab62a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.offers",
+          "kind": "text",
+          "text": "공급사 견적",
+          "sourceHash": "c00b3391678b755ef9042784bfc6867a83e67cbdaec146b5ad65dfb706bc3e22"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.claims",
+          "kind": "text",
+          "text": "변경 청구",
+          "sourceHash": "14a6d20ce215128c20409811792bc6d2e7ae7900bf49c5997940a51ba4e006c8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.price",
+          "kind": "text",
+          "text": "가격 인상 검토",
+          "sourceHash": "3a37ca20bef944609a2339dade5e8c98d1b433f82f75610a7c606f8902d506b8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.ecuIds",
+          "kind": "text",
+          "text": "대상 ECU",
+          "sourceHash": "1dd22784427f57ceb60f0300f1bbc1ccc7f3fa417db3db134f5e476ca188afef"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.candidates",
+          "kind": "text",
+          "text": "MCU 대안",
+          "sourceHash": "3fbab8d74e898f420c1e8e75b7edd86693b9f336d7d2a14ea2535ef353e0ef3c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.scenarioVolumes",
+          "kind": "text",
+          "text": "물량 시나리오",
+          "sourceHash": "43bb83a75c55ebe50fe7761d26dcf68b4a67169f4d6c9abfad598c5a7dd717e4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.selectedOfferId",
+          "kind": "text",
+          "text": "선택 견적",
+          "sourceHash": "6e376978bbf4f267726f7762f766a3ae2eb1cd5fb4e85533d4f9f1eacb88d5b8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.selectedCandidateId",
+          "kind": "text",
+          "text": "선택 대안",
+          "sourceHash": "2a4e6979685820f14920248c4f7d8294d7fdc2013f402de674a32eae090bb666"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.decisionReason",
+          "kind": "text",
+          "text": "선택·판단 사유",
+          "sourceHash": "7f2d8f468674a8500dabeb63a61527728629476ad5bd9d11897c1d7fefa61a9f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.id",
+          "kind": "text",
+          "text": "식별자",
+          "sourceHash": "5b7b8b77a7dce7cad4a0fdad4d2ad06776f5f3e3f9325b9b04684d684e7c499e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.revision",
+          "kind": "text",
+          "text": "개정",
+          "sourceHash": "ca973e0aa5b599b2c4fb10ac23f6ba628eda1bb25d32343f30ad81d9be9aea1e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.title",
+          "kind": "text",
+          "text": "내용",
+          "sourceHash": "cb0f24046b508710d6315e71bd9b21b920cf15301b0cf055dc9569c507576ea3"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.sourceId",
+          "kind": "text",
+          "text": "근거 선택",
+          "sourceHash": "eebc82541a2af41bea31a45fbaaa60a7d9b74d103fea3544c223453cb3ed43fd"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.testWaiverSource",
+          "kind": "text",
+          "text": "시험 면제 근거",
+          "sourceHash": "d138579605fd5a8ac8d77459087de8b488b81d358dbd299f66173a92deb57635"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.location",
+          "kind": "text",
+          "text": "원문 위치",
+          "sourceHash": "c38fea4cc5068c4e41187951fb73a6f80e00b86c4c158b9ebe4946f19b007074"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.confirmed",
+          "kind": "text",
+          "text": "원문 확인 완료",
+          "sourceHash": "80fd4142399a2d21f8a26d99d49b9f92759259a7fadd90d593753cb422855819"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.synthetic",
+          "kind": "text",
+          "text": "합성 자료",
+          "sourceHash": "2dfb3dffe01122e5ee49f1c8dc95505f461bc3798ff85b9a15b396867b0063c2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.filename",
+          "kind": "text",
+          "text": "파일 이름",
+          "sourceHash": "1b4dcf3b4694629eb7db9669c37224474b456344587276e2821124fc605bd246"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.mediaType",
+          "kind": "text",
+          "text": "파일 유형",
+          "sourceHash": "59d2ed90e7cf2403a72eef534e02e2260516d267051099974ae4552839b8d0fe"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.supplier",
+          "kind": "text",
+          "text": "공급사",
+          "sourceHash": "fdc4a213e1e480669e37db4eb6420b61943d05a31ae001919f0d3b90d2bc798f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.region",
+          "kind": "text",
+          "text": "지역",
+          "sourceHash": "770eb9e292c171999d24b8a26c73d63c7b1947558ff98c500a1f9069b83a5574"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.currency",
+          "kind": "text",
+          "text": "통화",
+          "sourceHash": "1566f907a6cafa98c014129374d57fda237dcc5f42147ddfc82fcde9270812dc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.tax",
+          "kind": "text",
+          "text": "세금 기준",
+          "sourceHash": "4e0b76d3c3e44932409fcfed6d1dd4cb06bc19adbb470063c0327712610d0045"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.period",
+          "kind": "text",
+          "text": "적용 기간",
+          "sourceHash": "05056a183afdf4c687761c641ad4975e41eedaec02fb9f774eb6f95ab607fd9e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.quoteRevision",
+          "kind": "text",
+          "text": "견적 개정",
+          "sourceHash": "2958b20375c0ffb755766b85a144074e31235a69895867c70b7237b8264ead78"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.quotedTotal",
+          "kind": "text",
+          "text": "제출 총액",
+          "sourceHash": "81be54c1eb153263947c9ae969e8751bfb971d074f42010bf5af81530efd3c25"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.works",
+          "kind": "text",
+          "text": "작업·공수",
+          "sourceHash": "7e28e6bbc73d6adb7f6d81fd8e7318002eccd1f3caac97f453725bd7f7c9d133"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.extras",
+          "kind": "text",
+          "text": "별도 비용",
+          "sourceHash": "2f297b5f2f09db5b290ff7fc0ff7c44cac711bcfa50edb5b986b436630d626d5"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.license",
+          "kind": "text",
+          "text": "라이선스·Terms",
+          "sourceHash": "268c7605d0783c6d02cbea53a7d0a7b386b7788e2fe1f64d44fe082ed9ccf62b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.requirementIds",
+          "kind": "text",
+          "text": "연결 요구사항",
+          "sourceHash": "566cf3fb4ad1d230923aa7da3479d96a2bcca902383fbbce7b04fa8cd3e28080"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.referenceLineNos",
+          "kind": "text",
+          "text": "연결 기준 행 번호",
+          "sourceHash": "9a6f32df5bd1a1a864cb3ca0b487a0133e0ab8735b98a74cbed685b744f7e3b9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.kind",
+          "kind": "text",
+          "text": "실제 작업 유형",
+          "sourceHash": "c50313c18a8ce04dd6fa8dc1118b3005b82f5adabf46aa5208740f22a60fd817"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.basisKind",
+          "kind": "text",
+          "text": "적용 공수 기준 유형",
+          "sourceHash": "256c8fd7bfed4ed0171d6cfbe6820c8dc970b5ab5a1e5029613916346747db64"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.effort",
+          "kind": "text",
+          "text": "공수",
+          "sourceHash": "cfa2c3122e37d23074b0fe26c0c816569ebfbd5c2da7e4d133b687c83a640972"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.effortUnit",
+          "kind": "text",
+          "text": "공수 단위",
+          "sourceHash": "df3b373935f9568068bbe7bf732b758ee883f63ab16a52b7e5ad851be5fc0b27"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.rate",
+          "kind": "text",
+          "text": "공수 단가·환산",
+          "sourceHash": "0488996e02588c2cde72b656247e88f28a8ba266da73f92ffb263eb9390870df"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.amount",
+          "kind": "text",
+          "text": "단가",
+          "sourceHash": "0ad1500b138edff345762de8d7a74b72868290835ff8408a09b24eb90bedb453"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.unit",
+          "kind": "text",
+          "text": "단가 단위",
+          "sourceHash": "47d115c5abe9c3de9b9cbb2adf5548cc5524f759b249ff148a0020dd5e811106"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.daysPerMonth",
+          "kind": "text",
+          "text": "월 작업일 수",
+          "sourceHash": "ec9e256a744cb90b31de52a0ebfda4d8d19bde46eaa917282598108aba307334"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.hoursPerDay",
+          "kind": "text",
+          "text": "일 작업시간",
+          "sourceHash": "697fcb5f7e17159bec92a45772791d7c711c658819f8db4aea4f1d940d207aa2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.executionId",
+          "kind": "text",
+          "text": "수행 식별자",
+          "sourceHash": "19d7eabbdaadc5fe39bce3561fe78aabb1873917a4caeb5bd23948dd8f5096a9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.scopeKey",
+          "kind": "text",
+          "text": "적용 범위 식별자",
+          "sourceHash": "3498c504a029616480341d70678ed0d8d67932bb1748aed87ce588009e28035d"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.standardRevision",
+          "kind": "text",
+          "text": "규격·개정",
+          "sourceHash": "bf7f922ed3e9d2132005ea99ebad359f6eef096416fd091041f039259bc8b32f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.variant",
+          "kind": "text",
+          "text": "사양",
+          "sourceHash": "fcf6c8fa55f99c38e05b45f06924b02a5725fd0f9c52d3e95f9b11ba03c424b8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.sampleCount",
+          "kind": "text",
+          "text": "시험 표본 수",
+          "sourceHash": "47eb91e9b8d1ffc69b7aca1c0500f0fe276194f6eaa86ac690bbd7e4da9433c5"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.deliverable",
+          "kind": "text",
+          "text": "산출물",
+          "sourceHash": "aa1839960c85132238a2f6fdb3bf728da460dc0f5383ad81a9fd414ebfd44b1b"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.disposition",
+          "kind": "text",
+          "text": "작업 포함 여부",
+          "sourceHash": "e7dcc163777c2e2d6b2f4576b5a7f90947c23e482b2ea52594ef9883e813e846"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.exclusionReason",
+          "kind": "text",
+          "text": "제외 사유",
+          "sourceHash": "3c3691f82cd28e239e81bdc94a515d73046129a520923f8bcf0ec5ff0b3e45e3"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.quantity",
+          "kind": "text",
+          "text": "수량",
+          "sourceHash": "4a12f9833048db20fbc03cf5142a53d2bda5552e04a3c0bb0adc48169ee78bd9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.unitPrice",
+          "kind": "text",
+          "text": "단위 가격",
+          "sourceHash": "dad4445ad70cbb11bc3d4e7b1f0d426ec7bd6f4cdafe928314acea4e4e39750f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.model",
+          "kind": "text",
+          "text": "과금 모델",
+          "sourceHash": "b68867419740e8e89355b1b9c94e091486b47946c574207246fb0f8bf07f9b48"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.oneTime",
+          "kind": "text",
+          "text": "일시금",
+          "sourceHash": "0d3aef8269e3be6eccd3662065cb15c2ec45337fe7fe28e9ea70a3220f608d55"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.perUnit",
+          "kind": "text",
+          "text": "대당 사용료",
+          "sourceHash": "778affcd98c1cb9367101e141557d27267322d92bcc33ae30e6e9751278c0a97"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.annual",
+          "kind": "text",
+          "text": "연간 사용료",
+          "sourceHash": "ffd7869ca84a3158c699ddc4fea347f9235b5ef3028868104dd194a021ade8a4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.volume",
+          "kind": "text",
+          "text": "물량",
+          "sourceHash": "b547ab3d979c59492585cf591bb59006ab9509f2f452a30cc0a704861f2e8240"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.years",
+          "kind": "text",
+          "text": "연수",
+          "sourceHash": "69e8789816870e10d1f9faa16e84737372e06b30b34d007f2c8b94e5e6154210"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.modelScope",
+          "kind": "text",
+          "text": "차종·적용 범위",
+          "sourceHash": "1bf9ec4e58e05d5edddc3e4cb9c4a5edafad79764400698fc29b27d9e8bb9ff2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.derivativeTerms",
+          "kind": "text",
+          "text": "파생 조건",
+          "sourceHash": "c30d48e466dd70f96a8dfcc229a01f23bc4f30487c735d28fcc63c1c81a07d96"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.maintenanceTerms",
+          "kind": "text",
+          "text": "유지보수 조건",
+          "sourceHash": "6c65c5d02af13b235147d08c9296a8e542ebc786e78d4d873a688525a8245d7f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.reuseTerms",
+          "kind": "text",
+          "text": "재사용 조건",
+          "sourceHash": "f6b79940adc72d5c138397a80346fa1c7ebd6ec1775bb029395c910f6349edd4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.changeId",
+          "kind": "text",
+          "text": "변경 요구 식별자",
+          "sourceHash": "d3d306f75cc201a0c9f772d81fbe276366805921ff934fd0136fcb7623476586"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.baselineApproval",
+          "kind": "text",
+          "text": "변경 전 승인 기준",
+          "sourceHash": "507705b33fd2e71e02e131ff61edf1f0dcdc6bbbba40166ef3126436c3f6b429"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.workIds",
+          "kind": "text",
+          "text": "연결 작업",
+          "sourceHash": "6c9212c43af68a8ad00e249d658faa6c0d75067cb6d58446f80fb0abd85dd680"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.contractIncluded",
+          "kind": "text",
+          "text": "기존 계약 포함 여부",
+          "sourceHash": "9e41097d7edc12bae4f10508d60b961e6a1b5389d4e4052c66abbdac4157f3fc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.claimed",
+          "kind": "text",
+          "text": "청구액",
+          "sourceHash": "9f859cd329b49971bb58986b6f4a797d9b2f6834d251a3fb7e9b5ec967e5ae54"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.recognizedProposal",
+          "kind": "text",
+          "text": "인정 제안액",
+          "sourceHash": "6c6c657f44e5ef13a2366521e66f3b6f32dc7bf808fbb68b2cabc30e56e1db78"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.reason",
+          "kind": "text",
+          "text": "사유",
+          "sourceHash": "ab9442a23e772cce670320f5d60fb8e84f94b845c859d2f7691c7d052aeabb99"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.contractId",
+          "kind": "text",
+          "text": "원계약 식별자",
+          "sourceHash": "6a1b25fbc177f8cab9fa74a72ffd245bbe6f2347f433c1bcc78c93ac20cce466"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.termsConfirmed",
+          "kind": "text",
+          "text": "Terms 원문 확인",
+          "sourceHash": "4464e7fea85bbb9ad0c9b0ffb32b0c1c7fe7f694eb15d2182ae726e25f1ee5a1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.ownershipTerms",
+          "kind": "text",
+          "text": "귀속 조건",
+          "sourceHash": "8b8a88165b13958d255d29b303f49718e8c423fa672ff0ff4c898fc4db6bb6c7"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.recoveryTerms",
+          "kind": "text",
+          "text": "고정비 회수 조건",
+          "sourceHash": "287c96b1ece81436373acc1b02214ddde53038419afde39e2271567af3bc71dd"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.tierTerms",
+          "kind": "text",
+          "text": "물량·구간 조건",
+          "sourceHash": "016f3c0c8546c3d432ef34e7f470b5805dee7f79072bd13448ef3edd15784fa2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.originalFixed",
+          "kind": "text",
+          "text": "원계약 고정비",
+          "sourceHash": "101aadbec442bcd5a421c81233d2475afcc338ddf9ceff443582ecf06e0717a1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.originalUnit",
+          "kind": "text",
+          "text": "기존 대당 가격",
+          "sourceHash": "9bf0847c225c6ef4a90b13517de0af3b91615832e61c45fc2dfc3f504102e249"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.requestedUnit",
+          "kind": "text",
+          "text": "요청 대당 가격",
+          "sourceHash": "f07edb29193b479fe7acd22954c5dacca62641f30ef9e733d569e6900f9d00cf"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.baseVolume",
+          "kind": "text",
+          "text": "기준 물량",
+          "sourceHash": "4020b18e9f16cec7218b5bc4cd280bb3658a4211406aae82fa8acd8bff661779"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.factors",
+          "kind": "text",
+          "text": "가격 변동 요인",
+          "sourceHash": "0832918974fa474c1380fc7a17e202387ad4dc92c89d0eeb3eee6c7f0e0f28b2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.amountPerUnit",
+          "kind": "text",
+          "text": "대당 변동액",
+          "sourceHash": "131dace08b88e1fbe619f3f25579c5164e2198606ebb52b1243230f3f7a2a248"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.baseline",
+          "kind": "text",
+          "text": "비교 기준 대안",
+          "sourceHash": "dcd39915749a22bae09eb58ed1ce1a03fde3fba1d11822e1e43d678fcbcb0d06"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.allocations",
+          "kind": "text",
+          "text": "ECU별 배분",
+          "sourceHash": "35494cf49fe83f9abfec44807d9c85bf2324d407753e160eff6850fbcafcdf69"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.ecuId",
+          "kind": "text",
+          "text": "ECU 식별자",
+          "sourceHash": "6b8aa22300aa0d3bf03438777d9f1c881936cc33593ed3520989975f7ac211e4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.unitsPerVehicle",
+          "kind": "text",
+          "text": "차량당 개수",
+          "sourceHash": "03e42783345632ca78e567e2f50b0ebc09ad6cc32a1f553550e61ee3c3cb3c09"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.royalty",
+          "kind": "text",
+          "text": "대당 로열티",
+          "sourceHash": "8ade3a84bb9de122cfea00a399224292f2a066bb839e545e34bf1627dfe7ea75"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.porting",
+          "kind": "text",
+          "text": "이식 비용",
+          "sourceHash": "7125e39dd6d4604b1a58686eeb451258b58b54d0f9cde5496cb5ad9b40ccd093"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.validation",
+          "kind": "text",
+          "text": "검증 비용",
+          "sourceHash": "62e07a79634fba075c5772e625adcf8734043e83a50d4fb603a37a21efb428d7"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.startup",
+          "kind": "text",
+          "text": "착수 비용",
+          "sourceHash": "21e2aca085e88899e926352d48cbb2a574625239dad9f03f1c1c8c00d0cd0e17"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.sharedCostId",
+          "kind": "text",
+          "text": "공통 비용 식별자",
+          "sourceHash": "b5a9e4b2ccfe8ab3118ea0dcebf0fbd543c190df4a059186dc3579a818d6d5af"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.sharedCost",
+          "kind": "text",
+          "text": "공통 비용",
+          "sourceHash": "63f8d7246d7b8e947c5075baeb71d2cb8a85dacf665090d0b63775f9276c05a0"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.started",
+          "kind": "text",
+          "text": "착수 여부",
+          "sourceHash": "987bd0fffc1955be11a95485b33af341e7253988fa5abcdb62ae291faf4bd6c1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.constraints",
+          "kind": "text",
+          "text": "기술·일정 제약",
+          "sourceHash": "5a33cee55a976b64f58124b50b2a2b3c8fc91e500db7753e928d0740f2ae3259"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.value",
+          "kind": "text",
+          "text": "값",
+          "sourceHash": "b19ddf94b4c9896bb5c6460d4b4acb5870b075afd6f168fda0c69f55ac5804f8"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.state",
+          "kind": "text",
+          "text": "확인 상태",
+          "sourceHash": "1a0a6a57ca3a6fdc8af46e79211e2f48f3f59d7bd0a01997611bdb783a489afe"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.note",
+          "kind": "text",
+          "text": "확인·비적용 사유",
+          "sourceHash": "5cace0e4aeeda0ea9bf8f1d4cc3af6acfd1dff79a71725c652f8ef5e29ef857f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.offerId",
+          "kind": "text",
+          "text": "견적",
+          "sourceHash": "616a0401ce31e5db1244e3921dee291a007103568068f6cb7f6a456b3cfed4f9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.labor",
+          "kind": "text",
+          "text": "작업 비용",
+          "sourceHash": "6b106d76528644a11cd99d63b72bd8b85ccb44dc84b85b91781d3da96223cee4"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.calculated",
+          "kind": "text",
+          "text": "계산 합계",
+          "sourceHash": "bdda6269767da486e800dcca680621b15bec9e25ccc9a23a6d2d0facd448e318"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.quoted",
+          "kind": "text",
+          "text": "견적 총액",
+          "sourceHash": "75b2ad7c9106db7916d44b31f44db2830fc10b21537b9f4cfc9f2ba5324fb72d"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.residual",
+          "kind": "text",
+          "text": "미설명 차액",
+          "sourceHash": "53fb2bfb806c511f8787af9c980479b0fb930f1da4256abdeeb866de57638f48"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.effortMm",
+          "kind": "text",
+          "text": "공수(M/M)",
+          "sourceHash": "99fcb6dc3382dbf7392048828175b9dc8c0c6a038cd89a3ac201f66ac8ce0370"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.comparison",
+          "kind": "text",
+          "text": "동등 범위 비교",
+          "sourceHash": "2274861699059c6ef1399a9dcb57c5e1af06de0c7a62863fcd7c991656eca4ab"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.left",
+          "kind": "text",
+          "text": "비교 대상 A",
+          "sourceHash": "2d3f6528c8204b6746456efd10d9e0658e3f38deb3871997928b15776538b2d6"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.right",
+          "kind": "text",
+          "text": "비교 대상 B",
+          "sourceHash": "1f6758b7011e9ada27cae5de5f9551adbd68449da2999d7fa12726d40bdd38ac"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.comparable",
+          "kind": "text",
+          "text": "동등 범위 확인",
+          "sourceHash": "26f31d6d022b83242c60fd33c6af43ee8a8033d8296f8e6433cd5b13d076f4ab"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.differences",
+          "kind": "text",
+          "text": "범위 차이",
+          "sourceHash": "04a9e5dc9c40ea476693d6cd4320cf688eec12f46b65b2f9bbb5fd5b5a714c35"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.claimTotal",
+          "kind": "text",
+          "text": "인정 제안 합계",
+          "sourceHash": "243ce4529532c38428cffc6714179dc134317bc52dcd678dd817d6e4dd96981f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.increase",
+          "kind": "text",
+          "text": "대당 인상액",
+          "sourceHash": "348abe97b0e47f9856c00a346bea08f8ff853f6e04c11bf1e97963c2f1289e4c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.explained",
+          "kind": "text",
+          "text": "근거 요인 합계",
+          "sourceHash": "040ac83291180dc3c1fd32377d220a510ceae1641e95cdf0ba498d9bc607021c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.scenarios",
+          "kind": "text",
+          "text": "물량별 비교",
+          "sourceHash": "bb5bfc5487ac1a99703f9b8d5ed0d5d95a2c706d718cadf440f5fab37a29ac55"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.original",
+          "kind": "text",
+          "text": "기존 총액",
+          "sourceHash": "3c794a4c0df1667140a95fcd065bf74d34e0f856ba2c465144ae525e4d0c022e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.requested",
+          "kind": "text",
+          "text": "요청 총액",
+          "sourceHash": "03f35a4f0924b8988a6ba26cebf358f7c283710ae7a2efcb05ac440bf3c63258"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.alternatives",
+          "kind": "text",
+          "text": "MCU 대안 비교",
+          "sourceHash": "994421dff035fff58a6939792abd1854a14d0dee6bfe65182180be238fbc4453"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.candidateId",
+          "kind": "text",
+          "text": "대안",
+          "sourceHash": "10f0209f371a19c52da280b7cbf11104c6e9abfd59d963e5c704fe39320f4c27"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.perVehicle",
+          "kind": "text",
+          "text": "차량당 비용",
+          "sourceHash": "c2e1a4430b2b462c253a7e9a913545854543dae21b788dc446f6398b07354f86"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.nre",
+          "kind": "text",
+          "text": "일시 개발비",
+          "sourceHash": "868bacbbdac4d50562c3c1111d5d3ed36d3d3f17dada8c571e2d1502f1ea8df7"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.breakEvenVolume",
+          "kind": "text",
+          "text": "손익분기 물량",
+          "sourceHash": "9f370faad3bfb3a3a99d49e4e2045974749bf4945dfc675e70b600dd6a8ad7c6"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.total",
+          "kind": "text",
+          "text": "총액",
+          "sourceHash": "b662c6eb441ef5344bb8af594dbf6b808529fbc1d7b5127b42e583c07dbe5fb5"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.savings",
+          "kind": "text",
+          "text": "절감액",
+          "sourceHash": "f92db99cb27e189b71aff0b9db34b30ae13d624b0acd64c88fc032720e54df6c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.scope",
+          "kind": "text",
+          "text": "기술 검토 범위",
+          "sourceHash": "4b70c13074fbe3a50da76e2eb45edd4a5c7458e38ae413acee14158ec9190278"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.labels.boundary",
+          "kind": "text",
+          "text": "처리 범위",
+          "sourceHash": "8a862da599bf94b950230928e3e0d311c94c2c96b20aadc5a4992baf567d9119"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.UNCONFIRMED",
+          "kind": "text",
+          "text": "미확정",
+          "sourceHash": "d7fbe9c338939b7b0431a95f274a3f27d66e7ad442865d5e0014919ce35d7eb2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.CONFIRMED",
+          "kind": "text",
+          "text": "확정",
+          "sourceHash": "5689404bc1e8d75f4d5732d1a4d9fd03a8541aba1ee772ac811da2ad176cb1c1"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.NOT_APPLICABLE",
+          "kind": "text",
+          "text": "비적용",
+          "sourceHash": "8ff2400238ebc967348dc5a13d2fe3a1de7dab340be4c5784e8f3e053419416e"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.DAY",
+          "kind": "text",
+          "text": "일",
+          "sourceHash": "dfc76879e2f5c3ead09186ff1c6b635624f96b7adbd71d94c37566429ca5df6f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.HOUR",
+          "kind": "text",
+          "text": "시간",
+          "sourceHash": "4692cef5ac69eb37bd5301ef63f765f04421250f52b6eee6c966e0b1840395a9"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.PARAMETER",
+          "kind": "text",
+          "text": "파라미터 조정",
+          "sourceHash": "cf882addf01f3e9b772014d45c5dd8bc2783fc4ee5428db6b717f31a4c871980"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.NEW_LOGIC",
+          "kind": "text",
+          "text": "신규 로직",
+          "sourceHash": "049e353aa2b27b55114150a58458d0ad633278ee9a5e967b12a70fe8c1a89969"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.PORTING",
+          "kind": "text",
+          "text": "이식",
+          "sourceHash": "8cbaf3a015e9b5c1d4fcbaa35e90d26b37f2f729ecdef4af24d4adad58e84d43"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.TEST",
+          "kind": "text",
+          "text": "시험",
+          "sourceHash": "ff65dc582ce71198934bfed655ff2266b49d5737df301cac6c7862f9b59d8dfc"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.OTHER",
+          "kind": "text",
+          "text": "기타",
+          "sourceHash": "2991f61ced07a61e82f4b66ec330b106efa81d6bd622bcfd0650e8a819554f9a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.UNKNOWN",
+          "kind": "text",
+          "text": "미확정",
+          "sourceHash": "d7fbe9c338939b7b0431a95f274a3f27d66e7ad442865d5e0014919ce35d7eb2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.INCLUDED",
+          "kind": "text",
+          "text": "포함",
+          "sourceHash": "f69c786e8034a90c656f969fd758685831711837aa11a240c9800f4d768e98fd"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.EXCLUDED",
+          "kind": "text",
+          "text": "제외",
+          "sourceHash": "73698f3e3666a8f563be392eb388912be2961200eb68339c3b36e38830897096"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.ONE_TIME",
+          "kind": "text",
+          "text": "일시금",
+          "sourceHash": "0d3aef8269e3be6eccd3662065cb15c2ec45337fe7fe28e9ea70a3220f608d55"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.PER_UNIT",
+          "kind": "text",
+          "text": "대당",
+          "sourceHash": "21bfe14d9f3e3401b98717d046b36ca857fb6792ac0a9e36e826bf651b4a7642"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.ANNUAL",
+          "kind": "text",
+          "text": "연간",
+          "sourceHash": "d370ebeaa99fcd354b3cdf53fa98913bcb2538f9115630815b2ebd1f30b4448f"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.COMBINED",
+          "kind": "text",
+          "text": "복합",
+          "sourceHash": "779bcc6f4543d1380d4fb1af75f183699396a12e7d86b41e0e46f38524726675"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.FIXED_PLUS_UNIT",
+          "kind": "text",
+          "text": "고정비 + 대당",
+          "sourceHash": "7b41a3d18e68ff2b43a8b207c91940fa64e6c661605e56b312c5540198f30aac"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.UNIT_ONLY",
+          "kind": "text",
+          "text": "대당만",
+          "sourceHash": "2ea302f251f66d10bfa8a4e0719946145a51facb1849a66a861994661d1bba77"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.YES",
+          "kind": "text",
+          "text": "예",
+          "sourceHash": "2eb73fba696e2fe4ea0a206ed3d21758e35c7594905d6181d9c34ff19556b17a"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.NO",
+          "kind": "text",
+          "text": "아니요",
+          "sourceHash": "9474acc7539b7e2cedafe13bd8d11322d13c13f1698fd919d6cbcd4533730c55"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.DRAFT",
+          "kind": "text",
+          "text": "작성 중",
+          "sourceHash": "52296b752eb1223b91b5cbb1496f09cce37b7dc53e7ea08cf691d9c09ea950eb"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.SUBMITTED",
+          "kind": "text",
+          "text": "검토 요청",
+          "sourceHash": "671a182e2fdaed5d497b972cc836fe2b8327fe55ce3ac6b7b0c243eb2245e652"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.APPROVED",
+          "kind": "text",
+          "text": "승인",
+          "sourceHash": "ae0b472e631ddef724071fd6dbc8c89351d9ed5e6536d7054e03a96a275b654c"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.TECHNICAL",
+          "kind": "text",
+          "text": "기술 의견",
+          "sourceHash": "6f34d4a2a0517d74fcccc9774734a67da4499a07ed970c66661c43b7f02a9529"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.TERMS",
+          "kind": "text",
+          "text": "조건 확인",
+          "sourceHash": "58ef462a07f7cae5cfc620efa649961fac1fa55a5631da368b9388db11e215e2"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.AGREE",
+          "kind": "text",
+          "text": "동의",
+          "sourceHash": "051a33c2b3a71197783eda4f83f3ceb1f101fe962b31d1cfe4b2dd0cf5df2fce"
+        },
+        {
+          "path": "cost-purchasing.costPurchasing.choices.CHANGES",
+          "kind": "text",
+          "text": "보완 요청",
+          "sourceHash": "9037a2a179456e84f1bfbccb4b05afe8298641f9958a3de392235054ddd3569a"
+        }
+      ],
+      "connectedExports": [
+        "costPurchasing"
+      ],
+      "unresolvedCopyReferences": []
+    },
+    {
       "module": "cost",
       "file": "FF/frontend/src/copy/cost.ts",
       "leaves": [
@@ -12159,8 +13639,8 @@
         {
           "path": "cost.swCost.lead",
           "kind": "text",
-          "text": "Feature를 담아 공수와 개발비를 계산합니다. 금액은 구매 담당 역할만 봅니다.",
-          "sourceHash": "fd19983d298a89c140d605c520d5dc4dce449a15904a19a5580e57231547d712"
+          "text": "Feature DB 기준 행에서 시작해 공수와 개발비를 계산합니다. 등록 Feature는 선택해 연결하고, 금액은 구매 담당 역할만 봅니다.",
+          "sourceHash": "13da4342572e81e30713a6b4e529a6008f58508269f50806e01f64d905fadc04"
         },
         {
           "path": "cost.swCost.keyFull",
@@ -12645,14 +14125,14 @@
         {
           "path": "cost.costLines.add",
           "kind": "text",
-          "text": "Feature 담기",
-          "sourceHash": "8a3888c1a5a69839531585221bc7a49d28a316204bb0cdc1d56d93c9b0bca75b"
+          "text": "Feature DB 기준 행 담기",
+          "sourceHash": "95b833554ccab7b917e5d19ca415933a2124f3b80af9f2992c06081691599692"
         },
         {
           "path": "cost.costLines.addTitle",
           "kind": "text",
-          "text": "Feature 담기",
-          "sourceHash": "8a3888c1a5a69839531585221bc7a49d28a316204bb0cdc1d56d93c9b0bca75b"
+          "text": "Feature DB 기준 행 담기",
+          "sourceHash": "95b833554ccab7b917e5d19ca415933a2124f3b80af9f2992c06081691599692"
         },
         {
           "path": "cost.costLines.search",
@@ -12687,8 +14167,8 @@
         {
           "path": "cost.costLines.empty",
           "kind": "text",
-          "text": "담긴 Feature가 없습니다. Feature 담기로 시작합니다.",
-          "sourceHash": "5db0879cbd26159674569eb3702c1eb9320c2d7cb35d5e3d992092e929078e59"
+          "text": "담긴 기준 행이 없습니다. Feature DB에서 기준 행을 먼저 선택하세요.",
+          "sourceHash": "fc6da3205a76396feee4e6b34b112407e6cb0d8b5f107a73a3e4a8fc2aabe25f"
         },
         {
           "path": "cost.costLines.caption",
@@ -12761,6 +14241,12 @@
           "kind": "text",
           "text": "포함",
           "sourceHash": "f69c786e8034a90c656f969fd758685831711837aa11a240c9800f4d768e98fd"
+        },
+        {
+          "path": "cost.costLines.role.REFERENCE",
+          "kind": "text",
+          "text": "기준 행만",
+          "sourceHash": "de6f48e8dc18b491a1ac7b3b4eb05b2e89ee0eb3878f96caaecebc802e71b5e1"
         },
         {
           "path": "cost.costLines.bundled",
@@ -13811,6 +15297,252 @@
           "kind": "text",
           "text": "기준 행",
           "sourceHash": "c78f420e496aae07105c05c4f454c7087f540a3e13109bc25c9cce9d20e2c233"
+        },
+        {
+          "path": "cost.costReference.title",
+          "kind": "text",
+          "text": "Feature DB 기반 산정",
+          "sourceHash": "07b86c801a8659c46e1a5d42e932fd75f50a143e318187fec8f9092fb285e25a"
+        },
+        {
+          "path": "cost.costReference.guide",
+          "kind": "text",
+          "text": "① 기준 행 검색 → ② 출처·버전 확인 → ③ 등록 Feature 선택 연결 → ④ 자동 채운 과제와 산정 입력 확인. 등록되지 않은 기준 행도 가짜 Feature를 만들지 않고 산정할 수 있습니다.",
+          "sourceHash": "bd9307da94d299eb1e59a5742e1c84f0843a538d85ab81bce3f0198523329ce7"
+        },
+        {
+          "path": "cost.costReference.search",
+          "kind": "text",
+          "text": "기준 행 이름·별칭·ID",
+          "sourceHash": "5662415662406464573f0136c3950bde50560e9903ccc6a1f1be3a44a3596f6e"
+        },
+        {
+          "path": "cost.costReference.domain",
+          "kind": "text",
+          "text": "도메인",
+          "sourceHash": "d2f9f747070b0e4270b226cd7ba9a07232b27be3dfaa29c7ca34efb4d5e91711"
+        },
+        {
+          "path": "cost.costReference.all",
+          "kind": "text",
+          "text": "전체",
+          "sourceHash": "a4b69faf0c1113faf1f7cf9d9a6224cf3b62a16c6e841a22882adafcced64db9"
+        },
+        {
+          "path": "cost.costReference.choose",
+          "kind": "text",
+          "text": "이 기준으로 산정",
+          "sourceHash": "ca26992f4e959acf6c567388a7d35c9fbb402897c18765cdf4723a726b4ef33e"
+        },
+        {
+          "path": "cost.costReference.selected",
+          "kind": "text",
+          "text": "선택한 산정 기준",
+          "sourceHash": "94707260741d93e6a2ae4a26e4532dd0e5e5e07e09430893ee707e1b112f588f"
+        },
+        {
+          "path": "cost.costReference.change",
+          "kind": "text",
+          "text": "기준 다시 선택",
+          "sourceHash": "bb00f743f5b216bc5d62270fa86b3f836d07ee63a6e5671c2078d4bf9a49f4a5"
+        },
+        {
+          "path": "cost.costReference.previous",
+          "kind": "text",
+          "text": "이전",
+          "sourceHash": "da7e61c67cc5a90f06309c80aa4cf2a165d9b4fbc4d6255526cf53d65bb1e3f9"
+        },
+        {
+          "path": "cost.costReference.next",
+          "kind": "text",
+          "text": "다음",
+          "sourceHash": "aef613c6612d424ab454e08337ab51a5c8f4695e4762b8c63c8b171667eb66b2"
+        },
+        {
+          "path": "cost.costReference.feature",
+          "kind": "text",
+          "text": "등록 Feature 연결 (선택)",
+          "sourceHash": "823a144b9da224b761702af6bb2fd557f5065047e0c72727d6a139e45fd61b96"
+        },
+        {
+          "path": "cost.costReference.none",
+          "kind": "text",
+          "text": "기준 행만 사용",
+          "sourceHash": "6cb4eeeafb3f043f8e7f6dd4e4e5ec7b82adad82a2dc4bb99a8e8b99150f3577"
+        },
+        {
+          "path": "cost.costReference.featureHint",
+          "kind": "text",
+          "text": "이 기준 행을 실제로 참조하는 Feature 버전만 연결할 수 있습니다. 연결을 선택하면 요구·적용 범위를 함께 보존합니다.",
+          "sourceHash": "d0f25735a219607548ca765fdab32d5aef174af340180bf1cccb0513e5cf3283"
+        },
+        {
+          "path": "cost.costReference.blocked",
+          "kind": "text",
+          "text": "산정할 수 없는 기준입니다. 상태·발행 버전·필수 계수를 먼저 확인하세요.",
+          "sourceHash": "34d01b1dd88979613a774c1b77e1dc42b09cc5ecc1c214e10364ed2c674915a1"
+        },
+        {
+          "path": "cost.costReference.missing",
+          "kind": "text",
+          "text": "누락된 산정 기준",
+          "sourceHash": "c95e49b6deeb9676a0e316ac659c855db7c8319466a0ff49ae8b25e4b6c03f57"
+        },
+        {
+          "path": "cost.costReference.release",
+          "kind": "text",
+          "text": "Feature DB 발행",
+          "sourceHash": "4f244925cdfe5bd922aead43873e8d4064ce60c4a610a96f0d351c2e3f2eaf40"
+        },
+        {
+          "path": "cost.costReference.basis",
+          "kind": "text",
+          "text": "계수 표",
+          "sourceHash": "6876adf8addad18584c9ef47cb506a3009a42f84796eee4938054ac11627f63b"
+        },
+        {
+          "path": "cost.costReference.hash",
+          "kind": "text",
+          "text": "원천 SHA-256",
+          "sourceHash": "da01733c3d70e670e09fdf375c865970065f1a3ccb28ede3cc1f20821d7609a5"
+        },
+        {
+          "path": "cost.costReference.scope",
+          "kind": "text",
+          "text": "적용 범위",
+          "sourceHash": "430adef23b572b8d8efa25d650b8004d568198726f7f5a55d185ade3dba41bb3"
+        },
+        {
+          "path": "cost.costReference.source",
+          "kind": "text",
+          "text": "출처·원천 개정",
+          "sourceHash": "cd313374b026d08868c3debcb9d434ba00455149001f4a54c0dde1369e334133"
+        },
+        {
+          "path": "cost.costReference.sourceGuide",
+          "kind": "text",
+          "text": "선택 당시 원천을 별도 보존합니다. 수량·공수 등 과제 입력과 원천 개정은 구분하며 최신 기준은 명시적으로 적용해야 합니다.",
+          "sourceHash": "e2eaba352ee8d4f21e798bfc77376e9605a054cec7505335460988e0820692e1"
+        },
+        {
+          "path": "cost.costReference.stale",
+          "kind": "text",
+          "text": "원천 변경됨 — 제출 전 최신 기준 재확인",
+          "sourceHash": "6fd33d86743a8b97a6e2a7a43639c0f304b5ffec4f17e1d812cf97b43f00939e"
+        },
+        {
+          "path": "cost.costReference.legacy",
+          "kind": "text",
+          "text": "이전 산정 줄 — 원천 기록은 최신 기준 명시 적용으로 생성합니다.",
+          "sourceHash": "b11ceaa89317804a1a17beaa33da873056277714ffafbcc9a8024780165ff9e1"
+        },
+        {
+          "path": "cost.costReference.history",
+          "kind": "text",
+          "text": "원천 개정 이력",
+          "sourceHash": "bc15cd445164b693fdc3ab491837a28b43bd38c1328fd3afe9e2ffdd59b77b0e"
+        },
+        {
+          "path": "cost.costReference.revision",
+          "kind": "text",
+          "text": "개정",
+          "sourceHash": "ca973e0aa5b599b2c4fb10ac23f6ba628eda1bb25d32343f30ad81d9be9aea1e"
+        },
+        {
+          "path": "cost.costReference.reason",
+          "kind": "text",
+          "text": "연결·원천 변경 사유",
+          "sourceHash": "18fc8bddfb0fe1ccc867b0dae59d4f0580e7df6eee6847e8cf79869c0fea339c"
+        },
+        {
+          "path": "cost.costReference.save",
+          "kind": "text",
+          "text": "원천 확인·연결 저장",
+          "sourceHash": "0e698260ef7a0ea6d12b7b3422397cb61584c92c962839dfae6d4a520f65fbca"
+        },
+        {
+          "path": "cost.costReference.remove",
+          "kind": "text",
+          "text": "이 기준 행 빼기",
+          "sourceHash": "f4ef7f81648c1919e2f9d05e0ad88a9a1289653943f4e3e2b138c7db02aeac14"
+        },
+        {
+          "path": "cost.costReference.edit",
+          "kind": "text",
+          "text": "산정 입력",
+          "sourceHash": "fcdd9504c6299c7a7ac9058e45e84a531191823b9fb06a01309a0bec62fe88de"
+        },
+        {
+          "path": "cost.costReference.referenceOnly",
+          "kind": "text",
+          "text": "등록 Feature 없이 산정",
+          "sourceHash": "6a540dab5bb72d8a2538db3c5ec9866997eae95aff14368d1dd0497b93478821"
+        },
+        {
+          "path": "cost.costReference.facts",
+          "kind": "text",
+          "text": "자동 적용 기준",
+          "sourceHash": "cc7a4c363a0ff548ad5e2ae30c62c3e61d216679a2cda4c4e175363a5fd4b414"
+        },
+        {
+          "path": "cost.costReference.boundary",
+          "kind": "text",
+          "text": "산정 검토 승인은 구매 계약·지급 승인이나 기술 승인으로 간주하지 않습니다. 미확인 값은 임의의 0이나 삭감액으로 확정하지 마세요.",
+          "sourceHash": "57dbde0ff97f4a5916e55cda59f74226b05a1c07b3c3aa96e8860e0d2990244f"
+        },
+        {
+          "path": "cost.costReference.procurement",
+          "kind": "text",
+          "text": "조달·SW 패키지",
+          "sourceHash": "ee35a8a566b80618494d7a0699deacf9d3989bed7b4c9630acdb9f9776e23280"
+        },
+        {
+          "path": "cost.costReference.license",
+          "kind": "text",
+          "text": "라이선스 항목·과금 방식",
+          "sourceHash": "48543218531715d23cf6dbc958d1a9b61a9d8e90b98004fc8bb8fabafbc6632b"
+        },
+        {
+          "path": "cost.costReference.evidence",
+          "kind": "text",
+          "text": "규모 근거·확인일·등록 버전",
+          "sourceHash": "85a40322262b7aa48ae1f4c88ef364df194f89a5e894bc344e061eb6e0c69e35"
+        },
+        {
+          "path": "cost.costReference.scopeIn",
+          "kind": "text",
+          "text": "포함 범위",
+          "sourceHash": "a06050f895aec3f8a741af0fac602eeb8c2f8a6f17cb9d78c7eaae8133d0426a"
+        },
+        {
+          "path": "cost.costReference.scopeOut",
+          "kind": "text",
+          "text": "제외 범위",
+          "sourceHash": "92aa69d4a9700aef5d34325c7f1442671b5ea9e8a7b3ecef561a9afb06c10262"
+        },
+        {
+          "path": "cost.costReference.latestSource",
+          "kind": "text",
+          "text": "최신 산정 기준·원천 명시 적용",
+          "sourceHash": "b760edf388e7de12a9d170ccc8ed619be7ef23347c9d9cc48e4ba894674391ad"
+        },
+        {
+          "path": "cost.costReference.assumptions",
+          "kind": "text",
+          "text": "공수 단위는 M/M이며 총개발비는 개발 NRE입니다. 반복 운영비·로열티는 별도입니다. 초기 등급과 ASIL은 과제 사양·HARA·실적으로 검토하고, 품질·안전·보안 공통 인력 및 MBD 기준값은 사내 근거를 확인하세요.",
+          "sourceHash": "ea188f2ec5c9e29ce9cccf16d1d1e5582b278711ca5bfcc2d4e25a1701425965"
+        },
+        {
+          "path": "cost.costReference.autoName",
+          "kind": "function",
+          "text": "(name:string)=>`${name} 개발비 산정`",
+          "sourceHash": "611f873d6ba52ef02b9d60d14a12e6abce3c0df7f9a42d52b8703317695f6888"
+        },
+        {
+          "path": "cost.costReference.autoTarget",
+          "kind": "function",
+          "text": "(component:string)=>`${component} / 적용 범위 확인 필요`",
+          "sourceHash": "db8343c067dc12f67f4ea5da339a6503515d16d78f249ac8a0aeec1fa4666d54"
         }
       ],
       "connectedExports": [
@@ -13825,7 +15557,8 @@
         "costHistory",
         "costBasis",
         "costCalib",
-        "costActual"
+        "costActual",
+        "costReference"
       ],
       "unresolvedCopyReferences": []
     },
@@ -15420,8 +17153,8 @@
         {
           "path": "departments.departments.allHint",
           "kind": "text",
-          "text": "모든 메뉴(8그룹)를 보여 줍니다",
-          "sourceHash": "0a664f97728ae3d7d1a8b2a491245496d6e61755c1f50eebb3c44e0032400c94"
+          "text": "모든 업무 메뉴를 보여 줍니다",
+          "sourceHash": "65b252e842c62000f5ce3a68f229f0b948c3e253900cc1742740acb3beeda2f6"
         },
         {
           "path": "departments.departments.switcher",
@@ -15504,8 +17237,8 @@
         {
           "path": "departments.departments.nav.procedures",
           "kind": "text",
-          "text": "업무 절차",
-          "sourceHash": "1994a191790296fdd8be236eed10d743fc984e3cbd1b2875da7b053cef55907b"
+          "text": "전체업무흐름",
+          "sourceHash": "85e9348f32cb96fddb2eb8e0650104e3d3494acb5515b3658d084ea3a128f631"
         },
         {
           "path": "departments.departments.nav.rnr",
@@ -15624,8 +17357,8 @@
         {
           "path": "departments.departments.home.procedures",
           "kind": "text",
-          "text": "업무 절차 전체",
-          "sourceHash": "8cc1265244872e87e5e1725d6fdc6e6f256264fba3139cf0248a1b77cb10e20c"
+          "text": "전체업무흐름",
+          "sourceHash": "85e9348f32cb96fddb2eb8e0650104e3d3494acb5515b3658d084ea3a128f631"
         },
         {
           "path": "departments.departments.home.consults",
@@ -52715,10 +54448,10 @@
           "sourceHash": "ed6da423fb5ad92ba2165f58f0a2b9a225a3efcdd5592f18645af783ac68da8c"
         },
         {
-          "path": "supplier.supplier.offlineReadOnly",
+          "path": "supplier.supplier.offlineSimulation",
           "kind": "text",
-          "text": "오프라인은 기준자료 조회 전용입니다. 새 납품·매핑·산출물 등록과 검수 기준 변경·제출·검수는 연결된 서비스에서 진행하세요.",
-          "sourceHash": "390bdba0a670d73d3b0dc2d0a1e676d152e9be208530f7dc487fe510267c0b85"
+          "text": "오프라인 시연입니다. 작성·제출·독립 검수와 본문 검증 결과는 이 브라우저에 저장됩니다. 실제 공급사 연계·시험·차량 적용을 뜻하지 않습니다.",
+          "sourceHash": "ea75ed9293659e491a0b0db6f9b3b16a3e0f189f62e7441c6ee60b53349f662a"
         },
         {
           "path": "supplier.supplier.target",

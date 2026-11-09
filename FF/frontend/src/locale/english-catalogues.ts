@@ -18,6 +18,7 @@ const loaders = {
   'contract-captions': () => import('./en/contract-captions'),
   'control': () => import('./en/control'),
   'cost-explorer': () => import('./en/cost-explorer'),
+  'cost-purchasing': () => import('./en/cost-purchasing'),
   'cost': () => import('./en/cost'),
   'dashboard-department': () => import('./en/dashboard-department'),
   'dashboard': () => import('./en/dashboard'),

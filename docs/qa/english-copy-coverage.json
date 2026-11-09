@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9553,
-  "translated": 9553,
+  "required": 9840,
+  "translated": 9840,
   "modules": [
     {
       "module": "ads-ac",
@@ -203,15 +203,26 @@
       "sourceHash": "d4687286e31084c1f674e0cdb42dee6b20223df6335c412afeba8a699acb0e52"
     },
     {
-      "module": "cost",
-      "source": "FF/frontend/src/copy/cost.ts",
-      "required": 277,
-      "translated": 277,
+      "module": "cost-purchasing",
+      "source": "FF/frontend/src/copy/cost-purchasing.ts",
+      "required": 245,
+      "translated": 245,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "7b41fee531b0cbade0e5ae6ed33435fd4c79afc582172ed85804aebb8c253ce9"
+      "sourceHash": "a05ac5103a351b7d35dbdf5ac209094cef90f34fa5149fd805a7258916bdf287"
+    },
+    {
+      "module": "cost",
+      "source": "FF/frontend/src/copy/cost.ts",
+      "required": 319,
+      "translated": 319,
+      "missing": [],
+      "unknownTranslationKeys": [],
+      "duplicateTranslationKeys": [],
+      "incompatibleFunctionSignatures": [],
+      "sourceHash": "53aa41ea3bd6b8872c6a0c2502aec9ab3a93a524a8951a70e76d2ee9a89d7772"
     },
     {
       "module": "dashboard-department",
@@ -255,7 +266,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "2781139ac72d915eabcc70269f003cec224c4ddf0e59cd9c987f3175755284cd"
+      "sourceHash": "5449b058846a27230c5ac4da49ccc04fa64ddec0a212c81f72f8397e80d77ec9"
     },
     {
       "module": "error-actions",
@@ -816,7 +827,7 @@
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "27bef2aae23cd0e32d2a75b6486362723834371dbd7b4441a86ed401c60f13af"
+      "sourceHash": "7e0df2021faf72cff8a0b17947b94285a604636df21130b9f8df672ae9f07b41"
     },
     {
       "module": "taxonomy-level-names",

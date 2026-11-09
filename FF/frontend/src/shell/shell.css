@@ -1395,10 +1395,14 @@ html:not([data-present='on']) .sh[data-workspace='portal'][data-guide='open'] {
   .sh[data-workspace] .sh-dnav {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: max-content;
     align-items: start;
     gap: var(--sp-2);
     padding: var(--sp-2) var(--sp-3);
-    overflow: visible;
+    min-height: 0;
+    max-height: min(32vh, 260px);
+    max-height: min(32dvh, 260px);
+    overflow: hidden auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     box-shadow: none;

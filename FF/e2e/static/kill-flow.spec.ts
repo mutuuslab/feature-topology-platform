@@ -20,7 +20,11 @@ async function as(page: Page, role: string, url: string) {
   await page.goto(url);
 }
 const meter = (page: Page) => page.getByRole('dialog').getByRole('meter').first();
-const num = async (l: ReturnType<Page['locator']>) => Number((await l.innerText()).replace(/[^\d]/g, ''));
+const num = async (l: ReturnType<Page['locator']>) => {
+  const value = (await l.innerText()).trim();
+  expect(value, '실제 숫자 표시가 필요합니다 — 누락·로딩을 0으로 보지 않습니다').toMatch(/^\d[\d,]*$/);
+  return Number(value.replace(/,/g, ''));
+};
 /** 시연 데이터에 남은 예약 작업 중 이 종류(차량 회신 묶음 등) 수 — 오버레이(IndexedDB ff-sim)를 읽는다. 고정 시간 대신 '회신이 다 들어왔다' 상태로 기다린다 */
 const pendingTasks = (page: Page, kind: string) =>
   page.evaluate(
@@ -45,6 +49,30 @@ const pendingTasks = (page: Page, kind: string) =>
     kind,
   );
 
+/** Read actual confirmed local Feature receipts; never create Flag evaluations for unknown vehicles. */
+const killReceiptProjection = (page: Page, featureId: string, killId: string) => page.evaluate(
+  ({ featureId, killId }) => new Promise<{ confirmedVins: string[]; flagKeys: string[] }>((resolve, reject) => {
+    const request = indexedDB.open('ff-sim');
+    request.onupgradeneeded = () => { request.transaction?.abort(); reject(new Error('시연 DB가 없습니다.')); };
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('overlay')) { db.close(); reject(new Error('시연 store가 없습니다.')); return; }
+      const get = db.transaction('overlay', 'readonly').objectStore('overlay').get('current');
+      get.onerror = () => { db.close(); reject(get.error); };
+      get.onsuccess = () => {
+        db.close();
+        const overlay = get.result;
+        const kill = overlay?.entities?.kill?.[killId];
+        if (!kill || !Array.isArray(kill.flagKeys) || !overlay?.data?.vehicleKill) { reject(new Error('실제 차단·회신 근거가 없습니다.')); return; }
+        const confirmedVins = Object.entries(overlay.data.vehicleKill as Record<string, Record<string, { state: string; killId: string }>>)
+          .filter(([, rows]) => rows[featureId]?.killId === killId && rows[featureId]?.state === 'DISABLED').map(([vin]) => vin);
+        resolve({ confirmedVins, flagKeys: kill.flagKeys });
+      };
+    };
+  }), { featureId, killId },
+);
+
 test.use({ storageState: { cookies: [], origins: [] }, viewport: { width: 1366, height: 900 } });
 
 test('정적 시연: 긴급 차단 → 2인 승인 → 차량 회신 → 재전송 → 복원 → 처음 상태로', async ({ page }) => {
@@ -64,7 +92,17 @@ test('정적 시연: 긴급 차단 → 2인 승인 → 차량 회신 → 재전�
   await as(page, 'operator', '/');
   const overview = page.locator('.operation-overview');
   await expect(overview).toContainText('차단 수신');
-  const safeBefore = Number((await overview.innerText()).match(/차단 수신\s*([\d,]+)/)?.[1]?.replace(/,/g, '') ?? '0');
+  const runtimeResponse = await page.request.get('/api-snapshot/fleet_runtime.json');
+  expect(runtimeResponse.ok()).toBe(true);
+  const runtime = (await runtimeResponse.json()).items as { vin: string; quality: string; flags: { flagKey: string; local: { value: boolean; reason: string } }[] }[];
+  expect(runtime.length).toBeGreaterThan(0);
+  expect(runtime.every((row) => Array.isArray(row.flags))).toBe(true);
+  const safeBefore = runtime.filter((row) => row.quality === 'TRUSTED' && row.flags.some((flag) => flag.local.reason === 'KILL_SWITCH')).length;
+  const unknownExpected = runtime.filter((row) => row.quality !== 'TRUSTED' || !row.flags.length).length;
+  const safeCard = overview.locator('[data-metric="safe"] dd');
+  const unknownCard = overview.locator('[data-metric="unknown"] dd');
+  await expect.poll(() => num(safeCard)).toBe(safeBefore);
+  await expect.poll(() => num(unknownCard)).toBe(unknownExpected);
   await shot(page, 'home-before');
 
   // 1. 운영 — 차단 요청(봉쇄 근거·사유, 게이트 사전 점검 통과 뒤 type-to-confirm)
@@ -131,9 +169,23 @@ test('정적 시연: 긴급 차단 → 2인 승인 → 차량 회신 → 재전�
   await shot(page, 'bell-issued');
   await page.keyboard.press('Escape');
   await page.goto('/');
-  await expect.poll(async () => Number((await overview.innerText()).match(/차단 수신\s*([\d,]+)/)?.[1]?.replace(/,/g, '') ?? '0'), { timeout: 20_000 }).toBeGreaterThan(safeBefore + online / 2); // 회신한 차량 중 신뢰 품질(TRUSTED)인 것만 '차단 수신'(receivedState)
+  const receipt = await killReceiptProjection(page, FEAT, killId);
+  expect(receipt.confirmedVins).toHaveLength(online); // Positive actual Feature readbacks remain mandatory.
+  expect(receipt.flagKeys.length).toBeGreaterThan(0);
+  const confirmed = new Set(receipt.confirmedVins);
+  const knownFlags = new Set(receipt.flagKeys);
+  const safeExpected = runtime.filter((row) => row.quality === 'TRUSTED' && row.flags.length > 0 && (
+    row.flags.some((flag) => flag.local.reason === 'KILL_SWITCH') ||
+    (confirmed.has(row.vin) && row.flags.some((flag) => knownFlags.has(flag.flagKey)))
+  )).length;
+  // The home metric counts received Flag evaluations, not every Feature-state receipt.
+  // A cold runtime with no flags stays UNKNOWN even when the Feature kill receipt is known.
+  await expect.poll(() => num(safeCard), { timeout: 20_000 }).toBe(safeExpected);
+  await expect.poll(() => num(unknownCard), { timeout: 20_000 }).toBe(unknownExpected);
   await shot(page, 'home-after-kill');
-  await page.goto('/fleet/map?lens=activation&flagKey=care_00022_param');
+  // Compare Feature-level confirmed kill receipts on the unfiltered activation map.
+  // Missing Flag evaluations must not be invented to obtain a Flag-scoped state.
+  await page.goto('/fleet/map?lens=activation');
   const disabled = page.locator('.fm-legend li', { hasText: '긴급 차단' }).locator('.fm-legend__n');
   await expect.poll(async () => num(disabled), { timeout: 20_000 }).toBeGreaterThanOrEqual(online);
   // 범례 숫자는 지도보다 먼저 온다 — 지도 바탕(maplibre)이 다 그려진 뒤 찍는다(전에는 '지도를 불러오는 중'이 찍혔다)
@@ -168,6 +220,8 @@ test('정적 시연: 긴급 차단 → 2인 승인 → 차량 회신 → 재전�
   await expect(page.getByRole('dialog').locator('[data-tour="kill-restore"]').getByRole('button', { name: '승인 — 개인 서명' })).toBeDisabled();
   await as(page, 'safety2', `/ops/kill?id=${killId}`);
   await page.getByRole('dialog').locator('[data-tour="kill-restore"]').getByRole('button', { name: '승인 — 개인 서명' }).click();
+  const restoreApprovals = page.getByRole('dialog').locator('[data-tour="kill-restore"]').getByRole('list', { name: '승인', exact: true });
+  await expect(restoreApprovals.getByRole('listitem').filter({ hasText: '오세린' })).toContainText('개인 서명 완료');
   await as(page, 'opslead', `/ops/kill?id=${killId}`);
   await page.getByRole('dialog').locator('[data-tour="kill-restore"]').getByRole('button', { name: '승인 — 개인 서명' }).click();
   // Canary 1대 복원 — 차단은 나머지 차량에 그대로(단계적 복원), 다음 단계 요청 폼이 다시 열린다
@@ -182,7 +236,8 @@ test('정적 시연: 긴급 차단 → 2인 승인 → 차량 회신 → 재전�
   await page.goto('/ops/kill');
   await expect(page.locator('#main')).not.toContainText(killId);
   await page.goto('/');
-  await expect.poll(async () => Number((await overview.innerText()).match(/차단 수신\s*([\d,]+)/)?.[1]?.replace(/,/g, '') ?? '0'), { timeout: 20_000 }).toBe(safeBefore);
+  await expect.poll(() => num(safeCard), { timeout: 20_000 }).toBe(safeBefore);
+  await expect.poll(() => num(unknownCard), { timeout: 20_000 }).toBe(unknownExpected);
   await shot(page, 'reset');
   expect(await page.evaluate(() => localStorage.getItem('ff.sim'))).toBeNull();
   expect(await page.evaluate(() => (window as any).__simUnhandled ?? [])).toEqual([]);

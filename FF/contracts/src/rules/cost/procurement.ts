@@ -19,8 +19,9 @@ export function evaluateCostReview(kind:CostReviewKind,input:CostReviewInputs,ba
   if(v.state!=='CONFIRMED'||v.value===null||!Number.isFinite(v.value)||!negative&&v.value<0){fail('VALUE_UNCONFIRMED',subject,'미확정 값은 0으로 계산하지 않습니다. 자료 확인 후 값을 확정하세요.');return null;}
   return evidence(v.sourceId,subject)?v.value:null;
  };
- const sum=(xs:(number|null)[])=>xs.some(x=>x===null)?null:round((xs as number[]).reduce((a,b)=>a+b,0));
- const product=(a:number|null,b:number|null)=>a===null||b===null?null:round(a*b);
+ const supported=(n:number):number|null=>{if(!Number.isFinite(n)||Math.abs(n)>Number.MAX_SAFE_INTEGER/100){fail('CALCULATION_RANGE','합계','계산 범위가 지원 정밀도를 넘었습니다.');return null;}return round(n);};
+ const sum=(xs:(number|null)[])=>xs.some(x=>x===null)?null:supported((xs as number[]).reduce((a,b)=>a+b,0));
+ const product=(a:number|null,b:number|null)=>a===null||b===null?null:supported(a*b);
  if(!baseline.valid)fail('BASELINE_INVALID','산정 기준',baseline.error??'Feature DB·계수·산정 기준을 최신으로 확인하세요.');
  if(!input.evidence.length)fail('EVIDENCE_REQUIRED','검토 근거','검토할 원문 자료가 없습니다.');
  for(const req of input.requirements)evidence(req.sourceId,req.id);

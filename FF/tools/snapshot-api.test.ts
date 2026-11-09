@@ -2,7 +2,7 @@
 // 원인(바깥 timeout이 프로세스 트리를 끊음·포트 충돌)을 알 수 없었다. 종료 신호·코드·포트·마지막 출력과 힌트가 보이는지 본다.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError } from './snapshot-api.ts';
+import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError, snapshotCostReferencePicker } from './snapshot-api.ts';
 
 test('출력 꼬리는 색 코드를 빼고 빈 줄 없이 마지막 N줄만', () => {
   const tail: string[] = [];
@@ -40,4 +40,11 @@ test('끊긴 연결의 GET만 한 번 다시 보낸다', () => {
   assert.equal(retryableFetchError(err('ECONNRESET'), { method: 'POST' }), false, '쓰기는 다시 보내지 않는다');
   assert.equal(retryableFetchError(err('ECONNREFUSED')), false, '서버가 없으면 다시 보내도 같다');
   assert.equal(retryableFetchError(new Error('x')), false);
+});
+
+test('cost reference picker captures its exact initial native GET, without inventing a sliced response', async () => {
+  const calls: unknown[] = [];
+  await snapshotCostReferencePicker(async (...args) => { calls.push(args); return { items: [] }; });
+  assert.deepEqual(calls, [['listRefs', {}, { limit: 10, offset: 0 }]]);
+  assert.deepEqual(Object.keys((calls[0] as any[])[2]), ['limit', 'offset']);
 });

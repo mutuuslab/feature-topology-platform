@@ -204,6 +204,11 @@ type Save = (name: string, params?: Record<string, string>, query?: Record<strin
  *    연결(featureRefs)은 목록 응답에 없다 — Version 상세(featureDetail)에서 모은다(목록에서 모아 '바뀐 버전'이 늘 '—'이던 결함, 하네스 리뷰 F4)
  *  · 정적 데모 검색(frontend screens/refdb/refSearch.ts): 검색어 스냅샷 대신 전체 목록 { offset, limit: 200 } 쪽을 받아 두고 화면이 찾는다(F5)
  */
+/** Cost project creation starts with this exact first-page request (including query key order). */
+export async function snapshotCostReferencePicker(save: Save) {
+  await save('listRefs', {}, { limit: 10, offset: 0 });
+}
+
 async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: string }[] }[]) {
   // 예시 변경 요청 — 수정(대표 ASIL·T-shirt) + 도메인 검토 의견 하나(승인 전). 정적 데모는 읽기 전용이라 여기서만 만든다
   const AUTHOR = { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' };
@@ -246,6 +251,7 @@ async function refdbSnapshots(save: Save, versions: { featureRefs?: { refId: str
     }
   }
   await save('listRefs', {}, { limit: 20 });
+  await snapshotCostReferencePicker(save);
   for (const component of new Set(nodes.filter((n) => n.level === 'COMPONENT').map((n) => n.nameEn))) await save('refSubfunctions', {}, { component });
 
   // 상세 — 모든 기준 행(목록 행을 누르면 열린다). 같은 쪽(200개)을 정적 데모 검색용 전체 목록으로도 남긴다(refSearch STATIC_SEARCH_PAGE)

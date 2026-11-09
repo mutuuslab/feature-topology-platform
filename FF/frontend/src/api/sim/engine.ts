@@ -17,6 +17,7 @@ import {
 } from '@ff/contracts';
 import type { ZodTypeAny } from 'zod';
 import { errors as E } from '../../copy/errors';
+import { isLocalFile } from '../../file-routing';
 import { actorFor } from '../actor';
 import { ApiError, gateDenied, toApiError, VIEW_ROLES, type CallOptions } from '../client';
 import { localDataChanged, publishLocalEvents, refreshLocalSubscribers, type PlatformEvent } from '../shared-event-source';
@@ -542,6 +543,11 @@ async function run(o: SimOverlay, req: SimRequest, actor: SimActor, fn: (ctx: Si
 export function simUnhandled(ctx: SimWriteContext) {
   const { req } = ctx;
   const target = Object.values(req.params)[0] ?? req.route.path;
+  if (isLocalFile()) {
+    return ctx.fail('NOT_IMPLEMENTED', E.offlineActionUnsupported, { operation: req.name, mode: 'OFFLINE_REPLAY' }, {
+      action: req.name, target, reason: E.offlineActionUnsupported, componentId: req.route.component, result: 'DENIED',
+    });
+  }
   ctx.audit({ action: req.name, target, after: req.body ?? null, componentId: req.route.component });
   if (typeof window !== 'undefined') (window.__simUnhandled ??= []).push({ name: req.name, at: ctx.iso(), params: req.params, body: req.body });
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};

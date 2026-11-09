@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 90,
-  "requiredLeaves": 9541,
+  "requiredLeaves": 9543,
   "modules": [
     {
       "module": "ads-ac",
@@ -16355,6 +16355,12 @@
           "kind": "text",
           "text": "데모에 없는 데이터입니다.",
           "sourceHash": "c73a5a683027d6cf6750b735ac06639808025d3c87a38ae17db33fda1c923c1e"
+        },
+        {
+          "path": "errors.errors.offlineActionUnsupported",
+          "kind": "text",
+          "text": "이 작업에는 연결된 서비스가 필요합니다. 오프라인 시연에서는 기준 자료를 조회할 수 있으며, 이 작업을 완료한 것으로 저장하지 않습니다.",
+          "sourceHash": "084ebedf8c4de17a7b68f307b3da2261d76c2815aa6ea604775e105a84ab6a84"
         },
         {
           "path": "errors.errors.codeLabel",
@@ -52646,6 +52652,12 @@
           "kind": "text",
           "text": "협력사 이관",
           "sourceHash": "ed6da423fb5ad92ba2165f58f0a2b9a225a3efcdd5592f18645af783ac68da8c"
+        },
+        {
+          "path": "supplier.supplier.offlineReadOnly",
+          "kind": "text",
+          "text": "오프라인은 기준자료 조회 전용입니다. 새 납품·매핑·산출물 등록과 검수 기준 변경·제출·검수는 연결된 서비스에서 진행하세요.",
+          "sourceHash": "390bdba0a670d73d3b0dc2d0a1e676d152e9be208530f7dc487fe510267c0b85"
         },
         {
           "path": "supplier.supplier.target",

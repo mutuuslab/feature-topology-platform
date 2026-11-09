@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9541,
-  "translated": 9541,
+  "required": 9543,
+  "translated": 9543,
   "modules": [
     {
       "module": "ads-ac",
@@ -271,13 +271,13 @@
     {
       "module": "errors",
       "source": "FF/frontend/src/copy/errors.ts",
-      "required": 17,
-      "translated": 17,
+      "required": 18,
+      "translated": 18,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "73b8be0bdcc21cebcf8a45ca17892752cfd740989ec940f85d97c87f7ffc7852"
+      "sourceHash": "c3ae024648725a71248f780b313d60de204cb66d12e6e4f59d3760de105c95da"
     },
     {
       "module": "exceptions",
@@ -810,13 +810,13 @@
     {
       "module": "supplier",
       "source": "FF/frontend/src/copy/supplier.ts",
-      "required": 98,
-      "translated": 98,
+      "required": 99,
+      "translated": 99,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "0215a3373d1b1b7c80d9ea41610d2b9c867d3d035f61456941f5bd48ebeefd87"
+      "sourceHash": "27bef2aae23cd0e32d2a75b6486362723834371dbd7b4441a86ed401c60f13af"
     },
     {
       "module": "taxonomy-level-names",

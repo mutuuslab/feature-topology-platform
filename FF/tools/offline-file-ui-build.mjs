@@ -45,7 +45,7 @@ export async function buildOfflineUi({ outDir } = {}) {
     for (const entry of entries) {
       const stage = join(staging, entry.name);
       const result = await build({
-        configFile: false, root: frontend, base: './', envDir: false,
+        configFile: false, root: frontend, base: './', envDir: false, envPrefix: 'FF_OFFLINE_NO_HOST_VALUES_',
         publicDir: false, mode: 'production', logLevel: 'warn',
         define: { 'import.meta.env.VITE_DATA_MODE': JSON.stringify('static'), 'import.meta.env.VITE_AUTH': JSON.stringify('demo') },
         plugins: [{ name: 'offline-browser-route-metadata', enforce: 'pre', transform(code, id) {

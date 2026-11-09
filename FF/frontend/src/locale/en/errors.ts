@@ -15,5 +15,6 @@ export default {
   'errors.unknownApi': (name: string) => `Unknown request: ${name}`,
   'errors.readOnlyDemo': 'This demo is read-only.',
   'errors.notInSnapshot': 'This data is not included in the demo.',
+  'errors.offlineActionUnsupported': 'This operation requires a connected service. The offline replay can display captured reference data and does not record this operation as completed.',
   'errors.codeLabel': 'Error code',
 };

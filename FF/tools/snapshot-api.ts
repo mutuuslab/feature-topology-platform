@@ -329,6 +329,7 @@ async function costSnapshots(save: Save) {
   const projects = await save('costProjects');
   for (const p of projects.items as { estId: string }[]) {
     const detail=await save('costProject', { estId: p.estId });
+    await save('costReviews', { estId: p.estId });
     for(const line of detail.lines ?? []) for(const revision of line.source?.history ?? []) await save('costReferenceHistory',{estId:p.estId,lineNo:String(line.lineNo),revision:String(revision.revision)});
   }
   const basis = await save('costBasisList');
@@ -389,6 +390,19 @@ async function main() {
   // 전시 채우기(사후 검증)가 이미 돌린 정책은 건너뛴다 — 같은 실행을 두 번 남기지 않게
   for (const p of (await get<{ items: { policyId: string }[] }>(routeUrl('listPolicies', {}, { featureId: KIT }))).items)
     if (!(await get<{ items: unknown[] }>(routeUrl('virtualRuns', {}, { policyId: p.policyId }))).items.length) await post('/api/virtual-validations', PROC_ACTOR, { policyId: p.policyId });
+
+  // Prepare and download the public test package before shared audit, event and key
+  // reads. Every exported response must refer to this same isolated backend state.
+  if (process.env.FF_SOFTWARE_CAPTURE_CONFIG) {
+    const config = JSON.parse(readFileSync(resolve(process.env.FF_SOFTWARE_CAPTURE_CONFIG), 'utf8'));
+    console.log('software-demo-capture ' + JSON.stringify(await captureSoftwareDemos({ ...config, outDir: OUT })));
+  } else if (process.env.FF_PUBLIC_SOFTWARE_DEMO === '1') {
+    if (process.env.FF_SHOWCASE !== '1') throw new Error('public software demo requires the isolated showcase snapshot');
+    const config = await prepareSnapshotSoftwareDemo({ apiUrl: BASE, expectedBuildSha: SOURCE_SHA });
+    console.log('software-demo-capture ' + JSON.stringify(await captureSoftwareDemos({ ...config, outDir: OUT })));
+  } else {
+    writeFileSync(join(OUT, 'api-snapshot', 'software-demo-index.json'), JSON.stringify({ schema: 'ff.software-demo-capture.v1', items: [] }));
+  }
 
   // 공통
   await save('health');
@@ -733,17 +747,6 @@ async function main() {
   await snapshotP3(save, { features: all.items });
   await snapshotP10(save, { features: all.items });
   await snapshotTx(save, { features: all.items, policies: policies.items });
-  // Public bytes stay opt-in and hash-allowlisted. The showcase preset generates only our public test template.
-  if (process.env.FF_SOFTWARE_CAPTURE_CONFIG) {
-    const config = JSON.parse(readFileSync(resolve(process.env.FF_SOFTWARE_CAPTURE_CONFIG), 'utf8'));
-    console.log('software-demo-capture ' + JSON.stringify(await captureSoftwareDemos({ ...config, outDir: OUT })));
-  } else if(process.env.FF_PUBLIC_SOFTWARE_DEMO==='1') {
-    if(process.env.FF_SHOWCASE!=='1')throw new Error('public software demo requires the isolated showcase snapshot');
-    const config=await prepareSnapshotSoftwareDemo({apiUrl:BASE,expectedBuildSha:SOURCE_SHA});
-    console.log('software-demo-capture '+JSON.stringify(await captureSoftwareDemos({...config,outDir:OUT})));
-  } else {
-    writeFileSync(join(OUT, 'api-snapshot', 'software-demo-index.json'), JSON.stringify({ schema: 'ff.software-demo-capture.v1', items: [] }));
-  }
   // Capture after the actual demo download so list, detail and native history describe the same source state.
   const software = await save('softwarePackages');
   for (const item of software.items) { await save('softwarePackage', { id: item.packageId }); await save('softwareDownloadHistory', { id: item.packageId }); }

@@ -45,9 +45,17 @@ export async function gxActiveKills(ctx: SimReadContext, featureId: string) {
 
 /** Same checks and waiver order as native deploy. Missing facts never become an empty success. */
 export async function gxForDeploy(ctx: SimWriteContext, policy: Policy, input: ValidationInput) {
-  const sources = await gxDeploySources(ctx, policy);
-  const release = await gxRelease(ctx, policy);
-  const active = (await gxExceptions(ctx)).filter((e) => validateActiveGx(e, ctx.iso()));
+  // These are independent reads of the same serial write context. Keep the original
+  // error priority while avoiding three network waterfalls on a cold public snapshot.
+  const [sourceRead, releaseRead, exceptionRead] = await Promise.allSettled([
+    gxDeploySources(ctx, policy), gxRelease(ctx, policy), gxExceptions(ctx),
+  ]);
+  if (sourceRead.status === 'rejected') throw sourceRead.reason;
+  if (releaseRead.status === 'rejected') throw releaseRead.reason;
+  if (exceptionRead.status === 'rejected') throw exceptionRead.reason;
+  const sources = sourceRead.value;
+  const release = releaseRead.value;
+  const active = exceptionRead.value.filter((e) => validateActiveGx(e, ctx.iso()));
   const used = new Map<string, ExceptionPolicy>();
   for (const id of release.exceptionIds) {
     const e = active.find((x) => x.exceptionId === id);

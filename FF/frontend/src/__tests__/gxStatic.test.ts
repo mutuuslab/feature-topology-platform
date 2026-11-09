@@ -77,6 +77,36 @@ describe('actual WebCrypto signed read-fact and Gate boundaries', () => {
 });
 
 describe('native rule checks, limited exceptions and lifecycle', () => {
+  it('starts independent deploy reads before awaiting source facts and does not stage writes', async () => {
+    let resume!: () => void;
+    const blockedSource = new Promise<void>((resolve) => { resume = resolve; });
+    const started = new Set<string>();
+    const snapshot = ctx.snapshot, read = ctx.read;
+    ctx.snapshot = async (name: string, params = {}) => {
+      if (name === 'policyExceptionSources') { started.add('source'); await blockedSource; }
+      if (name === 'exceptionPolicies') started.add('exceptions');
+      return snapshot(name, params);
+    };
+    ctx.read = async (name: string, params = {}) => { if (name === 'featureDetail') started.add('release'); return read(name, params); };
+    const deploy = gxForDeploy(ctx, policy, input());
+    try {
+      await vi.waitFor(() => expect([...started].sort()).toEqual(['exceptions', 'release', 'source']));
+      expect(ctx.overlay.entities).toEqual({});
+      expect(audit).toEqual([]);
+    } finally { resume(); }
+    expect((await deploy).cap()).toBe(null);
+    expect(ctx.overlay.entities).toEqual({});
+  });
+  it('retains signed-source refusal priority when release and exception reads also fail', async () => {
+    snapshots.get(key('policyExceptionSources', { id: P })).signature.value = 'A'.repeat(86);
+    snapshots.delete(key('exceptionPolicies'));
+    const read = ctx.read;
+    ctx.read = async (name: string, params = {}) => { if (name === 'featureDetail') throw new Error('release source unavailable'); return read(name, params); };
+    await expect(gxForDeploy(ctx, policy, input())).rejects.toMatchObject({ code: 'GUARD_FAILED', message: '예외 배포 원천 사실의 서명을 검증하지 못했습니다.' });
+    expect(ctx.overlay.entities).toEqual({});
+    expect(audit).toEqual([]);
+  });
+
   it.each(['COMPLIANCE_RULE', 'FLAG_CODE', 'ADS_PUBLISH'])('%s positive, refusal, two-person limited waiver; signature never waivable', async (check) => {
     expect((await gxForDeploy(ctx, policy, input())).cap()).toBe(null);
     if (check === 'COMPLIANCE_RULE') facts.compliance.rules = [{ ruleId: 'RULE-GX', name: 'Require trace', version: '1', type: 'INTERNAL', status: 'APPROVED', scope: { markets: ['KR'], featureIds: [], rolloutModes: [], asil: [], cal: [] }, criteria: [{ check: 'REQUIREMENT_TRACE' }], validFrom: '2026-01-01', validTo: null }];

@@ -22,7 +22,7 @@ test('로그인 — 틀린 비밀번호는 막고, FF/FF는 대소문자 구분 
   await page.getByLabel('Password').fill('fF');
   await page.getByRole('button', { name: '플랫폼 들어가기' }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('heading', { name: '업무 절차 지도' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '전체업무흐름' })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('ff.auth'))).toBe('1');
 
   const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();

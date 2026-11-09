@@ -9,7 +9,7 @@ const pairs = [];
 for (const w of [1366, 1920]) {
   pairs.push(
     [`process-${w}`, `ref-SYS2-${w}.png`, `procflow-fpw1-${w}-full.png`, '기준: SYS.2 절의 머리·요약·흐름도·활동 카드', 'FF: FPW.1 절차 화면'],
-    [`map-${w}`, `ref-overview-${w}.png`, `procflow-map-${w}.png`, '기준: 프로세스 고르기', 'FF: 전체 지도'],
+    [`map-${w}`, `ref-overview-${w}.png`, `procflow-map-${w}.png`, '기준: 프로세스 고르기', 'FF: 전체업무흐름'],
     [`roles-${w}`, `ref-roles-${w}.png`, `procflow-roles-${w}-full.png`, '기준: 역할 표', 'FF: 담당자별 업무 흐름'],
     [`trigger-${w}`, `ref-SUP9-${w}.png`, `procflow-roles-operator-${w}.png`, '기준: SUP.9(사건 시작)', 'FF: 운영 담당 업무 흐름'],
   );

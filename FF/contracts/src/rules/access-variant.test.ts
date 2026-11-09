@@ -21,7 +21,9 @@ describe('IAM (D06-09)', () => {
     const common = permissions().filter((p) => HUMAN_ROLES.every((role) => p.roles.includes(role))).map((p) => p.name);
     expect(common).toContain('readNotification');
     expect(common).toContain('submitWorkflowActivity');
-    expect(view.find((r) => r.role === 'AUDITOR')!.allowed.filter((name) => !common.includes(name))).toEqual(['checkSoftwareDownload', 'recordKillPostReview', 'createConsultation', 'answerConsultation']);
+    expect(common).toContain('createConsultation');
+    expect(common).toContain('answerConsultation');
+    expect(view.find((r) => r.role === 'AUDITOR')!.allowed.filter((name) => !common.includes(name))).toEqual(['checkSoftwareDownload', 'recordKillPostReview']);
     expect(ROUTES.find((p) => p.name === 'softwareDownload')!.roles).not.toContain('AUDITOR');
     expect(view.find((r) => r.role === 'OPERATOR')!.allowed).toContain('issueKill');
     expect(permissions().every((p) => p.method !== 'GET')).toBe(true);

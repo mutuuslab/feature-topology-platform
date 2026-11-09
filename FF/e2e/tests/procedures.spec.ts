@@ -11,17 +11,17 @@ async function asRole(page: Page, role: string) {
   }, role);
 }
 
-test('메인 화면 — 업무 절차 지도에 14개 절차·Gate·내 차례가 보이고 절차로 들어간다', async ({ page }) => {
+test('메인 화면 — 전체업무흐름에 18개 절차 중 HARA를 제외한 17개·Gate·내 차례가 보이고 절차로 들어간다', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'author');
   // 최초 진입은 역할 기본 화면으로 간다 — 홈 메뉴로 내 대시보드에 들어간다(실제 사용자 경로)
   await page.goto('/procedures');
   await page.getByRole('button', { name: '홈' }).click();
   await page.getByRole('link', { name: '내 대시보드' }).click();
-  await expect(page.getByRole('heading', { name: '업무 절차 지도' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '전체업무흐름' })).toBeVisible();
   const nodes = page.locator('.pm-node');
-  // 메인 지도는 HARA(FPW.2) 제외 — 13개(Feature DB 운영 FPW.14 포함)
-  await expect(nodes).toHaveCount(13);
+  // 메인 지도는 18개 절차에서 HARA(FPW.2) 제외. 기획·구매·프로세스·분석도 포함한다.
+  await expect(nodes).toHaveCount(17);
   // 지도 안만 본다 — 같은 화면의 감사 가젯에는 다른 시험이 남긴 ANALYSIS_HARA 기록이 보일 수 있다(공유 백엔드)
   await expect(page.locator('.pm-map').getByText(/HARA/)).toHaveCount(0);
   const first = page.locator('.pm-node').first();

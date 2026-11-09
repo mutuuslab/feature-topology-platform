@@ -57,7 +57,7 @@ export interface CostReferenceOrigin extends CostReferenceRevision {
 }
 
 /** A selected estimate row is not an empty workbook row. Unknown quantity/active expense is not zero. */
-export function costInputMissing(lines:readonly {lineNo:number;inputs:{qty?:number|null}}[],expenses:readonly {qty:number|null;unitPrice:number|null}[]=[]):string[]{
+export function costInputMissing(lines:readonly {lineNo:number;inputs:{qty?:number|null}}[],expenses:readonly {qty?:number|null;unitPrice?:number|null}[]=[]):string[]{
  const missing=lines.filter(l=>l.inputs.qty===null||l.inputs.qty===undefined).map(l=>'산정 줄 '+l.lineNo+' 수량');
- expenses.forEach((e,i)=>{if((e.qty!==null&&e.unitPrice===null)||(e.qty===null&&e.unitPrice!==null))missing.push('별도 비용 '+(i+1)+' 수량·단가');});return missing;
+ expenses.forEach((e,i)=>{if((e.qty!=null&&e.unitPrice==null)||(e.qty==null&&e.unitPrice!=null))missing.push('별도 비용 '+(i+1)+' 수량·단가');});return missing;
 }

@@ -18,7 +18,7 @@ const svgX = (e: { clientX: number; currentTarget: Element }) => {
   return svg ? e.clientX - svg.getBoundingClientRect().left : 0;
 };
 
-function useWidth<T extends HTMLElement>(fallback = 720, minimum = 320) {
+function useWidth<T extends HTMLElement>(fallback = 720, minimum = 180) {
   const ref = useRef<T>(null);
   const [w, setW] = useState(fallback);
   useEffect(() => {
@@ -77,10 +77,11 @@ export function Legend({ items }: { items: { color: string; label: ReactNode; li
 export function FunnelChart({ stages, label }: { stages: { key: Stage; label: string; value: number; note: string }[]; label: string }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip | null>(null);
-  const labelW = 64;
+  const compact = width < 400;
+  const labelW = compact ? 0 : 64;
   const valueW = 190;
   const bar = 24;
-  const row = 40;
+  const row = compact ? 60 : 40;
   const max = Math.max(1, ...stages.map((s) => s.value));
   const span = Math.max(40, width - labelW - valueW);
   const h = stages.length * row;
@@ -88,12 +89,12 @@ export function FunnelChart({ stages, label }: { stages: { key: Stage; label: st
     <div className="ds-viz" ref={ref} onPointerLeave={() => setTip(null)}>
       <svg width={width} height={h} role="group" aria-label={`${label}: ${stages.map((s) => `${s.label} ${nf(s.value)}`).join(', ')}`}>
         {stages.map((s, i) => {
-          const y = i * row + (row - bar) / 2;
+          const y = i * row + (compact ? 26 : (row - bar) / 2);
           const w = (s.value / max) * span;
           const show = (x: number) => setTip({ x, y: y + bar + 6, title: s.label, rows: [{ color: STAGE_COLOR[s.key], label: s.note, value: nf(s.value) }] });
           return (
             <g key={s.key}>
-              <text x={labelW - 8} y={y + bar / 2} className="ds-viz__label" textAnchor="end" dominantBaseline="central">
+              <text x={compact ? 0 : labelW - 8} y={compact ? i * row + 12 : y + bar / 2} className="ds-viz__label" textAnchor={compact ? 'start' : 'end'} dominantBaseline="central">
                 {s.label}
               </text>
               <path d={hbar(labelW, y, Math.max(w, 2), bar)} fill={STAGE_COLOR[s.key]} />
@@ -124,12 +125,13 @@ export interface SegmentRow {
 export function SegmentChart({ rows, label, suppressedText, rateLabels }: { rows: SegmentRow[]; label: string; suppressedText: string; rateLabels: { accept: string; convert: string } }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [tip, setTip] = useState<Tip | null>(null);
-  const labelW = 150;
+  const compact = width < 440;
+  const labelW = compact ? 12 : 150;
   const valueW = 64;
   // 두 막대 값 글자는 18px 간격 — 14px(12+2)이면 시연 모드 글자(15px)에서 비슷한 값끼리 위아래로 겹쳤다(2026-11-05)
   const bar = 14;
   const gap = 4;
-  const row = bar * 2 + gap + 14;
+  const row = compact ? 74 : bar * 2 + gap + 14;
   const top = 18;
   const span = Math.max(60, width - labelW - valueW);
   const h = top + rows.length * row;
@@ -153,7 +155,7 @@ export function SegmentChart({ rows, label, suppressedText, rateLabels }: { rows
         {rows.map((r, i) => {
           const y0 = top + i * row + 7;
           const name = (
-            <text x={labelW - 8} y={y0 + bar + gap / 2} className="ds-viz__label" textAnchor="end" dominantBaseline="central">
+            <text x={compact ? 0 : labelW - 8} y={compact ? y0 + 4 : y0 + bar + gap / 2} className="ds-viz__label" textAnchor={compact ? 'start' : 'end'} dominantBaseline="central">
               {r.key}
               <tspan className="ds-viz__muted"> ({formatCount(r.offered)})</tspan>
             </text>
@@ -174,7 +176,7 @@ export function SegmentChart({ rows, label, suppressedText, rateLabels }: { rows
               {name}
               {series.map((s, j) => {
                 const v = r[s.k] ?? 0;
-                const y = y0 + j * (bar + gap);
+                const y = y0 + (compact ? 18 : 0) + j * (bar + gap);
                 return (
                   <g key={s.k}>
                     <path d={hbar(labelW, y, Math.max(v * span, 2), bar)} fill={s.color} />
@@ -209,7 +211,7 @@ const seriesColor = (s: { key: string; color?: string }) => s.color ?? STAGE_COL
 
 /** tick — x축 눈금 글자(기본: 주 'YYYY-MM-DD'의 월-일, 긴 기간은 월). 시간 구간 등 다른 축은 화면이 준다 */
 export function TrendChart({ weeks, series, label, weekLabel, tick, maxTicks, showEndLabels = true }: { weeks: string[]; series: { key: string; label: string; values: number[]; color?: string }[]; label: string; weekLabel: string; tick?: (w: string) => string; maxTicks?: number; showEndLabels?: boolean }) {
-  const [ref, width] = useWidth<HTMLDivElement>(720, showEndLabels ? 320 : 180);
+  const [ref, width] = useWidth<HTMLDivElement>();
   const [idx, setIdx] = useState<number | null>(null);
   const left = 44;
   const right = showEndLabels ? 72 : 16;

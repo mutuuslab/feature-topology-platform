@@ -120,7 +120,7 @@ function FlowSamples({ doc }: { doc: WorkflowDoc }) {
   const p = doc.processes[0];
   const small = doc.processes.find((x) => x.id === 'FPW.13') ?? p;
   return (
-    <div className="ds-gallery-flow" style={{ display: 'grid', gap: 'var(--sp-4)', minWidth: 0 }}>
+    <div className="ds-gallery-flow" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 'var(--sp-4)', minWidth: 0 }}>
       <FlowLegend />
       <svg width={120} height={24} viewBox="0 0 120 24" role="img" aria-label={PF.legend.title}>
         <ArrowDefs id="gallery-arrow" />
@@ -208,7 +208,7 @@ export default function DesignGallery() {
         </div>
       </Panel>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--sp-5)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 'var(--sp-5)' }}>
         <Panel title={T.status} id="status">
           <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
             <GateBadge status="PASS" />
@@ -269,7 +269,7 @@ export default function DesignGallery() {
         title={T.table}
         id="table"
         actions={
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {(['ready', 'loading', 'empty', 'error', 'forbidden'] as const).map((s) => (
               <Button key={s} variant={state === s ? 'primary' : 'default'} onClick={() => setState(s)}>
                 {s}
@@ -322,7 +322,7 @@ export default function DesignGallery() {
         </div>
       </Panel>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--sp-5)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 'var(--sp-5)' }}>
         <Panel title={T.diff} id="diff">
           <DiffView
             rows={[
@@ -358,7 +358,7 @@ export default function DesignGallery() {
         </div>
       </Panel>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 'var(--sp-5)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(420px, 100%), 1fr))', gap: 'var(--sp-5)' }}>
         <Panel title={T.safetyRules} id="safety-rules">
           <RuleChecklist items={RULES} onRule={() => undefined} />
         </Panel>

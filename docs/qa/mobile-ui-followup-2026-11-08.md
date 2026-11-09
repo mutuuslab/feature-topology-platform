@@ -3,13 +3,23 @@ id: TC-MOBILE-UX-20261108
 type: reference
 title: 모바일 등록 선택·정책 상태·탭 이동 UX 근거
 status: in-review
-version: 0.1.0
+version: 0.2.0
 owner: feature-architect
 cycle: 1
-last_updated: 2026-11-08
+last_updated: 2026-11-09
 ---
 
 # 모바일 UI 후속 판단
+
+## 2026-11-09 추가: 남은 390px 넘침 8경로
+
+독립 원천 `e481e787` 기반에서 `/validations/virtual`, `/fleet/live`, `/biz/trials`, `/_design`, `/twin/impact`, `/twin/simulation`, `/twin/fleet`, `/twin/vehicle/VIN-DEMO-017`을 수정했다. 실행 도구의 줄바꿈, 가용 폭을 넘지 않는 격자, 레거시 key/value 열의 min-content 해제, 텔레메트리 이름의 별도 행, 모바일 단계 흐름의 수직 연결선을 적용했다. 화면 낭독용 절대 위치 텍스트는 `.table-wrap`을 기준으로 배치했다. 표의 원문·가로 스크롤·키보드 이동과 단계 순서는 유지한다.
+
+체험 차트는 ResizeObserver로 실제 본문 폭을 사용하고 좁은 폭에서 제목과 막대 행을 분리했다. SVG max-width/잘림으로 통과시키지 않았다. 새 `trial-responsive.spec.ts`는 실제 데이터의 차트 3개, 모든 텍스트의 SVG 내부 좌표, 방향키 주 이동과 Escape 닫기를 390/1366px에서 검증한다.
+
+실제 운영 UI 빌드와 기존 9784 데이터의 읽기 전용 중계에서 8경로×390/1366px **16뷰 모두 원래 `measureNarrow` 그대로 doc/main 0, culprits/clippedTools 빈 배열, JS·HTTP·실패요청 0**을 확인했다. 넓은 표의 실제 ArrowRight 스크롤도 보존됐다. 최종 PNG 16개를 직접 검토했다. 원래 `narrow-all.spec.ts`의 해당 8시험과 새 차트 2시험 PASS, 영향 단위 31시험 및 프런트 타입 PASS다. 측정 코드·임계값·skip은 바꾸지 않고, 실제 통과한 8경로만 KNOWN에서 제거했다. 별도 담당의 Flag 2경로는 이 변경에서 건드리지 않는다.
+
+수락 근거는 시연 키트 `out/mobile-overflow-fix/r5/{results,acceptance}.json`과 PNG, `out/mobile-overflow-exact-narrow-tests.log`, `out/mobile-overflow-chart-tests-r1.log`다. 초기 중계의 압축 헤더 오류로 데이터가 빠진 r2/r3 및 갤러리 17px가 남았던 r4는 수락 근거에서 제외했다. 갤러리 통과 전 KNOWN 제거는 자동 승인 검토가 거부했으며 예외를 유지한 채 수정·실데이터 재검증 후 제거했다. 기존 9543·9481·9483·9783·9784 원천/서비스와 native 데이터는 변경하지 않았다. 이 독립 UI 근거를 최종 원격 게시 완료나 최종 원격 전체 회귀로 대신하지 않는다.
 
 사용자가 Figma 가이드의 플랫폼 역방향 검토 결과 중 세 항목에 ‘수행’을 지시했다. 원천은 `harness/mobile-ux-20261108`, 기준은 `4fb5ee4cfcb10c38ceb6ab5e526a27fdbce5c4c4`다. 현재 공개 릴리스와 별도 후속이다.
 

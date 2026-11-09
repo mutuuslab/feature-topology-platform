@@ -12,16 +12,8 @@ const targets = [...MENU_ENTRIES.map((m) => ({ title: m.title, url: m.menu })), 
  * 새 화면이 넘치면 바로 실패한다. (2026-11-06 하네스 리뷰 — 공용 원인 3가지는 design.css에서 고쳤다: 고르기 칸·머리 행동 줄·격자 자식 min-width)
  */
 const KNOWN: Record<string, string> = {
-  '/validations/virtual': '실행 칸 줄(고르기·실행 버튼)이 줄바꿈하지 않는다 — Virtual.tsx',
-  '/fleet/live': '차량 격자 표(table.ds-fleet)가 가로 스크롤 상자 없이 본문에 놓였다 — FleetLive.tsx',
-  '/biz/trials': '추이 그림(svg width 320)이 본문(약 270px)보다 넓다 — TrialAnalytics.tsx·.ds-viz svg',
   '/flag-code/flags/care_00022_signal': '평가 추이 그림(biz/charts TrendChart — /biz/trials와 같은 그림)의 오른쪽 값 글자가 본문 밖 — flag-code/trend.tsx(통합 12단계)',
   '/ops/flag-evaluations': '평가 추이 그림(biz/charts TrendChart — 서명 오류 급증 Flag 시계열)의 오른쪽 값 글자가 본문 밖 — flag-code/trend.tsx(통합 12단계)',
-  '/_design': '디자인 갤러리 머리 — 개발용 화면',
-  '/twin/impact': 'BDC 데모 화면 — twinViews.css 격자(minmax 320px)',
-  '/twin/simulation': 'BDC 데모 화면 — 판정 사유 줄(twin-reason) nowrap',
-  '/twin/fleet': 'BDC 데모 화면 — 막대(span.bar) 폭',
-  '/twin/vehicle/VIN-DEMO-017': 'BDC 데모 화면 — 품질 칩(vtel-q) 줄',
 };
 
 test.describe('390 폭 전 화면', () => {

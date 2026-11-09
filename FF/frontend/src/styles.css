@@ -152,7 +152,8 @@ table.heatmap th{background:transparent}
 .decision.RELEASE{background:var(--lg-e8f6ee);color:var(--pass);border:1px solid var(--pass)}
 
 .muted{color:var(--muted)} .small{font-size:12px} .mt{margin-top:12px}
-.kv{display:grid;grid-template-columns:140px 1fr;gap:6px 12px;font-size:13px}
+.kv{display:grid;grid-template-columns:140px minmax(0,1fr);gap:6px 12px;font-size:13px}
+.kv > div{min-width:0;overflow-wrap:anywhere}
 .kv div:nth-child(odd){color:var(--muted)}
 .evt{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px;align-items:center}
 
@@ -209,7 +210,7 @@ table.heatmap th{background:transparent}
 .skip:focus{left:0;top:0}
 
 /* 반응형 테이블 래퍼 */
-.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-wrap{position:relative;overflow-x:auto;-webkit-overflow-scrolling:touch}
 
 /*
  * 화면 밖 대형 카드의 초기 레이아웃·페인트를 건너뛴다(§17.5).
@@ -241,6 +242,14 @@ table.heatmap th{background:transparent}
 /* 미충족 단계 — 진행 중(brand pulse)과 구분한다. 색만으로 알리지 않고 순서 번호를 유지한다. */
 .steps .step.fail .dot{background:var(--fail);color:var(--lg-ffffff);border-color:var(--fail)}
 .steps .step.fail .lbl{color:var(--fail);font-weight:700}
+@media (max-width:600px){
+  .steps{flex-direction:column}
+  .steps .step{flex:none;flex-direction:row;min-width:0;padding:0 0 12px;align-items:flex-start}
+  .steps .step:last-child{padding-bottom:0}
+  .steps .step .dot{flex:none}
+  .steps .step .lbl{max-width:none;margin:6px 0 0 8px;text-align:left;overflow-wrap:anywhere}
+  .steps .step .bar{top:30px;left:14px;width:3px;height:calc(100% - 30px)}
+}
 
 /* ── Timeline: 세로 타임라인 ── */
 .timeline{position:relative;padding-left:16px;margin-top:6px}
@@ -262,7 +271,8 @@ table.heatmap th{background:transparent}
 .twin-dre{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
 .twin-chip b{font-family:var(--mono);margin-right:2px;opacity:.85}
 .twin-arrow{color:var(--muted);font-size:12px}
-.twin-reason{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.twin-reason{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0;white-space:normal}
+.twin-reason code{white-space:normal;overflow-wrap:anywhere}
 .twin-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:0 0 auto}
 /* 누적 막대(Fleet Convergence) */
 .twin-stack{display:flex;height:16px;border-radius:var(--radius-sm);overflow:hidden;background:var(--surface-3)}

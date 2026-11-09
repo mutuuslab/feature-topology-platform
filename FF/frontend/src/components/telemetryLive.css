@@ -29,6 +29,11 @@
 .vtel-sig-val{font-size:12px;text-align:right}
 .vtel-sig-remain{font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
 .vtel-sig[data-stale="true"] .vtel-sig-remain{color:var(--fail);font-weight:700}
+@media (max-width:600px){
+  .vtel-sig{grid-template-columns:minmax(0,1fr) minmax(36px,1fr) 46px 44px}
+  .vtel-sig-nm{grid-column:1/-1;white-space:normal;overflow-wrap:anywhere}
+  .vtel-sig-val{text-align:left}
+}
 .vtel-q{font-size:10px;text-align:right;color:var(--muted)}
 .vtel-q[data-q="GOOD"]{color:var(--pass)}
 .vtel-q[data-q="BAD"]{color:var(--fail)}

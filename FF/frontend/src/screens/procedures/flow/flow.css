@@ -188,7 +188,7 @@
 .pf-lead { margin: 0; font-size: var(--fs-lg); color: var(--pd-muted); line-height: 1.5; }
 .pf-lead b { color: var(--pd-navy); }
 .pf-lead strong { color: var(--ink); }
-.pf-crit { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-3); padding: var(--sp-3); background: var(--pd-card-io); border-radius: var(--r); }
+.pf-crit { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: var(--sp-3); padding: var(--sp-3); background: var(--pd-card-io); border-radius: var(--r); }
 .pf-crit h4, .pf-card h4 { margin: 0 0 var(--sp-1); font-size: var(--fs-sm); color: var(--ink); }
 .pf-crit ul, .pf-card ul, .pf-card ol { margin: 0; padding-inline-start: var(--sp-5); line-height: 1.7; }
 .pf-section-title { display: flex; align-items: baseline; gap: var(--sp-2); margin: var(--sp-2) 0 0; font-size: var(--fs-md); color: var(--pd-navy); }
@@ -220,7 +220,7 @@
 .pf-io__ext a, .pf-wp-refs a { color: var(--accent); }
 /* 목록 안 활동·절차 ID 단추 — 누를 자리 24px(타깃 크기) */
 .pf-refbtn { display: inline-flex; align-items: center; min-block-size: var(--sp-6); min-inline-size: var(--sp-6); padding-inline: var(--sp-0h); }
-.pf-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4); font-size: var(--fs-sm); }
+.pf-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: var(--sp-4); font-size: var(--fs-sm); }
 .pf-checks { list-style: none; padding-inline-start: 0; }
 .pf-checks li::before { content: '✓'; color: var(--ok); font-weight: 700; margin-inline-end: var(--sp-2); }
 .pf-card__foot { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: center; }

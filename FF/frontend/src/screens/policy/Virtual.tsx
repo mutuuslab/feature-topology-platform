@@ -554,7 +554,7 @@ export function VirtualValidationScreen() {
         id="runs"
         tour="virtual-runs"
         actions={
-          <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'end' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-2)', alignItems: 'end', minWidth: 0 }}>
             <Select label={T.policy} value={pick} onChange={(e) => setPolicyId(e.target.value)}>
               {pols.map((p) => (
                 <option key={p.policyId} value={p.policyId}>

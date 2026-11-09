@@ -53,11 +53,11 @@ export const gateOf = (d: unknown): FlagReleaseGate | null => (d && typeof (d as
 export const seriesOf = (d: unknown): FlagEvaluationSeries | null => (d && Array.isArray((d as FlagEvaluationSeries).buckets) ? (d as FlagEvaluationSeries) : null);
 
 /** 스캔 상세(계약 FlagScanDetail) — 실행 기록·서명 검증 결과·동적 키 위치(manifest) */
-export function scanDetailOf(d: unknown): { run: FlagScanRun | null; unresolved: FlagUnresolvedCall[]; verified: boolean | null; provenance: string | null } {
+export function scanDetailOf(d: unknown): { run: FlagScanRun | null; unresolved: FlagUnresolvedCall[]; verified: boolean | null; provenance: string | null; local: boolean; sourceFiles: { path: string; content: string; sha256: string }[] } {
   const o = (d ?? {}) as Record<string, any>;
   const run: FlagScanRun | null = o.scan && typeof o.scan.scanId === 'string' ? o.scan : typeof o.scanId === 'string' ? (o as FlagScanRun) : o.run && typeof o.run.scanId === 'string' ? o.run : null;
   const unresolved = listOf<FlagUnresolvedCall>(o.manifest?.unresolved ?? o.unresolved ?? o.result?.manifest?.unresolved);
-  return { run, unresolved, verified: typeof o.verified === 'boolean' ? o.verified : null, provenance: typeof o.provenance === 'string' ? o.provenance : null };
+  return { run, unresolved, verified: typeof o.verified === 'boolean' ? o.verified : null, provenance: typeof o.provenance === 'string' ? o.provenance : null, local: o.simulationSource === 'LOCAL_SIMULATION', sourceFiles: Array.isArray(o.sourceFiles) ? o.sourceFiles : [] };
 }
 
 // ── 조회 훅 — 쿼리 키·정적 스냅샷 파일은 이 질의 그대로다 ─────────────

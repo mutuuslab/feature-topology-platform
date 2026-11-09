@@ -98,6 +98,7 @@ function ScanDrawer({ scan, repos, onClose }: { scan: FlagScanRun | null; repos:
               ...(s.error ? [{ k: S.error, v: s.error.message, note: s.error.code }] : []),
             ]}
           />
+          {d.local && <section><p className="fc-note">{T.local.notice}</p><h3>{T.local.source}</h3>{d.sourceFiles.map(f => <details key={f.path}><summary className="fc-file">{f.path}</summary><p className="fc-file">{f.sha256}</p><Button onClick={() => { const url = URL.createObjectURL(new Blob([f.content], { type: 'text/plain;charset=utf-8' })), a = document.createElement('a'); a.href = url; a.download = f.path.split('/').at(-1) ?? 'source.ts'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }}>{T.local.download}</Button><pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{f.content}</pre></details>)}</section>}
           {s.prCheck && s.prCheck.findings.length > 0 && (
             <section aria-labelledby="scan-check-h">
               <h3 id="scan-check-h" className="ds-eyebrow ds-eyebrow--ko">{`${S.prCheck} · ${T.check[s.prCheck.conclusion]}`}</h3>
@@ -179,6 +180,7 @@ export function CodeScansScreen() {
         actions={<RescanButton repos={repos} variant="primary" />}
       />
       <Panel title={S.table} id="scans">
+        {STATIC_MODE && <p className="fc-note">{T.local.notice}</p>}
         <div className="fc-filters" role="group" aria-label={S.filters}>
           <Select label={C.repo} value={repo} onChange={(e) => set('repo', e.target.value)}>
             <option value="">{T.common.allRepos}</option>

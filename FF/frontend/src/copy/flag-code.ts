@@ -5,6 +5,13 @@ import type { FlagCoverageSeverity, FlagCoverageStatus, FlagLane, FlagLaneState,
 const n = (x: number) => x.toLocaleString('ko-KR');
 
 export const flagCode = /* @__PURE__ */ localizedCopy('flag-code.flagCode', {
+  local: {
+    notice: '오프라인 DEMO: FF가 생성한 정확한 코드 원문·SHA·로컬 서명을 검증합니다. 원격 Git 커밋·일반 소스 AST·GitHub/OIDC·실차 적용 검증이 아닙니다. 처음 재스캔하면 현재 Feature 계획으로 독립 시연 원문을 생성합니다.',
+    remote: '원격 저장소 작업은 연결 서비스가 필요합니다. 오프라인에서는 시연 저장소를 선택하세요.',
+    source: '로컬 시연 원문 · SHA256 및 Ed25519 검증',
+    download: '원문 다운로드',
+    declared: 'CI v1 가져오기는 선언 자료(미검증)로 보관합니다. 서명 스캔·출시 관문의 코드 근거로 사용하지 않습니다.',
+  },
   nav: { label: 'Flag 코드 연결 화면', coverage: '현황', reconcile: '대사판', lifecycle: '수명 관리' },
   coverageStatus: { OK: '정상', PR_OPEN: 'Flag PR 검토 중', NO_CODE: '코드 없음', CALL_DELETED: '삭제된 호출', UNREGISTERED_KEY: '미등록 키', DYNAMIC_KEY: '동적 키', UNLEASH_MISMATCH: 'Unleash 불일치', STALE: '오래된 Flag', REMOVAL_DUE: '제거 대상' } satisfies Record<FlagCoverageStatus, string>,
   severity: { BLOCKER: '출시 차단', WARNING: '조치 필요', INFO: '진행 중', OK: '정상' } satisfies Record<FlagCoverageSeverity, string>,

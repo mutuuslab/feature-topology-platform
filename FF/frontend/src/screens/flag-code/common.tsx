@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { FLAG_LANES, FLAG_PR_RESUME_AFTER_MS, FLAG_WAIVER_MAX_DAYS, flagPrResumable, type FlagCoverageRow, type FlagCoverageSeverity, type FlagGateWaiver, type FlagPullRequest, type FlagRepository } from '@ff/contracts';
+import { STATIC_MODE } from '../../api/client';
 import { actorFor } from '../../api/actor';
 import { useApiMutation } from '../../api/hooks';
 import { flagCode as T } from '../../copy/flag-code';
@@ -24,13 +25,13 @@ export function FlagCodeNav() {
     { to: '/flag-code/lifecycle', label: T.nav.lifecycle, end: false },
   ];
   return (
-    <nav className="fc-nav" aria-label={T.nav.label}>
+    <><nav className="fc-nav" aria-label={T.nav.label}>
       {items.map((i) => (
         <NavLink key={i.to} to={i.to} end={i.end}>
           {i.label}
         </NavLink>
       ))}
-    </nav>
+    </nav>{STATIC_MODE && <p className="fc-note">{T.local.notice}</p>}</>
   );
 }
 
@@ -70,6 +71,7 @@ export function Lanes({ row, mini = false, detail }: { row: FlagCoverageRow; min
 
 /** 소스 줄 링크(새 창) */
 export function UsageLink({ url, path, line, full = false }: { url: string; path: string; line: number; full?: boolean }) {
+  if (url.startsWith('https://offline-demo.invalid/')) return <span className="fc-file" title={T.local.source}>{`${full ? path : shortPath(path)}:${line}`}</span>;
   return (
     <a className="fc-file" href={url} target="_blank" rel="noopener noreferrer" title={`${path}:${line} — ${T.common.sourceLink}`}>
       {`${full ? path : shortPath(path)}:${line}`} ↗
@@ -77,7 +79,7 @@ export function UsageLink({ url, path, line, full = false }: { url: string; path
   );
 }
 export function CommitLink({ repository, commit }: { repository?: string; commit: string | null | undefined }) {
-  const url = commitUrl(repository, commit);
+  const url = STATIC_MODE && commit?.length === 64 ? null : commitUrl(repository, commit);
   if (!commit) return <span className="fc-num">—</span>;
   return url ? (
     <a className="fc-num" href={url} target="_blank" rel="noopener noreferrer" title={T.common.commitLink}>
@@ -129,11 +131,11 @@ export function RescanButton({ repos, repoId, variant = 'default' }: { repos: Fl
   const [open, setOpen] = useState(false);
   const [picked, setTarget] = useState('');
   // 저장소 목록이 늦게 와도 첫 저장소를 기본으로(선택 전)
-  const target = picked || repoId || repos[0]?.repoId || '';
+  const target = picked || repoId || (STATIC_MODE ? repos.find(r => r.mode === 'DEMO_MIRROR') : repos[0])?.repoId || '';
   const [ref, setRef] = useState('');
   const [reason, setReason] = useState('');
   const [done, setDone] = useState<string | null>(null);
-  const why = reason.trim().length < 2 ? A.reasonHint : !target ? A.needRepo : undefined;
+  const why = STATIC_MODE && repos.find(r => r.repoId === target)?.mode !== 'DEMO_MIRROR' ? T.local.remote : reason.trim().length < 2 ? A.reasonHint : !target ? A.needRepo : undefined;
   return (
     <>
       <Button variant={variant} disabled={!perm.ok} reason={perm.hint} onClick={() => (setOpen(true), setDone(null), m.reset())}>
@@ -177,7 +179,7 @@ export function CreatePrButton({ row, repos }: { row: FlagCoverageRow; repos: Fl
   const perm = usePermission(['IMPLEMENTER']);
   // 생성 실패(App 미연결·권한 부족)도 201로 오고 state FAILED·failure에 이유가 있다
   const m = useApiMutation<{ state?: string; failure?: string | null }>('createFlagPr', FLAG_CODE_INVALIDATE);
-  const candidates = repos.filter((r) => !row.package || r.packages.some((p) => p.name === row.package));
+  const candidates = repos.filter((r) => (!STATIC_MODE || r.mode === 'DEMO_MIRROR') && (!row.package || r.packages.some((p) => p.name === row.package)));
   const [open, setOpen] = useState(false);
   const [picked, setTarget] = useState('');
   const target = picked || candidates[0]?.repoId || '';
@@ -279,9 +281,10 @@ export function ResumePrButton({ prId, repos }: { prId: string; repos: FlagRepos
 export function RemovalPrButton({ row, repos, retirementId }: { row: FlagCoverageRow; repos: FlagRepository[]; retirementId: string | null }) {
   const perm = usePermission(['IMPLEMENTER']);
   const m = useApiMutation('createFlagRemovalPr', [...FLAG_CODE_INVALIDATE, 'flagRetirements']);
-  const used = repos.filter((r) => row.code.usages.some((u) => u.repoId === r.repoId));
+  const available = repos.filter(r => !STATIC_MODE || r.mode === 'DEMO_MIRROR');
+  const used = available.filter((r) => row.code.usages.some((u) => u.repoId === r.repoId));
   const [picked, setTarget] = useState('');
-  const target = picked || used[0]?.repoId || repos[0]?.repoId || '';
+  const target = picked || used[0]?.repoId || available[0]?.repoId || '';
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const why = !retirementId ? A.removalNeedsRetirement : undefined;
@@ -295,7 +298,7 @@ export function RemovalPrButton({ row, repos, retirementId }: { row: FlagCoverag
         <div className="fc-form">
           <p className="fc-note">{A.removalBody(row.flagKey)}</p>
           <Select label={A.rescanRepo} value={target} onChange={(e) => setTarget(e.target.value)}>
-            {(used.length ? used : repos).map((r) => (
+            {(used.length ? used : available).map((r) => (
               <option key={r.repoId} value={r.repoId}>
                 {r.displayName}
               </option>

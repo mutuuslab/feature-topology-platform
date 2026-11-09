@@ -35,7 +35,7 @@ function useManager() {
 function ConnectForm({ onDone }: { onDone: () => void }) {
   const m = useApiMutation<FlagRepository>('createFlagRepository', FLAG_CODE_INVALIDATE);
   const mgr = useManager();
-  const [f, setF] = useState({ repository: '', displayName: '', mode: 'GITHUB_APP' as FlagRepoMode, defaultBranch: 'main', interval: '0', installationId: '' });
+  const [f, setF] = useState({ repository: '', displayName: '', mode: (STATIC_MODE ? 'DEMO_MIRROR' : 'GITHUB_APP') as FlagRepoMode, defaultBranch: 'main', interval: '0', installationId: '' });
   const [pkgs, setPkgs] = useState<Record<string, string>>({});
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }));
   const packages = Object.entries(pkgs).map(([name, path]) => ({ name, path: path || `packages/${name}` }));
@@ -51,7 +51,7 @@ function ConnectForm({ onDone }: { onDone: () => void }) {
       <div className="ds-split">
         <Select label={P.form.mode} value={f.mode} onChange={set('mode')}>
           {(['GITHUB_APP', 'ACTIONS_OIDC', 'DEMO_MIRROR'] as FlagRepoMode[]).map((m) => (
-            <option key={m} value={m}>{T.mode[m]}</option>
+            <option key={m} value={m} disabled={STATIC_MODE && m !== 'DEMO_MIRROR'}>{T.mode[m]}</option>
           ))}
         </Select>
         <Field label={P.form.branch}>
@@ -78,7 +78,7 @@ function ConnectForm({ onDone }: { onDone: () => void }) {
           </label>
         ))}
       </fieldset>
-      <p className="fc-note">{P.form.secretNote}</p>
+      <p className="fc-note">{STATIC_MODE ? T.local.notice : P.form.secretNote}</p>
       <ErrorNote error={m.error} />
       <Button
         variant="primary"

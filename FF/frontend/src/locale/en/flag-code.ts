@@ -1,5 +1,10 @@
 const n = (x: number) => x.toLocaleString('en-US');
 export default {
+  'flagCode.local.notice': 'Offline DEMO verifies exact FF-generated source bytes, SHA and local signatures. It does not verify remote Git commits, arbitrary-source AST, GitHub/OIDC or vehicle installation. The first rescan creates independent demo source from current Feature plans.',
+  'flagCode.local.remote': 'Remote repository operations require a connected service. Select a DEMO repository offline.',
+  'flagCode.local.source': 'Local demo source · SHA256 and Ed25519 verification',
+  'flagCode.local.download': 'Download source',
+  'flagCode.local.declared': 'CI v1 imports are retained as unverified declarations. They do not provide signed scan evidence or satisfy the code release gate.',
   'flagCode.coverageStatus.OK': 'Normal', 'flagCode.coverageStatus.PR_OPEN': 'Flag PR under review',
   'flagCode.coverageStatus.NO_CODE': 'No code', 'flagCode.coverageStatus.CALL_DELETED': 'Deleted call',
   'flagCode.coverageStatus.UNREGISTERED_KEY': 'Unregistered key', 'flagCode.coverageStatus.DYNAMIC_KEY': 'Dynamic key',

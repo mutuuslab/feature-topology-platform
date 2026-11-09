@@ -8,6 +8,8 @@ import { flags as T } from '../../copy/flags';
 import { flagCode as FC } from '../../copy/flag-code';
 import { coverageOf, gateOf, useReleaseGate, useVersionCoverage } from '../flag-code/data';
 import { StatusBadge } from '../flag-code/badge';
+import { STATIC_MODE } from '../../api/client';
+import { flagCode } from '../../copy/flag-code';
 import { AsyncView, Button, Drawer, ErrorNote, Field, Panel } from '../../design';
 import { usePermission, when } from '../shared';
 import { personLabel } from '../../data/people';
@@ -51,6 +53,7 @@ export function FlagImport() {
       {done && <span role="status">{T.importDone}</span>}
     </div>
     <Drawer open={open} title={T.import} onClose={close} dirty={!!text}>
+      {STATIC_MODE && <p>{flagCode.local.declared}</p>}
       <div className="ff-import">
         <p>{T.importHint}</p>
         <Field label={T.importLabel} error={error ?? undefined}><textarea value={text} onChange={(e) => { setText(e.target.value); setError(null); }} rows={15} spellCheck={false} /></Field>

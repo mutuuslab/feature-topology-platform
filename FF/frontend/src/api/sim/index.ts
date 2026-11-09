@@ -9,6 +9,7 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/kill'),
   () => import('./handlers/fleet'),
   () => import('./handlers/flags'),
+  () => import('./handlers/flag-code'),
   () => import('./handlers/registry'),
   () => import('./handlers/policy-ops'),
   () => import('./handlers/business'),

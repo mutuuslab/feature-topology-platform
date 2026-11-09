@@ -174,8 +174,26 @@ test('정적 시연: 외부 JIRA·연계 화면에서 바꾸면 플랫폼 판정
   await shot(page, 'external-jira-reverted');
   expect(await unhandled(page)).toEqual([]);
 
-  // 연계 화면 — JIRA에서 Epic 만들기(범위·기준 기능) → PROPOSED Feature 자동 등록
+  // 기본 seamless에서는 내부 모의 폼을 숨기고 외부 도구 창을 쓴다(D-ALM-17).
   await page.goto('/integration/connectors?tab=sync');
+  await expect(page.locator('#sync-simulate')).toHaveCount(0);
+  // 아래는 지원되는 labeled 표시 모드의 모의 입력 도구 검증이다.
+  // presentation만 바꾸고 원본 연결 mode·항목·권한·업무 핸들러는 그대로 쓴다.
+  let labeledResponses = 0;
+  await page.route('**/api-snapshot/system_connections.json', async (route) => {
+    const response = await route.fetch();
+    expect(response.ok()).toBe(true);
+    const body = await response.json();
+    expect(body.mode).toBe('demo');
+    expect(body.presentation).toBe('seamless');
+    labeledResponses++;
+    await route.fulfill({ response, json: { ...body, presentation: 'labeled' } });
+  });
+  await page.reload();
+  await expect(page.locator('#sync-simulate')).toHaveCount(1);
+  expect(labeledResponses).toBeGreaterThan(0);
+  // 실제 폼 입력 → 실제 모의 handler → 재조회되는 PROPOSED Feature 연결.
+
   await page.locator('#sync-simulate > summary').click();
   const epic = page.locator('section[aria-labelledby="sync-epic-new"]');
   await epic.getByLabel('Epic 제목 (= Feature 이름)').fill('와이퍼 자동 세척 예약');

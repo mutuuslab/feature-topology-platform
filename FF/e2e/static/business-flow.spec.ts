@@ -42,7 +42,8 @@ test('정적 시연: 상품 새 Version → 구성 승인 → 검증 → 고객 
   const drawer = page.getByRole('dialog');
   await drawer.getByLabel('변경 사유').fill('2027 연식 구성 갱신');
   await drawer.getByRole('button', { name: '새 Version 만들기' }).click();
-  await expect(page).toHaveURL(/\/products\/CAT-00002\/4\.2\.0$/);
+  // Bounded command completion; this is not a product rendering/performance SLA.
+  await expect(page).toHaveURL(/\/products\/CAT-00002\/4\.2\.0$/, { timeout: 20_000 });
   await expect(page.locator('h1')).toContainText('Highway Driving Package');
   await shot(page, 'product-proposed');
 

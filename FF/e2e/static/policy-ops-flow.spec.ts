@@ -107,7 +107,8 @@ test('정적 시연: 정책 작성 → 8종 검증 → 승인 → Canary 배포 
   await reviewDeployScope(page);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('감속 시작 거리 조정판 — Canary부터');
   await page.getByRole('dialog').getByRole('button', { name: '서버 배포' }).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  // Await actual command completion, including signed publication and active refresh.
+  await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 20_000 });
   await expect(page.locator('#main')).toContainText('DEPLOYED');
   await expect(page.getByRole('region', { name: 'Feature Flag 정책·승인' })).toContainText('5% / 100%');
   await shot(page, 'deployed-canary');
@@ -289,7 +290,7 @@ async function createApprovedPolicy(page: Page, before: CapturedPolicy, descript
   await reviewDeployScope(page);
   await page.getByRole('dialog').getByLabel('사유', { exact: true }).fill('같은 차량 값의 새 판 — 복구 이력 검증');
   await page.getByRole('dialog').getByRole('button', { name: '서버 배포', exact: true }).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 20_000 });
   await expect(page.locator('#main')).toContainText('DEPLOYED');
   return { ...before, policyId, description };
 }

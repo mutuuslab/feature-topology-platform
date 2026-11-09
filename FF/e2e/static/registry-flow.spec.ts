@@ -156,7 +156,7 @@ test('정적 시연: Release Sign-off → 출시 — 알림·감사가 같은 �
   await drawer(page).locator('textarea').fill('G8·G9 PASS 확인 — 출시 책임 확인');
   await drawer(page).getByRole('button', { name: /서명/ }).last().click();
   await expect(page.getByTestId('release-signoff')).not.toContainText('없습니다');
-  await expect(page.locator('[data-ui=signRelease]')).toHaveCount(0);
+  await expect(page.locator('[data-ui=signRelease]')).toHaveCount(0, { timeout: 20_000 });
   await shot(page, 'release-signed');
   // 출시 담당 — 알림 종에 차례, 출시 전이
   await as(page, 'coordinator', F);
@@ -195,7 +195,7 @@ test('정적 시연: Feature DB 변경 요청 → 도메인 검토 → 승인, �
   await size.selectOption(cur === 'XL' ? 'L' : 'XL');
   await form.getByRole('textbox', { name: '요청 사유' }).fill('사내 실적 3건 반영 — 규모 재평가');
   await form.getByRole('button', { name: '변경 요청 보내기' }).click();
-  await expect(main(page)).toContainText(/CR-\d{4}-\d{3}/);
+  await expect(main(page)).toContainText(/CR-\d{4}-\d{3}/, { timeout: 20_000 });
   const cr = (/CR-\d{4}-\d{3}/.exec(await main(page).innerText()) ?? [''])[0];
   await shot(page, 'refchange-created');
   // 2. 도메인 검토(구성 승인) — 알림 종의 요청, 동의 의견

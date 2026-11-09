@@ -1,0 +1,44 @@
+---
+id: TC-STATIC-COMMAND-WAITS-2026-11-10
+type: reference
+title: "정적 업무 명령 완료 대기 기준 검토"
+status: in-review
+version: 0.1.0
+owner: verification-safety
+cycle: 1
+last_updated: 2026-11-10
+---
+
+# 정적 업무 명령 완료 대기 기준 검토
+
+## 판정과 변경 범위
+
+기본 Playwright `expect` 5초를 제품의 정적 명령 SLA로 해석한 판단을 정정한다. `FF/harness/budgets.json`에는 해당 5초 명령 SLA가 없고, 기존 정책 승인 시험도 실제 병렬 부하를 근거로 명령 완료에 20초를 사용한다. 독립 하네스 검토와 아래 실측을 근거로 한 기능 시험의 대기 기준 정정이다. 제품 성능 해결이나 과거 실패의 재분류가 아니다.
+
+실제 지연을 확인한 다음 다섯 assertion에만 최대 20초를 지정한다. 임의 sleep이나 전역 expect 변경은 없다.
+
+| 명령 | 여전히 요구하는 실제 완료 상태 |
+| --- | --- |
+| 상품 새 Version 생성 | 새로 생성된 정확한 Catalog Version 상세 URL |
+| 첫 Canary 배포 | 실제 서명·게시 명령 완료 후 서랍 닫힘, DEPLOYED/5% 상태 |
+| 복구 기준판/동일값 새 판 배포 helper | 같은 실제 명령 서랍 닫힘과 DEPLOYED |
+| Release Sign-off | 실제 서명 정보와 서명 액션 제거, 이후 출시·알림·감사 |
+| Feature DB 변경 요청 생성 | 생성 CR ID, 독립 검토·승인·서명 완료·업무 인계 |
+
+각 시험 전체 240/180/420초, CI 2workers, 명시적 publication `5000`ms 상태 확인, 렌더링·프레임 성능 예산, 권한/직무 분리, 거부·서명·영속·최종 UI 단언은 유지한다. 제품 처리 코드는 이 변경에 포함하지 않는다.
+
+## 보존된 실패와 계측
+
+원본 r4는 app `786043d9e860d1b9ae359bcd9cb8f9a00c53566d`, 단일 native `70bbccd08e4156d7431406c1b739d73baaf90e23`/9793의 진단 preview9805다. 7흐름/2worker는 **4 PASS/3 FAIL**, skip/flaky0, 2.8분이다. 상품 첫 생성 URL/첫 정책 준비판 배포/Release Sign-off 액션 제거의 기본5초 실패를 그대로 보존했다. 시작·종료 하네스7파일 SHA 차이0 및 release 동일을 확인했다. 최종 fresh capture나 공개 게시 검증이 아니다.
+
+같은 진단판에서 응답·asset·저장 상태를 바꾸지 않는 QueryClient observer로 별도 계측했다. 2workers, 원5초 단언의 표적3명령은 3 PASS/43.2초였다. 5초 이후10초 추가 관측은 진단용으로만 기록하며 원단언 실패를 통과로 바꾸는 용도로 쓰지 않는다.
+
+| 명령 | 실 write 반환 | mutation success | 반환 후 조회/성공까지 |
+| --- | ---: | ---: | ---: |
+| 상품 Version | 3.596초 | 3.615초 | 0.019초 |
+| 첫 기준판 배포 | 2.887초 | 3.057초 | 0.169초 |
+| 출시 서명 | 2.140초 | 4.075초 | 1.935초 |
+
+앞서 REFDB 생성도 write4.36초 및 기본5초 실패가 보존돼 있다. 병렬 cold 준비·명령 처리·실조회 갱신의 변동이 있으므로 고정 sleep 대신 실제 완료 상태를 bounded wait한다. 전역 mutation onSuccess 대기 제거, fake optimistic 완료, guard 완화는 하지 않는다.
+
+증거는 시연 KIT `out/static-business-final-r4/`(원본 보고서·로그·시작끝 SHA), `out/command-latency-9805-r1/`(실제 명령 event·URL·본문·PNG), `out/mutation-phase-two-workers-r2/`(REFDB 원계측)에 보존한다. 변경 후 동일한 원7흐름/2worker는 새 실행으로 기록한다. 이 문서 작성 시점에는 미실행이다.

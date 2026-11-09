@@ -2,7 +2,7 @@
 // empty 프로젝트(빈 상태 확인)가 끝난 뒤에 돈다 — 같은 DB.
 // readiness: RD-OPS-02
 import { expect, test, type Page } from '@playwright/test';
-import { openRefPicker, pickPrimaryRef, submitProposedFeature, REF } from '../tests/refdb';
+import { pickPrimaryRef, submitProposedFeature, REF } from '../tests/refdb';
 
 async function asRole(page: Page, role: string) {
   await page.addInitScript((r) => {
@@ -21,11 +21,15 @@ test('첫 Feature 등록 — 제안 화면 → 상세 → Feature Registry에 �
   await expect(page.locator('h1').first()).toBeVisible();
   // 빈 설치에도 Feature DB v1.3(엑셀 가져옴)이 들어 있다 — 대표 기준 행부터 고른다
   await pickPrimaryRef(page, 'AVH', REF.avh);
+  // 빈 설치에는 적용 대상을 가져올 등록 Feature가 없다. 실제 사용 범위를 입력한다.
+  await page.locator('input[name="country"]').fill('KR');
+  await page.locator('input[name="vehicleModel"]').fill('NX4 PE');
+  await page.locator('input[name="trim"]').fill('Premium');
   await page.locator('input[name="name"]').fill('첫 기능 — 원격 시동');
   await page.locator('textarea[name="description"]').fill('고객 설치에서 처음 등록하는 기능');
   await page.locator('input[name="ownerId"]').fill('usr-author');
   await submitProposedFeature(page);
-  await expect(page).toHaveURL(/\/features\/FEAT-\d+\/0\.1\.0$/);
+  await expect(page).toHaveURL(/\/features\/FEAT-\d+\/0\.1\.0\?tab=ext$/);
   await expect(page.locator('h1').first()).toBeVisible();
   await expect(page.locator('#main')).toContainText('첫 기능 — 원격 시동');
 

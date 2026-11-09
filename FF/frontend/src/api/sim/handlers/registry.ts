@@ -1919,8 +1919,9 @@ registerSimHandler(
     const issues = validateNewDependency(all, body as any, source!.row, target?.row);
     if (issues.length) reject('GUARD_FAILED', issues.map((i) => i.message).join(' / '), { issues });
     const s = source!.row;
+    const tombstones = (await ctx.read<any>('deletedDrafts')).items ?? [];
     const draft = {
-      dependencyId: ctx.nextId('DEP', all.map((d) => d.dependencyId)),
+      dependencyId: ctx.nextId('DEP', [...all.map((d) => d.dependencyId), ...tombstones.filter((t: any) => t.entity === 'feature-relation').map((t: any) => t.recordId)]),
       type: body.type,
       sourceFeatureId: body.sourceFeatureId,
       sourceVersion: body.sourceVersion,

@@ -187,6 +187,14 @@ describe('P10 local commands with independent approval',()=>{
   expect((await call('dependencies')).items).toEqual([]);expect((await call('featureDetail',{id,ver})).feature.dependencyIds).toEqual([]);
   expect((await call('deletedDrafts')).items).toContainEqual(expect.objectContaining({entity:'feature-relation',recordId:dependency.dependencyId}));
  });
+ it('does not reuse an ID deleted before the capture when the browser sequence is new',async()=>{
+  seed();const target={...feature,featureId:'FEAT-00022',version:'1.0.0'};
+  files.set('/'+snapshotFile(url('featureDetail',{id:target.featureId,ver:target.version})),{feature:target,meta:{createdBy:null},gates:{},dependencies:{outgoing:[],incoming:[]},versions:[{version:target.version}]});
+  files.set('/'+snapshotFile(url('listFeatures',{}, {latestOnly:false})),{items:[feature,target]});
+  files.set('/'+snapshotFile(url('deletedDrafts')),{items:[{entity:'feature-relation',recordId:'DEP-00001',deletedBy:'usr-author',deletedAt:'2026-10-18T00:00:00.000Z',reason:'Deleted before capture'}]});
+  const created=await call('createDependency',{}, {},{type:'REQUIRES',sourceFeatureId:id,sourceVersion:ver,targetFeatureId:target.featureId,targetVersion:target.version},'author');
+  expect(created.dependencyId).toBe('DEP-00002');
+ });
  it('previous PASS remains deletion evidence after the latest Gate became FAIL',async()=>{
   seed();files.set('/'+snapshotFile(url('gates',{id,ver})),{gates:[{gate:'G1',latest:{gateRecordId:'GR-2',status:'FAIL'},history:[{gateRecordId:'GR-1',status:'PASS'},{gateRecordId:'GR-2',status:'FAIL'}]}]});
   await expect(call('deleteFeatureDraft',{id,ver},{},{reason:'과거 승인 이력 삭제 시도'},'author')).rejects.toMatchObject({code:'GUARD_FAILED',details:{code:'DRAFT_HAS_APPROVAL'}});

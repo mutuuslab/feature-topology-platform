@@ -63,7 +63,9 @@ last_updated: 2026-06-05
 
 기존 원격 커밋·서명·캡처 관측은 불변이다. 캡처 PR 요약만 있고 원문이 없으면 병합을 거부한다. private 결정 원문을 캡처하지 않은 기존 waiver를 로컬에서 임의 승인하지 않는다. GitHub/GitLab/OIDC 실제 연결은 `NOT_IMPLEMENTED`와 이유를 반환한다. CI v1 가져오기는 원문 canonical hash와 저장소/commit 불변성을 확인해 보관하되 `DECLARED_UNVERIFIED`이며 코드 출시 관문의 근거가 아니다. 새 코드 스캔은 Unleash·게시·차량 회신·역사적 stale 관측을 정상으로 바꾸지 않는다. 기본 브랜치 변경 시 이전 브랜치의 코드 근거를 재사용하지 않는다.
 
-현재 검증: 새 의미 회귀 15건과 공통 엔진/등록 영향 26건, 총 41건 PASS. 타입 검사 PASS. 실제 source SHA·exact template·서명 변조·누락키·purpose 교차대체·원문 없는 PR·제거 stub/SDK 호출 제거·F2 독립 승인·만료·immutable CI 선언·동시 중복 요청·원천 누락 및 다른 lane 차단 보존을 확인했다. 이 체크포인트는 실제 file 브라우저 검증 전이며 최종 통합 ZIP 완료를 뜻하지 않는다.
+최종 영향 검증: 새 의미 회귀 16건과 공통 엔진/등록 영향 26건, 기존 Flag 화면/Feature Flags/PR 수동 재개 41건, 총 83건 PASS. 타입 검사 PASS. 실제 source SHA·exact template·서명 변조·누락키·purpose 교차대체·원문 없는 PR·제거 stub/SDK 호출 제거·F2 독립 승인·만료·immutable CI 선언·동시 중복 요청·원천 누락 및 다른 lane 차단 보존을 확인했다. 기존 닫힌 PR보다 최신 PR을 먼저 대사하는 native 정렬을 보존한다. file 빌드의 경로 AST에서 body 스키마를 제거하므로 각 쓰기에 명시적으로 원천 body 스키마를 등록한다. 실제 초기 file 탐색에서 UI 생략 scanPaths 기본값이 없어 저장소 상세가 깨지는 결함을 발견한 뒤 이 방식으로 수정하고 생략 기본값/잘못된 enum/빈 사유 회귀를 추가했다.
+
+실제 file 브라우저 최종 근거: clean 앱 원천 `eadf5c02`, `out/offline-flag-functional-20261109-r3/FeaturePlatform/index.html`; 결과 `out/flag-functional-browser-20261109-r3/results.json`, 언어 확인 `english.json`. 실제 UI에서 신규 DEMO 저장소 등록·설정 개정→waiver 요청 및 독립 승인→원문 보관 scaffold PR→실제 PR check/DEMO 병합→재스캔→Blob 원문 다운로드→새로고침→두 창 중복 저장소 의도 1개 보존→브라우저 종료/재열기를 확인했다. 실제 다운로드 441 bytes의 SHA256 `5b1fcd50340e7520fe379e20f5686d9bf59acdb31ff07730e2bbf126dd8e749c`가 저장된 원문과 독립 비교에서 일치했다. HTTP/JS/파일 실패 0, 미캡처 요청 0, 47개 blob 검증, KO/EN 1366/390 가로 넘침 0. 영속 감사 8행·저장 revision 9를 재열기에서 확인했다. 공개 캡처 계보는 원천 `251fcf67`, 도구 `1f414eb0`, 기준 시각 `2026-11-09T01:47:27.767Z`, 원본 aggregate SHA `4f6fc1c39049beba005a46474dd5ed6f7237cd0ceb3dee4dcf2ea6d910873be0`를 그대로 유지했다. 이 독립 기능 검증은 최종 통합 ZIP 완료를 뜻하지 않는다. ADS의 명시 body 검증 후속 `e84a8d37`도 최종 통합에 필요하며 해당 15경로 invalid 입력 전수 및 도메인 13개 회귀가 통과했다.
 
 ## ADS file:// 업무 시연 엔진 (2026-11-09)
 

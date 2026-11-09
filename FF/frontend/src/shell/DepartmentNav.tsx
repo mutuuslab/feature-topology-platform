@@ -98,7 +98,7 @@ export function DepartmentNav({ dept, procCount, onAll }: { dept: DepartmentSumm
           <li><NavLink to="/?dashboard=role" className={() => dashboard === 'role' ? 'active' : ''}>{N.roleBoard}</NavLink></li>
         </ul>
       </section>
-      <div className="dnav-primary" aria-label={D.nav.primary}>{groups(menu.primary, 'primary')}</div>
+      <div className="dnav-primary" role="group" aria-label={D.nav.primary}>{groups(menu.primary, 'primary')}</div>
       {menu.reference.length > 0 && <details className="sh-dnav__more dnav-reference" ref={more}>
         <summary>{D.nav.reference}</summary>
         <div className="dnav-reference__groups">{groups(menu.reference, 'reference')}</div>

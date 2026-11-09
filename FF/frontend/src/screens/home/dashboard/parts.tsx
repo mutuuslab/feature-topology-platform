@@ -70,7 +70,7 @@ export interface Column<T> {
 /** Jira 표 — 회색 머리 줄, 얇은 줄 구분, 행 위에 올리면 옅은 바탕 */
 export function JiraTable<T>({ caption, rows, columns, rowKey }: { caption: string; rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string }) {
   return (
-    <div className="jd-table-wrap">
+    <div className="jd-table-wrap" role="region" aria-label={caption} tabIndex={0}>
       <table className="jd-table">
         <caption className="ds-sr">{caption}</caption>
         <thead>

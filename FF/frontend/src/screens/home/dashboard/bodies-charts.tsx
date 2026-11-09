@@ -149,7 +149,7 @@ function TwoD({ gadget }: GadgetBodyProps) {
         const colTotal = (xv: string) => rows.filter((r) => fieldValue(r, x) === xv).length;
         return (
           <GadgetState state={state} error={error} retry={retry} empty={!rows.length}>
-            <div className="jd-table-wrap">
+            <div className="jd-table-wrap" role="region" aria-label={`${B.types.twoD.title}: ${F[y]} × ${F[x]}`} tabIndex={0}>
               <table className="jd-table jd-table--matrix">
                 <caption className="ds-sr">{`${B.types.twoD.title}: ${F[y]} × ${F[x]}`}</caption>
                 <thead>

@@ -145,6 +145,12 @@ test('접근성(axe, WCAG 2.2 AA) — 편집 모드(디렉터리·구성 양식)
   await edit(page);
   await page.getByRole('complementary', { name: '가젯 추가' }).getByRole('button', { name: '2차원 통계 추가' }).click();
   await expect(page.getByRole('form', { name: '2차원 통계 구성' })).toBeVisible();
+  // 넓은 통계 표는 마우스 없이도 실제 가로 스크롤할 수 있어야 한다.
+  const matrixScroll = page.locator('.jd-table--matrix').locator('..');
+  await matrixScroll.focus();
+  await expect(matrixScroll).toBeFocused();
+  await matrixScroll.press('ArrowRight');
+  await expect.poll(() => matrixScroll.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
   await axe('편집 모드');
   await page.getByRole('form', { name: '2차원 통계 구성' }).getByRole('button', { name: '저장' }).click();
   await page.getByRole('button', { name: '완료' }).click();

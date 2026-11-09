@@ -39,6 +39,18 @@ async function audit(page: Page, path: string, info: TestInfo) {
   const records = [];
   for (const tab of tabs) {
     await visit(page, `${path}?tab=${tab}`, tab === 'flags');
+    if (tab === 'baseline') {
+      const comparison = page.getByRole('region', { name: '두 Baseline 비교', exact: true });
+      const left = comparison.getByRole('combobox', { name: '기준', exact: true });
+      const right = comparison.getByRole('combobox', { name: '비교 대상', exact: true });
+      if (!(await left.inputValue()) || !(await right.inputValue())) {
+        await expect(comparison.locator('[data-state="empty"]')).toContainText('기준과 비교 대상 Baseline을 선택');
+        await left.selectOption('BL-00001');
+        await right.selectOption('BL-00002');
+        await settle(page);
+        await expect(comparison.getByTestId('bl-compare-summary')).toContainText(/추가 \d+ · 삭제 \d+ · 변경 \d+/);
+      }
+    }
     const current = await queries(page);
     const errors = current.filter(q => q.error);
     // A new Version has no captured code evidence. This explicit negative guard

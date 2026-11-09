@@ -72,37 +72,26 @@ it('기준을 충족해도 항목별 확인과 검수 의견 없이 승인하지
   await waitFor(() => expect(writes.some((w) => w.url.endsWith('/reviews') && w.body.decision === 'ACCEPT' && w.body.items.length === 10)).toBe(true));
 });
 
-it('file archive keeps supplier review evidence readable and blocks every review mutation even when acceptance criteria pass', async () => {
-  fileMode.enabled = true;
-  verdict = 'MET';
-  mount();
-  await screen.findByRole('heading', { name: '협력사 이관', level: 1 });
-  expect(screen.getByRole('note')).toHaveTextContent('연결된 서비스');
+it('file simulation enables an independent reviewer only after all checks and preserves the draft across locale changes', async () => {
+  fileMode.enabled = true; verdict = 'MET'; mount();
   expect(await screen.findByRole('button', { name: '검수 합격' })).toBeDisabled();
-  expect(screen.getByRole('button', { name: '보완 요청' })).toBeDisabled();
-  expect(screen.getByLabelText('검수 의견')).toBeDisabled();
-  expect(screen.getAllByRole('checkbox').every((box) => box.hasAttribute('disabled'))).toBe(true);
-  expect(screen.queryByText('기준 등록')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '검수 합격' }));
+  expect(screen.getByRole('note')).toHaveTextContent('이 브라우저에 저장');
+  fireEvent.change(screen.getByLabelText('검수 의견'), { target: { value: '오프라인 독립 검수 의견' } });
+  for (const box of screen.getAllByRole('checkbox', { name: /확인$/ })) fireEvent.click(box);
+  expect(screen.getByRole('button', { name: '검수 합격' })).toBeEnabled();
   await act(async () => { await changeUiLanguage('en'); });
-  expect(screen.getByRole('note')).toHaveTextContent('require the connected service');
-  expect(screen.getByText('Content not retained')).toBeInTheDocument();
+  expect(screen.getByRole('note')).toHaveTextContent('saved in this browser');
+  expect(screen.getByLabelText('Review comment')).toHaveValue('오프라인 독립 검수 의견');
+  expect(screen.getByRole('button', { name: 'Accept review' })).toBeEnabled();
   expect(writes).toEqual([]);
 });
 
-it.each(['integrator', 'planner'])('file archive hides supplier creation, artifact submission and mapping forms for %s', async (role) => {
-  fileMode.enabled = true;
-  localStorage.setItem('fp.state.v2', JSON.stringify({ role }));
-  pkg.status = 'DRAFT';
-  mount();
-  await screen.findByRole('heading', { name: '협력사 이관', level: 1 });
-  await screen.findByRole('button', { name: /Tier1-B \/ 2.0.0/ });
-  expect(screen.queryByText('패키지 작성')).not.toBeInTheDocument();
-  expect(screen.queryByText('매핑 등록')).not.toBeInTheDocument();
-  expect(screen.queryByText('산출물 등록')).not.toBeInTheDocument();
-  expect(screen.queryByLabelText('검수 요청 의견')).not.toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '다시 읽기' })).toBeEnabled();
-  expect(writes).toEqual([]);
+it.each(['integrator', 'author'])('file simulation uses actual supplier authoring permissions for %s', async (role) => {
+  fileMode.enabled = true; localStorage.setItem('fp.state.v2', JSON.stringify({ role })); pkg.status = 'DRAFT'; mount();
+  expect((await screen.findAllByText('매핑 등록')).length).toBeGreaterThan(0);
+  if (role === 'integrator') { expect((await screen.findAllByText('패키지 작성')).length).toBeGreaterThan(0); expect((await screen.findAllByText('산출물 등록')).length).toBeGreaterThan(0); }
+  else { expect(screen.queryByText('패키지 작성')).not.toBeInTheDocument(); expect(screen.queryByText('산출물 등록')).not.toBeInTheDocument(); }
+  expect(screen.getByRole('button', { name: '다시 읽기' })).toBeEnabled(); expect(writes).toEqual([]);
 });
 
 it('HTTP supplier service retains creation, mapping and artifact forms for an implementer', async () => {

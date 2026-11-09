@@ -1,7 +1,7 @@
 import { localizedCopy } from '../locale/runtime';
 export const supplier = /* @__PURE__ */ localizedCopy('supplier.supplier', {
   title: '협력사 이관',
-  offlineReadOnly: '오프라인은 기준자료 조회 전용입니다. 새 납품·매핑·산출물 등록과 검수 기준 변경·제출·검수는 연결된 서비스에서 진행하세요.',
+  offlineSimulation: '오프라인 시연입니다. 작성·제출·독립 검수와 본문 검증 결과는 이 브라우저에 저장됩니다. 실제 공급사 연계·시험·차량 적용을 뜻하지 않습니다.',
   target: '협력사 패키지 대상',
   lead: 'Feature에 연결된 협력사 기능과 산출물을 확인하고, 독립 검수 결과를 남깁니다.',
   packages: '패키지·검수', deliveries: 'SW 납품',

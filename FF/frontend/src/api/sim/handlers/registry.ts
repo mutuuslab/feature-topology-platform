@@ -1180,6 +1180,11 @@ registerSimHandler(
     if (blocked) fail(blocked.readOnly ? 'IMMUTABLE' : 'GUARD_FAILED', blocked.reason);
     const pre = body.inputResult === 'PASS' ? await gatePrerequisite(ctx, id, ver, body.gate) : null;
     if (pre) fail('GUARD_FAILED', pre);
+    if (body.gate === 'G6' && body.inputResult === 'PASS') {
+      const supplier = await ctx.read<{ blockers: string[] }>('supplierGate', { id, ver });
+      if (!Array.isArray(supplier?.blockers)) fail('GUARD_FAILED', 'Supplier acceptance facts are unavailable.');
+      if (supplier.blockers.length) fail('GUARD_FAILED', supplier.blockers.join(' / '));
+    }
     // FFG-LCY-003 — 열린 재-HARA 요청이 있으면 G3 이후 PASS는 G2 재판정 뒤에
     const rh = body.inputResult === 'PASS' && (REHARA_BLOCKED_GATES as readonly string[]).includes(body.gate) ? await openRehara(ctx, id, ver) : [];
     if (rh.length) fail('GUARD_FAILED', `재-HARA 요청 ${rh.map((x: any) => `${x.requestId}(${(REHARA_LABEL as any)[x.condition] ?? x.condition})`).join(', ')}이(가) 열려 있습니다 — G2를 다시 판정한 뒤 ${body.gate}을(를) PASS로 판정할 수 있습니다.`);

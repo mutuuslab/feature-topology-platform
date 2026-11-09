@@ -1,6 +1,6 @@
 export default {
   "supplier.title": 'Supplier handover',
-  "supplier.offlineReadOnly": 'Offline mode provides reference data only. New deliveries, mappings, work products, acceptance criteria, submissions and reviews require the connected service.',
+  "supplier.offlineSimulation": 'Offline simulation. Authoring, submissions, independent reviews and body verification results are saved in this browser. They do not represent a real supplier connection, test execution or vehicle application.',
   "supplier.target": 'Supplier package target',
   "supplier.lead": 'Check supplier functions and work products linked to a Feature, and record an independent acceptance review.',
   "supplier.packages": 'Packages and reviews',

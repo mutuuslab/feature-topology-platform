@@ -1,6 +1,6 @@
 // Recompute captured/local DEMO sources. Never polls or verifies a remote endpoint.
 import {z} from 'zod';
-import {canonicalJson,computeCompleteness,cyberRequired,WP_KINDS,WP_RELATIONS,WP_GATE_STAGES,wpStageBlockers,wpSummaryText,epicDesired,epicFieldDiff,JIRA_EPIC_STATUS,RunReconcileBody,ROUTES,type WpGateMode,type WpItem,type WpRelation,type ExtSystem} from '@ff/contracts';
+import {canonicalJson,computeCompleteness,cyberRequired,WP_KINDS,WP_RELATIONS,WP_GATE_STAGES,wpStageBlockers,wpSummaryText,epicDesired,epicFieldDiff,JIRA_EPIC_STATUS,RunReconcileBody,type WpGateMode,type WpItem,type WpRelation,type ExtSystem} from '@ff/contracts';
 import {registerSimHandler,registerSimReader,SimError} from '../engine';
 import type {SimReadContext,SimWriteContext} from '../types';
 import {p10Registry as R} from './registry';
@@ -15,7 +15,12 @@ async function capturedWp(ctx:SimReadContext,id:string,ver:string){return (ctx.o
 /** Global mode is a captured policy fact, never an assumed warn default for new versions. */
 export async function localWpPolicyBasis(ctx:SimReadContext,views:any[]=[]){
  const candidates=views.filter(Boolean);
- if(!candidates.length){const p=ROUTES.find(r=>r.name==='almWorkProducts')?.sample;if(p?.id&&p?.ver){const v=await ctx.snapshot<any>('almWorkProducts',{id:p.id,ver:p.ver},{});if(v?.featureId===p.id&&v?.version===p.ver)candidates.push(v);}}
+ if(!candidates.length){
+  const source=await ctx.snapshot<any>('listFeatures',{}, {latestOnly:false});
+  if(!Array.isArray(source?.items)||!source.items.length||(source.total!=null&&source.total>source.items.length))throw new SimError('GUARD_FAILED','The complete captured Feature/version index is unavailable for ALM policy verification.');
+  const p=source.items.find((f:any)=>typeof f.featureId==='string'&&typeof f.version==='string');
+  if(p){const v=await ctx.snapshot<any>('almWorkProducts',{id:p.featureId,ver:p.version},{});if(v?.featureId===p.featureId&&v?.version===p.version)candidates.push(v);}
+ }
  if(!candidates.length||candidates.some(v=>!['enforce','warn','off'].includes(v.gateMode))||new Set(candidates.map(v=>v.gateMode)).size!==1)throw new SimError('GUARD_FAILED','The captured ALM gate mode is unavailable or inconsistent.');
  return {gateMode:candidates[0].gateMode as WpGateMode,approvalStatuses:new Set<string>(candidates.flatMap(v=>(v.items??[]).filter((i:any)=>i.approved).map((i:any)=>String(i.status).trim().toLowerCase())))};
 }

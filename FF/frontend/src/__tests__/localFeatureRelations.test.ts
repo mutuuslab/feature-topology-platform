@@ -110,3 +110,11 @@ it('rejects refresh without real global policy mode and commits no weakened warn
  await expect(run('refreshAlmWorkProducts',{},p,'integrator')).rejects.toMatchObject({code:'GUARD_FAILED'});
  expect(engine.__overlayForTest()!.entities.localAlmWorkProducts??{}).toEqual({});
 });
+
+it('verifies global mode using actual captured Feature/version IDs even when production route samples are absent',async()=>{
+ const p=await created();const route=ROUTES.find(r=>r.name==='almWorkProducts')!, sample=route.sample;
+ try{delete route.sample;const v=await get('almWorkProducts',p);expect(v.gateMode).toBe('enforce');expect(v.items).toEqual([]);}finally{route.sample=sample;}
+});
+it('does not accept a policy response for a different captured Feature/version',async()=>{
+ const p=await created();const wp=files.get(snapshotFile(routeUrl('almWorkProducts',params)));wp.featureId='FEAT-99999';await expect(get('almWorkProducts',p)).rejects.toMatchObject({code:'GUARD_FAILED'});
+});

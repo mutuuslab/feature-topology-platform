@@ -153,3 +153,48 @@ it('retains all native body schemas after browser route stripping, rejects malfo
   for (const [name, body, role, params] of cases) await expect(run(name, body, role, params), name).rejects.toMatchObject({ code: 'VALIDATION' });
   expect(Object.keys(engine.__overlayForTest()!.entities)).toHaveLength(0);
 });
+
+
+it('reads a newly registered Feature/version support history without nonexistent native fetches, then persists only actual drill results', async () => {
+  await get('listFeatures');
+  const local = { ...f, featureId: 'FEAT-90001', version: '0.1.0', lifecycle: 'PROPOSED' };
+  const key = `${local.featureId}@${local.version}`, o = engine.__overlayForTest()!;
+  (o.entities.regFeature ??= {})[key] = { row: local, meta: { createdBy: 'usr-author', createdAt: new Date().toISOString() } };
+  (o.created.regFeature ??= []).push(key);
+  const params = { id: local.featureId, ver: local.version }, missing = snapshotFile(u('supportDrills', params));
+  vi.mocked(fetch).mockClear();
+  expect(await get('supportDrills', params)).toEqual({ items: [] });
+  expect(vi.mocked(fetch).mock.calls.filter(([url]) => String(url).endsWith(missing))).toHaveLength(0);
+  const actual = await run('runSupportDrill', { horizonDays: 90, reason: 'New local Feature support practice' }, 'coordinator', params);
+  expect(actual).toMatchObject({ featureId: local.featureId, version: local.version, passed: false, provenance: 'LOCAL_SIMULATION', vehicleApplicationPerformed: false });
+  expect(actual.checks.find((c: any) => c.id === 'BASELINE_KEPT').result).toBe('FAIL');
+  expect(actual.checks.find((c: any) => c.id === 'KEY_RENEWAL').result).toBe('FAIL');
+  expect((await get('supportDrills', params)).items).toEqual([actual]);
+  expect((await get('supportDrills', { id: f.featureId, ver: f.version })).items).toEqual([]);
+});
+it('keeps locally created versions separate from the captured version and does not mutate native drill evidence', async () => {
+  const native = { drillId: 'DRL-00001', featureId: f.featureId, version: f.version, passed: false, checks: [{ id: 'BASELINE_KEPT', result: 'FAIL' }], signature: { native: 'unchanged' } };
+  snapshots[u('supportDrills', { id: f.featureId, ver: f.version })] = { items: [native] };
+  const original = structuredClone(snapshots[u('supportDrills', { id: f.featureId, ver: f.version })]);
+  await get('listFeatures');
+  const local = { ...f, version: '4.2.0', lifecycle: 'PROPOSED' }, key = `${f.featureId}@4.2.0`, o = engine.__overlayForTest()!;
+  (o.entities.regFeature ??= {})[key] = { row: local, meta: { createdBy: 'usr-author', createdAt: new Date().toISOString() } };
+  (o.created.regFeature ??= []).push(key);
+  expect(await get('supportDrills', { id: f.featureId, ver: '4.2.0' })).toEqual({ items: [] });
+  expect(await get('supportDrills', { id: f.featureId, ver: f.version })).toEqual(original);
+  expect(snapshots[u('supportDrills', { id: f.featureId, ver: f.version })]).toEqual(original);
+});
+it('preserves unknown Feature NOT_FOUND and missing native source INTERNAL instead of inventing empty native history', async () => {
+  await expect(get('supportDrills', { id: 'FEAT-99999', ver: '0.1.0' })).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+  delete snapshots[u('supportDrills', { id: f.featureId, ver: f.version })];
+  await expect(get('supportDrills', { id: f.featureId, ver: f.version })).rejects.toMatchObject({ status: 500, code: 'INTERNAL' });
+});
+it('requires both a created-version marker and an exact local registry row before bypassing the native source', async () => {
+  delete snapshots[u('supportDrills', { id: f.featureId, ver: f.version })];
+  await get('listFeatures');
+  const key = `${f.featureId}@${f.version}`, o = engine.__overlayForTest()!;
+  (o.entities.regFeature ??= {})[key] = { row: f, meta: { createdBy: 'usr-author' } };
+  await expect(get('supportDrills', { id: f.featureId, ver: f.version })).rejects.toMatchObject({ code: 'INTERNAL' });
+  o.created.regFeature = [key];o.entities.regFeature[key].row = { ...f, version: 'different' };
+  await expect(get('supportDrills', { id: f.featureId, ver: f.version })).rejects.toMatchObject({ code: 'INTERNAL' });
+});

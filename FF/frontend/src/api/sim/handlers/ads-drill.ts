@@ -5,7 +5,12 @@ import { fail, feature, items, LOCAL, merge, write } from './ads-shared';
 const DRILL = 'adsSupportDrill';
 async function drills(ctx: SimReadContext, id: string, ver: string) {
   await feature(ctx, id, ver);
-  return merge(await items(ctx, 'supportDrills', { id, ver }), ctx.list<any>(DRILL).filter(d => d.featureId === id && d.version === ver), 'drillId');
+  const key = `${id}@${ver}`, row = ctx.get<any>('regFeature', key)?.row;
+  // A genuinely created local version has no earlier native drill history. Existing
+  // native versions still require their exact source, even if locally edited.
+  const created = ctx.overlay.created.regFeature?.includes(key) && row?.featureId === id && row?.version === ver;
+  const base = created ? [] : await items(ctx, 'supportDrills', { id, ver });
+  return merge(base, ctx.list<any>(DRILL).filter(d => d.featureId === id && d.version === ver), 'drillId');
 }
 registerSimReader('supportDrills', async ctx => ({ items: await drills(ctx, ctx.req.params.id, ctx.req.params.ver) }));
 write('runSupportDrill', 'SUPPORT_END_DRILL', 'D01-01', async ctx => {

@@ -23,7 +23,7 @@ function validSource(target:NonNullable<ReturnType<typeof resourceRequest>>,sour
   return target.kind==='VEHICLE'?source.vins.has(target.id):source.features.has(target.id)&&(!target.version||source.features.get(target.id)!.has(target.version));
 }
 function expectedFiles(kind:ResourcePacket['kind'],id:string,source:ReturnType<typeof canonical>) {
-  if(kind==='VEHICLE')return ['runtime','requests','status','feature-state','verdicts','customer-state','openfeature','installs'].map(s=>`vehicles_${id}_${s}.json`).sort();
+  if(kind==='VEHICLE')return [...['runtime','requests','status','feature-state','verdicts','customer-state','openfeature','installs'].map(s=>`vehicles_${id}_${s}.json`),`field_vehicles_${id}.json`,`support_${id}.json`,`ofrep_evaluate_targetingKey_${id}.json`,`fleet_map_vehicles_${id}.json`].sort();
   const files=['','_baselines','_evaluations','_history','_ops-metrics','_reviews','_trace-links'].map(s=>`features_${id}${s}.json`);
   for(const version of source.features.get(id)??[]){
     files.push(`features_${id}_reviews_version_${version}.json`);

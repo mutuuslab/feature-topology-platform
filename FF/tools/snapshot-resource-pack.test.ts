@@ -19,6 +19,7 @@ function fixture(){
   const files=['vehicles_ego-01_runtime.json','vehicles_ego-01_requests.json','vehicles_ego-01_status.json','vehicles_ego-01_feature-state.json','vehicles_ego-01_verdicts.json','vehicles_ego-01_customer-state.json','vehicles_ego-01_openfeature.json','vehicles_ego-01_installs.json','features_FEAT-00001.json','features_FEAT-00001_history.json','features_FEAT-00001_reviews_version_1.0.0.json','features_FEAT-00001_versions_1.0.0_safety.json'];
   for(const suffix of ['baselines','evaluations','ops-metrics','reviews','trace-links'])files.push(`features_FEAT-00001_${suffix}.json`);
   for(const suffix of ['','_analysis','_baseline-checklist','_classification','_flag-code-gate','_gate-na-requests','_gates','_release-candidate','_release-signoff','_support-drills','_variability'])files.push(`features_FEAT-00001_versions_1.0.0${suffix}.json`);
+  files.push('field_vehicles_ego-01.json','support_ego-01.json','ofrep_evaluate_targetingKey_ego-01.json','fleet_map_vehicles_ego-01.json');
   const originals=new Map(files.map((f,i)=>[f,` {"value":"한글 ${i}","actorRole":"${i%2?'AUDITOR':'FEATURE_AUTHOR'}","scope":"${f}"}\n`]));
   for(const [f,body]of originals)writeFileSync(join(api,f),body);
   put('workflow_cases.json',{items:[{roleIds:['R-SYS'],caseId:'WFC-private'}]});
@@ -28,8 +29,8 @@ afterEach(()=>{for(const root of roots.splice(0)){assert.ok(resolve(root).starts
 const assets=(api:string,calls:string[])=>({fetch:async(request:Request)=>{const url=new URL(request.url);calls.push(url.pathname);assert.match(url.pathname,/^\/api-snapshot\/(vehicle-query-packets|resource-query-packets)\/[0-9a-f]{64}\.json$/);assert.equal(url.search,'');assert.equal(request.headers.get('Cookie'),null);const file=join(api,url.pathname.slice('/api-snapshot/'.length));return existsSync(file)?new Response(readFileSync(file,'utf8'),{headers:{'Content-Type':'application/json'}}):new Response(null,{status:404});}});
 
 test('additional exact families preserve every byte and role metadata; workflow captures remain separate',async()=>{
-  const f=fixture(),report=packArtifact(f.root);assert.equal(report.logical,30);
-  assert.equal(resourceLogicalFiles(f.api).length,28);assert.equal(packedLogicalFiles(f.api).length,30);
+  const f=fixture(),report=packArtifact(f.root);assert.equal(report.logical,34);
+  assert.equal(resourceLogicalFiles(f.api).length,32);assert.equal(packedLogicalFiles(f.api).length,34);
   assert.equal(existsSync(join(f.api,'workflow_cases.json')),true);assert.equal(resourceRequest('workflow_cases.json'),null);
   const calls:string[]=[],env={ASSETS:assets(f.api,calls)};
   for(const [file,body]of f.originals)for(const method of ['GET','HEAD']){
@@ -86,4 +87,14 @@ test('explicit executable demo bytes and capture metadata survive packing and re
 test('corrupt resources do not count as coverage; a packet larger than 25MiB never replaces the originals',()=>{
   const f=fixture();packArtifact(f.root);const index=JSON.parse(readFileSync(join(f.api,RESOURCE_INDEX),'utf8'));index.packets[0].file='../../outside.json';writeFileSync(join(f.api,RESOURCE_INDEX),JSON.stringify(index));assert.throws(()=>resourceLogicalFiles(f.api),/resource path/);
   const large=fixture();writeFileSync(join(large.api,large.files[0]),JSON.stringify({value:'x'.repeat(PAGES_MAX_FILE_BYTES)}));assert.throws(()=>packResources(large.api),/25MiB/);assert.equal(existsSync(join(large.api,large.files[0])),true);assert.equal(existsSync(join(large.api,RESOURCE_INDEX)),false);
+});
+
+
+test('new vehicle read families cannot reinterpret an unknown VIN as the canonical one',async()=>{
+ const f=fixture();packArtifact(f.root);const calls:string[]=[],env={ASSETS:assets(f.api,calls)};
+ for(const file of ['support_ego-01_actorRole_SYSTEM_ADMIN.json','ofrep_evaluate_targetingKey_ego-01_extra.json']){
+  const r=await onRequest({request:new Request('https://local.test/api-snapshot/'+file),env,next:async()=>new Response('unsafe fallback')});
+  assert.equal(r.status,404);
+ }
+ assert.equal(calls.length,2);assert.ok(calls.every(path=>!path.endsWith(resourcePacketFile(hash('VEHICLE:ego-01')))));
 });

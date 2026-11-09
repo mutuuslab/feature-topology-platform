@@ -26,12 +26,19 @@ const pendingTasks = (page: Page, kind: string) =>
   page.evaluate(
     (k) =>
       new Promise<number>((resolve, reject) => {
-        const req = indexedDB.open('ff-sim', 1);
+        // Read the existing app database without forcing an older schema or creating an empty fixture.
+        const req = indexedDB.open('ff-sim');
+        req.onupgradeneeded = () => { req.transaction?.abort(); reject(new Error('시연 오버레이 DB가 아직 없습니다.')); };
         req.onerror = () => reject(req.error);
         req.onsuccess = () => {
           const db = req.result;
-          const get = db.transaction('overlay').objectStore('overlay').get('current');
-          get.onsuccess = () => (db.close(), resolve(((get.result?.tasks ?? []) as { kind: string }[]).filter((t) => t.kind === k).length));
+          if (!db.objectStoreNames.contains('overlay')) { db.close(); reject(new Error('시연 오버레이 store가 없습니다.')); return; }
+          const get = db.transaction('overlay', 'readonly').objectStore('overlay').get('current');
+          get.onsuccess = () => {
+            db.close();
+            if (!Array.isArray(get.result?.tasks)) { reject(new Error('저장된 시연 작업 큐가 없습니다.')); return; }
+            resolve((get.result.tasks as { kind: string }[]).filter((t) => t.kind === k).length);
+          };
           get.onerror = () => (db.close(), reject(get.error));
         };
       }),

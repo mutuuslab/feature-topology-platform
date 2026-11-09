@@ -44,6 +44,8 @@ export default function SupplierPackages() {
   const mapPerm = usePermission(['IMPLEMENTER', 'FEATURE_AUTHOR']);
   const quality = usePermission(['GATE_JUDGE']);
   const unique = [...new Map(rows.map((f) => [f.featureId, f])).values()];
+  const targetQuery = features.isPending || features.isError ? features : allPackages;
+  const listState = featureId && version ? asyncState(list, packages.length === 0) : asyncState(targetQuery, true);
   return <div className="ds-screen">
     <PageHeader title={S.title} codes="D05-01" lead={S.lead} actions={<Link to="/supplier/deliveries">{S.deliveries}</Link>} message={{ tone: gate.data?.blockers.length ? 'warn' : 'neutral', text: gate.data?.blockers.length ? S.hold : S.gate }} />
     {isLocalFile() && <p role="note" className="ds-field__hint">{S.offlineSimulation}</p>}
@@ -51,13 +53,13 @@ export default function SupplierPackages() {
       <Select label={S.feature} value={featureId} onChange={(e) => { setId(e.target.value); setVer(''); setPackage(''); setSupplier(''); }}>{unique.map((f) => <option key={f.featureId} value={f.featureId}>{f.name} ({f.featureId})</option>)}</Select>
       <Select label={S.version} value={version} onChange={(e) => { setVer(e.target.value); setPackage(''); }}>{versions.map((f) => <option key={f.version} value={f.version}>{f.version}</option>)}</Select>
       <Select label={S.supplier} value={supplier} onChange={(e) => { setSupplier(e.target.value); setPackage(''); }}><option value="">{S.allSuppliers}</option>{suppliers.map((s) => <option key={s} value={s}>{s}</option>)}</Select>
-      <Button onClick={() => { void list.refetch(); void detail.refetch(); void gate.refetch(); }}>{S.refresh}</Button>
+      <Button onClick={() => { void features.refetch(); void allPackages.refetch(); if (featureId && version) { void list.refetch(); void gate.refetch(); } if (packageId) void detail.refetch(); }}>{S.refresh}</Button>
     </Toolbar>
     {gate.error && <p role="alert">{gate.error.message}</p>}
     {gate.data && <Panel title={S.gate}><p>{gate.data.applicable ? gate.data.blockers.length ? gate.data.blockers.join(' / ') : S.gateReady : S.internal}</p></Panel>}
     <div className="supplier-layout">
       <Panel title={S.packageList}>
-        <AsyncView state={asyncState(list)} error={list.error} onRetry={() => list.refetch()}>
+        <AsyncView state={listState} error={list.error ?? features.error ?? allPackages.error} onRetry={() => { void features.refetch(); void allPackages.refetch(); if (featureId && version) void list.refetch(); }}>
           <div className="ds-stack supplier-list">{packages.map((p) => <Button key={p.packageId} aria-pressed={p.packageId === packageId} onClick={() => setPackage(p.packageId)}><span>{p.supplier} / {p.version}</span><span>{S.status[p.status]}</span></Button>)}</div>
           {!packages.length && <p>{S.noPackage}</p>}
         </AsyncView>
@@ -69,9 +71,9 @@ export default function SupplierPackages() {
     <Panel title={S.mapping}>
       <DataTable caption={S.mapping} rows={mappings.data?.items ?? []} rowKey={(m) => m.mapId} columns={[{ key: 'supplier', header: S.supplier, cell: (m) => m.supplier }, { key: 'function', header: S.functionId, cell: (m) => m.supplierFunctionId }, { key: 'name', header: S.functionName, cell: (m) => m.name }, { key: 'swc', header: 'SW Component / ECU', cell: (m) => m.swcs.map((s) => s.name + ' / ' + (s.ecuPno ?? S.unlinked)).join(', ') }]} />
       {mappings.error && <p role="alert">{mappings.error.message}</p>}
-      {mapPerm.ok && <details><summary>{S.saveMapping}</summary><MappingForm featureId={featureId} mappings={mappings.data?.items ?? []} /></details>}
+      {mapPerm.ok && featureId && <details><summary>{S.saveMapping}</summary><MappingForm featureId={featureId} mappings={mappings.data?.items ?? []} /></details>}
     </Panel>
-    {quality.ok && <Panel title={S.criteria}><details><summary>{S.saveCriteria}</summary><CriteriaForm featureId={featureId} /></details></Panel>}
+    {quality.ok && featureId && <Panel title={S.criteria}><details><summary>{S.saveCriteria}</summary><CriteriaForm featureId={featureId} /></details></Panel>}
   </div>;
 }
 

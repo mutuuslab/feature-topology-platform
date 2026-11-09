@@ -21,8 +21,8 @@ const LEARN_MARKER = 'ff-learn-v1';
 const DEPT_MARKER = 'ff-dept-view-v1';
 const WORKSPACE_MARKER = 'data-workspace-home';
 const EXTERNAL_MARKER = 'ff-external-demo-v1';
-/** 라우트 표의 경로 문자열 '/_design'(따옴표로 감싼 값) */
-const DESIGN_ROUTE = /["'`]\/_design["'`]/;
+/** Detect an actual route field, not a translation dictionary key or a navigation comparison. */
+const DESIGN_ROUTE = /(?:\bpath|["'`]path["'`])\s*:\s*["'`]\/_design["'`]/;
 /** FF는 제품 약어이기도 하다. 문자열 대신 실제로 번들에 남은 데모 인증 모듈을 검사한다. */
 const demoAuthModule = (id: string) => /\/src\/(?:auth-demo\.ts|screens\/auth\/DemoLoginForm\.tsx)(?:$|\?)/.test(id.replaceAll('\\', '/'));
 
@@ -70,6 +70,11 @@ test('운영 빌드에 데모 로그인 표식·자격 검증 모듈이 없다',
 test('데모 인증 모듈 판별은 Windows·Linux·가상 모듈 경로에서 동작한다', () => {
   for (const path of ['C:\\repo\\frontend\\src\\auth-demo.ts', '/repo/frontend/src/screens/auth/DemoLoginForm.tsx', '/repo/frontend/src/auth-demo.ts?commonjs-proxy']) assert.ok(demoAuthModule(path), path);
   for (const path of ['/repo/frontend/src/auth.ts', '/repo/frontend/src/screens/auth/Login.tsx', '/repo/frontend/src/auth-demo-other.ts']) assert.equal(demoAuthModule(path), false, path);
+});
+
+test('design route detection distinguishes route definitions from copy keys', () => {
+  for (const code of ['{path:"/_design",element:Gallery}', '{"path":"/_design"}', "{path:'/_design'}"]) assert.ok(DESIGN_ROUTE.test(code), code);
+  for (const code of ['{"/_design":"Design system"}', 'href==="/_design"', '"/_design"']) assert.equal(DESIGN_ROUTE.test(code), false, code);
 });
 
 test('운영 빌드에 데모 역할 선택기(데모 계정 전체 목록)가 없고 SSO 로그인이 있다', () => {

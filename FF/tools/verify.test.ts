@@ -20,7 +20,7 @@ test('packaging은 실제 백엔드 빌드·스냅샷 생성 뒤 같은 검사�
   const commands = packaging.cmd.replace(/\bnpm\.cmd\b/g, 'npm').split(/\s*&&\s*/);
   const build = commands.indexOf('npm run build -w feature-topology-backend');
   const snapshot = commands.indexOf('node tools/snapshot-api.ts');
-  const check = commands.indexOf('node --test tools/packaging.test.mjs tools/demo-publish.test.ts');
+  const check = commands.findIndex((command) => command.startsWith('node --test ') && ['tools/packaging.test.mjs', 'tools/demo-publish.test.ts'].every((file) => command.split(/\s+/).includes(file)));
   assert.ok(build >= 0, '빌드된 백엔드를 로컬 잔존물로 가정하지 않는다');
   assert.ok(snapshot > build, '실제 스냅샷 생성은 백엔드 빌드 성공 뒤에 돈다');
   assert.ok(check > snapshot, 'packaging 검사는 실제 스냅샷 생성 성공 뒤에 돈다');

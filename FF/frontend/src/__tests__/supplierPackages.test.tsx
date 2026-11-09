@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); __resetLocaleForTest(); vi.unstubAllGlobals(); });
 const Portal = ROUTES.find((r) => r.path === '/supplier/portal')!.element;
-const mount = () => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={['/supplier/portal?featureId=FEAT-00010&featureVersion=2.0.0']}><AppProvider><Suspense fallback={<p>불러오는 중</p>}><Portal /></Suspense></AppProvider></MemoryRouter></QueryClientProvider>);
+const mount = (path = '/supplier/portal?featureId=FEAT-00010&featureVersion=2.0.0') => render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter initialEntries={[path]}><AppProvider><Suspense fallback={<p>불러오는 중</p>}><Portal /></Suspense></AppProvider></MemoryRouter></QueryClientProvider>);
 
 it('changes supplier UI captions live while preserving the review draft and acceptance guard', async () => {
   mount();
@@ -110,5 +110,17 @@ it('file archive still reads a captured supplier artifact body without posting c
   mount();
   fireEvent.click(await screen.findByRole('button', { name: '본문 보기' }));
   expect(await screen.findByText('DEMO synthetic reference body')).toBeInTheDocument();
+  expect(writes).toEqual([]);
+});
+
+
+it('empty first-run data settles without querying or editing an absent Feature', async () => {
+  const fetcher=vi.fn(async(_url:string)=>new Response(JSON.stringify({items:[]}),{headers:{'Content-Type':'application/json'}}));
+  vi.stubGlobal('fetch',fetcher);
+  const view=mount('/supplier/portal');
+  await screen.findByRole('heading',{name:'협력사 이관',level:1});
+  await waitFor(()=>expect(view.container.querySelectorAll('[data-state="loading"]')).toHaveLength(0));
+  expect(view.container.querySelector('[data-state="empty"]')).toBeTruthy();
+  expect(fetcher.mock.calls.every(args=>!String(args[0]).includes('supplier-gate')&&!String(args[0]).includes('supplier-mappings'))).toBe(true);
   expect(writes).toEqual([]);
 });

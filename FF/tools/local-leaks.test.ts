@@ -9,6 +9,14 @@ import { assertSnapshotClean } from './snapshot-api.ts';
 
 const kinds = (text: string, file = 'a.json', users = ['TaehoKim']) => scanText(text, file, users).map((l) => l.kind);
 
+test('generic CI account words are not personal-name leaks; identity values and account paths remain checked', () => {
+  assert.deepEqual(kinds('const o={runner:"실행기"};const s="previous runner record";', 'virtual.js', ['runner']), []);
+  assert.ok(kinds('{"createdBy":"runner"}', 'snapshot.json', ['runner']).includes('user-name'));
+  assert.ok(kinds('const meta={createdBy:"runner"}', 'metadata.js', ['runner']).includes('user-name'));
+  assert.ok(kinds('{"path":"/home/runner/work/app"}', 'snapshot.json', ['runner']).includes('posix-path'));
+  assert.deepEqual(kinds('"by":"TaehoKim"'), ['user-name']);
+});
+
 test('점검에서 나온 누출 — 검증 서버 상태·Evidence 경로·재생 명령·사설 IP·CI 경로', () => {
   assert.deepEqual(kinds('{"host":"127.0.0.1","port":2100}'), ['loopback']);
   assert.ok(kinds(JSON.stringify({ runner: 'C:\\project\\2026-06-04_Feature_Platform-static\\FF\\backend\\x.mjs' })).includes('windows-path'));

@@ -57,6 +57,9 @@ export function scanText(text: string, file = 'x.json', users: string[] = userNa
   const out: Leak[] = [];
   for (const { kind, re } of rules) {
     for (const m of t.matchAll(re)) {
+      // Common machine-account names are also ordinary technical words. Keep identity-value
+      // checks; absolute account paths remain covered by RULES independently.
+      if (kind === 'user-name' && /^(runner|root|admin|user|build|system)$/i.test(m[0]) && !/["']?\b(?:user(?:name)?|by|created[_-]?by|updated[_-]?by|author|owner|actor(?:Id)?|id)\b["']?\s*:\s*["']\s*$/i.test(t.slice(Math.max(0, m.index! - 100), m.index!))) continue;
       out.push({ file, kind, match: m[0], context: t.slice(Math.max(0, m.index! - 50), m.index! + m[0].length + 50).replace(/\s+/g, ' ') });
       if (out.filter((x) => x.kind === kind).length >= 3) break; // 같은 파일·같은 종류는 3건까지만 보인다
     }

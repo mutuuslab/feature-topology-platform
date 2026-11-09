@@ -38,8 +38,9 @@ export function cacheKey(name: ProfileName, distDir: string = BACKEND_DIST): str
   h.update(distDigest(distDir));
   // Feature DB 이전본·시드 연결도 첫 기동 때 DB에 들어간다(30-95 §9) — 바뀌면 캐시를 새로 만든다
   const refdb = join(FF, 'data', 'reference', 'feature-db');
-  for (const dir of [join(FF, 'data', 'fixtures', 'v0.81'), join(FF, 'data', 'fixtures', 'demo'), join(refdb, 'v1.3')]) for (const f of readdirSync(dir).sort()) h.update(f).update(readFileSync(join(dir, f)));
-  h.update(readFileSync(join(refdb, 'seed-links.json')));
+  // Fixtures now contain nested SW artifacts and multiple reference releases. Hash every tree,
+  // preserving relative paths, rather than reading child directories as if they were files.
+  for (const dir of [join(FF, 'data', 'fixtures', 'v0.81'), join(FF, 'data', 'fixtures', 'demo'), refdb]) h.update(distDigest(dir));
   // 데이터 크기만(요청 수·동시성·예산 배수는 DB와 무관)
   const { features, vehicles, audit, events, notifications, deliveries, statusReports } = PROFILES[name];
   h.update(JSON.stringify({ features, vehicles, audit, events, notifications, deliveries, statusReports }));

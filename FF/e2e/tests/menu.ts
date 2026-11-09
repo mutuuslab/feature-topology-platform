@@ -51,5 +51,5 @@ const SAMPLE: Record<string, string> = {
  */
 const NO_SAMPLE = new Set(['/master/feature-db/changes/:id']);
 export const DRILLDOWNS: { path: string; title: string; url: string }[] = [...src.matchAll(/\{ path: '([^']+)', element: ([^\n]*?), title: '([^']+)'[^\n]*parent: '/g)]
-  .filter((m) => !/legacyTo\(|Redirect'/.test(m[2]) && !NO_SAMPLE.has(m[1]))
+  .filter((m) => !/legacyTo\(|Redirect'/.test(m[2]) && !NO_SAMPLE.has(m[1]) && !MENU_ENTRIES.some((entry) => entry.path === m[1]))
   .map((m) => ({ path: m[1], title: m[3], url: SAMPLE[m[1]] ?? m[1] }));

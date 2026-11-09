@@ -5,6 +5,7 @@
 // 단계별 화면은 SHOTS 폴더(1366 폭)에 남긴다.
 import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { pickPrimaryRef, submitProposedFeature } from '../tests/refdb';
 
 const SHOTS = process.env.REGISTRY_SHOTS ?? 'C:/tmp/ff-static-audit/pw-out/registry/shots';
 let n = 0;
@@ -45,12 +46,9 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   page.on('pageerror', (e) => errors.push(e.message));
   await login(page);
 
-  // 1. 작성 — 기준 기능 고르기 → 등록 정보 → 제안 등록(Control Point 없이 — 정의 승인 뒤 Baseline 대상)
+  // 1. 작성 — Feature DB 대표 기준 선택 → 문서 편집 → 적용 범위 확인 → 제안 등록
   await as(page, 'author', '/feature/propose');
-  await main(page).getByRole('button', { name: '기준 기능 선택', exact: true }).click();
-  await page.getByRole('dialog').getByLabel('기능 검색').fill('AD-PRK-004');
-  await page.getByRole('dialog').getByRole('button', { name: 'AD-PRK-004 기본 정보 가져오기' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: '다음: 등록 정보 확인' }).click();
+  await pickPrimaryRef(page, 'AD-PRK-004', 'AD-PRK-004');
   await main(page).getByLabel('이름').fill('서라운드 뷰 주차 안내 · 시연');
   await main(page).getByLabel(/요구사항 ID/).fill('REQ-PARK-0301');
   await main(page).getByLabel('트림').fill('Signature');
@@ -58,9 +56,7 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await main(page).getByLabel('담당').fill('Parking기획팀');
   for (const cb of await main(page).getByRole('group', { name: 'Control Point' }).getByRole('checkbox').all()) if (await cb.isChecked()) await cb.uncheck();
   await shot(page, 'propose-confirm');
-  await main(page).getByRole('button', { name: '다음: 등록 전 확인' }).click();
-  await page.getByRole('dialog').getByRole('checkbox').check();
-  await page.getByRole('dialog').getByRole('button', { name: '확인한 내용으로 초안 등록' }).click();
+  await submitProposedFeature(page);
   await page.waitForURL(/\/features\/FEAT-\d{5}\/0\.1\.0/);
   const [, id] = /\/features\/(FEAT-\d{5})\/0\.1\.0/.exec(page.url())!;
   await expect(main(page)).toContainText('서라운드 뷰 주차 안내 · 시연');

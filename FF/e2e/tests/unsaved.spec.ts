@@ -24,7 +24,7 @@ test('Feature 제안: 입력 뒤 메뉴 링크 → 확인 창, 계속 편집이�
 
 test('입력이 없으면 묻지 않고 이동한다', async ({ page }) => {
   await page.goto('/feature/propose');
-  await expect(page.locator('#main input[name="name"]')).toBeVisible();
+  await expect(page.getByTestId('propose-reference-gate')).toBeVisible();
   await page.locator('a[href="/features"]').first().click();
   await expect(page).toHaveURL(/\/features$/);
   await expect(page.locator('[data-unsaved-prompt]')).toHaveCount(0);

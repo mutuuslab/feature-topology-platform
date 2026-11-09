@@ -8,7 +8,7 @@ const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const SHOWCASE = process.env.E2E_SHOWCASE === '1';
 const FLAG = 'care_00022_signal';
 const MAP_URL = `/fleet/map?lens=activation&flagKey=${FLAG}`;
-const ACT: Record<string, string> = { ON: '--ok', OFF: '--faint', DISABLED: '--danger', UNKNOWN: '--warn' };
+const ACT: Record<string, string> = { ON: '--mark-ok', OFF: '--mark-neutral', DISABLED: '--mark-danger', UNKNOWN: '--mark-warn' };
 type Vehicle = { vin: string; country: string; activation: string | null; position: { precision: string } | null };
 
 test.beforeEach(async ({ page }) => {

@@ -38,7 +38,7 @@ test('업무 절차 허브 — 빠른 완료가 진행률과 다음 할 일을 �
   await page.setViewportSize({ width: 1366, height: 900 });
   await asRole(page, 'author');
   await page.goto('/procedures?view=list');
-  await expect(page.getByRole('heading', { level: 1, name: '업무 절차' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: '전체업무흐름' })).toBeVisible();
   const progress = page.locator('.pr-progress');
   await expect(progress).toContainText('할 일');
   const before = await progress.textContent();

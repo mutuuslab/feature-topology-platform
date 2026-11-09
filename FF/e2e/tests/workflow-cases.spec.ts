@@ -53,7 +53,7 @@ test.describe('Actual workflow case persistence and boundaries', () => {
       await expect(page.getByRole('heading', { name: '업무 건·산출물', exact: true })).toBeVisible();
       await page.getByRole('combobox', { name: '처리할 활동', exact: true }).selectOption(ACT);
       await expect(page.getByText('scope-evidence.txt', { exact: false }).first()).toBeVisible();
-      const downloadButton = page.getByRole('button', { name: '첨부 받기 · scope-evidence.txt', exact: true });
+      const downloadButton = page.getByRole('button', { name: '첨부 다운로드 · scope-evidence.txt', exact: true });
       await expect(downloadButton).toBeEnabled();
       const [download] = await Promise.all([page.waitForEvent('download', { timeout: 10000 }), downloadButton.click()]);
       expect(await readFile((await download.path())!)).toEqual(bytes);

@@ -4,6 +4,7 @@
 //   G7은 SM·CSM 두 사람 서명 뒤에만 PASS(같은 사람 두 역할 거부). 단계 밖 Gate는 제출 전에 막히고 오류에 코드가 붙지 않는다.
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import { apiRefs, REF } from './refdb';
+import { acceptSupplierFixture } from './supplier';
 
 test.use({ actionTimeout: 10_000 });
 
@@ -147,6 +148,9 @@ test('SM HARA · CSM TARA · 법규 판단 → 판정자가 ASIL 사유를 보�
   // 정의 승인 → 개발 단계, G4~G6(API)
   await post(request, `${base}/gates`, ['usr-quality', 'GATE_JUDGE'], { gate: 'G3', inputResult: 'PASS', rationale: '사양 확인', evidenceRef: 'EV-W3-G3' });
   await post(request, `${base}/transitions`, ['usr-approver', 'FEATURE_APPROVER'], { to: 'APPROVED', reason: '정의 승인' }, 200);
+  const incomplete = await post(request, `${base}/gates`, ['usr-quality', 'GATE_JUDGE'], { gate: 'G6', inputResult: 'PASS', rationale: '본문 검수 전의 통과 시도', evidenceRef: 'EV-W3-G6-INCOMPLETE' }, 422);
+  expect(incomplete.error.details.blockers).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'SUPPLIER_PACKAGE', ref: 'G6' })]));
+  await acceptSupplierFixture(request, id, '0.1.0'); // 실제 10본문·SHA·서로 다른 검수자, 실차 인증 아님
   for (const g of ['G4', 'G5', 'G6']) await post(request, `${base}/gates`, ['usr-quality', 'GATE_JUDGE'], { gate: g, inputResult: 'PASS', rationale: `${g} 확인`, evidenceRef: `EV-W3-${g}` });
 
   // 5) G7 — 서명 전에는 판정 폼이 필요한 서명을 보이고 막는다

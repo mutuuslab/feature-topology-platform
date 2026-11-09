@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { DRILLDOWNS, MENU_ENTRIES } from './menu';
 import { settle } from './settle';
+import { prepareSoftwareListFixture } from './software';
 
 const FF = join(__dirname, '..', '..');
 const read = (p: string) => readFileSync(join(FF, p), 'utf8');
@@ -129,7 +130,18 @@ async function expectFilled(page: Page, label: string) {
 
 test.describe('메뉴·하위 화면 — 빈 상태 없음', () => {
   for (const s of SCREENS) {
-    test(`${s.title} ${s.url}`, async ({ page }) => {
+    test(`${s.title} ${s.url}`, async ({ page, request }) => {
+      // 기본 native seed에는 사용자가 작성할 workflow case가 없다(2x SHOWCASE seed와 별개).
+      // 목록을 면제하지 않고 실제 생성 API로 명시적 시험 자료를 만든 뒤 표시를 검증한다.
+      if (s.url === '/procedures/work') {
+        const created = await request.post(`http://localhost:${process.env.E2E_API_PORT ?? 9111}/api/workflow/cases`, {
+          headers: { 'X-Actor-Id': 'usr-author', 'X-Actor-Role': 'FEATURE_AUTHOR' },
+          data: { processId: 'FPW.18', title: 'E2E synthetic workflow list evidence', targetRef: 'FEAT-00022@1.0.0' },
+        });
+        expect(created.status(), await created.text()).toBe(201);
+        expect((await created.json()).item.caseId).toMatch(/^WFC-/);
+      }
+      if (s.url === '/deployments/software') await prepareSoftwareListFixture(request);
       const url = await sampleOf(PATH_OF.get(s.url) ?? s.url, s.url);
       await open(page, url, { role: 'author' });
       await expectFilled(page, `${s.url} (Feature 설계)`);

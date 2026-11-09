@@ -8,7 +8,7 @@ import { expect, test, type Locator, type Page, type Response } from '@playwrigh
 test.use({ viewport: { width: 1440, height: 900 }, launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } });
 
 const SUB: Record<string, string> = { OFFERED: '--viz-1', TRIAL: '--viz-2', PAID: '--viz-3', ENDED: '--faint', NONE: '--muted' };
-const ACT: Record<string, string> = { ON: '--ok', OFF: '--faint', DISABLED: '--danger', UNKNOWN: '--warn' };
+const ACT: Record<string, string> = { ON: '--mark-ok', OFF: '--mark-neutral', DISABLED: '--mark-danger', UNKNOWN: '--mark-warn' };
 
 interface Item {
   vin: string;
@@ -100,6 +100,10 @@ test('데모 차량 전부가 자동차 아이콘 — 상태 색, 기능 활성 
   const paidLegend = Number((await legend.locator('li', { hasText: '구독·구매' }).locator('.fm-legend__n').innerText()).replace(/,/g, ''));
   expect(paidLegend).toBe(await table.locator('tbody tr', { hasText: '구독·구매' }).count());
 
+  // 실제 테마의 상태별 표시색도 서로 달라야 한다(아이콘 ID 명칭만 바꿔 통과시키지 않는다).
+  const colors = await page.evaluate((tokens) => tokens.map((token) => getComputedStyle(document.documentElement).getPropertyValue(token).trim()), Object.values(ACT));
+  expect(colors.every(Boolean)).toBe(true);
+  expect(new Set(colors).size).toBe(4);
   await page.getByRole('radio', { name: '기능 활성' }).click();
   const a = await settled(canvas);
   expectIcons(a.points, demo(), (v) => ACT[v.activation!]);

@@ -6,6 +6,7 @@ import { recordAnalysisApi, signG7Api } from './analysis';
 import { waiveFlagCodeGate } from './flag-code-gate';
 import { acceptSupplierFixture } from './supplier';
 import { releaseVersionApi } from './release';
+import { classifyNonAdsFixture } from './classification';
 
 const API = `http://localhost:${process.env.E2E_API_PORT ?? 9111}`;
 const H = (id: string, role: string) => ({ 'X-Actor-Id': id, 'X-Actor-Role': role });
@@ -31,6 +32,7 @@ async function developingFeature(request: APIRequestContext) {
   const base = `/api/features/${f.featureId}/versions/0.1.0`;
   const p = await request.patch(`${API}${base}`, { headers: H(...author), data: { functions: [{ functionId: 'FUNC-000056', label: 'Extended Gap Control 기능' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] } });
   expect(p.status(), await p.text()).toBe(200);
+  await classifyNonAdsFixture(request, f.featureId, '0.1.0', 'ADAS상품기획팀');
   // 안전 분류 확정(Safety Manager) 없이는 G2 이후 PASS가 막힌다 — FFG-CLS-001
   await post(`${base}/safety/confirm`, ['usr-safety', 'SAFETY_OFFICER'], { reason: 'HARA 검토 완료' });
   await recordAnalysisApi(request, f.featureId, '0.1.0'); // G2 PASS 근거 — HARA·TARA(P3-3)

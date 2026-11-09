@@ -1,6 +1,7 @@
 // ADS·UNECE·Orca 화면 — 실제 백엔드(메모리 DB·v0.81 + data/fixtures/ads 시드)로 새 화면과 바뀐 화면을 끝까지 밟는다.
 // 핵심 메시지는 ux.json 확정안 문장(숫자만 시드), '모름'은 판단 불가·미확인 두 낱말, 막힌 행동은 글자 사유(BlockedAction).
 import { expect, test, type Page } from '@playwright/test';
+import type { VehicleFeatureStateView } from '../../contracts/src/rules/ads-state';
 
 const key = (page: Page) => page.locator('#main [data-key-message]');
 
@@ -60,15 +61,48 @@ test('증거: ADS·UNECE 요구 추적 — 구현되지 않은 요구 수와 플
   await expect(page.locator('#main')).toContainText('플랫폼 구현 현황 — 차량 인증 상태가 아닙니다');
 });
 
-test('상태: 차량 6축 — ADS 차량의 오래된 보고는 미확인, 활성 적격·실제 실행은 차량 보고값', async ({ page }) => {
+test('상태: 차량 6축 — 현재 API의 관측 신선도와 차량 보고 표시가 일치한다', async ({ page }) => {
+  const response = page.waitForResponse((r) => new URL(r.url()).pathname === '/api/vehicles/KMH-GN7-0001/feature-state' && r.status() === 200);
+  await page.goto('/fleet/vehicles/KMH-GN7-0001');
+  const view = await (await response).json() as VehicleFeatureStateView;
+  expect(view.vin).toBe('KMH-GN7-0001');
+  expect(view.features.length).toBeGreaterThan(0);
+  const unconfirmed = view.features.filter((f) => f.freshness.state !== 'FRESH').length;
+  expect(view.unconfirmed).toBe(unconfirmed);
+  // 실제 차량 시뮬레이터가 보고를 갱신한다. 오래된 seed가 계속 남아 있다는 가정 대신 실제 응답을 검증한다.
+  await expect(key(page)).toContainText(unconfirmed ? `현재 상태 미확인 기능 ${unconfirmed}개` : `기능 ${view.features.length}개 모두 기준 시간 안 차량 보고`);
+  const axes = page.locator('#main [data-axis-table]').first();
+  await expect(axes.getByRole('rowheader', { name: '활성 적격' })).toBeVisible();
+  await expect(axes.getByRole('rowheader', { name: '실제 실행' })).toBeVisible();
+  await expect(axes.getByRole('row', { name: /^관측 신선도/ })).toContainText({ FRESH: '최신 확인', DELAYED: '지연', OFFLINE: '오프라인', UNOBSERVED: '미확인' }[view.features[0].freshness.state]);
+  // 판정 탭 — 차량이 보고한 판정이지 플랫폼 허가가 아니다.
+  await page.goto('/fleet/vehicles/ego-01?tab=verdicts');
+  await expect(page.locator('#main')).toContainText('차량이 보고한 판정 — 플랫폼 허가가 아닙니다');
+});
+
+test('상태: 차량 6축 — 명시적 지연 응답 fixture는 과거 허용·실행을 현재 상태로 표시하지 않는다', async ({ page }) => {
+  // 실제 API 구조를 사용한 UI 오류주입이다. 서버 보고·서명·실차 상태를 수정하거나 native 관측 근거로 기록하지 않는다.
+  await page.route('**/api/vehicles/KMH-GN7-0001/feature-state', async (route) => {
+    const response = await route.fetch();
+    expect(response.status()).toBe(200);
+    const view = await response.json() as VehicleFeatureStateView;
+    expect(view.features.length).toBeGreaterThan(0);
+    for (const f of view.features) {
+      f.freshness = { ...f.freshness, state: 'DELAYED', observedAt: new Date(Date.parse(view.now) - f.freshness.staleAfterMs - 60_000).toISOString() };
+      f.eligibility = { ...f.eligibility, current: null, past: 'ALLOW' };
+      f.runtime = { ...f.runtime, current: null, past: 'ACTIVE' };
+    }
+    view.unconfirmed = view.features.length;
+    await route.fulfill({ response, json: view });
+  });
   await page.goto('/fleet/vehicles/KMH-GN7-0001');
   await expect(key(page)).toContainText('현재 상태 미확인 기능');
   const axes = page.locator('#main [data-axis-table]').first();
-  await expect(axes.getByRole('rowheader', { name: '활성 적격' })).toBeVisible();
-  await expect(axes).toContainText('미확인');
-  // 판정 탭 — 차량이 보고한 판정이지 플랫폼 허가가 아니다
-  await page.goto('/fleet/vehicles/ego-01?tab=verdicts');
-  await expect(page.locator('#main')).toContainText('차량이 보고한 판정 — 플랫폼 허가가 아닙니다');
+  for (const name of ['활성 적격', '실제 실행']) {
+    const row = axes.getByRole('row', { name: new RegExp(`^${name}`) });
+    await expect(row).toContainText('미확인');
+    await expect(row).toContainText('그때 보고');
+  }
 });
 
 test('상태: 배포 상세 — 적용 확인 안 된 차량 수와 배타 구간(합 = 대상)', async ({ page }) => {

@@ -121,7 +121,8 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await expect(drawer(page)).toContainText(br);
   await drawer(page).locator('textarea').fill('체크리스트 통과 — 확정');
   await drawer(page).getByRole('button', { name: /확정|승인/ }).first().click();
-  await expect(drawer(page)).toContainText(/BL-\d{5}/);
+  await expect(drawer(page)).toContainText('결정자 usr-steward');
+  await expect(drawer(page)).toContainText('체크리스트 통과 — 확정');
   await shot(page, 'baseline-decided');
   await page.goto(`/features/${id}/0.1.0?tab=baseline`);
   await page.waitForLoadState('networkidle');

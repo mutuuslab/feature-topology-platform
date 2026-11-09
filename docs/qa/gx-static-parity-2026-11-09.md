@@ -6,7 +6,7 @@ status: in-review
 version: 0.1.0
 owner: verification-safety
 cycle: 1
-last_updated: 2026-11-09
+last_updated: 2026-11-10
 ---
 
 # GX static parity release checkpoint — 2026-11-09
@@ -85,6 +85,7 @@ Executed evidence on isolated branch based on `70bbccd08e4156d7431406c1b739d73ba
 - The unchanged pre-fix engine was restored in the isolated worktree (`git diff --exit-code` confirmed HEAD source) and the two new queue/reset cases actually **failed 2/2**. The fixed engine was restored byte-for-byte afterward. Valid baseline evidence is `out/sim-read-snapshot-baseline-r2.log`; the earlier r1 comparison did not switch source because of a local write permission error and is not baseline evidence.
 - Full engine plus GX preflight/trust and workflow snapshot/transfer/execution suites: **6 files / 60 PASS**. Workflow captured-source reads, original artifact revisions, role separation and stale-version refusal remain covered.
 - Own contracts build and frontend production typecheck: **PASS**.
+- Additional real signature/original-byte SW delivery, static client and query-filter suites: **4 files / 40 PASS**. Cookie-expiry/gate error propagation: **5 PASS**. Together with the six engine/GX/workflow files above, **11 files / 105 tests PASS**; the seven new regressions are included in that total.
 - The first binary regression fixture lacked the mandatory exception source and correctly failed closed. Its final fixture explicitly declares a captured empty exception list and retains the real expiry preflight; no source guard was bypassed.
 
 The existing UI five-second acceptance limits and test skips were not changed. Final two-worker business/policy browser verification and the exact integrated release CI remain integration work; these unit results do not claim that those browser gates already pass.

@@ -8,6 +8,7 @@ import { autofill as AF, bof as B, regSteps as RS } from '../../frontend/src/cop
 import { propose as P } from '../../frontend/src/copy/propose';
 import { recordAnalysisApi } from './analysis';
 import { settle } from './settle';
+import { openRefPicker } from './refdb';
 
 test.describe.configure({ mode: 'default' });
 
@@ -54,7 +55,8 @@ test('(a) 기준 행 선택만으로 자동 채움 → 제출 → 검토 → 정
   await page.goto('/');
   await page.locator('[data-ui="dashboard-register"]').click();
   await expect(page).toHaveURL(/\/feature\/propose$/);
-  await expect(page.locator('[data-reg-step="0"] [aria-current="step"]')).toContainText(RS.stages[0]);
+  await expect(page.getByTestId('propose-reference-gate')).toBeVisible();
+  await openRefPicker(page);
 
   // ① 이름·설명으로 찾기 → 추천 후보를 대표로
   await page.locator('input[name="intent"]').fill('주차할 때 연석 감지하고 휠 보호');
@@ -66,7 +68,7 @@ test('(a) 기준 행 선택만으로 자동 채움 → 제출 → 검토 → 정
   await page.getByText(P.form.autofill).click();
   const af = page.getByTestId('autofill');
   await expect(af).toBeVisible();
-  await expect(page.locator('[data-reg-step="1"] [aria-current="step"]')).toContainText(RS.stages[1]);
+  await expect(page.locator(`[data-prefilled="${REF_ID}"]`)).toBeVisible();
   await expect(af.locator('[data-af-field="asil"]')).toContainText('대표 ASIL(L)');
   await expect(af.locator('[data-af-field="component"]')).toContainText('Parking assistance');
   await expect(af.locator('[data-af-field="owner"]')).toContainText(AF.sourceKind.CATALOGUE);
@@ -96,9 +98,9 @@ test('(a) 기준 행 선택만으로 자동 채움 → 제출 → 검토 → 정
   const regs = page.getByRole('table', { name: '진행 중인 등록' });
   await expect(regs.getByRole('row').filter({ hasText: id })).toContainText(`3 · ${RS.stages[2]}`);
 
-  // 검토 — 요구 ID(작성자)·구현 연결·안전 분류 확정(FSM)·분석 근거·G1~G3 PASS(품질 검토)
+  // 검토 — 요구 ID·실제 UPG-VC 기준·구현 연결·안전 분류 확정(FSM)·분석 근거·G1~G3 PASS(품질 검토)
   const base = `/api/features/${id}/versions/0.1.0`;
-  await call(request, 'patch', base, AUTHOR, { requirementIds: ['REQ-E2E-26580'], functions: [{ label: '연석 감지 판정' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] }, 200);
+  await call(request, 'patch', base, AUTHOR, { requirementIds: ['REQ-E2E-26580'], upgVc: ['F111A114001'], functions: [{ label: '연석 감지 판정' }], swIds: ['SW-CARE-SDIST-APP'], swVersions: ['1.2.1'], ecuPnos: ['99211-NX400'] }, 200);
   await call(request, 'post', `${base}/safety/confirm`, H('usr-safety', 'SAFETY_OFFICER'), { reason: 'HARA 검토 완료' }, 201);
   await recordAnalysisApi(request, id, '0.1.0');
   for (const gate of ['G1', 'G2', 'G3']) await call(request, 'post', `${base}/gates`, H('usr-quality', 'GATE_JUDGE'), { gate, inputResult: 'PASS', rationale: `${gate} 확인`, evidenceRef: `EV-${gate}` }, 201);

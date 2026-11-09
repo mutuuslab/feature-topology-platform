@@ -1,4 +1,4 @@
-// 구매 산정 담당자 흐름 — 실제 등록 Feature 담기·검토·제출·다른 사람 승인·결과 고정·역할별 금액·엑셀 다운로드.
+// 구매 산정 담당자 흐름 — Feature DB 기준 행에서 시작해 실제 등록 Feature 연결·검토·제출·다른 사람 승인·결과 고정·역할별 금액·엑셀 다운로드.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 
@@ -22,27 +22,28 @@ test('산정 작성자 → 승인자 → 열람 — Feature 담기·검토·금�
     data: { name: `E2E 산정 기능 ${suffix}`, description: '구매 담당자 흐름 검증', country: 'KR', vehicleModel: `E2E-COST-${suffix}`, trim: 'Premium', ownerId: 'usr-author', asil: 'QM', featureRefs: [{ refId: 'BC-BCM-001', role: 'PRIMARY' }] },
   });
   expect(registered.status()).toBe(201);
-  const featureId: string = (await registered.json()).featureId;
+  const registeredFeature = await registered.json();
+  const featureId: string = registeredFeature.featureId;
   await page.goto('/_design');
   await asRole(page, 'viewer', '/procurement/sw-cost');
   await page.getByRole('button', { name: '새 과제', exact: true }).click();
   const create = page.getByRole('dialog');
+  // 기준 행·발행본을 먼저 고른다. 등록 Feature 검색으로 우회하거나 빈 과제를 만들지 않는다.
+  await create.getByLabel('기준 행 이름·별칭·ID', { exact: true }).fill('BC-BCM-001');
+  const referenceRow = create.getByRole('table', { name: 'Feature DB 기반 산정', exact: true }).getByRole('row').filter({ hasText: 'BC-BCM-001' });
+  await referenceRow.getByRole('button', { name: '이 기준으로 산정', exact: true }).click();
+  await create.getByRole('combobox', { name: /^등록 Feature 연결 \(선택\)/ }).selectOption(`${featureId}@${registeredFeature.version}`);
+  await create.getByRole('button', { name: '이 기준으로 산정', exact: true }).click();
   const name = `E2E 구매 산정 ${suffix}`;
+  await expect(create.getByLabel('과제 이름', { exact: true })).not.toHaveValue('');
+  await expect(create.getByLabel(/^대상 제어기·차종/)).not.toHaveValue('');
   await create.getByLabel('과제 이름', { exact: true }).fill(name);
-  await create.getByLabel(/^대상 제어기·차종/).fill('NX4 PE / BCM');
   await create.getByRole('button', { name: '만들기', exact: true }).click();
   await expect(page).toHaveURL(/\/procurement\/sw-cost\/EST-\d+/);
   const id = new URL(page.url()).pathname.split('/').at(-1)!;
   const path = `/procurement/sw-cost/${id}`;
 
-  await page.getByRole('tab', { name: /^기능 목록/ }).click();
-  await page.getByRole('button', { name: 'Feature 담기', exact: true }).click();
-  const picker = page.getByRole('dialog');
-  await picker.getByLabel(/^Feature 이름·ID/).fill(featureId);
-  const candidate = picker.locator('li').filter({ hasText: featureId });
-  await expect(candidate.getByRole('button', { name: '담기', exact: true })).toBeEnabled();
-  await candidate.getByRole('button', { name: '담기', exact: true }).click();
-  await expect(picker).toHaveCount(0);
+  await expect(page.getByRole('table', { name: 'Feature DB 기반 산정', exact: true })).toContainText(featureId);
   const draft = await request.get(`${API}/api/cost/projects/${id}`, { headers: EST });
   expect(draft.status()).toBe(200);
   expect((await draft.json()).features).toEqual([expect.objectContaining({ featureId })]);
@@ -118,9 +119,8 @@ test('교정 담당자 — 승인 후 실적·전체 과제 오차·제안 초�
   const path = `/procurement/sw-cost/${first.id}?tab=lines`;
   await page.goto('/_design');
   await asRole(page, 'viewer', path);
-  const row = page.getByRole('row').filter({ hasText: 'BC-BCM-001' });
-  await row.focus();
-  await page.keyboard.press('Enter');
+  // 승인 뒤에는 원천·산정 입력 대신 기준 행 실적 전용 동작을 사용한다.
+  await page.getByRole('button', { name: 'BC-BCM-001 실적 공수', exact: true }).click();
   await page.getByRole('dialog').getByLabel(/^실적 공수/).fill('6');
   await page.getByRole('dialog').getByRole('button', { name: '저장', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);

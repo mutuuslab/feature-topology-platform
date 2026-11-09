@@ -110,7 +110,7 @@ describe('서버와 같은 판정', () => {
     expect(out.run.decision).toBe('GO');
     expect(out.run.results.map((r: any) => [r.componentId, r.result])).toEqual(server.results.map((r: any) => [r.componentId, r.result]));
     // 근거 문장도 같다 — 서버 검증 뒤 바뀐 사실(같은 제어점의 배포 정책 POL-00004 → POL-00008, 구성 상품 CAT-00064 추가)만 지금 상태로
-    const now = (s: string) => s.replace('POL-00004', 'POL-00008').replace('영향 상품 1건', '영향 상품 2건');
+    const now = (s: string) => s.replace('POL-00004', 'POL-00008').replace('영향 상품 1건', '영향 상품 2건').replace('ASIL QM 규칙 충족', 'ASIL QM 규칙 충족 · 적용 룰 0건 충족');
     expect(out.run.results.map((r: any) => r.summary)).toEqual(server.results.map((r: any) => now(r.summary)));
     expect(out.run.runId).toBe('VAL-000025');
     const list = await run('validations');
@@ -339,4 +339,11 @@ describe('이상 대응·사후 검토·레거시 해제', () => {
     const audit = (await run('audit', { query: { limit: 100 } })).items;
     expect(audit[0]).toMatchObject({ action: 'KILL_RELEASE', result: 'FAILED', componentId: 'D03-04' });
   });
+});
+
+it('registered abort criteria are stored and missing post-registration observations block expansion',async()=>{
+ const p=(await run('policyDetail',{params:{id:'POL-00008'}})).policy;
+ const body={metrics:[{metric:'apply_failure_rate',maxRelativeRisk:1.2}],confidence:0.95,observeHours:48,maxLagMinutes:10,reason:'확대 전 중단 기준 검토'};
+ const saved=await run('registerAbortCriteria',{params:{id:p.policyId},role:'coordinator',body});expect(saved).toMatchObject({policyId:p.policyId,observeHours:48,registeredBy:'usr-coordinator'});
+ const view=await run('policyExpansion',{params:{id:p.policyId}});expect(view.registeredCriteria).toMatchObject(saved);expect(view.decision.blocked).toBe(true);
 });

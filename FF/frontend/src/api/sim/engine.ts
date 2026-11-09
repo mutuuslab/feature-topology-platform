@@ -123,6 +123,7 @@ const STATUS: Record<string, number> = {
   REFDB_LINK_REQUIRED: 400,
   REFDB_DUPLICATE_IN_SCOPE: 409,
   INTERNAL: 500,
+  RATE_LIMITED: 429,
 };
 export class SimError extends Error {
   constructor(
@@ -208,6 +209,10 @@ async function ensure(): Promise<SimOverlay> {
 
 /** 이벤트·감사·알림 순번의 출발점(스냅샷 끝) — 한 번만 */
 async function seed(o: SimOverlay) {
+  if(o.data.ntfRules === undefined){
+    const captured=await fetchSnapshot(urlOf('notificationRules'));
+    o.data.ntfRules=Object.fromEntries((captured?.items??[]).map((r:any)=>[r.event,{added:r.added??[],updatedBy:r.updatedBy??null,updatedAt:r.updatedAt??null}]));
+  }
   if (o.seq.event !== undefined) return;
   const [ev, au, ntf, chain] = await Promise.all([
     fetchSnapshot(urlOf('events', {}, { limit: 500, recent: '1' })),
@@ -467,7 +472,12 @@ function writeContext(o: SimOverlay, req: SimRequest, actor: SimActor, st: Stage
         const kill = n.kill ?? (rule.needs.includes('kill') ? ctx.get('kill', String(payload.killId ?? aggregate)) : null);
         try {
           const draft = rule.build({ event: { seq: e.seq, type, at: e.at, aggregate, payload: e.payload as Record<string, any> }, feature: n.feature ?? null, policy: (n.policy as any) ?? null, kill: (kill as any) ?? null, refChange: (n.refChange as any) ?? null });
-          if (draft) st.notifications.push({ ...draft, notificationId: `NTF-${String(nextSeq('NTF')).padStart(5, '0')}`, eventSeq: e.seq, eventType: type, aggregate, createdAt: e.at } as SimNotification);
+          if (draft) {
+            const extra=(st.data.ntfRules??o.data.ntfRules) as Record<string,{added?:SimNotification['recipients']}>|undefined;
+            const added=type==='notification.sent'?[]:(extra?.[type]?.added??[]);
+            const recipients=[...new Map([...draft.recipients,...added].map(r=>[canonicalJson(r),r])).values()];
+            st.notifications.push({ ...draft, recipients, notificationId: `NTF-${String(nextSeq('NTF')).padStart(5, '0')}`, eventSeq: e.seq, eventType: type, aggregate, createdAt: e.at } as SimNotification);
+          }
         } catch {
           /* 맥락이 모자라면 알림 없이 이벤트만(서버도 규칙이 null이면 알림 없음) */
         }
@@ -585,6 +595,8 @@ function schedule(t: SimTask) {
     t.id,
     setTimeout(() => {
       timers.delete(t.id);
+      // Browser timers overflow beyond ~24.8 days. Re-arm until the actual due time.
+      if(t.at > Date.now()){ schedule(t); return; }
       void serial(async () => {
         const o = overlay;
         if (!o || !o.tasks.some((x) => x.id === t.id)) return;
@@ -597,7 +609,7 @@ function schedule(t: SimTask) {
           await saveOverlay(o);
         }
       });
-    }, Math.max(0, t.at - Date.now())),
+    }, Math.min(2_147_483_647, Math.max(0, t.at - Date.now()))),
   );
 }
 
@@ -676,4 +688,9 @@ export async function simInvoke<T = unknown>(ctx: SimWriteContext, name: string,
     Object.assign(st.data, mark.data);
     throw e;
   }
+}
+
+/** Actual notification receipt allocated inside the current atomic command. */
+export function pendingNotificationId(ctx: SimWriteContext,eventSeq:number):string|undefined {
+  return staged.get(ctx)?.st.notifications.find(n=>n.eventSeq===eventSeq)?.notificationId;
 }

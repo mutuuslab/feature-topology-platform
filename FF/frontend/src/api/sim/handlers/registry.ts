@@ -2080,4 +2080,4 @@ registerSimHandler(
 );
 
 /** Shared registry operations for browser-local P10 commands. Rules remain in contracts. */
-export const p10Registry = { requireFeature, featureOf, allSummaries, allDependencies, gateLatest, nextGateRecordId, autoAdvance, applyTransition, analysisView, allRetirements };
+export const p10Registry = { allRefs, requireFeature, featureOf, allSummaries, allDependencies, gateLatest, nextGateRecordId, autoAdvance, applyTransition, analysisView, allRetirements };

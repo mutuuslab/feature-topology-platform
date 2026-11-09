@@ -223,6 +223,7 @@ async function validationInput(ctx: SimReadContext, policy: any): Promise<Valida
     fleet: await vehiclesOf(ctx),
     affectedProducts,
     entitlementProductOk,
+    compliance: await (await import('./compliance-workflows')).complianceRegistryFor(ctx,feature),
   } as ValidationInput;
 }
 
@@ -610,7 +611,7 @@ registerSimHandler('stageRollout', async (ctx) => {
   const current = effectiveBasisPoints(p);
   const fClass = await fClassOf(ctx, p.featureId, p.featureVersion);
   const since = p.stagedAt ?? p.deployedAt ?? p.approvedAt ?? p.createdAt;
-  const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: ctx.iso(), actorId: ctx.actor.id, deployedBy: p.deployedBy ?? null, openAnomalies: body.basisPoints === 0 ? [] : await openAnomaliesOf(ctx, p.featureId), activeKills: body.basisPoints === 0 ? [] : await activeKillsOf(ctx, p.featureId) });
+  const j = judgeStageChange({ fClass, current, to: body.basisPoints, since, now: ctx.iso(), actorId: ctx.actor.id, deployedBy: p.deployedBy ?? null, openAnomalies: body.basisPoints === 0 ? [] : await openAnomaliesOf(ctx, p.featureId), activeKills: body.basisPoints === 0 ? [] : await activeKillsOf(ctx, p.featureId), expansion: body.basisPoints>current ? await (await import('./operations-workflows')).expansionSourcesFor(ctx,p) : null });
   if (!j.ok) {
     const msg = j.blockers.map((b) => b.message).join('; ');
     ctx.fail(j.blockers.some((b) => b.code === 'SAME_AS_DEPLOYER') ? 'SEPARATION_OF_DUTY' : 'GUARD_FAILED', `단계를 넓힐 수 없습니다: ${msg}`, { judgement: j }, { action: 'ROLLOUT_STAGE', target: id, reason: msg, componentId: 'D01-08' });

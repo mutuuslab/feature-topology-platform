@@ -49,7 +49,7 @@ registerSimHandler(
     if (why) ctx.fail('CONFLICT', why, undefined, { action: 'COMPLIANCE_RULE_OWNER_TRANSFER', target: ruleId, reason: why, componentId: 'D03-01' });
     const t: OwnerTransfer = { entity: 'compliance-rule', recordId: ruleId, fromOwnerId: d.rule.ownerId, fromState: ownerState, toOwnerId: body.toOwnerId, by: ctx.actor.id, at: ctx.iso(), reason: body.reason };
     const rule = { ...d.rule, ownerId: body.toOwnerId };
-    ctx.put(RULE, ruleId, { ruleId, rule, ownerState: 'ACTIVE', ownerTransfers: [...(d.ownerTransfers ?? []), t] });
+    ctx.put(RULE, ruleId, { ...d, ruleId, rule, ownerState: 'ACTIVE', ownerTransfers: [...(d.ownerTransfers ?? []), t] });
     ctx.audit({ action: 'COMPLIANCE_RULE_OWNER_TRANSFER', target: ruleId, before: { ownerId: d.rule.ownerId, ownerState }, after: { ownerId: body.toOwnerId }, reason: body.reason, componentId: 'D03-01' });
     ctx.emit('compliance.rule.owner-transferred', ruleId, { ruleId, from: d.rule.ownerId, to: body.toOwnerId, by: ctx.actor.id }, { componentId: 'D03-01' });
     return rule;
@@ -61,11 +61,11 @@ registerSimView('complianceRule', { collection: RULE, idKey: 'ruleId', detailPar
 // Account records can change after the immutable rule snapshot was captured.
 // Derive the displayed state for the current owner, retaining the full rule and transfer history.
 registerSimReader('complianceRule', async (ctx) => {
-  if (!ctx.list(ACC).length) return undefined;
-  const base = await ctx.snapshot<ComplianceRuleDetail>();
   const local = ctx.get<ComplianceRuleDetail>(RULE, ctx.req.params.id);
+  if (!ctx.list(ACC).length && !local) return undefined;
+  const base = await ctx.snapshot<ComplianceRuleDetail>();
   const detail = base ? { ...base, ...local } : local;
   const ownerId = detail?.rule?.ownerId;
   const account = ownerId ? ctx.get<AccountView>(ACC, ownerId) : undefined;
-  return account ? { ...detail, ownerState: account.state } : undefined;
+  return account ? { ...detail, ownerState: account.state } : local ? detail : undefined;
 });

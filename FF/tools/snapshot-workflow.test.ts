@@ -17,5 +17,14 @@ test('exports each real workflow detail and source once with the existing admini
 test('forwards the explicit synthetic scale while excluding customer DB, credentials and real external endpoints', () => {
   const env = snapshotServerEnv({ FF_SHOWCASE: '1', FF_SHOWCASE_SCALE: '2', FF_SHOWCASE_VEHICLES: '480', FF_SYNTHETIC: '24000', FF_DB: 'customer.db', FF_DB_URL: 'postgres://private', FF_AUTH: 'oidc', OIDC_CLIENT_SECRET: 'private', UNLEASH_URL: 'https://private.invalid', UNLEASH_ADMIN_TOKEN: 'private' }, 9559, { SIM_MODE: 'auto' });
   assert.equal(env.FF_SHOWCASE_SCALE, '2'); assert.equal(env.FF_DB, ':memory:');
+  assert.equal(env.FF_SHOWCASE, '1'); assert.equal(env.FF_SHOWCASE_VEHICLES, '480'); assert.equal(env.FF_SYNTHETIC, '24000');
+  assert.equal(env.FF_SCHEDULER, 'manual');
   for (const key of ['FF_DB_URL', 'FF_AUTH', 'OIDC_CLIENT_SECRET', 'UNLEASH_URL', 'UNLEASH_ADMIN_TOKEN']) assert.equal(env[key], undefined);
+});
+
+test('freezes only the isolated synthetic capture scheduler, regardless of inherited or injected timer mode', () => {
+  const env = snapshotServerEnv({ FF_SCHEDULER: 'auto', FF_DB: 'customer.db' }, 9559, { SIM_MODE: 'auto', FF_SCHEDULER: 'auto' });
+  assert.equal(env.FF_SCHEDULER, 'manual');
+  assert.equal(env.SIM_MODE, 'auto');
+  assert.equal(env.FF_DB, ':memory:');
 });

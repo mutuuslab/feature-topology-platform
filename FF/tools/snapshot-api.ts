@@ -102,7 +102,7 @@ const SNAPSHOT_ENV_PASS = /^(PATH|PATHEXT|SYSTEMROOT|WINDIR|COMSPEC|SYSTEMDRIVE|
  */
 export function snapshotServerEnv(src: Record<string, string | undefined>, port: number, sim: Record<string, string>): Record<string, string> {
   const pass = Object.fromEntries(Object.entries(src).filter((e): e is [string, string] => e[1] !== undefined && SNAPSHOT_ENV_PASS.test(e[0])));
-  return { ...pass, TZ: 'UTC', UNLEASH_MODE: 'mock', GLEO_MODE: 'internal', PORT: String(port), FF_DB: ':memory:', FF_SEED: 'v0.81', ...sim };
+  return { ...pass, TZ: 'UTC', UNLEASH_MODE: 'mock', GLEO_MODE: 'internal', PORT: String(port), FF_DB: ':memory:', FF_SEED: 'v0.81', ...sim, FF_SCHEDULER: 'manual' };
 }
 
 /** 보조 백엔드 시작 — 직접 실행할 때만(시험은 claimSnapshotFile만 읽는다) */

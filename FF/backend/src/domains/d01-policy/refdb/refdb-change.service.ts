@@ -133,7 +133,7 @@ export class RefdbChangeService {
       const doc = l.doc ? (JSON.parse(l.doc) as { name?: string; ownerId?: string }) : {};
       return { featureId: l.featureId, version: l.version, role: l.role, refVersion: l.refVersion, name: doc.name ?? null, ownerId: doc.ownerId ?? null, lifecycle: l.lifecycle };
     });
-    const recalcFields = change.kind === 'ADD' ? [] : RECALC_FIELDS.filter((k) => k in change.after);
+    const recalcFields = change.kind === 'ADD' ? [] : Object.keys(change.after).filter(k=>JSON.stringify((change.before as any)?.[k])!==JSON.stringify((change.after as any)[k]));
     return {
       change: this.view(change, role),
       diff,
@@ -143,8 +143,7 @@ export class RefdbChangeService {
         /** 대표 ASIL·T-shirt 변경 — 산정 과제에 '기준 변경됨, 재계산 필요'(20-94 §6.4) */
         recalcRequired: recalcFields.length > 0,
         recalcFields,
-        // TODO(20-94 §6.4): 개발비 산정 과제(cost project)가 생기면 이 행을 쓰는 진행 중 과제 목록과 '재계산 필요' 표시를 여기에 채운다.
-        costProjects: [] as unknown[],
+        costProjects: this.repo.linkedCostProjects(change.refId).map(p=>({...p,recalcRequired:recalcFields.length>0,awaitingPublish:change.status!=='PUBLISHED'})),
       },
       /** 이 행을 쓰는 Feature 연결(feature_ref_link) — 화면 호환 키 */
       usedBy: this.repo.usersOf(change.refId),

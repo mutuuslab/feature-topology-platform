@@ -30,6 +30,12 @@ export interface RefLinkRow extends FeatureRefLink {
 export class RefdbRepository {
   constructor(@Inject(DB) private readonly db: Db) {}
 
+  /** Cost impact exposes identifiers and source state, never rate or monetary inputs. */
+  linkedCostProjects(refId:string){
+    const rows=this.db.all<{est_id:string;status:string;doc:string;line_no:number}>('SELECT p.est_id,p.status,p.doc,l.line_no FROM cost_project p JOIN cost_line l ON l.est_id=p.est_id WHERE l.ref_id=? ORDER BY p.est_id,l.line_no',refId);
+    const projects=new Map<string,{estId:string;name:string;status:string;lineNos:number[];basisVersion:string;refRelease:string|null}>();
+    for(const r of rows){const doc=JSON.parse(r.doc);const p=projects.get(r.est_id)??{estId:r.est_id,name:doc.name??r.est_id,status:r.status,lineNos:[],basisVersion:doc.basisVersion,refRelease:doc.refRelease??null};p.lineNos.push(r.line_no);projects.set(r.est_id,p);}return [...projects.values()];
+  }
   // ── 기준 행 ──
   getRef(refId: string): FeatureRefRow | undefined {
     const r = this.db.get<{ doc: string }>('SELECT doc FROM feature_ref WHERE ref_id = ?', refId);

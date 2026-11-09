@@ -280,8 +280,8 @@ export class CostService implements OnModuleInit {
 
   private reviewBaseline(estId:string):CostReviewBaseline {
     const row=this.row(estId),doc=JSON.parse(row.doc)as CostProjectDoc,lines=this.lines(estId);let result:CostEstimate|null=null,error:string|null=null;
-    try{if(!lines.length)throw new Error('Feature DB 산정 기준 행을 먼저 연결하세요.');result=this.resultOf(row,doc);if(doc.basisVersion!==this.latestBasisVersion()||doc.refRelease!==(this.refs.latestRelease()?.release??null))throw new Error('과제의 계수·Feature DB 발행 기준이 최신과 다릅니다. 원천 갱신 후 재계산하세요.');}catch(e){error=e instanceof Error?e.message:String(e);}
-    const referenceState=lines.map(l=>({lineNo:l.lineNo,refId:l.refId,inputs:l.inputs,sourceRevision:l.sourceRevision,reference:l.sourceRevision?this.referenceStore.load(estId,l.lineNo,l.sourceRevision).metadata:null,current:this.refs.getRef(l.refId)}));
+    try{if(!lines.length)throw new Error('Feature DB 산정 기준 행을 먼저 연결하세요.');if(lines.some(l=>!l.sourceRevision||this.referenceStore.view(estId,l.lineNo,l.sourceRevision).stale))throw new Error('선택한 산정 원천이 변경됐습니다. 과제 원천을 먼저 갱신하세요.');result=this.resultOf(row,doc);if(doc.basisVersion!==this.latestBasisVersion()||doc.refRelease!==(this.refs.latestRelease()?.release??null))throw new Error('과제의 계수·Feature DB 발행 기준이 최신과 다릅니다. 원천 갱신 후 재계산하세요.');}catch(e){error=e instanceof Error?e.message:String(e);}
+    const referenceState=lines.map(l=>({lineNo:l.lineNo,refId:l.refId,inputs:l.inputs,sourceRevision:l.sourceRevision,reference:l.sourceRevision?this.referenceStore.load(estId,l.lineNo,l.sourceRevision).metadata:null,current:this.refs.getRef(l.refId),currentFeature:l.featureId&&l.version?this.features.get(l.featureId,l.version):null}));
     const fingerprint=sha(canonicalJson({doc,referenceState,latestBasisVersion:this.latestBasisVersion(),latestRefRelease:this.refs.latestRelease()?.release??null}));
     return {fingerprint,basisVersion:doc.basisVersion,refRelease:doc.refRelease,referenceIds:[...new Set(lines.map(l=>l.refId))],estimateTotalMm:result?.totals.totalMm??null,estimateCost:result?.totals.totalCost??null,valid:!error,error};
   }

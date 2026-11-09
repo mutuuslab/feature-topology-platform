@@ -223,7 +223,7 @@ function RuleDrawer({ ruleId, onClose, onEdit }: { ruleId: string; onClose: () =
                 { k: D.decided, v: r.decidedBy ? `${personLabel(r.decidedBy)} · ${t16(r.decidedAt)}` : '—' },
               ]}
             />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-2)', alignItems: 'flex-end' }}>
+            <div className="ds-why-inline" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-2)', alignItems: 'flex-end' }}>
               <Button disabled={!perm.ok || !!editWhy} reason={perm.hint ?? editWhy ?? undefined} onClick={() => onEdit(r)}>
                 {C.act.edit}
               </Button>

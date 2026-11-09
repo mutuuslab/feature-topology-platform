@@ -190,7 +190,7 @@ export function NotificationRulesScreen() {
                   key: 'event',
                   header: C.event,
                   cell: (r) => (
-                    <span className="ds-stack" data-event={r.event}>
+                    <span className="ds-stack" data-event={r.event} style={{ minWidth: '18em' }}>
                       <strong>{r.name}</strong>
                       {r.excludes && <span className="ds-field__hint">{R.excludes(r.excludes)}</span>}
                     </span>

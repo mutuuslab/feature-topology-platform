@@ -7,7 +7,7 @@ vi.hoisted(() => {
   // 가상검증 실행기 — 같은 계약의 시험 대역(e2e·정적 스냅샷과 같다). 가상검증 대상 Feature의 새 판도 8종 검증 GO를 받는다
   process.env.CARLA_RUNNER = `${process.cwd()}/test/fixtures/fake-carla/ffcarla_cli.mjs`;
   process.env.FF_EVIDENCE_DIR = `${process.cwd()}/../.evidence/test-showcase-fill`;
-  Object.assign(process.env, { GLEO_MODE: 'internal', FLEET_SIM_TIME_SCALE: '0.2', FLEET_SIM_LATENCY_MS: '100', FLEET_SIM_IDLE_MS: '300', FLEET_SIM_CYCLE_MS: '400' });
+  Object.assign(process.env, { GLEO_MODE: 'internal', FLEET_SIM_TIME_SCALE: '0.2', FLEET_SIM_LATENCY_MS: '100', FLEET_SIM_STAGGER_MS: '1', FLEET_SIM_IDLE_MS: '300', FLEET_SIM_CYCLE_MS: '400' });
   delete process.env.FF_SCHEDULER;
 });
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -98,13 +98,18 @@ describe('전시 빈 화면 채우기 — 켜짐 조건', () => {
 describe('전시 빈 화면 채우기 — 데모 활동·전시 시나리오와 함께 부팅', () => {
   let b: Awaited<ReturnType<typeof bootApp>>;
   const get = async (path: string, who: Record<string, string> = {}) => (await b.http().get(path).set(who).expect(200)).body;
+  const previousScale=process.env.FF_SHOWCASE_SCALE,previousVehicles=process.env.FF_SHOWCASE_VEHICLES;
   beforeAll(async () => {
+    // Keep >300 real simulated vehicle checks with a single-size fixture; publication verifies doubled data.
+    process.env.FF_SHOWCASE_SCALE='1';process.env.FF_SHOWCASE_VEHICLES='480';
     process.env.FF_SHOWCASE = '1';
     b = await bootApp({ demoActivity: true, costDemo: true });
   }, 180_000);
   afterAll(async () => {
     await b?.app.close();
     for (const k of ['FF_SHOWCASE', 'FF_DEMO_ACTIVITY']) delete process.env[k];
+    if(previousScale===undefined)delete process.env.FF_SHOWCASE_SCALE;else process.env.FF_SHOWCASE_SCALE=previousScale;
+    if(previousVehicles===undefined)delete process.env.FF_SHOWCASE_VEHICLES;else process.env.FF_SHOWCASE_VEHICLES=previousVehicles;
   });
 
   it('모든 단계가 성공하고 meta에 요약이 남는다', () => {

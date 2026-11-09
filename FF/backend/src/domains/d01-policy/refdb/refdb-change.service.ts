@@ -140,7 +140,7 @@ export class RefdbChangeService {
       checks: change.checks ?? [],
       impact: {
         features,
-        /** 대표 ASIL·T-shirt 변경 — 산정 과제에 '기준 변경됨, 재계산 필요'(20-94 §6.4) */
+        /** 기준 행 원천(규모·ASIL·범위·근거 메모 등) 변경 — 불변 지문이 달라져 재산정·승인 근거를 다시 확인한다. */
         recalcRequired: recalcFields.length > 0,
         recalcFields,
         costProjects: this.repo.linkedCostProjects(change.refId).map(p=>({...p,recalcRequired:recalcFields.length>0,awaitingPublish:change.status!=='PUBLISHED'})),

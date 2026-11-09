@@ -42,7 +42,8 @@ describe('Feature DB 변경 요청', () => {
     expect(d.impact.features.map((f: { featureId: string }) => f.featureId)).toEqual(expect.arrayContaining(['FEAT-00005', 'FEAT-00084', 'FEAT-00145', 'FEAT-00150', 'FEAT-00183', 'FEAT-00185']));
     expect(d.impact.features.find((f: { featureId: string }) => f.featureId === 'FEAT-00005')).toMatchObject({ role: expect.any(String), name: expect.any(String), ownerId: 'ADAS기획팀' });
     expect(d.impact.recalcRequired).toBe(true);
-    expect(d.impact.recalcFields).toEqual(['tshirt']);
+    // The immutable cost baseline includes reference notes as well as numerical sizing.
+    expect(d.impact.recalcFields).toEqual(['tshirt', 'remark']);
     expect(d.usedBy.length).toBe(d.impact.features.length);
   });
 

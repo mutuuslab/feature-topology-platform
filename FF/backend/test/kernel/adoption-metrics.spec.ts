@@ -22,19 +22,24 @@ it('국가 대표점 집계는 원천 상태·Canary·미수신을 보존하고 
 let close: (() => Promise<void>) | undefined;
 afterAll(() => close?.());
 it('실제 metrics HTTP는 FF 지도와 같은 런타임 원천을 집계하고 반복 scrape에서 중복하지 않는다', async () => {
-  const b = await bootApp(); close = () => b.app.close();
-  const db = b.get<Db>(DB);
-  const runtime = await b.get(VehicleRuntimeService).fleetStatus();
-  const vehicles = db.all<{ vin: string; doc: string }>('SELECT vin, doc FROM vehicle').map((v) => ({ vin: v.vin, country: JSON.parse(v.doc).country }));
-  const policies = db.all<{ doc: string }>("SELECT doc FROM policy WHERE status='DEPLOYED'").map((r) => JSON.parse(r.doc) as Policy);
-  const flags = [...new Map(policies.map((p) => [p.flagKey, { flagKey: p.flagKey, stageRatio: effectiveBasisPoints(p) / 10000 }])).values()];
-  const expected = flagAdoptionCounts(runtime.items, vehicles, flags);
-  expect(expected.length).toBeGreaterThan(0);
-  for (let i = 0; i < 2; i++) {
-    const response = await b.http().get('/api/health/metrics').expect(200);
-    expect(response.text).toContain('ff_flag_adoption_vehicles{');
-    const reg = b.get(Metrics).registry;
-    for (const { vehicles: n, ...labels } of expected) expect(reg.value('ff_flag_adoption_vehicles', labels)).toBe(n);
-    expect(reg.value('ff_flag_adoption_vehicles')).toBe(expected.reduce((n, r) => n + r.vehicles, 0));
-  }
+  const previousScheduler=process.env.FF_SCHEDULER;
+  process.env.FF_SCHEDULER='manual';
+  try {
+    // Both HTTP scrapes observe the same controlled runtime, not a moving background simulator.
+    const b = await bootApp({at:'2026-11-09T00:00:00Z'}); close = () => b.app.close();
+    const db = b.get<Db>(DB);
+    const runtime = await b.get(VehicleRuntimeService).fleetStatus();
+    const vehicles = db.all<{ vin: string; doc: string }>('SELECT vin, doc FROM vehicle').map((v) => ({ vin: v.vin, country: JSON.parse(v.doc).country }));
+    const policies = db.all<{ doc: string }>("SELECT doc FROM policy WHERE status='DEPLOYED'").map((r) => JSON.parse(r.doc) as Policy);
+    const flags = [...new Map(policies.map((p) => [p.flagKey, { flagKey: p.flagKey, stageRatio: effectiveBasisPoints(p) / 10000 }])).values()];
+    const expected = flagAdoptionCounts(runtime.items, vehicles, flags);
+    expect(expected.length).toBeGreaterThan(0);
+    for (let i = 0; i < 2; i++) {
+      const response = await b.http().get('/api/health/metrics').expect(200);
+      expect(response.text).toContain('ff_flag_adoption_vehicles{');
+      const reg = b.get(Metrics).registry;
+      for (const { vehicles: n, ...labels } of expected) expect(reg.value('ff_flag_adoption_vehicles', labels)).toBe(n);
+      expect(reg.value('ff_flag_adoption_vehicles')).toBe(expected.reduce((n, r) => n + r.vehicles, 0));
+    }
+  } finally {if(previousScheduler===undefined)delete process.env.FF_SCHEDULER;else process.env.FF_SCHEDULER=previousScheduler;}
 });

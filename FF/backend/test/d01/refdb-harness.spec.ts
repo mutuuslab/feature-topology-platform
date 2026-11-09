@@ -8,7 +8,7 @@ import { INestApplication, RequestMethod } from '@nestjs/common';
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { FeatureVersionRow, rolesView, ROUTES, routeKey, SOD_RULES, type RouteDef } from '@ff/contracts';
+import { FeatureVersionRow, costReviewActionRole, rolesView, ROUTES, routeKey, SOD_RULES, type RouteDef } from '@ff/contracts';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -109,7 +109,7 @@ describe('Feature DB 하네스 정합', () => {
       expect(refdbWrites('DOMAIN_REVIEWER')).toEqual(['createRefChange', 'reviewRefChange']);
     });
 
-    it('DB 관리자의 분류 쓰기4개 외에는 두 역할의 고유 외부 권한이 없다 — 권한표 API도 같은 값을 낸다', async () => {
+    it('DB 관리자 분류4개·도메인 검토자의 비용 기술의견 외에는 고유 외부 권한이 없다 — 권한표 API도 같다', async () => {
       const body = (await http().get('/api/iam/roles').expect(200)).body;
       const rows = body.roles as { role: string; allowed: string[] }[];
       const human = rolesView().filter((v) => v.human);
@@ -118,7 +118,12 @@ describe('Feature DB 하네스 정합', () => {
         const view = rolesView().find((v) => v.role === role)!;
         expect(view.human, role).toBe(true);
         const taxonomy=role==='REFDB_ADMIN'?['createTaxonomyNode','updateTaxonomyNode','deleteTaxonomyNode','placeFeatureTaxonomy']:[];
-        expect(view.allowed.filter((n) => !REFDB_ROUTES.some((r) => r.name === n) && !common.includes(n)).sort(), `${role}의 Feature DB 밖 고유 권한`).toEqual(taxonomy.sort());
+        expect(view.allowed.filter((n) => !REFDB_ROUTES.some((r) => r.name === n) && !common.includes(n)).sort(), `${role}의 Feature DB 밖 고유 권한`).toEqual([...taxonomy,...(role==='DOMAIN_REVIEWER'?['costReviewAction']:[])].sort());
+        if(role==='DOMAIN_REVIEWER'){
+          expect(ROUTES.find(r=>r.name==='costReviewAction')).toMatchObject({component:'D07-01',method:'POST'});
+          expect(costReviewActionRole('TECHNICAL_ACCEPT','DOMAIN_REVIEWER')).toBe(true);
+          for(const action of ['APPROVE','REJECT','HANDOFF','TERMS_ACCEPT','SUBMIT'])expect(costReviewActionRole(action,'DOMAIN_REVIEWER'),action).toBe(false);
+        }
         for(const name of taxonomy){const route=ROUTES.find(route=>route.name===name)!;expect(route.component).toBe('D01-01');expect(route.method).not.toBe('GET');}
         expect(rows.find((r) => r.role === role)?.allowed.sort(), `${role} /api/iam/roles`).toEqual([...view.allowed].sort());
       }

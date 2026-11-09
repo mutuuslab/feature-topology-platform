@@ -12,8 +12,6 @@ import { lcGate as C } from '../../copy/lifecycle-gate';
 import { ko } from '../../copy/ko';
 import { Button, ErrorNote, Field, Icon, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
-import { STATIC_MODE } from '../../api/client';
-import { errors as demoErrors } from '../../copy/errors';
 
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'workQueues'];
 
@@ -72,7 +70,7 @@ export function GateNaSection({ id, ver, gate, asil, requests, readOnly }: { id:
   const mine = requests.filter((r) => r.gate === gate);
   const pending = mine.find((r) => r.status === 'PENDING');
   const never = gateNaBlocker(gate, asil);
-  const blocked = whyDisabled([STATIC_MODE, demoErrors.readOnlyDemo], [readOnly, C.na.never], [!!never, never], [!reqPerm.ok, reqPerm.hint], [!!pending, C.na.pending], [reason.trim().length < 5, ko.why.reason]);
+  const blocked = whyDisabled([readOnly, C.na.never], [!!never, never], [!reqPerm.ok, reqPerm.hint], [!!pending, C.na.pending], [reason.trim().length < 5, ko.why.reason]);
   return (
     <section aria-label={C.na.title} data-testid="gate-na" style={{ display: 'grid', gap: 'var(--sp-2)' }}>
       <h3 className="ds-eyebrow" style={{ margin: 0 }}>{C.na.title}</h3>
@@ -101,7 +99,7 @@ export function GateNaSection({ id, ver, gate, asil, requests, readOnly }: { id:
           <ErrorNote error={decide.error} />
           <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
             {(['APPROVE', 'REJECT'] as const).map((d) => {
-              const why = whyDisabled([STATIC_MODE, demoErrors.readOnlyDemo], [pending.requestedBy === me, C.na.selfBlocked], [decisionReason.trim().length < 2, ko.why.reason]);
+              const why = whyDisabled([pending.requestedBy === me, C.na.selfBlocked], [decisionReason.trim().length < 2, ko.why.reason]);
               return (
                 <Button key={d} variant={d === 'APPROVE' ? 'primary' : 'default'} disabled={!!why || decide.isPending} reason={why ?? undefined} onClick={() => decide.mutate({ params: { rid: pending.requestId }, body: { decision: d, reason: decisionReason } }, { onSuccess: () => setDecisionReason('') })}>
                   {d === 'APPROVE' ? C.na.approve : C.na.reject}
@@ -121,7 +119,7 @@ export function GateNaSection({ id, ver, gate, asil, requests, readOnly }: { id:
             request.mutate({ params: { id, ver }, body: { gate, reason } }, { onSuccess: () => setReason('') });
           }}
         >
-          <p className="ds-field__hint" style={{ margin: 0 }}>{STATIC_MODE ? demoErrors.readOnlyDemo : C.na.hint}</p>
+          <p className="ds-field__hint" style={{ margin: 0 }}>{C.na.hint}</p>
           <Field label={C.na.reason}>
             <input className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>

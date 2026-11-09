@@ -90,6 +90,7 @@ import {
   type WorkflowIndexDoc,
 } from '@ff/contracts';
 import { z } from 'zod';
+import { goNoGo } from '../../../../../contracts/src/rules/gate-outcome';
 import { registerSimHandler, registerSimReader } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
 import { demoSign } from './kill';
@@ -132,6 +133,7 @@ function data<T>(ctx: SimReadContext, key: string, init: () => T): T {
 
 // ─── Feature 읽기 ──────────────────────────────────────────
 async function featureOf(ctx: SimReadContext, id: string, ver: string): Promise<FeatureEntity | null> {
+  if (data<Record<string, unknown>>(ctx, 'regDeletedFeatures', () => ({}))[fkey(id, ver)]) return null;
   const mine = ctx.get<FeatureEntity>(FEATURE, fkey(id, ver));
   if (mine) return structuredClone(mine);
   const d = await ctx.snapshot<any>('featureDetail', { id, ver });
@@ -167,8 +169,9 @@ async function summaryOf(ctx: SimReadContext, f: Row, latestVersion: string) {
 /** 모든 Feature Version 요약 — 스냅샷 전체 목록 + 시연에서 바뀐·새로 만든 것. featureId·Version 오름차순(서버 all()) */
 async function allSummaries(ctx: SimReadContext): Promise<any[]> {
   const base: any[] = (await ctx.snapshot<any>('listFeatures', {}, { latestOnly: false }))?.items ?? [];
-  const mine = ctx.list<FeatureEntity>(FEATURE);
-  const rows = new Map<string, any>(base.map((s) => [fkey(s.featureId, s.version), s]));
+  const deleted = data<Record<string, unknown>>(ctx, 'regDeletedFeatures', () => ({}));
+  const mine = ctx.list<FeatureEntity>(FEATURE).filter(e => !deleted[fkey(e.row.featureId, e.row.version)]);
+  const rows = new Map<string, any>(base.filter(s => !deleted[fkey(s.featureId, s.version)]).map((s) => [fkey(s.featureId, s.version), s]));
   const latest = new Map<string, string>();
   for (const k of [...rows.keys(), ...mine.map((e) => fkey(e.row.featureId, e.row.version))]) {
     const [id, v] = k.split('@');
@@ -671,6 +674,7 @@ registerSimReader('listFeatures', async (ctx) => {
 registerSimReader('featureVersions', async (ctx) => {
   const id = ctx.req.params.id;
   const vs = (await allSummaries(ctx)).filter((f) => f.featureId === id);
+  if (!vs.length && Object.keys(data<Record<string,unknown>>(ctx,'regDeletedFeatures',()=>({}))).some(k=>k.startsWith(id+'@'))) throw new (await import('../engine')).SimError('NOT_FOUND', `${id}을(를) 찾을 수 없습니다.`);
   if (!vs.length) return undefined;
   const base = await ctx.snapshot<any>('featureVersions', { id });
   return { ...(base ?? {}), featureId: id, name: vs[vs.length - 1].name, latestVersion: vs[vs.length - 1].version, versions: vs, rationale: base?.rationale ?? null };
@@ -680,7 +684,7 @@ registerSimReader('featureVersions', async (ctx) => {
 registerSimReader('featureDetail', async (ctx) => {
   const { id, ver } = ctx.req.params;
   const e = await featureOf(ctx, id, ver);
-  if (!e) return undefined;
+  if (!e) throw new (await import('../engine')).SimError('NOT_FOUND', `${id}@${ver}을(를) 찾을 수 없습니다.`);
   const base = await ctx.snapshot<any>('featureDetail', { id, ver });
   const key = fkey(id, ver);
   const f = e.row;
@@ -721,9 +725,12 @@ registerSimReader('gates', async (ctx) => {
   const base = await ctx.snapshot<any>('gates', { id, ver });
   const mine = gateLog(ctx, fkey(id, ver));
   const closed = new Set(data<Record<string, string[]>>(ctx, 'regReharaClosed', () => ({}))[fkey(id, ver)] ?? []);
-  if (!mine.length && base && !ctx.get(FEATURE, fkey(id, ver)) && !closed.size) return base;
+  if (!mine.length && base && !ctx.get(FEATURE, fkey(id, ver)) && !closed.size && !ctx.list<any>('p10Na').some(r=>r.featureId===id&&r.version===ver)) return base;
   const evidenceOf = (r: any) => (r.evidenceRef ? { evidenceRef: r.evidenceRef, gate: r.gate, gateRecordId: r.gateRecordId, featureId: id, featureVersion: ver, featureName: e.row.name, featureDescription: e.row.description, scope: [e.row.country, e.row.vehicleModel, e.row.trim].filter(Boolean).join(' · '), owner: e.row.ownerId, lifecycle: e.row.lifecycle, inputResult: r.inputResult, resultReason: `${r.inputResult} — ${r.rationale}`, additionalEvidence: null, _missing: {} } : null);
   return {
+    ...(base ?? {}),
+    goNoGo: goNoGo(statusesOf(await gateLatest(ctx,id,ver))),
+    naRequests: (await ctx.read<any>('gateNaRequests',{id,ver})).items,
     gates: GATES.map((g) => {
       const b = (base?.gates ?? []).find((x: any) => x.gate === g);
       const ms = mine.filter((x) => x.record.gate === g);
@@ -824,7 +831,7 @@ function fieldDiff(before: Record<string, unknown> | null, after: Record<string,
 }
 async function usersOf(ctx: SimReadContext, refId: string): Promise<any[]> {
   const base: any[] = (await ctx.snapshot<any>('refDetail', { refId }))?.usedBy ?? [];
-  const mine = ctx.list<FeatureEntity>(FEATURE).flatMap((e) => (e.row.featureRefs ?? []).filter((l) => l.refId === refId).map((l) => ({ featureId: e.row.featureId, version: e.row.version, role: l.role, refVersion: l.refVersion, lifecycle: e.row.lifecycle, name: e.row.name, ownerId: e.row.ownerId, country: e.row.country, vehicleModel: e.row.vehicleModel, trim: e.row.trim })));
+  const mine = ctx.list<FeatureEntity>(FEATURE).filter(e=>!data<Record<string,unknown>>(ctx,'regDeletedFeatures',()=>({}))[fkey(e.row.featureId,e.row.version)]).flatMap((e) => (e.row.featureRefs ?? []).filter((l) => l.refId === refId).map((l) => ({ featureId: e.row.featureId, version: e.row.version, role: l.role, refVersion: l.refVersion, lifecycle: e.row.lifecycle, name: e.row.name, ownerId: e.row.ownerId, country: e.row.country, vehicleModel: e.row.vehicleModel, trim: e.row.trim })));
   const keys = new Set(mine.map((u) => fkey(u.featureId, u.version)));
   return [...base.filter((u) => !keys.has(fkey(u.featureId, u.version))), ...mine];
 }
@@ -1021,7 +1028,8 @@ registerSimHandler('createFeature', async (ctx) => {
   if (dup.length)
     ctx.fail('CONFLICT', '같은 국가·차종·트림에 이름이 비슷한 Feature가 이미 있습니다. 기존 Feature의 새 Version인지 확인하세요.', { similar: dup.map((d) => ({ featureId: d.featureId, version: d.version, name: d.name, lifecycle: d.lifecycle })) }, failAudit('같은 적용 범위에 유사 Feature 존재'));
   const linked = await resolveRefs(ctx, { featureRefs: body.featureRefs, asil: body.asil, asilDeviation: body.asilDeviation, scope: { country: body.country, vehicleModel: body.vehicleModel, trim: body.trim }, duplicate: 'reject', confirmDuplicate: body.confirmDuplicate, duplicateReason: body.duplicateReason }, failAudit);
-  const featureId = ctx.nextId('FEAT', all.map((f) => f.featureId));
+  const tombstones = (await ctx.read<any>('deletedDrafts')).items ?? [];
+  const featureId = ctx.nextId('FEAT', [...all.map((f) => f.featureId), ...tombstones.filter((x:any)=>x.entity==='feature-version').map((x:any)=>x.recordId.split('@')[0])]);
   const f: Row = {
     featureId,
     name: body.name,
@@ -1098,7 +1106,8 @@ registerSimHandler(
     if (scopeChange.length) ctx.fail('VALIDATION', '국가·차종·트림이 바뀌면 새 Feature ID로 등록해야 합니다.', { fields: scopeChange });
     if (base.row.lifecycle === 'RETIRED') ctx.fail('GUARD_FAILED', 'RETIRED Feature에서는 새 Version을 만들 수 없습니다.');
     const versions = (await allSummaries(ctx)).filter((s) => s.featureId === id);
-    const version = bumpVersion(versions.at(-1)?.version ?? body.baseVersion, body.bump);
+    const deletedVersions = Object.keys(data<Record<string,unknown>>(ctx,'regDeletedFeatures',()=>({}))).filter(k=>k.startsWith(id+'@')).map(k=>k.slice(id.length+1));
+    const version = bumpVersion([...versions.map(v=>v.version),...deletedVersions].sort(compareVersion).at(-1) ?? body.baseVersion, body.bump);
     const changed = changedKeys(base.row, body.changes as any);
     const impl = await implLinks(ctx, 'FEATURE_VERSION_CREATE', fkey(id, body.baseVersion), base.row, body.changes);
     const ch = body.changes as any;
@@ -1129,10 +1138,10 @@ registerSimHandler(
   'transition',
   async (ctx) => {
     const { id, ver } = ctx.req.params;
-    const { to, reason } = ctx.req.body as { to: Lifecycle; reason: string };
+    const { to, reason, issues } = ctx.req.body as { to: Lifecycle; reason: string; issues?: {item:string;detail:string}[] };
     const e = await requireFeature(ctx, id, ver);
     const f = e.row;
-    const { rule, blockers } = evaluateTransition(f, to, await transitionContext(ctx, e, { actor: { id: ctx.actor.id, role: ctx.actor.role }, reason }));
+    const { rule, blockers } = evaluateTransition(f, to, await transitionContext(ctx, e, { actor: { id: ctx.actor.id, role: ctx.actor.role }, reason, issues }));
     const action = `FEATURE_TRANSITION ${f.lifecycle}→${to}`;
     const target = fkey(id, ver);
     if (rule?.auto) ctx.fail('CONFLICT', `${rule.ko}은(는) 조건이 갖춰지면 시스템이 자동으로 전이합니다.`, { blockers }, { action, target, reason: '자동 전이는 직접 실행할 수 없습니다', componentId: 'D01-01' });
@@ -1142,6 +1151,11 @@ registerSimHandler(
       ctx.fail(code, `전이할 수 없습니다: ${text}`, { blockers }, { action, target, reason: text, componentId: 'D01-01' });
     }
     const warnings = await transitionWarnings(ctx, f, to);
+    if(f.lifecycle==='VERIFIED' && to==='DEVELOPING'){
+      const prior=(await ctx.read<any>('featureReviews',{id})).items??[];
+      const record={recordId:ctx.nextId('FRV',prior.map((r:any)=>r.recordId)),featureId:id,version:ver,kind:'REWORK',from:f.lifecycle,to,reason,issues:issues??[],reworkReason:reason,by:ctx.actor.id,role:ctx.actor.role,at:ctx.iso()};
+      ctx.put('p10Reviews',record.recordId,record,{created:true});ctx.audit({action:'FEATURE_REWORK',target,after:record,reason,componentId:'D01-01'});
+    }
     const next = await applyTransition(ctx, e, to, reason, false);
     const cur = await autoAdvance(ctx, next);
     return warnings.length ? { ...cur.row, warnings } : cur.row;
@@ -1857,10 +1871,11 @@ registerSimHandler(
 async function allDependencies(ctx: SimReadContext): Promise<any[]> {
   const base: any[] = (await ctx.snapshot<any>('dependencies'))?.items ?? [];
   const mine = new Map(ctx.list<any>(DEP).map((d) => [d.dependencyId, d]));
-  return [...base.map((d) => mine.get(d.dependencyId) ?? d), ...[...mine.values()].filter((d) => !base.some((b) => b.dependencyId === d.dependencyId))];
+  const deleted = data<Record<string, unknown>>(ctx, 'regDeletedRelations', () => ({}));
+  return [...base.map((d) => mine.get(d.dependencyId) ?? d), ...[...mine.values()].filter((d) => !base.some((b) => b.dependencyId === d.dependencyId))].filter(d => !deleted[d.dependencyId]);
 }
 registerSimReader('dependencies', async (ctx) => {
-  if (!ctx.list(DEP).length) return undefined;
+  if (!ctx.list(DEP).length && !Object.keys(data<Record<string,unknown>>(ctx, 'regDeletedRelations',()=>({}))).length) return undefined;
   const q = ctx.req.query;
   return { items: (await allDependencies(ctx)).filter((d) => (!q.featureId || d.sourceFeatureId === q.featureId || d.targetFeatureId === q.featureId) && (!q.type || d.type === q.type) && (!q.verdict || d.verdict === q.verdict)) };
 });
@@ -2058,3 +2073,6 @@ registerSimHandler(
   },
   { body: RecordSourceReviewBody },
 );
+
+/** Shared registry operations for browser-local P10 commands. Rules remain in contracts. */
+export const p10Registry = { requireFeature, featureOf, allSummaries, allDependencies, gateLatest, nextGateRecordId, autoAdvance, applyTransition, analysisView, allRetirements };

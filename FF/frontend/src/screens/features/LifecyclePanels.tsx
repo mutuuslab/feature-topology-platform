@@ -10,7 +10,6 @@ import { ko } from '../../copy/ko';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, IdChip, KeyValue, LifecycleBadge, Panel, whyDisabled } from '../../design';
 import { usePermission } from '../shared';
 import { STATIC_MODE } from '../../api/client';
-import { errors as demoErrors } from '../../copy/errors';
 
 const INVALIDATE = ['featureDetail', 'listFeatures', 'gates', 'audit', 'featureReviews', 'featureRetireRequests', 'featureHistory', 'workQueues'];
 const at = (s: string | null | undefined) => (s ? s.slice(0, 16).replace('T', ' ') : '—');
@@ -48,8 +47,8 @@ export function RejectAction({ featureId, version, lifecycle, createdBy }: { fea
   const m = useApiMutation('rejectFeature', INVALIDATE);
   if (lifecycle !== 'PROPOSED') return null;
   const own = !!createdBy && createdBy === me;
-  const why = whyDisabled([STATIC_MODE, demoErrors.readOnlyDemo], [!perm.ok, perm.hint], [own, C.reject.selfBlocked]);
-  const formWhy = whyDisabled([STATIC_MODE, demoErrors.readOnlyDemo], [reason.trim().length < 2, ko.why.reason], [!filled(issues).length, C.reject.issues], [rework.trim().length < 2, C.reject.rework]);
+  const why = whyDisabled([!perm.ok, perm.hint], [own, C.reject.selfBlocked]);
+  const formWhy = whyDisabled([reason.trim().length < 2, ko.why.reason], [!filled(issues).length, C.reject.issues], [rework.trim().length < 2, C.reject.rework]);
   return (
     <>
       <Button disabled={!!why} reason={why ?? undefined} onClick={() => setOpen(true)} data-ui="rejectFeature">
@@ -96,8 +95,8 @@ export function RetireAction({ featureId, version, lifecycle, createdBy }: { fea
   const mine = (list.data?.items ?? []).filter((r) => r.version === version);
   const pending = mine.find((r) => r.status === 'PENDING');
   if (lifecycle === 'RETIRED' && !mine.length) return null;
-  const reqWhy = whyDisabled([STATIC_MODE, demoErrors.readOnlyDemo], [!reqPerm.ok, reqPerm.hint], [!!pending, C.retire.pending(pending?.requestId ?? '', pending?.requestedBy ?? '')]);
-  const decWhy = pending ? whyDisabled([STATIC_MODE, demoErrors.readOnlyDemo], [!decPerm.ok, decPerm.hint], [pending.requestedBy === me, C.retire.selfRequest], [!!createdBy && createdBy === me, C.retire.selfAuthor], [decision.trim().length < 2, ko.why.reason]) : null;
+  const reqWhy = whyDisabled([!reqPerm.ok, reqPerm.hint], [!!pending, C.retire.pending(pending?.requestId ?? '', pending?.requestedBy ?? '')]);
+  const decWhy = pending ? whyDisabled([!decPerm.ok, decPerm.hint], [pending.requestedBy === me, C.retire.selfRequest], [!!createdBy && createdBy === me, C.retire.selfAuthor], [decision.trim().length < 2, ko.why.reason]) : null;
   return (
     <>
       {lifecycle !== 'RETIRED' && !pending && (
@@ -140,7 +139,7 @@ export function RetireAction({ featureId, version, lifecycle, createdBy }: { fea
             <textarea className="ds-input" value={reason} onChange={(e) => setReason(e.target.value)} />
           </Field>
           <ErrorNote error={request.error} />
-          <Button type="submit" variant="primary" disabled={STATIC_MODE || reason.trim().length < 5 || request.isPending} reason={STATIC_MODE ? demoErrors.readOnlyDemo : reason.trim().length < 5 ? ko.why.reason : undefined}>
+          <Button type="submit" variant="primary" disabled={reason.trim().length < 5 || request.isPending} reason={reason.trim().length < 5 ? ko.why.reason : undefined}>
             {C.retire.submit}
           </Button>
         </form>

@@ -34,12 +34,14 @@ const snapshots: Record<string, unknown> = {
   [url('accounts')]: { items: ['author', 'sysadmin', 'steward'].map((name) => ({ id: `usr-${name}`, state: 'ACTIVE', roles: null, changedAt: null, changedBy: null, reason: null })) },
   [url('complianceRule', { id: 'CR-REG-001' })]: { rule: { ruleId: 'CR-REG-001', ownerId: 'usr-former' }, ownerState: 'ABSENT', ownerTransfers: [] },
 };
-const files = new Map(Object.entries(snapshots).map(([u, data]) => ['/' + snapshotFile(u), data]));
+const originalFiles = new Map(Object.entries(snapshots).map(([u,data])=>['/'+snapshotFile(u),data]));
+const files = new Map(originalFiles);
 let sim: typeof import('../api/sim');
 let engine: typeof import('../api/sim/engine');
 const call = (name: string, params: Record<string, string> = {}, query: Record<string, unknown> = {}, body?: unknown, role = 'author') => sim.simCall<any>(ROUTES.find((r) => r.name === name)!, url(name, params, query), { params, body, role });
 
 beforeEach(async () => {
+  files.clear(); for(const [key,value] of originalFiles)files.set(key,value);
   vi.resetModules();
   vi.stubEnv('VITE_DATA_MODE', 'static');
   vi.stubGlobal('fetch', vi.fn(async (u: string) => files.has(u) ? new Response(JSON.stringify(files.get(u)), { headers: { 'Content-Type': 'application/json' } }) : new Response('<!doctype html>', { headers: { 'Content-Type': 'text/html' } })));
@@ -89,7 +91,7 @@ describe('F0 공개 진입점 계정 기록과 소유자 이관', () => {
   });
 });
 
-describe('P10 공개 정적본 — 실제 승인을 가장하지 않는다', () => {
+describe('P10 로컬 업무와 기록 조회', () => {
   it.each([
     ['requestGateNa', { id, ver }, { gate: 'G3', reason: '공통 기능 검토' }, 'quality'],
     ['decideGateNa', { rid: 'GNA-00001' }, { decision: 'APPROVE', reason: '검토 완료' }, 'safety2'],
@@ -98,8 +100,8 @@ describe('P10 공개 정적본 — 실제 승인을 가장하지 않는다', () 
     ['decideFeatureRetire', { rid: 'FRT-00001' }, { decision: 'APPROVE', reason: '사업 취소 확인' }, 'approver'],
     ['deleteFeatureDraft', { id, ver }, { reason: '잘못 등록한 초안 정리' }, 'author'],
     ['deleteRelationDraft', { id: 'DEP-00001' }, { reason: '잘못 맺은 초안 관계 정리' }, 'author'],
-  ] as const)('%s는 성공 응답·엔터티 변경 없이 조회 전용 사유로 거부한다', async (name, params, body, role) => {
-    await expect(call(name, params, {}, body, role)).rejects.toMatchObject({ status: 422, code: 'GUARD_FAILED', details: { code: 'STATIC_DEMO_READ_ONLY' } });
+  ] as const)('%s는 조회 역할의 변경을 거부한다', async (name, params, body, role) => {
+    await expect(call(name, params, {}, body, 'viewer')).rejects.toMatchObject({ status: 403, code: 'FORBIDDEN' });
     expect(engine.__overlayForTest()!.entities).toEqual({});
     expect(engine.__overlayForTest()!.audit.some((a) => a.action === name && a.result === 'ALLOWED')).toBe(false);
     expect((window as any).__simUnhandled).toEqual([]);
@@ -130,4 +132,64 @@ describe('P10 공개 정적본 — 실제 승인을 가장하지 않는다', () 
     expect(result.items.map((p: any) => p.policyId)).toEqual(['POL-00001']);
     await expect(call('policyStages', {}, { stage: 'Unknown' })).rejects.toMatchObject({ status: 400, code: 'VALIDATION' });
   });
+});
+
+
+describe('P10 local commands with independent approval',()=>{
+ const seed=(lifecycle='PROPOSED',policies:any[]=[])=>{
+  const set=(name:string,p:Record<string,string>,body:unknown,q:Record<string,unknown>={})=>files.set('/'+snapshotFile(url(name,p,q)),body);
+  set('featureDetail',{id,ver},{feature:{...feature,lifecycle},meta:{createdBy:'usr-author',createdAt:null},gates:{},dependencies:{outgoing:[],incoming:[]},versions:[{version:ver,lifecycle}]});
+  set('listFeatures',{},{items:[{...feature,lifecycle,isLatest:true}]},{latestOnly:false});set('listPolicies',{},{items:policies});set('featureReviews',{id},{items:[]});set('featureRetireRequests',{},{items:[]});set('traceLinks',{},{items:[]},{featureId:id});set('dependencies',{},{items:[]});
+ };
+ it('N/A approval records a real local signature; duplicate, self-approval and mandatory Gate bypass are denied',async()=>{
+  seed();await expect(call('requestGateNa',{id,ver},{},{gate:'G1',reason:'모든 기능 공통 검토'},'quality')).rejects.toMatchObject({code:'GUARD_FAILED'});
+  const req=await call('requestGateNa',{id,ver},{},{gate:'G3',reason:'독립 검토가 필요한 공통 기능'},'quality');
+  await expect(call('requestGateNa',{id,ver},{},{gate:'G3',reason:'같은 요청 중복 확인'},'quality')).rejects.toMatchObject({code:'CONFLICT'});
+  const allowed=await call('decideGateNa',{rid:req.requestId},{},{decision:'APPROVE',reason:'독립 검토 완료'},'safety2');
+  expect(allowed).toMatchObject({request:{status:'APPROVED',requestedBy:'usr-quality',decidedBy:'usr-safety2'},record:{status:'N/A',evidenceRef:req.requestId}});
+  const log=(engine.__overlayForTest()!.data.regGates as any)[id+'@'+ver][0];expect(log.decision.signature.kid).toMatch(/^SIM-GATE-/);expect(log.decision.signature.value).toHaveLength(86);
+  expect((await call('gates',{id,ver})).naRequests).toContainEqual(expect.objectContaining({requestId:req.requestId,status:'APPROVED'}));
+  expect((await call('gates',{id,ver})).goNoGo.notApplicable).toContain('G3');
+  expect((await call('gateNaRequests',{id,ver})).items).toContainEqual(expect.objectContaining({requestId:req.requestId,status:'APPROVED'}));
+  const own=await call('requestGateNa',{id,ver},{},{gate:'G2',reason:'QM 기능 해당 없음 검토'},'quality');
+  await expect(call('decideGateNa',{rid:own.requestId},{},{decision:'APPROVE',reason:'자기 승인'},'quality')).rejects.toMatchObject({code:'SEPARATION_OF_DUTY'});
+ });
+ it('rejection preserves PROPOSED with the rework evidence and author cannot reject',async()=>{
+  seed();const body={reason:'요구 보완',issues:[{item:'근거 누락',detail:''}],reworkReason:'근거 재작성'};
+  await expect(call('rejectFeature',{id,ver},{},body,'author')).rejects.toMatchObject({code:'FORBIDDEN'});
+  const r=await call('rejectFeature',{id,ver},{},body,'approver');expect(r).toMatchObject({kind:'REJECT',to:'PROPOSED',issues:body.issues});
+  expect((await call('featureReviews',{id},{version:ver})).items).toContainEqual(expect.objectContaining({recordId:r.recordId,reworkReason:body.reworkReason}));expect((await call('featureDetail',{id,ver})).feature.lifecycle).toBe('PROPOSED');
+ });
+ it('retire request keeps the state until independent approval, then persists RETIRED and denies replay',async()=>{
+  seed();const r=await call('requestFeatureRetire',{id,ver},{},{reason:'사업 취소 폐기 요청'},'author');expect((await call('featureDetail',{id,ver})).feature.lifecycle).toBe('PROPOSED');
+  const result=await call('decideFeatureRetire',{rid:r.requestId},{},{decision:'APPROVE',reason:'사업 취소 독립 확인'},'approver');expect(result).toMatchObject({request:{status:'APPROVED'},feature:{lifecycle:'RETIRED'}});
+  expect((await call('featureDetail',{id,ver})).feature.lifecycle).toBe('RETIRED');await expect(call('decideFeatureRetire',{rid:r.requestId},{},{decision:'APPROVE',reason:'중복 승인'},'approver')).rejects.toMatchObject({code:'GUARD_FAILED'});
+ });
+ it('deployed Flag blocks retirement approval while a rejection remains possible',async()=>{
+  seed('RELEASED',[{policyId:'POL-X',flagKey:'alert',featureId:id,featureVersion:ver,status:'DEPLOYED'}]);const r=await call('requestFeatureRetire',{id,ver},{},{reason:'출시 버전 폐기 요청'},'author');
+  await expect(call('decideFeatureRetire',{rid:r.requestId},{},{decision:'APPROVE',reason:'배포 중인 Flag 확인'},'approver')).rejects.toMatchObject({code:'GUARD_FAILED'});
+  expect((await call('decideFeatureRetire',{rid:r.requestId},{},{decision:'REJECT',reason:'Flag 퇴역 먼저 완료'},'approver')).request.status).toBe('REJECTED');
+ });
+ it('deletes an unreferenced own draft with a tombstone and removes it from list and detail',async()=>{
+  seed();expect(await call('deleteFeatureDraft',{id,ver},{},{reason:'잘못 등록한 초안 정리'},'author')).toMatchObject({recordId:id+'@'+ver,entity:'feature-version'});
+  expect((await call('listFeatures',{}, {latestOnly:false})).items).toEqual([]);await expect(call('featureDetail',{id,ver})).rejects.toMatchObject({code:'NOT_FOUND'});
+  expect((await call('deletedDrafts')).items).toContainEqual(expect.objectContaining({recordId:id+'@'+ver}));
+ });
+ it('denies deletion of a referenced draft and preserves its state',async()=>{
+  seed('PROPOSED',[{policyId:'POL-X',featureId:id,featureVersion:ver,status:'DRAFT'}]);await expect(call('deleteFeatureDraft',{id,ver},{},{reason:'참조 초안 삭제 시도'},'author')).rejects.toMatchObject({code:'GUARD_FAILED',details:{code:'DRAFT_REFERENCED'}});
+  expect((await call('featureDetail',{id,ver})).feature.lifecycle).toBe('PROPOSED');
+ });
+ it('deletes a draft relation and updates source membership without resurrecting it',async()=>{
+  seed();const dependency={dependencyId:'DEP-09999',sourceFeatureId:id,sourceVersion:ver,targetFeatureId:'FEAT-00022',targetVersion:'1.0.0'};
+  files.set('/'+snapshotFile(url('dependencies')),{items:[dependency]});
+  const detailKey='/'+snapshotFile(url('featureDetail',{id,ver})),d=files.get(detailKey) as any;files.set(detailKey,{...d,feature:{...d.feature,dependencyIds:[dependency.dependencyId]}});
+  await call('deleteRelationDraft',{id:dependency.dependencyId},{},{reason:'잘못 맺은 초안 관계 정리'},'author');
+  expect((await call('dependencies')).items).toEqual([]);expect((await call('featureDetail',{id,ver})).feature.dependencyIds).toEqual([]);
+  expect((await call('deletedDrafts')).items).toContainEqual(expect.objectContaining({entity:'feature-relation',recordId:dependency.dependencyId}));
+ });
+ it('previous PASS remains deletion evidence after the latest Gate became FAIL',async()=>{
+  seed();files.set('/'+snapshotFile(url('gates',{id,ver})),{gates:[{gate:'G1',latest:{gateRecordId:'GR-2',status:'FAIL'},history:[{gateRecordId:'GR-1',status:'PASS'},{gateRecordId:'GR-2',status:'FAIL'}]}]});
+  await expect(call('deleteFeatureDraft',{id,ver},{},{reason:'과거 승인 이력 삭제 시도'},'author')).rejects.toMatchObject({code:'GUARD_FAILED',details:{code:'DRAFT_HAS_APPROVAL'}});
+ });
+
 });

@@ -14,8 +14,13 @@ it('uses English workflow display names while preserving source topology, RACI, 
   const activation=english.processes.find(process=>process.id==='FPW.7')!;
   expect(activation.activities.find(activity=>activity.id==='FPW.7-A14')?.trigger).toContain('PENDING release Gates');
   expect(activation.activities.find(activity=>activity.id==='FPW.7-A15')?.checks[0]).toBe('The requester and both approvers are three different people');
-  expect(activation.layout.nodes.find(node=>node.id==='FPW.7-S2')?.label).toContain('Emergency need');
-  expect(activation.layout.nodes.find(node=>node.id==='FPW.7-S3')?.label).toBe('When release effects need experimental comparison');
+  // Start IDs follow the current canonical model order. Geometry-only source reordering moved
+  // the independent exception start to S5; English labels must remain bound to its actual ID.
+  for (const layout of ['layout', 'departmentLayout'] as const) {
+    expect(activation[layout].nodes.find(node=>node.id==='FPW.7-S2')?.label).toBe('When release effects need experimental comparison');
+    expect(activation[layout].nodes.find(node=>node.id==='FPW.7-S3')?.label).toBe('G6 deployment complete');
+    expect(activation[layout].nodes.find(node=>node.id==='FPW.7-S5')?.label).toContain('Emergency need');
+  }
   expect(hara.workProducts.find(product=>product.key==='WP-IMPACT-ANALYSIS')?.content[0]).toBe('Previous Version and changed Registry attributes and Topology relationships');
   expect(english.processes.flatMap(p => p.activities).map(a => a.name).filter(name => /[가-힣]/.test(name))).toEqual([]);
   for (const [i, process] of english.processes.entries()) {

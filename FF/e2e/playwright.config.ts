@@ -43,7 +43,7 @@ export default defineConfig({
   //  · tablet(768)·mobile(390, 보기만) — 좁은 폭 스모크(narrow.spec), 기본은 chromium. E2E_ALL_ENGINES=1이면(verify --full)
   //    좁은 폭도 firefox·webkit으로 한 번 더
   projects: [
-    { name: 'chromium', testIgnore: [/visual\.spec\.ts/, /narrow\.spec\.ts/] },
+    { name: 'chromium', testIgnore: [/visual\.spec\.ts/, /narrow\.spec\.ts/, /topology-benchmark\.spec\.ts/] },
     { name: 'firefox', testMatch: /browsers\.spec\.ts/, use: { ...devices['Desktop Firefox'] } },
     { name: 'webkit', testMatch: /browsers\.spec\.ts/, use: { ...devices['Desktop Safari'] } },
     { name: 'tablet', testMatch: /narrow\.spec\.ts/, use: { viewport: { width: 768, height: 1024 } } },
@@ -55,6 +55,9 @@ export default defineConfig({
         ]
       : []),
     { name: 'visual', testMatch: /visual\.spec\.ts/ },
+    // RAF intervals are a rendering benchmark. Axe/WebGL in another worker changes the host frame interval.
+    // Run the same strict 210-event benchmark once, after every functional browser project.
+    { name: 'benchmark', testMatch: /topology-benchmark\.spec\.ts/, workers: 1, fullyParallel: false, dependencies: ['chromium', 'firefox', 'webkit', 'tablet', 'mobile', ...(process.env.E2E_ALL_ENGINES ? ['tablet-firefox', 'mobile-webkit'] : [])] },
   ],
   webServer: [
     {

@@ -7,7 +7,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { type CompatClass, type ConfigSet, type ConfigSetListItem, type ConfigVehicleRow } from '@ff/contracts';
 import { COMPAT_CLASSES, COMPAT_LABEL, configSetRegistrationBlocker, mergeSecurityMin } from '../../../../contracts/src/rules/ads-config';
 import { unregisteredSecurityMin } from '../../../../contracts/src/rules/ads-config-approval';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { compat as T } from '../../copy/ads-config';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, PageHeader, Panel, Select, Tabs, type KeyMessageSpec } from '../../design';
@@ -81,7 +80,7 @@ export default function CompatSetsScreen() {
             <Link to="/config/odd">{T.toOdd}</Link>
           </span>
         }
-        actions={perm.ok ? <Button onClick={() => setRegistering(true)}>{T.register.action}</Button> : <BlockedAction label={T.register.action} reason={STATIC_MODE ? T.register.readOnly : T.register.noPermission} />}
+        actions={perm.ok ? <Button onClick={() => setRegistering(true)}>{T.register.action}</Button> : <BlockedAction label={T.register.action} reason={T.register.noPermission} />}
       />
       <Drawer open={registering} title={T.register.title} onClose={() => setRegistering(false)}>
         <RegisterForm sets={items} onDone={() => setRegistering(false)} />

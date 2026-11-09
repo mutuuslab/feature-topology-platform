@@ -4,7 +4,6 @@ import { useState } from 'react';
 import type { ConfigSet, SecurityMinEntry } from '@ff/contracts';
 import { securityMinProposalBlocker } from '../../../../contracts/src/rules/ads-config-approval';
 import { actorFor } from '../../api/actor';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { securityMin as S, setApproval as A } from '../../copy/ads-ac';
 import { personName } from '../../data/people';
@@ -41,7 +40,7 @@ export function SetApprove({ set }: { set: ConfigSet }) {
   const [reason, setReason] = useState('');
   const approve = useApiMutation<ConfigSet>('approveConfigSet', INVALIDATE);
   if (set.status === 'APPROVED') return null;
-  if (!perm.ok) return <BlockedAction label={A.action} reason={STATIC_MODE ? A.readOnly : A.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={A.action} reason={A.noPermission} />;
   if (set.proposedBy && actorFor(role, ['SAFETY_OFFICER']).id === set.proposedBy) return <BlockedAction label={A.action} reason={A.selfApproval} />;
   return (
     <>
@@ -111,7 +110,7 @@ function MinApprove({ entry, entries }: { entry: SecurityMinEntry; entries: Secu
   const { role } = useAppShell();
   const [reason, setReason] = useState('');
   const approve = useApiMutation<SecurityMinEntry>('approveSecurityMin', INVALIDATE);
-  if (!perm.ok) return <BlockedAction label={S.approve.action} reason={STATIC_MODE ? S.readOnly : S.approve.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={S.approve.action} reason={S.approve.noPermission} />;
   if (actorFor(role, ['SECURITY_OFFICER']).id === entry.proposedBy) return <BlockedAction label={S.approve.action} reason={S.selfApproval} />;
   const stale = securityMinProposalBlocker(entries.filter((e) => e.entryId !== entry.entryId), entry.swId, entry.version);
   if (stale) return <BlockedAction label={S.approve.action} reason={S.blocker[stale.code] ?? stale.message} />;
@@ -136,7 +135,7 @@ function ProposeAction({ entries }: { entries: SecurityMinEntry[] }) {
   const [version, setVersion] = useState('');
   const [rationale, setRationale] = useState('');
   const propose = useApiMutation<SecurityMinEntry>('proposeSecurityMin', INVALIDATE);
-  if (!perm.ok) return <BlockedAction label={S.propose.action} reason={STATIC_MODE ? S.readOnly : S.propose.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={S.propose.action} reason={S.propose.noPermission} />;
   const blocked = swId && /^\d+\.\d+\.\d+$/.test(version) ? securityMinProposalBlocker(entries, swId, version) : null;
   return (
     <>

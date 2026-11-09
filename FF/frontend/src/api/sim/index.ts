@@ -22,6 +22,10 @@ const HANDLERS: (() => Promise<unknown>)[] = [
   () => import('./handlers/traceability'),
   () => import('./handlers/compliance-workflows'),
   () => import('./handlers/operations-workflows'),
+  () => import('./handlers/ads-classification'),
+  () => import('./handlers/ads-config'),
+  () => import('./handlers/ads-review'),
+  () => import('./handlers/ads-drill'),
   () => import('./p9'),
   () => import('./gx'),
 ];

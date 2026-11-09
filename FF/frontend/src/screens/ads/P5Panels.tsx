@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { type ClassificationView, type MarketBaseline } from '@ff/contracts';
 import { INSTALL_LINEAR, INSTALL_STAGE_LABEL } from '../../../../contracts/src/rules/ota-install';
 import { CANDIDATE_EXCLUSION_LABEL } from '../../../../contracts/src/rules/ads-publish';
-import { STATIC_MODE } from '../../api/client';
 import { asyncState, useApi, useApiMutation } from '../../api/hooks';
 import { baselineEdit as BE, cls as CL, compile as CP, drill as DR, install as IN, publish as PB, recovery as RC, site as ST } from '../../copy/ads-p5';
 import { AsyncView, Button, DataTable, Drawer, ErrorNote, Field, Panel, Select, StatusGlyph, SummaryLine } from '../../design';
@@ -83,7 +82,7 @@ export function SiteRequestAction({ profileId }: { profileId: string }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ name: '', kind: 'ZONE', mapVersion: '', infraVersion: '', changeImpactRef: '', reason: '' });
   const m = useApiMutation('addOddSite', ['oddProfile', 'oddProfiles', 'audit']);
-  if (!perm.ok) return <BlockedAction label={ST.add} reason={STATIC_MODE ? ST.readOnly : ST.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={ST.add} reason={ST.noPermission} />;
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   const ok = f.name.trim().length >= 2 && f.mapVersion && f.infraVersion && f.reason.trim().length >= 2;
   return (
@@ -133,7 +132,7 @@ export function SiteApprove({ profileId, siteId, status, reason }: { profileId: 
   const m = useApiMutation('approveOddSite', ['oddProfile', 'oddProfiles', 'audit']);
   const [why, setWhy] = useState('');
   if (status !== 'PENDING') return null;
-  if (!perm.ok) return <BlockedAction label={ST.approve} reason={STATIC_MODE ? ST.readOnly : ST.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={ST.approve} reason={ST.noPermission} />;
   return (
     <span className="adsc-row">
       <input className="ds-input" aria-label={ST.approveReason} value={why} onChange={(e) => setWhy(e.target.value)} />
@@ -264,7 +263,7 @@ function RecoveryForm({ setIds }: { setIds: string[] }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ vin: '', path: 'SAFE_STATE', configSetRef: setIds[0] ?? '', candidatePublicationId: '', rationale: '' });
   const m = useApiMutation('createRecoveryDecision', ['recoveryDecisions', 'configSets', 'audit']);
-  if (!perm.ok) return <BlockedAction label={RC.add} reason={STATIC_MODE ? RC.readOnly : RC.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={RC.add} reason={RC.noPermission} />;
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   return (
     <>
@@ -331,7 +330,7 @@ export function ClassificationActions({ v }: { v: ClassificationView }) {
     <div className="adc-stack" data-cls-actions>
       {v.ruleEnabled ? <p className="adc-note">{CL.ruleOn}</p> : null}
       <div className="adc-row">
-        {author.ok ? <Button onClick={() => setOpen(true)}>{CL.edit}</Button> : <BlockedAction label={CL.edit} reason={STATIC_MODE ? CL.readOnly : CL.noPermission} />}
+        {author.ok ? <Button onClick={() => setOpen(true)}>{CL.edit}</Button> : <BlockedAction label={CL.edit} reason={CL.noPermission} />}
         {c && c.status !== 'CONFIRMED' ? (
           safety.ok ? (
             <span className="adc-row">
@@ -341,7 +340,7 @@ export function ClassificationActions({ v }: { v: ClassificationView }) {
               </Button>
             </span>
           ) : (
-            <BlockedAction label={CL.confirm} reason={STATIC_MODE ? CL.readOnly : CL.noPermission} />
+            <BlockedAction label={CL.confirm} reason={CL.noPermission} />
           )
         ) : null}
         <ErrorNote error={confirm.error} />
@@ -408,7 +407,7 @@ export function BaselineAction({ v }: { v: ClassificationView }) {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ market: 'KR', approvalType: 'SELF_CERT', regs: '', oddProfileRef: '', approvalStatus: 'PENDING', note: '', reason: '' });
   const m = useApiMutation('putMarketBaseline', ['adsClassification', 'adsMarketBaselines', 'audit']);
-  if (!perm.ok) return <BlockedAction label={BE.add} reason={STATIC_MODE ? CL.readOnly : BE.noPermission} />;
+  if (!perm.ok) return <BlockedAction label={BE.add} reason={BE.noPermission} />;
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   const regulations = f.regs
     .split(',')
@@ -499,7 +498,7 @@ export function SupportDrillPanel({ id, ver }: { id: string; ver: string }) {
               </Button>
             </span>
           ) : (
-            <BlockedAction label={DR.run} reason={STATIC_MODE ? CL.readOnly : DR.noPermission} />
+            <BlockedAction label={DR.run} reason={DR.noPermission} />
           )}
           <span className="adc-note">{items.length ? DR.count(items.length) : DR.zero}</span>
           <ErrorNote error={run.error} />

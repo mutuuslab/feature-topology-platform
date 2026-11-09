@@ -1,11 +1,11 @@
 // 공개 시연 사이트 브라우저 안 쓰기 — 업무 묶음(api/sim/handlers/business.ts). 서버와 같은 규칙(contracts)으로 판정하는지,
 // 쓰기 뒤 목록·상세·감사·이벤트가 같은 상태인지 본다. 스냅샷은 공개 배포와 같은 frontend/public/api-snapshot을 그대로 읽는다.
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROUTES, routeUrl, snapshotFile } from '@ff/contracts';
 
-const SNAP_DIR = join(__dirname, '..', '..', 'public');
+const SNAP_DIR = process.env.FF_TEST_SNAPSHOT_PUBLIC ?? join(__dirname, '..', '..', 'public');
 const json = (v: string) => new Response(v, { headers: { 'Content-Type': 'application/json' } });
 const html = () => new Response('<!doctype html>', { headers: { 'Content-Type': 'text/html' } });
 
@@ -25,6 +25,11 @@ beforeEach(async () => {
     'fetch',
     vi.fn(async (u: string) => {
       const file = join(SNAP_DIR, decodeURIComponent(u));
+      const supplemental = process.env.FF_TEST_SNAPSHOT_SUPPLEMENTAL;
+      if (!existsSync(file) && supplemental && basename(file).startsWith('cost_references_')) {
+        const derived = join(supplemental, basename(file));
+        if (existsSync(derived)) return json(readFileSync(derived, 'utf8'));
+      }
       return existsSync(file) ? json(readFileSync(file, 'utf8')) : html();
     }),
   );

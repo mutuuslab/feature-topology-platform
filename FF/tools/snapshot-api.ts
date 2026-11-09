@@ -21,6 +21,7 @@ import { snapshotGx } from './snapshot-gx.ts';
 import { snapshotWorkflow } from './snapshot-workflow.ts';
 import { snapshotAc } from './snapshot-ac.ts';
 import { snapshotW } from './snapshot-w.ts';
+import { snapshotSupplier } from './snapshot-supplier.ts';
 import { captureSoftwareDemos } from './software-demo-capture.ts';
 
 const require = createRequire(import.meta.url);
@@ -347,11 +348,12 @@ async function main() {
   rmSync(join(OUT, 'api-snapshot'), { recursive: true, force: true });
   let n = 0;
   const written = new Map<string, string>();
-  const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}, headers?: Record<string, string>) => {
+  const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}, headers?: Record<string, string>, transform?: (body: any) => any) => {
     const url = routeUrl(name, params, query);
     const rel = snapshotFile(url);
     claimSnapshotFile(written, rel, url);
-    const body = await get(url, name, headers);
+    const received = await get(url, name, headers);
+    const body = transform ? transform(received) : received;
     const file = join(OUT, rel);
     mkdirSync(dirname(file), { recursive: true });
     writeFileSync(file, JSON.stringify(body));
@@ -399,6 +401,8 @@ async function main() {
   await save('procedureSummary', {}, {}, PROC);
   await save('procedureInbox', {}, {}, PROC);
   await snapshotWorkflow(save);
+  const { DEPARTMENTS } = require(join(FF, 'contracts', 'dist', 'generated', 'departments.js'));
+  for (const department of DEPARTMENTS.departments) await save('getDepartmentDashboardDefault', { departmentId: department.id }, {}, { 'X-Actor-Id': 'usr-sysadmin', 'X-Actor-Role': 'SYSTEM_ADMIN' });
   await snapshotAc(save);
 
   // Feature Registry 목록 — FeatureList의 질의 모양: { q, lifecycle, country, latestOnly }
@@ -446,6 +450,7 @@ async function main() {
     await save('productCandidates', {}, { country, vehicleModel, trim });
   }
   // 정책·검증·사용 권한·활성화 판단 (PoC ②③) — ActivationScreen은 차량 × 배포 flagKey 조합을 모두 묻는다
+  console.log('snapshot:supplier ' + JSON.stringify(await snapshotSupplier(save, { features: all.items })));
   const policies = await save('listPolicies');
   await snapshotGx(save, { policies: policies.items });
   await save('listPolicies', {}, { status: 'DEPLOYED' });

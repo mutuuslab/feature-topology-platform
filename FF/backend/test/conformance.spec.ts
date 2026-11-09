@@ -1,7 +1,7 @@
 // 런타임 준수 검사 — manifest(contracts)와 실제로 떠 있는 Nest 앱을 대조한다.
 // 정적 검사(tools/conformance.ts)는 파일 실재를, 이 테스트는 등록·응답을 본다.
 import { INestApplication } from '@nestjs/common';
-import { COMPONENTS, ROUTES, routeUrl } from '@ff/contracts';
+import { COMPONENTS, DEMO_PERSONAS, ROUTES, routeUrl } from '@ff/contracts';
 import { get as httpGet } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -53,7 +53,12 @@ describe('42 컴포넌트 런타임 준수', () => {
     }
     const req = http().get(url);
     // 역할 제한 조회는 계약이 허용한 신원으로 호출한다. 무인증·다른 역할 거부는 각 도메인 권한 회귀에서 확인한다.
-    if (r.roles?.length) req.set(actor('usr-conformance', r.roles[0]));
+    if(r.personal) {
+      // Workflow reads also verify active account identity. Use an actual seeded account with the declared role.
+      const persona=Object.entries(DEMO_PERSONAS).find(([key,roles])=>r.roles?.length?r.roles.some(role=>roles.includes(role)):key==='author');
+      if(!persona)throw new Error(`No seeded personal-read identity for ${r.name}`);
+      const [key,roles]=persona;req.set(actor(`usr-${key}`,r.roles?.find(role=>roles.includes(role)) ?? roles[0]));
+    } else if (r.roles?.length) req.set(actor('usr-conformance', r.roles[0]));
     // JIRA 앱 전용 조회(80-50 A6) — 앱 토큰 + 매핑된 JIRA 사용자. 무인증 거부는 alm-app.spec이 본다
     if (r.appToken) {
       const t = await http().post('/api/alm/app/token').send({ grant_type: 'client_credentials', client_id: 'ff-jira-app', client_secret: 'ff-mock-app-secret' }).expect(200);
@@ -61,6 +66,13 @@ describe('42 컴포넌트 런타임 준수', () => {
     }
     const res = await req;
     expect(res.status, JSON.stringify(res.body).slice(0, 200)).toBeLessThan(300);
+  });
+
+  it('업무 계정·역할·업무 건은 역할 헤더가 있어도 미확인 계정이면 403이다',async()=>{
+    for(const path of ['/api/workflow/accounts','/api/workflow/roles','/api/workflow/cases']){
+      const denied=await http().get(path).set(actor('usr-conformance','SYSTEM_ADMIN')).expect(403);
+      expect(denied.body.error.code).toBe('FORBIDDEN');
+    }
   });
 
   it('implemented 컴포넌트가 아직 없을 때도 스위트가 유효하다', () => {

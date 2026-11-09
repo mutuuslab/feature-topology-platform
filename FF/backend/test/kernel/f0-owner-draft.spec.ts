@@ -33,13 +33,13 @@ describe('F0 — 시스템 관리자·계정 상태·소유자 이관·초안 �
   beforeAll(async () => ({ app, http, get } = await bootApp({ at: '2026-11-07T01:00:00.000Z' })));
   afterAll(() => app.close());
 
-  it('IAM 역할표에 시스템 관리자가 사람 역할로 있고 계정 상태·이관 권한만 받는다', async () => {
+  it('IAM 역할표의 시스템 관리자는 계정·이관·업무 역할 배정·부서 기본값 권한을 받는다', async () => {
     const r = (await http().get('/api/iam/roles').expect(200)).body;
     const sa = r.roles.find((x: any) => x.role === 'SYSTEM_ADMIN');
     expect(sa).toMatchObject({ label: '시스템 관리자', human: true });
     expect(sa.allowed).toEqual(expect.arrayContaining(['deactivateAccount', 'reactivateAccount', 'transferComplianceRuleOwner']));
-    // 몇 역할로 좁힌 경로 중 시스템 관리자가 들어간 것은 이 셋뿐(사람 역할 전체에 여는 개인 조회·요청 경로는 제외) — 기록 내용 수정·승인 경로에는 없다
-    expect(ROUTES.filter((x) => x.roles?.includes('SYSTEM_ADMIN') && x.roles.length < 10).map((x) => x.name).sort()).toEqual(['deactivateAccount', 'reactivateAccount', 'transferComplianceRuleOwner']);
+    // 제한된 관리자 경로의 정확한 집합. 업무 역할 배정은 IAM 권한이나 업무 내용·승인 권한을 부여하지 않는다.
+    expect(ROUTES.filter((x) => x.roles?.includes('SYSTEM_ADMIN') && x.roles.length < 10).map((x) => x.name).sort()).toEqual(['deactivateAccount','reactivateAccount','setDepartmentDashboardDefault','setWorkflowRoleGrant','transferComplianceRuleOwner','workflowAssignableAccounts']);
   });
 
   it('계정 목록 — 데모 계정 13개 사용 중, 시스템 관리자만 비활성·재활성(사유, 자기 계정 제외), 감사·이벤트', async () => {

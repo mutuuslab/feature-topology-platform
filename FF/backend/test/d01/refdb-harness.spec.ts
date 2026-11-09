@@ -109,7 +109,7 @@ describe('Feature DB 하네스 정합', () => {
       expect(refdbWrites('DOMAIN_REVIEWER')).toEqual(['createRefChange', 'reviewRefChange']);
     });
 
-    it('두 역할의 Feature DB 밖 쓰기 권한은 모든 사람 역할 공통(알림 읽음·절차 활동·대시보드 …)뿐 — 권한표 API도 같은 값을 낸다', async () => {
+    it('DB 관리자의 분류 쓰기4개 외에는 두 역할의 고유 외부 권한이 없다 — 권한표 API도 같은 값을 낸다', async () => {
       const body = (await http().get('/api/iam/roles').expect(200)).body;
       const rows = body.roles as { role: string; allowed: string[] }[];
       const human = rolesView().filter((v) => v.human);
@@ -117,7 +117,9 @@ describe('Feature DB 하네스 정합', () => {
       for (const role of ['REFDB_ADMIN', 'DOMAIN_REVIEWER']) {
         const view = rolesView().find((v) => v.role === role)!;
         expect(view.human, role).toBe(true);
-        expect(view.allowed.filter((n) => !REFDB_ROUTES.some((r) => r.name === n) && !common.includes(n)), `${role}의 Feature DB 밖 고유 권한`).toEqual([]);
+        const taxonomy=role==='REFDB_ADMIN'?['createTaxonomyNode','updateTaxonomyNode','deleteTaxonomyNode','placeFeatureTaxonomy']:[];
+        expect(view.allowed.filter((n) => !REFDB_ROUTES.some((r) => r.name === n) && !common.includes(n)).sort(), `${role}의 Feature DB 밖 고유 권한`).toEqual(taxonomy.sort());
+        for(const name of taxonomy){const route=ROUTES.find(route=>route.name===name)!;expect(route.component).toBe('D01-01');expect(route.method).not.toBe('GET');}
         expect(rows.find((r) => r.role === role)?.allowed.sort(), `${role} /api/iam/roles`).toEqual([...view.allowed].sort());
       }
     });

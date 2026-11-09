@@ -44,6 +44,12 @@ let BASE = '';
 let SOURCE_SHA = '';
 // 출력 폴더(그 아래 api-snapshot/) — SNAPSHOT_OUT으로 바꾼다(tools/static-build.ts가 포트별 폴더로, 같은 폴더의 다른 작업과 겹치지 않게)
 const OUT = process.env.SNAPSHOT_OUT ? resolve(process.env.SNAPSHOT_OUT) : join(FF, 'frontend', 'public');
+/** Reset owns the directory before the first writer, including an empty software index. */
+export function resetSnapshotOutput(outDir: string): void {
+  const dir = join(outDir, 'api-snapshot');
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+}
 /** 정적 데모 검색용 전체 목록 한 쪽 — frontend screens/refdb/refSearch.ts STATIC_SEARCH_PAGE(= 서버 REF_PAGE_MAX)와 같다 */
 const STATIC_SEARCH_PAGE = 200;
 
@@ -366,7 +372,7 @@ async function main() {
       await new Promise((r) => setTimeout(r, 500));
     }
   }
-  rmSync(join(OUT, 'api-snapshot'), { recursive: true, force: true });
+  resetSnapshotOutput(OUT);
   let n = 0;
   const written = new Map<string, string>();
   const save = async (name: string, params: Record<string, string> = {}, query: Record<string, any> = {}, headers?: Record<string, string>, transform?: (body: any) => any) => {

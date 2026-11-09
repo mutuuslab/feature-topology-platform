@@ -2,8 +2,32 @@
 // 원인(바깥 timeout이 프로세스 트리를 끊음·포트 충돌)을 알 수 없었다. 종료 신호·코드·포트·마지막 출력과 힌트가 보이는지 본다.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError, snapshotCostReferencePicker, snapshotFleetMapFlags } from './snapshot-api.ts';
+import { backendGoneMessage, evidenceManifestIds, pushTail, retryableFetchError, snapshotCostReferencePicker, snapshotFleetMapFlags, resetSnapshotOutput } from './snapshot-api.ts';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { snapshotTx } from './snapshot-tx.ts';
+
+test('snapshot reset prepares a fresh output for the first empty software-index write and removes stale captures', () => {
+  const temp = mkdtempSync(join(tmpdir(), 'ff-snapshot-reset-'));
+  try {
+    const out = join(temp, 'fresh', 'public');
+    const index = join(out, 'api-snapshot', 'software-demo-index.json');
+    resetSnapshotOutput(out);
+    const empty = { schema: 'ff.software-demo-capture.v1', items: [] };
+    writeFileSync(index, JSON.stringify(empty));
+    assert.deepEqual(JSON.parse(readFileSync(index, 'utf8')), empty);
+    const stale = join(out, 'api-snapshot', 'stale-capture.json');
+    writeFileSync(stale, '{}');
+    resetSnapshotOutput(out);
+    assert.equal(existsSync(stale), false);
+    assert.equal(existsSync(index), false);
+    writeFileSync(index, JSON.stringify(empty));
+    assert.deepEqual(JSON.parse(readFileSync(index, 'utf8')), empty);
+  } finally {
+    rmSync(temp, { recursive: true, force: true });
+  }
+});
 
 test('captures the complete taxonomy tree and the exact level queries used by the classification editor',async()=>{
   const calls:{name:string;params:Record<string,string>;query:Record<string,unknown>}[]=[];

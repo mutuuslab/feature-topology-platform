@@ -39,6 +39,8 @@ setSimHandlerLoader(async () => {
   await import('./handlers/ads-shared');
   await Promise.all(HANDLERS.map((load) => load()));
   // Extensions capture the registered base reader, so load them after every base module.
+  await import('./handlers/local-feature-observability');
+  await import('./handlers/local-feature-relations');
   await import('./handlers/local-gate-snapshot');
 });
 

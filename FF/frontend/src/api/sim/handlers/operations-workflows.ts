@@ -25,7 +25,7 @@ registerSimHandler('moveFinding',async ctx=>{
  ctx.put(FIND,id,next);ctx.audit({action:'FINDING_TRANSITION',target:id,before:{status:f.status,actions:f.actions.length},after:{status:next.status,actions:actions.length,effect},reason:b.note,componentId:'D04-03'});ctx.emit('finding.moved',id,{featureId:f.featureId,version:f.version,axis:f.axis,cause:f.cause,from:f.status,to:next.status,action:b.action?.kind??null,effectMet:effect?.met??null});return decorate(next,ctx.now().getTime());
 },{body:FindingTransitionBody});
 async function observed(ctx:SimReadContext,id:string,base:any){
- const c=ctx.get<any>(ABORT,id);if(!c)return base;const canary=base?.canary;
+ const c=ctx.get<any>(ABORT,id);if(!c)return base?.canary??null;const canary=base?.canary;
  if(!canary)return null;
  const comparable=c.observeHours===canary.criteria.observeHours&&c.confidence===canary.criteria.confidence;
  const j=judgeCanary({lagMinutes:comparable&&canary.freshness.lagSeconds!=null?Math.round(canary.freshness.lagSeconds/60):null,vehicles:canary.vehicles.treatment,stats:canary.stats,criteria:c});
@@ -36,10 +36,25 @@ export async function expansionSourcesFor(ctx:SimReadContext,p:any){
  return {canary:canary?{verdict:canary.verdict,lagMinutes:canary.freshness.lagSeconds==null?null:Math.round(canary.freshness.lagSeconds/60),breached:canary.breached,registered:canary.criteria.registered}:ctx.get(ABORT,p.policyId)?{verdict:'HOLD_STALE' as const,lagMinutes:null,breached:[],registered:true}:null,evidence:e?{result:e.result,metrics:e.metrics,frozen:e.frozen,assumed:e.assumed}:null};
 }
 registerSimReader('policyExpansion',async ctx=>{
- const id=ctx.req.params.id,c=ctx.get<any>(ABORT,id);if(!c)return undefined;const base=await ctx.snapshot<any>('policyExpansion',{id}),p=(await ctx.read<any>('policyDetail',{id})).policy;if(!p)throw new SimError('NOT_FOUND','정책을 찾을 수 없습니다.');
- const sources=await expansionSourcesFor(ctx,p),canary=await observed(ctx,id,base),current=effectiveBasisPoints(p),ceiling=effectiveBasisPoints({...p,stageBasisPoints:null}),since=p.stagedAt??p.deployedAt??p.approvedAt??p.createdAt;
- const stage={fClass:base?.stage?.fClass??null,current,beyondCanary:ceiling>CANARY_MAX_BP&&current<ceiling,observedMs:Math.max(0,ctx.now().getTime()-Date.parse(since)),openAnomalies:base?.stage?.openAnomalies??[],activeKills:base?.stage?.activeKills??[]};
- return {...base,policyId:id,featureId:p.featureId,featureVersion:p.featureVersion,decision:judgeExpansion({...sources,stage}),canary,evidence:base?.evidence??null,registeredCriteria:c,stage:{...stage,ceiling,applies:stageCriteriaApply(stage),requiredMs:CANARY_OBSERVE_MS}};
+ const id=ctx.req.params.id,c=ctx.get<any>(ABORT,id),local=ctx.get<any>('policy',id);
+ // Unchanged native observations, signatures and decisions remain the captured response.
+ if(!c&&!local){
+  const base=await ctx.snapshot<any>('policyExpansion',{id});if(base)return base;
+  if(!(await ctx.snapshot<any>('policyDetail',{id}))?.policy)throw new SimError('NOT_FOUND','정책을 찾을 수 없습니다.');
+  return undefined;
+ }
+ const p=local??(await ctx.read<any>('policyDetail',{id})).policy;if(!p)throw new SimError('NOT_FOUND','정책을 찾을 수 없습니다.');
+ // A local policy revision has no newly measured Lake observations. Delivery ACK/READBACK
+ // establishes delivery only; it is not treatment/control health or Active exposure.
+ const base=local?null:await ctx.snapshot<any>('policyExpansion',{id}),canary=await observed(ctx,id,base);
+ const sources=local?{canary:c?{verdict:'HOLD_STALE' as const,lagMinutes:null,breached:[],registered:true}:null,evidence:null}:await expansionSourcesFor(ctx,p);
+ const facts=await (await import('./policy-ops')).expansionStageFacts(ctx,p);
+ const current=effectiveBasisPoints(p),ceiling=effectiveBasisPoints({...p,stageBasisPoints:null});
+ const stage={...facts,current,beyondCanary:ceiling>CANARY_MAX_BP&&current<ceiling,observedMs:Math.max(0,ctx.now().getTime()-Date.parse(facts.since))};
+ // The existing rule treats insufficient samples as an explicit advisory HOLD. Do not
+ // fabricate an observed Canary DTO or alter stageRollout's authorization/guard inputs.
+ const displaySources=!sources.canary&&!sources.evidence?{...sources,canary:{verdict:'INSUFFICIENT' as const,lagMinutes:null,breached:[],registered:false}}:sources;
+ return {...base,policyId:id,featureId:p.featureId,featureVersion:p.featureVersion,decision:judgeExpansion({...displaySources,stage}),canary,evidence:base?.evidence??null,registeredCriteria:c??null,stage:{fClass:stage.fClass,current,ceiling,applies:stageCriteriaApply(stage),observedMs:stage.observedMs,requiredMs:CANARY_OBSERVE_MS,openAnomalies:stage.openAnomalies,activeKills:stage.activeKills}};
 });
 registerSimHandler('registerAbortCriteria',async ctx=>{
  const id=ctx.req.params.id,d=await ctx.read<any>('policyDetail',{id}),p=d.policy,b=ctx.req.body;if(!p)ctx.fail('NOT_FOUND','정책을 찾을 수 없습니다.');if(!['APPROVED','DEPLOYED'].includes(p.status))ctx.fail('GUARD_FAILED','승인·배포된 정책만 중단 기준을 등록합니다.');

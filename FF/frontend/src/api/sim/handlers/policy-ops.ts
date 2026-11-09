@@ -599,6 +599,14 @@ async function activeKillsOf(ctx: SimReadContext, featureId: string) {
   return (await gxActiveKills(ctx, featureId)).map((k: any) => k.killId);
 }
 
+/** Same current stage facts used by the native expansion service and local stage guard. */
+export async function expansionStageFacts(ctx: SimReadContext, p: any) {
+  const [fClass, openAnomalies, activeKills] = await Promise.all([
+    fClassOf(ctx, p.featureId, p.featureVersion), openAnomaliesOf(ctx, p.featureId), activeKillsOf(ctx, p.featureId),
+  ]);
+  return { fClass, since: p.stagedAt ?? p.deployedAt ?? p.approvedAt ?? p.createdAt, openAnomalies, activeKills };
+}
+
 registerSimHandler('stageRollout', async (ctx) => {
   const id = ctx.req.params.id;
   const body = ctx.req.body;

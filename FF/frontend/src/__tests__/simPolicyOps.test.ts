@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ROUTES, routeUrl } from '@ff/contracts';
+import { ROUTES, routeUrl, snapshotFile } from '@ff/contracts';
 import { gxLegacyFacts } from './fixtures/gx-legacy-facts';
 
 // 스냅샷 묶음 — 정적 배포본 스냅샷(public/api-snapshot, 빌드 산출물이라 저장소 밖) 중 이 시험이 읽는 파일만 담았다.
@@ -159,6 +159,9 @@ describe('정책 작성 → 검증 → 승인 → 배포(Canary) → 확대 판�
     const pub = (await run('publicationDetail', { params: { id: 'PUB-00023' } })).publication;
     expect(pub).toMatchObject({ kind: 'POLICY', channel: 'OTA', status: 'DISPATCHED', denominator: 6 });
     expect(pub.payload.desired).toBe(p.contentHash);
+    const unobserved = await run('policyExpansion', { params: { id: p.policyId } });
+    expect(unobserved).toMatchObject({ canary: null, evidence: null, decision: { verdict: 'STOP', blocked: true }, stage: { current: 500, ceiling: 10000, fClass: 'F3', applies: true, openAnomalies: ['ANM-00001'] } });
+    expect(unobserved.decision.findings.map((f: any) => f.code)).toEqual(expect.arrayContaining(['OBSERVATION', 'CANARY_INSUFFICIENT', 'OPEN_ANOMALY']));
     // 차량 회신 — 통신되는 5대, 끊긴 1대는 전달 작업이 재시도 가능
     await vi.advanceTimersByTimeAsync(8000);
     const after = await run('publicationDetail', { params: { id: 'PUB-00023' } });
@@ -180,6 +183,12 @@ describe('정책 작성 → 검증 → 승인 → 배포(Canary) → 확대 판�
     await run('dismissAnomaly', { params: { id: 'ANM-00001' }, role: 'operator', body: { reason: '현장 재현 안 됨 — 오보고' } });
     const wide = await run('stageRollout', { params: { id: p.policyId }, role: 'operator', body: { basisPoints: 2000, reason: '관측 완료 후 20% 확대' } });
     expect(wide.stageBasisPoints).toBe(2000);
+    // Confirmed delivery and an elapsed clock do not invent measured health samples.
+    const withoutHealth = await run('policyExpansion', { params: { id: p.policyId } });
+    expect(withoutHealth.canary).toBeNull();
+    expect(withoutHealth.evidence).toBeNull();
+    expect(withoutHealth.decision.verdict).not.toBe('EXPAND');
+    expect(withoutHealth.decision.findings).toContainEqual(expect.objectContaining({ code: 'CANARY_INSUFFICIENT', waived: 'ADVISORY' }));
     // 감사·이벤트 — 같은 흐름이 남는다
     const audit = (await run('audit', { query: { limit: 100 } })).items.map((a: any) => `${a.action}:${a.result}`);
     for (const a of ['POLICY_CREATE:ALLOWED', 'POLICY_VALIDATE:ALLOWED', 'VIRTUAL_VALIDATION:ALLOWED', 'POLICY_APPROVE:ALLOWED', 'POLICY_RETIRE:ALLOWED', 'POLICY_DEPLOY:ALLOWED', 'ROLLOUT_STAGE:FAILED', 'ROLLOUT_STAGE:ALLOWED', 'ANOMALY_DISMISS:ALLOWED']) expect(audit).toContain(a);
@@ -346,4 +355,47 @@ it('registered abort criteria are stored and missing post-registration observati
  const body={metrics:[{metric:'apply_failure_rate',maxRelativeRisk:1.2}],confidence:0.95,observeHours:48,maxLagMinutes:10,reason:'확대 전 중단 기준 검토'};
  const saved=await run('registerAbortCriteria',{params:{id:p.policyId},role:'coordinator',body});expect(saved).toMatchObject({policyId:p.policyId,observeHours:48,registeredBy:'usr-coordinator'});
  const view=await run('policyExpansion',{params:{id:p.policyId}});expect(view.registeredCriteria).toMatchObject(saved);expect(view.decision.blocked).toBe(true);
+});
+
+
+describe('local policy expansion reads without fabricated observations', () => {
+  it('new local policy reads HOLD, without fetching a nonexistent native observation', async () => {
+    const p = await run('createPolicy', { role: 'author', body: NEW });
+    const missing = snapshotFile(url('policyExpansion', { id: p.policyId }));
+    const fetcher = vi.mocked(fetch); fetcher.mockClear();
+    const view = await run('policyExpansion', { params: { id: p.policyId } });
+    expect(view).toMatchObject({ policyId: p.policyId, canary: null, evidence: null, registeredCriteria: null, decision: { verdict: 'HOLD' } });
+    expect(view.decision.findings).toContainEqual(expect.objectContaining({ source: 'CANARY', code: 'CANARY_INSUFFICIENT', blocking: false }));
+    expect(fetcher.mock.calls.filter(([u]) => String(u).endsWith(missing))).toHaveLength(0);
+  });
+  it('registered criteria cannot turn missing local measurements into GO', async () => {
+    const p = await run('createPolicy', { role: 'author', body: NEW });
+    await run('runVirtual', { role: 'author', body: { policyId: p.policyId } });
+    await run('validatePolicy', { params: { id: p.policyId }, role: 'author', body: {} });
+    await run('decidePolicy', { params: { id: p.policyId }, role: 'approver', body: { decision: 'APPROVE', reason: '독립 검증 확인' } });
+    await run('registerAbortCriteria', { params: { id: p.policyId }, role: 'coordinator', body: { metrics: [{ metric: 'apply_failure_rate', maxRelativeRisk: 1.2 }], confidence: 0.95, observeHours: 48, maxLagMinutes: 10, reason: '관측 전 기준 등록' } });
+    const view = await run('policyExpansion', { params: { id: p.policyId } });
+    expect(view).toMatchObject({ canary: null, evidence: null, decision: { verdict: 'HOLD', blocked: true } });
+    expect(view.decision.findings).toContainEqual(expect.objectContaining({ code: 'STALE_DATA', blocking: true, lagMinutes: null }));
+  });
+  it('unknown policy is NOT_FOUND, never a synthetic empty or GO result', async () => {
+    await expect(run('policyExpansion', { params: { id: 'POL-99999' } })).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+  });
+  it('captured Canary sources without a local criteria override use the observation, not its envelope', async () => {
+    const { expansionSourcesFor } = await import('../api/sim/handlers/operations-workflows');
+    const canary = { verdict: 'HOLD_STALE', freshness: { lagSeconds: 900 }, breached: [], criteria: { registered: true } };
+    const base = { policyId: 'POL-00008', canary, evidence: null };
+    const ctx = { snapshot: vi.fn(async () => base), get: vi.fn(() => undefined) } as any;
+    expect(await expansionSourcesFor(ctx, { policyId: base.policyId })).toEqual({ canary: { verdict: 'HOLD_STALE', lagMinutes: 15, breached: [], registered: true }, evidence: null });
+    expect(base.canary).toEqual(canary);
+  });
+  it('unmodified native observation and signature fields are returned exactly after unrelated local work', async () => {
+    const native = { policyId: 'POL-00008', featureId: 'FEAT-00022', featureVersion: '1.0.0', decision: { verdict: 'HOLD', blocked: true, findings: [{ source: 'CANARY', code: 'STALE_DATA', verdict: 'HOLD', blocking: true, waived: null, lagMinutes: null, items: [], observedMs: null }] }, canary: null, evidence: null, stage: { fClass: 'F3', current: 500, ceiling: 10000, applies: true, observedMs: 12, requiredMs: 86400000, openAnomalies: [], activeKills: [] }, signature: { value: 'captured-test-signature', captured: true } };
+    const path = snapshotFile(url('policyExpansion', { id: native.policyId }));
+    vi.stubGlobal('fetch', vi.fn(async (u: string) => String(u).endsWith(path) ? json(native) : snapshotFetch(u)));
+    const before = structuredClone(native);
+    await run('createPolicy', { role: 'author', body: NEW });
+    expect(await run('policyExpansion', { params: { id: native.policyId } })).toEqual(before);
+    expect(native).toEqual(before);
+  });
 });

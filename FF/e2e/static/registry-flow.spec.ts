@@ -6,6 +6,7 @@
 import { mkdirSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { pickPrimaryRef, submitProposedFeature } from '../tests/refdb';
+import { settle } from '../tests/settle';
 
 const SHOTS = process.env.REGISTRY_SHOTS ?? 'C:/tmp/ff-static-audit/pw-out/registry/shots';
 let n = 0;
@@ -120,13 +121,17 @@ test('정적 시연: Feature 제안 → 안전 분류·HARA → Gate G1~G3 → �
   await expect(drawer(page)).toContainText(br);
   await drawer(page).locator('textarea').fill('체크리스트 통과 — 확정');
   await drawer(page).getByRole('button', { name: /확정|승인/ }).first().click();
-  await expect(drawer(page)).toContainText(/BL-\d{5}|확정/);
+  await expect(drawer(page)).toContainText(/BL-\d{5}/);
   await shot(page, 'baseline-decided');
   await page.goto(`/features/${id}/0.1.0?tab=baseline`);
+  await page.waitForLoadState('networkidle');
+  await settle(page);
   await expect(main(page)).toContainText(/BL-\d{5}/);
 
   // 7. 감사 — 이 Version의 기록(등록·안전 분류·Gate·전이·Baseline)
   await page.goto(`/features/${id}/0.1.0?tab=audit`);
+  await page.waitForLoadState('networkidle');
+  await settle(page);
   for (const a of ['Feature 등록', '안전 분류 확정', 'HARA 판단 기록', 'Gate 판정 G2', 'PROPOSED→APPROVED', 'Baseline 확정 요청', 'BASELINE_APPROVE']) await expect(main(page).getByRole('row', { name: new RegExp(`${a}.*허용`) }).first()).toBeVisible();
   await shot(page, 'audit');
   expect(errors).toEqual([]);
@@ -205,6 +210,8 @@ test('정적 시연: Feature DB 변경 요청 → 도메인 검토 → 승인, �
   await expect(main(page)).toContainText(/발행 대기|승인됨/);
   await shot(page, 'refchange-approved');
   await page.goto('/master/feature-db/changes');
+  await page.waitForLoadState('networkidle');
+  await settle(page);
   await expect(main(page).getByRole('row', { name: new RegExp(cr) })).toBeVisible();
   // 4. 업무 절차 — Feature Owner가 등록 활동을 Evidence·개인 서명으로 마치면 PLM 기준정보 차례
   await as(page, 'author', '/procedures/FPW.1?a=FPW.1-A01');

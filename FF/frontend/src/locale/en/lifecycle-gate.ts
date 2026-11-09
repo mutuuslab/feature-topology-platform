@@ -93,6 +93,8 @@ export default {
   "lcGate.baseline.left": 'Reference',
   "lcGate.baseline.right": 'Comparison target',
   "lcGate.baseline.run": 'Compare',
+  "lcGate.baseline.select": 'Select a Baseline',
+  "lcGate.baseline.selectPair": 'Select the reference and comparison Baselines to see their differences.',
   "lcGate.baseline.same": 'Both Baselines have the same content.',
   "lcGate.baseline.type.ADDED": 'Added',
   "lcGate.baseline.type.REMOVED": 'Removed',

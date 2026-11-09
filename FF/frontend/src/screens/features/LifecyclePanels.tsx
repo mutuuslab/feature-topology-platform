@@ -264,11 +264,12 @@ export function BaselineHistory({ featureId }: { featureId: string }) {
   const all = useApi<{ items: { baselineId: string; featureId: string; version: string }[] }>('baselines');
   const cs = useApi<{ items: BaselineChangeSet[] }>('baselineChangesets', { query: { featureId } });
   const mine = list.data?.items ?? [];
-  const [left, setLeft] = useState('');
-  const [right, setRight] = useState('');
-  const l = left || mine[0]?.baselineId || '';
-  const r = right || mine[mine.length - 1]?.baselineId || '';
-  const cmp = useApi<{ items: ChangeItem[]; summary: BaselineChangeSet['summary'] }>('compareBaselines', { query: { left: l, right: r } }, { enabled: !!l && !!r });
+  const [left, setLeft] = useState<string | null>(null);
+  const [right, setRight] = useState<string | null>(null);
+  const l = left ?? mine[0]?.baselineId ?? '';
+  const r = right ?? mine[mine.length - 1]?.baselineId ?? '';
+  const readyToCompare = !!l && !!r;
+  const cmp = useApi<{ items: ChangeItem[]; summary: BaselineChangeSet['summary'] }>('compareBaselines', { query: { left: l, right: r } }, { enabled: readyToCompare });
   const options = all.data?.items ?? [];
   return (
     <div style={{ display: 'grid', gap: 'var(--sp-4)' }}>
@@ -297,6 +298,7 @@ export function BaselineHistory({ featureId }: { featureId: string }) {
           ).map(([label, value, set]) => (
             <Field key={label} label={label}>
               <select className="ds-select" value={value} onChange={(e) => set(e.target.value)}>
+                <option value="">{B.select}</option>
                 {options.map((o) => (
                   <option key={o.baselineId} value={o.baselineId}>{`${o.baselineId} · ${o.featureId} ${o.version}`}</option>
                 ))}
@@ -304,10 +306,12 @@ export function BaselineHistory({ featureId }: { featureId: string }) {
             </Field>
           ))}
         </div>
-        {cmp.data && <p className="ds-field__hint" data-testid="bl-compare-summary">{B.summary(cmp.data.summary.type.ADDED, cmp.data.summary.type.REMOVED, cmp.data.summary.type.MODIFIED)}</p>}
-        <AsyncView state={asyncState(cmp)} error={cmp.error} rows={4}>
-          <ChangeTable items={cmp.data?.items ?? []} />
-        </AsyncView>
+        {readyToCompare && cmp.data && <p className="ds-field__hint" data-testid="bl-compare-summary">{B.summary(cmp.data.summary.type.ADDED, cmp.data.summary.type.REMOVED, cmp.data.summary.type.MODIFIED)}</p>}
+        {readyToCompare ? (
+          <AsyncView state={asyncState(cmp)} error={cmp.error} rows={4}>
+            <ChangeTable items={cmp.data?.items ?? []} />
+          </AsyncView>
+        ) : <p className="ds-field__hint" data-state="empty">{B.selectPair}</p>}
       </Panel>
       {!!cs.data?.items.length && (
         <Panel id="bl-changesets" title={B.changesets}>

@@ -95,6 +95,8 @@ export const lcGate = /* @__PURE__ */ localizedCopy('lifecycle-gate.lcGate', {
     left: '기준',
     right: '비교 대상',
     run: '비교',
+    select: 'Baseline을 선택하세요',
+    selectPair: '기준과 비교 대상 Baseline을 선택하면 차이를 표시합니다.',
     same: '두 Baseline의 내용이 같습니다.',
     type: { ADDED: '추가', REMOVED: '삭제', MODIFIED: '변경' } satisfies Record<ChangeType, string>,
     area: { DEFINITION: '정의', REQUIREMENT: '요구사항', SCOPE: '적용 범위', IMPLEMENTATION: '구현 연결', CONTROL: '제어점', RELATION: '관계', SAFETY: '안전', REFERENCE: '기준 기능' } satisfies Record<ChangeArea, string>,

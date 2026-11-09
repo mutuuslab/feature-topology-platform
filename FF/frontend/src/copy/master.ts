@@ -92,7 +92,7 @@ export const master = /* @__PURE__ */ localizedCopy('master.master', {
   },
   supplier: {
     keyLabel: (f: number) => `납품 SW · 재검증 범위 Feature ${f}개`,
-    title: '협력사 이관',
+    title: '협력사 SW 납품',
     lead: '협력사 SW 납품과 재검증할 Feature 범위.',
     supplier: '공급사',
     col: { sw: 'SW', version: 'Version', artifact: '산출물', checksum: '체크섬', ecu: 'ECU', lifecycle: '상태', features: '쓰는 Feature' },

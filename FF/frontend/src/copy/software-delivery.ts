@@ -1,6 +1,7 @@
 import { localizedCopy } from '../locale/runtime';
 export const softwareDelivery=/* @__PURE__ */ localizedCopy('software-delivery.softwareDelivery',{
   title:'SW 패키지 및 다운로드',lead:'Feature 버전·SW 구성품과 실제 파일을 연결하고, 차량별 Flag 판정을 통과한 원문만 내려받습니다.',
+  key:'개 패키지의 승인과 다운로드 조건을 확인하세요',
   guide:'진행 방법',steps:['1. Feature 버전과 SW 구성품을 선택합니다.','2. 실제 SW 파일을 업로드합니다. SHA-256은 자동 계산합니다.','3. 등록자와 다른 출시 담당자가 원문·구성품을 검토하고 승인합니다.','4. 대상 차량과 배포 Flag를 선택해 현재 조건을 확인합니다.','5. 파일을 내려받고 브라우저에서 서명·크기·SHA-256을 다시 검증합니다.'],
   boundary:'다운로드는 SW 설치·활성화·실차 적용 완료를 의미하지 않습니다. 이 화면은 원문 파일 전달을 검증하며, 설치 사실은 별도 OTA·차량 형상 보고로 확인합니다.',
   register:'SW 파일 등록',feature:'기준 Feature 버전',sw:'SW 구성품',file:'SW 원문 파일',choose:'선택하세요',reason:'작성·검토 근거',

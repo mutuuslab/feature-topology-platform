@@ -1,5 +1,6 @@
 
 export default {
+  'softwareDelivery.key': 'packages to check for approval and download eligibility',
   'softwareDelivery.noSw': 'No SW components are linked to this Feature Version. Check the Feature configuration first.',
   'softwareDelivery.featureDetail': 'Check Feature configuration',
   'softwareDelivery.checkedAt': 'Conditions checked at',

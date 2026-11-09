@@ -1,6 +1,7 @@
 import { localizedCopy } from '../locale/runtime';
 export const workflowExecution = /* @__PURE__ */ localizedCopy('workflow-execution.workflowExecution', {
   title: '업무 건·산출물', lead: '대상별로 업무를 열고 산출물을 작성한 뒤, 독립 검토와 다음 담당자의 인수까지 기록합니다.',
+  key: '개 업무 건의 산출물과 인계를 추적합니다',
   boundary: '이곳의 수락은 업무 산출물 검토 기록입니다. 안전·Gate·정책·출시 승인은 각 원천 업무 화면에서 별도로 처리합니다.',
   cases: '업무 건', newCase: '업무 건 만들기', noCases: '조회할 업무 건이 없습니다',
   caseCounts:(submitted:number,accepted:number,handoffs:number)=>`검토 대기 ${submitted} · 산출물 수락 ${accepted} · 인수 대기 ${handoffs}`,

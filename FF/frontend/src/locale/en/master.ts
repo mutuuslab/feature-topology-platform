@@ -109,7 +109,7 @@ export default {
   "master.telemetry.reqCol.reason": 'Reason',
   "master.telemetry.events": 'View event history',
   "master.supplier.keyLabel": (f: number) => `Delivered SW · ${f} Features in the revalidation scope`,
-  "master.supplier.title": 'Supplier handover',
+  "master.supplier.title": 'Supplier SW deliveries',
   "master.supplier.lead": 'Supplier SW deliveries and Features requiring revalidation.',
   "master.supplier.supplier": 'Supplier',
   "master.supplier.col.artifact": 'Artifact',

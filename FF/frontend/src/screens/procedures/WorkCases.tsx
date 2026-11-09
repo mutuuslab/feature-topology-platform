@@ -26,7 +26,7 @@ export function WorkflowWorkScreen() {
   const roles=identity.data?.roleIds??[];
   const processes=doc&&doc!=='fail'?doc.processes.filter(p=>p.activities.some(a=>[...a.raci.R,a.raci.A].some(r=>roles.includes(r)))):[];
   return <div className="ds-screen">
-    <PageHeader title={T.title} lead={T.lead} actions={<Button variant="primary" onClick={()=>setCreating(true)} disabled={!processes.length} reason={identity.isPending||doc===null?T.identityLoading:!processes.length?T.noRole:undefined}>{T.newCase}</Button>} />
+    <PageHeader title={T.title} lead={T.lead} message={{tone:'neutral',value:list.data?.items.length??'—',text:T.key}} actions={<Button variant="primary" onClick={()=>setCreating(true)} disabled={!processes.length} reason={identity.isPending||doc===null?T.identityLoading:!processes.length?T.noRole:undefined}>{T.newCase}</Button>} />
     <p className="ds-callout" data-tone="neutral">{T.boundary}</p>
     {doc===null&&<p role="status">{T.modelLoading}</p>}
     {doc==='fail'&&<div role="alert"><p>{T.modelFailure}</p><Button onClick={retryModel}>{T.retry}</Button></div>}

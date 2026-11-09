@@ -1,6 +1,7 @@
 // Work product acceptance is separate from approvals in source systems.
 export default {
   'workflowExecution.title': 'Workflow cases and work products',
+  'workflowExecution.key': 'workflow cases with work products and handovers to track',
   'workflowExecution.lead': 'Open a workflow for a target, prepare its work products, and record independent review and receipt by the next owner.',
   'workflowExecution.boundary': 'Work product acceptance here records a workflow review. Safety, Gate, policy and release approvals are handled separately in their source workflows.',
   'workflowExecution.cases': 'Workflow cases',

@@ -47,7 +47,7 @@ export default function SupplierPackages() {
   const targetQuery = features.isPending || features.isError ? features : allPackages;
   const listState = featureId && version ? asyncState(list, packages.length === 0) : asyncState(targetQuery, true);
   return <div className="ds-screen">
-    <PageHeader title={S.title} codes="D05-01" lead={S.lead} actions={<Link to="/supplier/deliveries">{S.deliveries}</Link>} message={{ tone: gate.data?.blockers.length ? 'warn' : 'neutral', text: gate.data?.blockers.length ? S.hold : S.gate }} />
+    <PageHeader title={S.title} codes="D05-01" lead={S.lead} actions={<Link to="/supplier/deliveries">{S.deliveries}</Link>} message={{ tone: gate.data?.blockers.length ? 'warn' : 'neutral', text: gate.data?.blockers.length ? S.holdKey : S.key }} />
     {isLocalFile() && <p role="note" className="ds-field__hint">{S.offlineSimulation}</p>}
     <Toolbar label={S.target}>
       <Select label={S.feature} value={featureId} onChange={(e) => { setId(e.target.value); setVer(''); setPackage(''); setSupplier(''); }}>{unique.map((f) => <option key={f.featureId} value={f.featureId}>{f.name} ({f.featureId})</option>)}</Select>

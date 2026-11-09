@@ -1,6 +1,7 @@
 import { localizedCopy } from '../locale/runtime';
 export const supplier = /* @__PURE__ */ localizedCopy('supplier.supplier', {
   title: '협력사 이관',
+  key: '대상 Feature의 검수 결과와 납품 근거를 확인하세요', holdKey: '협력사 검수 보류 사유를 먼저 확인하세요',
   offlineSimulation: '오프라인 시연입니다. 작성·제출·독립 검수와 본문 검증 결과는 이 브라우저에 저장됩니다. 실제 공급사 연계·시험·차량 적용을 뜻하지 않습니다.',
   target: '협력사 패키지 대상',
   lead: 'Feature에 연결된 협력사 기능과 산출물을 확인하고, 독립 검수 결과를 남깁니다.',

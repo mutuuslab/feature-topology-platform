@@ -2,7 +2,7 @@
   "schema": 1,
   "scope": "Static UI copy only; no translation of user records, permission values or canonical business decisions.",
   "moduleCount": 91,
-  "requiredLeaves": 9847,
+  "requiredLeaves": 9858,
   "modules": [
     {
       "module": "ads-ac",
@@ -7410,6 +7410,18 @@
       "file": "FF/frontend/src/copy/alm.ts",
       "leaves": [
         {
+          "path": "alm.alm.reconcile.localLead",
+          "kind": "text",
+          "text": "보관된 DEMO 항목을 비교·처리합니다. 원격 전송은 없고 무변경은 반영 0건입니다.",
+          "sourceHash": "6be0f15e4342ac0f47d559e1bc91d0aa818172c120c6bf0775623ef4c112311e"
+        },
+        {
+          "path": "alm.alm.reconcile.localBadge",
+          "kind": "text",
+          "text": "로컬 시연",
+          "sourceHash": "394c5081bee123b7ef7e1bc93c9822ec42f906b070c17381644270aa291d9147"
+        },
+        {
           "path": "alm.alm.reconcile.title",
           "kind": "text",
           "text": "주기 대사",
@@ -7666,6 +7678,12 @@
           "kind": "text",
           "text": "codeBeamer 다시 읽기",
           "sourceHash": "d3fa98ca3e6b8dcf6a7405784bd2a814e363cefcc2b59c38c6bd1fdd36fe56bb"
+        },
+        {
+          "path": "alm.alm.wp.localHint",
+          "kind": "text",
+          "text": "브라우저에 보관된 codeBeamer DEMO 원천으로 완결성·의심·재판정 대상을 다시 계산합니다. 원본 Gate 판정·서명을 바꾸거나 새 원격 검증으로 표시하지 않습니다.",
+          "sourceHash": "051df958c3d48f340b9b99a5f99681009851929450c91004da730116ea9c8047"
         },
         {
           "path": "alm.alm.wp.suspect",
@@ -37310,6 +37328,54 @@
       "module": "lifecycle-gate",
       "file": "FF/frontend/src/copy/lifecycle-gate.ts",
       "leaves": [
+        {
+          "path": "lifecycle-gate.lcGate.draft.feature",
+          "kind": "text",
+          "text": "초안 Feature 삭제",
+          "sourceHash": "098f2bfc9f127852af04b860e1471a8a395fa09e7a66ff160f31041852efc149"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.relation",
+          "kind": "text",
+          "text": "초안 관계 삭제",
+          "sourceHash": "e17c340f184b92060de78b638d44ac6a2830bcc6d1afa9a6a7bad41e36f56660"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.owner",
+          "kind": "text",
+          "text": "이 Feature Version 작성자만 삭제할 수 있습니다.",
+          "sourceHash": "9868676ba47b02b67f714a46a8f55ab1df226175fecf94161a62f835efefdab7"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.hint",
+          "kind": "text",
+          "text": "아직 초안이고 승인 이력과 다른 참조가 없어야 삭제됩니다. 조건을 만족하지 않으면 사유를 표시하고 기록을 유지합니다. 삭제한 ID는 재사용할 수 없으며 삭제 사유와 마지막 상태는 감사·묘비로 보존합니다.",
+          "sourceHash": "cf7acb6637575de1e8344ec5e03cfaa5207d07e5d6d63717c22e2cd6ca94b996"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.reason",
+          "kind": "text",
+          "text": "삭제 사유",
+          "sourceHash": "73ecfe917330e0ac190c5b8389fb394f18822e31648e8a138caba5eeeadc3ec9"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.reasonHint",
+          "kind": "text",
+          "text": "삭제 사유를 4자 이상 입력하세요.",
+          "sourceHash": "92f18733187b7724f4f569e8b49735e979148db898c8e73cbef41081a904b69d"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.confirm",
+          "kind": "text",
+          "text": "선택한 초안과 삭제 조건을 검토했습니다.",
+          "sourceHash": "7261d4707522666ffc640a2488104ac666b6977cc11cc3cd281596f3e2cf5b40"
+        },
+        {
+          "path": "lifecycle-gate.lcGate.draft.submit",
+          "kind": "text",
+          "text": "검토한 초안 삭제",
+          "sourceHash": "d07e74ede3e7eba28c865af7ee1365efd8f0eee4c049e945a75fbda00f89b86c"
+        },
         {
           "path": "lifecycle-gate.lcGate.goNoGo.title",
           "kind": "text",

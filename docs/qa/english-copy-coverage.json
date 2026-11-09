@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "scope": "Source-copy coverage; remaining static metadata, API-generated messages and rendered view acceptance require separate checks.",
-  "required": 9847,
-  "translated": 9847,
+  "required": 9858,
+  "translated": 9858,
   "modules": [
     {
       "module": "ads-ac",
@@ -95,13 +95,13 @@
     {
       "module": "alm",
       "source": "FF/frontend/src/copy/alm.ts",
-      "required": 53,
-      "translated": 53,
+      "required": 56,
+      "translated": 56,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "46087ef6d120d92db3ffa521709db714e00860728c027773b016554f5f03cc6b"
+      "sourceHash": "62c2ee3a4459fdf94ea62cdd7ed6cb3eb32474f20cc01dd80870ec2b8da5dc79"
     },
     {
       "module": "analysis",
@@ -502,13 +502,13 @@
     {
       "module": "lifecycle-gate",
       "source": "FF/frontend/src/copy/lifecycle-gate.ts",
-      "required": 118,
-      "translated": 118,
+      "required": 126,
+      "translated": 126,
       "missing": [],
       "unknownTranslationKeys": [],
       "duplicateTranslationKeys": [],
       "incompatibleFunctionSignatures": [],
-      "sourceHash": "b9eb557b88e59cd3ad85dbfd7428ddcc557fdad1db35aa252e501a46cddb6b99"
+      "sourceHash": "e028c442901105f6b9440647eafbb2f2fba8b52d65eb81d9c53ee1c1cf503702"
     },
     {
       "module": "lists",

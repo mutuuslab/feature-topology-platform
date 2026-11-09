@@ -85,18 +85,21 @@ test('정적 시연: 개발비 과제 만들기 → Feature 담기 → 승인 �
   await as(page, 'viewer', '/procurement/sw-cost');
   await page.getByRole('button', { name: '새 과제' }).click();
   const create = page.getByRole('dialog');
-  await create.getByLabel('과제 이름').fill('BCM 파생 2차 견적');
-  await create.getByLabel('대상 제어기·차종').fill('BCM / 파생 1종');
-  await create.getByRole('button', { name: '만들기' }).click();
-  await expect(page).toHaveURL(/\/procurement\/sw-cost\/EST-\d{4}$/, { timeout: 20_000 }); // 만들기는 산정 기준·Feature DB 발행본을 지연 로드해 계산한다(병렬 실행 부하에서 5초를 넘었다, 통합 12단계)
-  const estId = page.url().split('/').pop()!;
+  // 실제 Feature DB 발행 행으로 시작한다. 등록 Feature 연결은 선택이며 빈 과제를 만들지 않는다.
+  await create.getByLabel('기준 행 이름·별칭·ID', { exact: true }).fill('BC-BCM-001');
+  const referenceRow = create.getByRole('table', { name: 'Feature DB 기반 산정', exact: true }).getByRole('row').filter({ hasText: 'BC-BCM-001' });
+  await referenceRow.getByRole('button', { name: '이 기준으로 산정', exact: true }).click();
+  await create.getByRole('button', { name: '이 기준으로 산정', exact: true }).click();
+  await expect(create.getByLabel('과제 이름', { exact: true })).not.toHaveValue('');
+  await expect(create.getByLabel(/^대상 제어기·차종/)).not.toHaveValue('');
+  await create.getByLabel('과제 이름', { exact: true }).fill('BCM 파생 2차 견적');
+  await create.getByRole('button', { name: '만들기', exact: true }).click();
+  await expect(page).toHaveURL(/\/procurement\/sw-cost\/EST-\d{4}\?tab=lines$/, { timeout: 20_000 });
+  const estId = new URL(page.url()).pathname.split('/').pop()!;
 
+  // 산정 시작 시 선택한 기준 행이 실제 산식 입력으로 저장된다.
+  await expect(page.getByRole('table', { name: 'Feature DB 기반 산정', exact: true })).toContainText('BC-BCM-001');
   await page.getByRole('tab', { name: /기능 목록/ }).click();
-  await page.getByRole('button', { name: 'Feature 담기' }).click();
-  const add = page.getByRole('dialog');
-  await add.getByLabel('Feature 이름·ID').fill('FEAT-00187');
-  await add.getByRole('button', { name: '담기' }).first().click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('tab', { name: /기능 목록/ })).toContainText('1');
   await shot(page, 'cost-lines');
 

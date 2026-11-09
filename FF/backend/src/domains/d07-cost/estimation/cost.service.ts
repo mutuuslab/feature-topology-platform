@@ -1,5 +1,5 @@
 import { CostReviewStore } from './cost-review.store';
-import { canonicalJson,type CostReviewBaseline,type CreateCostReviewBody,type PutCostReviewBody,type ActCostReviewBody } from '@ff/contracts';
+import { costInputMissing,canonicalJson,type CostReviewBaseline,type CreateCostReviewBody,type PutCostReviewBody,type ActCostReviewBody } from '@ff/contracts';
 // SW 개발비 산정(D07-01, docs/20-architecture/20-94) — 산정 과제·줄·MBD·전이·계수 표 버전.
 // 계산은 contracts 엔진(rules/cost/engine.ts, 엑셀 1원 일치)이 한다. 금액은 산정 역할만 보고(D-COST-4, 서버 투영),
 // 단가가 든 계수 표와 승인 때 고정한 결과는 KEK 봉투로 봉인한다(D-COST-5). 금액을 돌려준 조회는 COST_VIEW로 감사한다.
@@ -264,6 +264,7 @@ export class CostService implements OnModuleInit {
   private compute(doc: CostProjectDoc, estId: string): CostEstimate {
     const basis = this.openBasis(doc.basisVersion);
     const sourceLines=this.lines(estId);
+    const missing=costInputMissing(sourceLines,doc.settings.directExpenses);if(missing.length)throw new DomainError('VALIDATION','미확정 입력을 0으로 계산할 수 없습니다. 수량과 별도 비용의 수량·단가를 확인하세요.',{missing});
     const refs=new Map(this.refFacts());
     const hashes=new Map<string,string>();
     for(const line of sourceLines) if(line.sourceRevision) for(const reference of this.referenceStore.load(estId,line.lineNo,line.sourceRevision).snapshot.relatedReferences ?? []) refs.set(reference.refId,costRefFactsOf(reference,0));

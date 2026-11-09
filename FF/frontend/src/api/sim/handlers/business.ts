@@ -4,7 +4,7 @@
 //  · D04-04 협의 의견(consult.service) · D07-01 개발비 산정(cost.service) · KERNEL 개인정보 요청(privacy.service)
 //  · D05-01 외부 연계 충돌 처리·CR 연결 · D01-07 실험 · D04-05 사고·VOC · D04-06 품질 피드백 · D05-02/03/05/07 · D06-10/11 · D02-01 · D04-02/03
 // 날짜 규칙(유효기간·체험 기간)은 스냅샷이 찍힌 날의 '오늘'을 쓴다 — 화면에 보이는 값과 같은 기준(서버만 아는 시계는 결정적으로).
-import {
+import { costInputMissing,
   AddCostFeatureBody,
   AddCostReferenceBody,
   UpdateCostReferenceBody,
@@ -741,7 +741,7 @@ function costNextLine(p:CostProj){return Math.max(0,...p.lines.map(l=>l.lineNo),
 async function costCaptureReference(ctx:SimWriteContext,p:CostProj,line:CostLine,value:any,reason:string){
  const {preview,feature}=value;const revisions=(p.sourceRevisions ??= {})[String(line.lineNo)] ??= [];const revision=Math.max(0,...revisions.map((s:any)=>s.revision))+1;
  const snapshot={reference:preview.ref,relatedReferences:preview.relatedReferences ?? [],facts:costRefFactsOf(preview.ref,preview.ord ?? 0),feature:feature?costFeatureSourceOf(feature):null,sources:preview.sources ?? []};
- revisions.push({revision,release:preview.refRelease,referenceSha256:preview.referenceSha256,featureSha256:feature?await sha256(canonicalCostSource(snapshot.feature)):null,capturedBy:ctx.actor.id,capturedAt:ctx.iso(),reason,snapshot});
+ revisions.push({revision,provenance:preview.provenance??null,release:preview.refRelease,referenceSha256:preview.referenceSha256,featureSha256:feature?await sha256(canonicalCostSource(snapshot.feature)):null,capturedBy:ctx.actor.id,capturedAt:ctx.iso(),reason,snapshot});
  line.sourceRevision=revision;line.featureId=feature?.featureId ?? null;line.version=feature?.version ?? null;line.role=feature?(feature.featureRefs ?? []).find((l:any)=>l.refId===line.refId).role:'REFERENCE';line.featureAsil=feature?.asil ?? preview.ref.asilRep;
 }
 async function costAppendReference(ctx:SimWriteContext,p:CostProj,selection:any,reason:string){
@@ -763,6 +763,7 @@ registerSimHandler('costReferenceUpdate',async ctx=>{const p=await costDraft(ctx
 registerSimHandler('costLineRemove',async ctx=>{const p=await costDraft(ctx,ctx.req.params.estId,'COST_LINE_REMOVE');const line=p.lines.find(l=>l.lineNo===Number(ctx.req.params.lineNo));if(!line)return ctx.fail('NOT_FOUND','산정 기준 행이 없습니다.');p.lines=p.lines.filter(l=>l.lineNo!==line.lineNo);if(!p.lines.some(l=>l.refId===line.refId))p.mbd=p.mbd.filter(m=>m.refId!==line.refId);saveCost(ctx,p);ctx.audit({action:'COST_LINE_REMOVE',target:`${p.estId}#${line.lineNo}`,before:{refId:line.refId,sourceRevision:line.sourceRevision},componentId:'D07-01'});return costDetail(ctx,p);},{body:EmptyBody});
 
 async function computeCost(ctx: SimReadContext, p: CostProj) {
+  const missing=costInputMissing(p.lines,p.doc.settings.directExpenses);if(missing.length)throw new SimError('VALIDATION','미확정 입력을 0으로 계산할 수 없습니다. 수량과 별도 비용의 수량·단가를 확인하세요.',{missing});
   const basis = await basisOf(ctx, p.doc.basisVersion);
   const lines = p.lines.map((l) => ({ refId: l.refId, ...l.inputs, asil: l.inputs.asil ?? l.featureAsil }));
   const facts=await refFacts(ctx,p.lines.map(l=>l.refId),basis);const hashes=new Map<string,string>();

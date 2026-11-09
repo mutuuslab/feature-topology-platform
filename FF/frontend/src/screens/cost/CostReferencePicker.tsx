@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { AddCostReferenceBody,FeatureRefRow,RefSource } from '@ff/contracts';
 import { asyncState,useApi } from '../../api/hooks';
+import {costPurchasing as CP} from '../../copy/cost-purchasing';
 import { costReference as T } from '../../copy/cost';
 import { AsyncView,Button,DataTable,ErrorNote,Field,Panel } from '../../design';
 import { useUiLocale } from '../../locale/react';
@@ -8,7 +9,7 @@ import { RefChip,RefStatusBadge } from '../refdb/common';
 import { useRefSearch,type RefSearchRow } from '../refdb/refSearch';
 
 export interface CostReferencePreview {
- ref:FeatureRefRow;basisVersion:string;refRelease:string|null;referenceSha256:string;usable:boolean;missing:string[];
+ provenance?:{kind:string};ref:FeatureRefRow;basisVersion:string;refRelease:string|null;referenceSha256:string;usable:boolean;missing:string[];
  features:{featureId:string;version:string;name:string;asil:string;lifecycle:string;sha256:string}[];sources:RefSource[];
 }
 export function CostReferencePicker({basisVersion,initialRef,excluded=[],onChoose,pending=false}:{basisVersion?:string;initialRef?:string;excluded?:string[];pending?:boolean;onChoose:(selection:AddCostReferenceBody,preview:CostReferencePreview)=>void}) {
@@ -39,7 +40,7 @@ export function CostReferencePicker({basisVersion,initialRef,excluded=[],onChoos
      <dl><dt>{T.scope}</dt><dd>{p.ref.domain} › {p.ref.component}</dd><dt>{T.facts}</dt><dd>{p.ref.tshirt} · ASIL {p.ref.asilRep} · {p.ref.lifecycle} · {p.ref.autoQuality}</dd><dt>{T.release}</dt><dd>{p.refRelease ?? '—'}</dd><dt>{T.basis}</dt><dd>{p.basisVersion}</dd><dt>{T.hash}</dt><dd className="ds-mono" style={{overflowWrap:'anywhere'}}>{p.referenceSha256}</dd></dl>
      <p>{p.ref.definition?.summary || '—'}</p>
      <p>{T.scopeIn}: {p.ref.definition?.scopeIn?.join(' · ') || '—'} / {T.scopeOut}: {p.ref.definition?.scopeOut?.join(' · ') || '—'}</p>
-     <dl><dt>{T.procurement}</dt><dd>{p.ref.procurement || '—'} · {p.ref.swPackage || '—'}</dd><dt>{T.license}</dt><dd>{p.ref.licenseItem || '—'} · {p.ref.billing || '—'}</dd><dt>{T.evidence}</dt><dd>{p.ref.sizeEvidenceGrade || '—'} · {p.ref.evidenceCheckedAt || '—'} · {p.ref.registeredIn || '—'}</dd></dl>
+     {p.provenance?.kind==='WORKBOOK_DERIVED_REFERENCE'&&<p className="ds-field__hint">{CP.derivedSource}</p>}<dl><dt>{T.procurement}</dt><dd>{p.ref.procurement || '—'} · {p.ref.swPackage || '—'}</dd><dt>{T.license}</dt><dd>{p.ref.licenseItem || '—'} · {p.ref.billing || '—'}</dd><dt>{T.evidence}</dt><dd>{p.ref.sizeEvidenceGrade || '—'} · {p.ref.evidenceCheckedAt || '—'} · {p.ref.registeredIn || '—'}</dd></dl>
      {p.ref.adminMemo && <p>{p.ref.adminMemo}</p>}
      <p className="ds-field__hint">{T.source}: {p.ref.sourceIds.join(', ') || '—'} · {p.ref.sourceDetail || '—'}</p>
      <Field label={T.feature} hint={T.featureHint}><select className="ds-select" value={feature} onChange={e=>setFeature(e.target.value)}><option value="">{T.none}</option>{p.features.map(f=><option key={`${f.featureId}@${f.version}`} value={`${f.featureId}@${f.version}`}>{f.featureId} @ {f.version} · {f.name}</option>)}</select></Field>

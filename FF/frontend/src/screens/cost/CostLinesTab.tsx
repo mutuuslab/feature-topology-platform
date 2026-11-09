@@ -30,7 +30,7 @@ export function CostLinesTab({ d }: { d: CostDetailResponse }) {
     {key:'feature',header:R.feature,cell:(l:CostLineRow)=>l.featureId && l.version?<FeatureLinkChip featureId={l.featureId} version={l.version}/>:R.referenceOnly,minor:true},
     { key: 'role', header: T.cols.role, cell: (l: CostLineRow) => T.role[l.role], minor: true },
     { key: 'path', header: T.cols.path, cell: (l: CostLineRow) => (results.get(l.refId)?.bundleIncluded ? T.bundled : (results.get(l.refId)?.path ?? '—')) },
-    { key: 'qty', header: T.cols.qty, cell: (l: CostLineRow) => l.inputs.qty ?? 0, align: 'right' as const },
+    { key: 'qty', header: T.cols.qty, cell: (l: CostLineRow) => l.inputs.qty ?? '—', align: 'right' as const },
     { key: 'change', header: T.cols.change, cell: (l: CostLineRow) => l.inputs.changeType ?? '—', minor: true },
     { key: 'asil', header: T.cols.asil, cell: (l: CostLineRow) => l.inputs.asil ?? l.featureAsil, minor: true },
     { key: 'variants', header: T.cols.variants, cell: (l: CostLineRow) => l.inputs.variants ?? 1, align: 'right' as const, minor: true },

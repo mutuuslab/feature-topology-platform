@@ -75,6 +75,7 @@ export function evaluateCostReview(kind:CostReviewKind,input:CostReviewInputs,ba
  }
  let claimTotal:number|null=null;
  if(kind==='CHANGE'){
+  const selected=input.offers.find(o=>o.id===input.selectedOfferId);if(selected&&input.offers.some(o=>o.currency!==selected.currency||o.tax!==selected.tax))fail('CHANGE_CURRENCY_SCOPE','견적 통화·세금 기준','하나의 변경 청구 검토에서는 같은 통화·세금 기준을 사용하세요. 다른 기준은 별도 검토로 분리하며 임의 환산하지 않습니다.');
   if(!input.claims.length)fail('CLAIMS_REQUIRED','변경청구','변경 요청·승인 기준선·작업·비용 근거를 연결하세요.');unique(input.claims.map(c=>c.id),'변경청구');const seen=new Set<string>();
   claimTotal=sum(input.claims.map(c=>{evidence(c.sourceId,c.id);if(!c.changeId||!c.baselineApproval||!c.reason||!c.workIds.length||c.workIds.some(id=>!workIds.has(id))||!c.requirementIds.length||c.requirementIds.some(id=>!reqs.has(id)))fail('CHANGE_TRACE_REQUIRED',c.id,'전후 요구·승인 기준선·변경점·작업·사유를 연결하세요.');const key=c.executionId+'|'+c.scopeKey;if(c.executionId&&seen.has(key))fail('DUPLICATE_CLAIM',c.id,'같은 수행·범위의 청구가 겹칩니다.');seen.add(key);if(c.contractIncluded==='UNKNOWN')fail('CONTRACT_SCOPE_UNKNOWN',c.id,'원 계약 포함 여부가 미확정입니다.');const claimed=value(c.claimed,c.id+' 청구액'),recognized=value(c.recognizedProposal,c.id+' 인정 제안액');if(recognized!==null&&claimed!==null&&recognized>claimed)fail('RECOGNITION_EXCEEDS_CLAIM',c.id,'인정 제안액이 청구액을 넘습니다.');if(c.contractIncluded==='YES'&&recognized!==null&&recognized!==0)fail('CONTRACT_ALREADY_INCLUDED',c.id,'계약에 포함된 작업을 추가 비용으로 다시 인정할 수 없습니다.');return recognized;}));
  }
@@ -118,12 +119,12 @@ export function costReviewAction(doc:CostReviewDocument,body:ActCostReviewBody,a
  const next=structuredClone(doc);next.revision++;next.updatedAt=at;next.updatedBy=actor.id;next.lastReason=body.reason;
  const stale=doc.baseline.fingerprint!==live.fingerprint||!live.valid;
  const assessment=evaluateCostReview(doc.kind,doc.inputs,doc.baseline);
- const self=()=>{if(actor.id===doc.createdBy)deny('SEPARATION_OF_DUTY','작성자는 자기 검토를 확인·승인할 수 없습니다.');};
+ const self=()=>{if((doc.authoredBy??[doc.createdBy]).includes(actor.id))deny('SEPARATION_OF_DUTY','작성자는 자기 검토를 확인·승인할 수 없습니다.');};
  const requireState=(state:CostReviewDocument['status'])=>{if(doc.status!==state)deny('CONFLICT','현재 상태에서는 이 조치를 수행할 수 없습니다.');};
  const fresh=()=>{if(stale)deny('GUARD_FAILED','산정 기준이 바뀌었거나 미확정입니다. 과제 원천 갱신과 검토 기준 재확인이 필요합니다.');};
  const latest=(kind:'TECHNICAL'|'TERMS')=>[...doc.opinions].reverse().find(o=>o.kind===kind&&o.contentSha256===doc.contentSha256);
  if(body.action==='REVISE'){requireState('APPROVED');next.status='DRAFT';next.approval=null;next.handoff=null;next.opinions=[];return next;}
- if(body.action==='REFRESH_BASELINE'){requireState('DRAFT');if(!live.valid)deny('GUARD_FAILED',live.error??'과제 기준이 미확정입니다.');next.baseline=structuredClone(live);next.opinions=[];next.approval=null;next.handoff=null;return next;}
+ if(body.action==='REFRESH_BASELINE'){requireState('DRAFT');if(!live.valid)deny('GUARD_FAILED',live.error??'과제 기준이 미확정입니다.');next.baseline=structuredClone(live);next.authoredBy=[...new Set([...(doc.authoredBy??[doc.createdBy]),actor.id])];next.opinions=[];next.approval=null;next.handoff=null;return next;}
  fresh();
  if(body.action==='SUBMIT'){requireState('DRAFT');if(!assessment.ready)deny('GUARD_FAILED','미확정·누락·불일치 항목을 해결한 뒤 검토를 요청하세요.',assessment.findings);next.status='SUBMITTED';return next;}
  if(body.action.startsWith('TECHNICAL_')||body.action.startsWith('TERMS_')){

@@ -4,7 +4,7 @@ import type { CostCheckStatus, CostProjectStatus } from '@ff/contracts';
 
 export const swCost = /* @__PURE__ */ localizedCopy('cost.swCost', {
   title: 'SW 개발비 산정',
-  lead: 'Feature DB 기준 행에서 시작해 공수와 개발비를 계산합니다. 등록 Feature는 선택해 연결하고, 금액은 구매 담당 역할만 봅니다.',
+  lead: 'Feature DB 기준 행으로 공수·개발비를 산정합니다. 등록 Feature는 선택 연결하고 금액은 구매 역할만 봅니다.',
   keyFull: '백만원 · 승인된 과제의 총개발비 합계',
   keyMm: 'M/M · 승인된 과제의 총 공수 합계',
   keyNone: '승인된 과제가 없습니다',

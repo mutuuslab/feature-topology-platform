@@ -30,6 +30,7 @@ export const costFeatureSourceOf = (f: FeatureVersionRow) => ({
   featureRefs:f.featureRefs ?? [],
 });
 export type CostFeatureSource = ReturnType<typeof costFeatureSourceOf>;
+export interface CostReferenceProvenance {kind:'WORKBOOK_DERIVED_REFERENCE';workbookSha256:string;sourceReferenceRelease:string;capturedPublicRelease:string;capturedPublicReferenceSha256:string;boundary:string}
 export interface CostReferenceSnapshot {
   reference:FeatureRefRow;
   /** Unselected duplicate targets can influence bundle inclusion checks in the engine. */
@@ -48,8 +49,15 @@ export interface CostReferenceRevision {
   capturedBy:string;capturedAt:string;reason:string;
 }
 export interface CostReferenceOrigin extends CostReferenceRevision {
+  provenance?:CostReferenceProvenance|null;
   kind:'FEATURE_DB'|'REGISTERED_FEATURE'|'LEGACY_FEATURE_LINK';
   stale:boolean;latestRelease:string|null;currentReferenceSha256:string|null;
   reference:ReturnType<typeof costReferencePublic>|null;feature:CostFeatureSource|null;
   sources:RefSource[];history:CostReferenceRevision[];
+}
+
+/** A selected estimate row is not an empty workbook row. Unknown quantity/active expense is not zero. */
+export function costInputMissing(lines:readonly {lineNo:number;inputs:{qty?:number|null}}[],expenses:readonly {qty:number|null;unitPrice:number|null}[]=[]):string[]{
+ const missing=lines.filter(l=>l.inputs.qty===null||l.inputs.qty===undefined).map(l=>'산정 줄 '+l.lineNo+' 수량');
+ expenses.forEach((e,i)=>{if((e.qty!==null&&e.unitPrice===null)||(e.qty===null&&e.unitPrice!==null))missing.push('별도 비용 '+(i+1)+' 수량·단가');});return missing;
 }

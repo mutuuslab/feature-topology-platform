@@ -36,6 +36,7 @@ describe('purchasing review in the persistent browser simulation',()=>{
   v=await run('costReviewAction',{revision:v.document.revision,action:'HANDOFF',reason:'Prepare internal handoff only'},p);expect(v.document.handoff).toMatchObject({state:'PREPARED',boundary:'NO_EXTERNAL_PAYMENT'});
   const h=await run('costReview',undefined,{...p},'COST_ESTIMATOR');expect(h.document.handoff.handoffId).toBe(v.document.handoff.handoffId);expect(h.history.length).toBeGreaterThan(3);
  });
+ it('keeps missing selected quantities and partial direct expenses out of calculated totals',async()=>{const estId=await create();let v=await run('costLineUpdate',{qty:null},{estId,lineNo:'1'});expect(v.result).toBeNull();expect(v.error).toContain('미확정');v=await run('costLineUpdate',{qty:0},{estId,lineNo:'1'});expect(v.result.totals.totalMm).toBe(0);v=await run('costProjectUpdate',{settings:{directExpenses:[{item:'확인 중 비용',qty:1,unitPrice:null}]}},{estId});expect(v.result).toBeNull();expect(v.error).toContain('미확정');});
  it('rejects tampered bytes, stale revision and baseline changes without replacing inputs',async()=>{
   const estId=await create(),v=await run('costReviewCreate',{kind:'QUOTE',title:'Baseline test'},{estId}),p={estId,caseId:v.document.caseId},inputs=await costReviewSyntheticExample('QUOTE');const bad=structuredClone(inputs);bad.evidence[0].bodyBase64=btoa('changed');
   await expect(run('costReviewUpdate',{revision:1,inputs:bad,reason:'Tamper'},p)).rejects.toMatchObject({code:'GUARD_FAILED'});

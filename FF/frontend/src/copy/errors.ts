@@ -19,6 +19,8 @@ export const errors = /* @__PURE__ */ localizedCopy('errors.errors', {
   readOnlyDemo: '읽기 전용 데모입니다.',
   notInSnapshot: '데모에 없는 데이터입니다.',
   offlineActionUnsupported: '이 작업에는 연결된 서비스가 필요합니다. 오프라인 시연에서는 기준 자료를 조회할 수 있으며, 이 작업을 완료한 것으로 저장하지 않습니다.',
+  capturedOtaReadOnly: '캡처된 OTA 작업은 읽기 전용입니다. 이 시연에서는 재전송하거나 차량 회신을 변경할 수 없습니다.',
+  otaSourceUnavailable: 'OTA 작업의 원천을 확인할 수 없어 재전송하지 않았습니다. 브라우저에서 생성한 시연 작업을 선택하세요.',
   // 오류 상자의 문의용 코드 앞 — 화면 읽기용(문장과 코드를 나눈다)
   codeLabel: '오류 코드',
 });

@@ -194,6 +194,45 @@ describe('초기화·판', () => {
   });
 });
 
+describe('캡처 OTA 작업의 재전송 경계', () => {
+  const file = '/' + snapshotFile(url('otaJobs'));
+  const capturedJob = { jobId: 'OTA-CAPTURED', state: 'RETRY_WAIT', attempts: 2, vehicles: [{ vin: OFFLINE, outcome: 'NO_RESPONSE' }] };
+  afterEach(() => { byFile.delete(file); });
+
+  it('캡처 작업은 구체적인 409 안내와 거부 감사만 남기고 원본·회신을 보존한다', async () => {
+    const original = { items: [capturedJob] };
+    const bytes = JSON.stringify(original);
+    byFile.set(file, original);
+    window.__simUnhandled = [];
+    let error: any;
+    try { await run('otaJobRetry', { params: { jobId: capturedJob.jobId }, role: 'operator', body: { reason: '통신 복구 확인' } }); }
+    catch (e) { error = e; }
+    expect(error).toMatchObject({ status: 409, code: 'CONFLICT', details: { boundary: 'CAPTURED_READ_ONLY' } });
+    const { userMessage, errorKind } = await import('../api/errors');
+    expect(userMessage(errorKind(error.status), error.status, error.message)).toContain('읽기 전용');
+    expect(JSON.stringify(original)).toBe(bytes);
+    expect(engine.__overlayForTest()!.events).toEqual([]);
+    expect(engine.__overlayForTest()!.tasks).toEqual([]);
+    expect(engine.__overlayForTest()!.data.killDelivery).toBeUndefined();
+    expect((await run('audit', { query: { limit: 100 } })).items[0]).toMatchObject({ action: 'OTA_JOB_RETRY', target: capturedJob.jobId, result: 'DENIED' });
+    expect(window.__simUnhandled).toEqual([]);
+    expect(vi.mocked(fetch).mock.calls.every(call => !call[1]?.method || call[1].method === 'GET')).toBe(true);
+  });
+
+  it('완전한 native 목록에 없는 작업만 404로 거부한다', async () => {
+    byFile.set(file, { items: [capturedJob] });
+    await expect(run('otaJobRetry', { params: { jobId: 'OTA-UNKNOWN' }, role: 'operator', body: { reason: '작업 확인' } })).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND', details: { boundary: 'NOT_FOUND' } });
+    expect(engine.__overlayForTest()!.audit[0]).toMatchObject({ action: 'OTA_JOB_RETRY', target: 'OTA-UNKNOWN', result: 'DENIED' });
+  });
+
+  it.each(['missing', 'bounded'] as const)('원천 %s 상태에서는 부재를 추정하거나 완료하지 않는다', async (kind) => {
+    if (kind === 'bounded') byFile.set(file, { items: Array.from({ length: 200 }, (_, i) => ({ jobId: `OTA-${i}` })) });
+    await expect(run('otaJobRetry', { params: { jobId: 'OTA-UNKNOWN' }, role: 'operator', body: { reason: '작업 확인' } })).rejects.toMatchObject({ status: 409, code: 'CONFLICT', details: { boundary: 'SOURCE_UNVERIFIED' } });
+    expect(engine.__overlayForTest()!.events).toEqual([]);
+    expect(engine.__overlayForTest()!.audit[0].result).toBe('DENIED');
+  });
+});
+
 describe('대표 흐름 — 긴급 차단 → 2인 승인 → 회신 → 재전송 → 복원', () => {
   const issueBody = { featureId: FEAT, featureVersion: '1.0.0', reasonCategory: 'SAFETY', reasonCode: 'FIELD_FAULT', reason: '전방 거리 오판정 의심', confirm: FEAT };
   it('접수를 차단 요청으로 한 번만 옮기며 다른 Feature·닫힌 접수는 거부한다',async()=>{

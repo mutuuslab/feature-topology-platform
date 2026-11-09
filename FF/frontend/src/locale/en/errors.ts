@@ -16,5 +16,7 @@ export default {
   'errors.readOnlyDemo': 'This demo is read-only.',
   'errors.notInSnapshot': 'This data is not included in the demo.',
   'errors.offlineActionUnsupported': 'This operation requires a connected service. The offline replay can display captured reference data and does not record this operation as completed.',
+  'errors.capturedOtaReadOnly': 'Captured OTA jobs are read-only. This demo cannot retransmit them or change vehicle receipts.',
+  'errors.otaSourceUnavailable': 'The OTA job source could not be verified, so nothing was retransmitted. Select a demo job created in this browser.',
   'errors.codeLabel': 'Error code',
 };

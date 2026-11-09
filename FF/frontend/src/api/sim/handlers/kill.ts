@@ -1,4 +1,5 @@
 import { scheduleOtaObservation } from '../p9';
+import { errors as E } from '../../../copy/errors';
 // 시연 흐름 — 긴급 차단(D03-03)·복원(D03-04). 서버 kill.service·restore.service와 같은 순서·규칙(contracts 순수 규칙)으로:
 // 요청(type-to-confirm·영향 범위·DC4 거부·F2 이상 안전 봉쇄 근거) → 2인 승인(approvalCheck — 요청자 제외·서로 다른 2인·FSM·CSM)
 // → 정책 게이트 최종 판정(gateVerdict — 같은 규칙표) → 명령 원장 +1 → 서명(시연 키)·차량별 봉투 → 긴급 채널 게시본
@@ -36,7 +37,7 @@ import {
 } from '@ff/contracts';
 import { classifyDelivery, convergenceCounts, cumulativeDelivery, REPORT_INTERVAL_DEFAULT_MS, type DeliveryEvent } from '../../../../../contracts/src/rules/ads-state';
 import { blockedVins, missingRestoreChecks, RESTORE_CHECK_LABEL } from '../../../../../contracts/src/rules/kill-scope';
-import { registerSimHandler, registerSimReader, registerSimTask, registerSimView, simUnhandled } from '../engine';
+import { registerSimHandler, registerSimReader, registerSimTask, registerSimView } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
 
 const KILL = 'kill';
@@ -851,12 +852,24 @@ registerSimTask('kill.deadline', (ctx, args) => {
 });
 
 // 전달 재시도 — 시연 게시본의 끊긴 차량에 다시 보낸다(같은 명령·같은 봉투, 두 번 적용되지 않는다). 차량이 연결되면 회신이 들어온다
-registerSimHandler('otaJobRetry', (ctx) => {
+registerSimHandler('otaJobRetry', async (ctx) => {
   const jobId = ctx.req.params.jobId;
   const all = ctx.state<Record<string, any>>('killDelivery', () => ({}));
   const publicationId = Object.keys(all).find((id) => all[id].job?.jobId === jobId);
-  // 스냅샷의 OTA 작업(정책 배포 등)은 아직 시연 흐름이 없다 — 공통 처리
-  if (!publicationId) return simUnhandled(ctx);
+  // Captured delivery observations are immutable. A local retry must never claim
+  // to have retransmitted a native job or manufacture new vehicle receipts.
+  if (!publicationId) {
+    const captured = await ctx.snapshot<{ items: { jobId: string }[] }>('otaJobs', {}, {});
+    const rows = captured?.items;
+    const valid = Array.isArray(rows) && rows.every(row => row && typeof row.jobId === 'string');
+    const known = valid && rows.some(row => row.jobId === jobId);
+    // Native OtaJobRepo.list is bounded at 200: a full page cannot prove absence.
+    const absent = valid && rows.length < 200 && !known;
+    const reason = known ? E.capturedOtaReadOnly : absent ? E.notFound : E.otaSourceUnavailable;
+    ctx.fail(absent ? 'NOT_FOUND' : 'CONFLICT', reason, { jobId, boundary: known ? 'CAPTURED_READ_ONLY' : absent ? 'NOT_FOUND' : 'SOURCE_UNVERIFIED' }, {
+      action: 'OTA_JOB_RETRY', target: jobId, reason, componentId: 'D04-01', result: 'DENIED',
+    });
+  }
   const store = all[publicationId!];
   const job = store.job;
   if (job.state !== 'RETRY_WAIT' && job.state !== 'FAILED') ctx.fail('CONFLICT', '다시 제출할 수 있는 상태가 아닙니다.', undefined, { action: 'OTA_JOB_RETRY', target: jobId, reason: `${job.state} 상태 재시도`, componentId: 'D04-01' });

@@ -1,5 +1,8 @@
 // English display copy; canonical IDs and user text are preserved.
 export default {
+  'alm.reconcile.localLead':'Compare and process DEMO items retained in this browser. No remote read or transmission occurs; unchanged inputs report zero applied changes.',
+  'alm.reconcile.localBadge':'Local demo',
+  'alm.wp.localHint':'Recalculate completeness, suspect links and rejudgment targets from retained codeBeamer DEMO sources. Original Gate decisions and signatures remain intact; this is not a new remote verification.',
   "alm.reconcile.title": "Periodic reconciliation",
   "alm.reconcile.lead": "Reconcile missed changes every 15 minutes and all Epics once a day. Received changes go through the same checks.",
   "alm.reconcile.kind.INCREMENTAL": "Incremental reconciliation",

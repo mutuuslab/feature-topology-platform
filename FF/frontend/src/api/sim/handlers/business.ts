@@ -1373,15 +1373,16 @@ registerSimReader('extConflicts', async (ctx) => {
   if (!touched(ctx, CONFLICT)) return undefined;
   const status = ctx.req.query.status;
   const open = (await ctx.snapshot<{ items: any[] }>('extConflicts', {}, { status: 'OPEN' }))?.items ?? [];
-  const base = (await ctx.snapshot<{ items: any[] }>()) ?? { items: open };
+  const base = {items:open};
   return { ...base, items: overlayList(ctx, CONFLICT, base.items ?? [], (c: any) => String(c.conflictId), (c) => !status || c.status === status) };
 });
 registerSimReader('extSync', async (ctx) => {
   const done = ctx.list<any>(CONFLICT).filter((c) => c.status === 'RESOLVED');
-  if (!done.length) return undefined;
+  const local=ctx.list<any>('localAlmOutbox'),conflicts=ctx.list<any>(CONFLICT).filter(c=>c.localOnly&&c.status==='OPEN');
+  if (!done.length&&!local.length&&!conflicts.length) return undefined;
   const base = await ctx.snapshot<any>();
   if (!base) return undefined;
-  return { ...base, items: base.items.map((s: any) => ({ ...s, conflicts: Math.max(0, s.conflicts - done.filter((c) => c.system === s.system).length) })) };
+  return { ...base, items: base.items.map((s: any) => ({ ...s, conflicts: Math.max(0, s.conflicts - done.filter((c) => !c.localOnly&&c.system === s.system).length)+conflicts.filter(c=>c.system===s.system).length,pending:s.pending+local.filter(j=>j.system===s.system&&j.status==='PENDING').length,failed:s.failed+local.filter(j=>j.system===s.system&&j.status==='FAILED').length,localReplay:{pending:local.filter(j=>j.system===s.system&&j.status==='PENDING').length,done:local.filter(j=>j.system===s.system&&j.status==='DONE').length,remoteWrites:0},capturedSummary:s,localOnly:true })) };
 });
 
 registerSimHandler(

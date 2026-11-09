@@ -8,6 +8,7 @@ import { KillIntakeDismissBody } from '../../../../../contracts/src/rules/kill-i
 import { CloseRejudgeBody } from '../../../../../contracts/src/rules/alm/api';
 import { registerSimHandler, registerSimReader } from '../engine';
 import type { SimReadContext, SimWriteContext } from '../types';
+import {readLocalWp,allRejudges} from './alm-local';
 import { p10Registry as R } from './registry';
 const KEY='localApiKey', LINK='localLegacyLink', DELETED='localDeletedLegacyLink', RULE='localLegacyRule', MODEL='localLakeModel', INTAKE='localKillIntake', REJUDGE='localAlmRejudge';
 const MSG='localLegacyMessage', SETTLE='localSettlementTransmission';
@@ -61,10 +62,10 @@ registerSimHandler('dismissKillIntake',async ctx=>{
  const id=ctx.req.params.id,i=(await localIntakes(ctx)).find(x=>x.intakeId===id);if(!i)ctx.fail('NOT_FOUND','접수를 찾을 수 없습니다.');if(i.status!=='RECEIVED')ctx.fail('CONFLICT','이미 처리한 접수입니다.');const n={...i,status:'DISMISSED',closedBy:ctx.actor.id,closedAt:ctx.iso(),closeReason:ctx.req.body.reason};ctx.put(INTAKE,id,n);ctx.audit({action:'KILL_INTAKE_DISMISS',target:id,before:{status:i.status},after:{status:n.status},reason:n.closeReason,componentId:'D03-03'});return n;
 },{body:KillIntakeDismissBody});
 // Rejudge closure is a human no-impact record, independent of external polling.
-registerSimReader('almWorkProducts',async ctx=>{if(!ctx.list(REJUDGE).length)return undefined;const base=await ctx.snapshot<any>();if(!base)return undefined;return {...base,rejudge:(base.rejudge??[]).map((r:any)=>ctx.get(REJUDGE,String(r.rejudgeId))??r)};});
+registerSimReader('almWorkProducts',ctx=>readLocalWp(ctx,ctx.req.params.id,ctx.req.params.ver));
 registerSimReader('lakeAnomalyEvidence',async ctx=>{if(!ctx.list(MODEL).length)return undefined;const base=await ctx.snapshot<any>();if(!base)return undefined;return {...base,items:(base.items??[]).map((r:any)=>{const m=r.model&&ctx.get<any>(MODEL,r.model.modelId+'@'+r.model.version);return m?{...r,model:{...r.model,usable:m.usable}}:r;})};});
 registerSimReader('lakeTrials',async ctx=>{if(!ctx.list(MODEL).length)return undefined;const base=await ctx.snapshot<any>();if(!base?.model)return undefined;const m=ctx.get<any>(MODEL,base.model.modelId+'@'+base.model.version);return m?{...base,model:m,targets:m.usable?base.targets:[]}:undefined;});
-registerSimReader('almRejudge',async ctx=>ctx.list(REJUDGE).length?{items:merge(rows(await ctx.snapshot('almRejudge',{},{})),ctx.list(REJUDGE),'rejudgeId').filter(r=>(!ctx.req.query.status||r.status===ctx.req.query.status)&&(!ctx.req.query.featureId||r.featureId===ctx.req.query.featureId))}:undefined);
+registerSimReader('almRejudge',async ctx=>ctx.list(REJUDGE).length?{items:(await allRejudges(ctx)).filter(r=>(!ctx.req.query.status||r.status===ctx.req.query.status)&&(!ctx.req.query.featureId||r.featureId===ctx.req.query.featureId))}:undefined);
 registerSimHandler('closeAlmRejudge',async ctx=>{
  const b=ctx.req.body;if(typeof b.reason!=='string'||b.reason.trim().length<2||b.reason.trim().length>500)ctx.fail('VALIDATION','종료 사유를 2~500자로 입력하세요.');const all=await ctx.read<any>('almRejudge',{},{}),id=Number(ctx.req.params.id),r=rows(all).find(r=>r.rejudgeId===id);if(!r)ctx.fail('NOT_FOUND','재판정 요청을 찾을 수 없습니다.');if(r.status!=='OPEN')ctx.fail('CONFLICT','이미 닫힌 요청입니다.');const n={...r,status:'RESOLVED',resolvedBy:ctx.actor.id,resolvedAt:ctx.iso(),reason:b.reason.trim(),how:'closed'};ctx.put(REJUDGE,String(id),n);ctx.audit({action:'ALM_REJUDGE_CLOSE',target:r.featureId+'@'+r.version+'#'+r.gate,before:{status:'OPEN'},after:{status:'RESOLVED',rejudgeId:id},reason:n.reason,componentId:'D05-01'});return n;
 },{body:CloseRejudgeBody});

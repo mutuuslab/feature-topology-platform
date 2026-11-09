@@ -1,3 +1,4 @@
+import {STATIC_MODE} from '../../api/client';
 import { uiLocaleTag } from '../../locale/runtime';
 // 외부 연계 — 주기 대사 실행 기록(80-50 §4.5). 증분(최근 변경)·전체(Epic 기대값) 대사의 훑은 수·반영·충돌·오류와 처리 내용.
 import type { ReconcileRunRow } from '@ff/contracts';
@@ -29,7 +30,7 @@ export function ReconcileRunsPanel() {
         </span>
       }
     >
-      <p className="ds-field__hint">{R.lead}</p>
+      <p className="ds-field__hint">{STATIC_MODE?R.localLead:R.lead}</p>
       {/* 첫 대사 전(기동 직후)에는 표를 그리지 않는다 — 빈 상자 대신 설명만 */}
       <AsyncView state={asyncState(q, rows.length === 0)} error={q.error} onRetry={() => q.refetch()} rows={2} emptyHidden>
         <DataTable<ReconcileRunRow>
@@ -39,7 +40,7 @@ export function ReconcileRunsPanel() {
           columns={[
             { key: 'at', header: R.col.at, cell: (r) => <span className="ds-mono ds-nowrap">{when(r.startedAt)}</span> },
             { key: 'k', header: R.col.kind, cell: (r) => R.kind[r.kind] },
-            { key: 's', header: R.col.system, cell: (r) => extSync.system[r.system] },
+            { key: 's', header: R.col.system, cell: (r) => <span>{extSync.system[r.system]}{(r as ReconcileRunRow&{localOnly?:boolean}).localOnly?' · '+R.localBadge:''}</span> },
             { key: 'n', header: R.col.scanned, cell: (r) => r.scanned.toLocaleString(uiLocaleTag()), align: 'right' },
             { key: 'a', header: R.col.applied, cell: (r) => r.applied, align: 'right' },
             { key: 'c', header: R.col.conflicts, cell: (r) => <span style={r.conflicts ? { color: 'var(--danger)', fontWeight: 600 } : undefined}>{r.conflicts}</span>, align: 'right' },

@@ -1,4 +1,5 @@
 // Feature 상세 '연계' 탭 — Epic 아래 이슈(80-50 §8): 기능 분해 Story, 현장 문제 Bug(운영 연결). 값은 /api/integrations/sync/features/:id/:ver 그대로.
+import {STATIC_MODE} from '../../api/client';
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { WORK_PRODUCT, type ExtLink, type RejudgeRow, type WpGateMode, type WpKindRow, type WpProblem, type WpResult } from '@ff/contracts';
@@ -88,7 +89,7 @@ const W = alm.wp;
 /** 산출물 8종(80-50 §5.4) — 종류별 필요·승인·추적 완결·누락, 작성률. 누락은 규칙 문장으로 */
 export function WorkProductsPanel({ id, ver }: { id: string; ver: string }) {
   const q = useApi<WpView>('almWorkProducts', { params: { id, ver } }, { staleTime: 15_000 });
-  const refresh = useApiMutation<WpView>('refreshAlmWorkProducts', ['almWorkProducts', 'extFeatureTrace']);
+  const refresh = useApiMutation<WpView>('refreshAlmWorkProducts', ['almWorkProducts', 'almRejudge', 'extFeatureTrace', 'extFeatureEpics']);
   const perm = usePermission(['IMPLEMENTER', 'GATE_JUDGE', 'FEATURE_AUTHOR']);
   const v = q.data;
   const problemsOf = (k: string) => (v?.result?.problems ?? []).filter((p: WpProblem) => p.kind === k);
@@ -137,6 +138,7 @@ export function WorkProductsPanel({ id, ver }: { id: string; ver: string }) {
           </div>
         )}
       </AsyncView>
+      {STATIC_MODE&&<p className="ds-field__hint">{W.localHint}</p>}
       <ErrorNote error={refresh.error} />
     </Panel>
   );

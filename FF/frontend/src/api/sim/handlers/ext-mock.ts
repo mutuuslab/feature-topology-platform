@@ -328,6 +328,7 @@ async function deliver(ctx: SimWriteContext, it: MockItem, prev: MockItem | null
   const row: InboxRow = { system: it.system, deliveryId, receivedAt: ctx.iso(), key: c.key, outcome: r.outcome, summary: r.summary, externalUser: c.externalUser };
   ctx.put(INBOX, `${seq.n}`, row, { created: true });
   if (r.outcome === 'REJECTED' || r.outcome === 'UNMAPPED') ctx.emit('ext.change.rejected', c.key, { system: it.system, key: c.key, outcome: r.outcome, summary: r.summary, externalUser: c.externalUser }, { componentId: 'D05-01' });
+  const latest=ctx.get<MockItem>(ITEM,idOf(it.system,it.key))??it;ctx.state<Record<string,number>>('localAlmObserved',()=>({}))[idOf(it.system,it.key)]=latest.revision;
   return row;
 }
 const resultOf = (row: InboxRow | null) => (row ? { system: row.system, deliveryId: row.deliveryId, receivedAt: row.receivedAt, key: row.key, outcome: row.outcome, summary: row.summary, externalUser: row.externalUser, duplicate: false } : null);
@@ -337,7 +338,11 @@ const resultOf = (row: InboxRow | null) => (row ? { system: row.system, delivery
 export async function registrationTrace(ctx: SimReadContext) {
   const { id, ver } = ctx.req.params;
   const row = ctx.get<{ row: { featureId: string; version: string; lifecycle: Lifecycle; requirementIds: string[] } }>('regFeature', fid(id, ver))?.row;
-  if (!row || await ctx.snapshot()) return undefined;
+  const changed=ctx.list<MockItem>(ITEM);
+  if(!row&&!changed.length)return undefined;
+  const captured=await ctx.snapshot<any>();
+  if(captured){if(!changed.length)return undefined;const byKey=new Map(changed.map(i=>[idOf(i.system,i.key),i]));const project=(link:any)=>{if(!link)return link;const item=byKey.get(idOf(link.system,link.key));return item?{...link,title:item.title,status:item.status,revision:item.revision,extra:item.fields,localOnly:true,remoteVerified:false}:link;};return {...captured,epic:project(captured.epic),requirements:(captured.requirements??[]).map(project),changeRequests:(captured.changeRequests??[]).map(project),defects:(captured.defects??[]).map(project),mergeRequests:(captured.mergeRequests??[]).map(project),pipelines:(captured.pipelines??[]).map(project),localOnly:true,remoteVerified:false};}
+  if(!row)return undefined;
   const target = fid(id, ver);
   const L = (ctx.overlay.data[LINKS] ?? {}) as Links;
   const observed = ctx.list<MockItem>(ITEM).filter((item) => L[idOf(item.system, item.key)]?.FEATURE === target);
@@ -371,10 +376,11 @@ registerSimReader('extFeatureEpics', async (ctx) => {
   const base = (await ctx.snapshot<{ items: { feature: string; key: string; url: string; status: string; syncState: string; expected: string | null }[] }>())?.items ?? [];
   const byKey = new Map(changed.map((x) => [x.key, x]));
   const L = (ctx.overlay.data[LINKS] ?? {}) as Links;
-  const items = base.map((e) => (byKey.has(e.key) ? { ...e, status: byKey.get(e.key)!.status } : e));
+  const items = base.map((e) => ({...e,...(byKey.has(e.key)?{status:byKey.get(e.key)!.status}:{}),...(ctx.get('localAlmEpic',e.key)??{})})).filter(e=>!e.supersededBy);
   for (const it of changed) {
+    if(ctx.get<any>('localAlmEpic',it.key)?.supersededBy)continue;
     const feature = L[idOf('JIRA', it.key)]?.FEATURE;
-    if (feature && !items.some((e) => e.feature === feature)) items.push({ feature, key: it.key, url: extUrl('JIRA', 'EPIC', it.key), status: it.status, syncState: 'SYNCED', expected: it.status });
+    if (feature && !items.some((e) => e.feature === feature)) items.push({ feature, key: it.key, url: extUrl('JIRA', 'EPIC', it.key), status: it.status, syncState: 'SYNCED', expected: it.status,...(ctx.get('localAlmEpic',it.key)??{}) });
   }
   return { items };
 });
@@ -471,3 +477,6 @@ registerSimHandler(
   },
   { body: ChangeRecordBody },
 );
+
+/** Browser DEMO primitives; callers must validate captured mock mode before reconciliation. */
+export const browserDemoExt={items:itemsOf,update,create,deliver,links,featureOfEpic};

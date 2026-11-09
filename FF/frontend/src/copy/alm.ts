@@ -4,6 +4,8 @@ import { almInbox } from './alm-inbox';
 
 export const alm = /* @__PURE__ */ localizedCopy('alm.alm', {
   reconcile: {
+    localLead:'보관된 DEMO 항목을 비교·처리합니다. 원격 전송은 없고 무변경은 반영 0건입니다.',
+    localBadge:'로컬 시연',
     title: '주기 대사',
     lead: '놓친 변경을 15분마다, 모든 Epic을 하루 한 번 다시 맞춥니다. 받은 변경은 같은 확인을 거칩니다.',
     kind: { INCREMENTAL: '증분 대사', FULL: '전체 대사' },
@@ -32,6 +34,7 @@ export const alm = /* @__PURE__ */ localizedCopy('alm.alm', {
     cyber: (why: string) => `사이버보안 요구: ${why}`,
     problems: '누락·끊긴 추적',
     refresh: 'codeBeamer 다시 읽기',
+    localHint:'브라우저에 보관된 codeBeamer DEMO 원천으로 완결성·의심·재판정 대상을 다시 계산합니다. 원본 Gate 판정·서명을 바꾸거나 새 원격 검증으로 표시하지 않습니다.',
     suspect: (n: number) => `의심 관계 ${n}건 — 위 항목이 승인 뒤 바뀌었습니다`,
   },
   rejudge: {

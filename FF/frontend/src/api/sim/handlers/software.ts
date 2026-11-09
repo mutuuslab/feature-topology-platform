@@ -132,8 +132,11 @@ registerSimDownload('softwareDownload',async ctx=>{
   return blob;
 });
 registerSimReader('softwareDownloadHistory',async ctx=>{
-  const item=await get(ctx,ctx.req.params.id),base=await ctx.snapshot<{items:any[]}>('softwareDownloadHistory',{id:ctx.req.params.id})??(await captures()).find(c=>c.package.packageId===ctx.req.params.id)?.history;
-  if(item.provenance!==LOCAL&&!base)throw new SimError('INTERNAL','캡처한 native SW 다운로드 이력이 없습니다.');
+  const id=ctx.req.params.id;await get(ctx,id);
+  // Only an engine-recorded browser creation has no native history source.
+  const local=(ctx.overlay.created[PACKAGE]??[]).includes(id);
+  const base=local?null:await ctx.snapshot<{items:any[]}>('softwareDownloadHistory',{id})??(await captures()).find(c=>c.package.packageId===id)?.history;
+  if(!local&&!base)throw new SimError('INTERNAL','캡처한 native SW 다운로드 이력이 없습니다.');
   return {items:[...ctx.list<any>(DOWNLOAD).filter(d=>d.packageId===ctx.req.params.id),...(base?.items??[])]};
 });
 for(const route of ['vehicleSoftwareDownload','vehicleSoftwareManifest'])registerSimReader(route,()=>{throw new SimError('FORBIDDEN','차량 키 인증은 native 차량 채널에서 검증합니다. 브라우저 시연은 실제 차량 신원을 만들지 않습니다.');});

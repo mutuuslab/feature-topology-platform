@@ -84,3 +84,28 @@ it('preserves revision, independent-review and author-role boundaries before any
 it('restricts audited GET effects to explicitly declared binary download routes',()=>{
  expect(()=>engine.registerSimDownload('softwarePackage',async()=>({ok:true}))).toThrow(/바이너리 GET/);
 });
+
+it('reads an engine-created local package history without requesting a nonexistent native snapshot',async()=>{
+ await run('softwarePackages');const localId='SWP-local-history',o=engine.__overlayForTest()!;
+ o.entities.softwarePackage={[localId]:{...packageOf(),packageId:localId,provenance:'LOCAL_SIMULATION'}};
+ o.created.softwarePackage=[localId];
+ const receipt={downloadId:'SWDL-local-proof',packageId:localId,state:'BROWSER_BLOB_READY',sha256:sha,bytes:bytes.length,provenance:'LOCAL_SIMULATION'};
+ o.entities.softwareDownload={[receipt.downloadId]:receipt};
+ const fetch=vi.mocked(globalThis.fetch);fetch.mockClear();
+ expect(await run('softwareDownloadHistory','viewer',undefined,{id:localId})).toEqual({items:[receipt]});
+ expect(fetch.mock.calls.filter(([url])=>String(url).endsWith('/'+snapshotFile(routeUrl('softwareDownloadHistory',{id:localId}))))).toHaveLength(0);
+});
+it('keeps captured native history unchanged and refuses an uncreated record with missing native history',async()=>{
+ const native={downloadId:'SWDL-original-native',packageId:ID,state:'STREAMED',sha256:sha};set('softwareDownloadHistory',{items:[native]},{id:ID});
+ expect(await run('softwareDownloadHistory','viewer',undefined,{id:ID})).toEqual({items:[native]});
+ expect(sources.get('/'+snapshotFile(routeUrl('softwareDownloadHistory',{id:ID})))).toEqual({items:[native]});
+ sources.delete('/'+snapshotFile(routeUrl('softwareDownloadHistory',{id:ID})));
+ engine.__resetSimForTest();await run('softwarePackages');
+ // A provenance string alone is not the engine's trusted local-creation marker.
+ engine.__overlayForTest()!.entities.softwarePackage={[ID]:{...packageOf(),provenance:'LOCAL_SIMULATION'}};
+ await expect(run('softwareDownloadHistory','viewer',undefined,{id:ID})).rejects.toMatchObject({status:500,code:'INTERNAL'});
+});
+it('fails closed for unknown package history before requesting a fictional history source',async()=>{
+ const unknown='SWP-unknown';await expect(run('softwareDownloadHistory','viewer',undefined,{id:unknown})).rejects.toMatchObject({status:404,code:'NOT_FOUND'});
+ expect(vi.mocked(globalThis.fetch).mock.calls.filter(([url])=>String(url).endsWith('/'+snapshotFile(routeUrl('softwareDownloadHistory',{id:unknown}))))).toHaveLength(0);
+});
